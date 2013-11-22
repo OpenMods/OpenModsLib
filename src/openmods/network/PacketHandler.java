@@ -13,7 +13,6 @@ import net.minecraft.server.management.PlayerManager;
 import net.minecraft.util.IntHashMap;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
-import openblocks.OpenBlocks;
 import openmods.Log;
 
 import com.google.common.base.Throwables;

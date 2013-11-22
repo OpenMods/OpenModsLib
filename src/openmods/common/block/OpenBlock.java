@@ -76,14 +76,18 @@ public abstract class OpenBlock extends Block {
 
 	protected OpenBlock(int id, Material material) {
 		super(id, material);
-		setCreativeTab(OpenBlocks.tabOpenBlocks);
+		mod = (IOpenMod) Loader.instance().activeModContainer().getMod();
+		setCreativeTab(mod.getCreativeTab());
 		setHardness(1.0F);
 		setRotationMode(BlockRotationMode.NONE);
 		setPlacementMode(BlockPlacementMode.ENTITY_ANGLE);
 
 		// I dont think vanilla actually uses this..
 		isBlockContainer = false;
-		mod = (IOpenMod) Loader.instance().activeModContainer().getMod();
+	}
+	
+	public IOpenMod getMod() {
+		return mod;
 	}
 
 	protected void setPlacementMode(BlockPlacementMode mode) {
@@ -197,7 +201,7 @@ public abstract class OpenBlock extends Block {
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerIcons(IconRegister registry) {
-		this.blockIcon = registry.registerIcon(String.format("%s:%s", "openblocks", uniqueBlockId));
+		this.blockIcon = registry.registerIcon(String.format("%s:%s", mod.getId(), uniqueBlockId));
 	}
 
 	@Override
@@ -224,11 +228,11 @@ public abstract class OpenBlock extends Block {
 	public void setupBlock(Block instance, String uniqueName, Class<? extends OpenTileEntity> tileEntity, Class<? extends ItemOpenBlock> itemClass) {
 		uniqueBlockId = uniqueName;
 
-		GameRegistry.registerBlock(instance, itemClass, String.format("%s_%s", "openblocks", uniqueName));
-		instance.setUnlocalizedName(String.format("%s.%s", "openblocks", uniqueName));
+		GameRegistry.registerBlock(instance, itemClass, String.format("%s_%s", mod.getId(), uniqueName));
+		instance.setUnlocalizedName(String.format("%s.%s", mod.getId(), uniqueName));
 
 		if (tileEntity != null) {
-			GameRegistry.registerTileEntity(tileEntity, String.format("%s_%s", "openblocks", uniqueName));
+			GameRegistry.registerTileEntity(tileEntity, String.format("%s_%s", mod.getId(), uniqueName));
 			this.teClass = tileEntity;
 			isBlockContainer = true;
 		}
@@ -417,7 +421,7 @@ public abstract class OpenBlock extends Block {
 
 	@Override
 	public int getRenderType() {
-		return OpenBlocks.renderId;
+		return mod.getRenderId();
 	}
 
 	public void setTexture(ForgeDirection direction, Icon icon) {

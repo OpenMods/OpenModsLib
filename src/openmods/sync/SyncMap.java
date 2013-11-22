@@ -130,7 +130,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 				if (ByteUtils.get(mask, i)) {
 					objects[i].readFromStream(dis);
 					changes.add(objects[i]);
-					objects[i].resetChangeTimer(getWorld());
+					objects[i].resetChangeTimer(handler.getProxy(), getWorld());
 				}
 			}
 		}
@@ -147,7 +147,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 		for (int i = 0; i < 16; i++) {
 			if (objects[i] != null && (regardless || objects[i].isDirty())) {
 				objects[i].writeToStream(dos, regardless);
-				objects[i].resetChangeTimer(getWorld());
+				objects[i].resetChangeTimer(handler.getProxy(), getWorld());
 			}
 		}
 	}

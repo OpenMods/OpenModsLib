@@ -6,6 +6,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet;
 import net.minecraftforge.common.ForgeDirection;
 import openmods.Log;
+import openmods.common.block.OpenBlock;
+import openmods.interfaces.IProxy;
 import openmods.sync.ISyncHandler;
 import openmods.sync.ISyncableObject;
 import openmods.sync.SyncMap;
@@ -67,5 +69,10 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncHa
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
 		syncMap.readFromNBT(tag);
+	}
+	
+	/** ugh, temporary hopefully. Just getting it to compile! **/
+	public IProxy getProxy() {
+		return ((OpenBlock)this.blockType).getMod().getProxy();
 	}
 }
