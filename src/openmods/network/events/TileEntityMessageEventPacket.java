@@ -10,10 +10,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import openmods.OpenMods;
-import openmods.common.tileentity.OpenTileEntity;
 import openmods.network.EventPacket;
 import openmods.network.IEventPacketType;
 import openmods.network.PacketHandler;
+import openmods.tileentity.OpenTileEntity;
 
 import com.google.common.base.Preconditions;
 

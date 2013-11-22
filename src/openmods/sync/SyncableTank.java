@@ -7,8 +7,8 @@ import java.io.IOException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
+import openmods.GenericTank;
 import openmods.OpenMods;
-import openmods.common.GenericTank;
 
 public class SyncableTank extends GenericTank implements ISyncableObject {
 
