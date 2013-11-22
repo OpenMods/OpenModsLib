@@ -1,8 +1,5 @@
 package openmods.common.entity;
 
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.entity.Entity;
@@ -14,6 +11,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
+
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteArrayDataOutput;
+
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -35,11 +36,11 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		this.height = height;
 		yOffset = 0;
 	}
-	
+
 	public static EntityBlock create(World world, int x, int y, int z) {
 		return create(world, x, y, z, EntityBlock.class);
 	}
-	
+
 	public static EntityBlock create(World world, int x, int y, int z, Class<? extends EntityBlock> klazz) {
 		int blockId = world.getBlockId(x, y, z);
 		Block block = Block.blocksList[blockId];
@@ -54,9 +55,9 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		if (entity == null) return null;
-		
+
 		entity.setBlockIdAndMeta(blockId, meta);
 
 		if (block instanceof BlockContainer) {
@@ -89,7 +90,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	public int getBlockId() {
 		return dataWatcher.getWatchableObjectInt(OBJECT_BLOCK_ID);
 	}
-	
+
 	public Block getBlock() {
 		int blockId = getBlockId();
 		return Block.blocksList[blockId];
@@ -136,9 +137,9 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 			setDead();
 			return;
 		}
-		
+
 		if (hasGravity) {
-	        motionY -= 0.03999999910593033D;
+			motionY -= 0.03999999910593033D;
 			motionX *= 0.98;
 			motionY *= 0.98;
 			motionZ *= 0.98;
@@ -206,11 +207,11 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 			}
 		}
 	}
-	
+
 	public void setHasGravity(boolean gravity) {
 		this.hasGravity = gravity;
 	}
-	
+
 	public boolean hasGravity() {
 		return hasGravity;
 	}

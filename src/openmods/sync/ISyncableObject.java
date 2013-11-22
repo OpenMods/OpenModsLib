@@ -4,8 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import openmods.interfaces.IProxy;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 

@@ -70,7 +70,6 @@ public abstract class OpenTileEntity extends TileEntity {
 		}
 	}
 
-
 	/**
 	 * This is called once the TE has been added to the world
 	 */

@@ -45,7 +45,7 @@ public class PacketHandler implements IPacketHandler {
 			Log.warn(e, "Error while handling data on channel %s from player '%s'", packet.channel, player);
 		}
 	}
-	
+
 	public static Set<EntityPlayer> getPlayersWatchingChunk(WorldServer world, int chunkX, int chunkZ) {
 		PlayerManager manager = world.getPlayerManager();
 

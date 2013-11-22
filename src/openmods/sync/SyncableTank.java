@@ -4,13 +4,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import openmods.OpenMods;
-import openmods.common.GenericTank;
-import openmods.interfaces.IProxy;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
+import openmods.OpenMods;
+import openmods.common.GenericTank;
 
 public class SyncableTank extends GenericTank implements ISyncableObject {
 

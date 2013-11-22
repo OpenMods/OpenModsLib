@@ -9,9 +9,9 @@ import net.minecraft.client.gui.Gui;
 public abstract class BaseComponent extends Gui {
 
 	private boolean overlay_mode = false;
-	
+
 	public static boolean IS_OVERLAY_PASS = false;
-	
+
 	public enum TabColor {
 		blue(0x8784c8),
 		lightblue(0x84c7c8),
@@ -34,12 +34,12 @@ public abstract class BaseComponent extends Gui {
 	public boolean isOverlay() {
 		return overlay_mode;
 	}
-	
+
 	public BaseComponent setOverlayMode(boolean isOverlay) {
 		this.overlay_mode = isOverlay;
 		return this;
 	}
-	
+
 	public static interface IComponentListener {
 		void componentMouseDown(BaseComponent component, int offsetX, int offsetY, int button);
 

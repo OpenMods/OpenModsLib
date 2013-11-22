@@ -10,7 +10,7 @@ import openmods.utils.ByteUtils;
 public class StencilCraftEvent extends TileEntityMessageEventPacket {
 
 	private Stencil stencil;
-	
+
 	public StencilCraftEvent() {}
 
 	public StencilCraftEvent(OpenTileEntity te, Stencil stencil) {
@@ -28,7 +28,7 @@ public class StencilCraftEvent extends TileEntityMessageEventPacket {
 	protected void writePayload(DataOutput output) {
 		ByteUtils.writeVLI(output, stencil.ordinal());
 	}
-	
+
 	public Stencil getStencil() {
 		return stencil;
 	}

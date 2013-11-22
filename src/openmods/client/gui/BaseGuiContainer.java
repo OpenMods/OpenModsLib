@@ -93,22 +93,22 @@ public abstract class BaseGuiContainer<T extends ContainerInventory<?>> extends
 		fontRenderer.drawString(translatedName, 8, this.ySize - 96 + 2, 4210752);
 
 	}
-	
+
 	@Override
 	public void drawScreen(int par1, int par2, float par3) {
-		super.drawScreen(par1, par2, par3);        
+		super.drawScreen(par1, par2, par3);
 		GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-        RenderHelper.disableStandardItemLighting();
-        GL11.glDisable(GL11.GL_LIGHTING);
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
+		RenderHelper.disableStandardItemLighting();
+		GL11.glDisable(GL11.GL_LIGHTING);
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
 		GL11.glPushMatrix();
 		BaseComponent.IS_OVERLAY_PASS = true;
 		root.render(this.mc, this.guiLeft, this.guiTop, par1 - this.guiLeft, par2 - this.guiTop);
 		GL11.glPopMatrix();
 		GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-        GL11.glEnable(GL11.GL_LIGHTING);
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-        RenderHelper.enableStandardItemLighting();
+		GL11.glEnable(GL11.GL_LIGHTING);
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		RenderHelper.enableStandardItemLighting();
 	}
 
 	public void sendButtonClick(int buttonId) {

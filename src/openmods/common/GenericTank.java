@@ -8,11 +8,11 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidHandler;
-// TODO: Move the getTicks and other helpers to a generic helpers class (:
 import openmods.integration.ModuleBuildCraft;
 import openmods.interfaces.IProxy;
 import openmods.sync.SyncableFlags;
 import openmods.utils.BlockUtils;
+// TODO: Move the getTicks and other helpers to a generic helpers class (:
 
 public class GenericTank extends FluidTank {
 

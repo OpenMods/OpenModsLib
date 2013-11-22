@@ -4,17 +4,14 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.Set;
 
-import openmods.OpenMods;
-import openmods.common.api.IOpenMod;
-import openmods.interfaces.IProxy;
-
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.world.World;
+import openmods.OpenMods;
 
 import com.google.common.io.ByteStreams;
 
 public class SyncableManager {
-	
+
 	public void handlePacket(Packet250CustomPayload packet) throws IOException {
 		DataInput input = ByteStreams.newDataInput(packet.data);
 

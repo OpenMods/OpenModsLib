@@ -11,13 +11,13 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.network.IGuiHandler;
-import cpw.mods.fml.common.network.Player;
 import openblocks.client.ClientGuiHandler;
 import openblocks.client.ClientTickHandler;
 import openblocks.client.fx.FXLiquidSpray;
 import openmods.interfaces.IProxy;
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.network.IGuiHandler;
+import cpw.mods.fml.common.network.Player;
 
 public class OpenClientProxy implements IProxy {
 
@@ -77,16 +77,12 @@ public class OpenClientProxy implements IProxy {
 	}
 
 	@Override
-	public void init() {
-	}
+	public void init() {}
 
 	@Override
-	public void postInit() {
-	}
+	public void postInit() {}
 
 	@Override
-	public void registerRenderInformation() {
-	}
-
+	public void registerRenderInformation() {}
 
 }

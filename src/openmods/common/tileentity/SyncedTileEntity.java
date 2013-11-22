@@ -6,13 +6,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet;
 import net.minecraftforge.common.ForgeDirection;
 import openmods.Log;
-import openmods.common.block.OpenBlock;
-import openmods.interfaces.IProxy;
-import openmods.sync.ISyncHandler;
-import openmods.sync.ISyncableObject;
-import openmods.sync.SyncMap;
-import openmods.sync.SyncMapTile;
-import openmods.sync.SyncableDirection;
+import openmods.sync.*;
 
 public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncHandler {
 

@@ -6,8 +6,12 @@ import openmods.interfaces.IProxy;
 
 public interface IOpenMod {
 	public IProxy getProxy();
+
 	public Log getLog();
+
 	public CreativeTabs getCreativeTab();
+
 	public String getId();
+
 	public int getRenderId();
 }

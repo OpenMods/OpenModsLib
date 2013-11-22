@@ -2,10 +2,9 @@ package openblocks.api;
 
 import java.util.HashMap;
 
-import com.google.common.collect.Maps;
-
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+
+import com.google.common.collect.Maps;
 
 public class MutantRegistry {
 

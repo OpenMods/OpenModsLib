@@ -3,10 +3,9 @@ package openmods.utils;
 import java.util.HashSet;
 import java.util.Set;
 
-import openmods.Mods;
-
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
+import openmods.Mods;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.registry.GameRegistry;
 

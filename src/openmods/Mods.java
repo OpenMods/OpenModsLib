@@ -54,16 +54,14 @@ public class Mods {
 
 	public static ModContainer getModForItemStack(ItemStack stack) {
 		Item item = stack.getItem();
-		if (item == null)
-			return null;
-		
+		if (item == null) return null;
+
 		Class<?> klazz = item.getClass();
-		
-		if (klazz.getName().startsWith("net.minecraft"))
-			return null;
-		
+
+		if (klazz.getName().startsWith("net.minecraft")) return null;
+
 		UniqueIdentifier identifier = GameRegistry.findUniqueIdentifierFor(item);
-		
+
 		if (identifier == null && item instanceof ItemBlock) {
 			int blockId = ((ItemBlock)item).getBlockID();
 			Block block = Block.blocksList[blockId];
@@ -72,13 +70,12 @@ public class Mods {
 				klazz = block.getClass();
 			}
 		}
-		
+
 		Map<String, ModContainer> modList = Loader.instance().getIndexedModList();
-		
+
 		if (identifier != null) {
 			ModContainer container = modList.get(identifier.modId);
-			if (container != null)
-				return container;
+			if (container != null) return container;
 		}
 
 		String[] itemClassParts = klazz.getName().split("\\.");
@@ -86,9 +83,8 @@ public class Mods {
 		int mostMatchingPackages = 0;
 		for (Entry<String, ModContainer> entry : modList.entrySet()) {
 			Object mod = entry.getValue().getMod();
-			if (mod == null)
-				continue;
-			
+			if (mod == null) continue;
+
 			String[] modClassParts = mod.getClass().getName().split("\\.");
 			int packageMatches = 0;
 			for (int i = 0; i < modClassParts.length; ++i) {

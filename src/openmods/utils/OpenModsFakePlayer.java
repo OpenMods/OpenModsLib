@@ -30,9 +30,8 @@ public class OpenModsFakePlayer extends FakePlayer {
 	public ItemStack equipWithAndRightClick(ItemStack itemStack, Vec3 currentPos, Vec3 hitVector, ForgeDirection side, boolean blockExists) {
 		setPosition(currentPos.xCoord, currentPos.yCoord, currentPos.zCoord);
 
-
 		ForgeDirection opposite = side.getOpposite();
-		
+
 		if (blockExists) {
 
 			// find rotations
@@ -49,7 +48,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 					deltaX, deltaY, deltaZ,
 					blockExists)) {
 				setSneaking(true);
-					
+
 				return inventory.getCurrentItem();
 			}
 			hitVector.yCoord++;
@@ -98,7 +97,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 	private boolean rightClick(ItemStack itemStack, int x, int y, int z, int side, float deltaX, float deltaY, float deltaZ, boolean blockExists) {
 		boolean flag = false;
 		int blockId;
-		
+
 		if (itemStack != null && itemStack.getItem() != null
 				&& itemStack.getItem().onItemUseFirst(itemStack, this, worldObj, x, y, z, side, deltaX, deltaY, deltaZ)) { return true; }
 

@@ -121,13 +121,13 @@ public class GuiComponentBox extends BaseComponent {
 		float g = (c >> 8 & 255) / 255.0F;
 		float b = (c & 255) / 255.0F;
 		GL11.glColor4f(r, g, b, 1);
-		if(isOverlay() == IS_OVERLAY_PASS) {
+		if (isOverlay() == IS_OVERLAY_PASS) {
 			renderBackground(offsetX, offsetY);
 			renderTopEdge(offsetX, offsetY);
 			renderBottomEdge(offsetX, offsetY);
 			renderLeftEdge(offsetX, offsetY);
 			renderRightEdge(offsetX, offsetY);
-			
+
 			renderTopLeftCorner(offsetX, offsetY);
 			renderTopRightCorner(offsetX, offsetY);
 			renderBottomLeftCorner(offsetX, offsetY);
