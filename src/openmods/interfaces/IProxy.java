@@ -3,6 +3,8 @@ package openmods.interfaces;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.fluids.FluidStack;
 import cpw.mods.fml.common.network.IGuiHandler;
 import cpw.mods.fml.common.network.Player;
 
@@ -30,4 +32,7 @@ public interface IProxy {
 	public void sendPacketToPlayer(Player player, Packet packet);
 
 	public void sendPacketToServer(Packet packet);
+	
+	public void spawnLiquidSpray(World worldObj, FluidStack water, double x, double y, double z, ForgeDirection sprayDirection, float angleRadians, float spread);
+
 }
