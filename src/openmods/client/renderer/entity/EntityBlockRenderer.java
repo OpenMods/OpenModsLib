@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
-import openblocks.common.entity.EntityBlock;
+import openmods.common.entity.EntityBlock;
 
 import org.lwjgl.opengl.GL11;
 

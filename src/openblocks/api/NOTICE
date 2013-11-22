@@ -1,0 +1,4 @@
+This API I feel SHOULD be in the OpenModsLib so that one jar provides the API of all our mods, makes it easier for other developers.
+But do not rename the package from the mod name. :)
+
+-NC

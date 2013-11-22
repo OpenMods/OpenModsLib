@@ -5,7 +5,7 @@ import java.util.Set;
 
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.ForgeDirection;
-import openblocks.shapes.IShapeable;
+import openmods.shapes.IShapeable;
 
 public class GeometryUtils {
 
