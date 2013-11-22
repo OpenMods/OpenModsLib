@@ -1,7 +1,6 @@
 package openmods.sync;
 
 import net.minecraft.world.World;
-import openblocks.OpenBlocks;
 import openmods.interfaces.IProxy;
 
 public abstract class SyncableObjectBase implements ISyncableObject {

@@ -14,7 +14,6 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import openblocks.OpenBlocks;
 import openmods.Log;
 import openmods.network.PacketHandler;
 import openmods.utils.ByteUtils;
@@ -181,12 +180,12 @@ public abstract class SyncMap<H extends ISyncHandler> {
 					if (knownUsers.contains(player.entityId)) {
 						if (hasChanges) {
 							if (changePacket == null) changePacket = createPacket(false, false);
-							OpenBlocks.proxy.sendPacketToPlayer((Player)player, changePacket);
+							handler.getProxy().sendPacketToPlayer((Player)player, changePacket);
 							sent = true;
 						}
 					} else {
 						if (fullPacket == null) fullPacket = createPacket(true, false);
-						OpenBlocks.proxy.sendPacketToPlayer((Player)player, fullPacket);
+						handler.getProxy().sendPacketToPlayer((Player)player, fullPacket);
 						sent = true;
 					}
 				}
@@ -196,7 +195,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 			}
 		} else {
 			try {
-				OpenBlocks.proxy.sendPacketToServer(createPacket(false, true));
+				handler.getProxy().sendPacketToServer(createPacket(false, true));
 				sent = true;
 			} catch (IOException e) {
 				e.printStackTrace();

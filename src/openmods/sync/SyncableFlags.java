@@ -8,7 +8,6 @@ import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
-import openblocks.OpenBlocks;
 import openmods.interfaces.IProxy;
 import openmods.utils.ByteUtils;
 
@@ -72,20 +71,20 @@ public class SyncableFlags extends SyncableObjectBase {
 		value = newVal;
 	}
 
-	public int ticksSinceSet(World world, Enum<?> slot) {
-		return ticksSinceSet(world, slot.ordinal());
+	public int ticksSinceSet(IProxy proxy, World world, Enum<?> slot) {
+		return ticksSinceSet(proxy, world, slot.ordinal());
 	}
 
-	public int ticksSinceSet(World world, int slot) {
-		return (int)(OpenBlocks.proxy.getTicks(world) - timeLastSet[slot]);
+	public int ticksSinceSet(IProxy proxy, World world, int slot) {
+		return (int)(proxy.getTicks(world) - timeLastSet[slot]);
 	}
 
-	public int ticksSinceUnset(World world, Enum<?> slot) {
-		return ticksSinceUnset(world, slot.ordinal());
+	public int ticksSinceUnset(IProxy proxy, World world, Enum<?> slot) {
+		return ticksSinceUnset(proxy, world, slot.ordinal());
 	}
 
-	public int ticksSinceUnset(World world, int slot) {
-		return (int)(OpenBlocks.proxy.getTicks(world) - timeLastUnset[slot]);
+	public int ticksSinceUnset(IProxy proxy, World world, int slot) {
+		return (int)(proxy.getTicks(world) - timeLastUnset[slot]);
 	}
 
 	public boolean get(Enum<?> slot) {
@@ -133,7 +132,7 @@ public class SyncableFlags extends SyncableObjectBase {
 	@Override
 	public void resetChangeTimer(IProxy proxy, World world) {
 		super.resetChangeTimer(proxy, world);
-		long time = OpenBlocks.proxy.getTicks(world);
+		long time = proxy.getTicks(world);
 		for (int i = 0; i < timeLastSet.length; i++) {
 			if (hasSlotChanged(i)) {
 				if (get(i)) {
