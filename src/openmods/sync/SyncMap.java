@@ -15,7 +15,7 @@ import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import openmods.Log;
-import openmods.network.PacketHandlerBase;
+import openmods.network.PacketHandler;
 import openmods.utils.ByteUtils;
 
 import com.google.common.base.Preconditions;
@@ -226,7 +226,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 		type.writeHandlerInfo(handler, bos);
 		writeToStream(bos, fullPacket);
 		Packet250CustomPayload packet = new Packet250CustomPayload();
-		packet.channel = handler.getProxy().getPacketHandler().getSyncChannel();
+		packet.channel = PacketHandler.CHANNEL_SYNC;
 		packet.data = bos.toByteArray();
 		packet.length = packet.data.length;
 		return packet;

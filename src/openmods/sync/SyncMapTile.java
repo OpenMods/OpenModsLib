@@ -6,7 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import openmods.network.PacketHandlerBase;
+import openmods.network.PacketHandler;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -23,7 +23,7 @@ public class SyncMapTile<H extends TileEntity & ISyncHandler> extends SyncMap<H>
 
 	@Override
 	protected Set<EntityPlayer> getPlayersWatching() {
-		if (handler.worldObj instanceof WorldServer) { return PacketHandlerBase.getPlayersWatchingBlock((WorldServer)handler.worldObj, handler.xCoord, handler.zCoord); }
+		if (handler.worldObj instanceof WorldServer) { return PacketHandler.getPlayersWatchingBlock((WorldServer)handler.worldObj, handler.xCoord, handler.zCoord); }
 		return ImmutableSet.of();
 	}
 

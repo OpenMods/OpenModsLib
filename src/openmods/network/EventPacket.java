@@ -170,7 +170,7 @@ public abstract class EventPacket extends Event {
 				stream.close();
 			}
 
-			Packet250CustomPayload result = new Packet250CustomPayload(PacketHandlerBase.CHANNEL_EVENTS, payload.toByteArray());
+			Packet250CustomPayload result = new Packet250CustomPayload(PacketHandler.CHANNEL_EVENTS, payload.toByteArray());
 			return result;
 		} catch (Exception e) {
 			throw Throwables.propagate(e);

@@ -12,7 +12,7 @@ import net.minecraft.world.WorldServer;
 import openblocks.OpenBlocks;
 import openmods.common.tileentity.OpenTileEntity;
 import openmods.network.EventPacket;
-import openmods.network.PacketHandlerBase;
+import openmods.network.PacketHandler;
 
 import com.google.common.base.Preconditions;
 
@@ -77,7 +77,7 @@ public class TileEntityMessageEventPacket extends EventPacket {
 	public void sendToWatchers(WorldServer world) {
 		if (checkSendToClient()) {
 			Packet packet = serializeEvent(this);
-			for (EntityPlayer player : PacketHandlerBase.getPlayersWatchingBlock(world, xCoord, zCoord))
+			for (EntityPlayer player : PacketHandler.getPlayersWatchingBlock(world, xCoord, zCoord))
 				OpenBlocks.proxy.sendPacketToPlayer((Player)player, packet);
 		}
 	}

@@ -36,7 +36,9 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncHa
 		}
 	}
 
-	public void onSync() {}
+	public void onSync() {
+		/* pre-sync, called on the sender */
+	}
 
 	@Override
 	public SyncMap<SyncedTileEntity> getSyncMap() {

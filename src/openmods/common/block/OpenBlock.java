@@ -17,7 +17,6 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
-import openblocks.OpenBlocks;
 import openmods.common.api.IActivateAwareTile;
 import openmods.common.api.IAwareTile;
 import openmods.common.api.INeighbourAwareTile;

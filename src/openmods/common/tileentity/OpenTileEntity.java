@@ -172,5 +172,7 @@ public abstract class OpenTileEntity extends TileEntity {
 		}
 	}
 
-	public void onEvent(TileEntityMessageEventPacket event) {}
+	public void onEvent(TileEntityMessageEventPacket event) {
+		/* when an event is received */
+	}
 }
