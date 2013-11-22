@@ -13,7 +13,7 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 
-@Mod(modid = "OpenMods", name = "OpenMods", version = "@VERSION@")
+@Mod(modid = "OpenMods", name = "OpenMods", version = "@VERSION@", dependencies = "after:ComputerCraft;after:OpenPeripheral")
 @NetworkMod(serverSideRequired = true, clientSideRequired = false, channels = { PacketHandler.CHANNEL_SYNC, PacketHandler.CHANNEL_EVENTS }, packetHandler = PacketHandler.class)
 public class OpenMods {
 
