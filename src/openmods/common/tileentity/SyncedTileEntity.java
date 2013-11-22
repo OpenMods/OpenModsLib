@@ -72,9 +72,5 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncHa
 		super.readFromNBT(tag);
 		syncMap.readFromNBT(tag);
 	}
-	
-	/** ugh, temporary hopefully. Just getting it to compile! **/
-	public IProxy getProxy() {
-		return ((OpenBlock)this.blockType).getMod().getProxy();
-	}
+
 }

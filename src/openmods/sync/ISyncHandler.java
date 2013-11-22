@@ -8,8 +8,6 @@ public interface ISyncHandler {
 
 	public SyncMap<?> getSyncMap();
 	
-	public IProxy getProxy();
-
 	public void onSynced(Set<ISyncableObject> changes);
 
 }
