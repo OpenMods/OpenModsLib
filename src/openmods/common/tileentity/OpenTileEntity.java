@@ -32,8 +32,9 @@ public abstract class OpenTileEntity extends TileEntity {
 		}
 	}
 
+	/** set up the tile entity! called once upon creation */
 	public void setup() {
-
+		/** */
 	}
 
 	/**
@@ -69,7 +70,13 @@ public abstract class OpenTileEntity extends TileEntity {
 		}
 	}
 
-	protected void initialize() {}
+
+	/**
+	 * This is called once the TE has been added to the world
+	 */
+	protected void initialize() {
+		/* only called if you call super.updateEntity() on your updateEntity() */
+	}
 
 	public boolean isLoaded() {
 		return initialized;

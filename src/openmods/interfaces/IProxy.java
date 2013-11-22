@@ -1,5 +1,6 @@
 package openmods.interfaces;
 
+import openmods.network.PacketHandlerBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.world.World;
@@ -34,5 +35,7 @@ public interface IProxy {
 	public void sendPacketToServer(Packet packet);
 	
 	public void spawnLiquidSpray(World worldObj, FluidStack water, double x, double y, double z, ForgeDirection sprayDirection, float angleRadians, float spread);
+
+	public PacketHandlerBase getPacketHandler();
 
 }

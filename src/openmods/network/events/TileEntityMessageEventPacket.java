@@ -12,7 +12,7 @@ import net.minecraft.world.WorldServer;
 import openblocks.OpenBlocks;
 import openmods.common.tileentity.OpenTileEntity;
 import openmods.network.EventPacket;
-import openmods.network.PacketHandler;
+import openmods.network.PacketHandlerBase;
 
 import com.google.common.base.Preconditions;
 
@@ -40,7 +40,12 @@ public class TileEntityMessageEventPacket extends EventPacket {
 		readPayload(input);
 	}
 
-	protected void readPayload(DataInput input) {}
+	protected void readPayload(DataInput input) {
+		/**
+		 * An empty block should be documented!
+		 * Am I doing this right?
+		 */
+	}
 
 	@Override
 	public void writeToStream(DataOutput output) throws IOException {
@@ -50,7 +55,12 @@ public class TileEntityMessageEventPacket extends EventPacket {
 		writePayload(output);
 	}
 
-	protected void writePayload(DataOutput output) {}
+	protected void writePayload(DataOutput output) {
+		/**
+		 * An empty block should be documented!
+		 * Am I doing this right?
+		 */
+	}
 
 	protected World getWorld() {
 		return ((EntityPlayer)player).worldObj;
@@ -67,7 +77,7 @@ public class TileEntityMessageEventPacket extends EventPacket {
 	public void sendToWatchers(WorldServer world) {
 		if (checkSendToClient()) {
 			Packet packet = serializeEvent(this);
-			for (EntityPlayer player : PacketHandler.getPlayersWatchingBlock(world, xCoord, zCoord))
+			for (EntityPlayer player : PacketHandlerBase.getPlayersWatchingBlock(world, xCoord, zCoord))
 				OpenBlocks.proxy.sendPacketToPlayer((Player)player, packet);
 		}
 	}
