@@ -34,7 +34,8 @@ public class OpenClientProxy implements IOpenModsProxy {
 
 	@Override
 	public long getTicks(World worldObj) {
-		return worldObj.getTotalWorldTime(); //until fixed //ClientTickHandler.getTicks();
+		return worldObj.getTotalWorldTime(); // until fixed
+												// //ClientTickHandler.getTicks();
 	}
 
 	@Override

@@ -1,11 +1,11 @@
 package openmods.network;
 
 public interface IEventPacketType {
-    public abstract EventPacket createPacket();
+	public abstract EventPacket createPacket();
 
-    public abstract PacketDirection getDirection();
+	public abstract PacketDirection getDirection();
 
-    public boolean isCompressed();
-    
-    public int getId();
+	public boolean isCompressed();
+
+	public int getId();
 }

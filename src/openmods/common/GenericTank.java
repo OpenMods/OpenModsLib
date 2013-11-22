@@ -12,6 +12,7 @@ import openmods.integration.ModuleBuildCraft;
 import openmods.interfaces.IOpenModsProxy;
 import openmods.sync.SyncableFlags;
 import openmods.utils.BlockUtils;
+
 // TODO: Move the getTicks and other helpers to a generic helpers class (:
 
 public class GenericTank extends FluidTank {

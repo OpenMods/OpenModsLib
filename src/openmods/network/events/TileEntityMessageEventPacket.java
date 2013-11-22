@@ -1,6 +1,8 @@
 package openmods.network.events;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.packet.Packet;
@@ -9,7 +11,9 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import openmods.OpenMods;
 import openmods.common.tileentity.OpenTileEntity;
-import openmods.network.*;
+import openmods.network.EventPacket;
+import openmods.network.IEventPacketType;
+import openmods.network.PacketHandler;
 
 import com.google.common.base.Preconditions;
 
