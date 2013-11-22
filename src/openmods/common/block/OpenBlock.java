@@ -17,11 +17,11 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
-import openblocks.Log;
 import openblocks.OpenBlocks;
 import openmods.common.api.IActivateAwareTile;
 import openmods.common.api.IAwareTile;
 import openmods.common.api.INeighbourAwareTile;
+import openmods.common.api.IOpenMod;
 import openmods.common.api.IPlaceAwareTile;
 import openmods.common.api.ISurfaceAttachment;
 import openmods.common.item.ItemOpenBlock;
@@ -29,6 +29,8 @@ import openmods.common.tileentity.OpenTileEntity;
 import openmods.common.tileentity.SyncedTileEntity;
 import openmods.sync.SyncableDirection;
 import openmods.utils.BlockUtils;
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -69,6 +71,8 @@ public abstract class OpenBlock extends Block {
 	protected ForgeDirection inventoryRenderRotation = ForgeDirection.WEST;
 
 	public Icon[] textures = new Icon[6];
+	
+	private IOpenMod mod;
 
 	protected OpenBlock(int id, Material material) {
 		super(id, material);
@@ -79,6 +83,7 @@ public abstract class OpenBlock extends Block {
 
 		// I dont think vanilla actually uses this..
 		isBlockContainer = false;
+		mod = (IOpenMod) Loader.instance().activeModContainer().getMod();
 	}
 
 	protected void setPlacementMode(BlockPlacementMode mode) {
@@ -174,9 +179,9 @@ public abstract class OpenBlock extends Block {
 				te = teClass.getConstructor(new Class[0]).newInstance();
 			}
 		} catch (NoSuchMethodException nsm) {
-			Log.warn(nsm, "Notice: Cannot create TE automatically due to constructor requirements");
+			mod.getLog().warn(nsm, "Notice: Cannot create TE automatically due to constructor requirements");
 		} catch (Exception ex) {
-			Log.warn(ex, "Notice: Error creating tile entity");
+			mod.getLog().warn(ex, "Notice: Error creating tile entity");
 		}
 		if (te != null) {
 			te.blockType = this;

@@ -5,7 +5,7 @@ import java.io.IOException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet;
 import net.minecraftforge.common.ForgeDirection;
-import openblocks.Log;
+import openmods.Log;
 import openmods.sync.ISyncHandler;
 import openmods.sync.ISyncableObject;
 import openmods.sync.SyncMap;
