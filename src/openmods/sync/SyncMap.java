@@ -15,6 +15,7 @@ import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import openmods.Log;
+import openmods.OpenMods;
 import openmods.network.PacketHandler;
 import openmods.utils.ByteUtils;
 
@@ -129,7 +130,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 				if (ByteUtils.get(mask, i)) {
 					objects[i].readFromStream(dis);
 					changes.add(objects[i]);
-					objects[i].resetChangeTimer(handler.getProxy(), getWorld());
+					objects[i].resetChangeTimer(getWorld());
 				}
 			}
 		}
@@ -146,7 +147,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 		for (int i = 0; i < 16; i++) {
 			if (objects[i] != null && (regardless || objects[i].isDirty())) {
 				objects[i].writeToStream(dos, regardless);
-				objects[i].resetChangeTimer(handler.getProxy(), getWorld());
+				objects[i].resetChangeTimer(getWorld());
 			}
 		}
 	}
@@ -180,12 +181,12 @@ public abstract class SyncMap<H extends ISyncHandler> {
 					if (knownUsers.contains(player.entityId)) {
 						if (hasChanges) {
 							if (changePacket == null) changePacket = createPacket(false, false);
-							handler.getProxy().sendPacketToPlayer((Player)player, changePacket);
+							OpenMods.proxy.sendPacketToPlayer((Player)player, changePacket);
 							sent = true;
 						}
 					} else {
 						if (fullPacket == null) fullPacket = createPacket(true, false);
-						handler.getProxy().sendPacketToPlayer((Player)player, fullPacket);
+						OpenMods.proxy.sendPacketToPlayer((Player)player, fullPacket);
 						sent = true;
 					}
 				}
@@ -195,7 +196,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 			}
 		} else {
 			try {
-				handler.getProxy().sendPacketToServer(createPacket(false, true));
+				OpenMods.proxy.sendPacketToServer(createPacket(false, true));
 				sent = true;
 			} catch (IOException e) {
 				e.printStackTrace();

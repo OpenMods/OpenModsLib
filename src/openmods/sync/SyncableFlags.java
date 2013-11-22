@@ -8,6 +8,7 @@ import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
+import openmods.OpenMods;
 import openmods.interfaces.IProxy;
 import openmods.utils.ByteUtils;
 
@@ -130,9 +131,9 @@ public class SyncableFlags extends SyncableObjectBase {
 	}
 
 	@Override
-	public void resetChangeTimer(IProxy proxy, World world) {
-		super.resetChangeTimer(proxy, world);
-		long time = proxy.getTicks(world);
+	public void resetChangeTimer(World world) {
+		super.resetChangeTimer(world);
+		long time = OpenMods.proxy.getTicks(world);
 		for (int i = 0; i < timeLastSet.length; i++) {
 			if (hasSlotChanged(i)) {
 				if (get(i)) {

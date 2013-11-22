@@ -20,9 +20,9 @@ public interface ISyncableObject {
 
 	public void writeToStream(DataOutput stream, boolean fullData) throws IOException;
 
-	public void resetChangeTimer(IProxy proxy, World world);
+	public void resetChangeTimer(World world);
 
-	public int getTicksSinceChange(IProxy proxy, World world);
+	public int getTicksSinceChange(World world);
 
 	public void writeToNBT(NBTTagCompound nbt, String name);
 

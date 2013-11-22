@@ -4,6 +4,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import openmods.OpenMods;
 import openmods.common.GenericTank;
 import openmods.interfaces.IProxy;
 
@@ -21,8 +22,8 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 	}
 
 	@Override
-	public int getTicksSinceChange(IProxy proxy, World world) {
-		return (int)(proxy.getTicks(world) - ticksSinceChange);
+	public int getTicksSinceChange(World world) {
+		return (int)(OpenMods.proxy.getTicks(world) - ticksSinceChange);
 	}
 
 	@Override
@@ -99,8 +100,8 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 	}
 
 	@Override
-	public void resetChangeTimer(IProxy proxy, World world) {
-		ticksSinceChange = proxy.getTicks(world);
+	public void resetChangeTimer(World world) {
+		ticksSinceChange = OpenMods.proxy.getTicks(world);
 	}
 
 }
