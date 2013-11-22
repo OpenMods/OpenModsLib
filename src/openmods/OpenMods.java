@@ -20,7 +20,7 @@ public class OpenMods {
 	@Instance(value = "OpenMods")
 	public static OpenMods instance;
 
-	@SidedProxy(clientSide = "openmods.client.OpenClientProxy", serverSide = "openmods.common.OpenServerProxy")
+	@SidedProxy(clientSide = "openmods.OpenClientProxy", serverSide = "openmods.OpenServerProxy")
 	public static IOpenModsProxy proxy;
 
 	public static SyncableManager syncableManager;
