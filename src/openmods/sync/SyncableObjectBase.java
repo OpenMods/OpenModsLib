@@ -2,6 +2,7 @@ package openmods.sync;
 
 import net.minecraft.world.World;
 import openblocks.OpenBlocks;
+import openmods.interfaces.IProxy;
 
 public abstract class SyncableObjectBase implements ISyncableObject {
 
@@ -24,12 +25,12 @@ public abstract class SyncableObjectBase implements ISyncableObject {
 	}
 
 	@Override
-	public void resetChangeTimer(World world) {
-		lastChangeTime = OpenBlocks.proxy.getTicks(world);
+	public void resetChangeTimer(IProxy proxy, World world) {
+		lastChangeTime = proxy.getTicks(world);
 	}
 
 	@Override
-	public int getTicksSinceChange(World world) {
-		return (int)(OpenBlocks.proxy.getTicks(world) - lastChangeTime);
+	public int getTicksSinceChange(IProxy proxy, World world) {
+		return (int)(proxy.getTicks(world) - lastChangeTime);
 	}
 }

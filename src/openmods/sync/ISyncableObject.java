@@ -4,6 +4,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import openmods.interfaces.IProxy;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
@@ -18,9 +20,9 @@ public interface ISyncableObject {
 
 	public void writeToStream(DataOutput stream, boolean fullData) throws IOException;
 
-	public void resetChangeTimer(World world);
+	public void resetChangeTimer(IProxy proxy, World world);
 
-	public int getTicksSinceChange(World world);
+	public int getTicksSinceChange(IProxy proxy, World world);
 
 	public void writeToNBT(NBTTagCompound nbt, String name);
 

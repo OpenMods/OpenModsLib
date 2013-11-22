@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import openmods.Mods;
 import openmods.common.GenericInventory;
-import openblocks.integration.ModuleBuildCraft;
+import openmods.integration.ModuleBuildCraft;
 import openmods.sync.SyncableFlags;
 import cpw.mods.fml.common.Loader;
 

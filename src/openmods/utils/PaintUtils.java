@@ -3,9 +3,10 @@ package openmods.utils;
 import java.util.HashSet;
 import java.util.Set;
 
+import openmods.Mods;
+
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
-import openblocks.Mods;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.registry.GameRegistry;
 
@@ -25,8 +26,8 @@ public class PaintUtils {
 		allowed.add(Block.stoneBrick.blockID);
 		allowed.add(Block.glass.blockID);
 		allowed.add(Block.planks.blockID);
-		if (Loader.isModLoaded(Mods.TCONSTRUCT)) {
-			addBlocksForMod(Mods.TCONSTRUCT, new String[] {
+		if (Loader.isModLoaded(Mods.TINKERSCONSTRUCT)) {
+			addBlocksForMod(Mods.TINKERSCONSTRUCT, new String[] {
 					"GlassBlock",
 					"decoration.multibrick",
 					"decoration.multibrickfancy"

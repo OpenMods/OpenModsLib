@@ -7,8 +7,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
-import openblocks.OpenBlocks;
-import openblocks.common.GenericInventory;
+import openmods.common.GenericInventory;
 import openmods.common.api.IInventoryCallback;
 import openmods.common.block.OpenBlock;
 import openmods.network.events.TileEntityMessageEventPacket;
@@ -138,8 +137,8 @@ public abstract class OpenTileEntity extends TileEntity {
 		return this.blockMetadata = worldObj.getBlockMetadata(xCoord, yCoord, zCoord);
 	}
 
-	public void openGui(EntityPlayer player) {
-		player.openGui(OpenBlocks.instance, -1, worldObj, xCoord, yCoord, zCoord);
+	public void openGui(Object instance, EntityPlayer player) {
+		player.openGui(instance, -1, worldObj, xCoord, yCoord, zCoord);
 	}
 
 	public AxisAlignedBB getBB() {

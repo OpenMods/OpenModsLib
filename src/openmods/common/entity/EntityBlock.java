@@ -1,6 +1,5 @@
 package openmods.common.entity;
 
-import openblocks.api.IMagnetAware;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.entity.Entity;

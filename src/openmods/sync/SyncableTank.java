@@ -4,11 +4,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import openmods.common.GenericTank;
+import openmods.interfaces.IProxy;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
-import openblocks.OpenBlocks;
-import openblocks.common.GenericTank;
 
 public class SyncableTank extends GenericTank implements ISyncableObject {
 
@@ -20,8 +21,8 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 	}
 
 	@Override
-	public int getTicksSinceChange(World world) {
-		return (int)(OpenBlocks.proxy.getTicks(world) - ticksSinceChange);
+	public int getTicksSinceChange(IProxy proxy, World world) {
+		return (int)(proxy.getTicks(world) - ticksSinceChange);
 	}
 
 	@Override
@@ -98,8 +99,8 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 	}
 
 	@Override
-	public void resetChangeTimer(World world) {
-		ticksSinceChange = OpenBlocks.proxy.getTicks(world);
+	public void resetChangeTimer(IProxy proxy, World world) {
+		ticksSinceChange = proxy.getTicks(world);
 	}
 
 }
