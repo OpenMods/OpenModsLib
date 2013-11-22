@@ -9,17 +9,11 @@ import net.minecraft.server.ServerListenThread;
 import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.ForgeDirection;
-import net.minecraftforge.fluids.FluidStack;
-import openblocks.client.ClientGuiHandler;
-import openblocks.client.ClientTickHandler;
-import openblocks.client.fx.FXLiquidSpray;
-import openmods.interfaces.IProxy;
+import openmods.interfaces.IOpenModsProxy;
 import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.network.IGuiHandler;
 import cpw.mods.fml.common.network.Player;
 
-public class OpenClientProxy implements IProxy {
+public class OpenClientProxy implements IOpenModsProxy {
 
 	@Override
 	public boolean isServerOnly() {
@@ -34,24 +28,13 @@ public class OpenClientProxy implements IProxy {
 	}
 
 	@Override
-	public void spawnLiquidSpray(World worldObj, FluidStack water, double x, double y, double z, ForgeDirection direction, float angleRadians, float spread) {
-		FXLiquidSpray spray = new FXLiquidSpray(worldObj, water, x, y, z, direction, angleRadians, spread);
-		Minecraft.getMinecraft().effectRenderer.addEffect(spray);
-	}
-
-	@Override
 	public EntityPlayer getThePlayer() {
 		return FMLClientHandler.instance().getClient().thePlayer;
 	}
 
 	@Override
-	public IGuiHandler createGuiHandler() {
-		return new ClientGuiHandler();
-	}
-
-	@Override
 	public long getTicks(World worldObj) {
-		return ClientTickHandler.getTicks();
+		return worldObj.getTotalWorldTime(); //until fixed //ClientTickHandler.getTicks();
 	}
 
 	@Override
@@ -75,14 +58,5 @@ public class OpenClientProxy implements IProxy {
 	public void sendPacketToServer(Packet packet) {
 		Minecraft.getMinecraft().getNetHandler().addToSendQueue(packet);
 	}
-
-	@Override
-	public void init() {}
-
-	@Override
-	public void postInit() {}
-
-	@Override
-	public void registerRenderInformation() {}
 
 }

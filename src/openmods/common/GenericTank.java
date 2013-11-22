@@ -9,7 +9,7 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidHandler;
 import openmods.integration.ModuleBuildCraft;
-import openmods.interfaces.IProxy;
+import openmods.interfaces.IOpenModsProxy;
 import openmods.sync.SyncableFlags;
 import openmods.utils.BlockUtils;
 // TODO: Move the getTicks and other helpers to a generic helpers class (:
@@ -68,7 +68,7 @@ public class GenericTank extends FluidTank {
 		return 0;
 	}
 
-	public void autoOutputToSides(IProxy proxy, int amountPerTick, TileEntity currentTile, SyncableFlags sides) {
+	public void autoOutputToSides(IOpenModsProxy proxy, int amountPerTick, TileEntity currentTile, SyncableFlags sides) {
 
 		// every 10 ticks refresh the surrounding tanks
 		if (proxy.getTicks(currentTile.worldObj) % 10 == 0) {
@@ -100,11 +100,11 @@ public class GenericTank extends FluidTank {
 
 	}
 
-	public void autoFillFromSides(IProxy proxy, int amountPerTick, TileEntity currentTile) {
+	public void autoFillFromSides(IOpenModsProxy proxy, int amountPerTick, TileEntity currentTile) {
 		autoFillFromSides(proxy, amountPerTick, currentTile, null);
 	}
 
-	public void autoFillFromSides(IProxy proxy, int amountPerTick, TileEntity currentTile, SyncableFlags sides) {
+	public void autoFillFromSides(IOpenModsProxy proxy, int amountPerTick, TileEntity currentTile, SyncableFlags sides) {
 
 		// every 10 ticks refresh the surrounding tanks
 		if (proxy.getTicks(currentTile.worldObj) % 10 == 0) {

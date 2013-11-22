@@ -1,18 +1,15 @@
 package openmods.network.events;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.io.*;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import openblocks.OpenBlocks;
+import openmods.OpenMods;
 import openmods.common.tileentity.OpenTileEntity;
-import openmods.network.EventPacket;
-import openmods.network.PacketHandler;
+import openmods.network.*;
 
 import com.google.common.base.Preconditions;
 
@@ -78,12 +75,12 @@ public class TileEntityMessageEventPacket extends EventPacket {
 		if (checkSendToClient()) {
 			Packet packet = serializeEvent(this);
 			for (EntityPlayer player : PacketHandler.getPlayersWatchingBlock(world, xCoord, zCoord))
-				OpenBlocks.proxy.sendPacketToPlayer((Player)player, packet);
+				OpenMods.proxy.sendPacketToPlayer((Player)player, packet);
 		}
 	}
 
 	@Override
-	public EventType getType() {
-		return EventType.TILE_ENTITY_NOTIFY;
+	public IEventPacketType getType() {
+		return CoreEventTypes.TILE_ENTITY_NOTIFY;
 	}
 }

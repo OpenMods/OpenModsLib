@@ -9,7 +9,7 @@ import java.util.Set;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import openmods.OpenMods;
-import openmods.interfaces.IProxy;
+import openmods.interfaces.IOpenModsProxy;
 import openmods.utils.ByteUtils;
 
 public class SyncableFlags extends SyncableObjectBase {
@@ -72,19 +72,19 @@ public class SyncableFlags extends SyncableObjectBase {
 		value = newVal;
 	}
 
-	public int ticksSinceSet(IProxy proxy, World world, Enum<?> slot) {
+	public int ticksSinceSet(IOpenModsProxy proxy, World world, Enum<?> slot) {
 		return ticksSinceSet(proxy, world, slot.ordinal());
 	}
 
-	public int ticksSinceSet(IProxy proxy, World world, int slot) {
+	public int ticksSinceSet(IOpenModsProxy proxy, World world, int slot) {
 		return (int)(proxy.getTicks(world) - timeLastSet[slot]);
 	}
 
-	public int ticksSinceUnset(IProxy proxy, World world, Enum<?> slot) {
+	public int ticksSinceUnset(IOpenModsProxy proxy, World world, Enum<?> slot) {
 		return ticksSinceUnset(proxy, world, slot.ordinal());
 	}
 
-	public int ticksSinceUnset(IProxy proxy, World world, int slot) {
+	public int ticksSinceUnset(IOpenModsProxy proxy, World world, int slot) {
 		return (int)(proxy.getTicks(world) - timeLastUnset[slot]);
 	}
 

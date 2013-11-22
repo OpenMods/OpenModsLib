@@ -1,6 +1,7 @@
 package openmods.network;
 
 import java.io.*;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -8,80 +9,21 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraftforge.event.Event;
-import openblocks.OpenBlocks;
-import openblocks.common.MapDataManager;
 import openmods.Log;
-import openmods.network.events.PlayerMovementEvent;
-import openmods.network.events.StencilCraftEvent;
+import openmods.OpenMods;
 import openmods.network.events.TileEntityMessageEventPacket;
 import openmods.utils.ByteUtils;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
 
 import cpw.mods.fml.common.network.Player;
 
 public abstract class EventPacket extends Event {
-	public enum PacketDirection {
-		TO_CLIENT(false, true),
-		FROM_CLIENT(true, false),
-		ANY(true, true);
+	private static final Map<Integer, IEventPacketType> TYPES = Maps.newHashMap();
 
-		public final boolean toServer;
-		public final boolean toClient;
-
-		private PacketDirection(boolean toServer, boolean toClient) {
-			this.toServer = toServer;
-			this.toClient = toClient;
-		}
-
-		public boolean validateSend(boolean isRemote) {
-			return (isRemote && toServer) || (!isRemote && toClient);
-		}
-
-		public boolean validateReceive(boolean isRemote) {
-			return (isRemote && toClient) || (!isRemote && toServer);
-		}
-	}
-
-	public enum EventType {
-		MAP_DATA_REQUEST {
-			@Override
-			public EventPacket createPacket() {
-				return new MapDataManager.MapDataRequestEvent();
-			}
-
-			@Override
-			public PacketDirection getDirection() {
-				return PacketDirection.FROM_CLIENT;
-			}
-		},
-		MAP_DATA_RESPONSE {
-			@Override
-			public EventPacket createPacket() {
-				return new MapDataManager.MapDataResponseEvent();
-			}
-
-			@Override
-			public PacketDirection getDirection() {
-				return PacketDirection.TO_CLIENT;
-			}
-
-			@Override
-			public boolean isCompressed() {
-				return true;
-			}
-		},
-		MAP_UPDATES {
-			@Override
-			public EventPacket createPacket() {
-				return new MapDataManager.MapUpdatesEvent();
-			}
-
-			@Override
-			public PacketDirection getDirection() {
-				return PacketDirection.TO_CLIENT;
-			}
-		},
+	public enum CoreEventTypes implements IEventPacketType {
 		TILE_ENTITY_NOTIFY {
 
 			@Override
@@ -94,50 +36,44 @@ public abstract class EventPacket extends Event {
 				return PacketDirection.ANY;
 			}
 
-		},
-		PLAYER_MOVEMENT {
 			@Override
-			public EventPacket createPacket() {
-				return new PlayerMovementEvent();
-			}
-
-			@Override
-			public PacketDirection getDirection() {
-				return PacketDirection.FROM_CLIENT;
-			}
-		},
-		STENCIL_CRAFT {
-			@Override
-			public EventPacket createPacket() {
-				return new StencilCraftEvent();
-			}
-
-			@Override
-			public PacketDirection getDirection() {
-				return PacketDirection.FROM_CLIENT;
+			public int getId() {
+				return EventIdRanges.BASE_ID_START + ordinal();
 			}
 		};
 
-		public static final EventType[] VALUES = values();
-
+		@Override
 		public abstract EventPacket createPacket();
 
+		@Override
 		public abstract PacketDirection getDirection();
 
+		@Override
 		public boolean isCompressed() {
 			return false;
 		}
+	}
+
+	public static void registerType(IEventPacketType type) {
+		final int typeId = type.getId();
+		IEventPacketType prev = TYPES.put(typeId, type);
+		Preconditions.checkState(prev == null, "Trying to re-register event type id %s with %s, prev %s", typeId, type, prev);
+	}
+
+	public static void regiterCorePackets() {
+		for (IEventPacketType type : CoreEventTypes.values())
+			registerType(type);
 	}
 
 	public static EventPacket deserializeEvent(Packet250CustomPayload packet) throws IOException {
 		ByteArrayInputStream bytes = new ByteArrayInputStream(packet.data);
 
 		EventPacket event;
-		EventType type;
+		IEventPacketType type;
 		{
 			DataInput input = new DataInputStream(bytes);
 			int id = ByteUtils.readVLI(input);
-			type = EventType.VALUES[id];
+			type = TYPES.get(id);
 			event = type.createPacket();
 		}
 
@@ -156,10 +92,10 @@ public abstract class EventPacket extends Event {
 		try {
 			ByteArrayOutputStream payload = new ByteArrayOutputStream();
 
-			EventType type = event.getType();
+			IEventPacketType type = event.getType();
 			{
 				DataOutput output = new DataOutputStream(payload);
-				ByteUtils.writeVLI(output, type.ordinal());
+				ByteUtils.writeVLI(output, type.getId());
 			}
 
 			OutputStream stream = type.isCompressed()? new GZIPOutputStream(payload) : payload;
@@ -181,7 +117,7 @@ public abstract class EventPacket extends Event {
 
 	public Player player;
 
-	public abstract EventType getType();
+	public abstract IEventPacketType getType();
 
 	protected abstract void readFromStream(DataInput input) throws IOException;
 
@@ -210,10 +146,10 @@ public abstract class EventPacket extends Event {
 	}
 
 	public void sendToPlayer(Player player) {
-		if (checkSendToClient()) OpenBlocks.proxy.sendPacketToPlayer(player, serializeEvent(this));
+		if (checkSendToClient()) OpenMods.proxy.sendPacketToPlayer(player, serializeEvent(this));
 	}
 
 	public void sendToServer() {
-		if (checkSendToServer()) OpenBlocks.proxy.sendPacketToServer(serializeEvent(this));
+		if (checkSendToServer()) OpenMods.proxy.sendPacketToServer(serializeEvent(this));
 	}
 }
