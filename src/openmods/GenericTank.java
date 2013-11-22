@@ -71,6 +71,7 @@ public class GenericTank extends FluidTank {
 
 	public void autoOutputToSides(IOpenModsProxy proxy, int amountPerTick, TileEntity currentTile, SyncableFlags sides) {
 
+		if(currentTile.worldObj == null) return;
 		// every 10 ticks refresh the surrounding tanks
 		if (proxy.getTicks(currentTile.worldObj) % 10 == 0) {
 			refreshSurroundingTanks(currentTile, sides);
