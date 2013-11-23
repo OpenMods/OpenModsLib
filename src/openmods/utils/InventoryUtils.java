@@ -24,9 +24,8 @@ public class InventoryUtils {
 	 * inventory
 	 * 
 	 * @param targetInventory
-	 *            . Although it doesn't return anything, it'll REDUCE the stack
-	 *            size
-	 *            of the stack that you pass in
+	 * Although it doesn't return anything, it'll REDUCE the stack
+	 * size of the stack that you pass in
 	 * 
 	 * @param slot
 	 * @param stack
