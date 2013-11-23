@@ -1,5 +1,6 @@
 package openmods.utils;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.IInventory;
@@ -109,6 +110,18 @@ public class BlockUtils {
 		int targetY = tile.yCoord + direction.offsetY;
 		int targetZ = tile.zCoord + direction.offsetZ;
 		return tile.worldObj.getBlockTileEntity(targetX, targetY, targetZ);
+	}
+	
+	public static boolean canRegisterBlock(int blockId) {
+		if (blockId > 0) {
+			if (Block.blocksList[blockId] != null) {
+				 throw new RuntimeException("OpenBlocks tried to register a block for ID: "
+						+ blockId
+						+ " but it was in use. failIdsQuietly is false so I'm yelling at you now.");
+			}
+			return true;
+		}
+		return false; // Block disabled, fail silently
 	}
 
 }
