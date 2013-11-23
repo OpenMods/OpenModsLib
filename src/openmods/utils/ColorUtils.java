@@ -2,6 +2,9 @@ package openmods.utils;
 
 import java.util.Map;
 
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.oredict.OreDictionary;
+
 import com.google.common.collect.ImmutableMap;
 
 public class ColorUtils {
@@ -25,6 +28,22 @@ public class ColorUtils {
 					.put("dyeOrange", 0xEB8844)
 					.put("dyeWhite", 0xF0F0F0)
 					.build();
+
+	/**
+	 * Quite ineffective, since it's based on list lookups, so don't to it ofter
+	 */
+	public static Integer dyeToColorValue(ItemStack stack) {
+		int oreId = OreDictionary.getOreID(stack);
+		if (oreId < 0) return null;
+		String oreName = OreDictionary.getOreName(oreId);
+		return COLORS.get(oreName);
+	}
+
+	public static String dyeToOreDictName(ItemStack stack) {
+		int oreId = OreDictionary.getOreID(stack);
+		if (oreId < 0) return null;
+		return OreDictionary.getOreName(oreId);
+	}
 
 	public static class RGB {
 		private int r, g, b;
