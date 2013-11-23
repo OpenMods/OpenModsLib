@@ -3,7 +3,7 @@ package openmods.gui.component;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Icon;
 import net.minecraft.util.ResourceLocation;
-import openmods.utils.FakeIcon;
+import openmods.utils.render.FakeIcon;
 
 import org.lwjgl.opengl.GL11;
 

@@ -5,7 +5,7 @@ import java.util.Map;
 import openmods.Log;
 import openmods.block.OpenBlock;
 import openmods.tileentity.OpenTileEntity;
-import openmods.utils.RenderUtils;
+import openmods.utils.render.RenderUtils;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;

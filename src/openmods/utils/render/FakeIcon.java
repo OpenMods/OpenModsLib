@@ -1,4 +1,4 @@
-package openmods.utils;
+package openmods.utils.render;
 
 import net.minecraft.util.Icon;
 import cpw.mods.fml.relauncher.Side;

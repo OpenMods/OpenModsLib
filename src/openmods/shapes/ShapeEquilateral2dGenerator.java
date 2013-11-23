@@ -1,6 +1,6 @@
 package openmods.shapes;
 
-import openmods.utils.GeometryUtils;
+import openmods.utils.render.GeometryUtils;
 
 public class ShapeEquilateral2dGenerator implements IShapeGenerator {
 

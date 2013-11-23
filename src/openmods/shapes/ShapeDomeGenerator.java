@@ -1,7 +1,7 @@
 package openmods.shapes;
 
-import openmods.utils.GeometryUtils;
-import openmods.utils.GeometryUtils.Octant;
+import openmods.utils.render.GeometryUtils;
+import openmods.utils.render.GeometryUtils.Octant;
 
 public class ShapeDomeGenerator implements IShapeGenerator {
 

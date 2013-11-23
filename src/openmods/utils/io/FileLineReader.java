@@ -1,8 +1,9 @@
-package openmods.utils;
+package openmods.utils.io;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+
 
 public class FileLineReader {
 

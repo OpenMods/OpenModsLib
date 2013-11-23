@@ -1,4 +1,4 @@
-package openmods.utils;
+package openmods.utils.render;
 
 import java.util.HashSet;
 import java.util.Set;
