@@ -24,7 +24,10 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	private static final int OBJECT_BLOCK_ID = 11;
 	private static final int OBJECT_BLOCK_META = 12;
 	private boolean hasGravity = false;
-
+	/* Should this entity return to a block on the ground? */
+	private boolean shouldDrop = true;
+	private boolean hasAirResistance = true;
+	
 	public static final ForgeDirection[] PLACE_DIRECTIONS = { ForgeDirection.UNKNOWN, ForgeDirection.UP, ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST, ForgeDirection.DOWN };
 
 	public EntityBlock(World world) {
@@ -101,6 +104,14 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	public int getBlockMeta() {
 		return dataWatcher.getWatchableObjectInt(OBJECT_BLOCK_META);
 	}
+	
+	public void setShouldDrop(boolean bool) {
+		shouldDrop = bool;
+	}
+	
+	public void setHasAirResistance(boolean bool) {
+		this.hasAirResistance = bool;
+	}
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound tag) {
@@ -143,9 +154,11 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		if (hasGravity) {
 			motionY -= 0.03999999910593033D;
 		}
-		motionX *= 0.98;
-		motionY *= 0.98;
-		motionZ *= 0.98;
+		if(hasAirResistance) {
+			motionX *= 0.98;
+			motionY *= 0.98;
+			motionZ *= 0.98;
+		}
 		prevPosX = posX;
 		prevPosY = posY;
 		prevPosZ = posZ;
@@ -171,7 +184,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	protected boolean shouldPlaceBlock() {
-		return onGround;
+		return onGround && shouldDrop;
 	}
 
 	private boolean tryPlaceBlock(int baseX, int baseY, int baseZ) {
