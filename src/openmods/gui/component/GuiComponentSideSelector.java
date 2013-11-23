@@ -79,6 +79,7 @@ public class GuiComponentSideSelector extends BaseComponent {
 		GL11.glPopMatrix();
 	}
 
+	@SuppressWarnings("incomplete-switch")
 	private static void drawHighlight(Tessellator t, SidePicker.Side side, int color) {
 
 		GL11.glDisable(GL11.GL_LIGHTING);

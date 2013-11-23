@@ -6,14 +6,14 @@ public class Cloth {
 
 	private List<Constraint> constraints;
 	public Point[][] points;
-	private double max_dim, min_dim, spacing;
+	private double max_dim, spacing;
 	private int num_x_points, num_y_points, n_constraints;
 
 	private static final int PHYSICS_ITERATIONS = 2;
 
 	public Cloth(int density, double width, double height) {
 		this.max_dim = Math.max(width, height);
-		this.min_dim = Math.min(width, height);
+		Math.min(width, height);
 		this.spacing = max_dim / density;
 		this.num_x_points = (int)((density * (width / max_dim)) + 0.5);
 		this.num_y_points = (int)((density * (height / max_dim)) + 0.5);
