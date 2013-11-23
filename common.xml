@@ -1,0 +1,143 @@
+<project name="OpenModsCommon">
+	<property environment="common-env" />
+
+	<!-- Properties -->
+	<property name="build.dir" value="build" />
+
+	<property name="download.dir" value="download" />
+
+	<property name="classes.dir" value="${build.dir}/classes" />
+	<property name="jar.dir" value="${build.dir}/dist" />
+
+	<property name="forge.dir" value="${build.dir}/forge" />
+	<property name="mcp.dir" value="${forge.dir}/mcp" />
+
+	<condition property="python.exe" value="${mcp.dir}/runtime/bin/python/python_mcp" else="python">
+		<os family="Windows" />
+	</condition>
+
+	<property name="mcpsrc.dir" value="${mcp.dir}/src/minecraft" />
+
+	<property name="mc.version" value="1.6.4" />
+	<property name="forge.version" value="9.11.0.883" />
+
+	<property name="forge.name" value="minecraftforge-src-${mc.version}-${forge.version}.zip" />
+
+	<available property="forge-exists" file="${download.dir}/${forge.name}" />
+
+	<condition property="out-of-date">
+		<not>
+			<and>
+				<available file="${download.dir}/${forge.name}" />
+				<available file="${mcpsrc.dir}" />
+			</and>
+		</not>
+	</condition>
+
+	<!-- Dummy target, to be extended by users -->
+	<target name="set-env" />
+	<target name="copy-source" />
+	<target name="create-manifest" />
+	<target name="copy-assets" />
+
+	<!-- Clear build directory -->
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<!-- Download necessary files -->
+	<target name="download-files" depends="make-downloads-dir, download-forge" />
+
+	<target name="make-downloads-dir">
+		<mkdir dir="${download.dir}" />
+	</target>
+
+	<!-- Download forge (if it doesn't exist) -->
+	<target name="download-forge" unless="forge-exists">
+		<get src="http://files.minecraftforge.net/${forge.name}" dest="${download.dir}" usetimestamp="True" />
+	</target>
+
+	<!-- Setup mcp and forge -->
+	<target name="setup-forge" depends="download-files" if="out-of-date">
+
+		<delete dir="${mcp.dir}" />
+		<delete dir="${forge.dir}" />
+
+		<!-- Unzip them -->
+		<unzip dest="${build.dir}" src="${download.dir}/${forge.name}" />
+
+		<!-- Install forge -->
+		<exec dir="${forge.dir}" executable="cmd" osfamily="windows">
+			<arg line="/c install.cmd" />
+		</exec>
+
+		<exec dir="${forge.dir}" executable="sh" osfamily="unix">
+			<arg value="install.sh" />
+		</exec>
+
+	</target>
+
+	<target name="cleanup-build">
+		<delete dir="${classes.dir}" />
+		<mkdir dir="${classes.dir}" />
+	</target>
+
+	<target name="cleanup-mcp">
+		<delete includeEmptyDirs="true" failonerror="false">
+			<fileset dir="${mcpsrc.dir}">
+				<include name="**/*" />
+				<exclude name="*" />
+				<exclude name="assets/**/*" />
+				<exclude name="cpw/**/*" />
+				<exclude name="net/**/*" />
+				<exclude name="ibxm/**/*" />
+				<exclude name="paulscode/**/*" />
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="recompile">
+		<exec executable="${python.exe}" dir="${mcp.dir}" failonerror="true">
+			<arg value="runtime/recompile.py" />
+		</exec>
+	</target>
+
+	<target name="reobfuscate">
+		<exec executable="${python.exe}" dir="${mcp.dir}" failonerror="true">
+			<arg value="runtime/reobfuscate.py" />
+			<arg value="--srgnames" />
+		</exec>
+	</target>
+
+	<target name="run-mcp" depends="recompile,reobfuscate" />
+
+	<target name="copy-binaries" depends="set-env">
+		<copy todir="${classes.dir}" verbose="true">
+			<fileset dir="${mcp.dir}/reobf/minecraft/">
+				<include name="${mod.dir}/**/*" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="copy-meta" depends="set-env">
+		<copy todir="${classes.dir}">
+			<fileset dir=".">
+				<include name="mcmod.info" />
+				<include name="pack.mcmeta" />
+			</fileset>
+			<filterset>
+				<filter token="VERSION" value="${mod.version}" />
+			</filterset>
+		</copy>
+	</target>
+
+	<target name="create-jar" depends="set-env">
+		<mkdir dir="${jar.dir}" />
+		<delete dir="${jar.dir}" includes="${env.JOB_NAME}*.jar" />
+		<jar destfile="${jar.dir}/${env.JOB_NAME}-${mod.version}-snapshot-${env.BUILD_NUMBER}.jar" basedir="${classes.dir}" manifest="${classes.dir}/META-INF/MANIFEST.MF" />
+	</target>
+
+	<target name="pre-build" depends="setup-forge,cleanup-build,cleanup-mcp" />
+	<target name="package" depends="copy-binaries,copy-assets,copy-meta,create-manifest,create-jar" />
+	<target name="build" depends="set-env,pre-build,copy-source,run-mcp,package" />
+</project>

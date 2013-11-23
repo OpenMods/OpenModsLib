@@ -1,5 +1,7 @@
 package openmods.utils;
 
+import openmods.utils.render.OpenGLUtils;
+
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;

@@ -5,6 +5,8 @@ import java.util.Map;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.ForgeDirection;
 
+import openmods.utils.render.OpenGLUtils;
+
 import org.lwjgl.input.Mouse;
 
 import com.google.common.collect.Maps;
