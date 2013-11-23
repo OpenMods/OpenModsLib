@@ -1,0 +1,31 @@
+<project name="OpenModsLib" default="build">
+	<property environment="env" />
+
+	<import file="common.xml" />
+
+	<target name="set-env">
+		<property name="env.BUILD_NUMBER" value="0" />
+		<property name="env.JOB_NAME" value="OpenModsLib" />
+		<property name="mod.version" value="0.1" />
+		<property name="mod.name" value="OpenModsLib" />
+		<property name="mod.dir" value="openmods" />
+		<echo message="Starting build for ${mod.name} v${mod.version}" />
+	</target>
+
+	<target name="copy-source" depends="set-env">
+		<copy todir="${mcpsrc.dir}">
+			<fileset dir="src" />
+			<fileset dir="integration" />
+			<filterset>
+				<filter token="VERSION" value="${mod.version}" />
+			</filterset>
+		</copy>
+	</target>
+
+	<target name="create-manifest">
+		<mkdir dir="${classes.dir}/META-INF" />
+		<manifest file="${classes.dir}/META-INF/MANIFEST.MF">
+			<attribute name="Manifest-Version" value="1.0" />
+		</manifest>
+	</target>
+</project>
