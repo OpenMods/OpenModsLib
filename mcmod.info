@@ -1,0 +1,20 @@
+[
+{
+  "modid" : "OpenMods",
+  "name" : "OpenMods",
+  "version" : "@VERSION@",
+  "url" : "http://openmods.info/",
+  "credits" : "",
+  "authors": [
+    "Mikee",
+    "NeverCast",
+    "boq",
+    "Lyqyd"
+  ],
+  "description": "Boring stuff for all that silly Open* mods",
+  "logoFile" : "",
+  "updateUrl" : "",
+  "parent" : "",
+  "screenshots": [
+  ]
+}]
