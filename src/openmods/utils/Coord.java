@@ -215,7 +215,7 @@ public class Coord {
                         int blockID = src.getBlockID(world);
                         int metadata = src.getBlockMetadata(world);
                         
-                        world.setBlock(tgt.x, tgt.y, tgt.z, blockID, metadata, BlockNotifyType.ALL);
+                        world.setBlock(tgt.x, tgt.y, tgt.z, blockID, metadata, 3);
                         
                         if (world.blockHasTileEntity(src.x, src.y, src.z)){
                                 TileEntity te = world.getBlockTileEntity(src.x, src.y, src.z);
