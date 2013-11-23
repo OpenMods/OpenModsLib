@@ -34,22 +34,30 @@ public class RenderUtils {
 		return null;
 	}
 
-	public static double interpolatePos(double current, double prev, float partialTickTime) {
+	public static double interpolateValue(double current, double prev, float partialTickTime) {
 		return prev + partialTickTime * (current - prev);
+	}
+
+	public static float interpolateYaw(Entity e, float f) {
+		return e.prevRotationYaw + (e.rotationYaw - e.prevRotationYaw) * f;
+	}
+
+	public static float interpolatePitch(Entity e, float f) {
+		return e.prevRotationPitch + (e.rotationPitch - e.prevRotationPitch) * f;
 	}
 
 	public static void translateToPlayer(Entity e, float partialTickTime) {
 		GL11.glTranslated(
-				interpolatePos(e.posX, e.prevPosX, partialTickTime) - RenderManager.renderPosX,
-				interpolatePos(e.posY, e.prevPosY, partialTickTime) - RenderManager.renderPosY,
-				interpolatePos(e.posZ, e.prevPosZ, partialTickTime) - RenderManager.renderPosZ);
+				interpolateValue(e.posX, e.prevPosX, partialTickTime) - RenderManager.renderPosX,
+				interpolateValue(e.posY, e.prevPosY, partialTickTime) - RenderManager.renderPosY,
+				interpolateValue(e.posZ, e.prevPosZ, partialTickTime) - RenderManager.renderPosZ);
 	}
 
 	public static void translateToWorld(Entity e, float partialTickTime) {
 		GL11.glTranslated(
-				interpolatePos(e.posX, e.prevPosX, partialTickTime),
-				interpolatePos(e.posY, e.prevPosY, partialTickTime),
-				interpolatePos(e.posZ, e.prevPosZ, partialTickTime));
+				interpolateValue(e.posX, e.prevPosX, partialTickTime),
+				interpolateValue(e.posY, e.prevPosY, partialTickTime),
+				interpolateValue(e.posZ, e.prevPosZ, partialTickTime));
 	}
 
 	public static void rotateFacesOnRenderer(OpenBlock block, ForgeDirection rotation, RenderBlocks renderer) {

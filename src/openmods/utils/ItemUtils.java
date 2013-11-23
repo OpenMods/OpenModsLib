@@ -1,7 +1,5 @@
 package openmods.utils;
 
-import java.util.Random;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
@@ -11,7 +9,6 @@ import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.world.World;
 
 public class ItemUtils {
-	public static final Random RANDOM = new Random();
 
 	public static ItemStack consumeItem(ItemStack stack) {
 		if (stack.stackSize == 1) {

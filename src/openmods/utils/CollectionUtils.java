@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class CollectionUtils {
 
-	public static Random rnd = new Random();
+	public static final Random rnd = new Random();
 
 	public static <T> T getRandom(Collection<T> collection) {
 		if (collection.size() == 0) { return null; }
@@ -26,7 +26,7 @@ public class CollectionUtils {
 		for (Integer i : values) {
 		    totalWeight += i;
 		}
-		T result = null;
+
 		int r = rnd.nextInt(totalWeight);
 		for (Entry<T, Integer> entry : collection.entrySet()) {
 		    r -= entry.getValue();
