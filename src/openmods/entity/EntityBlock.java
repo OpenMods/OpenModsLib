@@ -70,6 +70,8 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		}
 
 		world.setBlockToAir(x, y, z);
+		
+		entity.setPositionAndRotation(x + 0.5, y + 0.5, z + 0.5, 0, 0);
 
 		return entity;
 	}
