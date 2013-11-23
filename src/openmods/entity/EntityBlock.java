@@ -140,11 +140,10 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 		if (hasGravity) {
 			motionY -= 0.03999999910593033D;
-			motionX *= 0.98;
-			motionY *= 0.98;
-			motionZ *= 0.98;
 		}
-
+		motionX *= 0.98;
+		motionY *= 0.98;
+		motionZ *= 0.98;
 		prevPosX = posX;
 		prevPosY = posY;
 		prevPosZ = posZ;
