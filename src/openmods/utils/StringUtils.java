@@ -13,8 +13,4 @@ public class StringUtils {
 			sb.append(AB.charAt(rnd.nextInt(AB.length())));
 		return sb.toString();
 	}
-
-	public static boolean isEmpty(String str){
-		return str == null || "".equals(str);
-	}
 }
