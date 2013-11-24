@@ -2,6 +2,13 @@ package openmods.renderer;
 
 import java.util.Map;
 
+import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderBlocks;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.common.ForgeDirection;
 import openmods.Log;
 import openmods.block.OpenBlock;
 import openmods.tileentity.OpenTileEntity;
@@ -11,14 +18,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 import com.google.common.collect.Maps;
-
-import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.common.ForgeDirection;
 
 public class BlockRenderingHandlerBase {
 
@@ -33,7 +32,7 @@ public class BlockRenderingHandlerBase {
 		}
 		return te;
 	}
-	
+
 	protected void doRenderInventoryBlock(Block block, int metadata, int modelID, RenderBlocks renderer) {
 		OpenBlock openBlock = null;
 		if (block instanceof OpenBlock) {
@@ -87,7 +86,7 @@ public class BlockRenderingHandlerBase {
 			Log.severe(e, "Error during block '%s' rendering", block.getUnlocalizedName());
 		}
 	}
-	
+
 	protected boolean doRenderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
 
 		OpenBlock openBlock = null;

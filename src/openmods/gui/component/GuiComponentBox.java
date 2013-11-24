@@ -115,7 +115,7 @@ public class GuiComponentBox extends BaseComponent {
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		RenderHelper.disableStandardItemLighting();
-		CompatibilityUtils.bindTextureToClient("textures/gui/components.png");
+		CompatibilityUtils.bindOBTextureToClient("textures/gui/components.png");
 		int c = getColor();
 		float r = (c >> 16 & 255) / 255.0F;
 		float g = (c >> 8 & 255) / 255.0F;

@@ -13,7 +13,7 @@ import net.minecraftforge.common.ForgeDirection;
 
 //TODO: Discuss if we make seperate players for seperate mods
 public class OpenModsFakePlayer extends FakePlayer {
-	static final HashMap<Integer, OpenModsFakePlayer> _players = new HashMap<Integer, OpenModsFakePlayer>();
+	private static final HashMap<Integer, OpenModsFakePlayer> _players = new HashMap<Integer, OpenModsFakePlayer>();
 
 	public static OpenModsFakePlayer getPlayerForWorld(World world) {
 		int id = world.provider.dimensionId;

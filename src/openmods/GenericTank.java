@@ -9,7 +9,7 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidHandler;
 import openmods.integration.ModuleBuildCraft;
-import openmods.interfaces.IOpenModsProxy;
+import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncableFlags;
 import openmods.utils.BlockUtils;
 
@@ -71,7 +71,7 @@ public class GenericTank extends FluidTank {
 
 	public void autoOutputToSides(IOpenModsProxy proxy, int amountPerTick, TileEntity currentTile, SyncableFlags sides) {
 
-		if(currentTile.worldObj == null) return;
+		if (currentTile.worldObj == null) return;
 		// every 10 ticks refresh the surrounding tanks
 		if (proxy.getTicks(currentTile.worldObj) % 10 == 0) {
 			refreshSurroundingTanks(currentTile, sides);

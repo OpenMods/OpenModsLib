@@ -1,9 +1,11 @@
 package openmods.utils.render;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import net.minecraft.util.Icon;
 import net.minecraftforge.common.ForgeDirection;
+
+import com.google.common.collect.Maps;
 
 public class SimpleBlockTextureHelper {
 
@@ -14,7 +16,7 @@ public class SimpleBlockTextureHelper {
 	private Icon top;
 	private Icon bottom;
 
-	private HashMap<ForgeDirection, Icon[]> orientations;
+	private Map<ForgeDirection, Icon[]> orientations;
 
 	public Icon setTop(Icon icon) {
 		return top = icon;
@@ -41,7 +43,7 @@ public class SimpleBlockTextureHelper {
 	}
 
 	private void setup() {
-		orientations = new HashMap<ForgeDirection, Icon[]>();
+		orientations = Maps.newEnumMap(ForgeDirection.class);
 		orientations.put(ForgeDirection.DOWN, new Icon[] { top, bottom, side_down, side_down, side_down, side_down });
 		orientations.put(ForgeDirection.UP, new Icon[] { bottom, top, side_up, side_up, side_up, side_up });
 		orientations.put(ForgeDirection.WEST, new Icon[] { side_left, side_left, side_right, side_left, top, bottom });

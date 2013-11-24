@@ -25,7 +25,7 @@ public class GuiComponentPanel extends GuiComponentBox {
 		super.render(minecraft, x, y, mouseX, mouseY);
 		if (BaseComponent.IS_OVERLAY_PASS != isOverlay()) return;
 		GL11.glColor4f(1, 1, 1, 1);
-		CompatibilityUtils.bindTextureToClient("textures/gui/components.png");
+		CompatibilityUtils.bindOBTextureToClient("textures/gui/components.png");
 		if (container != null && container.get() != null) {
 			for (Slot slot : (List<Slot>)container.get().inventorySlots) {
 				drawTexturedModalRect(slot.xDisplayPosition - 1, slot.yDisplayPosition - 1, 0, 20, 18, 18);

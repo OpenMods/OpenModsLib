@@ -18,7 +18,7 @@ public class GuiComponentProgress extends BaseComponent {
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
-		CompatibilityUtils.bindTextureToClient("textures/gui/components.png");
+		CompatibilityUtils.bindOBTextureToClient("textures/gui/components.png");
 		GL11.glColor3f(1, 1, 1);
 		drawTexturedModalRect(offsetX + x, offsetY + y, 0, 38, getWidth(), getHeight());
 		int pxProgress = (int)Math.round(getWidth() * progress.getPercent());

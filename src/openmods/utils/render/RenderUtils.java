@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
-
 import openmods.block.OpenBlock;
 import openmods.block.OpenBlock.BlockRotationMode;
 
@@ -52,7 +51,6 @@ public class RenderUtils {
 				interpolatePos(e.posY, e.prevPosY, partialTickTime),
 				interpolatePos(e.posZ, e.prevPosZ, partialTickTime));
 	}
-
 
 	public static void rotateFacesOnRenderer(OpenBlock block, ForgeDirection rotation, RenderBlocks renderer) {
 		BlockRotationMode mode = block.getRotationMode();
@@ -195,5 +193,5 @@ public class RenderUtils {
 		}
 		GL11.glPopMatrix();
 	}
-	
+
 }

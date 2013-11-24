@@ -1,59 +1,58 @@
 package openmods.utils;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatMessageComponent;
 import net.minecraft.util.ResourceLocation;
+import openmods.Log;
 
 public final class CompatibilityUtils {
 
-	public static final String RESOURCE_ASSET_NAME = "openblocks";
+	public static final String OPENBLOCKS_ASSET_NAME = "openblocks";
 
 	/* Bugger me this is ugly, Needs testing! - NC */
 	public static void sendChatToPlayer(EntityPlayer player, String text) {
 		player.sendChatToPlayer(ChatMessageComponent.createFromText(text));
 	}
 
-	public static float getEntityHealth(EntityLivingBase entity) {
-		return entity.getHealth();
-	}
-
-	public static float getEntityMaxHealth(EntityLivingBase entity) {
-		return entity.getMaxHealth();
-	}
-
-	public static void bindTextureToClient(String texture) {
-		if (Minecraft.getMinecraft() != null) {
-			Minecraft.getMinecraft().renderEngine.bindTexture(getResourceLocation(texture));
+	public static void bindTextureToClient(ResourceLocation texture) {
+		if (texture != null) {
+			if (Minecraft.getMinecraft() != null) {
+				Minecraft.getMinecraft().renderEngine.bindTexture(texture);
+			} else {
+				Log.warn("Binding texture to null client.");
+			}
 		} else {
-			System.out.println("[OpenModsMonitor] WARNING: Binding texture to null client.");
+			Log.warn("Invalid texture location '%s'", texture);
 		}
+	}
+
+	public static void bindOBTextureToClient(String texture) {
+		ResourceLocation resource = getOpenBlocksAssetLocation(texture);
+		bindTextureToClient(resource);
 	}
 
 	public static void bindIndexedTextureToClient(int index) {
-		if (Minecraft.getMinecraft() != null) {
-			Minecraft.getMinecraft().renderEngine.bindTexture(Minecraft.getMinecraft().renderEngine.getResourceLocation(index));
-		} else {
-			System.out.println("[OpenModsMonitor] WARNING: Binding indexed texture to null client.");
-		}
+		ResourceLocation resource = Minecraft.getMinecraft().renderEngine.getResourceLocation(index);
+		bindTextureToClient(resource);
 
 	}
 
 	public static void bindDefaultTerrainTexture() {
-		bindIndexedTextureToClient(0);
+		bindTextureToClient(TextureMap.locationBlocksTexture);
 	}
 
 	public static void bindDefaultItemsTexture() {
-		bindIndexedTextureToClient(1);
+		bindTextureToClient(TextureMap.locationItemsTexture);
 	}
 
 	public static int getRandomNumber() {
 		return 4;
 	}
 
-	public static ResourceLocation getResourceLocation(String resourceName) {
-		return new ResourceLocation(RESOURCE_ASSET_NAME, resourceName);
+	public static ResourceLocation getOpenBlocksAssetLocation(String resourceName) {
+		return new ResourceLocation(OPENBLOCKS_ASSET_NAME, resourceName);
 	}
 
 }

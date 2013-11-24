@@ -1,5 +1,6 @@
 package openmods.entity;
 
+import openmods.utils.BlockNotifyFlags;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.entity.Entity;
@@ -27,7 +28,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	/* Should this entity return to a block on the ground? */
 	private boolean shouldDrop = true;
 	private boolean hasAirResistance = true;
-	
+
 	public static final ForgeDirection[] PLACE_DIRECTIONS = { ForgeDirection.UNKNOWN, ForgeDirection.UP, ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST, ForgeDirection.DOWN };
 
 	public EntityBlock(World world) {
@@ -73,7 +74,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		}
 
 		world.setBlockToAir(x, y, z);
-		
+
 		entity.setPositionAndRotation(x + 0.5, y + 0.5, z + 0.5, 0, 0);
 
 		return entity;
@@ -104,11 +105,11 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	public int getBlockMeta() {
 		return dataWatcher.getWatchableObjectInt(OBJECT_BLOCK_META);
 	}
-	
+
 	public void setShouldDrop(boolean bool) {
 		shouldDrop = bool;
 	}
-	
+
 	public void setHasAirResistance(boolean bool) {
 		this.hasAirResistance = bool;
 	}
@@ -154,7 +155,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		if (hasGravity) {
 			motionY -= 0.03999999910593033D;
 		}
-		if(hasAirResistance) {
+		if (hasAirResistance) {
 			motionX *= 0.98;
 			motionY *= 0.98;
 			motionZ *= 0.98;
@@ -194,7 +195,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 			int z = baseZ + dir.offsetZ;
 			if (!worldObj.isAirBlock(x, y, z)) continue;
 
-			worldObj.setBlock(x, y, z, getBlockId(), getBlockMeta(), 3);
+			worldObj.setBlock(x, y, z, getBlockId(), getBlockMeta(), BlockNotifyFlags.ALL);
 
 			if (tileEntity != null) {
 				tileEntity.xCoord = x;

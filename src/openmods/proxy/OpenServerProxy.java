@@ -1,4 +1,6 @@
-package openmods;
+package openmods.proxy;
+
+import java.io.File;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -6,7 +8,6 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
-import openmods.interfaces.IOpenModsProxy;
 import cpw.mods.fml.common.network.Player;
 
 public class OpenServerProxy implements IOpenModsProxy {
@@ -61,5 +62,15 @@ public class OpenServerProxy implements IOpenModsProxy {
 
 	@Override
 	public void sendPacketToServer(Packet packet) {}
+
+	@Override
+	public File getMinecraftDir() {
+		return MinecraftServer.getServer().getFile("");
+	}
+
+	@Override
+	public String getLogFileName() {
+		return "ForgeModLoader-server-0.log";
+	}
 
 }

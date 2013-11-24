@@ -25,7 +25,7 @@ public class GuiComponentCheckbox extends BaseComponent {
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		GL11.glColor4f(1, 1, 1, 1);
-		CompatibilityUtils.bindTextureToClient("textures/gui/components.png");
+		CompatibilityUtils.bindOBTextureToClient("textures/gui/components.png");
 		drawTexturedModalRect(offsetX + x, offsetY + y, flags.get(flagSlot)? 16 : 0, 62, 8, 8);
 	}
 

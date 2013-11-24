@@ -44,7 +44,7 @@ public class GuiComponentSlider extends BaseComponent {
 		int left = offsetX + x;
 		int top = offsetY + y;
 		int barStartX = left + 1;
-		CompatibilityUtils.bindTextureToClient("textures/gui/components.png");
+		CompatibilityUtils.bindOBTextureToClient("textures/gui/components.png");
 		drawTexturedModalRect(left, top, 0, 70, 1, getHeight());
 		GL11.glPushMatrix();
 		GL11.glTranslated(left + 1, top, 0);

@@ -1,6 +1,5 @@
 package openmods.utils;
 
-import net.minecraft.block.Block;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.IInventory;
@@ -111,17 +110,39 @@ public class BlockUtils {
 		int targetZ = tile.zCoord + direction.offsetZ;
 		return tile.worldObj.getBlockTileEntity(targetX, targetY, targetZ);
 	}
-	
-	public static boolean canRegisterBlock(int blockId) {
-		if (blockId > 0) {
-			if (Block.blocksList[blockId] != null) {
-				 throw new RuntimeException("OpenBlocks tried to register a block for ID: "
-						+ blockId
-						+ " but it was in use. failIdsQuietly is false so I'm yelling at you now.");
+
+	public static boolean moveBlock(World world, Coord src, Coord tgt, boolean allowBlockReplacement) {
+		if (!world.isRemote && !src.isAirBlock(world) && (tgt.isAirBlock(world) || allowBlockReplacement)) {
+			int blockID = src.getBlockID(world);
+			int metadata = src.getBlockMetadata(world);
+
+			world.setBlock(tgt.x, tgt.y, tgt.z, blockID, metadata, BlockNotifyFlags.ALL);
+
+			if (world.blockHasTileEntity(src.x, src.y, src.z)) {
+				TileEntity te = world.getBlockTileEntity(src.x, src.y, src.z);
+				if (te != null) {
+					NBTTagCompound nbt = new NBTTagCompound();
+					te.writeToNBT(nbt);
+
+					nbt.setInteger("x", tgt.x);
+					nbt.setInteger("y", tgt.y);
+					nbt.setInteger("z", tgt.z);
+
+					te = world.getBlockTileEntity(tgt.x, tgt.y, tgt.z);
+					if (te != null) te.readFromNBT(nbt);
+				}
 			}
+
+			world.setBlockToAir(src.x, src.y, src.z);
 			return true;
 		}
-		return false; // Block disabled, fail silently
+		return false;
+	}
+
+	public static int getFirstNonAirBlockFromTop(World world, int x, int z) {
+		int y;
+		for (y = world.getActualHeight(); world.isAirBlock(x, y - 1, z) && y > 0; y--) {}
+		return y;
 	}
 
 }

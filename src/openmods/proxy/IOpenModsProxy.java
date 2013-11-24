@@ -1,4 +1,6 @@
-package openmods.interfaces;
+package openmods.proxy;
+
+import java.io.File;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.packet.Packet;
@@ -22,4 +24,8 @@ public interface IOpenModsProxy {
 	public void sendPacketToPlayer(Player player, Packet packet);
 
 	public void sendPacketToServer(Packet packet);
+
+	public File getMinecraftDir();
+
+	public String getLogFileName();
 }

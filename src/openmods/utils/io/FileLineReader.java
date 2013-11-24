@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-
 public class FileLineReader {
 
 	public static void readLineByLine(BufferedReader reader, ILineReadMethod callback)

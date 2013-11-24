@@ -1,8 +1,8 @@
 package openmods;
 
-import openmods.interfaces.IOpenModsProxy;
 import openmods.network.EventPacket;
 import openmods.network.PacketHandler;
+import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncableManager;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -13,14 +13,14 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 
-@Mod(modid = "OpenMods", name = "OpenMods", version = "@VERSION@", dependencies = "after:ComputerCraft;after:OpenPeripheral")
+@Mod(modid = "OpenMods", name = "OpenMods", version = "@VERSION@")
 @NetworkMod(serverSideRequired = true, clientSideRequired = false, channels = { PacketHandler.CHANNEL_SYNC, PacketHandler.CHANNEL_EVENTS }, packetHandler = PacketHandler.class)
 public class OpenMods {
 
 	@Instance(value = "OpenMods")
 	public static OpenMods instance;
 
-	@SidedProxy(clientSide = "openmods.OpenClientProxy", serverSide = "openmods.OpenServerProxy")
+	@SidedProxy(clientSide = "openmods.proxy.OpenClientProxy", serverSide = "openmods.proxy.OpenServerProxy")
 	public static IOpenModsProxy proxy;
 
 	public static SyncableManager syncableManager;

@@ -5,9 +5,8 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import openmods.OpenMods;
-
 import net.minecraft.util.ChatAllowedCharacters;
+import openmods.OpenMods;
 
 public class FontSizeChecker {
 
@@ -94,7 +93,7 @@ public class FontSizeChecker {
 		for (int j = 0; j < par1Str.length(); ++j) {
 			char c0 = par1Str.charAt(j);
 
-			int k = this.getCharWidth(c0);
+			int k = getCharWidth(c0);
 
 			if (k < 0 && j < par1Str.length() - 1) {
 				++j;

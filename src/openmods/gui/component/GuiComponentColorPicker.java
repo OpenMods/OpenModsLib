@@ -89,7 +89,7 @@ public class GuiComponentColorPicker extends BaseComponent implements IComponent
 		int renderX = offsetX + x;
 		int renderY = offsetY + y;
 
-		CompatibilityUtils.bindTextureToClient("textures/gui/components.png");
+		CompatibilityUtils.bindOBTextureToClient("textures/gui/components.png");
 		drawTexturedModalRect(renderX, renderY, 156, 206, getWidth(), getColorsHeight());
 		drawRect(renderX, renderY, renderX + getWidth(), renderY
 				+ getColorsHeight(), (tone.getValue() << 24) | 0xFFFFFF);

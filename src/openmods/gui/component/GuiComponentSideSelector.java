@@ -9,11 +9,12 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
+import openmods.gui.misc.SidePicker;
+import openmods.gui.misc.SidePicker.HitCoord;
+import openmods.gui.misc.SidePicker.Side;
+import openmods.gui.misc.Trackball.TrackballWrapper;
 import openmods.sync.SyncableFlags;
-import openmods.utils.*;
-import openmods.utils.SidePicker.HitCoord;
-import openmods.utils.SidePicker.Side;
-import openmods.utils.Trackball.TrackballWrapper;
+import openmods.utils.MathUtils;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -79,7 +80,6 @@ public class GuiComponentSideSelector extends BaseComponent {
 		GL11.glPopMatrix();
 	}
 
-	@SuppressWarnings("incomplete-switch")
 	private static void drawHighlight(Tessellator t, SidePicker.Side side, int color) {
 
 		GL11.glDisable(GL11.GL_LIGHTING);
@@ -125,6 +125,8 @@ public class GuiComponentSideSelector extends BaseComponent {
 				t.addVertex(-0.5, 0.5, -0.5);
 				t.addVertex(0.5, 0.5, -0.5);
 				t.addVertex(0.5, -0.5, -0.5);
+				break;
+			default:
 				break;
 		}
 		t.draw();

@@ -1,4 +1,4 @@
-package openmods.utils;
+package openmods.gui.misc;
 
 import openmods.utils.render.OpenGLUtils;
 

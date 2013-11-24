@@ -12,8 +12,7 @@ public class PlayerUtils {
 
 		// SP and LAN
 		if (server.isSinglePlayer()) {
-			if (server instanceof IntegratedServer)
-				return server.getServerOwner().equals(username);
+			if (server instanceof IntegratedServer) return server.getServerOwner().equals(username);
 			return server.getConfigurationManager().getOps().contains(username);
 		}
 

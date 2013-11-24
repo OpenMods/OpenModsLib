@@ -1,4 +1,6 @@
-package openmods;
+package openmods.proxy;
+
+import java.io.File;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
@@ -9,7 +11,6 @@ import net.minecraft.server.ServerListenThread;
 import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
-import openmods.interfaces.IOpenModsProxy;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.Player;
 
@@ -34,11 +35,9 @@ public class OpenClientProxy implements IOpenModsProxy {
 
 	@Override
 	public long getTicks(World worldObj) {
-		if(worldObj != null) {
-			return worldObj.getTotalWorldTime();
-		}
+		if (worldObj != null) { return worldObj.getTotalWorldTime(); }
 		World cWorld = getClientWorld();
-		if(cWorld != null) return cWorld.getTotalWorldTime();
+		if (cWorld != null) return cWorld.getTotalWorldTime();
 		return 0;
 	}
 
@@ -62,6 +61,16 @@ public class OpenClientProxy implements IOpenModsProxy {
 	@Override
 	public void sendPacketToServer(Packet packet) {
 		Minecraft.getMinecraft().getNetHandler().addToSendQueue(packet);
+	}
+
+	@Override
+	public File getMinecraftDir() {
+		return Minecraft.getMinecraft().mcDataDir;
+	}
+
+	@Override
+	public String getLogFileName() {
+		return "ForgeModLoader-client-0.log";
 	}
 
 }
