@@ -1,8 +1,9 @@
 package openmods.utils;
 
-/*
+/**
+ * Provides constants for the types of block notifications possible in World.setBlock()
+ * 
  * @author: bspkrs
- * @desc: provides constants for the types of block notifications possible in World.setBlock()
  */
 
 public class BlockNotifyType{
