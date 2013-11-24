@@ -39,7 +39,7 @@ public class ConfigProcessing {
 	public static boolean canRegisterBlock(int blockId) {
 		if (blockId > 0) {
 			Preconditions.checkState(Block.blocksList[blockId] == null,
-					"OpenBlocks tried to register a block for ID: %s but it was in use");
+					"OpenBlocks tried to register a block for ID: %s but it was in use", blockId);
 			return true;
 		}
 		return false; // Block disabled, fail silently
