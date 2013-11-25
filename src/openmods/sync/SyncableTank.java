@@ -45,7 +45,7 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 		int fluidId = stream.readInt();
 		if (fluidId > -1) {
 			int fluidAmount = stream.readInt();
-			short len = readShort();
+			short len = stream.readShort();
 			NBTTagCompound tag;
 			if (len < 0)
 				tag = null;
@@ -63,7 +63,7 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 		if (fluid != null) {
 			stream.writeInt(fluid.fluidID);
 			stream.writeInt(fluid.amount);
-			if (compound == null) {
+			if (fluid.tag == null) {
 				stream.writeShort(-1);
 	 		}
 			else {
