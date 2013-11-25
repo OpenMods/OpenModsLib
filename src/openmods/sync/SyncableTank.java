@@ -4,6 +4,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
@@ -44,7 +45,14 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 		int fluidId = stream.readInt();
 		if (fluidId > -1) {
 			int fluidAmount = stream.readInt();
-			this.fluid = new FluidStack(fluidId, fluidAmount);
+			short len = readShort();
+			NBTTagCompound tag;
+			if (len < 0)
+				tag = null;
+			byte[] bytes = new byte[len];
+			stream.readFully(bytes);
+			tag = CompressedStreamTools.decompress(bytes);
+			this.fluid = new FluidStack(fluidId, fluidAmount, tag);
 		} else {
 			this.fluid = null;
 		}
@@ -55,6 +63,14 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 		if (fluid != null) {
 			stream.writeInt(fluid.fluidID);
 			stream.writeInt(fluid.amount);
+			if (compound == null) {
+				stream.writeShort(-1);
+	 		}
+			else {
+				byte[] bytes = CompressedStreamTools.compress(fluid.tag);
+				stream.writeShort(bytes.length);
+				stream.write(bytes);
+			}
 		} else {
 			stream.writeInt(-1);
 		}
