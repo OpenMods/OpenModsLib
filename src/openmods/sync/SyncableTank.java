@@ -46,12 +46,12 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 		if (fluidId > -1) {
 			int fluidAmount = stream.readInt();
 			short len = stream.readShort();
-			NBTTagCompound tag;
-			if (len < 0)
-				tag = null;
-			byte[] bytes = new byte[len];
-			stream.readFully(bytes);
-			tag = CompressedStreamTools.decompress(bytes);
+			NBTTagCompound tag = null;
+			if (len > 0) {
+				byte[] bytes = new byte[len];
+				stream.readFully(bytes);
+				tag = CompressedStreamTools.decompress(bytes);
+			}
 			this.fluid = new FluidStack(fluidId, fluidAmount, tag);
 		} else {
 			this.fluid = null;
@@ -65,7 +65,7 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 			stream.writeInt(fluid.amount);
 			if (fluid.tag == null) {
 				stream.writeShort(-1);
-	 		}
+			}
 			else {
 				byte[] bytes = CompressedStreamTools.compress(fluid.tag);
 				stream.writeShort(bytes.length);
