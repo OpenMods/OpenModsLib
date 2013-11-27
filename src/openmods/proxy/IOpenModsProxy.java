@@ -2,6 +2,7 @@ package openmods.proxy;
 
 import java.io.File;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.world.World;
@@ -18,6 +19,8 @@ public interface IOpenModsProxy {
 	public World getServerWorld(int dimension);
 
 	public EntityPlayer getThePlayer();
+	
+	public boolean isClientPlayer(Entity player);
 
 	public long getTicks(World worldObj);
 

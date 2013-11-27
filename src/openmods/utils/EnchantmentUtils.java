@@ -3,6 +3,7 @@ package openmods.utils;
 import java.util.List;
 import java.util.Random;
 
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.Item;
@@ -123,5 +124,10 @@ public class EnchantmentUtils {
 
 	public static int getLiquidForLevel(int level) {
 		return XPToLiquidRatio(getExperienceForLevel(level));
+	}
+
+	public static void addAllBooks(Enchantment enchantment, List<ItemStack> items) {
+		for (int i = enchantment.getMinLevel(); i <= enchantment.getMaxLevel(); i++)
+			items.add(Item.enchantedBook.getEnchantedItemStack(new EnchantmentData(enchantment, i)));
 	}
 }

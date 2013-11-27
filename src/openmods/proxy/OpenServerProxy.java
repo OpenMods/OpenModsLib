@@ -2,6 +2,7 @@ package openmods.proxy;
 
 import java.io.File;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet;
@@ -38,6 +39,11 @@ public class OpenServerProxy implements IOpenModsProxy {
 	public EntityPlayer getThePlayer() {
 		return null;
 	}
+	
+	@Override
+	public boolean isClientPlayer(Entity player) {
+		return false;
+	}
 
 	@Override
 	public long getTicks(World worldObj) {
@@ -72,5 +78,4 @@ public class OpenServerProxy implements IOpenModsProxy {
 	public String getLogFileName() {
 		return "ForgeModLoader-server-0.log";
 	}
-
 }

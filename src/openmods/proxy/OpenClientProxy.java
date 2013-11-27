@@ -4,6 +4,8 @@ import java.io.File;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.packet.Packet;
@@ -31,6 +33,11 @@ public class OpenClientProxy implements IOpenModsProxy {
 	@Override
 	public EntityPlayer getThePlayer() {
 		return FMLClientHandler.instance().getClient().thePlayer;
+	}
+
+	@Override
+	public boolean isClientPlayer(Entity player) {
+		return player instanceof EntityPlayerSP;
 	}
 
 	@Override
