@@ -19,7 +19,9 @@ import org.lwjgl.opengl.GL12;
 
 import com.google.common.collect.Maps;
 
-public class BlockRenderingHandlerBase {
+import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
+
+public abstract class BlockRenderingHandlerBase implements ISimpleBlockRenderingHandler {
 
 	protected final Map<Block, TileEntity> inventoryTileEntities = Maps.newIdentityHashMap();
 	protected final Map<Block, IBlockRenderer> blockRenderers = Maps.newIdentityHashMap();
@@ -33,7 +35,8 @@ public class BlockRenderingHandlerBase {
 		return te;
 	}
 
-	protected void doRenderInventoryBlock(Block block, int metadata, int modelID, RenderBlocks renderer) {
+	@Override
+	public void renderInventoryBlock(Block block, int metadata, int modelID, RenderBlocks renderer) {
 		OpenBlock openBlock = null;
 		if (block instanceof OpenBlock) {
 			openBlock = (OpenBlock)block;
@@ -87,8 +90,8 @@ public class BlockRenderingHandlerBase {
 		}
 	}
 
-	protected boolean doRenderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
-
+	@Override
+	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
 		OpenBlock openBlock = null;
 		if (block instanceof OpenBlock) {
 			openBlock = (OpenBlock)block;
@@ -108,4 +111,8 @@ public class BlockRenderingHandlerBase {
 		return true;
 	}
 
+	@Override
+	public boolean shouldRender3DInInventory() {
+		return true;
+	}
 }

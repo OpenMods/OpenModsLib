@@ -9,6 +9,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
@@ -19,17 +20,19 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import openmods.Log;
 import openmods.api.*;
-import openmods.item.ItemOpenBlock;
+import openmods.config.IRegisterableBlock;
 import openmods.sync.SyncableDirection;
 import openmods.tileentity.OpenTileEntity;
 import openmods.tileentity.SyncedTileEntity;
 import openmods.utils.BlockUtils;
-import cpw.mods.fml.common.Loader;
+
+import com.google.common.base.Preconditions;
+
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public abstract class OpenBlock extends Block {
+public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	/***
 	 * The block rotation mode. Defines how many levels of rotation
@@ -59,19 +62,15 @@ public abstract class OpenBlock extends Block {
 	/**
 	 * The tile entity class associated with this block
 	 */
-	private Class<? extends OpenTileEntity> teClass = null;
+	private Class<? extends TileEntity> teClass = null;
 	protected BlockRotationMode blockRotationMode;
 	protected BlockPlacementMode blockPlacementMode;
 	protected ForgeDirection inventoryRenderRotation = ForgeDirection.WEST;
 
 	public Icon[] textures = new Icon[6];
 
-	private IOpenMod mod;
-
 	protected OpenBlock(int id, Material material) {
 		super(id, material);
-		mod = (IOpenMod)Loader.instance().activeModContainer().getMod();
-		setCreativeTab(mod.getCreativeTab());
 		setHardness(1.0F);
 		setRotationMode(BlockRotationMode.NONE);
 		setPlacementMode(BlockPlacementMode.ENTITY_ANGLE);
@@ -80,9 +79,7 @@ public abstract class OpenBlock extends Block {
 		isBlockContainer = false;
 	}
 
-	public IOpenMod getMod() {
-		return mod;
-	}
+	protected abstract String getModId();
 
 	protected void setPlacementMode(BlockPlacementMode mode) {
 		this.blockPlacementMode = mode;
@@ -172,7 +169,7 @@ public abstract class OpenBlock extends Block {
 
 	@Override
 	public TileEntity createTileEntity(World world, int metadata) {
-		OpenTileEntity te = null;
+		TileEntity te = null;
 		try {
 			if (teClass != null) {
 				te = teClass.getConstructor(new Class[0]).newInstance();
@@ -182,9 +179,9 @@ public abstract class OpenBlock extends Block {
 		} catch (Exception ex) {
 			Log.warn(ex, "Notice: Error creating tile entity");
 		}
-		if (te != null) {
+		if (te instanceof OpenTileEntity) {
 			te.blockType = this;
-			te.setup();
+			((OpenTileEntity)te).setup();
 		}
 		return te;
 	}
@@ -196,7 +193,7 @@ public abstract class OpenBlock extends Block {
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerIcons(IconRegister registry) {
-		this.blockIcon = registry.registerIcon(String.format("%s:%s", mod.getId(), uniqueBlockId));
+		this.blockIcon = registry.registerIcon(String.format("%s:%s", getModId(), uniqueBlockId));
 	}
 
 	@Override
@@ -212,22 +209,16 @@ public abstract class OpenBlock extends Block {
 		super.breakBlock(world, x, y, z, par5, par6);
 	}
 
-	public void setupBlock(Block instance, String uniqueName) {
-		setupBlock(instance, uniqueName, null);
-	}
-
-	public void setupBlock(Block instance, String uniqueName, Class<? extends OpenTileEntity> tileEntity) {
-		setupBlock(instance, uniqueName, tileEntity, ItemOpenBlock.class);
-	}
-
-	public void setupBlock(Block instance, String uniqueName, Class<? extends OpenTileEntity> tileEntity, Class<? extends ItemOpenBlock> itemClass) {
+	@Override
+	public void setupBlock(String modId, String uniqueName, Class<? extends TileEntity> tileEntity, Class<? extends ItemBlock> itemClass) {
+		Preconditions.checkArgument(modId.equals(getModId()), "Invalid usage");
 		uniqueBlockId = uniqueName;
 
-		GameRegistry.registerBlock(instance, itemClass, String.format("%s_%s", mod.getId(), uniqueName));
-		instance.setUnlocalizedName(String.format("%s.%s", mod.getId(), uniqueName));
+		GameRegistry.registerBlock(this, itemClass, String.format("%s_%s", modId, uniqueName));
+		setUnlocalizedName(String.format("%s.%s", modId, uniqueName));
 
 		if (tileEntity != null) {
-			GameRegistry.registerTileEntity(tileEntity, String.format("%s_%s", mod.getId(), uniqueName));
+			GameRegistry.registerTileEntity(tileEntity, String.format("%s_%s", modId, uniqueName));
 			this.teClass = tileEntity;
 			isBlockContainer = true;
 		}
@@ -412,11 +403,6 @@ public abstract class OpenBlock extends Block {
 	protected boolean isOnTopOfSolidBlock(World world, int x, int y, int z, ForgeDirection side) {
 		return side == ForgeDirection.DOWN
 				&& isNeighborBlockSolid(world, x, y, z, ForgeDirection.DOWN);
-	}
-
-	@Override
-	public int getRenderType() {
-		return mod.getRenderId();
 	}
 
 	public void setTexture(ForgeDirection direction, Icon icon) {
