@@ -39,7 +39,7 @@ public class OpenServerProxy implements IOpenModsProxy {
 	public EntityPlayer getThePlayer() {
 		return null;
 	}
-	
+
 	@Override
 	public boolean isClientPlayer(Entity player) {
 		return false;

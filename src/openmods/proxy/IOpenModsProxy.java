@@ -19,7 +19,7 @@ public interface IOpenModsProxy {
 	public World getServerWorld(int dimension);
 
 	public EntityPlayer getThePlayer();
-	
+
 	public boolean isClientPlayer(Entity player);
 
 	public long getTicks(World worldObj);

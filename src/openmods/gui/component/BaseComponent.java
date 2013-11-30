@@ -3,17 +3,17 @@ package openmods.gui.component;
 import java.util.ArrayList;
 import java.util.List;
 
-import openmods.utils.CompatibilityUtils;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.util.ResourceLocation;
+import openmods.utils.CompatibilityUtils;
 
 public abstract class BaseComponent extends Gui {
 
+	public final static ResourceLocation TEXTURE_SHEET = new ResourceLocation("openmodslib", "textures/gui/components.png");
+
 	protected void bindComponentsSheet() {
-		ResourceLocation resource = new ResourceLocation("openmodslib", "textures/gui/components.png");
-		CompatibilityUtils.bindTextureToClient(resource);
+		CompatibilityUtils.bindTextureToClient(TEXTURE_SHEET);
 	}
 
 	private boolean overlay_mode = false;
