@@ -6,7 +6,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import openmods.gui.component.BaseComponent.IComponentListener;
 import openmods.sync.SyncableInt;
-import openmods.utils.CompatibilityUtils;
 
 import org.lwjgl.opengl.GL11;
 
@@ -89,7 +88,7 @@ public class GuiComponentColorPicker extends BaseComponent implements IComponent
 		int renderX = offsetX + x;
 		int renderY = offsetY + y;
 
-		CompatibilityUtils.bindOBTextureToClient("textures/gui/components.png");
+		bindComponentsSheet();
 		drawTexturedModalRect(renderX, renderY, 156, 206, getWidth(), getColorsHeight());
 		drawRect(renderX, renderY, renderX + getWidth(), renderY
 				+ getColorsHeight(), (tone.getValue() << 24) | 0xFFFFFF);

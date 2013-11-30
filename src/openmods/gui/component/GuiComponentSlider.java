@@ -2,7 +2,6 @@ package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
 import openmods.sync.SyncableInt;
-import openmods.utils.CompatibilityUtils;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -44,7 +43,7 @@ public class GuiComponentSlider extends BaseComponent {
 		int left = offsetX + x;
 		int top = offsetY + y;
 		int barStartX = left + 1;
-		CompatibilityUtils.bindOBTextureToClient("textures/gui/components.png");
+		bindComponentsSheet();
 		drawTexturedModalRect(left, top, 0, 70, 1, getHeight());
 		GL11.glPushMatrix();
 		GL11.glTranslated(left + 1, top, 0);

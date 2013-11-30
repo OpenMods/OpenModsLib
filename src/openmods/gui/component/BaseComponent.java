@@ -3,10 +3,18 @@ package openmods.gui.component;
 import java.util.ArrayList;
 import java.util.List;
 
+import openmods.utils.CompatibilityUtils;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.util.ResourceLocation;
 
 public abstract class BaseComponent extends Gui {
+
+	protected void bindComponentsSheet() {
+		ResourceLocation resource = new ResourceLocation("openmodslib", "textures/gui/components.png");
+		CompatibilityUtils.bindTextureToClient(resource);
+	}
 
 	private boolean overlay_mode = false;
 

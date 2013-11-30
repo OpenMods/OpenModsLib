@@ -6,7 +6,6 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
-import openmods.utils.CompatibilityUtils;
 
 import org.lwjgl.opengl.GL11;
 
@@ -25,7 +24,7 @@ public class GuiComponentPanel extends GuiComponentBox {
 		super.render(minecraft, x, y, mouseX, mouseY);
 		if (BaseComponent.IS_OVERLAY_PASS != isOverlay()) return;
 		GL11.glColor4f(1, 1, 1, 1);
-		CompatibilityUtils.bindOBTextureToClient("textures/gui/components.png");
+		bindComponentsSheet();
 		if (container != null && container.get() != null) {
 			for (Slot slot : (List<Slot>)container.get().inventorySlots) {
 				drawTexturedModalRect(slot.xDisplayPosition - 1, slot.yDisplayPosition - 1, 0, 20, 18, 18);

@@ -2,7 +2,6 @@ package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderHelper;
-import openmods.utils.CompatibilityUtils;
 
 import org.lwjgl.opengl.GL11;
 
@@ -115,7 +114,7 @@ public class GuiComponentBox extends BaseComponent {
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		RenderHelper.disableStandardItemLighting();
-		CompatibilityUtils.bindOBTextureToClient("textures/gui/components.png");
+		bindComponentsSheet();
 		int c = getColor();
 		float r = (c >> 16 & 255) / 255.0F;
 		float g = (c >> 8 & 255) / 255.0F;

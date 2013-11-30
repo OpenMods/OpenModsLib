@@ -21,6 +21,14 @@
 			</filterset>
 		</copy>
 	</target>
+    
+    <target name="copy-assets">
+		<copy todir="${classes.dir}/">
+			<fileset dir=".">
+				<include name="assets/**/*" />
+			</fileset>
+		</copy>
+	</target> 
 
 	<target name="create-manifest">
 		<mkdir dir="${classes.dir}/META-INF" />

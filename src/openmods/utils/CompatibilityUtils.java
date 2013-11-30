@@ -9,8 +9,6 @@ import openmods.Log;
 
 public final class CompatibilityUtils {
 
-	public static final String OPENBLOCKS_ASSET_NAME = "openblocks";
-
 	/* Bugger me this is ugly, Needs testing! - NC */
 	public static void sendChatToPlayer(EntityPlayer player, String text) {
 		player.sendChatToPlayer(ChatMessageComponent.createFromText(text));
@@ -26,11 +24,6 @@ public final class CompatibilityUtils {
 		} else {
 			Log.warn("Invalid texture location '%s'", texture);
 		}
-	}
-
-	public static void bindOBTextureToClient(String texture) {
-		ResourceLocation resource = getOpenBlocksAssetLocation(texture);
-		bindTextureToClient(resource);
 	}
 
 	public static void bindIndexedTextureToClient(int index) {
@@ -50,9 +43,4 @@ public final class CompatibilityUtils {
 	public static int getRandomNumber() {
 		return 4;
 	}
-
-	public static ResourceLocation getOpenBlocksAssetLocation(String resourceName) {
-		return new ResourceLocation(OPENBLOCKS_ASSET_NAME, resourceName);
-	}
-
 }
