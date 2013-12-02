@@ -6,4 +6,4 @@ OpenModsLib is a work-in-progress library of all our common code from OpenBlocks
 License
 -
 
-OpenModsLib is open source, have a look at LICENCE.txt
+OpenModsLib is open source, have a look at the LICENCE file.
