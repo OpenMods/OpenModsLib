@@ -26,6 +26,12 @@ public class OpenModsFakePlayer extends FakePlayer {
 	private OpenModsFakePlayer(World world) {
 		super(world, "Open Mods Fake Player");
 	}
+	
+	@Override
+	public void setDead() {
+		_players.remove(worldObj.provider.dimensionId);
+		super.setDead();
+	}
 
 	public ItemStack equipWithAndRightClick(ItemStack itemStack, Vec3 currentPos, Vec3 hitVector, ForgeDirection side, boolean blockExists) {
 		setPosition(currentPos.xCoord, currentPos.yCoord, currentPos.zCoord);
@@ -77,7 +83,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 				deltaX, deltaY, deltaZ,
 				blockExists);
 
-		return ItemStack.copyItemStack(inventory.getCurrentItem());
+		return ItemStack.copyItemStack(itemStack);
 	}
 
 	public void dropItemAt(ItemStack itemStack, int x, int y, int z, ForgeDirection direction) {
