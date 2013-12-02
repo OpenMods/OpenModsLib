@@ -6,6 +6,7 @@ import java.lang.reflect.Modifier;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.Property;
@@ -100,12 +101,20 @@ public class ConfigProcessing {
 	}
 
 	public static void registerBlocks(Class<?> klazz, final String mod) {
-		processAnnotations(klazz, IRegisterableBlock.class, RegisterBlock.class, new IAnnotationProcessor<IRegisterableBlock, RegisterBlock>() {
+		processAnnotations(klazz, Block.class, RegisterBlock.class, new IAnnotationProcessor<Block, RegisterBlock>() {
 			@Override
-			public void process(IRegisterableBlock block, RegisterBlock annotation) {
+			public void process(Block block, RegisterBlock annotation) {
+				final String name = annotation.name();
+				final Class<? extends ItemBlock> itemBlock = annotation.itemBlock();
 				Class<? extends TileEntity> teClass = annotation.tileEntity();
 				if (teClass == TileEntity.class) teClass = null;
-				if (block != null) block.setupBlock(mod, annotation.name(), teClass, annotation.itemBlock());
+
+				GameRegistry.registerBlock(block, itemBlock, String.format("%s_%s", mod, name));
+				block.setUnlocalizedName(String.format("%s.%s", mod, name));
+
+				if (teClass != null) GameRegistry.registerTileEntity(teClass, String.format("%s_%s", mod, name));
+
+				if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(mod, name, teClass, itemBlock);
 			}
 		});
 	}
