@@ -9,12 +9,15 @@ import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.Property;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import openmods.Log;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.LanguageRegistry;
 
 public class ConfigProcessing {
 
@@ -79,6 +82,9 @@ public class ConfigProcessing {
 						@SuppressWarnings("unchecked")
 						I entry = (I)f.get(null);
 						if (entry != null) processor.process(entry, annotation);
+						else{
+							System.out.println("Entry was null at: " + f.toString() + " " + annotation.toString());
+						}
 					} catch (Exception e) {
 						throw Throwables.propagate(e);
 					}
@@ -106,6 +112,21 @@ public class ConfigProcessing {
 				Class<? extends TileEntity> teClass = annotation.tileEntity();
 				if (teClass == TileEntity.class) teClass = null;
 				if (block != null) block.setupBlock(mod, annotation.name(), teClass, annotation.itemBlock());
+			}
+		});
+	}
+	
+	public static void registerFluids(Class<?> klazz, final String mod) {
+		 processAnnotations(klazz, Fluid.class, RegisterFluid.class, new IAnnotationProcessor<Fluid, RegisterFluid>() {
+			@Override
+			public void process(Fluid fluid, RegisterFluid annotation) {
+				fluid.setDensity(annotation.density()); //Yes I know you can daisy-chain these calls XD
+				fluid.setGaseous(annotation.gaseous());
+				fluid.setLuminosity(annotation.luminosity());
+				fluid.setViscosity(annotation.viscosity());
+				FluidRegistry.registerFluid(fluid);
+				fluid.setUnlocalizedName(String.format("%s.%s", mod, annotation.name())  );
+
 			}
 		});
 	}
