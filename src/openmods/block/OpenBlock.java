@@ -25,10 +25,6 @@ import openmods.sync.SyncableDirection;
 import openmods.tileentity.OpenTileEntity;
 import openmods.tileentity.SyncedTileEntity;
 import openmods.utils.BlockUtils;
-
-import com.google.common.base.Preconditions;
-
-import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -54,10 +50,8 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		SURFACE
 	}
 
-	/**
-	 * The unique ID of this block
-	 */
-	private String uniqueBlockId;
+	private String blockName;
+	private String modId;
 
 	/**
 	 * The tile entity class associated with this block
@@ -78,8 +72,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		// I dont think vanilla actually uses this..
 		isBlockContainer = false;
 	}
-
-	protected abstract String getModId();
 
 	protected void setPlacementMode(BlockPlacementMode mode) {
 		this.blockPlacementMode = mode;
@@ -193,7 +185,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	@SideOnly(Side.CLIENT)
 	@Override
 	public void registerIcons(IconRegister registry) {
-		this.blockIcon = registry.registerIcon(String.format("%s:%s", getModId(), uniqueBlockId));
+		this.blockIcon = registry.registerIcon(String.format("%s:%s", modId, blockName));
 	}
 
 	@Override
@@ -210,15 +202,11 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void setupBlock(String modId, String uniqueName, Class<? extends TileEntity> tileEntity, Class<? extends ItemBlock> itemClass) {
-		Preconditions.checkArgument(modId.equals(getModId()), "Invalid usage");
-		uniqueBlockId = uniqueName;
-
-		GameRegistry.registerBlock(this, itemClass, String.format("%s_%s", modId, uniqueName));
-		setUnlocalizedName(String.format("%s.%s", modId, uniqueName));
+	public void setupBlock(String modId, String blockName, Class<? extends TileEntity> tileEntity, Class<? extends ItemBlock> itemClass) {
+		this.blockName = blockName;
+		this.modId = modId;
 
 		if (tileEntity != null) {
-			GameRegistry.registerTileEntity(tileEntity, String.format("%s_%s", modId, uniqueName));
 			this.teClass = tileEntity;
 			isBlockContainer = true;
 		}
