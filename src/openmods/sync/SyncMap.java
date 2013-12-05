@@ -14,9 +14,11 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import openmods.LibConfig;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.network.PacketHandler;
+import openmods.network.PacketLogger;
 import openmods.utils.ByteUtils;
 
 import com.google.common.base.Preconditions;
@@ -137,7 +139,8 @@ public abstract class SyncMap<H extends ISyncHandler> {
 		return changes;
 	}
 
-	public void writeToStream(DataOutput dos, boolean regardless) throws IOException {
+	public int writeToStream(DataOutput dos, boolean regardless) throws IOException {
+		int count = 0;
 		short mask = 0;
 		for (int i = 0; i < 16; i++) {
 			mask = ByteUtils.set(mask, i, objects[i] != null
@@ -148,8 +151,11 @@ public abstract class SyncMap<H extends ISyncHandler> {
 			if (objects[i] != null && (regardless || objects[i].isDirty())) {
 				objects[i].writeToStream(dos, regardless);
 				objects[i].resetChangeTimer(getWorld());
+				count++;
 			}
 		}
+
+		return count;
 	}
 
 	public void markAllAsClean() {
@@ -225,11 +231,13 @@ public abstract class SyncMap<H extends ISyncHandler> {
 		HandlerType type = getHandlerType();
 		ByteUtils.writeVLI(bos, type.ordinal());
 		type.writeHandlerInfo(handler, bos);
-		writeToStream(bos, fullPacket);
+		int count = writeToStream(bos, fullPacket);
 		Packet250CustomPayload packet = new Packet250CustomPayload();
 		packet.channel = PacketHandler.CHANNEL_SYNC;
 		packet.data = bos.toByteArray();
 		packet.length = packet.data.length;
+
+		if (LibConfig.logPackets) PacketLogger.log(packet, false, handler.toString(), handler.getClass().toString(), Integer.toString(count));
 		return packet;
 	}
 

@@ -9,6 +9,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetworkManager;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraftforge.event.Event;
+import openmods.LibConfig;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.network.events.TileEntityMessageEventPacket;
@@ -85,6 +86,15 @@ public abstract class EventPacket extends Event {
 		}
 
 		stream.close();
+
+		if (LibConfig.logPackets) PacketLogger.log(
+				packet,
+				true,
+				Integer.toString(type.getId()),
+				type.toString(),
+				Boolean.toString(type.isCompressed())
+				);
+
 		return event;
 	}
 
@@ -100,13 +110,21 @@ public abstract class EventPacket extends Event {
 
 			OutputStream stream = type.isCompressed()? new GZIPOutputStream(payload) : payload;
 
-			{
-				DataOutput output = new DataOutputStream(stream);
-				event.writeToStream(output);
-				stream.close();
-			}
+			DataOutputStream output = new DataOutputStream(stream);
+			event.writeToStream(output);
+			stream.close();
 
 			Packet250CustomPayload result = new Packet250CustomPayload(PacketHandler.CHANNEL_EVENTS, payload.toByteArray());
+
+			if (LibConfig.logPackets) PacketLogger.log(
+					result,
+					false,
+					Integer.toString(type.getId()),
+					type.toString(),
+					Boolean.toString(type.isCompressed()),
+					Integer.toString(output.size())
+					);
+
 			return result;
 		} catch (Exception e) {
 			throw Throwables.propagate(e);

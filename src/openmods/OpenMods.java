@@ -1,5 +1,7 @@
 package openmods;
 
+import net.minecraftforge.common.Configuration;
+import openmods.config.ConfigProcessing;
 import openmods.network.EventPacket;
 import openmods.network.PacketHandler;
 import openmods.proxy.IOpenModsProxy;
@@ -29,6 +31,10 @@ public class OpenMods {
 	public void preInit(FMLPreInitializationEvent evt) {
 		Log.logger = evt.getModLog();
 		EventPacket.regiterCorePackets();
+
+		Configuration configFile = new Configuration(evt.getSuggestedConfigurationFile());
+		ConfigProcessing.processAnnotations(configFile, LibConfig.class);
+		if (configFile.hasChanged()) configFile.save();
 	}
 
 	@EventHandler

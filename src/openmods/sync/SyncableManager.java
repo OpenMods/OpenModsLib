@@ -6,7 +6,9 @@ import java.util.Set;
 
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.world.World;
+import openmods.LibConfig;
 import openmods.OpenMods;
+import openmods.network.PacketLogger;
 
 import com.google.common.io.ByteStreams;
 
@@ -29,6 +31,9 @@ public class SyncableManager {
 		if (handler != null) {
 			Set<ISyncableObject> changes = handler.getSyncMap().readFromStream(input);
 			handler.onSynced(changes);
+
+			if (LibConfig.logPackets) PacketLogger.log(packet, true, handler.toString(), handler.getClass().toString(), Integer.toString(changes.size()));
 		}
+
 	}
 }
