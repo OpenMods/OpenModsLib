@@ -26,7 +26,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 	private OpenModsFakePlayer(World world) {
 		super(world, "Open Mods Fake Player");
 	}
-	
+
 	@Override
 	public void setDead() {
 		_players.remove(worldObj.provider.dimensionId);

@@ -37,7 +37,7 @@ public abstract class BlockRenderingHandlerBase implements ISimpleBlockRendering
 
 	@Override
 	public void renderInventoryBlock(Block block, int metadata, int modelID, RenderBlocks renderer) {
-		
+
 		OpenBlock openBlock = null;
 		if (block instanceof OpenBlock) {
 			openBlock = (OpenBlock)block;
