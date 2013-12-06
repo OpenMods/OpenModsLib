@@ -152,9 +152,6 @@ public class ConfigProcessing {
 						@SuppressWarnings("unchecked")
 						I entry = (I)f.get(null);
 						if (entry != null) processor.process(entry, annotation);
-						else{
-							System.out.println("Entry was null at: " + f.toString() + " " + annotation.toString());
-						}
 					} catch (Exception e) {
 						throw Throwables.propagate(e);
 					}
