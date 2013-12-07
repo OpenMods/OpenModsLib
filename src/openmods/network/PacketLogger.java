@@ -17,12 +17,16 @@ import com.google.common.collect.Lists;
 
 public class PacketLogger {
 	public static void log(Packet250CustomPayload packet, boolean incoming, String... extras) {
+		log(packet, incoming, Arrays.asList(extras));
+	}
+
+	public static void log(Packet250CustomPayload packet, boolean incoming, List<String> extras) {
 		List<String> fields = Lists.newArrayList();
 		fields.add(packet.channel);
 		fields.add(OpenMods.proxy.isServerThread()? "server" : "client");
 		fields.add(incoming? "incoming" : "outgoing");
 		fields.add(Integer.toString(packet.data.length));
-		fields.addAll(Arrays.asList(extras));
+		fields.addAll(extras);
 		String extra = Joiner.on('\t').join(fields);
 		getDebugLog().info(extra);
 	}
@@ -38,7 +42,7 @@ public class PacketLogger {
 		public String format(LogRecord record) {
 
 			String isoDate = df.format(new Date(record.getMillis()));
-			return isoDate + ": " + formatMessage(record) + LINE_SEPARATOR;
+			return isoDate + "\t" + formatMessage(record) + LINE_SEPARATOR;
 		}
 	}
 

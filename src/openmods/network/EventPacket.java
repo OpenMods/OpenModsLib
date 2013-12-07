@@ -1,6 +1,7 @@
 package openmods.network;
 
 import java.io.*;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -15,8 +16,11 @@ import openmods.OpenMods;
 import openmods.network.events.TileEntityMessageEventPacket;
 import openmods.utils.ByteUtils;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import cpw.mods.fml.common.network.Player;
@@ -66,36 +70,29 @@ public abstract class EventPacket extends Event {
 			registerType(type);
 	}
 
-	public static EventPacket deserializeEvent(Packet250CustomPayload packet) throws IOException {
-		ByteArrayInputStream bytes = new ByteArrayInputStream(packet.data);
+	public static EventPacket deserializeEvent(Packet250CustomPayload packet) {
+		try {
+			ByteArrayInputStream bytes = new ByteArrayInputStream(packet.data);
 
-		EventPacket event;
-		IEventPacketType type;
-		{
-			DataInput input = new DataInputStream(bytes);
-			int id = ByteUtils.readVLI(input);
-			type = TYPES.get(id);
-			event = type.createPacket();
-		}
+			EventPacket event;
+			IEventPacketType type;
+			{
+				DataInput input = new DataInputStream(bytes);
+				int id = ByteUtils.readVLI(input);
+				type = TYPES.get(id);
+				event = type.createPacket();
+			}
 
-		InputStream stream = type.isCompressed()? new GZIPInputStream(bytes) : bytes;
+			InputStream stream = type.isCompressed()? new GZIPInputStream(bytes) : bytes;
 
-		{
 			DataInput input = new DataInputStream(stream);
 			event.readFromStream(input);
+			stream.close();
+
+			return event;
+		} catch (Exception e) {
+			throw Throwables.propagate(e);
 		}
-
-		stream.close();
-
-		if (LibConfig.logPackets) PacketLogger.log(
-				packet,
-				true,
-				Integer.toString(type.getId()),
-				type.toString(),
-				Boolean.toString(type.isCompressed())
-				);
-
-		return event;
 	}
 
 	public static Packet250CustomPayload serializeEvent(EventPacket event) {
@@ -116,19 +113,23 @@ public abstract class EventPacket extends Event {
 
 			Packet250CustomPayload result = new Packet250CustomPayload(PacketHandler.CHANNEL_EVENTS, payload.toByteArray());
 
-			if (LibConfig.logPackets) PacketLogger.log(
-					result,
-					false,
-					Integer.toString(type.getId()),
-					type.toString(),
-					Boolean.toString(type.isCompressed()),
-					Integer.toString(output.size())
-					);
+			if (LibConfig.logPackets) PacketLogger.log(result, false, createLogInfo(event));
 
 			return result;
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
+	}
+
+	public static List<String> createLogInfo(EventPacket event) {
+		List<String> info = Lists.newArrayList();
+		final IEventPacketType type = event.getType();
+		info.add(Integer.toString(type.getId()));
+		info.add(type.toString());
+		info.add(type.isCompressed()? "packed" : "raw");
+		info.add(ObjectUtils.toString(event.player));
+		event.appendLogInfo(info);
+		return info;
 	}
 
 	public INetworkManager manager;
@@ -140,6 +141,8 @@ public abstract class EventPacket extends Event {
 	protected abstract void readFromStream(DataInput input) throws IOException;
 
 	protected abstract void writeToStream(DataOutput output) throws IOException;
+
+	protected void appendLogInfo(List<String> info) {}
 
 	public void reply(EventPacket reply) {
 		boolean isRemote = !(player instanceof EntityPlayerMP);

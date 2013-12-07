@@ -1,9 +1,9 @@
 package openmods.utils;
 
-import java.util.Collection;
-import java.util.Map;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
 
 public class CollectionUtils {
 
@@ -33,5 +33,26 @@ public class CollectionUtils {
 			if (r <= 0) { return entry.getKey(); }
 		}
 		return null;
+	}
+
+	public static void readSortedIdList(DataInput input, Collection<Integer> output) {
+		int elemCount = ByteUtils.readVLI(input);
+
+		int currentId = 0;
+		for (int i = 0; i < elemCount; i++) {
+			currentId += ByteUtils.readVLI(input);
+			output.add(currentId);
+		}
+	}
+
+	public static void writeSortedIdList(DataOutput output, SortedSet<Integer> idList) {
+		ByteUtils.writeVLI(output, idList.size());
+
+		int currentId = 0;
+		for (Integer id : idList) {
+			int delta = id - currentId;
+			ByteUtils.writeVLI(output, delta);
+			currentId = id;
+		}
 	}
 }

@@ -7,7 +7,8 @@ import java.util.Map;
 
 import net.minecraft.nbt.*;
 
-import com.google.common.collect.ImmutableBiMap;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 
 public abstract class TypeRW<T> implements INBTSerializable<T>, IStreamSerializable<T>, IStringSerializable<T> {
 
@@ -142,7 +143,7 @@ public abstract class TypeRW<T> implements INBTSerializable<T>, IStreamSerializa
 
 		@Override
 		public void writeToStream(String o, DataOutput output) throws IOException {
-			output.writeUTF(o);
+			output.writeUTF(Strings.nullToEmpty(o));
 		}
 
 		@Override
@@ -304,14 +305,21 @@ public abstract class TypeRW<T> implements INBTSerializable<T>, IStreamSerializa
 		}
 	};
 
-	public static final Map<Class<?>, TypeRW<?>> TYPES = ImmutableBiMap.<Class<?>, TypeRW<?>> builder()
+	public static final Map<Class<?>, TypeRW<?>> TYPES = ImmutableMap.<Class<?>, TypeRW<?>> builder()
 			.put(Integer.class, INTEGER)
+			.put(int.class, INTEGER)
 			.put(Boolean.class, BOOL)
+			.put(boolean.class, BOOL)
 			.put(Byte.class, BYTE)
+			.put(byte.class, BYTE)
 			.put(Double.class, DOUBLE)
+			.put(double.class, DOUBLE)
 			.put(Float.class, FLOAT)
+			.put(float.class, FLOAT)
 			.put(Long.class, LONG)
+			.put(long.class, LONG)
 			.put(Short.class, SHORT)
+			.put(short.class, SHORT)
 			.put(String.class, STRING)
 			.build();
 }

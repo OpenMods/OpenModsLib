@@ -3,6 +3,7 @@ package openmods.network.events;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.packet.Packet;
@@ -34,14 +35,14 @@ public class TileEntityMessageEventPacket extends EventPacket {
 	}
 
 	@Override
-	public void readFromStream(DataInput input) throws IOException {
+	protected final void readFromStream(DataInput input) throws IOException {
 		xCoord = input.readInt();
 		yCoord = input.readInt();
 		zCoord = input.readInt();
 		readPayload(input);
 	}
 
-	protected void readPayload(DataInput input) {
+	protected void readPayload(DataInput input) throws IOException {
 		/**
 		 * An empty block should be documented!
 		 * Am I doing this right?
@@ -49,18 +50,27 @@ public class TileEntityMessageEventPacket extends EventPacket {
 	}
 
 	@Override
-	public void writeToStream(DataOutput output) throws IOException {
+	protected final void writeToStream(DataOutput output) throws IOException {
 		output.writeInt(xCoord);
 		output.writeInt(yCoord);
 		output.writeInt(zCoord);
 		writePayload(output);
 	}
 
-	protected void writePayload(DataOutput output) {
+	protected void writePayload(DataOutput output) throws IOException {
 		/**
 		 * An empty block should be documented!
 		 * Am I doing this right?
 		 */
+
+		/**
+		 * LOL NOPE
+		 */
+	}
+
+	@Override
+	protected void appendLogInfo(List<String> info) {
+		info.add(String.format("%d,%d,%d", xCoord, yCoord, zCoord));
 	}
 
 	protected World getWorld() {
