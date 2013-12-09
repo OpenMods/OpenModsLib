@@ -8,18 +8,6 @@ import buildcraft.api.transport.IPipeTile;
 
 public class ModuleBuildCraft {
 
-	private static ModuleBuildCraft _instance = new ModuleBuildCraft();
-
-	/*
-	 * I don't like this, but it's better than offering public access to the
-	 * instance
-	 */
-	public static void live() {
-		if (!(_instance instanceof ModuleBuildCraftLive)) {
-			_instance = new ModuleBuildCraftLive();
-		}
-	}
-
 	public int tryAcceptIntoPipe(TileEntity possiblePipe, ItemStack nextStack, boolean doInsert, ForgeDirection direction) {
 		return 0;
 	}
@@ -32,11 +20,7 @@ public class ModuleBuildCraft {
 		return false;
 	}
 
-	public static ModuleBuildCraft instance() {
-		return _instance;
-	}
-
-	private static class ModuleBuildCraftLive extends ModuleBuildCraft {
+	static class ModuleBuildCraftLive extends ModuleBuildCraft {
 
 		@Override
 		public int tryAcceptIntoPipe(TileEntity possiblePipe, ItemStack nextStack, boolean doInsert, ForgeDirection direction) {

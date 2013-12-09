@@ -8,7 +8,7 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidHandler;
-import openmods.integration.ModuleBuildCraft;
+import openmods.integration.Integration;
 import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncableFlags;
 import openmods.utils.BlockUtils;
@@ -89,7 +89,7 @@ public class GenericTank extends FluidTank {
 						if (otherTank instanceof IFluidHandler) {
 							drainedFluid.amount -= ((IFluidHandler)otherTank).fill(side.getOpposite(), drainedFluid, true);
 						} else {
-							drainedFluid.amount -= ModuleBuildCraft.instance().tryAcceptIntoPipe(otherTank, drainedFluid, side.getOpposite());
+							drainedFluid.amount -= Integration.modBuildCraft().tryAcceptIntoPipe(otherTank, drainedFluid, side.getOpposite());
 						}
 					}
 				}
