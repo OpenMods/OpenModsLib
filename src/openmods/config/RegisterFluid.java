@@ -16,11 +16,11 @@ public @interface RegisterFluid {
 	public String name();
 
 	public int density() default 80;
-	
+
 	public int viscosity() default 1;
-	
+
 	public int luminosity() default 0;
-	
+
 	public boolean gaseous() default false;
-	
+
 }

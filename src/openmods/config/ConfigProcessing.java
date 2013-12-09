@@ -190,17 +190,17 @@ public class ConfigProcessing {
 			}
 		});
 	}
-	
+
 	public static void registerFluids(Class<?> klazz, final String mod) {
-		 processAnnotations(klazz, Fluid.class, RegisterFluid.class, new IAnnotationProcessor<Fluid, RegisterFluid>() {
+		processAnnotations(klazz, Fluid.class, RegisterFluid.class, new IAnnotationProcessor<Fluid, RegisterFluid>() {
 			@Override
 			public void process(Fluid fluid, RegisterFluid annotation) {
-				fluid.setDensity(annotation.density()); //Yes I know you can daisy-chain these calls XD
+				fluid.setDensity(annotation.density());
 				fluid.setGaseous(annotation.gaseous());
 				fluid.setLuminosity(annotation.luminosity());
 				fluid.setViscosity(annotation.viscosity());
 				FluidRegistry.registerFluid(fluid);
-				fluid.setUnlocalizedName(String.format("%s.%s", mod, annotation.name())  );
+				fluid.setUnlocalizedName(String.format("%s.%s", mod, annotation.name()));
 
 			}
 		});

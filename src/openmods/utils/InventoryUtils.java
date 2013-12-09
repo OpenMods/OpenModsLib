@@ -12,10 +12,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import openmods.GenericInventory;
-import openmods.Mods;
 import openmods.integration.ModuleBuildCraft;
 import openmods.sync.SyncableFlags;
-import cpw.mods.fml.common.Loader;
 
 public class InventoryUtils {
 

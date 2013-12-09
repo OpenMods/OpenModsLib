@@ -7,11 +7,9 @@ import openmods.network.EventPacket;
 import openmods.network.PacketHandler;
 import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncableManager;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.*;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -46,7 +44,7 @@ public class OpenMods {
 
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent evt) {
-		if(Loader.isModLoaded(Mods.BUILDCRAFT)) {
+		if (Loader.isModLoaded(Mods.BUILDCRAFT)) {
 			ModuleBuildCraft.live();
 		}
 	}
