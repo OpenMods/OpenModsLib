@@ -167,9 +167,8 @@ public class InventoryUtils {
 		int inserted = 0;
 
 		// if it's a pipe, try accept it
-		if (target instanceof TileEntity && Loader.isModLoaded(Mods.BUILDCRAFT)
-				&& ModuleBuildCraft.isPipe((TileEntity)target)) {
-			inserted = ModuleBuildCraft.tryAcceptIntoPipe((TileEntity)target, clonedSourceStack, doMove, direction);
+		if (target instanceof TileEntity && ModuleBuildCraft.instance().isPipe((TileEntity)target)) {
+			inserted = ModuleBuildCraft.instance().tryAcceptIntoPipe((TileEntity)target, clonedSourceStack, doMove, direction);
 			clonedSourceStack.stackSize -= inserted;
 
 			// if it's an inventory

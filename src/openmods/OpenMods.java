@@ -2,10 +2,12 @@ package openmods;
 
 import net.minecraftforge.common.Configuration;
 import openmods.config.ConfigProcessing;
+import openmods.integration.ModuleBuildCraft;
 import openmods.network.EventPacket;
 import openmods.network.PacketHandler;
 import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncableManager;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -43,5 +45,9 @@ public class OpenMods {
 	}
 
 	@EventHandler
-	public void postInit(FMLPostInitializationEvent evt) {}
+	public void postInit(FMLPostInitializationEvent evt) {
+		if(Loader.isModLoaded(Mods.BUILDCRAFT)) {
+			ModuleBuildCraft.live();
+		}
+	}
 }

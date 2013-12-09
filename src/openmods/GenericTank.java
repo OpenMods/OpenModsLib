@@ -89,7 +89,7 @@ public class GenericTank extends FluidTank {
 						if (otherTank instanceof IFluidHandler) {
 							drainedFluid.amount -= ((IFluidHandler)otherTank).fill(side.getOpposite(), drainedFluid, true);
 						} else {
-							drainedFluid.amount -= ModuleBuildCraft.tryAcceptIntoPipe(otherTank, drainedFluid, side.getOpposite());
+							drainedFluid.amount -= ModuleBuildCraft.instance().tryAcceptIntoPipe(otherTank, drainedFluid, side.getOpposite());
 						}
 					}
 				}
