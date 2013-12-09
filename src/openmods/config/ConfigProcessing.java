@@ -12,6 +12,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.Property;
 import net.minecraftforge.common.Property.Type;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import openmods.Log;
 import openmods.utils.io.IStringSerializable;
 import openmods.utils.io.StringConversionException;
@@ -185,6 +187,21 @@ public class ConfigProcessing {
 				if (teClass != null) GameRegistry.registerTileEntity(teClass, String.format("%s_%s", mod, name));
 
 				if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(mod, name, teClass, itemBlock);
+			}
+		});
+	}
+	
+	public static void registerFluids(Class<?> klazz, final String mod) {
+		 processAnnotations(klazz, Fluid.class, RegisterFluid.class, new IAnnotationProcessor<Fluid, RegisterFluid>() {
+			@Override
+			public void process(Fluid fluid, RegisterFluid annotation) {
+				fluid.setDensity(annotation.density()); //Yes I know you can daisy-chain these calls XD
+				fluid.setGaseous(annotation.gaseous());
+				fluid.setLuminosity(annotation.luminosity());
+				fluid.setViscosity(annotation.viscosity());
+				FluidRegistry.registerFluid(fluid);
+				fluid.setUnlocalizedName(String.format("%s.%s", mod, annotation.name())  );
+
 			}
 		});
 	}
