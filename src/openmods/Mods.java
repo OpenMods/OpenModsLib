@@ -48,6 +48,7 @@ public class Mods {
 	public static final String MYSTCRAFT = "Mystcraft";
 	public static final String OPENBLOCKS = "OpenBlocks";
 	public static final String OPENPERIPHERAL = "OpenPeripheral";
+	public static final String OPENPERIPHERALCORE = "OpenPeripheralCore";
 	public static final String PORTALGUN = "PortalGun";
 	public static final String PROJECTRED_TRANSMISSION = "ProjRed|Transmission";
 	public static final String RAILCRAFT = "Railcraft";
