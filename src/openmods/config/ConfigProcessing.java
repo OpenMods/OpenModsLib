@@ -15,6 +15,7 @@ import net.minecraftforge.common.Property.Type;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import openmods.Log;
+import openmods.config.RegisterBlock.RegisterTileEntity;
 import openmods.utils.io.IStringSerializable;
 import openmods.utils.io.StringConversionException;
 import openmods.utils.io.TypeRW;
@@ -162,12 +163,27 @@ public class ConfigProcessing {
 		}
 	}
 
+	private static String dotName(String a, String b) {
+		return a + "." + b;
+	}
+
+	private static String underscoreName(String a, String b) {
+		return a + "_" + b;
+	}
+
 	public static void registerItems(Class<?> klazz, final String mod) {
 		processAnnotations(klazz, Item.class, RegisterItem.class, new IAnnotationProcessor<Item, RegisterItem>() {
 			@Override
 			public void process(Item item, RegisterItem annotation) {
-				String name = String.format("%s.%s", mod, annotation.name());
+				String name = dotName(mod, annotation.name());
 				GameRegistry.registerItem(item, name);
+
+				String unlocalizedName = annotation.unlocalizedName();
+				if (!unlocalizedName.equals(RegisterItem.NONE)) {
+					if (unlocalizedName.equals(RegisterItem.DEFAULT)) unlocalizedName = name;
+					else unlocalizedName = dotName(mod, unlocalizedName);
+					item.setUnlocalizedName(unlocalizedName);
+				}
 			}
 		});
 	}
@@ -181,12 +197,19 @@ public class ConfigProcessing {
 				Class<? extends TileEntity> teClass = annotation.tileEntity();
 				if (teClass == TileEntity.class) teClass = null;
 
-				GameRegistry.registerBlock(block, itemBlock, String.format("%s_%s", mod, name));
-				block.setUnlocalizedName(String.format("%s.%s", mod, name));
+				final String blockName = underscoreName(mod, name);
 
-				if (teClass != null) GameRegistry.registerTileEntity(teClass, String.format("%s_%s", mod, name));
+				GameRegistry.registerBlock(block, itemBlock, blockName);
+				block.setUnlocalizedName(dotName(mod, name));
+
+				if (teClass != null) GameRegistry.registerTileEntity(teClass, blockName);
 
 				if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(mod, name, teClass, itemBlock);
+
+				for (RegisterTileEntity te : annotation.tileEntities()) {
+					final String teName = underscoreName(mod, te.name());
+					GameRegistry.registerTileEntity(te.cls(), teName);
+				}
 			}
 		});
 	}
