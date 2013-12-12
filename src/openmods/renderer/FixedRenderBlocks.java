@@ -201,4 +201,8 @@ public class FixedRenderBlocks extends RenderBlocks {
 	public void setWorld(IBlockAccess world) {
 		this.blockAccess = world;
 	}
+
+	public void setAllFaces(int rot) {
+		uvRotateTop = uvRotateBottom = uvRotateNorth = uvRotateSouth = uvRotateEast = uvRotateWest = rot;
+	}
 }
