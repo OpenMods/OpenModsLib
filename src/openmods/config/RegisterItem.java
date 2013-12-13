@@ -10,7 +10,8 @@ import java.lang.annotation.Target;
 public @interface RegisterItem {
 	public static final String DEFAULT = "[default]";
 	public static final String NONE = "[none]";
-	
+
 	public String name();
+
 	public String unlocalizedName() default DEFAULT;
 }

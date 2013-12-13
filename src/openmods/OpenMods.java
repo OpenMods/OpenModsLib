@@ -1,7 +1,9 @@
 package openmods;
 
 import net.minecraftforge.common.Configuration;
+import net.minecraftforge.common.MinecraftForge;
 import openmods.config.ConfigProcessing;
+import openmods.entity.DelayedEntityLoadManager;
 import openmods.integration.Integration;
 import openmods.network.EventPacket;
 import openmods.network.PacketHandler;
@@ -36,6 +38,8 @@ public class OpenMods {
 		Configuration configFile = new Configuration(evt.getSuggestedConfigurationFile());
 		ConfigProcessing.processAnnotations(configFile, LibConfig.class);
 		if (configFile.hasChanged()) configFile.save();
+
+		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);
 	}
 
 	@EventHandler
