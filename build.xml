@@ -8,8 +8,7 @@
 		<property name="env.JOB_NAME" value="OpenModsLib" />
 		<property name="mod.version" value="0.1" />
 		<property name="mod.name" value="OpenModsLib" />
-		<property name="mod.dir" value="openmods" />
-		<echo message="Starting build for ${mod.name} v${mod.version}" />
+		<echo message="Starting build for ${env.JOB_NAME} v${mod.version}" />
 	</target>
 
 	<target name="copy-source" depends="set-env">

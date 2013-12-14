@@ -19,9 +19,10 @@
 	<property name="mcpsrc.dir" value="${mcp.dir}/src/minecraft" />
 
 	<property name="mc.version" value="1.6.4" />
-	<property name="forge.version" value="9.11.0.883" />
+	<property name="forge.version" value="9.11.1.953" />
 
-	<property name="forge.name" value="minecraftforge-src-${mc.version}-${forge.version}.zip" />
+	<property name="forge.version.full" value="${mc.version}-${forge.version}" />
+	<property name="forge.name" value="forge-${forge.version.full}-src.zip" />
 
 	<available property="forge-exists" file="${download.dir}/${forge.name}" />
 
@@ -54,7 +55,7 @@
 
 	<!-- Download forge (if it doesn't exist) -->
 	<target name="download-forge" unless="forge-exists">
-		<get src="http://files.minecraftforge.net/${forge.name}" dest="${download.dir}" usetimestamp="True" />
+		<get src="http://files.minecraftforge.net/maven/net/minecraftforge/forge/${forge.version.full}/${forge.name}" dest="${download.dir}" usetimestamp="True" />
 	</target>
 
 	<!-- Setup mcp and forge -->
