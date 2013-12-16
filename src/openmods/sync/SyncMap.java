@@ -43,8 +43,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 				if (world != null) {
 					if (world.blockExists(x, y, z)) {
 						TileEntity tile = world.getBlockTileEntity(x, y, z);
-						if (tile instanceof ISyncHandler)
-						return (ISyncHandler)tile;
+						if (tile instanceof ISyncHandler) return (ISyncHandler)tile;
 					}
 				}
 
@@ -172,7 +171,11 @@ public abstract class SyncMap<H extends ISyncHandler> {
 
 	protected abstract World getWorld();
 
+	protected abstract boolean isInvalid();
+
 	public boolean sync() {
+		if (isInvalid()) return false;
+
 		Set<EntityPlayer> players = getPlayersWatching();
 		boolean sent = false;
 		if (!getWorld().isRemote) {

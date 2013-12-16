@@ -31,4 +31,9 @@ public class SyncMapEntity<H extends Entity & ISyncHandler> extends SyncMap<H> {
 	protected World getWorld() {
 		return handler.worldObj;
 	}
+
+	@Override
+	protected boolean isInvalid() {
+		return handler.isDead;
+	}
 }

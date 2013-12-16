@@ -31,4 +31,9 @@ public class SyncMapTile<H extends TileEntity & ISyncHandler> extends SyncMap<H>
 	protected World getWorld() {
 		return handler.worldObj;
 	}
+
+	@Override
+	protected boolean isInvalid() {
+		return handler.isInvalid();
+	}
 }

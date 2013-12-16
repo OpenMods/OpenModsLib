@@ -79,6 +79,8 @@ public class PacketHandler implements IPacketHandler {
 
 		EntityTrackerEntry entry = (EntityTrackerEntry)trackers.lookup(entityId);
 
+		if (entry == null) return ImmutableSet.of();
+
 		@SuppressWarnings({ "unchecked" })
 		Set<EntityPlayer> trackingPlayers = entry.trackingPlayers;
 
