@@ -4,6 +4,7 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -200,6 +201,18 @@ public class RenderUtils {
 			tessellator.draw();
 		}
 		GL11.glPopMatrix();
+	}
+
+	public static void disableLightmap() {
+		OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+	}
+
+	public static void reenableLightmap() {
+		OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
 	}
 
 }
