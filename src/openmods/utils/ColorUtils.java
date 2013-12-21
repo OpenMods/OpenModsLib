@@ -1,48 +1,79 @@
 package openmods.utils;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class ColorUtils {
 
-	public static final Map<String, Integer> COLORS =
-			new ImmutableMap.Builder<String, Integer>()
-					.put("dyeBlack", 0x1E1B1B)
-					.put("dyeRed", 0xB3312C)
-					.put("dyeGreen", 0x3B511A)
-					.put("dyeBrown", 0x51301A)
-					.put("dyeBlue", 0x253192)
-					.put("dyePurple", 0x7B2FBE)
-					.put("dyeCyan", 0x287697)
-					.put("dyeLightGray", 0xABABAB)
-					.put("dyeGray", 0x434343)
-					.put("dyePink", 0xD88198)
-					.put("dyeLime", 0x41CD34)
-					.put("dyeYellow", 0xDECF2A)
-					.put("dyeLightBlue", 0x6689D3)
-					.put("dyeMagenta", 0xC354CD)
-					.put("dyeOrange", 0xEB8844)
-					.put("dyeWhite", 0xF0F0F0)
-					.build();
+	public static class ColorMeta {
+		public final int rgb;
+		public final int vanillaId;
+		public final int oreId;
+		public final String oreName;
 
-	/**
-	 * Quite ineffective, since it's based on list lookups, so don't to it ofter
-	 */
-	public static Integer dyeToColorValue(ItemStack stack) {
-		int oreId = OreDictionary.getOreID(stack);
-		if (oreId < 0) return null;
-		String oreName = OreDictionary.getOreName(oreId);
-		return COLORS.get(oreName);
+		public ColorMeta(int rgb, int vanillaId, int oreId, String oreName) {
+			this.rgb = rgb;
+			this.vanillaId = vanillaId;
+			this.oreId = oreId;
+			this.oreName = oreName;
+		}
 	}
 
-	public static String dyeToOreDictName(ItemStack stack) {
+	private static final List<ColorMeta> COLORS = Lists.newArrayList();
+	private static final Map<String, ColorMeta> COLORS_BY_ORE_NAME = Maps.newHashMap();
+	private static final Map<Integer, ColorMeta> COLORS_BY_ORE_ID = Maps.newHashMap();
+
+	private static void addEntry(String oreName, int colorValue, int vanillaId) {
+		int oreId = OreDictionary.getOreID(oreName);
+		ColorMeta color = new ColorMeta(colorValue, vanillaId, oreId, oreName);
+		COLORS.add(color);
+		COLORS_BY_ORE_NAME.put(oreName, color);
+		COLORS_BY_ORE_ID.put(oreId, color);
+	}
+
+	static {
+		addEntry("dyeBlack", 0x1E1B1B, 0);
+		addEntry("dyeRed", 0xB3312C, 1);
+		addEntry("dyeGreen", 0x3B511A, 2);
+		addEntry("dyeBrown", 0x51301A, 3);
+		addEntry("dyeBlue", 0x253192, 4);
+		addEntry("dyePurple", 0x7B2FBE, 5);
+		addEntry("dyeCyan", 0x287697, 6);
+		addEntry("dyeLightGray", 0xABABAB, 7);
+		addEntry("dyeGray", 0x434343, 8);
+		addEntry("dyePink", 0xD88198, 9);
+		addEntry("dyeLime", 0x41CD34, 10);
+		addEntry("dyeYellow", 0xDECF2A, 11);
+		addEntry("dyeLightBlue", 0x6689D3, 12);
+		addEntry("dyeMagenta", 0xC354CD, 13);
+		addEntry("dyeOrange", 0xEB8844, 14);
+		addEntry("dyeWhite", 0xF0F0F0, 15);
+	}
+
+	public static ColorMeta stackToColor(ItemStack stack) {
 		int oreId = OreDictionary.getOreID(stack);
 		if (oreId < 0) return null;
-		return OreDictionary.getOreName(oreId);
+		return COLORS_BY_ORE_ID.get(oreId);
+	}
+
+	public static ColorMeta oreIdToColor(int oreId) {
+		return COLORS_BY_ORE_ID.get(oreId);
+	}
+
+	public static ColorMeta oreNameToColor(String oreName) {
+		return COLORS_BY_ORE_NAME.get(oreName);
+	}
+
+	public static Collection<ColorMeta> getAllColors() {
+		return Collections.unmodifiableCollection(COLORS);
 	}
 
 	public static class RGB {
