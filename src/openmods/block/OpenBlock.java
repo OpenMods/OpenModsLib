@@ -95,7 +95,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	private void dropBlockItem(World world, int x, int y, int z) {
 		if (world.isRemote) return;
-
 		int metadata = world.getBlockMetadata(x, y, z);
 		ArrayList<ItemStack> items = getBlockDropped(world, x, y, z, metadata, 0);
 		Iterator<ItemStack> it = items.iterator();
@@ -240,7 +239,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		if (te instanceof ISurfaceAttachment) {
 			ForgeDirection direction = ((ISurfaceAttachment)te).getSurfaceDirection();
 			if (!isNeighborBlockSolid(world, x, y, z, direction)) {
-				dropBlockAsItem(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
+				dropBlockItem(world, x, y, z);
 				world.setBlockToAir(x, y, z);
 			}
 		}
