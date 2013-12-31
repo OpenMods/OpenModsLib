@@ -134,6 +134,13 @@ public class GenericTank extends FluidTank {
 					FluidStack currentFluid = getFluid();
 					if (currentFluid == null) {
 						FluidTankInfo[] infos = handler.getTankInfo(side.getOpposite());
+
+						if (infos == null) {
+							Log.fine("Tank %s @ (%d,%d,%d) returned null tank info. Nasty.",
+									otherTank.getClass(), otherTank.xCoord, otherTank.yCoord, otherTank.zCoord);
+							continue;
+						}
+
 						for (FluidTankInfo info : infos) {
 							if (acceptableFluids.length == 0
 									&& info.fluid != null) {

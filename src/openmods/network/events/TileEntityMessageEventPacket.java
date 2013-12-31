@@ -42,7 +42,7 @@ public class TileEntityMessageEventPacket extends EventPacket {
 		readPayload(input);
 	}
 
-	protected void readPayload(DataInput input) throws IOException {
+	protected void readPayload(DataInput input) {
 		/**
 		 * An empty block should be documented!
 		 * Am I doing this right?
@@ -57,7 +57,7 @@ public class TileEntityMessageEventPacket extends EventPacket {
 		writePayload(output);
 	}
 
-	protected void writePayload(DataOutput output) throws IOException {
+	protected void writePayload(DataOutput output) {
 		/**
 		 * An empty block should be documented!
 		 * Am I doing this right?
