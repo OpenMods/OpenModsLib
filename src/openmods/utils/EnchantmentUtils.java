@@ -6,6 +6,7 @@ import java.util.Random;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -27,6 +28,18 @@ public class EnchantmentUtils {
 
 		int l = (max? 7 : 0) + 1 + (power >> 1) + (max? power : 0);
 		return max? Math.max(l, power * 2) : Math.max(l / 3, 1);
+	}
+	
+	public static int getPlayerXP(EntityPlayer player) {
+		return (int)(EnchantmentUtils.getExperienceForLevel(player.experienceLevel) + (player.experience * player.xpBarCap()));
+	}
+	
+	public static void drainPlayerXP(EntityPlayer player, int amount) {
+		int experience = getPlayerXP(player) - amount;
+		player.experienceTotal = experience;
+		player.experienceLevel = EnchantmentUtils.getLevelForExperience(experience);
+		int expForLevel = EnchantmentUtils.getExperienceForLevel(player.experienceLevel);
+		player.experience = (float)(experience - expForLevel) / (float)player.xpBarCap();
 	}
 
 	public static boolean enchantItem(ItemStack itemstack, int level, Random rand) {
