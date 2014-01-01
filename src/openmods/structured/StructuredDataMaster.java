@@ -20,9 +20,9 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
 public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IStructureElement> extends StructuredData<C, E> {
-	private Set<Integer> newContainers = Sets.newHashSet();
-	private Set<Integer> deletedContainers = Sets.newHashSet();
-	private Set<Integer> modifiedElements = Sets.newHashSet();
+	private Set<Integer> newContainers = Sets.newTreeSet();
+	private Set<Integer> deletedContainers = Sets.newTreeSet();
+	private Set<Integer> modifiedElements = Sets.newTreeSet();
 	private byte checkCount;
 
 	public synchronized void appendUpdateCommands(List<Command> commands) {

@@ -58,7 +58,7 @@ public class GuiComponentTab extends GuiComponentBox {
 		GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 		itemRenderer.zLevel = zLevel + 50; // <- critical! Must be >= 50
 		itemRenderer.renderItemIntoGUI(minecraft.fontRenderer, minecraft.getTextureManager(), iconStack,
-				offsetX + x + 4, offsetY + y + 4);
+				offsetX + x + 3, offsetY + y + 3);
 		GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 		GL11.glDisable(GL11.GL_LIGHTING);
 	}
