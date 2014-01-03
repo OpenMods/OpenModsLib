@@ -12,6 +12,9 @@ import openmods.item.ItemOpenBlock;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface RegisterBlock {
+	public static final String DEFAULT = "[default]";
+	public static final String NONE = "[none]";
+
 	public @interface RegisterTileEntity {
 		public String name();
 
@@ -25,4 +28,6 @@ public @interface RegisterBlock {
 	public Class<? extends TileEntity> tileEntity() default TileEntity.class;
 
 	public RegisterTileEntity[] tileEntities() default {};
+
+	public String unlocalizedName() default DEFAULT;
 }

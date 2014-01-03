@@ -200,7 +200,13 @@ public class ConfigProcessing {
 				final String blockName = underscoreName(mod, name);
 
 				GameRegistry.registerBlock(block, itemBlock, blockName);
-				block.setUnlocalizedName(dotName(mod, name));
+
+				String unlocalizedName = annotation.unlocalizedName();
+				if (!unlocalizedName.equals(RegisterBlock.NONE)) {
+					if (unlocalizedName.equals(RegisterBlock.DEFAULT)) unlocalizedName = dotName(mod, name);
+					else unlocalizedName = dotName(mod, unlocalizedName);
+					block.setUnlocalizedName(unlocalizedName);
+				}
 
 				if (teClass != null) GameRegistry.registerTileEntity(teClass, blockName);
 
