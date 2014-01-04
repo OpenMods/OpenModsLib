@@ -1,7 +1,5 @@
 package openmods.block;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -25,10 +23,15 @@ import openmods.sync.SyncableDirection;
 import openmods.tileentity.OpenTileEntity;
 import openmods.tileentity.SyncedTileEntity;
 import openmods.utils.BlockUtils;
+
+import com.google.common.base.Preconditions;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenBlock extends Block implements IRegisterableBlock {
+
+	public static final int OPEN_MODS_TE_GUI = -1;
 
 	/***
 	 * The block rotation mode. Defines how many levels of rotation
@@ -96,12 +99,9 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	private void dropBlockItem(World world, int x, int y, int z) {
 		if (world.isRemote) return;
 		int metadata = world.getBlockMetadata(x, y, z);
-		ArrayList<ItemStack> items = getBlockDropped(world, x, y, z, metadata, 0);
-		Iterator<ItemStack> it = items.iterator();
-		while (it.hasNext()) {
-			ItemStack item = it.next();
-			dropBlockAsItem_do(world, x, y, z, item);
-		}
+		List<ItemStack> items = getBlockDropped(world, x, y, z, metadata, 0);
+		for (ItemStack stack : items)
+			dropBlockAsItem_do(world, x, y, z, stack);
 	}
 
 	@Override
@@ -193,8 +193,8 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		if (te instanceof IInventory) {
 			BlockUtils.dropTileInventory(te);
 		}
-		if (te instanceof IAwareTile) {
-			((IAwareTile)te).onBlockBroken();
+		if (te instanceof IBreakAwareTile) {
+			((IBreakAwareTile)te).onBlockBroken();
 		}
 		world.removeBlockTileEntity(x, y, z);
 		super.breakBlock(world, x, y, z, par5, par6);
@@ -208,6 +208,11 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		if (tileEntity != null) {
 			this.teClass = tileEntity;
 			isBlockContainer = true;
+
+			if (blockRotationMode == BlockRotationMode.TWENTYFOUR_DIRECTIONS) {
+				Preconditions.checkArgument(SyncedTileEntity.class.isAssignableFrom(tileEntity),
+						"To use 24-direction rotations TE class '%s' needs to implement SyncedTileEntity", tileEntity);
+			}
 		}
 	}
 
@@ -247,18 +252,15 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
-		IActivateAwareTile te = getTileEntity(world, x, y, z, IActivateAwareTile.class);
-		if (te != null) { return te.onBlockActivated(player, side, hitX, hitY, hitZ); }
-		return false;
-	}
+		TileEntity te = world.getBlockTileEntity(x, y, z);
 
-	@Override
-	public void onBlockAdded(World world, int x, int y, int z) {
-		IAwareTile te = getTileEntity(world, x, y, z, IAwareTile.class);
-		if (te != null) {
-			te.onBlockAdded();
+		if (te instanceof IHasGui && ((IHasGui)te).canOpenGui(player) && !player.isSneaking()) {
+			if (!world.isRemote) openGui(player, world, x, y, z);
+			return true;
 		}
-		super.onBlockAdded(world, x, y, z);
+
+		if (te instanceof IActivateAwareTile) return ((IActivateAwareTile)te).onBlockActivated(player, side, hitX, hitY, hitZ);
+		return false;
 	}
 
 	@Override
@@ -311,18 +313,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 * An extended block placement function which includes ALL the details
 	 * you'll ever need.
 	 * This is called if your ItemBlock extends ItemOpenBlock
-	 * 
-	 * @param world
-	 * @param player
-	 * @param stack
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param side
-	 * @param hitX
-	 * @param hitY
-	 * @param hitZ
-	 * @param meta
 	 */
 	public void onBlockPlacedBy(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, float hitX, float hitY, float hitZ, int meta) {
 		ForgeDirection additionalRotation = null;
@@ -353,20 +343,18 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 				}
 		}
 		world.setBlockMetadataWithNotify(x, y, z, meta, 3);
-		IPlaceAwareTile te = null;
+
+		TileEntity te = world.getBlockTileEntity(x, y, z);
+
 		if (additionalRotation != null) {
-			SyncedTileEntity nTe = getTileEntity(world, x, y, z, SyncedTileEntity.class);
-			if (nTe != null) {
-				nTe.addSyncedObject("_rotation2", new SyncableDirection(additionalRotation));
-				nTe.sync();
-			} else {
-				new Exception("For 6+ levels of rotation you need to use a NetworkedTileEntity").printStackTrace();
-			}
+			Preconditions.checkState(te instanceof SyncedTileEntity,
+					"For 6+ levels of rotation you need to use a SyncedTileEntity, but '%s' on block '%s' is not one", te, this);
+			SyncedTileEntity ste = (SyncedTileEntity)te;
+			ste.addSyncedObject("_rotation2", new SyncableDirection(additionalRotation));
+			ste.sync();
 		}
-		te = getTileEntity(world, x, y, z, IPlaceAwareTile.class);
-		if (te != null) {
-			te.onBlockPlacedBy(player, side, stack, hitX, hitY, hitZ);
-		}
+
+		if (te instanceof IPlaceAwareTile) ((IPlaceAwareTile)te).onBlockPlacedBy(player, side, stack, hitX, hitY, hitZ);
 	}
 
 	@Override
@@ -396,33 +384,48 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		textures[direction.ordinal()] = icon;
 	}
 
-	/**
-	 * This method should be overriden if needed. We're getting the texture for
-	 * the UNROTATED block for a particular side (direction). Feel free to look
-	 * up data in the TileEntity to grab additional information here
-	 * 
-	 * @param direction
-	 * @param world
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return
-	 */
-	public Icon getUnrotatedTexture(ForgeDirection direction, IBlockAccess world, int x, int y, int z) {
+	protected final Icon getUnrotatedTexture(ForgeDirection direction) {
 		if (direction != ForgeDirection.UNKNOWN) {
-			if (textures[direction.ordinal()] != null) { return textures[direction.ordinal()]; }
+			final int directionId = direction.ordinal();
+			if (textures[directionId] != null) return textures[directionId];
 		}
 		return blockIcon;
 	}
 
-	@SideOnly(Side.CLIENT)
-	@Override
+	/**
+	 * This method should be overriden if needed. We're getting the texture for
+	 * the UNROTATED block for a particular side (direction). Feel free to look
+	 * up data in the TileEntity to grab additional information here
+	 */
+	public Icon getUnrotatedTexture(ForgeDirection direction, IBlockAccess world, int x, int y, int z) {
+		return getUnrotatedTexture(direction);
+	}
+
 	/**
 	 * Get the texture, but rotate the block around the metadata rotation first
 	 */
+	@Override
+	@SideOnly(Side.CLIENT)
 	public Icon getBlockTexture(IBlockAccess world, int x, int y, int z, int side) {
 		ForgeDirection direction = rotateSideByMetadata(side, world.getBlockMetadata(x, y, z));
-		return getUnrotatedTexture(direction, world, x, y, z);
+		IIconProvider provider = getTileEntity(world, x, y, z, IIconProvider.class);
+		Icon teIcon = null;
+		if (provider != null) teIcon = provider.getIcon(direction);
+		return teIcon != null? teIcon : getUnrotatedTexture(direction, world, x, y, z);
+	}
+
+	/***
+	 * This is called by the blockrenderer when rendering an item into the
+	 * inventory.
+	 * We'll return the block, rotated as we wish, but without any additional
+	 * texture
+	 * changes that are caused by the blocks current state
+	 */
+	@Override
+	@SideOnly(Side.CLIENT)
+	public Icon getIcon(int side, int metadata) {
+		ForgeDirection newRotation = rotateSideByMetadata(side, metadata);
+		return getUnrotatedTexture(newRotation);
 	}
 
 	/***
@@ -477,27 +480,17 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return dir;
 	}
 
-	@Override
-	@SideOnly(Side.CLIENT)
-	/***
-	 * This is called by the blockrenderer when rendering an item into the inventory.
-	 * We'll return the block, rotated as we wish, but without any additional texture
-	 * changes that are caused by the blocks current state
-	 */
-	public Icon getIcon(int side, int metadata) {
-		ForgeDirection newRotation = rotateSideByMetadata(side, metadata);
-		if (newRotation != ForgeDirection.UNKNOWN) {
-			int index = newRotation.ordinal();
-			if (textures[index] != null) { return textures[index]; }
-		}
-		return blockIcon;
-	}
-
 	public void setDefaultTexture(Icon icon) {
 		this.blockIcon = icon;
 	}
 
 	public abstract boolean shouldRenderBlock();
+
+	protected abstract Object getModInstance();
+
+	public void openGui(EntityPlayer player, World world, int x, int y, int z) {
+		player.openGui(getModInstance(), OPEN_MODS_TE_GUI, world, x, y, z);
+	}
 
 	public boolean useTESRForInventory() {
 		return true;

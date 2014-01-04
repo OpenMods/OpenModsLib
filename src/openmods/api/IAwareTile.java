@@ -1,7 +1,7 @@
 package openmods.api;
 
-public interface IAwareTile extends IAwareTileLite, INeighbourAwareTile {
-	public void onBlockBroken();
-
-	public void onBlockAdded();
-}
+/**
+ * @deprecated Implement interfaces that you actually need
+ */
+@Deprecated
+public interface IAwareTile extends INeighbourAwareTile, IBreakAwareTile, IPlaceAwareTile, IActivateAwareTile {}

@@ -10,6 +10,23 @@ import com.google.common.collect.Maps;
 
 public class ColorUtils {
 
+	public static final int BLACK = 0;
+	public static final int RED = 1;
+	public static final int GREEN = 2;
+	public static final int BROWN = 3;
+	public static final int BLUE = 4;
+	public static final int PURPLE = 5;
+	public static final int CYAN = 6;
+	public static final int LIGHT_GRAY = 7;
+	public static final int GRAY = 8;
+	public static final int PINK = 9;
+	public static final int LIME = 10;
+	public static final int YELLOW = 11;
+	public static final int LIGHT_BLUE = 12;
+	public static final int MAGENTA = 13;
+	public static final int ORANGE = 14;
+	public static final int WHITE = 15;
+
 	public static class ColorMeta {
 		public final int rgb;
 		public final int vanillaId;
@@ -37,22 +54,22 @@ public class ColorUtils {
 	}
 
 	static {
-		addEntry("dyeBlack", 0x1E1B1B, 0);
-		addEntry("dyeRed", 0xB3312C, 1);
-		addEntry("dyeGreen", 0x3B511A, 2);
-		addEntry("dyeBrown", 0x51301A, 3);
-		addEntry("dyeBlue", 0x253192, 4);
-		addEntry("dyePurple", 0x7B2FBE, 5);
-		addEntry("dyeCyan", 0x287697, 6);
-		addEntry("dyeLightGray", 0xABABAB, 7);
-		addEntry("dyeGray", 0x434343, 8);
-		addEntry("dyePink", 0xD88198, 9);
-		addEntry("dyeLime", 0x41CD34, 10);
-		addEntry("dyeYellow", 0xDECF2A, 11);
-		addEntry("dyeLightBlue", 0x6689D3, 12);
-		addEntry("dyeMagenta", 0xC354CD, 13);
-		addEntry("dyeOrange", 0xEB8844, 14);
-		addEntry("dyeWhite", 0xF0F0F0, 15);
+		addEntry("dyeBlack", 0x1E1B1B, BLACK);
+		addEntry("dyeRed", 0xB3312C, RED);
+		addEntry("dyeGreen", 0x3B511A, GREEN);
+		addEntry("dyeBrown", 0x51301A, BROWN);
+		addEntry("dyeBlue", 0x253192, BLUE);
+		addEntry("dyePurple", 0x7B2FBE, PURPLE);
+		addEntry("dyeCyan", 0x287697, CYAN);
+		addEntry("dyeLightGray", 0xABABAB, LIGHT_GRAY);
+		addEntry("dyeGray", 0x434343, GRAY);
+		addEntry("dyePink", 0xD88198, PINK);
+		addEntry("dyeLime", 0x41CD34, LIME);
+		addEntry("dyeYellow", 0xDECF2A, YELLOW);
+		addEntry("dyeLightBlue", 0x6689D3, LIGHT_BLUE);
+		addEntry("dyeMagenta", 0xC354CD, MAGENTA);
+		addEntry("dyeOrange", 0xEB8844, ORANGE);
+		addEntry("dyeWhite", 0xF0F0F0, WHITE);
 	}
 
 	public static ColorMeta stackToColor(ItemStack stack) {
