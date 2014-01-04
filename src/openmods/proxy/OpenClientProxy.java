@@ -13,7 +13,9 @@ import net.minecraft.server.ServerListenThread;
 import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
+import openmods.gui.ClientGuiHandler;
 import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.network.IGuiHandler;
 import cpw.mods.fml.common.network.Player;
 
 public class OpenClientProxy implements IOpenModsProxy {
@@ -78,6 +80,11 @@ public class OpenClientProxy implements IOpenModsProxy {
 	@Override
 	public String getLogFileName() {
 		return "ForgeModLoader-client-0.log";
+	}
+
+	@Override
+	public IGuiHandler wrapHandler(IGuiHandler modSpecificHandler) {
+		return new ClientGuiHandler(modSpecificHandler);
 	}
 
 }
