@@ -35,7 +35,11 @@ public class EnchantmentUtils {
 	}
 
 	public static void drainPlayerXP(EntityPlayer player, int amount) {
-		int experience = getPlayerXP(player) - amount;
+		addPlayerXP(player, -amount);
+	}
+
+	public static void addPlayerXP(EntityPlayer player, int amount) {
+		int experience = getPlayerXP(player) + amount;
 		player.experienceTotal = experience;
 		player.experienceLevel = EnchantmentUtils.getLevelForExperience(experience);
 		int expForLevel = EnchantmentUtils.getExperienceForLevel(player.experienceLevel);
