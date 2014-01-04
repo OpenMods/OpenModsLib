@@ -1,10 +1,7 @@
 package openmods.structured;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 
 import openmods.structured.Command.ConsistencyCheck;
 import openmods.structured.Command.ContainerInfo;

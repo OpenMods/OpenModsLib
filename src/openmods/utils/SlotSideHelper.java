@@ -1,9 +1,7 @@
 package openmods.utils;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import openmods.sync.SyncableFlags;
 

@@ -1,9 +1,6 @@
 package openmods.entity;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
