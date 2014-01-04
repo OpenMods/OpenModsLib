@@ -8,7 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 
 public class SyncableString extends SyncableObjectBase {
 
-	private String value;
+	private String value = "";
 
 	public void setValue(String val) {
 		if (val != value) {

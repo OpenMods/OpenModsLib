@@ -46,6 +46,18 @@ public abstract class ContainerInventory<T extends IInventory> extends
 		}
 	}
 
+	protected void addInventoryLine(int xOffset, int yOffset, int start, int count) {
+		addInventoryLine(xOffset, yOffset, start, count, 0);
+	}
+
+	protected void addInventoryLine(int xOffset, int yOffset, int start, int count, int margin) {
+		for (int x = 0, slotId = start; x < count; x++, slotId++) {
+			addSlotToContainer(new RestrictedSlot(owner, slotId,
+					xOffset + x * (18 + margin),
+					yOffset));
+		}
+	}
+
 	protected void addPlayerInventorySlots(int offsetY) {
 		addPlayerInventorySlots(8, offsetY);
 	}
