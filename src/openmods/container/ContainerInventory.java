@@ -19,13 +19,16 @@ public abstract class ContainerInventory<T extends IInventory> extends
 
 	protected static class RestrictedSlot extends Slot {
 
+		private final int inventoryIndex;
+
 		public RestrictedSlot(IInventory inventory, int slot, int x, int y) {
 			super(inventory, slot, x, y);
+			inventoryIndex = slot; // since slotIndex is private
 		}
 
 		@Override
 		public boolean isItemValid(ItemStack itemstack) {
-			return inventory.isItemValidForSlot(slotNumber, itemstack);
+			return inventory.isItemValidForSlot(inventoryIndex, itemstack);
 		}
 	}
 
