@@ -13,7 +13,7 @@ public class PaintUtils {
 
 	private Set<Integer> allowed;
 
-	private static PaintUtils _instance;
+	public static final PaintUtils instance = new PaintUtils();
 
 	protected PaintUtils() {
 		allowed = new HashSet<Integer>();
@@ -49,15 +49,12 @@ public class PaintUtils {
 		}
 	}
 
-	public static PaintUtils instance() {
-		if (_instance == null) {
-			_instance = new PaintUtils();
-		}
-		return _instance;
-	}
-
-	public boolean isAllowedToPaint(World world, int x, int y, int z) {
+	public boolean isAllowedToReplace(World world, int x, int y, int z) {
 		int id = world.getBlockId(x, y, z);
+
+		Block b = Block.blocksList[id];
+		if (b == null || b.canProvidePower() || b.isAirBlock(world, x, y, z)) return false;
+
 		return allowed.contains(id);
 	}
 }
