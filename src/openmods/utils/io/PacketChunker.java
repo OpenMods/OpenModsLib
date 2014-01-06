@@ -1,132 +1,98 @@
 package openmods.utils.io;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.Map;
 
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.Packet250CustomPayload;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+import com.google.common.primitives.UnsignedBytes;
 
 public class PacketChunker {
 
 	private byte packetId = 0;
 
-	private final HashMap<Byte, byte[][]> packetStack = new HashMap<Byte, byte[][]>();
+	private final Map<Byte, byte[][]> chunks = Maps.newHashMap();
 
-	public final static PacketChunker instance = new PacketChunker();
+	public static final int MAX_CHUNK_SIZE = Short.MAX_VALUE - 100;
 
 	/***
-	 * Convert a byte array into one or more packets
+	 * Split a byte array into one or more chunks with headers
 	 * 
-	 * @param the
-	 *            byte array
+	 * @param data
 	 * @return the list of chunks
-	 * @throws IOException
 	 */
-	public Packet[] createPackets(String channel, byte[] data) throws IOException {
+	public byte[][] splitIntoChunks(byte[] data) {
 
-		int start = 0;
-		short maxChunkSize = Short.MAX_VALUE - 100;
-		byte numChunks = (byte)Math.ceil(data.length / (double)maxChunkSize);
-		Packet[] packets = new Packet[numChunks];
-		final byte META_LENGTH = 3;
+		final int numChunks = (data.length + MAX_CHUNK_SIZE - 1) / MAX_CHUNK_SIZE;
+		Preconditions.checkArgument(numChunks < 256, "%s chunks? Way too much data, man.", numChunks);
+		byte[][] result = new byte[numChunks][];
 
-		for (byte i = 0; i < numChunks; i++) {
-
+		int chunkOffset = 0;
+		for (int chunkIndex = 0; chunkIndex < numChunks; chunkIndex++) {
 			// size of the current chunk
-			int chunkSize = Math.min(data.length - start, maxChunkSize);
+			int chunkSize = Math.min(data.length - chunkOffset, MAX_CHUNK_SIZE);
 
-			// make a new byte array but leave space for the meta
-			byte[] chunk = new byte[META_LENGTH + chunkSize];
+			ByteArrayDataOutput buf = ByteStreams.newDataOutput(MAX_CHUNK_SIZE);
 
-			// set the chunk metadata: total number of chunks, current chunk
-			// index, packetId to match chunks together
-			chunk[0] = numChunks;
-			chunk[1] = i;
-			chunk[2] = packetId;
+			buf.writeByte(numChunks);
+			if (numChunks > 1) {
+				buf.writeByte(chunkIndex);
+				buf.writeByte(packetId);
+			}
 
-			// copy part of the data across
-			System.arraycopy(data, start, chunk, META_LENGTH, chunkSize);
-
-			Packet250CustomPayload packet = new Packet250CustomPayload();
-			packet.channel = channel;
-			packet.data = chunk;
-			packet.length = chunk.length;
-			packets[i] = packet;
-			start += chunkSize;
+			buf.write(data, chunkOffset, chunkSize);
+			result[chunkIndex] = buf.toByteArray();
+			chunkOffset += chunkSize;
 		}
 		packetId++;
-		return packets;
+		return result;
 	}
 
 	/***
 	 * Get the bytes from the packet. If the total packet is not yet complete
-	 * (and we're waiting for more to complete the sequence), We return null.
+	 * (and we're waiting for more to complete the sequence), we return null.
 	 * Otherwise we return the full byte array
 	 * 
-	 * @param one
-	 *            of the packets
-	 * @return the full byte array
-	 * @throws IOException
+	 * @param payload
+	 *            one of the chunks
+	 * @return the full byte array or null if not complete
 	 */
-	public byte[] getBytes(Packet250CustomPayload packet) throws IOException {
+	public byte[] consumeChunk(byte[] payload) {
+		ByteArrayDataInput input = ByteStreams.newDataInput(payload);
+		int numChunks = UnsignedBytes.toInt(input.readByte());
 
-		DataInputStream inputStream1 = new DataInputStream(new ByteArrayInputStream(packet.data));
+		if (numChunks == 1) return Arrays.copyOfRange(payload, 1, payload.length);
 
-		// how many total chunks in this packet
-		byte chunkLength = inputStream1.readByte();
+		int chunkIndex = UnsignedBytes.toInt(input.readByte());
+		byte incomingPacketId = input.readByte();
 
-		// the index of this chunk
-		byte chunkIndex = inputStream1.readByte();
+		byte[][] alreadyReceived = chunks.get(incomingPacketId);
 
-		// the id for the combined packet
-		byte incomingPacketId = inputStream1.readByte();
-
-		// if it's not in our stack, lets create a new one
-		if (!packetStack.containsKey(incomingPacketId)) {
-			packetStack.put(incomingPacketId, new byte[chunkLength][]);
+		if (alreadyReceived == null) {
+			alreadyReceived = new byte[numChunks][];
+			chunks.put(incomingPacketId, alreadyReceived);
 		}
 
-		// the current stack
-		byte[][] stack = packetStack.get(incomingPacketId);
+		byte[] chunkBytes = new byte[payload.length - 3];
+		input.readFully(chunkBytes);
 
-		byte[] remainingBytes = new byte[packet.data.length - 3];
-		inputStream1.read(remainingBytes, 0, remainingBytes.length);
-		stack[chunkIndex] = remainingBytes;
+		alreadyReceived[chunkIndex] = chunkBytes;
 
-		// count how many chunks are still null
-		byte chunksLeft = 0;
-		for (byte[] s : stack) {
-			if (s == null) {
-				chunksLeft++;
-			}
+		for (byte[] s : alreadyReceived)
+			if (s == null) return null; // not completed yet
+
+		ByteArrayDataOutput fullPacket = ByteStreams.newDataOutput();
+
+		for (short i = 0; i < numChunks; i++) {
+			byte[] chunkPart = alreadyReceived[i];
+			fullPacket.write(chunkPart);
 		}
 
-		// if we've got all the chunks
-		if (chunksLeft == 0) {
+		chunks.remove(incomingPacketId);
 
-			int totalLength = 0;
-			for (byte[] s : stack) {
-				totalLength += s.length;
-			}
-
-			// merge them into a single full byte array
-			byte[] fullPacket = new byte[totalLength];
-			int offset = 0;
-			for (short i = 0; i < chunkLength; i++) {
-				byte[] chunkPart = stack[i];
-				System.arraycopy(chunkPart, 0, fullPacket, offset, chunkPart.length);
-				offset += chunkPart.length;
-			}
-
-			// remove the entry
-			packetStack.remove(incomingPacketId);
-
-			// return the bytes
-			return fullPacket;
-
-		}
-		return null;
+		return fullPacket.toByteArray();
 	}
 }

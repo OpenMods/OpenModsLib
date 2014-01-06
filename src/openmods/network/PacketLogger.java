@@ -1,5 +1,6 @@
 package openmods.network;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -51,7 +52,9 @@ public class PacketLogger {
 			debugLog = Logger.getLogger("packets");
 
 			try {
-				Handler handler = new FileHandler("test.log", 1024 * 1024, 5);
+				File dir = OpenMods.proxy.getMinecraftDir();
+				File logPattern = new File(dir, "test.log");
+				Handler handler = new FileHandler(logPattern.getCanonicalPath(), 1024 * 1024, 5);
 				handler.setFormatter(new PacketLogFormatter());
 				debugLog.addHandler(handler);
 			} catch (IOException e) {

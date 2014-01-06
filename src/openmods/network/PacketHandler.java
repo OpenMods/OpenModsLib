@@ -12,8 +12,6 @@ import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.util.IntHashMap;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.MinecraftForge;
-import openmods.LibConfig;
 import openmods.Log;
 import openmods.OpenMods;
 
@@ -37,11 +35,7 @@ public class PacketHandler implements IPacketHandler {
 			if (packet.channel.equals(CHANNEL_SYNC)) {
 				OpenMods.syncableManager.handlePacket(packet);
 			} else if (packet.channel.equals(CHANNEL_EVENTS)) {
-				EventPacket event = EventPacket.deserializeEvent(packet);
-				event.manager = manager;
-				event.player = player;
-				if (LibConfig.logPackets) PacketLogger.log(packet, true, EventPacket.createLogInfo(event));
-				MinecraftForge.EVENT_BUS.post(event);
+				EventPacketManager.handlePacket(packet, manager, player);
 			}
 		} catch (Exception e) {
 			Log.warn(e, "Error while handling data on channel %s from player '%s'", packet.channel, player);
