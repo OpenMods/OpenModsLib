@@ -7,5 +7,7 @@ public interface IEventPacketType {
 
 	public boolean isCompressed();
 
+	public boolean isChunked();
+
 	public int getId();
 }

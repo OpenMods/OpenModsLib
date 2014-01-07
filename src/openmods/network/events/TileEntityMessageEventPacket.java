@@ -6,19 +6,15 @@ import java.io.IOException;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.network.packet.Packet;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import openmods.OpenMods;
 import openmods.network.EventPacket;
 import openmods.network.IEventPacketType;
 import openmods.network.PacketHandler;
 import openmods.tileentity.OpenTileEntity;
 
 import com.google.common.base.Preconditions;
-
-import cpw.mods.fml.common.network.Player;
 
 public class TileEntityMessageEventPacket extends EventPacket {
 
@@ -86,11 +82,7 @@ public class TileEntityMessageEventPacket extends EventPacket {
 	}
 
 	public void sendToWatchers(WorldServer world) {
-		if (checkSendToClient()) {
-			Packet packet = serializeEvent(this);
-			for (EntityPlayer player : PacketHandler.getPlayersWatchingBlock(world, xCoord, zCoord))
-				OpenMods.proxy.sendPacketToPlayer((Player)player, packet);
-		}
+		sendToPlayers(PacketHandler.getPlayersWatchingBlock(world, xCoord, zCoord));
 	}
 
 	@Override
