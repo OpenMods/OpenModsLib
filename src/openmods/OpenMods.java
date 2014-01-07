@@ -40,7 +40,7 @@ public class OpenMods {
 		if (configFile.hasChanged()) configFile.save();
 
 		MinecraftForge.EVENT_BUS.register(new TileEntityEventHandler());
-		
+
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);
 	}
 

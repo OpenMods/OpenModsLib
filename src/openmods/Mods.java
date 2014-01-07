@@ -57,6 +57,7 @@ public class Mods {
 	public static final String STATUSEFFECTHUD = "StatusEffectHUD";
 	public static final String STEVESCARTS = "StevesCarts";
 	public static final String TINKERSCONSTRUCT = "TConstruct";
+	public static final String TINKERSMECHWORKS = "TMechworks";
 	public static final String THAUMCRAFT = "Thaumcraft";
 	public static final String THERMALEXPANSION = "ThermalExpansion";
 	public static final String TRANSLOCATOR = "Translocator";
