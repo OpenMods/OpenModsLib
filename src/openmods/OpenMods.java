@@ -7,6 +7,7 @@ import openmods.entity.DelayedEntityLoadManager;
 import openmods.integration.Integration;
 import openmods.network.EventPacket;
 import openmods.network.PacketHandler;
+import openmods.network.events.TileEntityEventHandler;
 import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncableManager;
 import cpw.mods.fml.common.*;
@@ -38,6 +39,8 @@ public class OpenMods {
 		ConfigProcessing.processAnnotations(configFile, LibConfig.class);
 		if (configFile.hasChanged()) configFile.save();
 
+		MinecraftForge.EVENT_BUS.register(new TileEntityEventHandler());
+		
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);
 	}
 
