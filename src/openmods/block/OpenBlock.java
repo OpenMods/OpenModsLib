@@ -6,7 +6,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IconRegister;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -189,13 +188,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public void breakBlock(World world, int x, int y, int z, int par5, int par6) {
-		TileEntity te = world.getBlockTileEntity(x, y, z);
-		if (te instanceof IInventory) {
-			BlockUtils.dropTileInventory(te);
-		}
-		if (te instanceof IBreakAwareTile) {
-			((IBreakAwareTile)te).onBlockBroken();
-		}
+		BlockUtils.tryDropTileInventory(world.getBlockTileEntity(x, y, z));
 		world.removeBlockTileEntity(x, y, z);
 		super.breakBlock(world, x, y, z, par5, par6);
 	}

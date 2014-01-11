@@ -1,10 +1,11 @@
-package openmods;
+package openmods.liquids;
 
 import java.util.*;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.fluids.*;
+import openmods.Log;
 import openmods.integration.Integration;
 import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncableFlags;

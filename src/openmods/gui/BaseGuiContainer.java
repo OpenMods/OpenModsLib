@@ -3,7 +3,7 @@ package openmods.gui;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.util.StatCollector;
-import openmods.container.ContainerInventory;
+import openmods.container.ContainerBase;
 import openmods.gui.component.BaseComponent;
 import openmods.gui.component.GuiComponentPanel;
 import openmods.tileentity.SyncedTileEntity;
@@ -11,7 +11,7 @@ import openmods.tileentity.SyncedTileEntity;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-public abstract class BaseGuiContainer<T extends ContainerInventory<?>> extends
+public abstract class BaseGuiContainer<T extends ContainerBase<?>> extends
 		GuiContainer {
 
 	protected BaseComponent root;

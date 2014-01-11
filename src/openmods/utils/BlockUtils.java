@@ -9,6 +9,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
+import openmods.IInventoryProvider;
 
 public class BlockUtils {
 
@@ -82,12 +83,16 @@ public class BlockUtils {
 		return item;
 	}
 
-	public static void dropTileInventory(TileEntity tileEntity) {
-
-		if (tileEntity != null && tileEntity instanceof IInventory) {
-			IInventory inventory = (IInventory)tileEntity;
-			dropInventory(inventory, tileEntity.worldObj, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
+	public static boolean tryDropTileInventory(TileEntity tileEntity) {
+		if (tileEntity == null) return false;
+		if (tileEntity instanceof IInventory) {
+			dropInventory((IInventory)tileEntity, tileEntity.worldObj, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
+			return true;
+		} else if (tileEntity instanceof IInventoryProvider) {
+			dropInventory(((IInventoryProvider)tileEntity).getInventory(), tileEntity.worldObj, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
+			return true;
 		}
+		return false;
 	}
 
 	public static void dropInventory(IInventory inventory, World world, double x, double y, double z) {

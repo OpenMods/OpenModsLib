@@ -2,13 +2,10 @@ package openmods.tileentity;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
-import openmods.GenericInventory;
-import openmods.api.IInventoryCallback;
 import openmods.block.OpenBlock;
 import openmods.network.events.TileEntityMessageEventPacket;
 import cpw.mods.fml.relauncher.Side;
@@ -20,17 +17,6 @@ public abstract class OpenTileEntity extends TileEntity {
 	private boolean isActive = false;
 
 	private boolean isUsedForClientInventoryRendering = false;
-	protected GenericInventory inventory;
-
-	public void setInventory(GenericInventory inventory) {
-		this.inventory = inventory;
-	}
-
-	public void addInventoryCallback(IInventoryCallback callback) {
-		if (inventory != null) {
-			inventory.addCallback(callback);
-		}
-	}
 
 	/** set up the tile entity! called once upon creation */
 	public void setup() {
@@ -153,22 +139,6 @@ public abstract class OpenTileEntity extends TileEntity {
 
 	public boolean isRenderedInInventory() {
 		return isUsedForClientInventoryRendering;
-	}
-
-	@Override
-	public void writeToNBT(NBTTagCompound tag) {
-		super.writeToNBT(tag);
-		if (inventory != null) {
-			inventory.writeToNBT(tag);
-		}
-	}
-
-	@Override
-	public void readFromNBT(NBTTagCompound tag) {
-		super.readFromNBT(tag);
-		if (inventory != null) {
-			inventory.readFromNBT(tag);
-		}
 	}
 
 	public void onEvent(TileEntityMessageEventPacket event) {

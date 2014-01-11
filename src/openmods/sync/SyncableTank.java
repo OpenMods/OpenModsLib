@@ -8,8 +8,8 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
-import openmods.GenericTank;
 import openmods.OpenMods;
+import openmods.liquids.GenericTank;
 
 public class SyncableTank extends GenericTank implements ISyncableObject {
 
