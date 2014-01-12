@@ -20,10 +20,11 @@ public class OpenModsClassTransformer implements IClassTransformer {
 		}
 	};
 
-	public static byte[] applyVisitor(byte[] bytes, TransformProvider context) {
+	public static byte[] applyVisitor(byte[] bytes, int flags, TransformProvider context) {
 		ClassReader cr = new ClassReader(bytes);
-		ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+		ClassWriter cw = new ClassWriter(cr, flags);
 		ClassVisitor mod = context.createVisitor(cw);
+
 		try {
 			cr.accept(mod, 0);
 			return cw.toByteArray();
@@ -35,6 +36,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 	@Override
 	public byte[] transform(final String name, String transformedName, byte[] bytes) {
 		if (name.startsWith("openmods.asm")) return bytes;
-		return applyVisitor(bytes, INCLUDING_CV);
+		// / no need for COMPUTE_FRAMES, we can handle simple stuff
+		return applyVisitor(bytes, 0, INCLUDING_CV);
 	}
 }

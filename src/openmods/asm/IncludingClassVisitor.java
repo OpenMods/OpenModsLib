@@ -4,6 +4,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 import openmods.Log;
+import openmods.OpenModsCorePlugin;
 
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.Method;
@@ -15,17 +16,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public class IncludingClassVisitor extends ClassVisitor {
-
-	private void addInterfaceImplementations(Type annotationHint, IIncludedMethodBuilder builder) {
-		Type wrappedInterface = builder.getInterfaceType(annotationHint);
-		boolean notYetDeclared = interfaces.add(wrappedInterface.getInternalName());
-		Preconditions.checkState(notYetDeclared, "%s already implements interface %s", clsName, wrappedInterface);
-
-		for (Method m : getInterfaceMethods(wrappedInterface)) {
-			MethodAdder prev = methodsToAdd.put(m, builder.createMethod(wrappedInterface));
-			if (prev != null) Preconditions.checkState(overrides.contains(m), "Included method '%s' conflict, interfaces = %s,%s", m, wrappedInterface, prev.intf);
-		}
-	}
 
 	private class AnnotatedFieldFinder extends FieldVisitor implements IIncludedMethodBuilder {
 		public final String fieldName;
@@ -149,7 +139,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 			mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, intf.getInternalName(), method.getName(), method.getDescriptor());
 			Type returnType = method.getReturnType();
 			mv.visitInsn(returnType.getOpcode(Opcodes.IRETURN));
-			mv.visitMaxs(1, 1);
+			mv.visitMaxs(args.length + 1, args.length + 1);
 			mv.visitEnd();
 		}
 	}
@@ -159,22 +149,6 @@ public class IncludingClassVisitor extends ClassVisitor {
 	public static final Type INCLUDE_INTERFACE = Type.getObjectType("openmods/include/IncludeInterface");
 
 	public static final Type INCLUDE_OVERRIDE = Type.getObjectType("openmods/include/IncludeOverride");
-
-	private List<Method> getInterfaceMethods(Type intf) {
-		Preconditions.checkState(intf.getSort() == Type.OBJECT, "%s is not interface (including class = %s)", intf, clsName);
-		try {
-			Class<?> loaded = Class.forName(intf.getClassName());
-			Preconditions.checkArgument(loaded.isInterface(), "%s is not interface (including class = %s)", loaded, clsName);
-
-			List<Method> result = Lists.newArrayList();
-			for (java.lang.reflect.Method m : loaded.getMethods())
-				result.add(Method.getMethod(m));
-			return result;
-		} catch (Throwable t) {
-			Log.severe(t, "Error while searching for interface '%s'", intf);
-			throw Throwables.propagate(t);
-		}
-	}
 
 	private final Set<Method> existingMethods = Sets.newHashSet();
 	private final Set<Method> overrides = Sets.newHashSet();
@@ -247,6 +221,33 @@ public class IncludingClassVisitor extends ClassVisitor {
 		this.superName = superName;
 		this.interfaces.addAll(Arrays.asList(interfaces));
 		super.visit(version, access, clsName, signature, superName, interfaces);
+	}
+
+	private List<Method> getInterfaceMethods(Type intf) {
+		Preconditions.checkState(intf.getSort() == Type.OBJECT, "%s is not interface (including class = %s)", intf, clsName);
+		try {
+			Class<?> loaded = Class.forName(intf.getClassName());
+			Preconditions.checkArgument(loaded.isInterface(), "%s is not interface (including class = %s)", loaded, clsName);
+
+			List<Method> result = Lists.newArrayList();
+			for (java.lang.reflect.Method m : loaded.getMethods())
+				result.add(Method.getMethod(m));
+			return result;
+		} catch (Throwable t) {
+			Log.severe(t, "Error while searching for interface '%s'", intf);
+			throw Throwables.propagate(t);
+		}
+	}
+
+	private void addInterfaceImplementations(Type annotationHint, IIncludedMethodBuilder builder) {
+		Type wrappedInterface = builder.getInterfaceType(annotationHint);
+		boolean notYetDeclared = interfaces.add(wrappedInterface.getInternalName());
+		Preconditions.checkState(notYetDeclared, "%s already implements interface %s", clsName, wrappedInterface);
+		OpenModsCorePlugin.log.info("Adding interface " + wrappedInterface.getInternalName() + " to " + clsName);
+		for (Method m : getInterfaceMethods(wrappedInterface)) {
+			MethodAdder prev = methodsToAdd.put(m, builder.createMethod(wrappedInterface));
+			if (prev != null) Preconditions.checkState(overrides.contains(m), "Included method '%s' conflict, interfaces = %s,%s", m, wrappedInterface, prev.intf);
+		}
 	}
 
 }

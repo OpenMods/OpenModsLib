@@ -33,6 +33,8 @@
 		<mkdir dir="${classes.dir}/META-INF" />
 		<manifest file="${classes.dir}/META-INF/MANIFEST.MF">
 			<attribute name="Manifest-Version" value="1.0" />
+			<attribute name="FMLCorePlugin" value="openmods.OpenModsCorePlugin" />
+			<attribute name="FMLCorePluginContainsFMLMod" value="true" /> 
 		</manifest>
 	</target>
 </project>
