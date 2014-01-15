@@ -24,7 +24,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 	}
 
 	private OpenModsFakePlayer(World world) {
-		super(world, "Open Mods Fake Player");
+		super(world, "OpenModsFakePlayer");
 	}
 
 	@Override
