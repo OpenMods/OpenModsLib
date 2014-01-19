@@ -68,7 +68,7 @@ public class EventPacketManager {
 			event.manager = manager;
 			event.player = player;
 
-			PacketLogger.log(packet, true, createLogInfo(event, 0, 0));
+			if (LibConfig.logPackets) PacketLogger.log(packet, true, createLogInfo(event, 0, 0));
 			return event;
 		} catch (Exception e) {
 			throw Throwables.propagate(e);

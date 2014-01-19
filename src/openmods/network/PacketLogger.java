@@ -53,7 +53,7 @@ public class PacketLogger {
 
 			try {
 				File dir = OpenMods.proxy.getMinecraftDir();
-				File logPattern = new File(dir, "test.log");
+				File logPattern = new File(dir, "open-mods-packets.log");
 				Handler handler = new FileHandler(logPattern.getCanonicalPath(), 1024 * 1024, 5);
 				handler.setFormatter(new PacketLogFormatter());
 				debugLog.addHandler(handler);
