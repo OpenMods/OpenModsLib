@@ -188,7 +188,9 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public void breakBlock(World world, int x, int y, int z, int par5, int par6) {
-		BlockUtils.tryDropTileInventory(world.getBlockTileEntity(x, y, z));
+		final TileEntity te = world.getBlockTileEntity(x, y, z);
+		if (te instanceof IBreakAwareTile) ((IBreakAwareTile)te).onBlockBroken();
+		BlockUtils.tryDropTileInventory(te);
 		world.removeBlockTileEntity(x, y, z);
 		super.breakBlock(world, x, y, z, par5, par6);
 	}
