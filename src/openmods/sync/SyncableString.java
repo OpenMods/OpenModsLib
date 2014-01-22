@@ -10,6 +10,13 @@ public class SyncableString extends SyncableObjectBase {
 
 	private String value = "";
 
+	public SyncableString() {}
+
+	public SyncableString(String val) {
+		this();
+		this.value = val;
+	}
+
 	public void setValue(String val) {
 		if (val != value) {
 			value = val;
