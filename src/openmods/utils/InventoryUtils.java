@@ -38,6 +38,7 @@ public class InventoryUtils {
 				boolean valid = targetInventory.isItemValidForSlot(slot, stack);
 				if (valid
 						&& stack.isItemEqual(targetStack)
+						&& ItemStack.areItemStackTagsEqual(stack, targetStack)
 						&& targetStack.stackSize < targetStack.getMaxStackSize()) {
 					int space = targetStack.getMaxStackSize()
 							- targetStack.stackSize;

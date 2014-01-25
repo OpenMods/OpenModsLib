@@ -8,12 +8,13 @@ import net.minecraft.nbt.NBTTagCompound;
 
 public class SyncableString extends SyncableObjectBase {
 
-	private String value = "";
+	private String value;
 
-	public SyncableString() {}
+	public SyncableString() {
+		this("");
+	}
 
 	public SyncableString(String val) {
-		this();
 		this.value = val;
 	}
 

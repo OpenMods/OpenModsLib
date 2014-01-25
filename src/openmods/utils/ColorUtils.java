@@ -7,6 +7,9 @@ import net.minecraft.block.BlockColored;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.apache.commons.lang3.text.WordUtils;
+
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -50,45 +53,57 @@ public class ColorUtils {
 		public final int rgb;
 		public final int vanillaId;
 		public final int oreId;
+		public final int bitmask;
 		public final String oreName;
+		public final String name;
 
-		public ColorMeta(int rgb, int vanillaId, int oreId, String oreName) {
+		public ColorMeta(int rgb, int vanillaId, int oreId, String name, String oreName) {
 			this.rgb = rgb;
 			this.vanillaId = vanillaId;
 			this.oreId = oreId;
 			this.oreName = oreName;
+			this.name = name;
+			this.bitmask = 1 << vanillaId;
 		}
 	}
 
 	private static final List<ColorMeta> COLORS = Lists.newArrayList();
 	private static final Map<String, ColorMeta> COLORS_BY_ORE_NAME = Maps.newHashMap();
+	private static final Map<String, ColorMeta> COLORS_BY_NAME = Maps.newHashMap();
 	private static final Map<Integer, ColorMeta> COLORS_BY_ORE_ID = Maps.newHashMap();
+	private static final Map<Integer, ColorMeta> COLORS_BY_BITMASK = Maps.newHashMap();
+	private static final Map<Integer, ColorMeta> COLORS_BY_VANILLA = Maps.newHashMap();
 
-	private static void addEntry(String oreName, int colorValue, int vanillaId) {
+	private static void addEntry(String name, int colorValue, int vanillaId) {
+		String oreName = "dye" + WordUtils.capitalize(name);
 		int oreId = OreDictionary.getOreID(oreName);
-		ColorMeta color = new ColorMeta(colorValue, vanillaId, oreId, oreName);
+		name = name.toLowerCase();
+		ColorMeta color = new ColorMeta(colorValue, vanillaId, oreId, name, oreName);
 		COLORS.add(color);
+		COLORS_BY_NAME.put(name, color);
 		COLORS_BY_ORE_NAME.put(oreName, color);
 		COLORS_BY_ORE_ID.put(oreId, color);
+		COLORS_BY_BITMASK.put(color.bitmask, color);
+		COLORS_BY_VANILLA.put(vanillaId, color);
 	}
 
 	static {
-		addEntry("dyeBlack", 0x1E1B1B, BLACK);
-		addEntry("dyeRed", 0xB3312C, RED);
-		addEntry("dyeGreen", 0x3B511A, GREEN);
-		addEntry("dyeBrown", 0x51301A, BROWN);
-		addEntry("dyeBlue", 0x253192, BLUE);
-		addEntry("dyePurple", 0x7B2FBE, PURPLE);
-		addEntry("dyeCyan", 0x287697, CYAN);
-		addEntry("dyeLightGray", 0xABABAB, LIGHT_GRAY);
-		addEntry("dyeGray", 0x434343, GRAY);
-		addEntry("dyePink", 0xD88198, PINK);
-		addEntry("dyeLime", 0x41CD34, LIME);
-		addEntry("dyeYellow", 0xDECF2A, YELLOW);
-		addEntry("dyeLightBlue", 0x6689D3, LIGHT_BLUE);
-		addEntry("dyeMagenta", 0xC354CD, MAGENTA);
-		addEntry("dyeOrange", 0xEB8844, ORANGE);
-		addEntry("dyeWhite", 0xF0F0F0, WHITE);
+		addEntry("black", 0x1E1B1B, BLACK);
+		addEntry("red", 0xB3312C, RED);
+		addEntry("green", 0x3B511A, GREEN);
+		addEntry("brown", 0x51301A, BROWN);
+		addEntry("blue", 0x253192, BLUE);
+		addEntry("purple", 0x7B2FBE, PURPLE);
+		addEntry("cyan", 0x287697, CYAN);
+		addEntry("lightGray", 0xABABAB, LIGHT_GRAY);
+		addEntry("gray", 0x434343, GRAY);
+		addEntry("pink", 0xD88198, PINK);
+		addEntry("lime", 0x41CD34, LIME);
+		addEntry("yellow", 0xDECF2A, YELLOW);
+		addEntry("lightBlue", 0x6689D3, LIGHT_BLUE);
+		addEntry("magenta", 0xC354CD, MAGENTA);
+		addEntry("orange", 0xEB8844, ORANGE);
+		addEntry("white", 0xF0F0F0, WHITE);
 	}
 
 	public static ColorMeta stackToColor(ItemStack stack) {
@@ -105,8 +120,27 @@ public class ColorUtils {
 		return COLORS_BY_ORE_NAME.get(oreName);
 	}
 
+	public static ColorMeta nameToColor(String name) {
+		return COLORS_BY_NAME.get(name.toLowerCase());
+	}
+
+	public static ColorMeta bitmaskToColor(int bitmask) {
+		return COLORS_BY_BITMASK.get(bitmask);
+	}
+
+	public static ColorMeta vanillaToColor(int vanillaId) {
+		return COLORS_BY_VANILLA.get(vanillaId);
+	}
+
 	public static Collection<ColorMeta> getAllColors() {
 		return Collections.unmodifiableCollection(COLORS);
+	}
+
+	public static int bitmaskToVanilla(int color) {
+		int high = Integer.numberOfLeadingZeros(color);
+		int low = Integer.numberOfTrailingZeros(color);
+		Preconditions.checkArgument(high == 31 - low && low <= 16, "Invalid color value: %sb", Integer.toBinaryString(color));
+		return low;
 	}
 
 	public static class RGB {
