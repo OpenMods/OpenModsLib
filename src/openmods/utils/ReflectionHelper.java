@@ -73,6 +73,10 @@ public class ReflectionHelper {
 	public static <T> T call(Object instance, String methodName, Object... args) {
 		return call(instance.getClass(), instance, ArrayUtils.toArray(methodName), args);
 	}
+	
+	public static <T> T call(Object instance, String[] methodNames, Object... args) {
+		return call(instance.getClass(), instance, methodNames, args);
+	}
 
 	public static <T> T call(Class<?> cls, Object instance, String methodName, Object... args) {
 		return call(cls, instance, ArrayUtils.toArray(methodName), args);
