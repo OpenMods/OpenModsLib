@@ -38,6 +38,7 @@
 	<!-- Dummy target, to be extended by users -->
 	<target name="set-env" />
 	<target name="copy-source" />
+	<target name="copy-extra-binaries" />
 	<target name="create-manifest" />
 	<target name="copy-assets" />
 
@@ -139,6 +140,6 @@
 	</target>
 
 	<target name="pre-build" depends="setup-forge,cleanup-build,cleanup-mcp" />
-	<target name="package" depends="copy-binaries,copy-assets,copy-meta,create-manifest,create-jar" />
+	<target name="package" depends="copy-binaries,copy-extra-binaries,copy-assets,copy-meta,create-manifest,create-jar" />
 	<target name="build" depends="set-env,pre-build,copy-source,run-mcp,package" />
 </project>
