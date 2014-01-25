@@ -1,6 +1,7 @@
 package openmods.config;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Map;
@@ -31,58 +32,147 @@ public class ConfigProcessing {
 
 	public static final Map<Class<?>, Property.Type> CONFIG_TYPES = ImmutableMap.<Class<?>, Property.Type> builder()
 			.put(Integer.class, Property.Type.INTEGER)
+			.put(int.class, Property.Type.INTEGER)
 			.put(Boolean.class, Property.Type.BOOLEAN)
+			.put(boolean.class, Property.Type.BOOLEAN)
 			.put(Byte.class, Property.Type.INTEGER)
+			.put(byte.class, Property.Type.INTEGER)
 			.put(Double.class, Property.Type.DOUBLE)
+			.put(double.class, Property.Type.DOUBLE)
 			.put(Float.class, Property.Type.DOUBLE)
+			.put(float.class, Property.Type.DOUBLE)
 			.put(Long.class, Property.Type.INTEGER)
+			.put(long.class, Property.Type.INTEGER)
 			.put(Short.class, Property.Type.INTEGER)
+			.put(short.class, Property.Type.INTEGER)
 			.put(String.class, Property.Type.STRING)
 			.build();
 
-	private static void getProperty(Configuration configFile, Field f, String category, String name, String comment) {
-		if (Strings.isNullOrEmpty(name)) name = f.getName();
-		if (Strings.isNullOrEmpty(category)) category = null;
+	private static String[] toStringArray(Object array) {
+		Preconditions.checkArgument(array.getClass().isArray(), "Type %s is not an array", array.getClass());
+		int length = Array.getLength(array);
+		String[] result = new String[length];
+		for (int i = 0; i < length; i++)
+			result[i] = Array.get(array, i).toString();
 
-		final Object defaultValue;
-		try {
-			defaultValue = f.get(null);
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
-		}
+		return result;
+	}
 
-		Preconditions.checkNotNull(defaultValue, "Config field %s has no default value", name);
-		// f.getType may return primitive type, so let's use value
-		final Class<?> fieldType = defaultValue.getClass();
+	private abstract static class FieldProcessing {
+		public void getProperty(Configuration configFile, Field f, String category, String name, String comment) {
+			if (Strings.isNullOrEmpty(name)) name = f.getName();
+			if (Strings.isNullOrEmpty(category)) category = null;
 
-		final Property.Type expectedType = CONFIG_TYPES.get(fieldType);
-		Preconditions.checkNotNull(expectedType, "Config field %s has no property type mapping", name);
-
-		final IStringSerializable<?> converter = TypeRW.TYPES.get(fieldType);
-		Preconditions.checkNotNull(converter, "Config field %s has no known conversion from string", name);
-
-		final String defaultString = defaultValue.toString();
-		final Property property = configFile.get(category, name, defaultString, comment, expectedType);
-		if (property.hasChanged()) return; // newly created value
-
-		final String valueString = property.getString();
-
-		final Type actualType = property.getType();
-		if (expectedType != actualType) {
-			Log.warn("Invalid config property type '%s', using default value '%s' of type '%s'", property.getType(), defaultString, expectedType);
-		} else if (!valueString.equals(defaultString)) {
+			final Object defaultValue;
 			try {
-				Object value = converter.readFromString(valueString);
+				defaultValue = f.get(null);
+			} catch (Exception e) {
+				throw Throwables.propagate(e);
+			}
+
+			Preconditions.checkNotNull(defaultValue, "Config field %s has no default value", name);
+			final Class<?> fieldType = getFieldType(defaultValue);
+
+			final Property.Type expectedType = CONFIG_TYPES.get(fieldType);
+			Preconditions.checkNotNull(expectedType, "Config field %s has no property type mapping", name);
+
+			final IStringSerializable<?> converter = TypeRW.TYPES.get(fieldType);
+			Preconditions.checkNotNull(converter, "Config field %s has no known conversion from string", name);
+
+			final Property property = getProperty(configFile, category, name, comment, expectedType, defaultValue);
+			// return on newly created value. Due to forge bug list properties
+			// don't set this value properly
+			if (!property.wasRead() && !property.isList()) return;
+
+			final Type actualType = property.getType();
+
+			if (expectedType != actualType) {
+				Log.warn("Invalid config property type '%s', using default value", property.getType(), expectedType);
+				return;
+			}
+
+			Object value = convertValue(property, converter, fieldType);
+			if (value != null) {
 				try {
 					f.set(null, value);
 				} catch (Exception e) {
 					throw Throwables.propagate(e);
 				}
-			} catch (StringConversionException e) {
-				Log.warn(e, "Invalid config property value '%s', using default '%s'", valueString, defaultString);
-				property.set(defaultString);
 			}
 		}
+
+		protected abstract Property getProperty(Configuration configFile, String category, String name, String comment, Type expectedType, Object defaultValue);
+
+		protected abstract Class<? extends Object> getFieldType(Object defaultValue);
+
+		protected abstract Object convertValue(Property property, IStringSerializable<?> converter, Class<?> targetType);
+	}
+
+	private static final FieldProcessing SINGLE_VALUE = new FieldProcessing() {
+		@Override
+		protected Property getProperty(Configuration configFile, String category, String name, String comment, Type expectedType, Object defaultValue) {
+			final String defaultString = defaultValue.toString();
+			return configFile.get(category, name, defaultString, comment, expectedType);
+		}
+
+		@Override
+		protected Class<? extends Object> getFieldType(Object defaultValue) {
+			return defaultValue.getClass();
+		}
+
+		@Override
+		protected Object convertValue(Property property, IStringSerializable<?> converter, Class<?> targetType) {
+			final String value = property.getString();
+			try {
+				return converter.readFromString(value);
+			} catch (StringConversionException e) {
+				Log.warn(e, "Invalid config property value '%s', using default value", value);
+			}
+			return null;
+		}
+	};
+
+	private static final FieldProcessing MULTIPLE_VALUES = new FieldProcessing() {
+
+		@Override
+		protected Property getProperty(Configuration configFile, String category, String name, String comment, Type expectedType, Object defaultValue) {
+			final String[] defaultStrings = toStringArray(defaultValue);
+			return configFile.get(category, name, defaultStrings, comment, expectedType);
+		}
+
+		@Override
+		protected Class<? extends Object> getFieldType(Object defaultValue) {
+			return defaultValue.getClass().getComponentType();
+		}
+
+		@Override
+		protected Object convertValue(Property property, IStringSerializable<?> converter, Class<?> targetType) {
+			final String[] values = property.getStringList();
+			final Object result = Array.newInstance(targetType, values.length);
+			for (int i = 0; i < values.length; i++) {
+				String value = values[i];
+				Object converted;
+				try {
+					converted = converter.readFromString(value);
+				} catch (StringConversionException e) {
+					Log.warn(e, "Invalid config property value '%s' at index %d, using default", value, i);
+					return null;
+				}
+				try {
+					Array.set(result, i, converted);
+				} catch (IllegalArgumentException e) {
+					Log.warn(e, "Invalid config property value '%s' at index %d, using default", value, i);
+					return null;
+				}
+			}
+			return result;
+		}
+	};
+
+	private static void getProperty(Configuration configFile, Field f, String category, String name, String comment) {
+		Class<?> fieldType = f.getType();
+		FieldProcessing p = fieldType.isArray()? MULTIPLE_VALUES : SINGLE_VALUE;
+		p.getProperty(configFile, f, category, name, comment);
 	}
 
 	private static void getBlock(Configuration configFile, Field field, String description) {

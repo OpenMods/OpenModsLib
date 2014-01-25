@@ -10,7 +10,7 @@ public abstract class DisplayListWrapper {
 	protected void finalize() {
 		if (displayList != null) GL11.glDeleteLists(displayList, 1);
 	}
-	
+
 	public boolean isCompiled() {
 		return displayList != null;
 	}
@@ -22,9 +22,9 @@ public abstract class DisplayListWrapper {
 			compile();
 			GL11.glEndList();
 		}
-		
+
 		GL11.glCallList(displayList);
 	}
-	
+
 	public abstract void compile();
 }
