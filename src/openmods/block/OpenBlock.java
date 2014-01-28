@@ -1,5 +1,6 @@
 package openmods.block;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -11,7 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.Icon;
-import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
@@ -24,6 +24,7 @@ import openmods.tileentity.SyncedTileEntity;
 import openmods.utils.BlockUtils;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -93,31 +94,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	protected void setInventoryRenderRotation(ForgeDirection rotation) {
 		inventoryRenderRotation = rotation;
-	}
-
-	private void dropBlockItem(World world, int x, int y, int z) {
-		if (world.isRemote) return;
-		int metadata = world.getBlockMetadata(x, y, z);
-		List<ItemStack> items = getBlockDropped(world, x, y, z, metadata, 0);
-		for (ItemStack stack : items)
-			dropBlockAsItem_do(world, x, y, z, stack);
-	}
-
-	@Override
-	public void dropBlockAsItemWithChance(World par1World, int par2, int par3, int par4, int par5, float par6, int par7) {}
-
-	@Override
-	public void onBlockExploded(World world, int x, int y, int z, Explosion explosion) {
-		dropBlockItem(world, x, y, z);
-		super.onBlockExploded(world, x, y, z, explosion);
-	}
-
-	@Override
-	public boolean removeBlockByPlayer(World world, EntityPlayer player, int x, int y, int z) {
-		if ((!player.capabilities.isCreativeMode)) {
-			dropBlockItem(world, x, y, z);
-		}
-		return super.removeBlockByPlayer(world, player, x, y, z);
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -190,9 +166,46 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public void breakBlock(World world, int x, int y, int z, int par5, int par6) {
 		final TileEntity te = world.getBlockTileEntity(x, y, z);
 		if (te instanceof IBreakAwareTile) ((IBreakAwareTile)te).onBlockBroken();
-		BlockUtils.tryDropTileInventory(te);
 		world.removeBlockTileEntity(x, y, z);
 		super.breakBlock(world, x, y, z, par5, par6);
+	}
+
+	private void getTileEntityDrops(TileEntity te, List<ItemStack> result) {
+		if (te != null) {
+			BlockUtils.getTileInventoryDrops(te, result);
+			if (te instanceof ISpecialDrops) ((ISpecialDrops)te).addDrops(result);
+			getCustomTileEntityDrops(te, result);
+		}
+	}
+
+	protected void getCustomTileEntityDrops(TileEntity te, List<ItemStack> result) {}
+
+	protected boolean hasNormalDrops() {
+		return true;
+	}
+
+	@Override
+	public boolean removeBlockByPlayer(World world, EntityPlayer player, int x, int y, int z) {
+		if (!player.capabilities.isCreativeMode) {
+			final TileEntity te = world.getBlockTileEntity(x, y, z);
+			List<ItemStack> teDrops = Lists.newArrayList();
+			getTileEntityDrops(te, teDrops);
+
+			for (ItemStack drop : teDrops)
+				dropBlockAsItem_do(world, x, y, z, drop);
+		}
+
+		return super.removeBlockByPlayer(world, player, x, y, z);
+	}
+
+	@Override
+	public ArrayList<ItemStack> getBlockDropped(World world, int x, int y, int z, int metadata, int fortune) {
+		ArrayList<ItemStack> result = Lists.newArrayList();
+		if (hasNormalDrops()) result.addAll(super.getBlockDropped(world, x, y, z, metadata, fortune));
+		final TileEntity te = world.getBlockTileEntity(x, y, z);
+		getTileEntityDrops(te, result);
+
+		return result;
 	}
 
 	@Override
@@ -239,8 +252,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		if (te instanceof ISurfaceAttachment) {
 			ForgeDirection direction = ((ISurfaceAttachment)te).getSurfaceDirection();
 			if (!isNeighborBlockSolid(world, x, y, z, direction)) {
-				dropBlockItem(world, x, y, z);
-				world.setBlockToAir(x, y, z);
+				world.destroyBlock(x, y, z, true);
 			}
 		}
 	}
@@ -298,7 +310,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <U> U getTileEntity(IBlockAccess world, int x, int y, int z, Class<U> T) {
+	public static <U> U getTileEntity(IBlockAccess world, int x, int y, int z, Class<U> T) {
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 		if (te != null && T.isAssignableFrom(te.getClass())) { return (U)te; }
 		return null;
@@ -490,6 +502,4 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public boolean useTESRForInventory() {
 		return true;
 	}
-
-	public void addInformation(ItemStack itemStack, EntityPlayer player, List<ItemStack> list, boolean par4) {}
 }

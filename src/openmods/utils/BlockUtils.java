@@ -1,5 +1,7 @@
 package openmods.utils;
 
+import java.util.List;
+
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.IInventory;
@@ -79,15 +81,17 @@ public class BlockUtils {
 		return item;
 	}
 
-	public static boolean tryDropTileInventory(TileEntity tileEntity) {
+	public static boolean getTileInventoryDrops(TileEntity tileEntity, List<ItemStack> drops) {
 		if (tileEntity == null) return false;
+
 		if (tileEntity instanceof IInventory) {
-			dropInventory((IInventory)tileEntity, tileEntity.worldObj, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
+			drops.addAll(InventoryUtils.getInventoryContents((IInventory)tileEntity));
 			return true;
 		} else if (tileEntity instanceof IInventoryProvider) {
-			dropInventory(((IInventoryProvider)tileEntity).getInventory(), tileEntity.worldObj, tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
+			drops.addAll(InventoryUtils.getInventoryContents(((IInventoryProvider)tileEntity).getInventory()));
 			return true;
 		}
+
 		return false;
 	}
 

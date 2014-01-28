@@ -15,6 +15,8 @@ import openmods.GenericInventory;
 import openmods.integration.Integration;
 import openmods.sync.SyncableFlags;
 
+import com.google.common.collect.Lists;
+
 public class InventoryUtils {
 
 	/***
@@ -248,6 +250,15 @@ public class InventoryUtils {
 			return getInventory(te.worldObj, te.xCoord, te.yCoord, te.zCoord);
 		}
 		return inventory;
+	}
+
+	public static List<ItemStack> getInventoryContents(IInventory inventory) {
+		List<ItemStack> result = Lists.newArrayList();
+		for (int i = 0; i < inventory.getSizeInventory(); i++) {
+			ItemStack slot = inventory.getStackInSlot(i);
+			if (slot != null) result.add(slot);
+		}
+		return result;
 	}
 
 	/***
