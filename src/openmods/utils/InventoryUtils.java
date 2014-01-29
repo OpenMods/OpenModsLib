@@ -2,13 +2,12 @@ package openmods.utils;
 
 import java.util.*;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockChest;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.InventoryLargeChest;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import openmods.GenericInventory;
@@ -210,18 +209,14 @@ public class InventoryUtils {
 	 */
 	public static IInventory getInventory(World world, int x, int y, int z) {
 		TileEntity tileEntity = world.getBlockTileEntity(x, y, z);
-		if ((tileEntity != null) && ((tileEntity instanceof IInventory))) {
-			int blockID = world.getBlockId(x, y, z);
-			Block block = Block.blocksList[blockID];
-			if ((block instanceof BlockChest)) {
-				if (world.getBlockId(x - 1, y, z) == blockID) { return new InventoryLargeChest("Large chest", (IInventory)world.getBlockTileEntity(x - 1, y, z), (IInventory)tileEntity); }
-				if (world.getBlockId(x + 1, y, z) == blockID) { return new InventoryLargeChest("Large chest", (IInventory)tileEntity, (IInventory)world.getBlockTileEntity(x + 1, y, z)); }
-				if (world.getBlockId(x, y, z - 1) == blockID) { return new InventoryLargeChest("Large chest", (IInventory)world.getBlockTileEntity(x, y, z - 1), (IInventory)tileEntity); }
-				if (world.getBlockId(x, y, z + 1) == blockID) { return new InventoryLargeChest("Large chest", (IInventory)tileEntity, (IInventory)world.getBlockTileEntity(x, y, z + 1)); }
-			}
-			return (IInventory)tileEntity;
+		if (tileEntity instanceof TileEntityChest) {
+			int chestId = world.getBlockId(x, y, z);
+			if (world.getBlockId(x - 1, y, z) == chestId) return new InventoryLargeChest("Large chest", (IInventory)world.getBlockTileEntity(x - 1, y, z), (IInventory)tileEntity);
+			if (world.getBlockId(x + 1, y, z) == chestId) return new InventoryLargeChest("Large chest", (IInventory)tileEntity, (IInventory)world.getBlockTileEntity(x + 1, y, z));
+			if (world.getBlockId(x, y, z - 1) == chestId) return new InventoryLargeChest("Large chest", (IInventory)world.getBlockTileEntity(x, y, z - 1), (IInventory)tileEntity);
+			if (world.getBlockId(x, y, z + 1) == chestId) return new InventoryLargeChest("Large chest", (IInventory)tileEntity, (IInventory)world.getBlockTileEntity(x, y, z + 1));
 		}
-		return null;
+		return (tileEntity instanceof IInventory)? (IInventory)tileEntity : null;
 	}
 
 	/***
@@ -245,7 +240,7 @@ public class InventoryUtils {
 	}
 
 	public static IInventory getInventory(IInventory inventory) {
-		if (inventory instanceof TileEntity) {
+		if (inventory instanceof TileEntityChest) {
 			TileEntity te = (TileEntity)inventory;
 			return getInventory(te.worldObj, te.xCoord, te.yCoord, te.zCoord);
 		}
