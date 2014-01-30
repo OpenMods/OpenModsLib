@@ -10,6 +10,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Lists;
 
 public class ReflectionHelper {
@@ -175,5 +177,22 @@ public class ReflectionHelper {
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
+	}
+
+	public static final BiMap<Class<?>, Class<?>> WRAPPERS = ImmutableBiMap.<Class<?>, Class<?>> builder()
+			.put(long.class, Long.class)
+			.put(int.class, Integer.class)
+			.put(short.class, Short.class)
+			.put(byte.class, Byte.class)
+			.put(boolean.class, Boolean.class)
+			.put(double.class, Double.class)
+			.put(float.class, Float.class)
+			.put(char.class, Character.class)
+			.build();
+
+	public static boolean compareTypes(Class<?> left, Class<?> right) {
+		if (left.isPrimitive()) left = WRAPPERS.get(left);
+		if (right.isPrimitive()) right = WRAPPERS.get(right);
+		return left.equals(right);
 	}
 }
