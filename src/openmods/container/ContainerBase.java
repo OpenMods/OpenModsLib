@@ -9,6 +9,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 import openmods.tileentity.SyncedTileEntity;
+import openmods.utils.InventoryUtils;
 
 public abstract class ContainerBase<T> extends Container {
 
@@ -88,27 +89,74 @@ public abstract class ContainerBase<T> extends Container {
 		return owner;
 	}
 
-	@Override
-	public ItemStack transferStackInSlot(EntityPlayer pl, int i) {
-		ItemStack itemstack = null;
-		Slot slot = (Slot)inventorySlots.get(i);
-		if (slot != null && slot.getHasStack()) {
-			ItemStack itemstack1 = slot.getStack();
-			itemstack = itemstack1.copy();
-			if (i < inventorySize) {
-				if (!mergeItemStack(itemstack1, inventorySize, inventorySlots.size(), true)) return null;
-			} else if (!mergeItemStack(itemstack1, 0, inventorySize, false)) return null;
-			if (itemstack1.stackSize == 0) {
-				slot.putStack(null);
-			} else {
-				slot.onSlotChanged();
+	protected boolean mergeItemStackSafe(ItemStack stackToMerge, int start, int stop, boolean reverse) {
+		boolean inventoryChanged = false;
+
+		final int delta = reverse? -1 : 1;
+		List<Slot> slots = getSlots();
+
+		if (stackToMerge.isStackable()) {
+			int slotId = reverse? stop - 1 : start;
+			while (stackToMerge.stackSize > 0 && ((!reverse && slotId < stop) || (reverse && slotId >= start))) {
+
+				Slot slot = slots.get(slotId);
+				ItemStack stackInSlot = slot.getStack();
+
+				if (InventoryUtils.tryMergeStacks(stackToMerge, stackInSlot)) {
+					slot.onSlotChanged();
+					inventoryChanged = true;
+				}
+
+				slotId += delta;
 			}
 		}
-		return itemstack;
+
+		if (stackToMerge.stackSize > 0) {
+			int slotId = reverse? stop - 1 : start;
+
+			while ((!reverse && slotId < stop) || (reverse && slotId >= start)) {
+				Slot slot = slots.get(slotId);
+				ItemStack stackInSlot = slot.getStack();
+
+				if (stackInSlot == null && slot.isItemValid(stackToMerge)) {
+					slot.putStack(stackToMerge.copy());
+					slot.onSlotChanged();
+					stackToMerge.stackSize = 0;
+					return true;
+				}
+
+				slotId += delta;
+			}
+		}
+
+		return inventoryChanged;
+	}
+
+	@Override
+	public ItemStack transferStackInSlot(EntityPlayer player, int slotId) {
+		Slot slot = (Slot)inventorySlots.get(slotId);
+		if (slot != null && slot.getHasStack()) {
+			ItemStack itemToTransfer = slot.getStack();
+			ItemStack copy = itemToTransfer.copy();
+			if (slotId < inventorySize) {
+				if (!mergeItemStackSafe(itemToTransfer, inventorySize, inventorySlots.size(), true)) return null;
+			} else if (!mergeItemStackSafe(itemToTransfer, 0, inventorySize, false)) return null;
+
+			if (itemToTransfer.stackSize == 0) slot.putStack(null);
+			else slot.onSlotChanged();
+
+			if (itemToTransfer.stackSize != copy.stackSize) return copy;
+		}
+		return null;
 	}
 
 	public int getInventorySize() {
 		return inventorySize;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected List<Slot> getSlots() {
+		return inventorySlots;
 	}
 
 	@SuppressWarnings("unchecked")
