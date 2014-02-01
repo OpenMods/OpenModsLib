@@ -1,6 +1,7 @@
 package openmods.tileentity;
 
 import java.io.IOException;
+import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet;
@@ -25,14 +26,11 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncHa
 	}
 
 	public void sync() {
-		if (syncMap.sync()) {
-			onSync();
-		}
+		Set<ISyncableObject> changed = syncMap.sync();
+		if (!changed.isEmpty()) onServerSync(changed);
 	}
 
-	public void onSync() {
-		/* pre-sync, called on the sender */
-	}
+	public void onServerSync(Set<ISyncableObject> changed) {}
 
 	@Override
 	public SyncMap<SyncedTileEntity> getSyncMap() {

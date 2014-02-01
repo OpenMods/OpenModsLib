@@ -22,9 +22,7 @@ import openmods.network.PacketLogger;
 import openmods.utils.ByteUtils;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
@@ -173,55 +171,53 @@ public abstract class SyncMap<H extends ISyncHandler> {
 
 	protected abstract boolean isInvalid();
 
-	public boolean sync() {
-		if (isInvalid()) return false;
+	public Set<ISyncableObject> sync() {
+		if (isInvalid()) return ImmutableSet.of();
 
 		Set<EntityPlayer> players = getPlayersWatching();
-		boolean sent = false;
+		Set<ISyncableObject> changes = listChanges();
+		final boolean hasChanges = !changes.isEmpty();
+
 		if (!getWorld().isRemote) {
 			Packet changePacket = null;
 			Packet fullPacket = null;
 
-			boolean hasChanges = hasChanges();
 			try {
-				Set<Integer> newUsersInRange = Sets.newHashSet();
 				for (EntityPlayer player : players) {
-					newUsersInRange.add(player.entityId);
 					if (knownUsers.contains(player.entityId)) {
 						if (hasChanges) {
 							if (changePacket == null) changePacket = createPacket(false, false);
 							OpenMods.proxy.sendPacketToPlayer((Player)player, changePacket);
-							sent = true;
 						}
 					} else {
+						knownUsers.add(player.entityId);
 						if (fullPacket == null) fullPacket = createPacket(true, false);
 						OpenMods.proxy.sendPacketToPlayer((Player)player, fullPacket);
-						sent = true;
 					}
 				}
-				knownUsers = newUsersInRange;
 			} catch (IOException e) {
-				Log.warn(e, "IOError during sync");
+				Log.warn(e, "IOError during downstream sync");
 			}
-		} else {
+		} else if (hasChanges) {
 			try {
 				OpenMods.proxy.sendPacketToServer(createPacket(false, true));
-				sent = true;
 			} catch (IOException e) {
-				e.printStackTrace();
+				Log.warn(e, "IOError during upstream sync");
 			}
 			knownUsers.clear();
 		}
+
 		markAllAsClean();
-		return sent;
+		return changes;
 	}
 
-	private boolean hasChanges() {
+	private Set<ISyncableObject> listChanges() {
+		Set<ISyncableObject> changes = Sets.newIdentityHashSet();
 		for (ISyncableObject obj : objects) {
-			if (obj != null && obj.isDirty()) return true;
+			if (obj != null && obj.isDirty()) changes.add(obj);
 		}
 
-		return false;
+		return changes;
 	}
 
 	public Packet createPacket(boolean fullPacket, boolean toServer) throws IOException {
