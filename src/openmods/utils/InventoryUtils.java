@@ -36,11 +36,8 @@ public class InventoryUtils {
 				targetInventory.setInventorySlotContents(slot, stack.copy());
 				stack.stackSize = 0;
 			} else {
-				boolean valid = targetInventory.isItemValidForSlot(slot, stack);
-				if (valid
-						&& stack.isItemEqual(targetStack)
-						&& ItemStack.areItemStackTagsEqual(stack, targetStack)
-						&& targetStack.stackSize < targetStack.getMaxStackSize()) {
+				if (targetInventory.isItemValidForSlot(slot, stack) &&
+						areMergeCandidates(stack, targetStack)) {
 					int space = targetStack.getMaxStackSize()
 							- targetStack.stackSize;
 					int mergeAmount = Math.min(space, stack.stackSize);
@@ -51,6 +48,12 @@ public class InventoryUtils {
 				}
 			}
 		}
+	}
+
+	protected static boolean areMergeCandidates(ItemStack source, ItemStack target) {
+		return source.isItemEqual(target)
+				&& ItemStack.areItemStackTagsEqual(source, target)
+				&& target.stackSize < target.getMaxStackSize();
 	}
 
 	public static void insertItemIntoInventory(IInventory inventory, ItemStack stack) {
@@ -424,8 +427,7 @@ public class InventoryUtils {
 				itemSizeCounter -= Math.min(Math.min(itemSizeCounter, inventory.getInventoryStackLimit()), item.getMaxStackSize());
 			}
 			/* If the slot is not empty, check that these items stack */
-			else if (item.isItemEqual(inventorySlot)
-					&& inventorySlot.stackSize < inventorySlot.getMaxStackSize()) {
+			else if (areMergeCandidates(item, inventorySlot)) {
 				/* If they stack, decrement by the amount of space that remains */
 
 				int space = inventorySlot.getMaxStackSize()
