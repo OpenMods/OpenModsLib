@@ -135,21 +135,31 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public TileEntity createTileEntity(World world, int metadata) {
-		TileEntity te = null;
+		final TileEntity te = createTileEntity();
+
+		te.blockType = this;
+		if (te instanceof OpenTileEntity) {
+			((OpenTileEntity)te).setup();
+		}
+		return te;
+	}
+
+	public TileEntity createTileEntityForRender() {
+		final TileEntity te = createTileEntity();
+		te.blockType = this;
+		te.blockMetadata = 0;
+		return te;
+	}
+
+	protected TileEntity createTileEntity() {
 		try {
-			if (teClass != null) {
-				te = teClass.getConstructor(new Class[0]).newInstance();
-			}
+			if (teClass != null) return teClass.getConstructor(new Class[0]).newInstance();
 		} catch (NoSuchMethodException nsm) {
 			Log.warn(nsm, "Notice: Cannot create TE automatically due to constructor requirements");
 		} catch (Exception ex) {
 			Log.warn(ex, "Notice: Error creating tile entity");
 		}
-		if (te instanceof OpenTileEntity) {
-			te.blockType = this;
-			((OpenTileEntity)te).setup();
-		}
-		return te;
+		return null;
 	}
 
 	public Class<? extends TileEntity> getTileClass() {
