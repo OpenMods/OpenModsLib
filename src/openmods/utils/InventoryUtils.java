@@ -517,4 +517,8 @@ public class InventoryUtils {
 
 		return false;
 	}
+
+	static ItemStack returnItem(ItemStack stack) {
+		return (stack == null || stack.stackSize <= 0)? null : stack.copy();
+	}
 }

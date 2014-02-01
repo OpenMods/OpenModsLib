@@ -1,6 +1,6 @@
 package openmods.utils;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityItem;
@@ -11,16 +11,18 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.FakePlayer;
 import net.minecraftforge.common.ForgeDirection;
 
+import com.google.common.collect.Maps;
+
 //TODO: Discuss if we make seperate players for seperate mods
 public class OpenModsFakePlayer extends FakePlayer {
-	private static final HashMap<Integer, OpenModsFakePlayer> _players = new HashMap<Integer, OpenModsFakePlayer>();
+	private static final Map<Integer, OpenModsFakePlayer> PLAYERS = Maps.newHashMap();
 
 	public static OpenModsFakePlayer getPlayerForWorld(World world) {
 		int id = world.provider.dimensionId;
-		if (!_players.containsKey(id)) {
-			_players.put(id, new OpenModsFakePlayer(world));
+		if (!PLAYERS.containsKey(id)) {
+			PLAYERS.put(id, new OpenModsFakePlayer(world));
 		}
-		return _players.get(id);
+		return PLAYERS.get(id);
 	}
 
 	private OpenModsFakePlayer(World world) {
@@ -29,7 +31,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 
 	@Override
 	public void setDead() {
-		_players.remove(worldObj.provider.dimensionId);
+		PLAYERS.remove(worldObj.provider.dimensionId);
 		super.setDead();
 	}
 
@@ -55,7 +57,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 					blockExists)) {
 				setSneaking(true);
 
-				return inventory.getCurrentItem();
+				return InventoryUtils.returnItem(inventory.getCurrentItem());
 			}
 			hitVector.yCoord++;
 			setSneaking(true);
@@ -83,7 +85,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 				deltaX, deltaY, deltaZ,
 				blockExists);
 
-		return ItemStack.copyItemStack(itemStack);
+		return InventoryUtils.returnItem(inventory.getCurrentItem());
 	}
 
 	public void dropItemAt(ItemStack itemStack, int x, int y, int z, ForgeDirection direction) {
