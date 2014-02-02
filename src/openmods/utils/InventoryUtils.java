@@ -29,13 +29,13 @@ public class InventoryUtils {
 	 * @param slot
 	 * @param stack
 	 */
-	public static void tryMergeStacks(IInventory targetInventory, int slot, ItemStack stack) {
+	public static void tryInsertStack(IInventory targetInventory, int slot, ItemStack stack, boolean canMerge) {
 		if (targetInventory.isItemValidForSlot(slot, stack)) {
 			ItemStack targetStack = targetInventory.getStackInSlot(slot);
 			if (targetStack == null) {
 				targetInventory.setInventorySlotContents(slot, stack.copy());
 				stack.stackSize = 0;
-			} else {
+			} else if (canMerge) {
 				if (targetInventory.isItemValidForSlot(slot, stack) &&
 						areMergeCandidates(stack, targetStack)) {
 					int space = targetStack.getMaxStackSize()
@@ -64,18 +64,12 @@ public class InventoryUtils {
 		insertItemIntoInventory(inventory, stack, side, intoSlot, true);
 	}
 
-	/***
-	 * Insert the stack into the target inventory. Pass -1 if you don't care
-	 * which slot
-	 * 
-	 * @param inventory
-	 * @param stack
-	 * @param side
-	 *            The side of the block you're inserting into
-	 */
 	public static void insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot, boolean doMove) {
+		insertItemIntoInventory(inventory, stack, side, intoSlot, doMove, true);
+	}
 
-		if (stack == null) { return; }
+	public static void insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot, boolean doMove, boolean canStack) {
+		if (stack == null) return;
 
 		IInventory targetInventory = inventory;
 
@@ -121,19 +115,22 @@ public class InventoryUtils {
 					continue;
 				}
 			}
-			tryMergeStacks(targetInventory, attemptSlots[i], stack);
+			tryInsertStack(targetInventory, attemptSlots[i], stack, canStack);
 			i++;
 		}
 	}
 
+	public static int moveItemInto(IInventory fromInventory, int fromSlot, Object target, int intoSlot, int maxAmount, ForgeDirection direction, boolean doMove) {
+		return moveItemInto(fromInventory, fromSlot, target, intoSlot, maxAmount, direction, doMove, true);
+	}
+	
 	/***
 	 * Move an item from the fromInventory, into the target. The target can be
 	 * an inventory or pipe.
 	 * Double checks are automagically wrapped. If you're not bothered what slot
-	 * you insert into,
-	 * pass -1 for intoSlot. If you're passing false for doMove, it'll create a
-	 * dummy inventory and
-	 * make its calculations on that instead
+	 * you insert into, pass -1 for intoSlot. If you're passing false for
+	 * doMove, it'll create a dummy inventory and its calculations on that
+	 * instead
 	 * 
 	 * @param fromInventory
 	 *            the inventory the item is coming from
@@ -149,9 +146,10 @@ public class InventoryUtils {
 	 * @param direction
 	 *            The direction of the move. Pass UNKNOWN if not applicable
 	 * @param doMove
+	 * @param canStack
 	 * @return The amount of items moved
 	 */
-	public static int moveItemInto(IInventory fromInventory, int fromSlot, Object target, int intoSlot, int maxAmount, ForgeDirection direction, boolean doMove) {
+	public static int moveItemInto(IInventory fromInventory, int fromSlot, Object target, int intoSlot, int maxAmount, ForgeDirection direction, boolean doMove, boolean canStack) {
 
 		fromInventory = InventoryUtils.getInventory(fromInventory);
 
@@ -160,7 +158,7 @@ public class InventoryUtils {
 		if (sourceStack == null) { return 0; }
 
 		if (fromInventory instanceof ISidedInventory
-				&& !((ISidedInventory)fromInventory).canExtractItem(fromSlot, sourceStack, direction.ordinal())) { return 0; }
+				&& !((ISidedInventory)fromInventory).canExtractItem(fromSlot, sourceStack, direction.ordinal())) return 0;
 
 		// create a clone of our source stack and set the size to either
 		// maxAmount or the stackSize
@@ -180,7 +178,7 @@ public class InventoryUtils {
 			ForgeDirection side = direction.getOpposite();
 			// try insert the item into the target inventory. this'll reduce the
 			// stackSize of our stack
-			InventoryUtils.insertItemIntoInventory(targetInventory, clonedSourceStack, side, intoSlot, doMove);
+			InventoryUtils.insertItemIntoInventory(targetInventory, clonedSourceStack, side, intoSlot, doMove, canStack);
 			inserted = amountToMove - clonedSourceStack.stackSize;
 
 		}
