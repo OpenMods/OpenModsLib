@@ -17,7 +17,7 @@ public class OpenModsCorePlugin implements IFMLLoadingPlugin {
 
 	@Override
 	public String[] getASMTransformerClass() {
-		return new String[] { "openmods.asm.OpenModsClassTransformer" };
+		return new String[] { "openmods.OpenModsClassTransformer" };
 	}
 
 	@Override

@@ -123,7 +123,7 @@ public class InventoryUtils {
 	public static int moveItemInto(IInventory fromInventory, int fromSlot, Object target, int intoSlot, int maxAmount, ForgeDirection direction, boolean doMove) {
 		return moveItemInto(fromInventory, fromSlot, target, intoSlot, maxAmount, direction, doMove, true);
 	}
-	
+
 	/***
 	 * Move an item from the fromInventory, into the target. The target can be
 	 * an inventory or pipe.

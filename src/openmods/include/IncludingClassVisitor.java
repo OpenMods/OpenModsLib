@@ -1,10 +1,11 @@
-package openmods.asm;
+package openmods.include;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
 
 import openmods.Log;
 import openmods.OpenModsCorePlugin;
+import openmods.asm.StopTransforming;
 
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.Method;
