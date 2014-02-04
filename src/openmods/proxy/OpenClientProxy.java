@@ -13,10 +13,15 @@ import net.minecraft.server.ServerListenThread;
 import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
+import openmods.Log;
 import openmods.gui.ClientGuiHandler;
+import openmods.movement.LegacyTickHandler;
+import openmods.movement.PlayerMovementManager;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.IGuiHandler;
 import cpw.mods.fml.common.network.Player;
+import cpw.mods.fml.common.registry.TickRegistry;
+import cpw.mods.fml.relauncher.Side;
 
 public class OpenClientProxy implements IOpenModsProxy {
 
@@ -85,6 +90,20 @@ public class OpenClientProxy implements IOpenModsProxy {
 	@Override
 	public IGuiHandler wrapHandler(IGuiHandler modSpecificHandler) {
 		return new ClientGuiHandler(modSpecificHandler);
+	}
+
+	@Override
+	public void preInit() {}
+
+	@Override
+	public void init() {}
+
+	@Override
+	public void postInit() {
+		if (!PlayerMovementManager.isCallbackInjected()) {
+			Log.info("EntityPlayerSP movement callback patch not applied, using legacy solution");
+			TickRegistry.registerTickHandler(new LegacyTickHandler(), Side.CLIENT);
+		}
 	}
 
 }

@@ -42,15 +42,18 @@ public class OpenMods {
 		MinecraftForge.EVENT_BUS.register(new TileEntityEventHandler());
 
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);
+		proxy.preInit();
 	}
 
 	@EventHandler
 	public void init(FMLInitializationEvent evt) {
 		syncableManager = new SyncableManager();
+		proxy.init();
 	}
 
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent evt) {
 		Integration.selectModules();
+		proxy.postInit();
 	}
 }

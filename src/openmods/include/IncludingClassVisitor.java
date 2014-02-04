@@ -2,8 +2,8 @@ package openmods.include;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.logging.Level;
 
-import openmods.Log;
 import openmods.OpenModsCorePlugin;
 import openmods.asm.StopTransforming;
 
@@ -235,7 +235,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 				result.add(Method.getMethod(m));
 			return result;
 		} catch (Throwable t) {
-			Log.severe(t, "Error while searching for interface '%s'", intf);
+			OpenModsCorePlugin.log.log(Level.SEVERE, String.format("Error while searching for interface '%s'", intf), t);
 			throw Throwables.propagate(t);
 		}
 	}

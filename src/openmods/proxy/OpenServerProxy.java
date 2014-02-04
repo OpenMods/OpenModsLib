@@ -85,4 +85,13 @@ public class OpenServerProxy implements IOpenModsProxy {
 	public IGuiHandler wrapHandler(IGuiHandler modSpecificHandler) {
 		return new CommonGuiHandler(modSpecificHandler);
 	}
+
+	@Override
+	public void preInit() {}
+
+	@Override
+	public void init() {}
+
+	@Override
+	public void postInit() {}
 }

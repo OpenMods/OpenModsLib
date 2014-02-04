@@ -34,4 +34,10 @@ public interface IOpenModsProxy {
 	public String getLogFileName();
 
 	public IGuiHandler wrapHandler(IGuiHandler modSpecificHandler);
+
+	public void preInit();
+
+	public void init();
+
+	public void postInit();
 }
