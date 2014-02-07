@@ -78,7 +78,7 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 	}
 
 	private SortedSet<Integer> addReplaceContainer(int type, int containerId, int start) {
-		C container = factory.createContainer(type);
+		C container = factory.createContainer(containerId, type);
 		if (containerToElement.containsEntry(containerId, start)) {
 			onConsistencyCheckFail();
 			return ImmutableSortedSet.of();
