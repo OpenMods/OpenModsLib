@@ -5,7 +5,9 @@ import java.util.logging.Logger;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
+import cpw.mods.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
 
+@TransformerExclusions({ "openmods.asm", "openmods.include" })
 public class OpenModsCorePlugin implements IFMLLoadingPlugin {
 
 	public static Logger log;

@@ -22,7 +22,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 
 	@Override
 	public byte[] transform(final String name, String transformedName, byte[] bytes) {
-		if (bytes == null || name.startsWith("openmods.asm") || name.startsWith("openmods.include")) return bytes;
+		if (bytes == null) return bytes;
 
 		if (applyMovementTransformer && transformedName.equals("net.minecraft.client.entity.EntityPlayerSP")) return VisitorHelper.apply(bytes, ClassWriter.COMPUTE_FRAMES, new TransformProvider() {
 			@Override
