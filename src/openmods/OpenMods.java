@@ -1,7 +1,10 @@
 package openmods;
 
+import java.io.File;
+
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.MinecraftForge;
+import openmods.config.CommandConfig;
 import openmods.config.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
 import openmods.integration.Integration;
@@ -13,9 +16,7 @@ import openmods.sync.SyncableManager;
 import cpw.mods.fml.common.*;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.*;
 import cpw.mods.fml.common.network.NetworkMod;
 
 @Mod(modid = "OpenMods", name = "OpenMods", version = "@VERSION@", dependencies = "required-after:OpenModsCore")
@@ -35,13 +36,15 @@ public class OpenMods {
 		Log.logger = evt.getModLog();
 		EventPacket.registerCorePackets();
 
-		Configuration configFile = new Configuration(evt.getSuggestedConfigurationFile());
-		ConfigProcessing.processAnnotations(configFile, LibConfig.class);
-		if (configFile.hasChanged()) configFile.save();
+		final File configFile = evt.getSuggestedConfigurationFile();
+		Configuration config = new Configuration(configFile);
+		ConfigProcessing.processAnnotations(configFile, "OpenMods", config, LibConfig.class);
+		if (config.hasChanged()) config.save();
 
 		MinecraftForge.EVENT_BUS.register(new TileEntityEventHandler());
 
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);
+
 		proxy.preInit();
 	}
 
@@ -55,5 +58,10 @@ public class OpenMods {
 	public void postInit(FMLPostInitializationEvent evt) {
 		Integration.selectModules();
 		proxy.postInit();
+	}
+
+	@EventHandler
+	public void severStart(FMLServerStartingEvent evt) {
+		evt.registerServerCommand(new CommandConfig("om_config_s", true));
 	}
 }

@@ -1,9 +1,11 @@
 package openmods.config;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import net.minecraft.block.Block;
@@ -12,167 +14,69 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.Property;
-import net.minecraftforge.common.Property.Type;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import openmods.Log;
 import openmods.config.RegisterBlock.RegisterTileEntity;
-import openmods.utils.io.IStringSerializable;
-import openmods.utils.io.StringConversionException;
-import openmods.utils.io.TypeRW;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Table;
 
 import cpw.mods.fml.common.registry.GameRegistry;
 
 public class ConfigProcessing {
 
-	public static final Map<Class<?>, Property.Type> CONFIG_TYPES = ImmutableMap.<Class<?>, Property.Type> builder()
-			.put(Integer.class, Property.Type.INTEGER)
-			.put(int.class, Property.Type.INTEGER)
-			.put(Boolean.class, Property.Type.BOOLEAN)
-			.put(boolean.class, Property.Type.BOOLEAN)
-			.put(Byte.class, Property.Type.INTEGER)
-			.put(byte.class, Property.Type.INTEGER)
-			.put(Double.class, Property.Type.DOUBLE)
-			.put(double.class, Property.Type.DOUBLE)
-			.put(Float.class, Property.Type.DOUBLE)
-			.put(float.class, Property.Type.DOUBLE)
-			.put(Long.class, Property.Type.INTEGER)
-			.put(long.class, Property.Type.INTEGER)
-			.put(Short.class, Property.Type.INTEGER)
-			.put(short.class, Property.Type.INTEGER)
-			.put(String.class, Property.Type.STRING)
-			.build();
+	public static class ModConfig {
+		private final Configuration config;
+		public final Class<?> configClass;
+		public final File configFile;
+		public final String modId;
 
-	private static String[] toStringArray(Object array) {
-		Preconditions.checkArgument(array.getClass().isArray(), "Type %s is not an array", array.getClass());
-		int length = Array.getLength(array);
-		String[] result = new String[length];
-		for (int i = 0; i < length; i++)
-			result[i] = Array.get(array, i).toString();
+		private Table<String, String, ConfigPropertyMeta> properties = HashBasedTable.create();
 
-		return result;
+		private ModConfig(String modId, File configFile, Configuration config, Class<?> configClass) {
+			this.modId = modId;
+			this.configFile = configFile;
+			this.config = config;
+			this.configClass = configClass;
+		}
+
+		void tryProcessConfig(Field field) {
+			ConfigPropertyMeta meta = ConfigPropertyMeta.createMetaForField(config, field);
+			if (meta != null) {
+				meta.updateValueFromConfig(false);
+				properties.put(meta.category.toLowerCase(), meta.name.toLowerCase(), meta);
+			}
+		}
+
+		public void save() {
+			if (config.hasChanged()) config.save();
+		}
+
+		public Collection<String> getCategories() {
+			return Collections.unmodifiableCollection(properties.rowKeySet());
+		}
+
+		public Collection<String> getValues(String category) {
+			return Collections.unmodifiableCollection(properties.row(category.toLowerCase()).keySet());
+		}
+
+		public ConfigPropertyMeta getValue(String category, String name) {
+			return properties.get(category.toLowerCase(), name.toLowerCase());
+		}
 	}
 
-	private abstract static class FieldProcessing {
-		public void getProperty(Configuration configFile, Field f, String category, String name, String comment) {
-			if (Strings.isNullOrEmpty(name)) name = f.getName();
-			if (Strings.isNullOrEmpty(category)) category = null;
+	private static final Map<String, ModConfig> configs = Maps.newHashMap();
 
-			final Object defaultValue;
-			try {
-				defaultValue = f.get(null);
-			} catch (Exception e) {
-				throw Throwables.propagate(e);
-			}
-
-			Preconditions.checkNotNull(defaultValue, "Config field %s has no default value", name);
-			final Class<?> fieldType = getFieldType(defaultValue);
-
-			final Property.Type expectedType = CONFIG_TYPES.get(fieldType);
-			Preconditions.checkNotNull(expectedType, "Config field %s has no property type mapping", name);
-
-			final IStringSerializable<?> converter = TypeRW.TYPES.get(fieldType);
-			Preconditions.checkNotNull(converter, "Config field %s has no known conversion from string", name);
-
-			final Property property = getProperty(configFile, category, name, comment, expectedType, defaultValue);
-			// return on newly created value. Due to forge bug list properties
-			// don't set this value properly
-			if (!property.wasRead() && !property.isList()) return;
-
-			final Type actualType = property.getType();
-
-			if (expectedType != actualType) {
-				Log.warn("Invalid config property type '%s', using default value", property.getType(), expectedType);
-				return;
-			}
-
-			Object value = convertValue(property, converter, fieldType);
-			if (value != null) {
-				try {
-					f.set(null, value);
-				} catch (Exception e) {
-					throw Throwables.propagate(e);
-				}
-			}
-		}
-
-		protected abstract Property getProperty(Configuration configFile, String category, String name, String comment, Type expectedType, Object defaultValue);
-
-		protected abstract Class<? extends Object> getFieldType(Object defaultValue);
-
-		protected abstract Object convertValue(Property property, IStringSerializable<?> converter, Class<?> targetType);
+	public static Collection<String> getConfigsIds() {
+		return Collections.unmodifiableCollection(configs.keySet());
 	}
 
-	private static final FieldProcessing SINGLE_VALUE = new FieldProcessing() {
-		@Override
-		protected Property getProperty(Configuration configFile, String category, String name, String comment, Type expectedType, Object defaultValue) {
-			final String defaultString = defaultValue.toString();
-			return configFile.get(category, name, defaultString, comment, expectedType);
-		}
-
-		@Override
-		protected Class<? extends Object> getFieldType(Object defaultValue) {
-			return defaultValue.getClass();
-		}
-
-		@Override
-		protected Object convertValue(Property property, IStringSerializable<?> converter, Class<?> targetType) {
-			final String value = property.getString();
-			try {
-				return converter.readFromString(value);
-			} catch (StringConversionException e) {
-				Log.warn(e, "Invalid config property value '%s', using default value", value);
-			}
-			return null;
-		}
-	};
-
-	private static final FieldProcessing MULTIPLE_VALUES = new FieldProcessing() {
-
-		@Override
-		protected Property getProperty(Configuration configFile, String category, String name, String comment, Type expectedType, Object defaultValue) {
-			final String[] defaultStrings = toStringArray(defaultValue);
-			return configFile.get(category, name, defaultStrings, comment, expectedType);
-		}
-
-		@Override
-		protected Class<? extends Object> getFieldType(Object defaultValue) {
-			return defaultValue.getClass().getComponentType();
-		}
-
-		@Override
-		protected Object convertValue(Property property, IStringSerializable<?> converter, Class<?> targetType) {
-			final String[] values = property.getStringList();
-			final Object result = Array.newInstance(targetType, values.length);
-			for (int i = 0; i < values.length; i++) {
-				String value = values[i];
-				Object converted;
-				try {
-					converted = converter.readFromString(value);
-				} catch (StringConversionException e) {
-					Log.warn(e, "Invalid config property value '%s' at index %d, using default", value, i);
-					return null;
-				}
-				try {
-					Array.set(result, i, converted);
-				} catch (IllegalArgumentException e) {
-					Log.warn(e, "Invalid config property value '%s' at index %d, using default", value, i);
-					return null;
-				}
-			}
-			return result;
-		}
-	};
-
-	private static void getProperty(Configuration configFile, Field f, String category, String name, String comment) {
-		Class<?> fieldType = f.getType();
-		FieldProcessing p = fieldType.isArray()? MULTIPLE_VALUES : SINGLE_VALUE;
-		p.getProperty(configFile, f, category, name, comment);
+	public static ModConfig getConfig(String modId) {
+		return configs.get(modId.toLowerCase());
 	}
 
 	private static void getBlock(Configuration configFile, Field field, String description) {
@@ -204,12 +108,16 @@ public class ConfigProcessing {
 		return false; // Block disabled, fail silently
 	}
 
-	public static void processAnnotations(Configuration configFile, Class<?> klazz) {
+	public static void processAnnotations(File configFile, String modId, Configuration config, Class<?> klazz) {
+		Preconditions.checkState(!configs.containsKey(modId), "Trying to configure mod '%s' twice", modId);
+		ModConfig configMeta = new ModConfig(modId, configFile, config, klazz);
+		configs.put(modId.toLowerCase(), configMeta);
+
 		for (Field f : klazz.getFields()) {
 			{
 				ItemId a = f.getAnnotation(ItemId.class);
 				if (a != null) {
-					getItem(configFile, f, a.description());
+					getItem(config, f, a.description());
 					continue;
 				}
 			}
@@ -217,16 +125,11 @@ public class ConfigProcessing {
 			{
 				BlockId a = f.getAnnotation(BlockId.class);
 				if (a != null) {
-					getBlock(configFile, f, a.description());
+					getBlock(config, f, a.description());
 				}
 			}
 
-			{
-				ConfigProperty a = f.getAnnotation(ConfigProperty.class);
-				if (a != null) {
-					getProperty(configFile, f, a.category(), a.name(), a.comment());
-				}
-			}
+			configMeta.tryProcessConfig(f);
 		}
 	}
 

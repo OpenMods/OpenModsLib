@@ -12,8 +12,10 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.server.ServerListenThread;
 import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.world.World;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.DimensionManager;
 import openmods.Log;
+import openmods.config.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.LegacyTickHandler;
 import openmods.movement.PlayerMovementManager;
@@ -93,7 +95,9 @@ public class OpenClientProxy implements IOpenModsProxy {
 	}
 
 	@Override
-	public void preInit() {}
+	public void preInit() {
+		ClientCommandHandler.instance.registerCommand(new CommandConfig("om_config_c", false));
+	}
 
 	@Override
 	public void init() {}

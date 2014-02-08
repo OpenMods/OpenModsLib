@@ -1,0 +1,11 @@
+openmodslib.command.no_enough_args=Not enough arguments
+openmodslib.command.unknown_modid=Unknown mod id
+openmodslib.command.unknown_value=Unknown config value
+openmodslib.command.saved=Saved configuration to %s
+openmodslib.command.not_multiple=This property doesn't accept multiple values
+openmodslib.command.online_change=Config property changed. Using new value. 
+openmodslib.command.offline_change=Config property changed. New value will be applied after restart
+openmodslib.command.cancelled=Config change cancelled!
+openmodslib.command.unknown_error=Unknown error during config property change: %s
+openmodslib.command.invalid_command=Invalid command '%s'
+openmodslib.command.invalid_type=Can't convert value %s to %s
