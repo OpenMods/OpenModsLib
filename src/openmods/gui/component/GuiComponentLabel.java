@@ -14,6 +14,7 @@ public class GuiComponentLabel extends BaseComponent {
 	private String textDelta;
 	private String[] formattedText;
 	private int maxHeight, maxWidth;
+	private int additionalLineHeight = 0;
 
 	private static FontRenderer getFontRenderer() {
 		return Minecraft.getMinecraft().fontRenderer;
@@ -63,7 +64,7 @@ public class GuiComponentLabel extends BaseComponent {
 		for (String s : formattedText) {
 			if (s == null) break;
 			minecraft.fontRenderer.drawString(s, 0, offset, 4210752);
-			offset += minecraft.fontRenderer.FONT_HEIGHT;
+			offset += getFontHeight();
 			if (++lineCount >= getMaxLines()) break;
 		}
 		GL11.glPopMatrix();
@@ -76,7 +77,7 @@ public class GuiComponentLabel extends BaseComponent {
 		int lineCount = 0;
 		for (String s : formattedText) {
 			if (s == null) break;
-			offset += fr.FONT_HEIGHT;
+			offset += getFontHeight();
 			if (++lineCount >= getMaxLines()) break;
 		}
 		return offset;
@@ -107,7 +108,15 @@ public class GuiComponentLabel extends BaseComponent {
 		this.maxHeight = maxHeight;
 		return this;
 	}
+	
+	public void setAdditionalLineHeight(int lh) {
+		this.additionalLineHeight = lh;
+	}
 
+	public int getFontHeight() {
+		return getFontRenderer().FONT_HEIGHT + additionalLineHeight;
+	}
+	
 	public int getMaxHeight() {
 		return maxHeight;
 	}
@@ -119,7 +128,7 @@ public class GuiComponentLabel extends BaseComponent {
 
 	public int getMaxLines() {
 		return (int)Math.floor(getMaxHeight() / scale
-				/ getFontRenderer().FONT_HEIGHT);
+				/ getFontHeight());
 	}
 
 	public int getMaxWidth() {
