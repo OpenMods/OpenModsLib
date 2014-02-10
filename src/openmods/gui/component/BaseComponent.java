@@ -16,10 +16,6 @@ public abstract class BaseComponent extends Gui {
 		TextureUtils.bindTextureToClient(TEXTURE_SHEET);
 	}
 
-	private boolean overlay_mode = false;
-
-	public static boolean IS_OVERLAY_PASS = false;
-
 	public enum TabColor {
 		blue(0x8784c8),
 		lightblue(0x84c7c8),
@@ -37,15 +33,6 @@ public abstract class BaseComponent extends Gui {
 		public int getColor() {
 			return color;
 		}
-	}
-
-	public boolean isOverlay() {
-		return overlay_mode;
-	}
-
-	public BaseComponent setOverlayMode(boolean isOverlay) {
-		this.overlay_mode = isOverlay;
-		return this;
 	}
 
 	public static interface IComponentListener {
@@ -166,8 +153,20 @@ public abstract class BaseComponent extends Gui {
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (renderChildren) {
 			for (BaseComponent component : components) {
-				if (component != null && component.isEnabled() && IS_OVERLAY_PASS == component.isOverlay()) {
+				if (component != null && component.isEnabled()) {
 					component.render(minecraft, offsetX + this.x, offsetY
+							+ this.y, mouseX
+							- this.x, mouseY - this.y);
+				}
+			}
+		}
+	}
+
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+		if (renderChildren) {
+			for (BaseComponent component : components) {
+				if (component != null && component.isEnabled()) {
+					component.renderOverlay(minecraft, offsetX + this.x, offsetY
 							+ this.y, mouseX
 							- this.x, mouseY - this.y);
 				}

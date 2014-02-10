@@ -13,6 +13,17 @@ public class GuiComponentBox extends BaseComponent {
 	protected int v;
 	protected int color;
 
+	private boolean overlay_mode;
+
+	public boolean isOverlay() {
+		return overlay_mode;
+	}
+
+	public BaseComponent setOverlayMode(boolean isOverlay) {
+		this.overlay_mode = isOverlay;
+		return this;
+	}
+
 	public GuiComponentBox(int x, int y, int width, int height, int u, int v, int color) {
 		super(x, y);
 		this.width = width;
@@ -108,9 +119,18 @@ public class GuiComponentBox extends BaseComponent {
 		drawTexturedModalRect(0, 0, u + 19, v, 1, 1);
 		GL11.glPopMatrix();
 	}
-
-	@Override
+	
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+		if (!overlay_mode) doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
+		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
+	}
+	
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+		if (overlay_mode) doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
+		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
+	}
+	
+	protected void doRender(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		RenderHelper.disableStandardItemLighting();
 		bindComponentsSheet();
 		int c = getColor();
@@ -118,19 +138,17 @@ public class GuiComponentBox extends BaseComponent {
 		float g = (c >> 8 & 255) / 255.0F;
 		float b = (c & 255) / 255.0F;
 		GL11.glColor4f(r, g, b, 1);
-		if (isOverlay() == IS_OVERLAY_PASS) {
-			renderBackground(offsetX, offsetY);
-			renderTopEdge(offsetX, offsetY);
-			renderBottomEdge(offsetX, offsetY);
-			renderLeftEdge(offsetX, offsetY);
-			renderRightEdge(offsetX, offsetY);
 
-			renderTopLeftCorner(offsetX, offsetY);
-			renderTopRightCorner(offsetX, offsetY);
-			renderBottomLeftCorner(offsetX, offsetY);
-			renderBottomRightCorner(offsetX, offsetY);
-		}
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
+		renderBackground(offsetX, offsetY);
+		renderTopEdge(offsetX, offsetY);
+		renderBottomEdge(offsetX, offsetY);
+		renderLeftEdge(offsetX, offsetY);
+		renderRightEdge(offsetX, offsetY);
+
+		renderTopLeftCorner(offsetX, offsetY);
+		renderTopRightCorner(offsetX, offsetY);
+		renderBottomLeftCorner(offsetX, offsetY);
+		renderBottomRightCorner(offsetX, offsetY);
 	}
 
 }

@@ -12,7 +12,17 @@ public class GuiComponentSprite extends BaseComponent {
 	private Icon icon;
 	private ResourceLocation texture;
 	private float r = 1, g = 1, b = 1;
+	private boolean overlay_mode;
 
+	public boolean isOverlay() {
+		return overlay_mode;
+	}
+
+	public BaseComponent setOverlayMode(boolean isOverlay) {
+		this.overlay_mode = isOverlay;
+		return this;
+	}
+	
 	public static class Sprites {
 		public static Icon hammer = FakeIcon.createSheetIcon(0, 233, 23, 23);
 		public static Icon plus = FakeIcon.createSheetIcon(23, 242, 13, 13);
@@ -35,6 +45,20 @@ public class GuiComponentSprite extends BaseComponent {
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
+		if (!overlay_mode) {
+			doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
+		}
+	}
+
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
+		if (overlay_mode) {
+			doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
+		}
+	}
+	
+	protected void doRender(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (icon == null) { return; }
 		if (texture != null) minecraft.renderEngine.bindTexture(texture);
 		GL11.glColor3f(r, g, b);

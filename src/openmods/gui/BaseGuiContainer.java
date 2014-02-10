@@ -78,7 +78,6 @@ public abstract class BaseGuiContainer<T extends ContainerBase<?>> extends
 		this.preRender(mouseX, mouseY);
 		GL11.glPushMatrix();
 		GL11.glTranslated(this.guiLeft, this.guiTop, 0);
-		BaseComponent.IS_OVERLAY_PASS = false;
 		root.render(this.mc, 0, 0, mouseX - this.guiLeft, mouseY - this.guiTop);
 		GL11.glPopMatrix();
 	}
@@ -102,8 +101,8 @@ public abstract class BaseGuiContainer<T extends ContainerBase<?>> extends
 		GL11.glDisable(GL11.GL_LIGHTING);
 		GL11.glDisable(GL11.GL_DEPTH_TEST);
 		GL11.glPushMatrix();
-		BaseComponent.IS_OVERLAY_PASS = true;
-		root.render(this.mc, this.guiLeft, this.guiTop, par1 - this.guiLeft, par2 - this.guiTop);
+
+		root.renderOverlay(this.mc, this.guiLeft, this.guiTop, par1 - this.guiLeft, par2 - this.guiTop);
 		GL11.glPopMatrix();
 		GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 		GL11.glEnable(GL11.GL_LIGHTING);
