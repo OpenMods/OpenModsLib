@@ -10,6 +10,7 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Icon;
 import net.minecraft.util.ResourceLocation;
+import openmods.sync.SyncableString;
 import openmods.utils.render.FakeIcon;
 import openmods.gui.component.BaseComponent;
 
@@ -21,6 +22,11 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 	private GuiComponentSprite imgRightBackground;
 	private GuiComponentSpriteButton imgPrev;
 	private GuiComponentSpriteButton imgNext;
+	private GuiComponentLabel pageNumberLeft;
+	private GuiComponentLabel pageNumberRight;
+	
+	private SyncableString strPageNumberLeft;
+	private SyncableString strPageNumberRight;
 
 	public static Icon iconPageLeft = FakeIcon.createSheetIcon(-45, 0, -211, 180);
 	public static Icon iconPageRight = FakeIcon.createSheetIcon(0, 0, 211, 180);
@@ -45,11 +51,20 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 		imgPrev.addListener(this);
 		imgNext = new GuiComponentSpriteButton(380, 158, iconNext, iconNextHover, texture);
 		imgNext.addListener(this);
+		
+		strPageNumberLeft = new SyncableString("[page]");
+		strPageNumberRight = new SyncableString("[page]");
+		pageNumberLeft = new GuiComponentLabel(85, 163, 100, 10, strPageNumberLeft);
+		pageNumberLeft.setScale(0.5f);
+		pageNumberRight = new GuiComponentLabel(295, 163, 100, 10, strPageNumberRight);
+		pageNumberRight.setScale(0.5f);
 
 		addComponent(imgLeftBackground);
 		addComponent(imgRightBackground);
 		addComponent(imgPrev);
 		addComponent(imgNext);
+		addComponent(pageNumberLeft);
+		addComponent(pageNumberRight);
 
 		pages = Lists.newArrayList();
 
@@ -101,8 +116,13 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 			page.setEnabled(i == index || i == index + 1);
 			i++;
 		}
+		
+		int totalPageCount = i % 2 == 0 ? i : i + 1;
+		
 		imgNext.setEnabled(index < pages.size() - 2);
 		imgPrev.setEnabled(index > 0);
+		strPageNumberLeft.setValue(String.format("Page %s of %s", index + 1, totalPageCount));
+		strPageNumberRight.setValue(String.format("Page %s of %s", index + 2, totalPageCount));
 	}
 
 	@Override

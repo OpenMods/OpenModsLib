@@ -11,6 +11,8 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.Icon;
 import net.minecraft.util.ResourceLocation;
 
+import openmods.utils.render.RenderUtils;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -138,8 +140,9 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		GL11.glTranslatef(0.0F, 0.0F, 32.0F);
 		this.zLevel = 200.0F;
 		itemRenderer.zLevel = 200.0F;
-
-		RenderHelper.enableStandardItemLighting();
+		RenderHelper.enableGUIStandardItemLighting();
+		GL11.glColor3f(1f, 1f, 1f);
+		GL11.glEnable(GL11.GL_NORMALIZE);
 		FontRenderer font = null;
 		if (par1ItemStack != null) font = par1ItemStack.getItem().getFontRenderer(par1ItemStack);
 		if (font == null) font = Minecraft.getMinecraft().fontRenderer;
@@ -147,5 +150,6 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		itemRenderer.renderItemOverlayIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), par1ItemStack, par2, par3, par4Str);
 		this.zLevel = 0.0F;
 		itemRenderer.zLevel = 0.0F;
+		//GL11.glPopAttrib();
 	}
 }
