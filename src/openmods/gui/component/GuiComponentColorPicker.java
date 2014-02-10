@@ -4,7 +4,6 @@ import java.awt.Color;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
-import openmods.gui.component.BaseComponent.IComponentListener;
 import openmods.sync.SyncableInt;
 
 import org.lwjgl.opengl.GL11;
