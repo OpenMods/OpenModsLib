@@ -138,6 +138,8 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		GL11.glTranslatef(0.0F, 0.0F, 32.0F);
 		this.zLevel = 200.0F;
 		itemRenderer.zLevel = 200.0F;
+
+		RenderHelper.enableStandardItemLighting();
 		FontRenderer font = null;
 		if (par1ItemStack != null) font = par1ItemStack.getItem().getFontRenderer(par1ItemStack);
 		if (font == null) font = Minecraft.getMinecraft().fontRenderer;

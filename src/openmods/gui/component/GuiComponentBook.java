@@ -35,7 +35,7 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 
 	private int index = 0;
 
-	public GuiComponentBook(GuiScreen screen) {
+	public GuiComponentBook() {
 		super(0, 0);
 
 		imgLeftBackground = new GuiComponentSprite(0, 0, iconPageLeft, texture);
