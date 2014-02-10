@@ -9,10 +9,10 @@ import org.lwjgl.opengl.GL11;
 
 public class GuiComponentSprite extends BaseComponent {
 
-	private Icon icon;
-	private ResourceLocation texture;
-	private float r = 1, g = 1, b = 1;
-	private boolean overlay_mode;
+	protected Icon icon;
+	protected ResourceLocation texture;
+	protected float r = 1, g = 1, b = 1;
+	protected boolean overlay_mode;
 
 	public boolean isOverlay() {
 		return overlay_mode;
