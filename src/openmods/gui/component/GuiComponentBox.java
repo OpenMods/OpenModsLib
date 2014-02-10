@@ -119,17 +119,19 @@ public class GuiComponentBox extends BaseComponent {
 		drawTexturedModalRect(0, 0, u + 19, v, 1, 1);
 		GL11.glPopMatrix();
 	}
-	
+
+	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (!overlay_mode) doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 	}
-	
+
+	@Override
 	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (overlay_mode) doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
 		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
 	}
-	
+
 	protected void doRender(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		RenderHelper.disableStandardItemLighting();
 		bindComponentsSheet();

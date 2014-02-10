@@ -108,7 +108,7 @@ public class GuiComponentLabel extends BaseComponent {
 		this.maxHeight = maxHeight;
 		return this;
 	}
-	
+
 	public void setAdditionalLineHeight(int lh) {
 		this.additionalLineHeight = lh;
 	}
@@ -116,7 +116,7 @@ public class GuiComponentLabel extends BaseComponent {
 	public int getFontHeight() {
 		return getFontRenderer().FONT_HEIGHT + additionalLineHeight;
 	}
-	
+
 	public int getMaxHeight() {
 		return maxHeight;
 	}

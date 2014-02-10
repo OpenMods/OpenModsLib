@@ -22,7 +22,7 @@ public class GuiComponentSprite extends BaseComponent {
 		this.overlay_mode = isOverlay;
 		return this;
 	}
-	
+
 	public static class Sprites {
 		public static Icon hammer = FakeIcon.createSheetIcon(0, 233, 23, 23);
 		public static Icon plus = FakeIcon.createSheetIcon(23, 242, 13, 13);
@@ -57,7 +57,7 @@ public class GuiComponentSprite extends BaseComponent {
 			doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
 		}
 	}
-	
+
 	protected void doRender(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (icon == null) { return; }
 		if (texture != null) minecraft.renderEngine.bindTexture(texture);

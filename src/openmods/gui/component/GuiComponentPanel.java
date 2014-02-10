@@ -49,6 +49,7 @@ public class GuiComponentPanel extends GuiComponentBox {
 		slotRenderers.put(slotId, renderer);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void doRender(Minecraft minecraft, int x, int y, int mouseX, int mouseY) {
 		super.doRender(minecraft, x, y, mouseX, mouseY);
@@ -60,6 +61,5 @@ public class GuiComponentPanel extends GuiComponentBox {
 			}
 		}
 	}
-	
 
 }
