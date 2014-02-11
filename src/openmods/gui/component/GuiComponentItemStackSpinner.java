@@ -55,7 +55,7 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 
 	@Override
 	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
+		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
 		GL11.glPushMatrix();
 		float scale = 30.0f;
 		Tessellator t = Tessellator.instance;

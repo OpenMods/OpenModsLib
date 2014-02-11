@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
@@ -36,7 +37,6 @@ public class GuiComponentStandardRecipePage extends BaseComponent {
 		if (videoLink != "" && !videoLink.equals(translatedLink)) {
 			addComponent(new GuiComponentYouTube(25, 146, translatedLink));
 		}
-
 		lblTitle = new GuiComponentLabel((getWidth() - Minecraft.getMinecraft().fontRenderer.getStringWidth(translatedTitle)) / 2, 12, translatedTitle);
 		lblDescription = new GuiComponentLabel(27, 95, 340, 51, translatedDescription);
 		arrow = new GuiComponentSprite(90, 50, iconArrow, texture);
@@ -94,9 +94,35 @@ public class GuiComponentStandardRecipePage extends BaseComponent {
 	@SuppressWarnings("unchecked")
 	private static Object[] getRecipeInput(IRecipe recipe) {
 		if (recipe instanceof ShapelessOreRecipe) return ((ShapelessOreRecipe)recipe).getInput().toArray();
-		else if (recipe instanceof ShapedOreRecipe) return ((ShapedOreRecipe)recipe).getInput();
+		else if (recipe instanceof ShapedOreRecipe) return getShapedOreRecipe((ShapedOreRecipe)recipe);
 		else if (recipe instanceof ShapedRecipes) return ((ShapedRecipes)recipe).recipeItems;
 		else if (recipe instanceof ShapelessRecipes) return ((ShapelessRecipes)recipe).recipeItems.toArray(new ItemStack[0]);
+		return null;
+	}
+
+	private static Object[] getShapedOreRecipe(ShapedOreRecipe recipe) {
+		try {
+			Field field = ShapedOreRecipe.class.getDeclaredField("width");
+			if (field != null) {
+				field.setAccessible(true);
+				int width = field.getInt(recipe);
+				Object[] input = recipe.getInput();
+				Object[] grid = new Object[9];
+				for (int i = 0, offset = 0, y = 0; y < 3; y++) {
+					for (int x = 0; x < 3; x++, i++) {
+						if (x < width && offset < input.length) {
+							grid[i] = input[offset];
+							offset++;
+						} else {
+							grid[i] = null;
+						}
+					}
+				}
+				return grid;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 
