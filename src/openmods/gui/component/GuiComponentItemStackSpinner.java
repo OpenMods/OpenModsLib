@@ -57,6 +57,7 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
 		GL11.glPushMatrix();
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		float scale = 30.0f;
 		Tessellator t = Tessellator.instance;
 		GL11.glTranslated(offsetX + x + (scale / 2), offsetY + y + (scale / 2), scale);
@@ -65,11 +66,11 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 		GL11.glRotatef(20, 1, 0, 0);
 		GL11.glRotatef(rotationY, 0, 1, 0);
 		renderItem(stack);
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
 		GL11.glPopMatrix();
 	}
 
-	public void renderItem(ItemStack itemStack)
-	{
+	public void renderItem(ItemStack itemStack) {
 		GL11.glPushMatrix();
 		Minecraft mc = Minecraft.getMinecraft();
 		EntityLivingBase player = mc.thePlayer;

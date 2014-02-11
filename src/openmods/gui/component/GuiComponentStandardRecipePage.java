@@ -50,8 +50,8 @@ public class GuiComponentStandardRecipePage extends BaseComponent {
 		addComponent(lblDescription);
 		addComponent(lblTitle);
 		addComponent(arrow);
-		addComponent(craftingGrid);
 		addComponent(outputSpinner);
+		addComponent(craftingGrid);
 
 	}
 
