@@ -1,24 +1,20 @@
 package openmods.gui.component;
 
-import java.awt.Cursor;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
-
-import org.lwjgl.input.Mouse;
-
-import openmods.utils.render.FakeIcon;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiConfirmOpenLink;
 import net.minecraft.util.Icon;
 import net.minecraft.util.ResourceLocation;
+import openmods.utils.render.FakeIcon;
 
 public class GuiComponentYouTube extends BaseComponent {
 
 	private static final ResourceLocation texture = new ResourceLocation("openmodslib:textures/gui/book.png");
 	public static Icon icon = FakeIcon.createSheetIcon(0, 236, 12, 8);
-	
+
 	private final int PROMPT_REPLY_ACTION = 0;
 
 	private GuiComponentLabel label;
@@ -26,7 +22,7 @@ public class GuiComponentYouTube extends BaseComponent {
 	private String url;
 
 	public static URI youtubeUrl;
-	
+
 	public GuiComponentYouTube(int x, int y, String url) {
 		super(x, y);
 		label = new GuiComponentLabel(15, 2, "Watch video");
@@ -66,6 +62,5 @@ public class GuiComponentYouTube extends BaseComponent {
 			Desktop.getDesktop().browse(uri);
 		} catch (IOException e) {}
 	}
-	
 
 }

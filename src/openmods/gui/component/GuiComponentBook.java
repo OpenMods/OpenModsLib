@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -12,7 +11,6 @@ import net.minecraft.util.Icon;
 import net.minecraft.util.ResourceLocation;
 import openmods.sync.SyncableString;
 import openmods.utils.render.FakeIcon;
-import openmods.gui.component.BaseComponent;
 
 import com.google.common.collect.Lists;
 
@@ -24,7 +22,7 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 	private GuiComponentSpriteButton imgNext;
 	private GuiComponentLabel pageNumberLeft;
 	private GuiComponentLabel pageNumberRight;
-	
+
 	private SyncableString strPageNumberLeft;
 	private SyncableString strPageNumberRight;
 
@@ -51,7 +49,7 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 		imgPrev.addListener(this);
 		imgNext = new GuiComponentSpriteButton(380, 158, iconNext, iconNextHover, texture);
 		imgNext.addListener(this);
-		
+
 		strPageNumberLeft = new SyncableString("[page]");
 		strPageNumberRight = new SyncableString("[page]");
 		pageNumberLeft = new GuiComponentLabel(85, 163, 100, 10, strPageNumberLeft);
@@ -116,9 +114,9 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 			page.setEnabled(i == index || i == index + 1);
 			i++;
 		}
-		
-		int totalPageCount = i % 2 == 0 ? i : i + 1;
-		
+
+		int totalPageCount = i % 2 == 0? i : i + 1;
+
 		imgNext.setEnabled(index < pages.size() - 2);
 		imgPrev.setEnabled(index > 0);
 		strPageNumberLeft.setValue(String.format("Page %s of %s", index + 1, totalPageCount));
