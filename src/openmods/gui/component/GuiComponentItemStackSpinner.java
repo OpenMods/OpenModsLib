@@ -7,30 +7,20 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Icon;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.IItemRenderer;
-import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.client.*;
 import net.minecraftforge.client.IItemRenderer.ItemRenderType;
-import openmods.block.OpenBlock;
-import openmods.tileentity.OpenTileEntity;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 public class GuiComponentItemStackSpinner extends BaseComponent {
 
-	private OpenTileEntity tile;
-	private OpenBlock block;
 	private ItemStack stack;
-	private Item item;
-	private float rotationX = 0.1f;
 	private float rotationY = 0f;
-	private int meta = 0;
 	private static ItemRenderer itemRenderer;
 	private static RenderBlocks blockRenderer = new RenderBlocks();
 	private static final ResourceLocation RES_ITEM_GLINT = new ResourceLocation("textures/misc/enchanted_item_glint.png");
@@ -59,7 +49,6 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 		GL11.glPushMatrix();
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		float scale = 30.0f;
-		Tessellator t = Tessellator.instance;
 		GL11.glTranslated(offsetX + x + (scale / 2), offsetY + y + (scale / 2), scale);
 		GL11.glScaled(scale, -scale, scale);
 		rotationY += 0.6f;
@@ -106,16 +95,16 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 			GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 			GL11.glTranslatef(-0.5f, -0.5f, 0);
 			ItemRenderer.renderItemIn2D(
-				tessellator,
-				icon.getMaxU(),
-				icon.getMinV(),
-				icon.getMinU(),
-				icon.getMaxV(),
-				icon.getIconWidth(),
-				icon.getIconHeight(),
-				0.0625F
-			);
-			
+					tessellator,
+					icon.getMaxU(),
+					icon.getMinV(),
+					icon.getMinU(),
+					icon.getMaxV(),
+					icon.getIconWidth(),
+					icon.getIconHeight(),
+					0.0625F
+					);
+
 			GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 		}
 		GL11.glPopMatrix();

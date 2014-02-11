@@ -3,14 +3,23 @@ package openmods.config;
 import net.minecraftforge.event.Cancelable;
 import net.minecraftforge.event.Event;
 
+import com.google.common.base.Preconditions;
+
 public class ConfigurationChange extends Event {
 
 	public final String name;
 	public final String category;
 
 	public ConfigurationChange(String name, String category) {
+		Preconditions.checkNotNull(name);
 		this.name = name;
+
+		Preconditions.checkNotNull(category);
 		this.category = category;
+	}
+
+	public boolean check(String category, String name) {
+		return this.category.equals(category) && this.name.equals(name);
 	}
 
 	@Cancelable

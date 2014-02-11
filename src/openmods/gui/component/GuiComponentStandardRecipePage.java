@@ -26,7 +26,7 @@ public class GuiComponentStandardRecipePage extends BaseComponent {
 	private GuiComponentLabel lblDescription;
 	private GuiComponentLabel lblTitle;
 	private GuiComponentItemStackSpinner outputSpinner;
-	
+
 	public GuiComponentStandardRecipePage(String title, String description, String videoLink, ItemStack resultingItem) {
 		super(0, 0);
 
@@ -44,7 +44,7 @@ public class GuiComponentStandardRecipePage extends BaseComponent {
 
 		lblDescription.setScale(0.5f);
 		lblDescription.setAdditionalLineHeight(4);
-		
+
 		outputSpinner = new GuiComponentItemStackSpinner(150, 40, resultingItem);
 
 		addComponent(lblDescription);

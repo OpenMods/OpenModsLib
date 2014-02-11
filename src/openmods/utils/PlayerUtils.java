@@ -21,24 +21,24 @@ public class PlayerUtils {
 		// SMP
 		return server.getConfigurationManager().getOps().contains(username);
 	}
-	
+
 	public static NBTTagCompound getModPlayerPersistTag(EntityPlayer player, String modName) {
-		
+
 		NBTTagCompound tag = player.getEntityData();
 		NBTTagCompound persistTag = tag.getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG);
-		
+
 		if (persistTag == null) {
 			persistTag = new NBTTagCompound();
 			tag.setCompoundTag(EntityPlayer.PERSISTED_NBT_TAG, persistTag);
 		}
-		
+
 		NBTTagCompound modTag = persistTag.getCompoundTag(modName);
-		
+
 		if (modTag == null) {
 			modTag = new NBTTagCompound();
 			persistTag.setCompoundTag(modName, modTag);
 		}
-		
+
 		return modTag;
 	}
 }

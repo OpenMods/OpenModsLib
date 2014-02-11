@@ -1,11 +1,11 @@
 package openmods.gui.component;
 
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Icon;
 import net.minecraft.util.ResourceLocation;
+
+import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.GL11;
 
 public class GuiComponentSpriteButton extends GuiComponentSprite {
 
@@ -16,6 +16,7 @@ public class GuiComponentSpriteButton extends GuiComponentSprite {
 		this.hoverIcon = hoverIcon;
 	}
 
+	@Override
 	protected void doRender(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (icon == null) { return; }
 		if (texture != null) minecraft.renderEngine.bindTexture(texture);
