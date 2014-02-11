@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -12,7 +11,6 @@ import net.minecraft.util.Icon;
 import net.minecraft.util.ResourceLocation;
 import openmods.sync.SyncableString;
 import openmods.utils.render.FakeIcon;
-import openmods.gui.component.BaseComponent;
 
 import com.google.common.collect.Lists;
 
@@ -69,6 +67,16 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 		pages = Lists.newArrayList();
 
 	}
+	
+	public boolean gotoPage(BaseComponent page) {
+		int pageIndex = pages.indexOf(page);
+		if (pageIndex > -1) {
+			index = pageIndex % 2 == 1 ? pageIndex - 1 : pageIndex;
+			enablePages();
+			return true;
+		}
+		return false;
+	}
 
 	@Override
 	public int getWidth() {
@@ -85,7 +93,7 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 		page.setEnabled(false);
 		pages.add(page);
 	}
-
+	
 	public boolean addStandardRecipePage(String modId, String name, Object item) {
 		ItemStack stack = null;
 		String type = "";
