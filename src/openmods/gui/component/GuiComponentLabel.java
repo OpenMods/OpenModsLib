@@ -2,6 +2,7 @@ package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.ScaledResolution;
 import openmods.sync.SyncableString;
 
 import org.lwjgl.opengl.GL11;
@@ -14,6 +15,7 @@ public class GuiComponentLabel extends BaseComponent {
 	private String textDelta;
 	private String[] formattedText;
 	private int maxHeight, maxWidth;
+	private float additionalScale = 1.0f;
 	private int additionalLineHeight = 0;
 
 	private static FontRenderer getFontRenderer() {
@@ -44,20 +46,23 @@ public class GuiComponentLabel extends BaseComponent {
 
 	@SuppressWarnings("unchecked")
 	private void compileFormattedText(FontRenderer fr) {
-		if (textDelta != null && textDelta.equals(getText())) return;
+		//if (textDelta != null && textDelta.equals(getText())) return;
 		textDelta = getText();
 		if (textDelta == null) return;
-		formattedText = (String[])fr.listFormattedStringToWidth(textDelta, maxWidth).toArray(formattedText);
+		formattedText = (String[])fr.listFormattedStringToWidth(textDelta, getMaxWidth()).toArray(formattedText);
 	}
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
+		Minecraft mc = Minecraft.getMinecraft();
+		ScaledResolution sr = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
+		additionalScale = sr.getScaleFactor() % 2 == 1 ? 0.6745f : 1f;
 		if (getMaxHeight() < minecraft.fontRenderer.FONT_HEIGHT) return;
 		if (getMaxWidth() < minecraft.fontRenderer.getCharWidth('m')) return;
 		GL11.glPushMatrix();
 		GL11.glTranslated(offsetX + x, offsetY + y, 1);
-		GL11.glScalef(scale, scale, scale);
+		GL11.glScalef(scale * additionalScale, scale * additionalScale, scale * additionalScale);
 		compileFormattedText(minecraft.fontRenderer);
 		int offset = 0;
 		int lineCount = 0;
@@ -103,7 +108,7 @@ public class GuiComponentLabel extends BaseComponent {
 	public float getScale() {
 		return scale;
 	}
-
+	
 	public GuiComponentLabel setMaxHeight(int maxHeight) {
 		this.maxHeight = maxHeight;
 		return this;
@@ -127,12 +132,12 @@ public class GuiComponentLabel extends BaseComponent {
 	}
 
 	public int getMaxLines() {
-		return (int)Math.floor(getMaxHeight() / scale
+		return (int)Math.floor(getMaxHeight() / (scale / additionalScale)
 				/ getFontHeight());
 	}
 
 	public int getMaxWidth() {
-		return this.maxWidth;
+		return (int)(this.maxWidth / additionalScale);
 	}
 
 	@Override
