@@ -57,7 +57,7 @@ public class GuiComponentLabel extends BaseComponent {
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		Minecraft mc = Minecraft.getMinecraft();
 		ScaledResolution sr = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
-		additionalScale = sr.getScaleFactor() % 2 == 1 ? 0.6745f : 1f;
+		additionalScale = sr.getScaleFactor() % 2 == 1 ? 0.666f : 1f;
 		if (getMaxHeight() < minecraft.fontRenderer.FONT_HEIGHT) return;
 		if (getMaxWidth() < minecraft.fontRenderer.getCharWidth('m')) return;
 		GL11.glPushMatrix();
