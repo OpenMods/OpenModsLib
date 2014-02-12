@@ -144,6 +144,7 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 
 	@Override
 	public void componentMouseDown(BaseComponent component, int offsetX, int offsetY, int button) {
+		int oldIndex = index;
 		if (component == imgPrev) {
 			if (index > 0) {
 				index -= 2;
@@ -153,6 +154,10 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 			if (index < pages.size() - 2) {
 				index += 2;
 			}
+		}
+		if (oldIndex != index) {
+			Minecraft mc = Minecraft.getMinecraft();
+			mc.sndManager.playSoundFX("openmodslib:pageturn", 1.0F, 1.0F);
 		}
 		enablePages();
 	}
