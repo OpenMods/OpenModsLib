@@ -77,6 +77,10 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 		}
 		return false;
 	}
+	
+	public int getNumberOfPages() {
+		return pages.size();
+	}
 
 	@Override
 	public int getWidth() {
@@ -116,6 +120,11 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 			return true;
 		}
 		return false;
+	}
+	
+	public void gotoIndex(int i) {
+		index = i;
+		enablePages();
 	}
 
 	public void enablePages() {
@@ -173,4 +182,5 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 
 	@Override
 	public void componentKeyTyped(BaseComponent component, char par1, int par2) {}
+
 }
