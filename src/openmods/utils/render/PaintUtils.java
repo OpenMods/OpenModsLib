@@ -38,6 +38,11 @@ public class PaintUtils {
 					"extrautils:decor"
 			});
 		}
+		if (Loader.isModLoaded(Mods.BIOMESOPLENTY)) {
+			addBlocksForMod(Mods.BIOMESOPLENTY, new String[] {
+					"bop.planks"
+			});
+		}
 	}
 
 	protected void addBlocksForMod(String modId, String[] blocks) {
