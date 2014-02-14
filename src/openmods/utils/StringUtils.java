@@ -37,12 +37,12 @@ public class StringUtils {
 	
 	public static String getFormatter(boolean bold, boolean italic) {
 		StringBuilder formatter = new StringBuilder();
-		formatter.append("§r");
+		formatter.append("\u00a7r");
 		if (bold) {
-			formatter.append("§l");
+			formatter.append("\u00a7l");
 		}
 		if (italic) {
-			formatter.append("§o");
+			formatter.append("\u00a7o");
 		}
 		return formatter.toString();
 	}
