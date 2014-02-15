@@ -10,7 +10,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Icon;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.*;
 import net.minecraftforge.client.IItemRenderer.ItemRenderType;
 
@@ -23,7 +22,6 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 	private float rotationY = 0f;
 	private static ItemRenderer itemRenderer;
 	private static RenderBlocks blockRenderer = new RenderBlocks();
-	private static final ResourceLocation RES_ITEM_GLINT = new ResourceLocation("textures/misc/enchanted_item_glint.png");
 
 	public GuiComponentItemStackSpinner(int x, int y, ItemStack stack) {
 		super(x, y);

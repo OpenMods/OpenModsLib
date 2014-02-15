@@ -67,17 +67,17 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 		pages = Lists.newArrayList();
 
 	}
-	
+
 	public boolean gotoPage(BaseComponent page) {
 		int pageIndex = pages.indexOf(page);
 		if (pageIndex > -1) {
-			index = pageIndex % 2 == 1 ? pageIndex - 1 : pageIndex;
+			index = pageIndex % 2 == 1? pageIndex - 1 : pageIndex;
 			enablePages();
 			return true;
 		}
 		return false;
 	}
-	
+
 	public int getNumberOfPages() {
 		return pages.size();
 	}
@@ -97,7 +97,7 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 		page.setEnabled(false);
 		pages.add(page);
 	}
-	
+
 	public boolean addStandardRecipePage(String modId, String name, Object item) {
 		ItemStack stack = null;
 		String type = "";
@@ -121,7 +121,7 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 		}
 		return false;
 	}
-	
+
 	public void gotoIndex(int i) {
 		index = i;
 		enablePages();

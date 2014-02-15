@@ -23,7 +23,12 @@ import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 public abstract class BlockRenderingHandlerBase implements ISimpleBlockRenderingHandler {
 
 	protected final Map<Block, TileEntity> inventoryTileEntities = Maps.newIdentityHashMap();
-	protected final Map<Block, IBlockRenderer> blockRenderers = Maps.newIdentityHashMap();
+	protected final Map<Block, IBlockRenderer<Block>> blockRenderers = Maps.newIdentityHashMap();
+
+	@SuppressWarnings("unchecked")
+	public <B extends Block> void addRenderer(B block, IBlockRenderer<B> renderer) {
+		blockRenderers.put(block, (IBlockRenderer<Block>)renderer);
+	}
 
 	public TileEntity getTileEntityForBlock(OpenBlock block) {
 		TileEntity te = inventoryTileEntities.get(block);
@@ -83,7 +88,7 @@ public abstract class BlockRenderingHandlerBase implements ISimpleBlockRendering
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
 		OpenBlock openBlock = (block instanceof OpenBlock)? (OpenBlock)block : null;
 
-		IBlockRenderer customRenderer = blockRenderers.get(block);
+		IBlockRenderer<Block> customRenderer = blockRenderers.get(block);
 		if (customRenderer != null) return customRenderer.renderWorldBlock(world, x, y, z, block, modelId, renderer);
 
 		if (openBlock == null || openBlock.shouldRenderBlock()) {

@@ -46,7 +46,7 @@ public class GuiComponentLabel extends BaseComponent {
 
 	@SuppressWarnings("unchecked")
 	private void compileFormattedText(FontRenderer fr) {
-		//if (textDelta != null && textDelta.equals(getText())) return;
+		// if (textDelta != null && textDelta.equals(getText())) return;
 		textDelta = getText();
 		if (textDelta == null) return;
 		formattedText = (String[])fr.listFormattedStringToWidth(textDelta, getMaxWidth()).toArray(formattedText);
@@ -57,7 +57,7 @@ public class GuiComponentLabel extends BaseComponent {
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		Minecraft mc = Minecraft.getMinecraft();
 		ScaledResolution sr = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
-		additionalScale = sr.getScaleFactor() % 2 == 1 && scale < 1f ? 0.667f : 1f;
+		additionalScale = sr.getScaleFactor() % 2 == 1 && scale < 1f? 0.667f : 1f;
 		if (getMaxHeight() < minecraft.fontRenderer.FONT_HEIGHT) return;
 		if (getMaxWidth() < minecraft.fontRenderer.getCharWidth('m')) return;
 		GL11.glPushMatrix();
@@ -108,7 +108,7 @@ public class GuiComponentLabel extends BaseComponent {
 	public float getScale() {
 		return scale;
 	}
-	
+
 	public GuiComponentLabel setMaxHeight(int maxHeight) {
 		this.maxHeight = maxHeight;
 		return this;

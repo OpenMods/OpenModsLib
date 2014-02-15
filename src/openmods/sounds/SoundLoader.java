@@ -5,11 +5,10 @@ import net.minecraftforge.event.ForgeSubscribe;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-
 public class SoundLoader {
 
 	private final static String[] soundFiles = new String[] {
-		"pageturn.ogg"
+			"pageturn.ogg"
 	};
 
 	@SideOnly(Side.CLIENT)
