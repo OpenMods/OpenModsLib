@@ -195,7 +195,7 @@ public abstract class ConfigPropertyMeta {
 			int length = Array.getLength(array);
 			String[] result = new String[length];
 			for (int i = 0; i < length; i++)
-				result[i] = Array.get(array, i).toString();
+				result[i] = String.format("\"%s\"", Array.get(array, i).toString());
 
 			return result;
 		}
