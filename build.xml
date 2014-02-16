@@ -6,7 +6,7 @@
 	<target name="set-env">
 		<property name="env.BUILD_NUMBER" value="0" />
 		<property name="env.JOB_NAME" value="OpenModsLib" />
-		<property name="mod.version" value="0.1" />
+		<property name="mod.version" value="0.2" />
 		<property name="mod.dir" value="openmods" />
 		<echo message="Starting build for ${env.JOB_NAME} v${mod.version}" />
 	</target>
