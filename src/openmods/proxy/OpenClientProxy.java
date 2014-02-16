@@ -110,4 +110,9 @@ public class OpenClientProxy implements IOpenModsProxy {
 		}
 	}
 
+	@Override
+	public void setNowPlayingTitle(String nowPlaying) {
+		Minecraft.getMinecraft().ingameGUI.setRecordPlayingMessage(nowPlaying);
+	}
+
 }

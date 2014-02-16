@@ -94,4 +94,8 @@ public class OpenServerProxy implements IOpenModsProxy {
 
 	@Override
 	public void postInit() {}
+
+	@Override
+	public void setNowPlayingTitle(String nowPlaying) {
+	}
 }

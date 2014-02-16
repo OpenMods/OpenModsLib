@@ -40,4 +40,6 @@ public interface IOpenModsProxy {
 	public void init();
 
 	public void postInit();
+	
+	public void setNowPlayingTitle(String nowPlaying);
 }
