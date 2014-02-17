@@ -1,28 +1,37 @@
 package openmods.utils;
 
 import java.util.Map;
+import java.util.WeakHashMap;
+
+import openmods.Log;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.FakePlayer;
 import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.event.Event;
+import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 
-import com.google.common.collect.Maps;
+import com.google.common.base.Preconditions;
 
 //TODO: Discuss if we make seperate players for seperate mods
 public class OpenModsFakePlayer extends FakePlayer {
-	private static final Map<Integer, OpenModsFakePlayer> PLAYERS = Maps.newHashMap();
+	private static final Map<World, OpenModsFakePlayer> PLAYERS = new WeakHashMap<World, OpenModsFakePlayer>();
 
 	public static OpenModsFakePlayer getPlayerForWorld(World world) {
-		int id = world.provider.dimensionId;
-		if (!PLAYERS.containsKey(id)) {
-			PLAYERS.put(id, new OpenModsFakePlayer(world));
+		OpenModsFakePlayer player = PLAYERS.get(world);
+		if (player == null) {
+			player = new OpenModsFakePlayer(world);
+			PLAYERS.put(world, player);
 		}
-		return PLAYERS.get(id);
+		return player;
 	}
 
 	private OpenModsFakePlayer(World world) {
@@ -38,8 +47,6 @@ public class OpenModsFakePlayer extends FakePlayer {
 	public ItemStack equipWithAndRightClick(ItemStack itemStack, Vec3 currentPos, Vec3 hitVector, ForgeDirection side, boolean blockExists) {
 		setPosition(currentPos.xCoord, currentPos.yCoord, currentPos.zCoord);
 
-		ForgeDirection opposite = side.getOpposite();
-
 		if (blockExists) {
 
 			// find rotations
@@ -49,10 +56,10 @@ public class OpenModsFakePlayer extends FakePlayer {
 			setSneaking(false);
 			if (rightClick(
 					inventory.getCurrentItem(),
-					(int)currentPos.xCoord + opposite.offsetX,
-					(int)currentPos.yCoord + opposite.offsetY,
-					(int)currentPos.zCoord + opposite.offsetZ,
-					opposite.ordinal(),
+					(int)currentPos.xCoord,
+					(int)currentPos.yCoord,
+					(int)currentPos.zCoord,
+					side,
 					deltaX, deltaY, deltaZ,
 					blockExists)) {
 				setSneaking(true);
@@ -78,10 +85,10 @@ public class OpenModsFakePlayer extends FakePlayer {
 		inventory.addItemStackToInventory(itemStack);
 		rightClick(
 				inventory.getCurrentItem(),
-				(int)currentPos.xCoord + opposite.offsetX,
-				(int)currentPos.yCoord + opposite.offsetY,
-				(int)currentPos.zCoord + opposite.offsetZ,
-				opposite.ordinal(),
+				(int)currentPos.xCoord,
+				(int)currentPos.yCoord,
+				(int)currentPos.zCoord,
+				side,
 				deltaX, deltaY, deltaZ,
 				blockExists);
 
@@ -90,67 +97,42 @@ public class OpenModsFakePlayer extends FakePlayer {
 
 	public void dropItemAt(ItemStack itemStack, int x, int y, int z, ForgeDirection direction) {
 		setPosition(x + 0.5F, y - 1.5, z + 0.5F);
-		if (direction == ForgeDirection.DOWN) {
-			setRotation(0, 90);
-		} else {
-			// "Other directions than down is not implemented"
-			throw new IllegalStateException();
-		}
+		Preconditions.checkArgument(direction == ForgeDirection.DOWN, "Other directions than down is not implemented");
+		setRotation(0, 90);
 		EntityItem entityItem = dropPlayerItem(itemStack);
 		entityItem.motionX = 0;
 		entityItem.motionY = 0;
 		entityItem.motionZ = 0;
 	}
 
-	private boolean rightClick(ItemStack itemStack, int x, int y, int z, int side, float deltaX, float deltaY, float deltaZ, boolean blockExists) {
-		boolean flag = false;
-		int blockId;
+	private boolean rightClick(ItemStack itemStack, int x, int y, int z, ForgeDirection side, float deltaX, float deltaY, float deltaZ, boolean blockExists) {
+		if (itemStack == null) return false;
 
-		if (itemStack != null && itemStack.getItem() != null
-				&& itemStack.getItem().onItemUseFirst(itemStack, this, worldObj, x, y, z, side, deltaX, deltaY, deltaZ)) { return true; }
+		final int opposite = side.getOpposite().ordinal();
+		PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(this, Action.RIGHT_CLICK_BLOCK, x, y, z, opposite);
 
-		if (isSneaking() || (getHeldItem() == null || getHeldItem().getItem().shouldPassSneakingClickToBlock(worldObj, x, y, z))) {
-			blockId = worldObj.getBlockId(x, y, z);
+		if (event.isCanceled()) { return false; }
 
-			if (blockId > 0 && Block.blocksList[blockId].onBlockActivated(worldObj, x, y, z, this, side, deltaX, deltaY, deltaZ)) {
-				flag = true;
+		final Item usedItem = itemStack.getItem();
+
+		if (usedItem.onItemUseFirst(itemStack, this, worldObj, x, y, z, opposite, deltaX, deltaY, deltaZ)) { return true; }
+
+		if (event.useBlock != Event.Result.DENY && (isSneaking() || usedItem.shouldPassSneakingClickToBlock(worldObj, x, y, z))) {
+			int blockId = worldObj.getBlockId(x, y, z);
+			Block block = Block.blocksList[blockId];
+			if (block != null) try {
+				if (block.onBlockActivated(worldObj, x, y, z, this, opposite, deltaX, deltaY, deltaZ)) return true;
+			} catch (Throwable t) {
+				Log.warn(t, "Invalid use of fake player on block %s @ (%d,%d,%d), aborting. Don't do it again", block, x, y, z);
 			}
 		}
 
-		if (!flag && itemStack != null && itemStack.getItem() instanceof ItemBlock) {
-			if (blockExists) { return false; }
-
-			ItemBlock itemblock = (ItemBlock)itemStack.getItem();
-			if (!canPlaceItemBlockOnSide(itemblock, worldObj, x, y, z, side, itemStack)) { return false; }
-		}
-
-		if (flag) {
-			return true;
-		} else if (itemStack == null) {
+		if (event.useItem == Event.Result.DENY || usedItem instanceof ItemBlock && blockExists) return false;
+		try {
+			return itemStack.tryPlaceItemIntoWorld(this, worldObj, x, y, z, opposite, deltaX, deltaY, deltaZ);
+		} catch (Throwable t) {
+			Log.warn(t, "Invalid use of fake player with item %s @ (%d,%d,%d), aborting. Don't do it again", usedItem, x, y, z);
 			return false;
-		} else {
-			ForgeDirection s = ForgeDirection.getOrientation(side);
-			if (!itemStack.tryPlaceItemIntoWorld(this, worldObj, x + s.offsetX, y + s.offsetY, z + s.offsetZ, s.getOpposite().ordinal(), deltaX, deltaY, deltaZ)) { return false; }
-			// if (itemStack.stackSize <= 0)
-			// {
-			// MinecraftForge.EVENT_BUS.post(new PlayerDestroyItemEvent(this,
-			// itemStack));
-			// }
-			return true;
 		}
-	}
-
-	private boolean canPlaceItemBlockOnSide(ItemBlock itemBlock, World world, int x, int y, int z, int side, ItemStack itemStack) {
-		int blockId = world.getBlockId(x, y, z);
-		if (blockId == Block.snow.blockID) {
-			side = 1;
-		} else if (blockId != Block.vine.blockID &&
-				blockId != Block.tallGrass.blockID &&
-				blockId != Block.deadBush.blockID &&
-				(Block.blocksList[blockId] == null || !Block.blocksList[blockId].isBlockReplaceable(world, x, y, z))) {
-
-		}
-		int oppositeSide = ForgeDirection.getOrientation(side).getOpposite().ordinal();
-		return world.canPlaceEntityOnSide(itemBlock.getBlockID(), x, y, z, false, oppositeSide, this, itemStack);
 	}
 }
