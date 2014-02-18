@@ -51,8 +51,8 @@ public class GuiComponentPanel extends GuiComponentBox {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected void doRender(Minecraft minecraft, int x, int y, int mouseX, int mouseY) {
-		super.doRender(minecraft, x, y, mouseX, mouseY);
+	public void render(Minecraft minecraft, int x, int y, int mouseX, int mouseY) {
+		super.render(minecraft, x, y, mouseX, mouseY);
 		GL11.glColor4f(1, 1, 1, 1);
 		bindComponentsSheet();
 		if (container != null && container.get() != null) {
