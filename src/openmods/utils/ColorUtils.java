@@ -144,9 +144,17 @@ public class ColorUtils {
 	}
 
 	public static class RGB {
-		private int r, g, b;
+		public byte r;
+		public byte g;
+		public byte b;
 
-		public RGB(int r, int g, int b) {
+		public RGB(float r, float g, float b) {
+			this.r = (byte)(r * 255);
+			this.g = (byte)(g * 255);
+			this.b = (byte)(b * 255);
+		}
+
+		public RGB(byte r, byte g, byte b) {
 			this.r = r;
 			this.g = g;
 			this.b = b;
@@ -157,41 +165,13 @@ public class ColorUtils {
 		}
 
 		public RGB() {
-			this(0);
-		}
-
-		public int getR() {
-			return r;
-		}
-
-		public void setR(int r) {
-			this.r = r;
-		}
-
-		public int getG() {
-			return g;
-		}
-
-		public void setG(int g) {
-			this.g = g;
-		}
-
-		public int getB() {
-			return b;
-		}
-
-		public void setB(int b) {
-			this.b = b;
-		}
-
-		public void setColor(int r, int g, int b) {
-			setR(r);
-			setG(g);
-			setB(b);
+			r = g = b = 0;
 		}
 
 		public void setColor(int color) {
-			setColor(((color & 0xFF0000) >> 16), ((color & 0x00FF00) >> 8), (color & 0x0000FF));
+			r = (byte)((color & 0xFF0000) >> 16);
+			g = (byte)((color & 0x00FF00) >> 8);
+			b = (byte)(color & 0x0000FF);
 		}
 
 		public int getColor() {

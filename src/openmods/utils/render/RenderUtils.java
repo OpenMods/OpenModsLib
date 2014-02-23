@@ -4,17 +4,19 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
+import openmods.Log;
 import openmods.block.OpenBlock;
 import openmods.block.OpenBlock.BlockRotationMode;
+import openmods.utils.ColorUtils.RGB;
 
 import org.lwjgl.opengl.GL11;
+
+import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class RenderUtils {
 
@@ -212,6 +214,19 @@ public class RenderUtils {
 		OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+	}
+
+	public static RGB getFogColor() {
+		try {
+			EntityRenderer re = Minecraft.getMinecraft().entityRenderer;
+			float red = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorRed", "field_78518_n");
+			float green = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorGreen", "field_78519_o");
+			float blue = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorBlue", "field_78533_p");
+			return new RGB(red, green, blue);
+		} catch (Throwable t) {
+			Log.warn(t, "Can't get fog color");
+			return new RGB(1, 1, 1);
+		}
 	}
 
 }
