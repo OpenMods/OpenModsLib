@@ -126,7 +126,6 @@ public class RenderUtils {
 	}
 
 	public static void resetFacesOnRenderer(RenderBlocks renderer) {
-		renderer.uvRotateTop = 0;
 		renderer.uvRotateBottom = 0;
 		renderer.uvRotateEast = 0;
 		renderer.uvRotateNorth = 0;

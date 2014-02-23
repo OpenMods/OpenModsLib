@@ -3,8 +3,6 @@ package openmods.utils;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import openmods.Log;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.Item;
@@ -18,6 +16,7 @@ import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
+import openmods.Log;
 
 import com.google.common.base.Preconditions;
 
