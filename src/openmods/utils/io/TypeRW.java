@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import net.minecraft.nbt.*;
+import openmods.utils.ByteUtils;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -302,6 +303,43 @@ public abstract class TypeRW<T> implements INBTSerializable<T>, IStreamSerializa
 			} catch (NumberFormatException e) {
 				throw new StringConversionException("long", s, e);
 			}
+		}
+	};
+
+	public static final TypeRW<byte[]> BYTE_ARRAY = new TypeRW<byte[]>() {
+
+		@Override
+		public byte[] readFromString(String s) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void writeToStream(byte[] o, DataOutput output) throws IOException {
+			ByteUtils.writeVLI(output, o.length);
+			output.write(o);
+		}
+
+		@Override
+		public byte[] readFromStream(DataInput input) throws IOException {
+			int lenght = ByteUtils.readVLI(input);
+			byte[] result = new byte[lenght];
+			input.readFully(result);
+			return result;
+		}
+
+		@Override
+		public void writeToNBT(byte[] o, NBTTagCompound tag, String name) {
+			tag.setByteArray(name, o);
+		}
+
+		@Override
+		public byte[] readFromNBT(NBTTagCompound tag, String name) {
+			return tag.getByteArray(name);
+		}
+
+		@Override
+		public boolean checkTagType(NBTBase tag) {
+			return tag instanceof NBTTagByteArray;
 		}
 	};
 

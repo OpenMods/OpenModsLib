@@ -2,8 +2,14 @@ package openmods.utils;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+
+import openmods.utils.io.IStreamReadable;
+import openmods.utils.io.IStreamWriteable;
+
+import com.google.common.base.Throwables;
 
 public class CollectionUtils {
 
@@ -53,6 +59,38 @@ public class CollectionUtils {
 			int delta = id - currentId;
 			ByteUtils.writeVLI(output, delta);
 			currentId = id;
+		}
+	}
+
+	public static <D> void readSortedIdMap(DataInput input, Map<Integer, D> output, IStreamReadable<D> reader) {
+		int elemCount = ByteUtils.readVLI(input);
+
+		int currentId = 0;
+		try {
+			for (int i = 0; i < elemCount; i++) {
+				currentId += ByteUtils.readVLI(input);
+				D data = reader.readFromStream(input);
+				output.put(currentId, data);
+			}
+		} catch (IOException e) {
+			Throwables.propagate(e);
+		}
+	}
+
+	public static <D> void writeSortedIdMap(DataOutput output, SortedMap<Integer, D> input, IStreamWriteable<D> writer) {
+		ByteUtils.writeVLI(output, input.size());
+
+		int currentId = 0;
+		try {
+			for (Map.Entry<Integer, D> e : input.entrySet()) {
+				final int id = e.getKey();
+				final int delta = id - currentId;
+				ByteUtils.writeVLI(output, delta);
+				writer.writeToStream(e.getValue(), output);
+				currentId = id;
+			}
+		} catch (IOException e) {
+			Throwables.propagate(e);
 		}
 	}
 }
