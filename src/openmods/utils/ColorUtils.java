@@ -144,58 +144,48 @@ public class ColorUtils {
 	}
 
 	public static class RGB {
-		private int r, g, b;
+		public int r;
+		public int g;
+		public int b;
+
+		public RGB(float r, float g, float b) {
+			this.r = ((int)(r * 255)) & 0xFF;
+			this.g = ((int)(g * 255)) & 0xFF;
+			this.b = ((int)(b * 255)) & 0xFF;
+		}
 
 		public RGB(int r, int g, int b) {
-			this.r = r;
-			this.g = g;
-			this.b = b;
+			this.r = r & 0xFF;
+			this.g = g & 0xFF;
+			this.b = b & 0xFF;
 		}
 
 		public RGB(int color) {
 			this(((color & 0xFF0000) >> 16), ((color & 0x00FF00) >> 8), (color & 0x0000FF));
 		}
 
-		public RGB() {
-			this(0);
-		}
-
-		public int getR() {
-			return r;
-		}
-
-		public void setR(int r) {
-			this.r = r;
-		}
-
-		public int getG() {
-			return g;
-		}
-
-		public void setG(int g) {
-			this.g = g;
-		}
-
-		public int getB() {
-			return b;
-		}
-
-		public void setB(int b) {
-			this.b = b;
-		}
-
-		public void setColor(int r, int g, int b) {
-			setR(r);
-			setG(g);
-			setB(b);
-		}
+		public RGB() {}
 
 		public void setColor(int color) {
-			setColor(((color & 0xFF0000) >> 16), ((color & 0x00FF00) >> 8), (color & 0x0000FF));
+			r = (color & 0xFF0000) >> 16;
+			g = (color & 0x00FF00) >> 8;
+			b = color & 0x0000FF;
 		}
 
 		public int getColor() {
 			return r << 16 | g << 8 | b;
+		}
+
+		public float getR() {
+			return r / 255f;
+		}
+
+		public float getG() {
+			return g / 255f;
+		}
+
+		public float getB() {
+			return b / 255f;
 		}
 
 		public RGB interpolate(RGB other, double amount) {
