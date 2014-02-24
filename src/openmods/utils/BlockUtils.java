@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import openmods.IInventoryProvider;
@@ -150,4 +151,14 @@ public class BlockUtils {
 		return y;
 	}
 
+	public static boolean isBlockHit(MovingObjectPosition mop, TileEntity tile) {
+		if (tile == null) return false;
+		return isBlockHit(mop, tile.xCoord, tile.yCoord, tile.zCoord);
+	}
+
+	public static boolean isBlockHit(MovingObjectPosition mop, int x, int y, int z) {
+		if (mop == null) return false;
+		return mop.blockX == x && mop.blockY == y && mop.blockZ == z;
+	}
+	
 }
