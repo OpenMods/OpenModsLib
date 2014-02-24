@@ -65,6 +65,7 @@ public class Mods {
 	public static final String TREECAPITATOR = "TreeCapitator";
 	public static final String WIRELESSREDSTONECBE = "WR-CBE|Core";
 	public static final String WORLDSTATECHECKPOINTS = "WorldStateCheckpoints";
+	public static final String FLANSMOD = "FlansMod";
 
 	public static ModContainer getModForItemStack(ItemStack stack) {
 		Item item = stack.getItem();
