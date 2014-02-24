@@ -25,6 +25,14 @@ public class PaintUtils {
 		allowed.add(Block.stoneBrick.blockID);
 		allowed.add(Block.glass.blockID);
 		allowed.add(Block.planks.blockID);
+		allowed.add(Block.dirt.blockID);
+		allowed.add(Block.grass.blockID);
+		allowed.add(Block.wood.blockID);
+		allowed.add(Block.blockGold.blockID);
+		allowed.add(Block.blockEmerald.blockID);
+		allowed.add(Block.blockLapis.blockID);
+		allowed.add(Block.blockNetherQuartz.blockID);
+		allowed.add(Block.whiteStone.blockID);
 		if (Loader.isModLoaded(Mods.TINKERSCONSTRUCT)) {
 			addBlocksForMod(Mods.TINKERSCONSTRUCT, new String[] {
 					"GlassBlock",
