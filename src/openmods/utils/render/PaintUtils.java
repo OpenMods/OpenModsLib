@@ -26,7 +26,6 @@ public class PaintUtils {
 		allowed.add(Block.glass.blockID);
 		allowed.add(Block.planks.blockID);
 		allowed.add(Block.dirt.blockID);
-		allowed.add(Block.grass.blockID);
 		allowed.add(Block.wood.blockID);
 		allowed.add(Block.blockGold.blockID);
 		allowed.add(Block.blockEmerald.blockID);
