@@ -160,5 +160,5 @@ public class BlockUtils {
 		if (mop == null) return false;
 		return mop.blockX == x && mop.blockY == y && mop.blockZ == z;
 	}
-	
+
 }

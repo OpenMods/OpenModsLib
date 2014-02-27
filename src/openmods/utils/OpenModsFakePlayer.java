@@ -1,10 +1,5 @@
 package openmods.utils;
 
-import java.util.Map;
-import java.util.WeakHashMap;
-
-import openmods.Log;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.Item;
@@ -18,29 +13,20 @@ import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
+import openmods.Log;
 
 import com.google.common.base.Preconditions;
 
 //TODO: Discuss if we make seperate players for seperate mods
 public class OpenModsFakePlayer extends FakePlayer {
-	private static final Map<World, OpenModsFakePlayer> PLAYERS = new WeakHashMap<World, OpenModsFakePlayer>();
 
-	public static OpenModsFakePlayer getPlayerForWorld(World world) {
-		OpenModsFakePlayer player = PLAYERS.get(world);
-		if (player == null) {
-			player = new OpenModsFakePlayer(world);
-			PLAYERS.put(world, player);
-		}
-		return player;
-	}
-
-	private OpenModsFakePlayer(World world) {
+	public OpenModsFakePlayer(World world) {
 		super(world, "OpenModsFakePlayer");
 	}
 
 	@Override
 	public void setDead() {
-		PLAYERS.remove(worldObj.provider.dimensionId);
+		inventory.clearInventory(-1, -1);
 		super.setDead();
 	}
 

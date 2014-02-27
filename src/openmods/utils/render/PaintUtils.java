@@ -60,7 +60,7 @@ public class PaintUtils {
 			}
 		}
 	}
-	
+
 	public boolean isAllowedToReplace(Block block) {
 		if (block == null || block.canProvidePower()) return false;
 		return allowed.contains(block.blockID);
@@ -68,9 +68,7 @@ public class PaintUtils {
 
 	public boolean isAllowedToReplace(World world, int x, int y, int z) {
 		int id = world.getBlockId(x, y, z);
-		if (world.isAirBlock(x, y, z)) {
-			return false;
-		}
+		if (world.isAirBlock(x, y, z)) { return false; }
 		Block block = Block.blocksList[id];
 		return isAllowedToReplace(block);
 	}
