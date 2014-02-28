@@ -33,7 +33,6 @@ public class OpenMods {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent evt) {
-		Log.logger = evt.getModLog();
 		EventPacket.registerCorePackets();
 
 		final File configFile = evt.getSuggestedConfigurationFile();

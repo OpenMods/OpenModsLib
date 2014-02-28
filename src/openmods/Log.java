@@ -3,10 +3,17 @@ package openmods;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cpw.mods.fml.common.FMLLog;
+
 public final class Log {
 	private Log() {}
 
-	public static Logger logger;
+	private static final Logger logger;
+
+	static {
+		logger = Logger.getLogger("OpenMods");
+		logger.setParent(FMLLog.getLogger());
+	}
 
 	private static final Throwable stackInfo = new Throwable();
 
