@@ -14,6 +14,7 @@ import openmods.GenericInventory;
 import openmods.integration.Integration;
 import openmods.sync.SyncableFlags;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class InventoryUtils {
@@ -518,5 +519,19 @@ public class InventoryUtils {
 
 	static ItemStack returnItem(ItemStack stack) {
 		return (stack == null || stack.stackSize <= 0)? null : stack.copy();
+	}
+
+	public static void swapStacks(IInventory inventory, int fromSlot, int intoSlot) {
+		Preconditions.checkElementIndex(fromSlot, inventory.getSizeInventory(), "input slot id");
+		Preconditions.checkElementIndex(intoSlot, inventory.getSizeInventory(), "output slot id");
+
+		ItemStack stack1 = inventory.getStackInSlot(fromSlot);
+		ItemStack stack2 = inventory.getStackInSlot(intoSlot);
+
+		if (stack1 != null) stack1 = stack1.copy();
+		if (stack2 != null) stack2 = stack2.copy();
+
+		inventory.setInventorySlotContents(fromSlot, stack2);
+		inventory.setInventorySlotContents(intoSlot, stack1);
 	}
 }
