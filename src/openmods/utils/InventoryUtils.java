@@ -521,17 +521,75 @@ public class InventoryUtils {
 		return (stack == null || stack.stackSize <= 0)? null : stack.copy();
 	}
 
-	public static void swapStacks(IInventory inventory, int fromSlot, int intoSlot) {
-		Preconditions.checkElementIndex(fromSlot, inventory.getSizeInventory(), "input slot id");
-		Preconditions.checkElementIndex(intoSlot, inventory.getSizeInventory(), "output slot id");
+	public static void swapStacks(IInventory inventory, int slot1, int slot2) {
+		swapStacks(inventory, slot1, slot2, true, true);
+	}
 
-		ItemStack stack1 = inventory.getStackInSlot(fromSlot);
-		ItemStack stack2 = inventory.getStackInSlot(intoSlot);
+	public static void swapStacks(IInventory inventory, int slot1, int slot2, boolean copy, boolean validate) {
+		Preconditions.checkElementIndex(slot1, inventory.getSizeInventory(), "input slot id");
+		Preconditions.checkElementIndex(slot2, inventory.getSizeInventory(), "output slot id");
 
-		if (stack1 != null) stack1 = stack1.copy();
-		if (stack2 != null) stack2 = stack2.copy();
+		ItemStack stack1 = inventory.getStackInSlot(slot1);
+		ItemStack stack2 = inventory.getStackInSlot(slot2);
 
-		inventory.setInventorySlotContents(fromSlot, stack2);
-		inventory.setInventorySlotContents(intoSlot, stack1);
+		if (validate) {
+			isItemValid(inventory, slot2, stack1);
+			isItemValid(inventory, slot1, stack2);
+		}
+
+		if (copy) {
+			if (stack1 != null) stack1 = stack1.copy();
+			if (stack2 != null) stack2 = stack2.copy();
+		}
+
+		inventory.setInventorySlotContents(slot1, stack2);
+		inventory.setInventorySlotContents(slot2, stack1);
+		inventory.onInventoryChanged();
+	}
+
+	public static void swapStacks(ISidedInventory inventory, int slot1, ForgeDirection side1, int slot2, ForgeDirection side2) {
+		swapStacks(inventory, slot1, side1, slot2, side2, true, true);
+	}
+
+	public static void swapStacks(ISidedInventory inventory, int slot1, ForgeDirection side1, int slot2, ForgeDirection side2, boolean copy, boolean validate) {
+		Preconditions.checkElementIndex(slot1, inventory.getSizeInventory(), "input slot id");
+		Preconditions.checkElementIndex(slot2, inventory.getSizeInventory(), "output slot id");
+
+		ItemStack stack1 = inventory.getStackInSlot(slot1);
+		ItemStack stack2 = inventory.getStackInSlot(slot2);
+
+		if (validate) {
+			isItemValid(inventory, slot2, stack1);
+			isItemValid(inventory, slot1, stack2);
+
+			canExtract(inventory, slot1, side1, stack1);
+			canInsert(inventory, slot2, side2, stack1);
+
+			canExtract(inventory, slot2, side2, stack2);
+			canInsert(inventory, slot1, side1, stack2);
+		}
+
+		if (copy) {
+			if (stack1 != null) stack1 = stack1.copy();
+			if (stack2 != null) stack2 = stack2.copy();
+		}
+
+		inventory.setInventorySlotContents(slot1, stack2);
+		inventory.setInventorySlotContents(slot2, stack1);
+		inventory.onInventoryChanged();
+	}
+
+	protected static void isItemValid(IInventory inventory, int slot, ItemStack stack) {
+		Preconditions.checkArgument(inventory.isItemValidForSlot(slot, stack), "Slot %s cannot accept item", slot);
+	}
+
+	protected static void canInsert(ISidedInventory inventory, int slot, ForgeDirection side, ItemStack stack) {
+		Preconditions.checkArgument(inventory.canInsertItem(slot, stack, side.ordinal()),
+				"Item cannot be inserted into slot %s on side %s", slot, side);
+	}
+
+	protected static void canExtract(ISidedInventory inventory, int slot, ForgeDirection side, ItemStack stack) {
+		Preconditions.checkArgument(inventory.canExtractItem(slot, stack, side.ordinal()),
+				"Item cannot be extracted from slot %s on side %s", slot, side);
 	}
 }
