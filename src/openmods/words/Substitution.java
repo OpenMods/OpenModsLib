@@ -4,17 +4,19 @@ import java.math.BigInteger;
 import java.util.Map;
 import java.util.Random;
 
-public class Terminal implements IGenerator {
+import com.google.common.base.Strings;
 
-	private final String value;
+public class Substitution implements IGenerator {
 
-	public Terminal(String value) {
-		this.value = value;
+	private final String key;
+
+	public Substitution(String key) {
+		this.key = key;
 	}
 
 	@Override
 	public String generate(Random random, Map<String, String> params) {
-		return value;
+		return Strings.nullToEmpty(params.get(key));
 	}
 
 	@Override

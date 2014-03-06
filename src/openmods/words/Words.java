@@ -73,4 +73,7 @@ public class Words {
 		return new Optional(gen, probability);
 	}
 
+	public static IGenerator sub(String key) {
+		return new Substitution(key);
+	}
 }

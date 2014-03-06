@@ -1,5 +1,7 @@
 package openmods.words;
 
+import java.math.BigInteger;
+import java.util.Map;
 import java.util.Random;
 
 public class Optional implements IGenerator {
@@ -13,8 +15,13 @@ public class Optional implements IGenerator {
 	}
 
 	@Override
-	public String generate(Random random) {
-		return (random.nextFloat() < probability)? part.generate(random) : "";
+	public String generate(Random random, Map<String, String> params) {
+		return (random.nextFloat() < probability)? part.generate(random, params) : "";
+	}
+
+	@Override
+	public BigInteger count() {
+		return part.count().add(BigInteger.ONE);
 	}
 
 }

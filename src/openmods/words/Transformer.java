@@ -1,5 +1,7 @@
 package openmods.words;
 
+import java.math.BigInteger;
+import java.util.Map;
 import java.util.Random;
 
 public abstract class Transformer implements IGenerator {
@@ -13,9 +15,13 @@ public abstract class Transformer implements IGenerator {
 	protected abstract String transform(String input);
 
 	@Override
-	public String generate(Random random) {
-		String result = root.generate(random);
+	public String generate(Random random, Map<String, String> params) {
+		String result = root.generate(random, params);
 		return transform(result);
 	}
 
+	@Override
+	public BigInteger count() {
+		return root.count();
+	}
 }

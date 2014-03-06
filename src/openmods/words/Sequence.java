@@ -1,13 +1,13 @@
 package openmods.words;
 
+import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 public abstract class Sequence implements IGenerator {
@@ -18,19 +18,20 @@ public abstract class Sequence implements IGenerator {
 		this.parts = ImmutableList.copyOf(parts);
 	}
 
-	protected List<String> generateParts(Random random) {
+	protected List<String> generateParts(Random random, Map<String, String> params) {
 		List<String> result = Lists.newArrayList();
 		for (IGenerator part : parts)
-			result.add(part.generate(random));
+			result.add(part.generate(random, params));
 		return result;
 	}
 
-	private static final Predicate<String> SKIP = new Predicate<String>() {
-		@Override
-		public boolean apply(String input) {
-			return !Strings.isNullOrEmpty(input);
-		}
-	};
+	@Override
+	public BigInteger count() {
+		BigInteger result = BigInteger.ONE;
+		for (IGenerator part : parts)
+			result = result.multiply(part.count());
+		return result;
+	}
 
 	public static class Phrase extends Sequence {
 		public Phrase(IGenerator... parts) {
@@ -38,8 +39,15 @@ public abstract class Sequence implements IGenerator {
 		}
 
 		@Override
-		public String generate(Random random) {
-			return Joiner.on(' ').join(Iterables.filter(generateParts(random), SKIP));
+		public String generate(Random random, Map<String, String> params) {
+			List<String> results = Lists.newArrayList();
+
+			for (IGenerator part : parts) {
+				String result = part.generate(random, params);
+				if (!Strings.isNullOrEmpty(result)) results.add(result);
+			}
+
+			return Joiner.on(' ').join(results);
 		}
 	}
 
@@ -49,10 +57,10 @@ public abstract class Sequence implements IGenerator {
 		}
 
 		@Override
-		public String generate(Random random) {
+		public String generate(Random random, Map<String, String> params) {
 			StringBuilder builder = new StringBuilder();
 			for (IGenerator part : parts)
-				builder.append(part.generate(random));
+				builder.append(part.generate(random, params));
 			return builder.toString();
 		}
 	}
