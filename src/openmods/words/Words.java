@@ -74,6 +74,10 @@ public class Words {
 	}
 
 	public static IGenerator sub(String key) {
-		return new Substitution(key);
+		return new Substitution(key, "");
+	}
+
+	public static IGenerator sub(String key, String defaultValue) {
+		return new Substitution(key, defaultValue);
 	}
 }
