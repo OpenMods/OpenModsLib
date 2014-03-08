@@ -80,4 +80,8 @@ public class Words {
 	public static IGenerator sub(String key, String defaultValue) {
 		return new Substitution(key, defaultValue);
 	}
+
+	public static IGenerator range(int start, int end) {
+		return new Range(start, end);
+	}
 }
