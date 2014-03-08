@@ -16,7 +16,7 @@ public class CollectionUtils {
 	public static final Random rnd = new Random();
 
 	public static <T> T getRandom(Collection<T> collection) {
-		if (collection.size() == 0) { return null; }
+		if (collection.isEmpty()) return null;
 		int randomIndex = rnd.nextInt(collection.size());
 		int i = 0;
 		for (T obj : collection) {
@@ -24,6 +24,12 @@ public class CollectionUtils {
 			i = i + 1;
 		}
 		return null;
+	}
+
+	public static <T> T getRandom(List<T> list) {
+		if (list.isEmpty()) return null;
+		int randomIndex = rnd.nextInt(list.size());
+		return list.get(randomIndex);
 	}
 
 	public static <T> T getWeightedRandom(Map<T, Integer> collection) {

@@ -1,10 +1,15 @@
 package openmods.config;
 
-import java.util.*;
+import static openmods.utils.CommandUtils.error;
+import static openmods.utils.CommandUtils.filterPrefixes;
+import static openmods.utils.CommandUtils.respond;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.ChatMessageComponent;
 import openmods.Log;
 import openmods.config.ConfigProcessing.ModConfig;
 import openmods.utils.io.StringConversionException;
@@ -12,7 +17,6 @@ import openmods.utils.io.StringConversionException;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 
 public class CommandConfig implements ICommand {
 
@@ -68,38 +72,20 @@ public class CommandConfig implements ICommand {
 		return null;
 	}
 
-	private static void respond(ICommandSender sender, String format) {
-		sender.sendChatToPlayer(ChatMessageComponent.createFromTranslationKey(format));
-	}
-
-	private static void respond(ICommandSender sender, String format, Object... args) {
-		sender.sendChatToPlayer(ChatMessageComponent.createFromTranslationWithSubstitutions(format, args));
-	}
-
 	private static void printValue(ICommandSender sender, final ModConfig config, ConfigPropertyMeta property) {
 		respond(sender, "%s.%s.%s = %s (%s)", config.modId, property.category, property.name, property.valueDescription(), property.type.toString());
 	}
 
 	@Override
 	public void processCommand(ICommandSender sender, String[] args) {
-		if (args.length < 2) {
-			respond(sender, "openmodslib.command.no_enough_args");
-			return;
-		}
+		if (args.length < 2) throw error("openmodslib.command.no_enough_args");
 
 		final String command = args[0];
-
-		if (!SUBCOMMANDS.contains(command)) {
-			respond(sender, "openmodslib.command.invalid_command", command);
-			return;
-		}
+		if (!SUBCOMMANDS.contains(command)) throw error("openmodslib.command.invalid_command", command);
 
 		final String modId = args[1];
 		final ModConfig config = ConfigProcessing.getConfig(modId);
-		if (config == null) {
-			respond(sender, "openmodslib.command.unknown_modid");
-			return;
-		}
+		if (config == null) throw error("openmodslib.command.unknown_modid");
 
 		if (COMMAND_SAVE.equals(command)) {
 			config.save();
@@ -107,19 +93,13 @@ public class CommandConfig implements ICommand {
 			return;
 		}
 
-		if (args.length < 4) {
-			respond(sender, "openmodslib.command.no_enough_args");
-			return;
-		}
+		if (args.length < 4) throw error("openmodslib.command.no_enough_args");
 
 		final String category = args[2];
 		final String name = args[3];
 
 		ConfigPropertyMeta property = config.getValue(category, name);
-		if (property == null) {
-			respond(sender, "openmodslib.command.unknown_value");
-			return;
-		}
+		if (property == null) throw error("openmodslib.command.unknown_value");
 
 		if (COMMAND_HELP.equals(command)) {
 			respond(sender, "%s.%s.%s: %s (%s)", config.modId, property.category, property.name, property.comment, property.type.toString());
@@ -129,15 +109,12 @@ public class CommandConfig implements ICommand {
 			return;
 		} else if (COMMAND_CLEAR.equals(command)) {
 			if (property.acceptsMultipleValues()) changeValue(config, sender, property);
-			else respond(sender, "openmodslib.command.not_multiple");
+			else throw error("openmodslib.command.not_multiple");
 
 			return;
 		}
 
-		if (args.length < 5) {
-			respond(sender, "openmodslib.command.no_enough_args");
-			return;
-		}
+		if (args.length < 5) throw error("openmodslib.command.no_enough_args");
 
 		String[] values = Arrays.copyOfRange(args, 4, args.length);
 
@@ -146,10 +123,7 @@ public class CommandConfig implements ICommand {
 			return;
 		}
 
-		if (!property.acceptsMultipleValues()) {
-			respond(sender, "openmodslib.command.not_multiple");
-			return;
-		}
+		if (!property.acceptsMultipleValues()) throw error("openmodslib.command.not_multiple");
 
 		String[] current = property.getPropertyValue();
 
@@ -161,7 +135,7 @@ public class CommandConfig implements ICommand {
 			return;
 		}
 
-		respond(sender, "openmodslib.command.no_enough_args");
+		throw error("openmodslib.command.no_enough_args");
 
 	}
 
@@ -181,10 +155,10 @@ public class CommandConfig implements ICommand {
 			}
 			printValue(sender, config, property);
 		} catch (StringConversionException e) {
-			respond(sender, "openmodslib.command.invalid_type", Arrays.toString(values), property.type);
+			throw error("openmodslib.command.invalid_type", Arrays.toString(values), property.type);
 		} catch (Exception e) {
-			respond(sender, "openmodslib.command.unknown_error", e.getMessage());
 			Log.warn(e, "Error during command change");
+			throw error("openmodslib.command.unknown_error", e.getMessage());
 		}
 	}
 
@@ -215,16 +189,6 @@ public class CommandConfig implements ICommand {
 		if (args.length == 4) return filterPrefixes(name, config.getValues(category));
 
 		return null;
-	}
-
-	private static List<String> filterPrefixes(String prefix, Collection<String> proposals) {
-		prefix = prefix.toLowerCase();
-
-		List<String> result = Lists.newArrayList();
-		for (String s : proposals)
-			if (s.startsWith(prefix)) result.add(s);
-
-		return result;
 	}
 
 	@Override
