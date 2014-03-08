@@ -44,6 +44,7 @@ public class Mods {
 	public static final String IC2 = "IC2";
 	public static final String INGAMEINFO = "IngameInfo";
 	public static final String MAGICBEES = "MagicBees";
+	public static final String MFR = "MineFactoryReloaded"
 	public static final String MPS = "powersuits";
 	public static final String MULTIPART = "McMultipart";
 	public static final String MYSTCRAFT = "Mystcraft";
