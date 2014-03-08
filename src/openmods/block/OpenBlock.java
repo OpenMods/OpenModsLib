@@ -194,13 +194,19 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return true;
 	}
 
+	protected boolean hasTileEntityDrops() {
+		return true;
+	}
+
 	@Override
 	public boolean removeBlockByPlayer(World world, EntityPlayer player, int x, int y, int z) {
-		if (!player.capabilities.isCreativeMode) {
+		// This is last place we have TE, before it's removed,
+		// When removed by player, it will be already unavailable in
+		// getBlockDropped
+		if (hasTileEntityDrops() && !player.capabilities.isCreativeMode) {
 			final TileEntity te = world.getBlockTileEntity(x, y, z);
 			List<ItemStack> teDrops = Lists.newArrayList();
 			getTileEntityDrops(te, teDrops);
-
 			for (ItemStack drop : teDrops)
 				dropBlockAsItem_do(world, x, y, z, drop);
 		}
@@ -212,8 +218,10 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public ArrayList<ItemStack> getBlockDropped(World world, int x, int y, int z, int metadata, int fortune) {
 		ArrayList<ItemStack> result = Lists.newArrayList();
 		if (hasNormalDrops()) result.addAll(super.getBlockDropped(world, x, y, z, metadata, fortune));
-		final TileEntity te = world.getBlockTileEntity(x, y, z);
-		getTileEntityDrops(te, result);
+		if (hasTileEntityDrops()) {
+			final TileEntity te = world.getBlockTileEntity(x, y, z);
+			getTileEntityDrops(te, result);
+		}
 
 		return result;
 	}
