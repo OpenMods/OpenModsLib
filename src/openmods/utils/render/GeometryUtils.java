@@ -110,9 +110,9 @@ public class GeometryUtils {
 
 	public static void makeSphere(int radiusX, int radiusY, int radiusZ, IShapeable shapeable, EnumSet<Octant> octants) {
 
-		final double invRadiusX = 1.0 / radiusX;
-		final double invRadiusY = 1.0 / radiusY;
-		final double invRadiusZ = 1.0 / radiusZ;
+		final double invRadiusX = 1.0 / (radiusX + 0.5);
+		final double invRadiusY = 1.0 / (radiusY + 0.5);
+		final double invRadiusZ = 1.0 / (radiusZ + 0.5);
 
 		final Set<Octant> octantSet = octants;
 

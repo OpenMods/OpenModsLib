@@ -8,8 +8,8 @@ public class ShapeCylinderGenerator implements IShapeGenerator {
 	public void generateShape(int radiusX, int height, int radiusZ, IShapeable shapeable) {
 		if (height == 0) { return; }
 
-		final double invRadiusX = 1.0 / radiusX;
-		final double invRadiusZ = 1.0 / radiusZ;
+		final double invRadiusX = 1.0 / (radiusX + 0.5);
+		final double invRadiusZ = 1.0 / (radiusZ + 0.5);
 
 		double nextXn = 0;
 		forX: for (int x = 0; x <= radiusX; ++x) {
