@@ -42,16 +42,36 @@ public class ReflectionHelper {
 		return new TypeMarker(cls, value);
 	}
 
+	public static Object primitive(char value) {
+		return new TypeMarker(char.class, value);
+	}
+
+	public static Object primitive(long value) {
+		return new TypeMarker(long.class, value);
+	}
+
 	public static Object primitive(int value) {
 		return new TypeMarker(int.class, value);
 	}
 
-	public static Object primitive(boolean value) {
-		return new TypeMarker(boolean.class, value);
+	public static Object primitive(short value) {
+		return new TypeMarker(short.class, value);
 	}
 
 	public static Object primitive(byte value) {
 		return new TypeMarker(byte.class, value);
+	}
+
+	public static Object primitive(float value) {
+		return new TypeMarker(float.class, value);
+	}
+
+	public static Object primitive(double value) {
+		return new TypeMarker(double.class, value);
+	}
+
+	public static Object primitive(boolean value) {
+		return new TypeMarker(boolean.class, value);
 	}
 
 	public static Object getProperty(Class<?> klazz, Object instance, String... fields) {
