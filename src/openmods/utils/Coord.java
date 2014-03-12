@@ -1,17 +1,11 @@
 package openmods.utils;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockFlower;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.ForgeDirection;
 
-public class Coord {
-	public int x;
-	public int y;
-	public int z;
-
-	public Coord() {}
+public class Coord implements Cloneable {
+	public final int x;
+	public final int y;
+	public final int z;
 
 	public Coord(ForgeDirection direction) {
 		x = direction.offsetX;
@@ -25,16 +19,12 @@ public class Coord {
 		this.z = z;
 	}
 
-	public void offset(ForgeDirection direction) {
-		x += direction.offsetX;
-		y += direction.offsetY;
-		z += direction.offsetZ;
+	public Coord offset(ForgeDirection direction) {
+		return new Coord(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
 	}
 
-	public void set(int x, int y, int z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+	public Coord offset(int ox, int oy, int oz) {
+		return new Coord(x + ox, y + oy, z + oz);
 	}
 
 	@Override
@@ -52,18 +42,6 @@ public class Coord {
 	@Override
 	public String toString() {
 		return String.format("%s,%s,%s", x, y, z);
-	}
-
-	public void offset(int ox, int oy, int oz) {
-		x += ox;
-		y += oy;
-		z += oz;
-	}
-
-	public void setFrom(Coord copy) {
-		x = copy.x;
-		y = copy.y;
-		z = copy.z;
 	}
 
 	@Override
@@ -168,52 +146,5 @@ public class Coord {
 
 	public boolean isZAligned(Coord pos) {
 		return pos != null? z == pos.z : false;
-	}
-
-	public boolean isAirBlock(World world) {
-		return world.isAirBlock(x, y, z);
-	}
-
-	public boolean isFlower(World world) {
-		Block block = Block.blocksList[getBlockID(world)];
-		return block instanceof BlockFlower;
-	}
-
-	public boolean isBlockNormalCube(World world) {
-		return world.isBlockNormalCube(x, y, z);
-	}
-
-	public boolean isBlockOpaqueCube(World world) {
-		return world.isBlockOpaqueCube(x, y, z);
-	}
-
-	public boolean isWood(World world) {
-		Block block = Block.blocksList[getBlockID(world)];
-		return block != null && block.isWood(world, x, y, z);
-	}
-
-	public boolean isLeaves(World world) {
-		Block block = Block.blocksList[getBlockID(world)];
-		return block != null && block.isLeaves(world, x, y, z);
-	}
-
-	public int getBlockID(World world) {
-		return world.getBlockId(x, y, z);
-	}
-
-	public int getBlockMetadata(World world) {
-		return world.getBlockMetadata(x, y, z);
-	}
-
-	public BiomeGenBase getBiomeGenBase(World world) {
-		return world.getBiomeGenForCoords(x, z);
-	}
-
-	public boolean moveBlockToHereFrom(World world, Coord src, boolean allowBlockReplacement) {
-		return BlockUtils.moveBlock(world, src, this, allowBlockReplacement);
-	}
-
-	public boolean moveBlockFromHereTo(World world, Coord tgt, boolean allowBlockReplacement) {
-		return BlockUtils.moveBlock(world, this, tgt, allowBlockReplacement);
 	}
 }
