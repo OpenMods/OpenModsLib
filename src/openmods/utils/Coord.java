@@ -1,6 +1,7 @@
 package openmods.utils;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockFlower;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.ForgeDirection;
@@ -171,6 +172,11 @@ public class Coord {
 
 	public boolean isAirBlock(World world) {
 		return world.isAirBlock(x, y, z);
+	}
+
+	public boolean isFlower(World world) {
+		Block block = Block.blocksList[getBlockID(world)];
+		return block instanceof BlockFlower;
 	}
 
 	public boolean isBlockNormalCube(World world) {
