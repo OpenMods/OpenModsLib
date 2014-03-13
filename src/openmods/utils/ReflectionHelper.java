@@ -74,18 +74,41 @@ public class ReflectionHelper {
 		return new TypeMarker(boolean.class, value);
 	}
 
-	public static Object getProperty(Class<?> klazz, Object instance, String... fields) {
+	@SuppressWarnings("unchecked")
+	public static <T> T getProperty(Class<?> klazz, Object instance, String... fields) {
 		Field field = getField(klazz == null? instance.getClass() : klazz, fields);
 		Preconditions.checkNotNull(field, "Fields %s not found", Arrays.toString(fields));
 		try {
-			return field.get(instance);
+			return (T)field.get(instance);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
 	}
 
-	public static Object getProperty(String className, Object instance, String... fields) {
+	public static <T> T getProperty(String className, Object instance, String... fields) {
 		return getProperty(getClass(className), instance, fields);
+	}
+
+	public static <T> T getProperty(Object instance, String... fields) {
+		return getProperty(instance.getClass(), instance, fields);
+	}
+
+	public static void setProperty(Class<?> klazz, Object instance, Object value, String... fields) {
+		Field field = getField(klazz == null? instance.getClass() : klazz, fields);
+		Preconditions.checkNotNull(field, "Fields %s not found", Arrays.toString(fields));
+		try {
+			field.set(instance, value);
+		} catch (Exception e) {
+			throw Throwables.propagate(e);
+		}
+	}
+
+	public static void setProperty(String className, Object instance, Object value, String... fields) {
+		setProperty(getClass(className), instance, value, fields);
+	}
+
+	public static void setProperty(Object instance, Object value, String... fields) {
+		setProperty(instance.getClass(), instance, value, fields);
 	}
 
 	public static <T> T callStatic(Class<?> klazz, String methodName, Object... args) {
