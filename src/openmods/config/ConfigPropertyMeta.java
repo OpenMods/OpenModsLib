@@ -27,9 +27,11 @@ public abstract class ConfigPropertyMeta {
 	public final String name;
 	public final String category;
 	public final String comment;
-	public final Field field;
 	public final Property.Type type;
-	public final boolean onLine;
+	protected final Field field;
+	private final boolean onLine;
+	private final Object defaultValue;
+	private final String[] defaultText;
 
 	protected final IStringSerializable<?> converter;
 	protected final Property wrappedProperty;
@@ -66,8 +68,9 @@ public abstract class ConfigPropertyMeta {
 		this.name = name;
 		this.field = field;
 
-		final Object defaultValue = getFieldValue();
+		defaultValue = getFieldValue();
 		Preconditions.checkNotNull(defaultValue, "Config field %s has no default value", name);
+		defaultText = convertToStringArray(defaultValue);
 
 		final Class<?> fieldType = getFieldType();
 		type = ConfigPropertyMeta.CONFIG_TYPES.get(fieldType);
@@ -127,6 +130,8 @@ public abstract class ConfigPropertyMeta {
 
 	public abstract String valueDescription();
 
+	protected abstract String[] convertToStringArray(Object value);
+
 	public Result tryChangeValue(String... proposedValues) {
 		ConfigurationChange.Pre evt = new ConfigurationChange.Pre(name, category, proposedValues);
 		if (MinecraftForge.EVENT_BUS.post(evt)) return Result.CANCELLED;
@@ -140,6 +145,10 @@ public abstract class ConfigPropertyMeta {
 		setPropertyValue(evt.proposedValues);
 
 		return onLine? Result.ONLINE : Result.OFFLINE;
+	}
+
+	public String[] getDefaultValues() {
+		return defaultText.clone();
 	}
 
 	private static class SingleValue extends ConfigPropertyMeta {
@@ -186,19 +195,14 @@ public abstract class ConfigPropertyMeta {
 		public String valueDescription() {
 			return wrappedProperty.getString();
 		}
+
+		@Override
+		protected String[] convertToStringArray(Object value) {
+			return new String[] { value.toString() };
+		}
 	}
 
 	private static class MultipleValues extends ConfigPropertyMeta {
-
-		private static String[] toStringArray(Object array) {
-			Preconditions.checkArgument(array.getClass().isArray(), "Type %s is not an array", array.getClass());
-			int length = Array.getLength(array);
-			String[] result = new String[length];
-			for (int i = 0; i < length; i++)
-				result[i] = String.format("\"%s\"", Array.get(array, i).toString());
-
-			return result;
-		}
 
 		protected MultipleValues(Configuration config, Field field, ConfigProperty annotation) {
 			super(config, field, annotation);
@@ -211,7 +215,7 @@ public abstract class ConfigPropertyMeta {
 
 		@Override
 		protected Property getProperty(Configuration configFile, Type expectedType, Object defaultValue) {
-			final String[] defaultStrings = toStringArray(defaultValue);
+			final String[] defaultStrings = convertToStringArray(defaultValue);
 			return configFile.get(category, name, defaultStrings, comment, expectedType);
 		}
 
@@ -245,6 +249,17 @@ public abstract class ConfigPropertyMeta {
 		@Override
 		public String valueDescription() {
 			return Arrays.toString(wrappedProperty.getStringList());
+		}
+
+		@Override
+		protected String[] convertToStringArray(Object value) {
+			Preconditions.checkArgument(value.getClass().isArray(), "Type %s is not an array", value.getClass());
+			int length = Array.getLength(value);
+			String[] result = new String[length];
+			for (int i = 0; i < length; i++)
+				result[i] = String.format("\"%s\"", Array.get(value, i).toString());
+
+			return result;
 		}
 	}
 

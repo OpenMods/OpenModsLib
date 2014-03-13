@@ -27,6 +27,7 @@ public class CommandConfig implements ICommand {
 	private static final String COMMAND_GET = "get";
 	private static final String COMMAND_HELP = "help";
 	private static final String COMMAND_SAVE = "save";
+	private static final String COMMAND_DEFAULT = "default";
 
 	private static final Set<String> SUBCOMMANDS = ImmutableSet.of(
 			COMMAND_SAVE,
@@ -35,7 +36,8 @@ public class CommandConfig implements ICommand {
 			COMMAND_CLEAR,
 			COMMAND_SET,
 			COMMAND_APPEND,
-			COMMAND_REMOVE);
+			COMMAND_REMOVE,
+			COMMAND_DEFAULT);
 
 	public CommandConfig(String name, boolean restricted) {
 		this.name = name;
@@ -63,7 +65,8 @@ public class CommandConfig implements ICommand {
 				name + " clear <modid> <category> <name> OR\n" +
 				name + " set <modid> <category> <name> <value>... OR\n" +
 				name + " append <modid> <category> <name> <value>... OR\n" +
-				name + " remove <modid> <category> <name> <value>...";
+				name + " remove <modid> <category> <name> <value>... OR\n" +
+				name + " default <modid> <category> <name> <value>... OR\n";
 	}
 
 	@Override
@@ -110,7 +113,9 @@ public class CommandConfig implements ICommand {
 		} else if (COMMAND_CLEAR.equals(command)) {
 			if (property.acceptsMultipleValues()) changeValue(config, sender, property);
 			else throw error("openmodslib.command.not_multiple");
-
+			return;
+		} else if (COMMAND_DEFAULT.equals(command)) {
+			changeValue(config, sender, property, property.getDefaultValues());
 			return;
 		}
 
