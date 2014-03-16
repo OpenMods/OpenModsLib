@@ -89,27 +89,21 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 	@Override
 	public int fill(FluidStack resource, boolean doFill) {
 		int filled = super.fill(resource, doFill);
-		if (filled > 0) {
-			markDirty();
-		}
+		if (doFill && filled > 0) markDirty();
 		return filled;
 	}
 
 	@Override
 	public FluidStack drain(FluidStack stack, boolean doDrain) {
 		FluidStack drained = super.drain(stack, doDrain);
-		if (drained != null) {
-			markDirty();
-		}
+		if (doDrain && drained != null) markDirty();
 		return drained;
 	}
 
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
 		FluidStack drained = super.drain(maxDrain, doDrain);
-		if (drained != null) {
-			markDirty();
-		}
+		if (doDrain && drained != null) markDirty();
 		return drained;
 	}
 

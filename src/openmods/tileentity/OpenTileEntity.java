@@ -8,6 +8,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import openmods.block.OpenBlock;
 import openmods.network.events.TileEntityMessageEventPacket;
+import openmods.utils.Coord;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -21,6 +22,10 @@ public abstract class OpenTileEntity extends TileEntity {
 	/** set up the tile entity! called once upon creation */
 	public void setup() {
 		/** */
+	}
+
+	public Coord getPosition() {
+		return new Coord(xCoord, yCoord, zCoord);
 	}
 
 	/**
