@@ -2,7 +2,7 @@
 {
   "modid" : "OpenMods",
   "name" : "OpenMods",
-  "version" : "@VERSION@",
+  "version" : "${version}",
   "url" : "http://openmods.info/",
   "credits" : "",
   "authors": [
