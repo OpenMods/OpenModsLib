@@ -19,7 +19,7 @@ import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.event.*;
 import cpw.mods.fml.common.network.NetworkMod;
 
-@Mod(modid = "OpenMods", name = "OpenMods", version = "0.3", dependencies = "required-after:OpenModsCore")
+@Mod(modid = "OpenMods", name = "OpenMods", version = "0.4", dependencies = "required-after:OpenModsCore")
 @NetworkMod(serverSideRequired = true, clientSideRequired = false, channels = { PacketHandler.CHANNEL_SYNC, PacketHandler.CHANNEL_EVENTS }, packetHandler = PacketHandler.class)
 public class OpenMods {
 
