@@ -1,5 +1,6 @@
 package openmods.utils.render;
 
+import java.util.EnumSet;
 import java.util.Set;
 
 import net.minecraft.block.Block;
@@ -142,7 +143,7 @@ public class RenderUtils {
 	}
 
 	public static void renderInventoryBlock(RenderBlocks renderer, Block block, ForgeDirection rotation, int colorMultiplier) {
-		renderInventoryBlock(renderer, block, rotation, colorMultiplier, null);
+		renderInventoryBlock(renderer, block, rotation, colorMultiplier, EnumSet.allOf(ForgeDirection.class));
 	}
 
 	public static void renderInventoryBlock(RenderBlocks renderer, Block block, ForgeDirection rotation, int colorMultiplier, Set<ForgeDirection> enabledSides) {
@@ -165,37 +166,37 @@ public class RenderUtils {
 		GL11.glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
 		GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
 		int metadata = rotation.ordinal();
-		if (enabledSides == null || enabledSides.contains(ForgeDirection.DOWN)) {
+		if (enabledSides.contains(ForgeDirection.DOWN)) {
 			tessellator.startDrawingQuads();
 			tessellator.setNormal(0.0F, -1.0F, 0.0F);
 			renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, metadata));
 			tessellator.draw();
 		}
-		if (enabledSides == null || enabledSides.contains(ForgeDirection.UP)) {
+		if (enabledSides.contains(ForgeDirection.UP)) {
 			tessellator.startDrawingQuads();
 			tessellator.setNormal(0.0F, 1.0F, 0.0F);
 			renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 1, metadata));
 			tessellator.draw();
 		}
-		if (enabledSides == null || enabledSides.contains(ForgeDirection.SOUTH)) {
+		if (enabledSides.contains(ForgeDirection.SOUTH)) {
 			tessellator.startDrawingQuads();
 			tessellator.setNormal(0.0F, 0.0F, -1.0F);
 			renderer.renderFaceZNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 2, metadata));
 			tessellator.draw();
 		}
-		if (enabledSides == null || enabledSides.contains(ForgeDirection.NORTH)) {
+		if (enabledSides.contains(ForgeDirection.NORTH)) {
 			tessellator.startDrawingQuads();
 			tessellator.setNormal(0.0F, 0.0F, 1.0F);
 			renderer.renderFaceZPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 3, metadata));
 			tessellator.draw();
 		}
-		if (enabledSides == null || enabledSides.contains(ForgeDirection.WEST)) {
+		if (enabledSides.contains(ForgeDirection.WEST)) {
 			tessellator.startDrawingQuads();
 			tessellator.setNormal(-1.0F, 0.0F, 0.0F);
 			renderer.renderFaceXNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 4, metadata));
 			tessellator.draw();
 		}
-		if (enabledSides == null || enabledSides.contains(ForgeDirection.EAST)) {
+		if (enabledSides.contains(ForgeDirection.EAST)) {
 			tessellator.startDrawingQuads();
 			tessellator.setNormal(1.0F, 0.0F, 0.0F);
 			renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 5, metadata));
