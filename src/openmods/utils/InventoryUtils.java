@@ -199,40 +199,28 @@ public class InventoryUtils {
 		return inserted;
 	}
 
-	/***
-	 * Returns the inventory at the passed in coordinates. If it's a double
-	 * chest it'll wrap the inventory
-	 * 
-	 * @param world
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return
-	 */
-	public static IInventory getInventory(World world, int x, int y, int z) {
-		TileEntity tileEntity = world.getBlockTileEntity(x, y, z);
-		if (tileEntity instanceof TileEntityChest) {
-			int chestId = world.getBlockId(x, y, z);
-			if (world.getBlockId(x - 1, y, z) == chestId) return new InventoryLargeChest("Large chest", (IInventory)world.getBlockTileEntity(x - 1, y, z), (IInventory)tileEntity);
-			if (world.getBlockId(x + 1, y, z) == chestId) return new InventoryLargeChest("Large chest", (IInventory)tileEntity, (IInventory)world.getBlockTileEntity(x + 1, y, z));
-			if (world.getBlockId(x, y, z - 1) == chestId) return new InventoryLargeChest("Large chest", (IInventory)world.getBlockTileEntity(x, y, z - 1), (IInventory)tileEntity);
-			if (world.getBlockId(x, y, z + 1) == chestId) return new InventoryLargeChest("Large chest", (IInventory)tileEntity, (IInventory)world.getBlockTileEntity(x, y, z + 1));
-		}
-		return (tileEntity instanceof IInventory)? (IInventory)tileEntity : null;
+	private static IInventory doubleChestFix(TileEntity te) {
+		final World world = te.worldObj;
+		final int x = te.xCoord;
+		final int y = te.yCoord;
+		final int z = te.zCoord;
+		int chestId = world.getBlockId(x, y, z);
+		if (world.getBlockId(x - 1, y, z) == chestId) return new InventoryLargeChest("Large chest", (IInventory)world.getBlockTileEntity(x - 1, y, z), (IInventory)te);
+		if (world.getBlockId(x + 1, y, z) == chestId) return new InventoryLargeChest("Large chest", (IInventory)te, (IInventory)world.getBlockTileEntity(x + 1, y, z));
+		if (world.getBlockId(x, y, z - 1) == chestId) return new InventoryLargeChest("Large chest", (IInventory)world.getBlockTileEntity(x, y, z - 1), (IInventory)te);
+		if (world.getBlockId(x, y, z + 1) == chestId) return new InventoryLargeChest("Large chest", (IInventory)te, (IInventory)world.getBlockTileEntity(x, y, z + 1));
+		return null;
 	}
 
-	/***
-	 * Gets the inventory relative to the passed in coordinates.
-	 * 
-	 * @param world
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param direction
-	 * @return
-	 */
+	public static IInventory getInventory(World world, int x, int y, int z) {
+		TileEntity tileEntity = world.getBlockTileEntity(x, y, z);
+		if (tileEntity instanceof TileEntityChest) return doubleChestFix(tileEntity);
+		if (tileEntity instanceof IInventory) return (IInventory)tileEntity;
+		return null;
+	}
+
 	public static IInventory getInventory(World world, int x, int y, int z, ForgeDirection direction) {
-		if (direction != null && direction != ForgeDirection.UNKNOWN) {
+		if (direction != null) {
 			x += direction.offsetX;
 			y += direction.offsetY;
 			z += direction.offsetZ;
@@ -242,10 +230,7 @@ public class InventoryUtils {
 	}
 
 	public static IInventory getInventory(IInventory inventory) {
-		if (inventory instanceof TileEntityChest) {
-			TileEntity te = (TileEntity)inventory;
-			return getInventory(te.worldObj, te.xCoord, te.yCoord, te.zCoord);
-		}
+		if (inventory instanceof TileEntityChest) return doubleChestFix((TileEntity)inventory);
 		return inventory;
 	}
 

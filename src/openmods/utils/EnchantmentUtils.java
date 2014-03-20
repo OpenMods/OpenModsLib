@@ -29,15 +29,17 @@ public class EnchantmentUtils {
 		int l = (max? 7 : 0) + 1 + (power >> 1) + (max? power : 0);
 		return max? Math.max(l, power * 2) : Math.max(l / 3, 1);
 	}
-	
+
 	/**
-	 * Be warned, minecraft doesn't update experienceTotal properly, so we have to do this.
+	 * Be warned, minecraft doesn't update experienceTotal properly, so we have
+	 * to do this.
+	 * 
 	 * @param player
 	 * @return
 	 */
 	public static int getPlayerXP(EntityPlayer player) {
- 		return (int)(EnchantmentUtils.getExperienceForLevel(player.experienceLevel) + (player.experience * player.xpBarCap()));
-  	}
+		return (int)(EnchantmentUtils.getExperienceForLevel(player.experienceLevel) + (player.experience * player.xpBarCap()));
+	}
 
 	public static void drainPlayerXP(EntityPlayer player, int amount) {
 		addPlayerXP(player, -amount);
