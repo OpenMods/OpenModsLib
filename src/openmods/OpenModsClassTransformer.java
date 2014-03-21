@@ -5,6 +5,7 @@ import openmods.asm.VisitorHelper;
 import openmods.asm.VisitorHelper.TransformProvider;
 import openmods.include.IncludingClassVisitor;
 import openmods.movement.MovementPatcher;
+import openmods.world.MapGenStructureVisitor;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -12,6 +13,7 @@ import org.objectweb.asm.ClassWriter;
 public class OpenModsClassTransformer implements IClassTransformer {
 
 	private static boolean applyMovementTransformer = System.getProperty("openmods.legacy_movement") == null;
+	private static boolean applyMapgenFix = System.getProperty("openmods.no_mapgen_fix") == null;
 
 	private final static TransformProvider INCLUDING_CV = new TransformProvider() {
 		@Override
@@ -27,8 +29,16 @@ public class OpenModsClassTransformer implements IClassTransformer {
 		if (applyMovementTransformer && transformedName.equals("net.minecraft.client.entity.EntityPlayerSP")) return VisitorHelper.apply(bytes, ClassWriter.COMPUTE_FRAMES, new TransformProvider() {
 			@Override
 			public ClassVisitor createVisitor(ClassVisitor cv) {
-				OpenModsCorePlugin.log.info(String.format("Trying to apply movement callback (class: %s)", name));
+				Log.info("Trying to apply movement callback (class: %s)", name);
 				return new MovementPatcher(name, cv);
+			}
+		});
+
+		if (applyMapgenFix && transformedName.equals("net.minecraft.world.gen.structure.MapGenStructure")) return VisitorHelper.apply(bytes, ClassWriter.COMPUTE_FRAMES, new TransformProvider() {
+			@Override
+			public ClassVisitor createVisitor(ClassVisitor cv) {
+				Log.info("Trying to patch MapGenStructure (class: %s)", name);
+				return new MapGenStructureVisitor(name, cv);
 			}
 		});
 
