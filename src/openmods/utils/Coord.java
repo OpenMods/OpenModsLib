@@ -1,5 +1,7 @@
 package openmods.utils;
 
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.ChunkPosition;
 import net.minecraftforge.common.ForgeDirection;
 
 public class Coord implements Cloneable {
@@ -17,6 +19,24 @@ public class Coord implements Cloneable {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+	}
+
+	public Coord(double x, double y, double z) {
+		this.x = MathHelper.floor_double(x);
+		this.y = MathHelper.floor_double(y);
+		this.z = MathHelper.floor_double(z);
+	}
+
+	public Coord(int[] coords) {
+		this.x = coords[0];
+		this.y = coords[1];
+		this.z = coords[2];
+	}
+
+	public Coord(ChunkPosition pos) {
+		this.x = pos.x;
+		this.y = pos.y;
+		this.z = pos.z;
 	}
 
 	public Coord offset(ForgeDirection direction) {
@@ -49,20 +69,24 @@ public class Coord implements Cloneable {
 		return new Coord(x, y, z);
 	}
 
-	public Coord add(Coord pos) {
-		return new Coord(x + pos.x, y + pos.y, z + pos.z);
+	public ChunkPosition asChunkPosition() {
+		return new ChunkPosition(x, y, z);
 	}
 
-	public Coord add(int ai[]) {
-		return new Coord(x + ai[0], y + ai[1], z + ai[2]);
+	public Coord add(Coord other) {
+		return new Coord(x + other.x, y + other.y, z + other.z);
 	}
 
-	public Coord substract(Coord pos) {
-		return new Coord(x - pos.x, y - pos.y, z - pos.z);
+	public Coord substract(Coord other) {
+		return new Coord(x - other.x, y - other.y, z - other.z);
 	}
 
-	public Coord substract(int ai[]) {
-		return new Coord(x - ai[0], y - ai[1], z - ai[2]);
+	public int lengthSq() {
+		return x * x + y * y + z * z;
+	}
+
+	public double length() {
+		return Math.sqrt(lengthSq());
 	}
 
 	public Coord getAdjacentCoord(ForgeDirection fd) {

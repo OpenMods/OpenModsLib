@@ -10,9 +10,7 @@ import net.minecraft.world.gen.structure.MapGenStructure;
 import openmods.Log;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import cpw.mods.fml.relauncher.ReflectionHelper.UnableToAccessFieldException;
@@ -141,6 +139,27 @@ public class StructureRegistry {
 				} catch (IndexOutOfBoundsException e) {
 					// bug in MC, just ignore
 					// hopefully fixed by magic of ASM
+				}
+			}
+		});
+
+		return result.build();
+	}
+
+	public Set<ChunkPosition> getNearestInstance(final String name, final WorldServer world, final int x, final int y, final int z) {
+		final ImmutableSet.Builder<ChunkPosition> result = ImmutableSet.builder();
+		visitStructures(world, new IStructureVisitor() {
+			@Override
+			public void visit(MapGenStructure structure) {
+				String structType = identifyStructure(structure);
+				if (name.equals(structType)) {
+					try {
+						ChunkPosition structPos = structure.getNearestInstance(world, x, y, z);
+						if (structPos != null) result.add(structPos);
+					} catch (IndexOutOfBoundsException e) {
+						// bug in MC, just ignore
+						// hopefully fixed by magic of ASM
+					}
 				}
 			}
 		});
