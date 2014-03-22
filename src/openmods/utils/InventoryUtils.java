@@ -209,7 +209,7 @@ public class InventoryUtils {
 		if (world.getBlockId(x + 1, y, z) == chestId) return new InventoryLargeChest("Large chest", (IInventory)te, (IInventory)world.getBlockTileEntity(x + 1, y, z));
 		if (world.getBlockId(x, y, z - 1) == chestId) return new InventoryLargeChest("Large chest", (IInventory)world.getBlockTileEntity(x, y, z - 1), (IInventory)te);
 		if (world.getBlockId(x, y, z + 1) == chestId) return new InventoryLargeChest("Large chest", (IInventory)te, (IInventory)world.getBlockTileEntity(x, y, z + 1));
-		return null;
+		return (te instanceof IInventory)? (IInventory)te : null;
 	}
 
 	public static IInventory getInventory(World world, int x, int y, int z) {
