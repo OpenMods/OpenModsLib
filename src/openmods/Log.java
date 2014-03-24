@@ -1,5 +1,6 @@
 package openmods;
 
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,7 +13,17 @@ public final class Log {
 
 	static {
 		logger = Logger.getLogger("OpenMods");
-		logger.setParent(FMLLog.getLogger());
+		logger.setLevel(Level.ALL);
+
+		Logger rootLogger = FMLLog.getLogger();
+		if (rootLogger != null) {
+			logger.setParent(rootLogger);
+		} else {
+			ConsoleHandler handler = new ConsoleHandler();
+			handler.setLevel(Level.ALL);
+			logger.addHandler(handler);
+			logger.setUseParentHandlers(false);
+		}
 	}
 
 	private static final Throwable stackInfo = new Throwable();
