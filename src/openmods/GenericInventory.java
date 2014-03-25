@@ -171,10 +171,12 @@ public class GenericInventory implements IInventory {
 	}
 
 	/**
-	 * This bastard never even gets called, so ignore it
+	 * This bastard never even gets called, so don't rely on it.
 	 */
 	@Override
-	public void onInventoryChanged() {}
+	public void onInventoryChanged() {
+		onInventoryChanged(0);
+	}
 
 	public void copyFrom(IInventory inventory) {
 		for (int i = 0; i < inventory.getSizeInventory(); i++) {

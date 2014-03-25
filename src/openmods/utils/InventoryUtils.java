@@ -51,7 +51,7 @@ public class InventoryUtils {
 		}
 	}
 
-	protected static boolean areMergeCandidates(ItemStack source, ItemStack target) {
+	public static boolean areMergeCandidates(ItemStack source, ItemStack target) {
 		return source.isItemEqual(target)
 				&& ItemStack.areItemStackTagsEqual(source, target)
 				&& target.stackSize < target.getMaxStackSize();

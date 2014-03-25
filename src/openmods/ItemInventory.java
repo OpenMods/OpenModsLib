@@ -14,19 +14,23 @@ public class ItemInventory extends GenericInventory {
 	private final int inventorySlot;
 
 	public ItemInventory(EntityPlayer _player, int size) {
-		super("", false, size);
+		this(_player, size, _player.inventory.currentItem);
+	}
 
+	public ItemInventory(EntityPlayer _player, int size, int inventorySlot) {
+		super("", false, size);
 		player = _player;
-		inventorySlot = player.inventory.currentItem;
-		inventoryStack = player.inventory.getCurrentItem();
+		this.inventorySlot = inventorySlot;
+		inventoryStack = player.inventory.getStackInSlot(inventorySlot);
 		final NBTTagCompound tag = ItemUtils.getItemTag(inventoryStack);
 		readFromNBT(getInventoryTag(tag));
+
 	}
 
 	@Override
 	public void onInventoryChanged(int slotNumber) {
 		super.onInventoryChanged(slotNumber);
-		ItemStack currentStack = player.inventory.getCurrentItem();
+		ItemStack currentStack = player.inventory.getStackInSlot(inventorySlot);
 		if (currentStack == null || !currentStack.isItemEqual(inventoryStack)) {
 			player.closeScreen();
 			return;
