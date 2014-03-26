@@ -21,6 +21,7 @@ import openmods.config.IRegisterableBlock;
 import openmods.sync.SyncableDirection;
 import openmods.tileentity.OpenTileEntity;
 import openmods.tileentity.SyncedTileEntity;
+import openmods.utils.BlockNotifyFlags;
 import openmods.utils.BlockUtils;
 
 import com.google.common.base.Preconditions;
@@ -31,6 +32,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
+	private static final String SYNCED_ROTATION_VAR = "_rotation2";
 	public static final int OPEN_MODS_TE_GUI = -1;
 
 	/***
@@ -38,10 +40,16 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 * a block can have
 	 */
 	public enum BlockRotationMode {
-		NONE,
-		FOUR_DIRECTIONS,
-		SIX_DIRECTIONS,
-		TWENTYFOUR_DIRECTIONS
+		NONE(),
+		FOUR_DIRECTIONS(ForgeDirection.UP, ForgeDirection.DOWN),
+		SIX_DIRECTIONS(ForgeDirection.VALID_DIRECTIONS),
+		TWENTYFOUR_DIRECTIONS(ForgeDirection.VALID_DIRECTIONS);
+
+		private BlockRotationMode(ForgeDirection... rotations) {
+			this.rotations = rotations;
+		}
+
+		private final ForgeDirection[] rotations;
 	}
 
 	/***
@@ -347,7 +355,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 			setPlacementMode(BlockPlacementMode.ENTITY_ANGLE);
 		}
 
-		switch (getPlacementMode()) {
+		switch (this.blockPlacementMode) {
 			case SURFACE:
 				meta = side.getOpposite().ordinal();
 				break;
@@ -367,7 +375,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 						break;
 				}
 		}
-		world.setBlockMetadataWithNotify(x, y, z, meta, 3);
+		world.setBlockMetadataWithNotify(x, y, z, meta, BlockNotifyFlags.ALL);
 
 		TileEntity te = world.getBlockTileEntity(x, y, z);
 
@@ -375,7 +383,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 			Preconditions.checkState(te instanceof SyncedTileEntity,
 					"For 6+ levels of rotation you need to use a SyncedTileEntity, but '%s' on block '%s' is not one", te, this);
 			SyncedTileEntity ste = (SyncedTileEntity)te;
-			ste.addSyncedObject("_rotation2", new SyncableDirection(additionalRotation));
+			ste.addSyncedObject(SYNCED_ROTATION_VAR, new SyncableDirection(additionalRotation));
 			ste.sync();
 		}
 
@@ -519,5 +527,20 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	public boolean useTESRForInventory() {
 		return true;
+	}
+
+	public boolean canRotateWithTool() {
+		return true;
+	}
+
+	@Override
+	public boolean rotateBlock(World worldObj, int x, int y, int z, ForgeDirection axis) {
+		return canRotateWithTool() && RotationHelper.rotateBlock(this, worldObj, x, y, z, axis);
+	}
+
+	@Override
+	public ForgeDirection[] getValidRotations(World worldObj, int x, int y, int z) {
+		if (!canRotateWithTool()) return BlockRotationMode.NONE.rotations;
+		return blockRotationMode.rotations;
 	}
 }
