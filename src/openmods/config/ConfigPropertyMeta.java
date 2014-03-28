@@ -12,9 +12,9 @@ import openmods.utils.io.IStringSerializable;
 import openmods.utils.io.StringConversionException;
 import openmods.utils.io.TypeRW;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.base.*;
 import com.google.common.collect.ImmutableMap;
 
 public abstract class ConfigPropertyMeta {
@@ -222,10 +222,10 @@ public abstract class ConfigPropertyMeta {
 		@Override
 		protected Object convertValue(String... values) {
 			final Object result = Array.newInstance(field.getType().getComponentType(), values.length);
+			final CharMatcher matcher = CharMatcher.is('"');
 			for (int i = 0; i < values.length; i++) {
-				String value = values[i];
-				Object converted;
-				converted = converter.readFromString(value);
+				final String value = matcher.trimFrom(StringUtils.strip(values[i]));
+				final Object converted = converter.readFromString(value);
 				Array.set(result, i, converted);
 			}
 			return result;
