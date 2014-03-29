@@ -16,24 +16,6 @@ import com.google.common.collect.Lists;
 
 public class ReflectionHelper {
 
-	public static class SafeClassLoad {
-		private final String clsName;
-		private Class<?> loaded;
-
-		public SafeClassLoad(String clsName) {
-			this.clsName = clsName;
-		}
-
-		public void load() {
-			if (loaded == null) loaded = ReflectionHelper.getClass(clsName);
-		}
-
-		public Class<?> get() {
-			load();
-			return loaded;
-		}
-	}
-
 	private static class NullMarker {
 		public final Class<?> cls;
 
