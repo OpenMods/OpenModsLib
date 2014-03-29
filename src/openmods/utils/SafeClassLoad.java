@@ -3,7 +3,7 @@ package openmods.utils;
 import openmods.Log;
 
 public class SafeClassLoad {
-	private final String clsName;
+	public final String clsName;
 	private Class<?> loaded;
 
 	public SafeClassLoad(String clsName) {
@@ -18,11 +18,11 @@ public class SafeClassLoad {
 		load();
 		return loaded;
 	}
-	
+
 	public boolean tryLoad() {
 		return tryLoad(true);
 	}
-	
+
 	public boolean tryLoad(boolean silent) {
 		try {
 			load();
@@ -31,5 +31,10 @@ public class SafeClassLoad {
 			if (!silent) Log.warn(t, "Loading class %s failed", clsName);
 			return false;
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "delayed " + clsName;
 	}
 }

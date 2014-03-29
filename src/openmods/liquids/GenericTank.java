@@ -6,7 +6,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.fluids.*;
 import openmods.Log;
-import openmods.integration.Integration;
+import openmods.integration.modules.BuildCraftPipes;
 import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncableFlags;
 import openmods.utils.BlockUtils;
@@ -87,7 +87,7 @@ public class GenericTank extends FluidTank {
 						if (otherTank instanceof IFluidHandler) {
 							drainedFluid.amount -= ((IFluidHandler)otherTank).fill(side.getOpposite(), drainedFluid, true);
 						} else {
-							drainedFluid.amount -= Integration.modBuildCraft().tryAcceptIntoPipe(otherTank, drainedFluid, side.getOpposite());
+							drainedFluid.amount -= BuildCraftPipes.access().tryAcceptIntoPipe(otherTank, drainedFluid, side.getOpposite());
 						}
 					}
 				}

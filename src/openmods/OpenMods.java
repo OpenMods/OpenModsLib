@@ -8,6 +8,7 @@ import openmods.config.CommandConfig;
 import openmods.config.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
 import openmods.integration.Integration;
+import openmods.integration.modules.BuildCraftPipes;
 import openmods.network.EventPacket;
 import openmods.network.PacketHandler;
 import openmods.network.events.TileEntityEventHandler;
@@ -55,7 +56,8 @@ public class OpenMods {
 
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent evt) {
-		Integration.selectModules();
+		Integration.addModule(new BuildCraftPipes());
+		Integration.loadModules();
 		proxy.postInit();
 	}
 

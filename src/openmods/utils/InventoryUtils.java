@@ -11,7 +11,7 @@ import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import openmods.GenericInventory;
-import openmods.integration.Integration;
+import openmods.integration.modules.BuildCraftPipes;
 import openmods.sync.SyncableFlags;
 
 import com.google.common.base.Preconditions;
@@ -169,8 +169,8 @@ public class InventoryUtils {
 		int inserted = 0;
 
 		// if it's a pipe, try accept it
-		if (target instanceof TileEntity && Integration.modBuildCraft().isPipe((TileEntity)target)) {
-			inserted = Integration.modBuildCraft().tryAcceptIntoPipe((TileEntity)target, clonedSourceStack, doMove, direction);
+		if (target instanceof TileEntity && BuildCraftPipes.access().isPipe((TileEntity)target)) {
+			inserted = BuildCraftPipes.access().tryAcceptIntoPipe((TileEntity)target, clonedSourceStack, doMove, direction);
 			clonedSourceStack.stackSize -= inserted;
 
 			// if it's an inventory

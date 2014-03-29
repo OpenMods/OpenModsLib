@@ -1,44 +1,38 @@
 package openmods.integration;
 
-import java.lang.annotation.*;
-import java.lang.reflect.Field;
+import java.util.List;
 
-import openmods.Mods;
-import openmods.integration.ModuleBuildCraft.ModuleBuildCraftLive;
+import openmods.Log;
 
-import com.google.common.base.Throwables;
-
-import cpw.mods.fml.common.Loader;
+import com.google.common.collect.Lists;
 
 public class Integration {
 
-	@Retention(RetentionPolicy.RUNTIME)
-	@Target(ElementType.FIELD)
-	public static @interface Module {
-		public String modId();
+	private static final List<IIntegrationModule> modules = Lists.newArrayList();
 
-		public Class<?> live();
+	private static boolean alreadyLoaded;
+
+	public static void addModule(IIntegrationModule module) {
+		if (alreadyLoaded) Log.warn("Trying to add integration module %s after loading. This will not work");
+		modules.add(module);
 	}
 
-	@Module(modId = Mods.BUILDCRAFT, live = ModuleBuildCraftLive.class)
-	private static ModuleBuildCraft buildCraft = new ModuleBuildCraft();
+	public static void loadModules() {
+		if (alreadyLoaded) {
+			Log.warn("Trying to load integration modules twice, ignoring");
+			return;
+		}
 
-	public static ModuleBuildCraft modBuildCraft() {
-		return buildCraft;
-	}
-
-	public static void selectModules() {
-		for (Field f : Integration.class.getDeclaredFields()) {
-			Module mod = f.getAnnotation(Module.class);
-			if (mod != null && Loader.isModLoaded(mod.modId())) {
+		for (IIntegrationModule module : modules) {
+			if (module.canLoad()) {
 				try {
-					Class<?> liveReplacementCls = mod.live();
-					f.setAccessible(true);
-					Object replacement = liveReplacementCls.newInstance();
-					f.set(null, replacement);
-				} catch (Exception e) {
-					Throwables.propagate(e);
+					module.load();
+					Log.info("Loaded integration module '%s'", module.name());
+				} catch (Throwable t) {
+					Log.warn(t, "Can't load integration module '%s'", module.name());
 				}
+			} else {
+				Log.info("Condition no met for integration module '%s', not loading", module.name());
 			}
 		}
 	}
