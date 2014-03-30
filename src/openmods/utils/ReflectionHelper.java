@@ -4,15 +4,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 
 public class ReflectionHelper {
 
@@ -171,6 +170,18 @@ public class ReflectionHelper {
 			if (result != null) return result;
 		}
 		return null;
+	}
+	
+	public static Set<Class<?>> getAllInterfaces(Class<?> clazz) {
+		ImmutableSet.Builder<Class<?>> result = ImmutableSet.builder();
+		
+		Class<?> current = clazz;
+		while (current != null) {
+			result.add(current.getInterfaces());
+			current = current.getSuperclass();
+		}
+		
+		return result.build();
 	}
 
 	public static Method getDeclaredMethod(Class<?> clazz, String name, Class<?>[] argsTypes) {
