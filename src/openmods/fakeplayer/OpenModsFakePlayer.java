@@ -1,4 +1,4 @@
-package openmods.utils;
+package openmods.fakeplayer;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityItem;
@@ -14,20 +14,21 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import openmods.Log;
+import openmods.utils.InventoryUtils;
+import openmods.utils.MathUtils;
 
 import com.google.common.base.Preconditions;
 
-//TODO: Discuss if we make seperate players for seperate mods
 public class OpenModsFakePlayer extends FakePlayer {
 
-	public OpenModsFakePlayer(World world) {
-		super(world, "OpenModsFakePlayer");
+	OpenModsFakePlayer(World world, int id) {
+		super(world, String.format("OpenModsFakePlayer-%03d", id));
 	}
 
 	@Override
 	public void setDead() {
 		inventory.clearInventory(-1, -1);
-		super.setDead();
+		isDead = true;
 	}
 
 	public ItemStack equipWithAndRightClick(ItemStack itemStack, Vec3 currentPos, Vec3 hitVector, ForgeDirection side, boolean blockExists) {

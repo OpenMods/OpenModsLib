@@ -171,16 +171,16 @@ public class ReflectionHelper {
 		}
 		return null;
 	}
-	
+
 	public static Set<Class<?>> getAllInterfaces(Class<?> clazz) {
 		ImmutableSet.Builder<Class<?>> result = ImmutableSet.builder();
-		
+
 		Class<?> current = clazz;
 		while (current != null) {
 			result.add(current.getInterfaces());
 			current = current.getSuperclass();
 		}
-		
+
 		return result.build();
 	}
 

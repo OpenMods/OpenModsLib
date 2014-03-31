@@ -7,6 +7,7 @@ import net.minecraftforge.common.MinecraftForge;
 import openmods.config.CommandConfig;
 import openmods.config.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
+import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
 import openmods.network.EventPacket;
@@ -44,6 +45,8 @@ public class OpenMods {
 		MinecraftForge.EVENT_BUS.register(new TileEntityEventHandler());
 
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);
+
+		MinecraftForge.EVENT_BUS.register(FakePlayerPool.instance);
 
 		proxy.preInit();
 	}
