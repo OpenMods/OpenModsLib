@@ -4,13 +4,15 @@ import java.util.Map;
 
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.ForgeDirection;
-import openmods.utils.render.OpenGLUtils;
+import openmods.utils.render.ProjectionHelper;
 
 import org.lwjgl.input.Mouse;
 
 import com.google.common.collect.Maps;
 
 public class SidePicker {
+
+	private static final ProjectionHelper projectionHelper = new ProjectionHelper();
 
 	public enum Side {
 		XNeg,
@@ -88,7 +90,7 @@ public class SidePicker {
 	}
 
 	private static Vec3 getMouseVector(float z) {
-		return OpenGLUtils.unproject(Mouse.getX(), Mouse.getY(), z);
+		return projectionHelper.unproject(Mouse.getX(), Mouse.getY(), z);
 	}
 
 	private Vec3 calculateXPoint(Vec3 near, Vec3 diff, double x) {
@@ -144,7 +146,7 @@ public class SidePicker {
 	}
 
 	public Map<Side, Vec3> calculateMouseHits() {
-		OpenGLUtils.updateMatrices();
+		projectionHelper.updateMatrices();
 		Vec3 near = getMouseVector(0);
 		Vec3 far = getMouseVector(1);
 
@@ -152,7 +154,7 @@ public class SidePicker {
 	}
 
 	public HitCoord getNearestHit() {
-		OpenGLUtils.updateMatrices();
+		projectionHelper.updateMatrices();
 		Vec3 near = getMouseVector(0);
 		Vec3 far = getMouseVector(1);
 
