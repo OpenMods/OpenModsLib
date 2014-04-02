@@ -24,15 +24,15 @@ public class Integration {
 		}
 
 		for (IIntegrationModule module : modules) {
-			if (module.canLoad()) {
-				try {
+			try {
+				if (module.canLoad()) {
 					module.load();
 					Log.info("Loaded integration module '%s'", module.name());
-				} catch (Throwable t) {
-					Log.warn(t, "Can't load integration module '%s'", module.name());
+				} else {
+					Log.info("Condition no met for integration module '%s', not loading", module.name());
 				}
-			} else {
-				Log.info("Condition no met for integration module '%s', not loading", module.name());
+			} catch (Throwable t) {
+				Log.warn(t, "Can't load integration module '%s'", module.name());
 			}
 		}
 	}

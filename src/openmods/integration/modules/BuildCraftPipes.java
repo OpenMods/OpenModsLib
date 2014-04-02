@@ -1,16 +1,17 @@
 package openmods.integration.modules;
 
+import static openmods.integration.Conditions.classExists;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
-import openmods.integration.ApiIntegration;
+import openmods.integration.IntegrationModule;
 import buildcraft.api.transport.IPipeTile;
 
-public class BuildCraftPipes extends ApiIntegration {
+public class BuildCraftPipes extends IntegrationModule {
 
 	public BuildCraftPipes() {
-		super("buildcraft.api.transport.IPipeTile");
+		super(classExists("buildcraft.api.transport.IPipeTile"));
 	}
 
 	public interface BuildCraftAccess {
