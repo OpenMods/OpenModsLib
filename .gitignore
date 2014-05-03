@@ -4,6 +4,8 @@
 *.jar
 *.war
 *.ear
-build/
-download/
-/bin
+
+# Gradle
+/.gradle
+/build/
+/run/

@@ -32,7 +32,7 @@ public class DisposableDynamicTexture extends AbstractTexture {
 	}
 
 	@Override
-	public void loadTexture(ResourceManager par1ResourceManager) throws IOException {}
+	public void loadTexture(ResourceManager par1ResourceManager) {}
 
 	public void update() {
 		Preconditions.checkNotNull(dynamicTextureData, "Texture not allocated");
