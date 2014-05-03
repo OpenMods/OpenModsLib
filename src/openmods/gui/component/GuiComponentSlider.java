@@ -72,13 +72,17 @@ public class GuiComponentSlider extends BaseComponent {
 		level = Math.max(min, Math.min(max, level));
 		drawTexturedModalRect(handleX, top + 1, 3, 70, 9, 10);
 		if (showValue) {
-			String label = Integer.toString(level);
+			String label = formatValue(level);
 			int strWidth = minecraft.fontRenderer.getStringWidth(label);
 			minecraft.fontRenderer.drawString(label, handleX + 4
 					- (strWidth / 2), top + 15, 4210752);
 		}
 		value.setValue(level);
 
+	}
+	
+	public String formatValue(int value) {
+		return Integer.toString(value);
 	}
 
 	@Override
@@ -89,6 +93,10 @@ public class GuiComponentSlider extends BaseComponent {
 	@Override
 	public int getHeight() {
 		return 12;
+	}
+	
+	public boolean isDragging() {
+		return isDragging;
 	}
 
 	public void onMouseUp() {
