@@ -86,7 +86,7 @@ if (!in_jenkins) {
 if (branch != null && !branch.equals("master")) {
     version += "-" + branch
 } else {
-    version += "-" + hash
+    //version += "-" + hash
 }
 
 // Version tag for jar file name
