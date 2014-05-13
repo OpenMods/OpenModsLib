@@ -80,7 +80,7 @@ public class GuiComponentSlider extends BaseComponent {
 		value.setValue(level);
 
 	}
-	
+
 	public String formatValue(int value) {
 		return Integer.toString(value);
 	}
@@ -94,7 +94,7 @@ public class GuiComponentSlider extends BaseComponent {
 	public int getHeight() {
 		return 12;
 	}
-	
+
 	public boolean isDragging() {
 		return isDragging;
 	}

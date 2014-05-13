@@ -73,7 +73,7 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 		if (customRenderer != null)
 		{
 			texturemanager.bindTexture(texturemanager.getResourceLocation(itemStack.getItemSpriteNumber()));
-			ForgeHooksClient.renderEquippedItem(ItemRenderType.ENTITY, customRenderer, blockRenderer, player, itemStack);
+			ForgeHooksClient.renderEquippedItem(ItemRenderType.EQUIPPED, customRenderer, blockRenderer, player, itemStack);
 		}
 		else if (block != null && itemStack.getItemSpriteNumber() == 0 && RenderBlocks.renderItemIn3d(Block.blocksList[itemStack.itemID].getRenderType()))
 		{
