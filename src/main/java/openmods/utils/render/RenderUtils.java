@@ -220,9 +220,9 @@ public class RenderUtils {
 	public static RGB getFogColor() {
 		try {
 			EntityRenderer re = Minecraft.getMinecraft().entityRenderer;
-			float red = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorRed", "field_78518_n");
-			float green = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorGreen", "field_78519_o");
-			float blue = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorBlue", "field_78533_p");
+			Float red = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorRed", "field_78518_n");
+			Float green = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorGreen", "field_78519_o");
+			Float blue = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorBlue", "field_78533_p");
 			return new RGB(red, green, blue);
 		} catch (Throwable t) {
 			Log.warn(t, "Can't get fog color");
