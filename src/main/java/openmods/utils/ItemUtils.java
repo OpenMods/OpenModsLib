@@ -2,6 +2,7 @@ package openmods.utils;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -12,7 +13,8 @@ public class ItemUtils {
 
 	public static ItemStack consumeItem(ItemStack stack) {
 		if (stack.stackSize == 1) {
-			if (stack.getItem().hasContainerItem()) { return stack.getItem().getContainerItemStack(stack); }
+			final Item item = stack.getItem();
+			if (item.hasContainerItem()) return item.getContainerItemStack(stack);
 			return null;
 		}
 		stack.splitStack(1);

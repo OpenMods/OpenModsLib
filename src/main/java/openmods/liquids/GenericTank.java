@@ -3,174 +3,188 @@ package openmods.liquids;
 import java.util.*;
 
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
 import net.minecraftforge.fluids.*;
 import openmods.Log;
+import openmods.OpenMods;
 import openmods.integration.modules.BuildCraftPipes;
-import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncableFlags;
 import openmods.utils.BlockUtils;
+import openmods.utils.Coord;
 
-// TODO: Move the getTicks and other helpers to a generic helpers class (:
+import com.google.common.collect.Lists;
 
 public class GenericTank extends FluidTank {
 
-	protected List<ForgeDirection> surroundingTanks = new ArrayList<ForgeDirection>();
+	private List<ForgeDirection> surroundingTanks = Lists.newArrayList();
+	private long lastUpdate = 0;
+	private final IFluidFilter filter;
 
-	protected FluidStack[] acceptableFluids;
+	public interface IFluidFilter {
+		public boolean canAcceptFluid(FluidStack stack);
+	}
+
+	private static final IFluidFilter NO_RESTRICTIONS = new IFluidFilter() {
+		@Override
+		public boolean canAcceptFluid(FluidStack stack) {
+			return true;
+		}
+	};
+
+	private static IFluidFilter filter(final FluidStack... acceptableFluids) {
+		if (acceptableFluids.length == 0) return NO_RESTRICTIONS;
+
+		return new IFluidFilter() {
+			@Override
+			public boolean canAcceptFluid(FluidStack stack) {
+				for (FluidStack acceptableFluid : acceptableFluids)
+					if (acceptableFluid.isFluidEqual(stack)) return true;
+
+				return false;
+			}
+		};
+	}
 
 	public GenericTank(int capacity, FluidStack... acceptableFluids) {
 		super(capacity);
-		this.acceptableFluids = acceptableFluids;
+		this.filter = filter(acceptableFluids);
 	}
 
-	public void refreshSurroundingTanks(TileEntity currentTile, SyncableFlags sides) {
-		HashSet<ForgeDirection> checkSides = new HashSet<ForgeDirection>();
+	private static boolean isNeighbourTank(World world, Coord coord, ForgeDirection dir) {
+		TileEntity tile = BlockUtils.getTileInDirection(world, coord, dir);
+		return tile instanceof IFluidHandler;
+	}
+
+	private static Set<ForgeDirection> getSurroundingTanks(World world, Coord coord, SyncableFlags sides) {
+		EnumSet<ForgeDirection> result = EnumSet.noneOf(ForgeDirection.class);
 		if (sides == null) {
-			checkSides.addAll(Arrays.asList(ForgeDirection.VALID_DIRECTIONS));
-		} else {
+			for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+				if (isNeighbourTank(world, coord, dir)) result.add(dir);
+		}
+		else
+		{
 			for (Integer s : sides.getActiveSlots()) {
-				checkSides.add(ForgeDirection.getOrientation(s));
+				ForgeDirection dir = ForgeDirection.getOrientation(s);
+				if (isNeighbourTank(world, coord, dir)) result.add(dir);
 			}
 		}
-		surroundingTanks = new ArrayList<ForgeDirection>();
-		for (ForgeDirection side : checkSides) {
-			TileEntity tile = BlockUtils.getTileInDirection(currentTile, side);
-			if (tile instanceof IFluidHandler) {
-				surroundingTanks.add(side);
-			}
-		}
+
+		return result;
 	}
 
 	public FluidStack drain(FluidStack resource, boolean doDrain) {
-		if (resource == null) { return null; }
-		if (this.fluid == null) { return null; }
-		if (!this.fluid.isFluidEqual(resource)) { return null; }
-		return this.drain(resource.amount, doDrain);
+		if (resource == null ||
+				fluid == null ||
+				fluid.isFluidEqual(resource)) return null;
+
+		return drain(resource.amount, doDrain);
 	}
 
 	public int getSpace() {
 		return getCapacity() - getFluidAmount();
 	}
 
-	public double getPercentFull() {
-		return (double)getFluidAmount() / (double)getCapacity();
-	}
-
 	@Override
 	public int fill(FluidStack resource, boolean doFill) {
-		if (resource == null) { return 0; }
-		if (acceptableFluids.length == 0) { return super.fill(resource, doFill); }
-		for (FluidStack acceptableFluid : acceptableFluids) {
-			if (acceptableFluid.isFluidEqual(resource)) { return super.fill(resource, doFill); }
-		}
-		return 0;
+		if (resource == null || !filter.canAcceptFluid(resource)) return 0;
+		return super.fill(resource, doFill);
 	}
 
-	public void autoOutputToSides(IOpenModsProxy proxy, int amountPerTick, TileEntity currentTile, SyncableFlags sides) {
-
-		if (currentTile.worldObj == null) return;
-		// every 10 ticks refresh the surrounding tanks
-		if (proxy.getTicks(currentTile.worldObj) % 10 == 0) {
-			refreshSurroundingTanks(currentTile, sides);
+	private void periodicUpdateNeighbours(World world, Coord coord, SyncableFlags sides) {
+		long currentTime = OpenMods.proxy.getTicks(world);
+		if (currentTime - lastUpdate > 10) {
+			surroundingTanks = Lists.newArrayList(getSurroundingTanks(world, coord, sides));
+			lastUpdate = currentTime;
 		}
-
-		if (getFluidAmount() > 0 && surroundingTanks.size() > 0) {
-			FluidStack drainedFluid = drain(Math.min(getFluidAmount(), amountPerTick), true);
-			if (drainedFluid != null) {
-				Collections.shuffle(surroundingTanks);
-				// for each surrounding tank
-				for (ForgeDirection side : surroundingTanks) {
-					TileEntity otherTank = BlockUtils.getTileInDirection(currentTile, side);
-					if (drainedFluid.amount > 0) {
-						drainedFluid = drainedFluid.copy();
-						if (otherTank instanceof IFluidHandler) {
-							drainedFluid.amount -= ((IFluidHandler)otherTank).fill(side.getOpposite(), drainedFluid, true);
-						} else {
-							drainedFluid.amount -= BuildCraftPipes.access().tryAcceptIntoPipe(otherTank, drainedFluid, side.getOpposite());
-						}
-					}
-				}
-				// fill any remainder
-				if (drainedFluid.amount > 0) {
-					fill(drainedFluid, true);
-				}
-			}
-		}
-
 	}
 
-	public void autoFillFromSides(IOpenModsProxy proxy, int amountPerTick, TileEntity currentTile) {
-		autoFillFromSides(proxy, amountPerTick, currentTile, null);
+	private static int tryFillNeighbour(FluidStack drainedFluid, ForgeDirection side, TileEntity otherTank) {
+		final FluidStack toFill = drainedFluid.copy();
+		final ForgeDirection fillSide = side.getOpposite();
+
+		if (otherTank instanceof IFluidHandler) return ((IFluidHandler)otherTank).fill(fillSide, toFill, true);
+		else return BuildCraftPipes.access().tryAcceptIntoPipe(otherTank, toFill, fillSide);
 	}
 
-	public void autoFillFromSides(IOpenModsProxy proxy, int amountPerTick, TileEntity currentTile, SyncableFlags sides) {
+	public void distributeToSides(int maxAmount, TileEntity currentTile) {
+		distributeToSides(maxAmount, currentTile);
+	}
 
-		// every 10 ticks refresh the surrounding tanks
-		if (proxy.getTicks(currentTile.worldObj) % 10 == 0) {
-			refreshSurroundingTanks(currentTile, sides);
-		}
+	public void distributeToSides(int amountPerTick, World world, Coord coord, SyncableFlags sides) {
+		if (world == null) return;
 
-		// if we've got space in the tank, and we've got at least 1 surrounding
-		// tank
-		if (getSpace() > 0 && surroundingTanks.size() > 0) {
-			// shuffle them up
+		if (getFluidAmount() <= 0) return;
+
+		periodicUpdateNeighbours(world, coord, sides);
+
+		if (surroundingTanks.isEmpty()) return;
+
+		FluidStack drainedFluid = drain(amountPerTick, false);
+
+		if (drainedFluid != null && drainedFluid.amount > 0) {
+			int startingAmount = drainedFluid.amount;
 			Collections.shuffle(surroundingTanks);
 
-			// for each surrounding tank
 			for (ForgeDirection side : surroundingTanks) {
-				TileEntity otherTank = BlockUtils.getTileInDirection(currentTile, side);
-				if (otherTank instanceof IFluidHandler) {
+				if (drainedFluid.amount <= 0) break;
 
-					IFluidHandler handler = (IFluidHandler)otherTank;
+				TileEntity otherTank = BlockUtils.getTileInDirection(world, coord, side);
+				if (otherTank != null) drainedFluid.amount -= tryFillNeighbour(drainedFluid, side, otherTank);
+			}
 
-					// get the fluid inside that tank. If the fluid is one of
-					// our acceptable fluids
-					// (or we dont have any acceptable fluids), and it matches
-					// what we have in the tank
-					// or the tank is currently empty...
-					FluidStack currentFluid = getFluid();
-					if (currentFluid == null) {
-						FluidTankInfo[] infos = handler.getTankInfo(side.getOpposite());
+			// return any remainder
+			int distributed = startingAmount - drainedFluid.amount;
+			if (distributed > 0) drain(distributed, true);
+		}
+	}
 
-						if (infos == null) {
-							Log.fine("Tank %s @ (%d,%d,%d) returned null tank info. Nasty.",
-									otherTank.getClass(), otherTank.xCoord, otherTank.yCoord, otherTank.zCoord);
-							continue;
-						}
+	public void fillFromSides(int maxAmount, World world, Coord coord) {
+		fillFromSides(maxAmount, world, coord, null);
+	}
 
-						for (FluidTankInfo info : infos) {
-							if (acceptableFluids.length == 0
-									&& info.fluid != null) {
-								currentFluid = info.fluid;
-							} else {
-								for (FluidStack acceptFluid : acceptableFluids) {
-									if (info.fluid != null
-											&& info.fluid.isFluidEqual(acceptFluid)) {
-										currentFluid = info.fluid;
-										break;
-									}
-								}
-							}
-							if (currentFluid != null) {
-								break;
-							}
-						}
-					}
-					if (currentFluid != null) {
-						// copy the fluid and set the amount to the amount we
-						// want to drain
-						FluidStack drainStack = currentFluid.copy();
-						drainStack.amount = Math.min(amountPerTick, getSpace());
-						// drain it out and fill our own tank
-						FluidStack drained = handler.drain(side.getOpposite(), drainStack, true);
-						fill(drained, true);
-						// if it's full, chillax.
-						if (getCapacity() == getFluidAmount()) {
-							break;
-						}
-					}
+	public void fillFromSides(int maxAmount, World world, Coord coord, SyncableFlags sides) {
+		if (world == null) return;
+
+		int toDrain = Math.min(maxAmount, getSpace());
+		if (toDrain <= 0) return;
+
+		periodicUpdateNeighbours(world, coord, sides);
+
+		if (surroundingTanks.isEmpty()) return;
+
+		Collections.shuffle(surroundingTanks);
+		MAIN: for (ForgeDirection side : surroundingTanks) {
+			if (toDrain <= 0) break;
+			TileEntity otherTank = BlockUtils.getTileInDirection(world, coord, side);
+			if (otherTank instanceof IFluidHandler) {
+				final ForgeDirection drainSide = side.getOpposite();
+				final IFluidHandler handler = (IFluidHandler)otherTank;
+				final FluidTankInfo[] infos = handler.getTankInfo(drainSide);
+
+				if (infos == null) {
+					Log.fine("Tank %s @ (%d,%d,%d) returned null tank info. Nasty.",
+							otherTank.getClass(), otherTank.xCoord, otherTank.yCoord, otherTank.zCoord);
+					continue;
 				}
+
+				for (FluidTankInfo info : infos) {
+					if (filter.canAcceptFluid(info.fluid)) {
+						FluidStack stack = info.fluid.copy();
+						stack.amount = toDrain;
+
+						FluidStack drained = handler.drain(drainSide, stack, true);
+
+						if (drained != null) {
+							fill(drained, true);
+							toDrain -= drained.amount;
+						}
+
+						if (toDrain <= 0) break MAIN;
+					}
+
+				}
+
 			}
 		}
 	}
