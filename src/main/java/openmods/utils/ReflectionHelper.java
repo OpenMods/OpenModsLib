@@ -15,6 +15,14 @@ import com.google.common.collect.*;
 
 public class ReflectionHelper {
 
+	public static class MethodNotFound extends RuntimeException {
+		private static final long serialVersionUID = 4931028064550261584L;
+
+		private MethodNotFound(String method) {
+			super("Method not found: " + method);
+		}
+	}
+
 	private static class NullMarker {
 		public final Class<?> cls;
 
@@ -129,7 +137,6 @@ public class ReflectionHelper {
 	@SuppressWarnings("unchecked")
 	public static <T> T call(Class<?> klazz, Object instance, String[] methodNames, Object... args) {
 		Method m = getMethod(klazz, methodNames, args);
-		Preconditions.checkNotNull(m, "Method %s not found", Arrays.toString(methodNames));
 
 		for (int i = 0; i < args.length; i++) {
 			final Object arg = args[i];
@@ -160,7 +167,8 @@ public class ReflectionHelper {
 			Method result = getDeclaredMethod(klazz, name, argTypes);
 			if (result != null) return result;
 		}
-		return null;
+
+		throw new MethodNotFound(klazz + "." + Arrays.toString(methodNames) + Arrays.toString(argTypes));
 	}
 
 	public static Method getMethod(Class<?> klazz, String[] methodNames, Class<?>... types) {
