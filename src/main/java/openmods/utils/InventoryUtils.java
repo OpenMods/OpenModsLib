@@ -16,6 +16,7 @@ import openmods.sync.SyncableFlags;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class InventoryUtils {
 
@@ -72,52 +73,42 @@ public class InventoryUtils {
 	public static void insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot, boolean doMove, boolean canStack) {
 		if (stack == null) return;
 
+		final int sideId = side.ordinal();
 		IInventory targetInventory = inventory;
 
 		// if we're not meant to move, make a clone of the inventory
 		if (!doMove) {
-			targetInventory = new GenericInventory("temporary.inventory", false, targetInventory.getSizeInventory());
-			((GenericInventory)targetInventory).copyFrom(inventory);
+			GenericInventory copy = new GenericInventory("temporary.inventory", false, targetInventory.getSizeInventory());
+			copy.copyFrom(inventory);
+			targetInventory = copy;
 		}
-		int i = 0;
-		int[] attemptSlots = new int[0];
+
+		Set<Integer> attemptSlots = Sets.newTreeSet();
 
 		// if it's a sided inventory, get all the accessible slots
-		if (inventory instanceof ISidedInventory
-				&& side != ForgeDirection.UNKNOWN) {
-			attemptSlots = ((ISidedInventory)inventory).getAccessibleSlotsFromSide(side.ordinal());
-			if (attemptSlots == null) {
-				attemptSlots = new int[0];
+		final boolean isSidedInventory = inventory instanceof ISidedInventory && side != ForgeDirection.UNKNOWN;
+
+		if (isSidedInventory) {
+			int[] accessibleSlots = ((ISidedInventory)inventory).getAccessibleSlotsFromSide(sideId);
+			if (attemptSlots != null) {
+				for (int slot : accessibleSlots)
+					attemptSlots.add(slot);
 			}
 		} else {
 			// if it's just a standard inventory, get all slots
-			attemptSlots = new int[inventory.getSizeInventory()];
 			for (int a = 0; a < inventory.getSizeInventory(); a++) {
-				attemptSlots[a] = a;
+				attemptSlots.add(a);
 			}
 		}
+
+		if (attemptSlots.isEmpty()) return;
 		// if we've defining a specific slot, we'll just use that
-		if (intoSlot > -1) {
-			Set<Integer> x = new HashSet<Integer>();
-			for (int attemptedSlot : attemptSlots) {
-				x.add(attemptedSlot);
-			}
-			if (x.contains(intoSlot)) {
-				attemptSlots = new int[] { intoSlot };
-			} else {
-				attemptSlots = new int[0];
-			}
-		}
-		while (stack.stackSize > 0 && i < attemptSlots.length) {
-			if (side != ForgeDirection.UNKNOWN
-					&& inventory instanceof ISidedInventory) {
-				if (!((ISidedInventory)inventory).canInsertItem(intoSlot, stack, side.ordinal())) {
-					i++;
-					continue;
-				}
-			}
-			tryInsertStack(targetInventory, attemptSlots[i], stack, canStack);
-			i++;
+		if (intoSlot > -1 && !attemptSlots.contains(intoSlot)) return;
+
+		for (Integer slot : attemptSlots) {
+			if (stack.stackSize <= 0) break;
+			if (isSidedInventory && !((ISidedInventory)inventory).canInsertItem(slot, stack, sideId)) continue;
+			tryInsertStack(targetInventory, slot, stack, canStack);
 		}
 	}
 
