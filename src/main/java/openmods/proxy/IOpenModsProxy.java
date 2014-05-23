@@ -4,10 +4,8 @@ import java.io.File;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.network.packet.Packet;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.network.IGuiHandler;
-import cpw.mods.fml.common.network.Player;
 
 public interface IOpenModsProxy {
 

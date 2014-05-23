@@ -55,7 +55,7 @@ public class SyncableNBT extends SyncableObjectBase {
 
 	@Override
 	public void writeToNBT(NBTTagCompound nbt, String name) {
-		nbt.setCompoundTag(name, nbt);
+		nbt.setTag(name, nbt);
 	}
 
 	@Override

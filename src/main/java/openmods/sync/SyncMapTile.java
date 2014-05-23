@@ -23,13 +23,13 @@ public class SyncMapTile<H extends TileEntity & ISyncHandler> extends SyncMap<H>
 
 	@Override
 	protected Set<EntityPlayer> getPlayersWatching() {
-		if (handler.worldObj instanceof WorldServer) { return PacketHandler.getPlayersWatchingBlock((WorldServer)handler.worldObj, handler.xCoord, handler.zCoord); }
+		if (handler.getWorldObj() instanceof WorldServer) { return PacketHandler.getPlayersWatchingBlock((WorldServer)handler.worldObj, handler.xCoord, handler.zCoord); }
 		return ImmutableSet.of();
 	}
 
 	@Override
 	protected World getWorld() {
-		return handler.worldObj;
+		return handler.getWorldObj();
 	}
 
 	@Override

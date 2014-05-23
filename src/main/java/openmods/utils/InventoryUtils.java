@@ -2,6 +2,7 @@ package openmods.utils;
 
 import java.util.*;
 
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.InventoryLargeChest;
@@ -9,7 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.util.ForgeDirection;
 import openmods.GenericInventory;
 import openmods.integration.modules.BuildCraftPipes;
 import openmods.sync.SyncableFlags;
@@ -191,20 +192,19 @@ public class InventoryUtils {
 	}
 
 	private static IInventory doubleChestFix(TileEntity te) {
-		final World world = te.worldObj;
+		final World world = te.getWorldObj();
 		final int x = te.xCoord;
 		final int y = te.yCoord;
 		final int z = te.zCoord;
-		int chestId = world.getBlockId(x, y, z);
-		if (world.getBlockId(x - 1, y, z) == chestId) return new InventoryLargeChest("Large chest", (IInventory)world.getBlockTileEntity(x - 1, y, z), (IInventory)te);
-		if (world.getBlockId(x + 1, y, z) == chestId) return new InventoryLargeChest("Large chest", (IInventory)te, (IInventory)world.getBlockTileEntity(x + 1, y, z));
-		if (world.getBlockId(x, y, z - 1) == chestId) return new InventoryLargeChest("Large chest", (IInventory)world.getBlockTileEntity(x, y, z - 1), (IInventory)te);
-		if (world.getBlockId(x, y, z + 1) == chestId) return new InventoryLargeChest("Large chest", (IInventory)te, (IInventory)world.getBlockTileEntity(x, y, z + 1));
+		if (world.getBlock(x - 1, y, z) == Blocks.chest) return new InventoryLargeChest("Large chest", (IInventory)world.getTileEntity(x - 1, y, z), (IInventory)te);
+		if (world.getBlock(x + 1, y, z) == Blocks.chest) return new InventoryLargeChest("Large chest", (IInventory)te, (IInventory)world.getTileEntity(x + 1, y, z));
+		if (world.getBlock(x, y, z - 1) == Blocks.chest) return new InventoryLargeChest("Large chest", (IInventory)world.getTileEntity(x, y, z - 1), (IInventory)te);
+		if (world.getBlock(x, y, z + 1) == Blocks.chest) return new InventoryLargeChest("Large chest", (IInventory)te, (IInventory)world.getTileEntity(x, y, z + 1));
 		return (te instanceof IInventory)? (IInventory)te : null;
 	}
 
 	public static IInventory getInventory(World world, int x, int y, int z) {
-		TileEntity tileEntity = world.getBlockTileEntity(x, y, z);
+		TileEntity tileEntity = world.getTileEntity(x, y, z);
 		if (tileEntity instanceof TileEntityChest) return doubleChestFix(tileEntity);
 		if (tileEntity instanceof IInventory) return (IInventory)tileEntity;
 		return null;
@@ -454,7 +454,7 @@ public class InventoryUtils {
 
 			// grab the tile in the current direction
 			ForgeDirection directionToOutputItem = ForgeDirection.getOrientation(dir);
-			TileEntity tileOnSurface = currentTile.worldObj.getBlockTileEntity(currentTile.xCoord
+			TileEntity tileOnSurface = currentTile.getWorldObj().getTileEntity(currentTile.xCoord
 					+ directionToOutputItem.offsetX, currentTile.yCoord
 					+ directionToOutputItem.offsetY, currentTile.zCoord
 					+ directionToOutputItem.offsetZ);
@@ -520,7 +520,7 @@ public class InventoryUtils {
 
 		inventory.setInventorySlotContents(slot1, stack2);
 		inventory.setInventorySlotContents(slot2, stack1);
-		inventory.onInventoryChanged();
+		inventory.markDirty();
 	}
 
 	public static void swapStacks(ISidedInventory inventory, int slot1, ForgeDirection side1, int slot2, ForgeDirection side2) {
@@ -552,7 +552,7 @@ public class InventoryUtils {
 
 		inventory.setInventorySlotContents(slot1, stack2);
 		inventory.setInventorySlotContents(slot2, stack1);
-		inventory.onInventoryChanged();
+		inventory.markDirty();
 	}
 
 	protected static void isItemValid(IInventory inventory, int slot, ItemStack stack) {

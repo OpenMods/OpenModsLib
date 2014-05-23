@@ -1,12 +1,12 @@
 package openmods.network.events;
 
-import net.minecraftforge.event.ForgeSubscribe;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import openmods.Log;
 import openmods.tileentity.OpenTileEntity;
 
 public class TileEntityEventHandler {
 
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void onTileEntityEvent(TileEntityMessageEventPacket event) {
 		OpenTileEntity tile = event.getTileEntity();
 		if (tile != null) {

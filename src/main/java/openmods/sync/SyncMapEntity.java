@@ -23,7 +23,7 @@ public class SyncMapEntity<H extends Entity & ISyncHandler> extends SyncMap<H> {
 
 	@Override
 	protected Set<EntityPlayer> getPlayersWatching() {
-		if (handler.worldObj instanceof WorldServer) { return PacketHandler.getPlayersWatchingEntity((WorldServer)handler.worldObj, handler.entityId); }
+		if (handler.worldObj instanceof WorldServer) { return PacketHandler.getPlayersWatchingEntity((WorldServer)handler.worldObj, handler.getEntityId()); }
 		return ImmutableSet.of();
 	}
 

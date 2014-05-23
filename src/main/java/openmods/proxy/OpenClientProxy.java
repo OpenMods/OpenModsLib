@@ -8,9 +8,6 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.server.ServerListenThread;
-import net.minecraft.server.ThreadMinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.DimensionManager;
@@ -21,8 +18,6 @@ import openmods.movement.LegacyTickHandler;
 import openmods.movement.PlayerMovementManager;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.network.IGuiHandler;
-import cpw.mods.fml.common.network.Player;
-import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 
 public class OpenClientProxy implements IOpenModsProxy {

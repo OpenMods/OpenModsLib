@@ -77,7 +77,7 @@ public class TileEntityMessageEventPacket extends EventPacket {
 		World world = getWorld();
 		Preconditions.checkNotNull(world, "Invalid packet data");
 
-		TileEntity te = world.getBlockTileEntity(xCoord, yCoord, zCoord);
+		TileEntity te = world.getTileEntity(xCoord, yCoord, zCoord);
 		return (te instanceof OpenTileEntity)? (OpenTileEntity)te : null;
 	}
 

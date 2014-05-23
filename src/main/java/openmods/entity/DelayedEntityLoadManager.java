@@ -4,13 +4,14 @@ import java.util.*;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
-import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
+
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class DelayedEntityLoadManager {
 	public static final DelayedEntityLoadManager instance = new DelayedEntityLoadManager();
@@ -25,8 +26,8 @@ public class DelayedEntityLoadManager {
 					return Sets.newSetFromMap(new WeakHashMap<IEntityLoadListener, Boolean>());
 				}
 			});
-
-	@ForgeSubscribe
+	
+	@SubscribeEvent
 	public void onEntityCreate(EntityJoinWorldEvent evt) {
 		final Entity entity = evt.entity;
 		for (IEntityLoadListener callback : delayedLoads.removeAll(entity.getEntityId()))

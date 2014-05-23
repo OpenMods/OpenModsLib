@@ -23,8 +23,7 @@ public abstract class ItemGeneric extends Item {
 
 	protected Map<Integer, IMetaItem> metaitems = Maps.newHashMap();
 
-	public ItemGeneric(int id) {
-		super(id);
+	public ItemGeneric() {
 		setHasSubtypes(true);
 		setMaxDamage(0);
 	}
@@ -92,9 +91,9 @@ public abstract class ItemGeneric extends Item {
 	@Override
 	@SideOnly(Side.CLIENT)
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void getSubItems(int id, CreativeTabs tab, List subItems) {
+	public void getSubItems(Item item, CreativeTabs tab, List subItems) {
 		for (Entry<Integer, IMetaItem> entry : metaitems.entrySet())
-			entry.getValue().addToCreativeList(id, entry.getKey(), subItems);
+			entry.getValue().addToCreativeList(item, entry.getKey(), subItems);
 	}
 
 	public IMetaItem getMeta(int id) {
