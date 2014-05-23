@@ -4,8 +4,6 @@ import java.util.EnumSet;
 import java.util.Map;
 
 import net.minecraft.client.settings.KeyBinding;
-import cpw.mods.fml.client.registry.KeyBindingRegistry.KeyHandler;
-import cpw.mods.fml.common.TickType;
 
 public class KeyDispatcher extends KeyHandler {
 

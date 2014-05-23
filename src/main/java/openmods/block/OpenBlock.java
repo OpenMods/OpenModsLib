@@ -276,7 +276,9 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		if (te instanceof ISurfaceAttachment) {
 			ForgeDirection direction = ((ISurfaceAttachment)te).getSurfaceDirection();
 			if (!isNeighborBlockSolid(world, x, y, z, direction)) {
-				world.destroyBlock(x, y, z, true);
+				if (world instanceof World) {
+					((World)world).func_147480_a(x, y, z, true);
+				}
 			}
 		}
 	}
