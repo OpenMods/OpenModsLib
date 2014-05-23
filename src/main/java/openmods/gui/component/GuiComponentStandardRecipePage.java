@@ -6,7 +6,7 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.*;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 import net.minecraftforge.oredict.OreDictionary;
@@ -18,8 +18,8 @@ public class GuiComponentStandardRecipePage extends BaseComponent {
 
 	private static final ResourceLocation texture = new ResourceLocation("openmodslib:textures/gui/book.png");
 
-	public static Icon iconCraftingGrid = FakeIcon.createSheetIcon(0, 180, 56, 56);
-	public static Icon iconArrow = FakeIcon.createSheetIcon(60, 198, 48, 15);
+	public static IIcon iconCraftingGrid = FakeIcon.createSheetIcon(0, 180, 56, 56);
+	public static IIcon iconArrow = FakeIcon.createSheetIcon(60, 198, 48, 15);
 
 	private GuiComponentCraftingGrid craftingGrid;
 	private GuiComponentSprite arrow;

@@ -1,10 +1,10 @@
 package openmods.utils.render;
 
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class FakeIcon implements Icon {
+public class FakeIcon implements IIcon {
 
 	private final float minU;
 	private final float maxU;
@@ -22,7 +22,7 @@ public class FakeIcon implements Icon {
 		this.height = height;
 	}
 
-	public static Icon createSheetIcon(int x, int y, int width, int height) {
+	public static IIcon createSheetIcon(int x, int y, int width, int height) {
 		float minU = x / 256.0f;
 		float minV = y / 256.0f;
 		float maxU = (x + width) / 256.0f;

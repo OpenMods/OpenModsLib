@@ -1,6 +1,6 @@
 package openmods.liquids;
 
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.IFluidTank;
 import openmods.sync.SyncableFlags;

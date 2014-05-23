@@ -2,14 +2,14 @@ package openmods.item;
 
 import java.util.List;
 
-import net.minecraft.client.renderer.texture.IconRegister;
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
 public class MetaGeneric implements IMetaItem {
@@ -30,7 +30,7 @@ public class MetaGeneric implements IMetaItem {
 
 	private final String mod;
 	private final String name;
-	private Icon icon;
+	private IIcon icon;
 	private Object[] recipes;
 	private boolean visibleInCreative = true;
 
@@ -46,7 +46,7 @@ public class MetaGeneric implements IMetaItem {
 	}
 
 	@Override
-	public Icon getIcon() {
+	public IIcon getIcon() {
 		return icon;
 	}
 
@@ -71,11 +71,11 @@ public class MetaGeneric implements IMetaItem {
 	}
 
 	@Override
-	public void registerIcons(IconRegister register) {
+	public void registerIcons(IIconRegister register) {
 		registerIcon(register, name);
 	}
 
-	protected void registerIcon(IconRegister register, String name) {
+	protected void registerIcon(IIconRegister register, String name) {
 		icon = register.registerIcon(String.format("%s:%s", mod, name));
 	}
 
@@ -89,7 +89,7 @@ public class MetaGeneric implements IMetaItem {
 		for (Object tmp : recipes) {
 			if (tmp instanceof SmeltingRecipe) {
 				SmeltingRecipe recipe = (SmeltingRecipe)tmp;
-				furnaceRecipes.addSmelting(recipe.itemId, recipe.itemMeta, recipe.result, recipe.experience);
+				furnaceRecipes.func_151393_a(recipe.itemId, recipe.itemMeta, recipe.result, recipe.experience);
 			} else if (tmp instanceof IRecipe) {
 				craftingRecipes.add((IRecipe)tmp);
 			} else throw new IllegalArgumentException("Invalid recipe object: "

@@ -29,7 +29,7 @@ public class DelayedEntityLoadManager {
 	@ForgeSubscribe
 	public void onEntityCreate(EntityJoinWorldEvent evt) {
 		final Entity entity = evt.entity;
-		for (IEntityLoadListener callback : delayedLoads.removeAll(entity.entityId))
+		for (IEntityLoadListener callback : delayedLoads.removeAll(entity.getEntityId()))
 			callback.onEntityLoaded(entity);
 	}
 

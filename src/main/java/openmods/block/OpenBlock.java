@@ -5,16 +5,16 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.renderer.texture.IconRegister;
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.util.ForgeDirection;
 import openmods.Log;
 import openmods.api.*;
 import openmods.config.IRegisterableBlock;
@@ -72,7 +72,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	protected BlockPlacementMode blockPlacementMode;
 	protected ForgeDirection inventoryRenderRotation = ForgeDirection.WEST;
 
-	public Icon[] textures = new Icon[6];
+	public IIcon[] textures = new IIcon[6];
 
 	protected OpenBlock(int id, Material material) {
 		super(id, material);
@@ -176,15 +176,15 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@SideOnly(Side.CLIENT)
 	@Override
-	public void registerIcons(IconRegister registry) {
+	public void registerIcons(IIconRegister registry) {
 		this.blockIcon = registry.registerIcon(String.format("%s:%s", modId, blockName));
 	}
 
 	@Override
 	public void breakBlock(World world, int x, int y, int z, int par5, int par6) {
-		final TileEntity te = world.getBlockTileEntity(x, y, z);
+		final TileEntity te = world.getTileEntity(x, y, z);
 		if (te instanceof IBreakAwareTile) ((IBreakAwareTile)te).onBlockBroken();
-		world.removeBlockTileEntity(x, y, z);
+		world.removeTileEntity(x, y, z);
 		super.breakBlock(world, x, y, z, par5, par6);
 	}
 
@@ -212,7 +212,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		// When removed by player, it will be already unavailable in
 		// getBlockDropped
 		if (hasTileEntityDrops() && !player.capabilities.isCreativeMode) {
-			final TileEntity te = world.getBlockTileEntity(x, y, z);
+			final TileEntity te = world.getTileEntity(x, y, z);
 			List<ItemStack> teDrops = Lists.newArrayList();
 			getTileEntityDrops(te, teDrops);
 			for (ItemStack drop : teDrops)
@@ -227,7 +227,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		ArrayList<ItemStack> result = Lists.newArrayList();
 		if (hasNormalDrops()) result.addAll(super.getBlockDropped(world, x, y, z, metadata, fortune));
 		if (hasTileEntityDrops()) {
-			final TileEntity te = world.getBlockTileEntity(x, y, z);
+			final TileEntity te = world.getTileEntity(x, y, z);
 			getTileEntityDrops(te, result);
 		}
 
@@ -271,7 +271,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public void onNeighborBlockChange(World world, int x, int y, int z, int blockId) {
-		TileEntity te = world.getBlockTileEntity(x, y, z);
+		TileEntity te = world.getTileEntity(x, y, z);
 		if (te instanceof INeighbourAwareTile) {
 			((INeighbourAwareTile)te).onNeighbourChanged(blockId);
 		}
@@ -285,7 +285,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
-		TileEntity te = world.getBlockTileEntity(x, y, z);
+		TileEntity te = world.getTileEntity(x, y, z);
 
 		if (te instanceof IHasGui && ((IHasGui)te).canOpenGui(player) && !player.isSneaking()) {
 			if (!world.isRemote) openGui(player, world, x, y, z);
@@ -337,7 +337,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@SuppressWarnings("unchecked")
 	public static <U> U getTileEntity(IBlockAccess world, int x, int y, int z, Class<U> T) {
-		TileEntity te = world.getBlockTileEntity(x, y, z);
+		TileEntity te = world.getTileEntity(x, y, z);
 		if (te != null && T.isAssignableFrom(te.getClass())) { return (U)te; }
 		return null;
 	}
@@ -377,7 +377,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		}
 		world.setBlockMetadataWithNotify(x, y, z, meta, BlockNotifyFlags.ALL);
 
-		TileEntity te = world.getBlockTileEntity(x, y, z);
+		TileEntity te = world.getTileEntity(x, y, z);
 
 		if (additionalRotation != null) {
 			Preconditions.checkState(te instanceof SyncedTileEntity,
@@ -413,11 +413,11 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 				&& isNeighborBlockSolid(world, x, y, z, ForgeDirection.DOWN);
 	}
 
-	public void setTexture(ForgeDirection direction, Icon icon) {
+	public void setTexture(ForgeDirection direction, IIcon icon) {
 		textures[direction.ordinal()] = icon;
 	}
 
-	protected final Icon getUnrotatedTexture(ForgeDirection direction) {
+	protected final IIcon getUnrotatedTexture(ForgeDirection direction) {
 		if (direction != ForgeDirection.UNKNOWN) {
 			final int directionId = direction.ordinal();
 			if (textures[directionId] != null) return textures[directionId];
@@ -430,7 +430,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 * the UNROTATED block for a particular side (direction). Feel free to look
 	 * up data in the TileEntity to grab additional information here
 	 */
-	public Icon getUnrotatedTexture(ForgeDirection direction, IBlockAccess world, int x, int y, int z) {
+	public IIcon getUnrotatedTexture(ForgeDirection direction, IBlockAccess world, int x, int y, int z) {
 		return getUnrotatedTexture(direction);
 	}
 
@@ -439,10 +439,10 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 */
 	@Override
 	@SideOnly(Side.CLIENT)
-	public Icon getBlockTexture(IBlockAccess world, int x, int y, int z, int side) {
+	public IIcon getBlockTexture(IBlockAccess world, int x, int y, int z, int side) {
 		ForgeDirection direction = rotateSideByMetadata(side, world.getBlockMetadata(x, y, z));
 		IIconProvider provider = getTileEntity(world, x, y, z, IIconProvider.class);
-		Icon teIcon = null;
+		IIcon teIcon = null;
 		if (provider != null) teIcon = provider.getIcon(direction);
 		return teIcon != null? teIcon : getUnrotatedTexture(direction, world, x, y, z);
 	}
@@ -456,7 +456,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 */
 	@Override
 	@SideOnly(Side.CLIENT)
-	public Icon getIcon(int side, int metadata) {
+	public IIcon getIcon(int side, int metadata) {
 		ForgeDirection newRotation = rotateSideByMetadata(side, metadata);
 		return getUnrotatedTexture(newRotation);
 	}
@@ -513,7 +513,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return dir;
 	}
 
-	public void setDefaultTexture(Icon icon) {
+	public void setDefaultTexture(IIcon icon) {
 		this.blockIcon = icon;
 	}
 

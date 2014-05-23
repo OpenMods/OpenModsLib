@@ -31,7 +31,7 @@ public class PlayerUtils {
 			persistTag = tag.getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG);
 		} else {
 			persistTag = new NBTTagCompound();
-			tag.setCompoundTag(EntityPlayer.PERSISTED_NBT_TAG, persistTag);
+			tag.setTag(EntityPlayer.PERSISTED_NBT_TAG, persistTag);
 		}
 
 		NBTTagCompound modTag = null;
@@ -39,7 +39,7 @@ public class PlayerUtils {
 			modTag = persistTag.getCompoundTag(modName);
 		} else {
 			modTag = new NBTTagCompound();
-			persistTag.setCompoundTag(modName, modTag);
+			persistTag.setTag(modName, modTag);
 		}
 
 		return modTag;

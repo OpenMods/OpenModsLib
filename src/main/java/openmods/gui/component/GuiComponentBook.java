@@ -7,7 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import openmods.sync.SyncableString;
 import openmods.utils.render.FakeIcon;
@@ -26,12 +26,12 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 	private SyncableString strPageNumberLeft;
 	private SyncableString strPageNumberRight;
 
-	public static Icon iconPageLeft = FakeIcon.createSheetIcon(-45, 0, -211, 180);
-	public static Icon iconPageRight = FakeIcon.createSheetIcon(0, 0, 211, 180);
-	public static Icon iconPrev = FakeIcon.createSheetIcon(57, 226, 18, 10);
-	public static Icon iconNext = FakeIcon.createSheetIcon(57, 213, 18, 10);
-	public static Icon iconPrevHover = FakeIcon.createSheetIcon(80, 226, 18, 10);
-	public static Icon iconNextHover = FakeIcon.createSheetIcon(80, 213, 18, 10);
+	public static IIcon iconPageLeft = FakeIcon.createSheetIcon(-45, 0, -211, 180);
+	public static IIcon iconPageRight = FakeIcon.createSheetIcon(0, 0, 211, 180);
+	public static IIcon iconPrev = FakeIcon.createSheetIcon(57, 226, 18, 10);
+	public static IIcon iconNext = FakeIcon.createSheetIcon(57, 213, 18, 10);
+	public static IIcon iconPrevHover = FakeIcon.createSheetIcon(80, 226, 18, 10);
+	public static IIcon iconNextHover = FakeIcon.createSheetIcon(80, 213, 18, 10);
 
 	private static final ResourceLocation texture = new ResourceLocation("openmodslib:textures/gui/book.png");
 

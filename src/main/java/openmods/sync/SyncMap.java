@@ -40,7 +40,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 				int z = input.readInt();
 				if (world != null) {
 					if (world.blockExists(x, y, z)) {
-						TileEntity tile = world.getBlockTileEntity(x, y, z);
+						TileEntity tile = world.getTileEntity(x, y, z);
 						if (tile instanceof ISyncHandler) return (ISyncHandler)tile;
 					}
 				}
@@ -79,7 +79,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 			public void writeHandlerInfo(ISyncHandler handler, DataOutput output) throws IOException {
 				try {
 					Entity e = (Entity)handler;
-					output.writeInt(e.entityId);
+					output.writeInt(e.getEntityId());
 				} catch (ClassCastException e) {
 					throw new RuntimeException("Invalid usage of handler type", e);
 				}

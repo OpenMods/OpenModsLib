@@ -1,7 +1,7 @@
 package openmods.renderer;
 
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public class RotatedTessellator extends Tessellator {
 

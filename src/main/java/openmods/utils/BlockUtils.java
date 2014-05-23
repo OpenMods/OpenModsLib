@@ -11,7 +11,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.util.ForgeDirection;
 import openmods.IInventoryProvider;
 
 public class BlockUtils {
@@ -114,14 +114,14 @@ public class BlockUtils {
 		int targetX = tile.xCoord + direction.offsetX;
 		int targetY = tile.yCoord + direction.offsetY;
 		int targetZ = tile.zCoord + direction.offsetZ;
-		return tile.worldObj.getBlockTileEntity(targetX, targetY, targetZ);
+		return tile.getWorldObj().getTileEntity(targetX, targetY, targetZ);
 	}
 
 	public static TileEntity getTileInDirection(World world, Coord coord, ForgeDirection direction) {
 		int targetX = coord.x + direction.offsetX;
 		int targetY = coord.y + direction.offsetY;
 		int targetZ = coord.z + direction.offsetZ;
-		return world.getBlockTileEntity(targetX, targetY, targetZ);
+		return world.getTileEntity(targetX, targetY, targetZ);
 	}
 
 	public static int getFirstNonAirBlockFromTop(World world, int x, int z) {

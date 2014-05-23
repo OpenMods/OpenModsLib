@@ -1,18 +1,29 @@
 package openmods.utils;
 
+import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 
 public class BlockProperties {
 
-	public static int getBlockID(Coord c, World world) {
-		return world.getBlockId(c.x, c.y, c.z);
+	public static String getBlockName(Block block) {
+		return GameRegistry.findUniqueIdentifierFor(block).toString();
+	}
+	
+	public static String getBlockName(Coord c, World world) {
+		return getBlockName(getBlock(c, world));
+	}
+
+	public static Block getBlockByName(String blockName) {
+		UniqueIdentifier ident = new UniqueIdentifier(blockName);
+		return GameRegistry.findBlock(ident.modId, ident.name);
 	}
 
 	public static Block getBlock(Coord c, World world) {
-		return Block.blocksList[getBlockID(c, world)];
+		return world.getBlock(c.x, c.y, c.z);
 	}
 
 	public static int getBlockMetadata(Coord c, World world) {
@@ -29,11 +40,13 @@ public class BlockProperties {
 	}
 
 	public static boolean isBlockNormalCube(Coord c, World world) {
-		return world.isBlockNormalCube(c.x, c.y, c.z);
+		return world.isBlockNormalCubeDefault(c.x, c.y, c.z, false);
 	}
 
 	public static boolean isBlockOpaqueCube(Coord c, World world) {
-		return world.isBlockOpaqueCube(c.x, c.y, c.z);
+		// TODO: Fix
+		//return world.(c.x, c.y, c.z);
+		return true;
 	}
 
 	public static boolean isWood(Coord c, World world) {

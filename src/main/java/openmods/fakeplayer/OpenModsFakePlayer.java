@@ -7,9 +7,8 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
-import net.minecraftforge.common.FakePlayer;
-import net.minecraftforge.common.ForgeDirection;
-import net.minecraftforge.event.Event;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
@@ -105,8 +104,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 		if (usedItem.onItemUseFirst(itemStack, this, worldObj, x, y, z, opposite, deltaX, deltaY, deltaZ)) { return true; }
 
 		if (event.useBlock != Event.Result.DENY && (isSneaking() || usedItem.shouldPassSneakingClickToBlock(worldObj, x, y, z))) {
-			int blockId = worldObj.getBlockId(x, y, z);
-			Block block = Block.blocksList[blockId];
+			Block block = worldObj.getBlock(x, y, z)
 			if (block != null) try {
 				if (block.onBlockActivated(worldObj, x, y, z, this, opposite, deltaX, deltaY, deltaZ)) return true;
 			} catch (Throwable t) {

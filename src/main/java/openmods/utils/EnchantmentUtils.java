@@ -69,7 +69,7 @@ public class EnchantmentUtils {
 
 					if (!flag || k == j) {
 						if (flag) {
-							Item.enchantedBook.addEnchantment(itemstack, enchantmentdata);
+							Items.en.addEnchantment(itemstack, enchantmentdata);
 						} else {
 							itemstack.addEnchantment(enchantmentdata.enchantmentobj, enchantmentdata.enchantmentLevel);
 						}

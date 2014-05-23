@@ -21,7 +21,7 @@ public class ClientGuiHandler extends CommonGuiHandler {
 		if (world instanceof WorldClient) {
 			if (id != OpenBlock.OPEN_MODS_TE_GUI) return wrappedHandler != null? wrappedHandler.getClientGuiElement(id, player, world, x, y, z) : null;
 			else {
-				TileEntity tile = world.getBlockTileEntity(x, y, z);
+				TileEntity tile = world.getTileEntity(x, y, z);
 				if (tile instanceof IHasGui) return ((IHasGui)tile).getClientGui(player);
 			}
 		}

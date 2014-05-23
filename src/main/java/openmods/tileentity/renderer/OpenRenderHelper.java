@@ -3,7 +3,7 @@ package openmods.tileentity.renderer;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 
 import org.lwjgl.opengl.GL11;
 
@@ -11,11 +11,11 @@ public class OpenRenderHelper {
 
 	public static RenderBlocks renderBlocks = new RenderBlocks();
 
-	public static void renderCube(double x1, double y1, double z1, double x2, double y2, double z2, Block block, Icon overrideTexture) {
+	public static void renderCube(double x1, double y1, double z1, double x2, double y2, double z2, Block block, IIcon overrideTexture) {
 		renderCube(x1, y1, z1, x2, y2, z2, block, overrideTexture, 0);
 	}
 
-	public static void renderCube(double x1, double y1, double z1, double x2, double y2, double z2, Block block, Icon overrideTexture, int meta) {
+	public static void renderCube(double x1, double y1, double z1, double x2, double y2, double z2, Block block, IIcon overrideTexture, int meta) {
 		GL11.glPushMatrix();
 		Tessellator t = Tessellator.instance;
 
@@ -25,7 +25,7 @@ public class OpenRenderHelper {
 
 		t.startDrawingQuads();
 
-		Icon useTexture = overrideTexture != null? overrideTexture : block.getIcon(0, meta);
+		IIcon useTexture = overrideTexture != null? overrideTexture : block.getIcon(0, meta);
 		t.setNormal(0.0F, -1.0F, 0.0F);
 		renderBlocks.renderFaceYNeg(block, 0, 0, 0, useTexture);
 
@@ -53,11 +53,11 @@ public class OpenRenderHelper {
 		GL11.glPopMatrix();
 	}
 
-	public static void renderWorldCube(RenderBlocks renderer, double x1, double y1, double z1, double x2, double y2, double z2, Block block, Icon overrideTexture) {
+	public static void renderWorldCube(RenderBlocks renderer, double x1, double y1, double z1, double x2, double y2, double z2, Block block, IIcon overrideTexture) {
 
 		renderer.setRenderBounds(x1, y1, z1, x2, y2, z2);
 
-		Icon useTexture = overrideTexture != null? overrideTexture : block.getBlockTextureFromSide(0);
+		IIcon useTexture = overrideTexture != null? overrideTexture : block.getBlockTextureFromSide(0);
 		renderer.renderFaceYNeg(block, 0, 0, 0, useTexture);
 
 		useTexture = overrideTexture != null? overrideTexture : block.getBlockTextureFromSide(1);

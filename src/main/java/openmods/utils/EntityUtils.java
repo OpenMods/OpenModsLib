@@ -22,10 +22,12 @@ public class EntityUtils {
 
 		if (entity == null || entity.worldObj == null) { return null; }
 
-		return entity.worldObj.rayTraceBlocks_do_do(
+		// TODO: Check 5th param is fine
+		return entity.worldObj.func_147447_a(
 				getCurrentPosition(entity),
 				getPredictedPosition(entity),
 				false,
-				true);
+				true,
+				false);
 	}
 }

@@ -22,7 +22,7 @@ public class CommonGuiHandler implements IGuiHandler {
 	public Object getServerGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
 		if (id != OpenBlock.OPEN_MODS_TE_GUI) return wrappedHandler != null? wrappedHandler.getServerGuiElement(id, player, world, x, y, z) : null;
 		else {
-			TileEntity tile = world.getBlockTileEntity(x, y, z);
+			TileEntity tile = world.getTileEntity(x, y, z);
 			if (tile instanceof IHasGui) return ((IHasGui)tile).getServerGui(player);
 		}
 		return null;

@@ -4,7 +4,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import net.minecraft.util.Vec3;
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.util.ForgeDirection;
 import openmods.shapes.IShapeable;
 import openmods.utils.MathUtils;
 

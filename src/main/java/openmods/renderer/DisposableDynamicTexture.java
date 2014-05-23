@@ -1,9 +1,11 @@
 package openmods.renderer;
 
+import java.io.IOException;
+
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureUtil;
-import net.minecraft.client.resources.ResourceManager;
+import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 
 import com.google.common.base.Preconditions;
@@ -30,7 +32,7 @@ public class DisposableDynamicTexture extends AbstractTexture {
 	}
 
 	@Override
-	public void loadTexture(ResourceManager par1ResourceManager) {}
+	public void loadTexture(IResourceManager par1ResourceManager) {}
 
 	public void update() {
 		Preconditions.checkNotNull(dynamicTextureData, "Texture not allocated");
@@ -55,4 +57,5 @@ public class DisposableDynamicTexture extends AbstractTexture {
 		manager.loadTexture(location, this);
 		return location;
 	}
+
 }

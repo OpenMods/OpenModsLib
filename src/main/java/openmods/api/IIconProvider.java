@@ -1,8 +1,8 @@
 package openmods.api;
 
-import net.minecraft.util.Icon;
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraft.util.IIcon;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public interface IIconProvider {
-	public Icon getIcon(ForgeDirection rotatedDir);
+	public IIcon getIcon(ForgeDirection rotatedDir);
 }

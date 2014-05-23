@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
@@ -26,7 +26,7 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 	protected static RenderItem itemRenderer = new RenderItem();
 	private ItemStack[] items;
 
-	public GuiComponentCraftingGrid(int x, int y, ItemStack[] items, Icon icon, ResourceLocation texture) {
+	public GuiComponentCraftingGrid(int x, int y, ItemStack[] items, IIcon icon, ResourceLocation texture) {
 		super(x, y, icon, texture);
 		this.items = items;
 	}
@@ -128,7 +128,7 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 	}
 
 	protected EnumChatFormatting getRarityColor(ItemStack stack) {
-		return EnumChatFormatting.values()[stack.getRarity().rarityColor];
+		return stack.getRarity().rarityColor;
 	}
 
 	private void drawItemStack(ItemStack par1ItemStack, int par2, int par3, String par4Str)

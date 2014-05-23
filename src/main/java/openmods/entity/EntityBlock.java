@@ -1,8 +1,10 @@
 package openmods.entity;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.entity.Entity;
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
@@ -10,8 +12,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.util.ForgeDirection;
 import openmods.utils.BlockNotifyFlags;
+import openmods.utils.BlockProperties;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
@@ -19,10 +22,10 @@ import com.google.common.io.ByteArrayDataOutput;
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-
+//TODO: Review later
 public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
-	private static final int OBJECT_BLOCK_ID = 11;
+	private static final int OBJECT_BLOCK_NAME = 11;
 	private static final int OBJECT_BLOCK_META = 12;
 	private boolean hasGravity = false;
 	/* Should this entity return to a block on the ground? */
@@ -46,8 +49,8 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	public static EntityBlock create(World world, int x, int y, int z, Class<? extends EntityBlock> klazz) {
-		int blockId = world.getBlockId(x, y, z);
-		Block block = Block.blocksList[blockId];
+
+		Block block = world.getBlock(x, y, z);
 
 		if (block == null) return null;
 
@@ -62,14 +65,14 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 		if (entity == null) return null;
 
-		entity.setBlockIdAndMeta(blockId, meta);
+		entity.setBlockNameAndMeta(BlockProperties.getBlockName(block), meta);
 
 		if (block instanceof BlockContainer) {
-			TileEntity te = world.getBlockTileEntity(x, y, z);
+			TileEntity te = world.getTileEntity(x, y, z);
 			if (te != null) {
 				entity.tileEntity = te;
 				te.invalidate();
-				world.removeBlockTileEntity(x, y, z);
+				world.removeTileEntity(x, y, z);
 			}
 		}
 
@@ -84,22 +87,21 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	protected void entityInit() {
-		dataWatcher.addObject(OBJECT_BLOCK_ID, Block.bedrock.blockID);
+		dataWatcher.addObject(OBJECT_BLOCK_NAME, BlockProperties.getBlockName(Blocks.bedrock));
 		dataWatcher.addObject(OBJECT_BLOCK_META, 0);
 	}
 
-	public void setBlockIdAndMeta(int id, int meta) {
-		this.dataWatcher.updateObject(OBJECT_BLOCK_ID, id);
+	public void setBlockNameAndMeta(String name, int meta) {
+		this.dataWatcher.updateObject(OBJECT_BLOCK_NAME, name);
 		this.dataWatcher.updateObject(OBJECT_BLOCK_META, meta);
 	}
 
-	public int getBlockId() {
-		return dataWatcher.getWatchableObjectInt(OBJECT_BLOCK_ID);
+	public String getBlockName() {
+		return dataWatcher.getWatchableObjectString(OBJECT_BLOCK_NAME);
 	}
 
 	public Block getBlock() {
-		int blockId = getBlockId();
-		return Block.blocksList[blockId];
+		return BlockProperties.getBlockByName(getBlockName());
 	}
 
 	public int getBlockMeta() {
@@ -116,15 +118,18 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound tag) {
-		int blockId = tag.getInteger("BlockId");
+		
+		String blockName = tag.getString("BlockName");
+		
+		Block block = BlockProperties.getBlockByName(blockName);
 
-		if (Block.blocksList[blockId] == null) {
+		if (block == null) {
 			setDead();
 			return;
 		}
 
 		int blockMeta = tag.getInteger("BlockMeta");
-		setBlockIdAndMeta(blockId, blockMeta);
+		setBlockNameAndMeta(blockName, blockMeta);
 
 		NBTBase teTag = tag.getTag("TileEntity");
 
@@ -135,7 +140,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound tag) {
-		tag.setInteger("BlockId", getBlockId());
+		tag.setString("BlockName", getBlockName());
 		tag.setInteger("BlockMeta", getBlockMeta());
 
 		if (tileEntity != null) {
@@ -195,14 +200,14 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 			int z = baseZ + dir.offsetZ;
 			if (!worldObj.isAirBlock(x, y, z)) continue;
 
-			worldObj.setBlock(x, y, z, getBlockId(), getBlockMeta(), BlockNotifyFlags.ALL);
+			worldObj.setBlock(x, y, z, getBlock(), getBlockMeta(), BlockNotifyFlags.ALL);
 
 			if (tileEntity != null) {
 				tileEntity.xCoord = x;
 				tileEntity.yCoord = y;
 				tileEntity.zCoord = z;
 				tileEntity.validate();
-				worldObj.setBlockTileEntity(x, y, z, tileEntity);
+				worldObj.setTileEntity(x, y, z, tileEntity);
 			}
 			return true;
 		}
@@ -210,7 +215,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	private void dropBlock() {
-		ItemStack item = new ItemStack(getBlockId(), 1, getBlockMeta());
+		ItemStack item = new ItemStack(getBlock(), 1, getBlockMeta());
 
 		entityDropItem(item, 0.1f);
 
@@ -255,14 +260,15 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	@Override
 	protected void dealFireDamage(int i) {}
 
+
 	@Override
-	public void writeSpawnData(ByteArrayDataOutput data) {
+	public void writeSpawnData(ByteBuf data) {
 		data.writeBoolean(hasGravity);
 	}
 
 	@Override
-	public void readSpawnData(ByteArrayDataInput data) {
-		hasGravity = data.readBoolean();
+	public void readSpawnData(ByteBuf additionalData) {
+		hasGravity = additionalData.readBoolean();
 	}
 
 }

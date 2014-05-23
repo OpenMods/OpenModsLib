@@ -1,7 +1,7 @@
 package openmods.block;
 
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.util.ForgeDirection;
 import openmods.utils.BlockNotifyFlags;
 
 public class RotationHelper {

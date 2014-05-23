@@ -5,7 +5,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.util.ForgeDirection;
 import openmods.block.OpenBlock;
 import openmods.network.events.TileEntityMessageEventPacket;
 import openmods.utils.Coord;
@@ -93,7 +93,7 @@ public abstract class OpenTileEntity extends TileEntity {
 		 * TODO: Mikee, getBlockTileEntity returns null anyway, why the extra
 		 * block check ?
 		 */
-		if (worldObj != null && worldObj.blockExists(x, y, z)) { return worldObj.getBlockTileEntity(x, y, z); }
+		if (worldObj != null && worldObj.blockExists(x, y, z)) { return worldObj.getTileEntity(x, y, z); }
 		return null;
 	}
 
@@ -109,12 +109,12 @@ public abstract class OpenTileEntity extends TileEntity {
 	}
 
 	public void sendBlockEvent(int key, int value) {
-		worldObj.addBlockEvent(xCoord, yCoord, zCoord, worldObj.getBlockId(xCoord, yCoord, zCoord), key, value);
+		worldObj.addBlockEvent(xCoord, yCoord, zCoord, worldObj.getBlock(xCoord, yCoord, zCoord), key, value);
 	}
 
 	@Override
-	public boolean shouldRefresh(int oldID, int newID, int oldMeta, int newMeta, World world, int x, int y, int z) {
-		return oldID != newID;
+	public boolean shouldRefresh(Block oldBlock, Block newBlock, int oldMeta, int newMeta, World world, int x, int y, int z) {
+		return oldBlock != newBlock;
 	}
 
 	public OpenBlock getBlock() {

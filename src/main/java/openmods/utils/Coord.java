@@ -2,7 +2,7 @@ package openmods.utils;
 
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkPosition;
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public class Coord implements Cloneable {
 	public final int x;
@@ -34,9 +34,9 @@ public class Coord implements Cloneable {
 	}
 
 	public Coord(ChunkPosition pos) {
-		this.x = pos.x;
-		this.y = pos.y;
-		this.z = pos.z;
+		this.x = pos.chunkPosX;
+		this.y = pos.chunkPosY;
+		this.z = pos.chunkPosZ;
 	}
 
 	public Coord offset(ForgeDirection direction) {

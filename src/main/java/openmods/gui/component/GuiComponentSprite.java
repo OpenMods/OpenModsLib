@@ -1,7 +1,7 @@
 package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import openmods.utils.render.FakeIcon;
 
@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11;
 
 public class GuiComponentSprite extends BaseComponent {
 
-	protected Icon icon;
+	protected IIcon icon;
 	protected ResourceLocation texture;
 	protected float r = 1, g = 1, b = 1;
 	protected boolean overlay_mode;
@@ -24,12 +24,12 @@ public class GuiComponentSprite extends BaseComponent {
 	}
 
 	public static class Sprites {
-		public static Icon hammer = FakeIcon.createSheetIcon(0, 233, 23, 23);
-		public static Icon plus = FakeIcon.createSheetIcon(23, 242, 13, 13);
-		public static Icon result = FakeIcon.createSheetIcon(36, 241, 22, 15);
+		public static IIcon hammer = FakeIcon.createSheetIcon(0, 233, 23, 23);
+		public static IIcon plus = FakeIcon.createSheetIcon(23, 242, 13, 13);
+		public static IIcon result = FakeIcon.createSheetIcon(36, 241, 22, 15);
 	}
 
-	public GuiComponentSprite(int x, int y, Icon icon, ResourceLocation texture) {
+	public GuiComponentSprite(int x, int y, IIcon icon, ResourceLocation texture) {
 		super(x, y);
 		this.texture = texture;
 		this.icon = icon;
@@ -77,7 +77,7 @@ public class GuiComponentSprite extends BaseComponent {
 		return 0;
 	}
 
-	public void setIcon(Icon icon) {
+	public void setIcon(IIcon icon) {
 		this.icon = icon;
 	}
 }

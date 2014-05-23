@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import net.minecraftforge.client.*;
 import net.minecraftforge.client.IItemRenderer.ItemRenderType;
 
@@ -82,7 +82,7 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 		}
 		else
 		{
-			Icon icon = player.getItemIcon(itemStack, 0);
+			IIcon icon = player.getItemIcon(itemStack, 0);
 			if (icon == null)
 			{
 				GL11.glPopMatrix();

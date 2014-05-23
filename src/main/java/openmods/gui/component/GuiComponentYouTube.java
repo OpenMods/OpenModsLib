@@ -6,14 +6,14 @@ import java.net.URI;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiConfirmOpenLink;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import openmods.utils.render.FakeIcon;
 
 public class GuiComponentYouTube extends BaseComponent {
 
 	private static final ResourceLocation texture = new ResourceLocation("openmodslib:textures/gui/book.png");
-	public static Icon icon = FakeIcon.createSheetIcon(0, 236, 12, 8);
+	public static IIcon icon = FakeIcon.createSheetIcon(0, 236, 12, 8);
 
 	private final int PROMPT_REPLY_ACTION = 0;
 

@@ -3,7 +3,7 @@ package openmods.gui.component;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidTank;
 
@@ -27,7 +27,7 @@ public class GuiComponentTankLevel extends GuiComponentBox {
 			Tessellator tessellator = Tessellator.instance;
 			tessellator.startDrawingQuads();
 			tessellator.setColorOpaque_F(1, 1, 1);
-			Icon icon = stack.getFluid().getIcon();
+			IIcon icon = stack.getFluid().getIcon();
 			if (icon != null) {
 				double fluidHeight = (height - 3) * percentFull;
 				tessellator.addVertexWithUV(offsetX + x + 3, offsetY + y

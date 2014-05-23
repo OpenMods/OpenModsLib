@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.minecraft.block.Block;
+import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import openmods.Mods;
 import cpw.mods.fml.common.Loader;
@@ -11,27 +12,28 @@ import cpw.mods.fml.common.registry.GameRegistry;
 
 public class PaintUtils {
 
-	private Set<Integer> allowed;
+	private Set<Block> allowed;
 
 	public static final PaintUtils instance = new PaintUtils();
 
 	protected PaintUtils() {
-		allowed = new HashSet<Integer>();
-		allowed.add(Block.stone.blockID);
-		allowed.add(Block.cobblestone.blockID);
-		allowed.add(Block.cobblestoneMossy.blockID);
-		allowed.add(Block.sandStone.blockID);
-		allowed.add(Block.blockIron.blockID);
-		allowed.add(Block.stoneBrick.blockID);
-		allowed.add(Block.glass.blockID);
-		allowed.add(Block.planks.blockID);
-		allowed.add(Block.dirt.blockID);
-		allowed.add(Block.wood.blockID);
-		allowed.add(Block.blockGold.blockID);
-		allowed.add(Block.blockEmerald.blockID);
-		allowed.add(Block.blockLapis.blockID);
-		allowed.add(Block.blockNetherQuartz.blockID);
-		allowed.add(Block.whiteStone.blockID);
+		allowed = new HashSet<Block>();
+		allowed.add(Blocks.stone);
+		allowed.add(Blocks.cobblestone);
+		allowed.add(Blocks.mossy_cobblestone);
+		allowed.add(Blocks.sandstone);
+		allowed.add(Blocks.iron_block);
+		allowed.add(Blocks.stonebrick);
+		allowed.add(Blocks.glass);
+		allowed.add(Blocks.planks);
+		allowed.add(Blocks.dirt);
+		allowed.add(Blocks.log);
+		allowed.add(Blocks.log2);
+		allowed.add(Blocks.gold_block);
+		allowed.add(Blocks.emerald_block);
+		allowed.add(Blocks.lapis_block);
+		allowed.add(Blocks.quartz_block);
+		allowed.add(Blocks.end_stone);
 		if (Loader.isModLoaded(Mods.TINKERSCONSTRUCT)) {
 			addBlocksForMod(Mods.TINKERSCONSTRUCT, new String[] {
 					"GlassBlock",
@@ -56,20 +58,18 @@ public class PaintUtils {
 		for (String blockName : blocks) {
 			Block block = GameRegistry.findBlock(modId, blockName);
 			if (block != null) {
-				allowed.add(block.blockID);
+				allowed.add(block);
 			}
 		}
 	}
 
 	public boolean isAllowedToReplace(Block block) {
 		if (block == null || block.canProvidePower()) return false;
-		return allowed.contains(block.blockID);
+		return allowed.contains(block);
 	}
 
 	public boolean isAllowedToReplace(World world, int x, int y, int z) {
-		int id = world.getBlockId(x, y, z);
 		if (world.isAirBlock(x, y, z)) { return false; }
-		Block block = Block.blocksList[id];
-		return isAllowedToReplace(block);
+		return isAllowedToReplace(world.getBlock(x, y, z));
 	}
 }

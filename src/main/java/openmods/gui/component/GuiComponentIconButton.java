@@ -1,20 +1,20 @@
 package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.Icon;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 
 public class GuiComponentIconButton extends GuiComponentButton {
 
 	private ResourceLocation texture;
-	private final Icon icon;
+	private final IIcon icon;
 
-	public GuiComponentIconButton(int x, int y, int color, Icon icon) {
+	public GuiComponentIconButton(int x, int y, int color, IIcon icon) {
 		super(x, y, icon.getIconWidth() + 4, icon.getIconHeight() + 4, color);
 		this.icon = icon;
 	}
 
-	public GuiComponentIconButton(int x, int y, int color, Icon icon, ResourceLocation texture) {
+	public GuiComponentIconButton(int x, int y, int color, IIcon icon, ResourceLocation texture) {
 		this(x, y, color, icon);
 		this.texture = texture;
 	}
