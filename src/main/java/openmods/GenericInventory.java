@@ -33,9 +33,6 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
-	public void closeChest() {}
-
-	@Override
 	public ItemStack decrStackSize(int par1, int par2)
 	{
 		if (this.inventoryContents[par1] != null)
@@ -67,11 +64,6 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
-	public String getInvName() {
-		return this.inventoryTitle;
-	}
-
-	@Override
 	public int getSizeInventory() {
 		return slotsCount;
 	}
@@ -96,11 +88,6 @@ public class GenericInventory implements IInventory {
 		return null;
 	}
 
-	@Override
-	public boolean isInvNameLocalized() {
-		return isInvNameLocalized;
-	}
-
 	public boolean isItem(int slot, Item item) {
 		return inventoryContents[slot] != null
 				&& inventoryContents[slot].getItem() == item;
@@ -121,9 +108,6 @@ public class GenericInventory implements IInventory {
 			callback.onInventoryChanged(this, slotNumber);
 	}
 
-	@Override
-	public void openChest() {}
-
 	public void clearAndSetSlotCount(int amount) {
 		this.slotsCount = amount;
 		inventoryContents = new ItemStack[amount];
@@ -134,10 +118,10 @@ public class GenericInventory implements IInventory {
 		if (tag.hasKey("size")) {
 			this.slotsCount = tag.getInteger("size");
 		}
-		NBTTagList nbttaglist = tag.getTagList("Items");
+		NBTTagList nbttaglist = tag.getTagList("Items", 10);
 		inventoryContents = new ItemStack[slotsCount];
 		for (int i = 0; i < nbttaglist.tagCount(); i++) {
-			NBTTagCompound stacktag = (NBTTagCompound)nbttaglist.tagAt(i);
+			NBTTagCompound stacktag = (NBTTagCompound)nbttaglist.getCompoundTagAt(i);
 			int j = stacktag.getByte("Slot");
 			if (j >= 0 && j < inventoryContents.length) {
 				inventoryContents[j] = ItemStack.loadItemStackFromNBT(stacktag);
@@ -174,7 +158,7 @@ public class GenericInventory implements IInventory {
 	 * This bastard never even gets called, so don't rely on it.
 	 */
 	@Override
-	public void onInventoryChanged() {
+	public void markDirty() {
 		onInventoryChanged(0);
 	}
 
@@ -193,5 +177,23 @@ public class GenericInventory implements IInventory {
 
 	public List<ItemStack> contents() {
 		return Arrays.asList(inventoryContents);
+	}
+
+	@Override
+	public String getInventoryName() {
+		return this.inventoryTitle;
+	}
+
+	@Override
+	public boolean hasCustomInventoryName() {
+		return this.isInvNameLocalized;
+	}
+
+	@Override
+	public void openInventory() {
+	}
+
+	@Override
+	public void closeInventory() {		
 	}
 }

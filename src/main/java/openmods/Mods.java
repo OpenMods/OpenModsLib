@@ -79,8 +79,7 @@ public class Mods {
 		UniqueIdentifier identifier = GameRegistry.findUniqueIdentifierFor(item);
 
 		if (identifier == null && item instanceof ItemBlock) {
-			int blockId = ((ItemBlock)item).getBlockID();
-			Block block = Block.blocksList[blockId];
+			Block block = ((ItemBlock)item).field_150939_a;
 			if (block != null) {
 				identifier = GameRegistry.findUniqueIdentifierFor(block);
 				klazz = block.getClass();

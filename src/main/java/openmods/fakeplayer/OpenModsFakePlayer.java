@@ -18,6 +18,8 @@ import openmods.utils.MathUtils;
 
 import com.google.common.base.Preconditions;
 
+import cpw.mods.fml.common.eventhandler.Event;
+
 public class OpenModsFakePlayer extends FakePlayer {
 
 	OpenModsFakePlayer(World world, int id) {
@@ -26,7 +28,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 
 	@Override
 	public void setDead() {
-		inventory.clearInventory(-1, -1);
+		inventory.clearInventory(null, -1);
 		isDead = true;
 	}
 
@@ -67,7 +69,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 
 		setRotation(pitch, hue);
 
-		inventory.clearInventory(-1, -1);
+		inventory.clearInventory(null, -1);
 		inventory.addItemStackToInventory(itemStack);
 		rightClick(
 				inventory.getCurrentItem(),
@@ -85,7 +87,8 @@ public class OpenModsFakePlayer extends FakePlayer {
 		setPosition(x + 0.5F, y - 1.5, z + 0.5F);
 		Preconditions.checkArgument(direction == ForgeDirection.DOWN, "Other directions than down is not implemented");
 		setRotation(0, 90);
-		EntityItem entityItem = dropPlayerItem(itemStack);
+		// TODO: Check. Stupid method with a stupid name and unused parameters
+		EntityItem entityItem = dropPlayerItemWithRandomChoice(itemStack, false);
 		entityItem.motionX = 0;
 		entityItem.motionY = 0;
 		entityItem.motionZ = 0;
@@ -103,8 +106,9 @@ public class OpenModsFakePlayer extends FakePlayer {
 
 		if (usedItem.onItemUseFirst(itemStack, this, worldObj, x, y, z, opposite, deltaX, deltaY, deltaZ)) { return true; }
 
-		if (event.useBlock != Event.Result.DENY && (isSneaking() || usedItem.shouldPassSneakingClickToBlock(worldObj, x, y, z))) {
-			Block block = worldObj.getBlock(x, y, z)
+		// TODO: doesSneakBypassUse ? reversed? uh.
+		if (event.useBlock != Event.Result.DENY && (isSneaking() || usedItem.doesSneakBypassUse(worldObj, x, y, z, this))) {
+			Block block = worldObj.getBlock(x, y, z);
 			if (block != null) try {
 				if (block.onBlockActivated(worldObj, x, y, z, this, opposite, deltaX, deltaY, deltaZ)) return true;
 			} catch (Throwable t) {

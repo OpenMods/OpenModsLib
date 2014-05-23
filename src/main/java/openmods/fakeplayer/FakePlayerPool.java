@@ -6,6 +6,8 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import openmods.LibConfig;
@@ -43,12 +45,12 @@ public class FakePlayerPool {
 
 	private static final Map<World, WorldPool> worldPools = new WeakHashMap<World, WorldPool>();
 
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void onWorldLoad(WorldEvent.Load evt) {
 		worldPools.put(evt.world, new WorldPool());
 	}
 
-	@ForgeSubscribe
+	@SubscribeEvent
 	public void onWorldUnload(WorldEvent.Unload evt) {
 		worldPools.remove(evt.world);
 	}

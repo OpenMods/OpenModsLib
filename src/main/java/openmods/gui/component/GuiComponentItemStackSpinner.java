@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
@@ -64,9 +65,10 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 		TextureManager texturemanager = mc.getTextureManager();
 
 		Block block = null;
-		if (itemStack.getItem() instanceof ItemBlock && itemStack.itemID < Block.blocksList.length)
+		Item item = itemStack.getItem();
+		if (item instanceof ItemBlock)
 		{
-			block = Block.blocksList[itemStack.itemID];
+			block = Block.getBlockFromItem(item);
 		}
 
 		IItemRenderer customRenderer = MinecraftForgeClient.getItemRenderer(itemStack, ItemRenderType.ENTITY);
@@ -75,10 +77,10 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 			texturemanager.bindTexture(texturemanager.getResourceLocation(itemStack.getItemSpriteNumber()));
 			ForgeHooksClient.renderEquippedItem(ItemRenderType.EQUIPPED, customRenderer, blockRenderer, player, itemStack);
 		}
-		else if (block != null && itemStack.getItemSpriteNumber() == 0 && RenderBlocks.renderItemIn3d(Block.blocksList[itemStack.itemID].getRenderType()))
+		else if (block != null && itemStack.getItemSpriteNumber() == 0 && RenderBlocks.renderItemIn3d(block.getRenderType()))
 		{
 			texturemanager.bindTexture(texturemanager.getResourceLocation(0));
-			blockRenderer.renderBlockAsItem(Block.blocksList[itemStack.itemID], itemStack.getItemDamage(), 1.0F);
+			blockRenderer.renderBlockAsItem(block, itemStack.getItemDamage(), 1.0F);
 		}
 		else
 		{
