@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import net.minecraft.network.INetworkManager;
-import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraftforge.common.MinecraftForge;
 import openmods.LibConfig;
 import openmods.utils.ByteUtils;
@@ -23,8 +21,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-
-import cpw.mods.fml.common.network.Player;
 
 public class EventPacketManager {
 	private static final Map<Integer, IEventPacketType> TYPES = Maps.newHashMap();

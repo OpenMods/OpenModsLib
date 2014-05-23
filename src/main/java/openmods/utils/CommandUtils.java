@@ -6,7 +6,7 @@ import java.util.List;
 import net.minecraft.command.*;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatMessageComponent;
+import net.minecraft.util.ChatComponentTranslation;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -34,11 +34,13 @@ public class CommandUtils {
 	}
 
 	public static void respond(ICommandSender sender, String format) {
-		sender.sendChatToPlayer(ChatMessageComponent.createFromTranslationKey(format));
+		// TODO: check
+		sender.addChatMessage(new ChatComponentTranslation(format));
 	}
 
 	public static void respond(ICommandSender sender, String format, Object... args) {
-		sender.sendChatToPlayer(ChatMessageComponent.createFromTranslationWithSubstitutions(format, args));
+		// TODO: check
+		sender.addChatMessage(new ChatComponentTranslation(format, args));
 	}
 
 	public static CommandException error(String format, Object... args) {

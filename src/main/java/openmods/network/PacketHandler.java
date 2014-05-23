@@ -7,8 +7,6 @@ import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.EntityTrackerEntry;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.INetworkManager;
-import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.util.IntHashMap;
 import net.minecraft.world.WorldServer;
@@ -19,8 +17,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
-import cpw.mods.fml.common.network.IPacketHandler;
-import cpw.mods.fml.common.network.Player;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class PacketHandler implements IPacketHandler {

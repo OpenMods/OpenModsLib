@@ -16,14 +16,12 @@ import net.minecraft.world.World;
 public class MetaGeneric implements IMetaItem {
 
 	public static class SmeltingRecipe {
-		public final int itemId;
-		public final int itemMeta;
+		public final ItemStack input;
 		public final ItemStack result;
 		public final float experience;
 
-		private SmeltingRecipe(int itemId, int itemMeta, ItemStack result, float experience) {
-			this.itemId = itemId;
-			this.itemMeta = itemMeta;
+		private SmeltingRecipe(ItemStack input, ItemStack result, float experience) {
+			this.input = input;
 			this.result = result.copy();
 			this.experience = experience;
 		}
@@ -90,7 +88,7 @@ public class MetaGeneric implements IMetaItem {
 		for (Object tmp : recipes) {
 			if (tmp instanceof SmeltingRecipe) {
 				SmeltingRecipe recipe = (SmeltingRecipe)tmp;
-				furnaceRecipes.addSmelting(recipe.itemId, recipe.itemMeta, recipe.result, recipe.experience);
+				furnaceRecipes.func_151394_a(recipe.input, recipe.result, recipe.experience);
 			} else if (tmp instanceof IRecipe) {
 				craftingRecipes.add((IRecipe)tmp);
 			} else throw new IllegalArgumentException("Invalid recipe object: "

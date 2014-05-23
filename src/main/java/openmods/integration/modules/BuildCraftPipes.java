@@ -3,10 +3,9 @@ package openmods.integration.modules;
 import static openmods.integration.Conditions.classExists;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.ForgeDirection;
+import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.integration.IntegrationModule;
-import buildcraft.api.transport.IPipeTile;
 
 public class BuildCraftPipes extends IntegrationModule {
 
@@ -43,19 +42,20 @@ public class BuildCraftPipes extends IntegrationModule {
 
 		@Override
 		public int tryAcceptIntoPipe(TileEntity possiblePipe, ItemStack nextStack, boolean doInsert, ForgeDirection direction) {
-			if (possiblePipe instanceof IPipeTile) { return ((IPipeTile)possiblePipe).injectItem(nextStack, doInsert, direction.getOpposite()); }
+			//if (possiblePipe instanceof IPipeTile) { return ((IPipeTile)possiblePipe).injectItem(nextStack, doInsert, direction.getOpposite()); }
 			return 0;
 		}
 
 		@Override
 		public int tryAcceptIntoPipe(TileEntity possiblePipe, FluidStack nextStack, ForgeDirection direction) {
-			if (possiblePipe instanceof IPipeTile) { return ((IPipeTile)possiblePipe).fill(direction.getOpposite(), nextStack, true); }
+			//if (possiblePipe instanceof IPipeTile) { return ((IPipeTile)possiblePipe).fill(direction.getOpposite(), nextStack, true); }
 			return 0;
 		}
 
 		@Override
 		public boolean isPipe(TileEntity tile) {
-			return tile instanceof IPipeTile;
+			return false;
+			//return tile instanceof IPipeTile;
 		}
 	}
 

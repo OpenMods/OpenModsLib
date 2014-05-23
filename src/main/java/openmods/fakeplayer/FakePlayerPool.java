@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.world.WorldEvent;
 import openmods.LibConfig;
 import openmods.Log;
@@ -23,7 +24,7 @@ public class FakePlayerPool {
 		private final Queue<OpenModsFakePlayer> pool = new ConcurrentLinkedQueue<OpenModsFakePlayer>();
 		private final AtomicInteger playerCount = new AtomicInteger();
 
-		public void executeOnPlayer(World world, PlayerUser user) {
+		public void executeOnPlayer(WorldServer world, PlayerUser user) {
 			OpenModsFakePlayer player = pool.poll();
 
 			if (player == null) {
@@ -55,7 +56,7 @@ public class FakePlayerPool {
 		worldPools.remove(evt.world);
 	}
 
-	public void executeOnPlayer(World world, PlayerUser user) {
+	public void executeOnPlayer(WorldServer world, PlayerUser user) {
 		WorldPool pool = worldPools.get(world);
 		if (pool != null) pool.executeOnPlayer(world, user);
 		else Log.warn("Trying to execute %s on world %s, but it's not loaded", user, world);

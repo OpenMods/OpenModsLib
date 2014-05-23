@@ -38,8 +38,8 @@ public class OpenModsCorePlugin implements IFMLLoadingPlugin {
 	@Override
 	public void injectData(Map<String, Object> data) {}
 
-	@Deprecated
-	public String[] getLibraryRequestClass() {
+	@Override
+	public String getAccessTransformerClass() {
 		return null;
 	}
 

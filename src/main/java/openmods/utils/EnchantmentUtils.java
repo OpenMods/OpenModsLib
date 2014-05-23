@@ -7,6 +7,7 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -55,11 +56,11 @@ public class EnchantmentUtils {
 
 			@SuppressWarnings("unchecked")
 			List<EnchantmentData> list = EnchantmentHelper.buildEnchantmentList(rand, itemstack, level);
-			boolean flag = itemstack.itemID == Item.book.itemID;
+			boolean flag = itemstack.getItem() == Items.book;
 			if (list != null) {
 
 				if (flag) {
-					itemstack.itemID = Item.enchantedBook.itemID;
+					itemstack.func_150996_a(Items.enchanted_book);
 				}
 
 				int j = flag? rand.nextInt(list.size()) : -1;
@@ -69,7 +70,7 @@ public class EnchantmentUtils {
 
 					if (!flag || k == j) {
 						if (flag) {
-							Items.en.addEnchantment(itemstack, enchantmentdata);
+							Items.enchanted_book.addEnchantment(itemstack, enchantmentdata);
 						} else {
 							itemstack.addEnchantment(enchantmentdata.enchantmentobj, enchantmentdata.enchantmentLevel);
 						}
@@ -154,6 +155,6 @@ public class EnchantmentUtils {
 
 	public static void addAllBooks(Enchantment enchantment, List<ItemStack> items) {
 		for (int i = enchantment.getMinLevel(); i <= enchantment.getMaxLevel(); i++)
-			items.add(Item.enchantedBook.getEnchantedItemStack(new EnchantmentData(enchantment, i)));
+			items.add(Items.enchanted_book.getEnchantedItemStack(new EnchantmentData(enchantment, i)));
 	}
 }

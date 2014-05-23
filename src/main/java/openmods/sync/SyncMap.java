@@ -184,13 +184,13 @@ public abstract class SyncMap<H extends ISyncHandler> {
 
 			try {
 				for (EntityPlayer player : players) {
-					if (knownUsers.contains(player.entityId)) {
+					if (knownUsers.contains(player.getEntityId())) {
 						if (hasChanges) {
 							if (changePacket == null) changePacket = createPacket(false, false);
 							OpenMods.proxy.sendPacketToPlayer((Player)player, changePacket);
 						}
 					} else {
-						knownUsers.add(player.entityId);
+						knownUsers.add(player.getEntityId());
 						if (fullPacket == null) fullPacket = createPacket(true, false);
 						OpenMods.proxy.sendPacketToPlayer((Player)player, fullPacket);
 					}

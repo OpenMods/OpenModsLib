@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.*;
 
-import net.minecraft.network.packet.Packet250CustomPayload;
 import openmods.OpenMods;
 
 import com.google.common.base.Joiner;

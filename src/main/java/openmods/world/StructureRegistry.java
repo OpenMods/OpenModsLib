@@ -130,7 +130,8 @@ public class StructureRegistry {
 			@Override
 			public void visit(MapGenStructure structure) {
 				try {
-					ChunkPosition structPos = structure.getNearestInstance(world, x, y, z);
+					// TODO: confirm correct srg name
+					ChunkPosition structPos = structure.func_151545_a(world, x, y, z);
 
 					if (structPos != null) {
 						String structType = identifyStructure(structure);
@@ -154,7 +155,8 @@ public class StructureRegistry {
 				String structType = identifyStructure(structure);
 				if (name.equals(structType)) {
 					try {
-						ChunkPosition structPos = structure.getNearestInstance(world, x, y, z);
+						// TODO: confirm correct srg name
+						ChunkPosition structPos = structure.func_151545_a(world, x, y, z);
 						if (structPos != null) result.add(structPos);
 					} catch (IndexOutOfBoundsException e) {
 						// bug in MC, just ignore

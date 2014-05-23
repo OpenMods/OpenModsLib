@@ -6,7 +6,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -17,13 +17,15 @@ import openmods.utils.InventoryUtils;
 import openmods.utils.MathUtils;
 
 import com.google.common.base.Preconditions;
+import com.mojang.authlib.GameProfile;
 
 import cpw.mods.fml.common.eventhandler.Event;
 
 public class OpenModsFakePlayer extends FakePlayer {
 
-	OpenModsFakePlayer(World world, int id) {
-		super(world, String.format("OpenModsFakePlayer-%03d", id));
+	OpenModsFakePlayer(WorldServer world, int id) {
+		//TODO: fix
+		super(world, new GameProfile("41C82C87-7AfB-4024-BA57-13D2C99CAE77", String.format("OpenModsFakePlayer-%03d", id)));
 	}
 
 	@Override

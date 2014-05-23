@@ -3,6 +3,7 @@ package openmods;
 import java.io.File;
 
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
 import openmods.config.CommandConfig;
 import openmods.config.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
@@ -20,7 +21,6 @@ import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.event.*;
 
 @Mod(modid = "OpenMods", name = "OpenMods", version = "0.5", dependencies = "required-after:OpenModsCore")
-@NetworkMod(serverSideRequired = true, clientSideRequired = false, channels = { PacketHandler.CHANNEL_SYNC, PacketHandler.CHANNEL_EVENTS }, packetHandler = PacketHandler.class)
 public class OpenMods {
 
 	@Instance(value = "OpenMods")
