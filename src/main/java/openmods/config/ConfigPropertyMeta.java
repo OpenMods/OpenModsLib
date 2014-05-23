@@ -6,7 +6,9 @@ import java.util.Arrays;
 import java.util.Map;
 
 import net.minecraftforge.common.*;
-import net.minecraftforge.common.Property.Type;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
+import net.minecraftforge.common.config.Property.Type;
 import openmods.Log;
 import openmods.utils.io.IStringSerializable;
 import openmods.utils.io.StringConversionException;
