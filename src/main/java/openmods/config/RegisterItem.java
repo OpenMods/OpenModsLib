@@ -11,4 +11,6 @@ public @interface RegisterItem {
 	public String name();
 
 	public String unlocalizedName() default DEFAULT;
+	
+	public boolean isEnabled() default true;
 }

@@ -13,7 +13,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import openmods.Log;
@@ -79,58 +78,13 @@ public class ConfigProcessing {
 		return configs.get(modId.toLowerCase());
 	}
 
-	private static void getBlock(Configuration configFile, Field field, String description) {
-		try {
-			int defaultValue = field.getInt(null);
-			Property prop = configFile.getBlock("block", field.getName(), defaultValue, description);
-			field.set(null, prop.getInt());
-		} catch (Throwable e) {
-			throw Throwables.propagate(e);
-		}
-	}
-
-	private static void getItem(Configuration configFile, Field field, String description) {
-		try {
-			int defaultValue = field.getInt(null);
-			Property prop = configFile.getItem("item", field.getName(), defaultValue, description);
-			field.set(null, prop.getInt());
-		} catch (Throwable e) {
-			throw Throwables.propagate(e);
-		}
-	}
-
-	public static boolean canRegisterBlock(int blockId) {
-		if (blockId > 0) {
-			Preconditions.checkState(Block.blocksList[blockId] == null,
-					"OpenBlocks tried to register a block for ID: %s but it was in use", blockId);
-			return true;
-		}
-		return false; // Block disabled, fail silently
-	}
-
 	public static void processAnnotations(File configFile, String modId, Configuration config, Class<?> klazz) {
 		Preconditions.checkState(!configs.containsKey(modId), "Trying to configure mod '%s' twice", modId);
 		ModConfig configMeta = new ModConfig(modId, configFile, config, klazz);
 		configs.put(modId.toLowerCase(), configMeta);
 
-		for (Field f : klazz.getFields()) {
-			{
-				ItemId a = f.getAnnotation(ItemId.class);
-				if (a != null) {
-					getItem(config, f, a.description());
-					continue;
-				}
-			}
-
-			{
-				BlockId a = f.getAnnotation(BlockId.class);
-				if (a != null) {
-					getBlock(config, f, a.description());
-				}
-			}
-
+		for (Field f : klazz.getFields())
 			configMeta.tryProcessConfig(f);
-		}
 	}
 
 	private interface IAnnotationProcessor<I, A extends Annotation> {
@@ -198,7 +152,7 @@ public class ConfigProcessing {
 				if (!unlocalizedName.equals(RegisterBlock.NONE)) {
 					if (unlocalizedName.equals(RegisterBlock.DEFAULT)) unlocalizedName = dotName(mod, name);
 					else unlocalizedName = dotName(mod, unlocalizedName);
-					block.setUnlocalizedName(unlocalizedName);
+					block.setBlockName(unlocalizedName);
 				}
 
 				if (teClass != null) GameRegistry.registerTileEntity(teClass, blockName);

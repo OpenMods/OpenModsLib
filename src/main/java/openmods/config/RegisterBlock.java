@@ -27,4 +27,6 @@ public @interface RegisterBlock {
 	public RegisterTileEntity[] tileEntities() default {};
 
 	public String unlocalizedName() default DEFAULT;
+	
+	public boolean isEnabled() default true;
 }
