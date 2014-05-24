@@ -1,6 +1,5 @@
 package openmods.config;
 
-
 import com.google.common.base.Preconditions;
 
 import cpw.mods.fml.common.eventhandler.Cancelable;

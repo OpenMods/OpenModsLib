@@ -15,13 +15,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.utils.BlockNotifyFlags;
 import openmods.utils.BlockProperties;
-
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
-
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+
 //TODO: Review later
 public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
@@ -118,9 +115,9 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound tag) {
-		
+
 		String blockName = tag.getString("BlockName");
-		
+
 		Block block = BlockProperties.getBlockByName(blockName);
 
 		if (block == null) {
@@ -259,7 +256,6 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	protected void dealFireDamage(int i) {}
-
 
 	@Override
 	public void writeSpawnData(ByteBuf data) {

@@ -3,7 +3,6 @@ package openmods.utils;
 import java.util.*;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockColored;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
@@ -47,8 +46,8 @@ public class ColorUtils {
 
 	public static ItemStack createDyedBlock(Block block, int color) {
 		// TODO: Fix
-		//int blockColor = BlockColored.getBlockFromDye(color);
-		//return new ItemStack(block, 1, blockColor);
+		// int blockColor = BlockColored.getBlockFromDye(color);
+		// return new ItemStack(block, 1, blockColor);
 		return null;
 	}
 

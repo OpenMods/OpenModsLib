@@ -141,10 +141,8 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public void openInventory() {
-	}
+	public void openInventory() {}
 
 	@Override
-	public void closeInventory() {
-	}
+	public void closeInventory() {}
 }

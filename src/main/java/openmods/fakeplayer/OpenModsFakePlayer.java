@@ -24,7 +24,7 @@ import cpw.mods.fml.common.eventhandler.Event;
 public class OpenModsFakePlayer extends FakePlayer {
 
 	OpenModsFakePlayer(WorldServer world, int id) {
-		//TODO: fix
+		// TODO: fix
 		super(world, new GameProfile("41C82C87-7AfB-4024-BA57-13D2C99CAE77", String.format("OpenModsFakePlayer-%03d", id)));
 	}
 

@@ -1,5 +1,7 @@
 package openmods.network;
 
+import ibxm.Player;
+
 import java.lang.reflect.Field;
 import java.util.Set;
 

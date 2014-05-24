@@ -11,7 +11,6 @@ import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
 import openmods.network.EventPacket;
-import openmods.network.PacketHandler;
 import openmods.network.events.TileEntityEventHandler;
 import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncableManager;

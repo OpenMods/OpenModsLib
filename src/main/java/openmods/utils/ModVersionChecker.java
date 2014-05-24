@@ -5,7 +5,6 @@ import java.net.URL;
 
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
-
 import openmods.Log;
 
 import com.google.common.collect.Ordering;

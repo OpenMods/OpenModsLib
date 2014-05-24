@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.Set;
 
-import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.world.World;
 import openmods.LibConfig;
 import openmods.OpenMods;

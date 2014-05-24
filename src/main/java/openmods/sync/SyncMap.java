@@ -1,5 +1,7 @@
 package openmods.sync;
 
+import ibxm.Player;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -10,8 +12,6 @@ import java.util.Map.Entry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import openmods.LibConfig;
@@ -25,8 +25,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-
-import cpw.mods.fml.common.network.Player;
 
 public abstract class SyncMap<H extends ISyncHandler> {
 

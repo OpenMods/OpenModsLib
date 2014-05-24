@@ -163,7 +163,7 @@ public class GenericTank extends FluidTank {
 				final FluidTankInfo[] infos = handler.getTankInfo(drainSide);
 
 				if (infos == null) {
-					Log.fine("Tank %s @ (%d,%d,%d) returned null tank info. Nasty.",
+					Log.debug("Tank %s @ (%d,%d,%d) returned null tank info. Nasty.",
 							otherTank.getClass(), otherTank.xCoord, otherTank.yCoord, otherTank.zCoord);
 					continue;
 				}

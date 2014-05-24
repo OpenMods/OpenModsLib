@@ -43,7 +43,7 @@ public class GenericInventory implements IInventory {
 			{
 				itemstack = this.inventoryContents[par1];
 				this.inventoryContents[par1] = null;
-				this.onInventoryChanged(par1);
+				onInventoryChanged(par1);
 				return itemstack;
 			}
 			itemstack = this.inventoryContents[par1].splitStack(par2);
@@ -52,7 +52,7 @@ public class GenericInventory implements IInventory {
 				this.inventoryContents[par1] = null;
 			}
 
-			this.onInventoryChanged(par1);
+			onInventoryChanged(par1);
 			return itemstack;
 		}
 		return null;
@@ -121,7 +121,7 @@ public class GenericInventory implements IInventory {
 		NBTTagList nbttaglist = tag.getTagList("Items", 10);
 		inventoryContents = new ItemStack[slotsCount];
 		for (int i = 0; i < nbttaglist.tagCount(); i++) {
-			NBTTagCompound stacktag = (NBTTagCompound)nbttaglist.getCompoundTagAt(i);
+			NBTTagCompound stacktag = nbttaglist.getCompoundTagAt(i);
 			int j = stacktag.getByte("Slot");
 			if (j >= 0 && j < inventoryContents.length) {
 				inventoryContents[j] = ItemStack.loadItemStackFromNBT(stacktag);
@@ -137,7 +137,7 @@ public class GenericInventory implements IInventory {
 			itemstack.stackSize = getInventoryStackLimit();
 		}
 
-		this.onInventoryChanged(i);
+		onInventoryChanged(i);
 	}
 
 	public void writeToNBT(NBTTagCompound tag) {
@@ -190,10 +190,8 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
-	public void openInventory() {
-	}
+	public void openInventory() {}
 
 	@Override
-	public void closeInventory() {		
-	}
+	public void closeInventory() {}
 }

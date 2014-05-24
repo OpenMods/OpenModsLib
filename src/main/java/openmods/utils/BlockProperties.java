@@ -1,10 +1,10 @@
 package openmods.utils;
 
-import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 
 public class BlockProperties {
@@ -12,7 +12,7 @@ public class BlockProperties {
 	public static String getBlockName(Block block) {
 		return GameRegistry.findUniqueIdentifierFor(block).toString();
 	}
-	
+
 	public static String getBlockName(Coord c, World world) {
 		return getBlockName(getBlock(c, world));
 	}
@@ -45,7 +45,7 @@ public class BlockProperties {
 
 	public static boolean isBlockOpaqueCube(Coord c, World world) {
 		// TODO: Fix
-		//return world.(c.x, c.y, c.z);
+		// return world.(c.x, c.y, c.z);
 		return true;
 	}
 

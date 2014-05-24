@@ -1,8 +1,8 @@
 package openmods.network.events;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import openmods.Log;
 import openmods.tileentity.OpenTileEntity;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class TileEntityEventHandler {
 

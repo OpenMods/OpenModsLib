@@ -35,9 +35,9 @@ public class StenciledTextureRenderer extends StencilRendererHandler {
 		GL11.glStencilFunc(GL11.GL_EQUAL, stencilMask, stencilMask);
 
 		// TODO: confirm
-		//context.renderEngine.bindTexture(texture);
+		// context.renderEngine.bindTexture(texture);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
-		
+
 		RenderUtils.disableLightmap();
 		GL11.glDisable(GL11.GL_LIGHTING);
 

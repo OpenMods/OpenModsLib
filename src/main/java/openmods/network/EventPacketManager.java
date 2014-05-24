@@ -1,5 +1,7 @@
 package openmods.network;
 
+import ibxm.Player;
+
 import java.io.*;
 import java.util.List;
 import java.util.Map;

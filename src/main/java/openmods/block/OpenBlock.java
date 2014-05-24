@@ -257,7 +257,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		x += side.offsetX;
 		y += side.offsetY;
 		z += side.offsetZ;
-		return world.isSideSolid(x, y, z, side.getOpposite(), true); //TODO: check default
+		return world.isSideSolid(x, y, z, side.getOpposite(), true); // TODO: check default
 	}
 
 	public final static boolean areNeighborBlocksSolid(World world, int x, int y, int z, ForgeDirection... sides) {

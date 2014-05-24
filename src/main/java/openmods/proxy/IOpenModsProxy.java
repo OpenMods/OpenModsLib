@@ -9,10 +9,6 @@ import cpw.mods.fml.common.network.IGuiHandler;
 
 public interface IOpenModsProxy {
 
-	public boolean isServerOnly();
-
-	public boolean isServerThread();
-
 	public World getClientWorld();
 
 	public World getServerWorld(int dimension);
@@ -22,10 +18,6 @@ public interface IOpenModsProxy {
 	public boolean isClientPlayer(Entity player);
 
 	public long getTicks(World worldObj);
-
-	public void sendPacketToPlayer(Player player, Packet packet);
-
-	public void sendPacketToServer(Packet packet);
 
 	public File getMinecraftDir();
 

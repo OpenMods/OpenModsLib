@@ -42,20 +42,20 @@ public class BuildCraftPipes extends IntegrationModule {
 
 		@Override
 		public int tryAcceptIntoPipe(TileEntity possiblePipe, ItemStack nextStack, boolean doInsert, ForgeDirection direction) {
-			//if (possiblePipe instanceof IPipeTile) { return ((IPipeTile)possiblePipe).injectItem(nextStack, doInsert, direction.getOpposite()); }
+			// if (possiblePipe instanceof IPipeTile) { return ((IPipeTile)possiblePipe).injectItem(nextStack, doInsert, direction.getOpposite()); }
 			return 0;
 		}
 
 		@Override
 		public int tryAcceptIntoPipe(TileEntity possiblePipe, FluidStack nextStack, ForgeDirection direction) {
-			//if (possiblePipe instanceof IPipeTile) { return ((IPipeTile)possiblePipe).fill(direction.getOpposite(), nextStack, true); }
+			// if (possiblePipe instanceof IPipeTile) { return ((IPipeTile)possiblePipe).fill(direction.getOpposite(), nextStack, true); }
 			return 0;
 		}
 
 		@Override
 		public boolean isPipe(TileEntity tile) {
 			return false;
-			//return tile instanceof IPipeTile;
+			// return tile instanceof IPipeTile;
 		}
 	}
 

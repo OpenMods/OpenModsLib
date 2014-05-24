@@ -26,7 +26,7 @@ public class DelayedEntityLoadManager {
 					return Sets.newSetFromMap(new WeakHashMap<IEntityLoadListener, Boolean>());
 				}
 			});
-	
+
 	@SubscribeEvent
 	public void onEntityCreate(EntityJoinWorldEvent evt) {
 		final Entity entity = evt.entity;

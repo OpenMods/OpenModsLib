@@ -1,7 +1,5 @@
 package openmods.renderer;
 
-import java.io.IOException;
-
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureUtil;

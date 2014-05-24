@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Map;
 
-import net.minecraftforge.common.*;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.common.config.Property.Type;
