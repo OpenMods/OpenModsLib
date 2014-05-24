@@ -13,13 +13,6 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
 @TransformerExclusions({ "openmods.asm", "openmods.include" })
 public class OpenModsCorePlugin implements IFMLLoadingPlugin {
 
-	public static Logger log;
-
-	static {
-		log = Logger.getLogger("OpenModsCore");
-		log.setParent(FMLLog.getLogger());
-	}
-
 	@Override
 	public String[] getASMTransformerClass() {
 		return new String[] { "openmods.OpenModsClassTransformer" };

@@ -2,9 +2,8 @@ package openmods.include;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.logging.Level;
 
-import openmods.OpenModsCorePlugin;
+import openmods.Log;
 import openmods.asm.StopTransforming;
 
 import org.objectweb.asm.*;
@@ -235,7 +234,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 				result.add(Method.getMethod(m));
 			return result;
 		} catch (Throwable t) {
-			OpenModsCorePlugin.log.log(Level.SEVERE, String.format("Error while searching for interface '%s'", intf), t);
+			Log.severe(t, "Error while searching for interface '%s'", intf);
 			throw Throwables.propagate(t);
 		}
 	}
@@ -244,7 +243,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 		Type wrappedInterface = builder.getInterfaceType(annotationHint);
 		boolean notYetDeclared = interfaces.add(wrappedInterface.getInternalName());
 		Preconditions.checkState(notYetDeclared, "%s already implements interface %s", clsName, wrappedInterface);
-		OpenModsCorePlugin.log.info("Adding interface " + wrappedInterface.getInternalName() + " to " + clsName);
+		Log.info("Adding interface %s to %s", wrappedInterface.getInternalName(), clsName);
 		for (Method m : getInterfaceMethods(wrappedInterface)) {
 			MethodAdder prev = methodsToAdd.put(m, builder.createMethod(wrappedInterface));
 			if (prev != null) Preconditions.checkState(overrides.contains(m), "Included method '%s' conflict, interfaces = %s,%s", m, wrappedInterface, prev.intf);

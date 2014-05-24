@@ -1,6 +1,6 @@
 package openmods.movement;
 
-import openmods.OpenModsCorePlugin;
+import openmods.Log;
 import openmods.asm.MethodMatcher;
 import openmods.asm.StopTransforming;
 import openmods.asm.VisitorHelper;
@@ -54,7 +54,7 @@ public class MovementPatcher extends ClassVisitor {
 			boolean patch = opcode == Opcodes.INVOKEVIRTUAL && calledMethodMatcher.match(name, desc);
 			if (patch) {
 				if (PlayerMovementManager.callbackInjected) {
-					OpenModsCorePlugin.log.warning("Method code mismatch, aborting");
+					Log.warn("Method code mismatch, aborting");
 					PlayerMovementManager.callbackInjected = false;
 					throw new StopTransforming();
 				}
@@ -67,7 +67,7 @@ public class MovementPatcher extends ClassVisitor {
 				// movement handler still on stack
 				visitVarInsn(Opcodes.ALOAD, 0); // load this
 				visitMethodInsn(Opcodes.INVOKESTATIC, MANAGER_CLASS, callbackMethod.getName(), callbackMethod.getDescriptor());
-				OpenModsCorePlugin.log.info("Callback inserted. Using new movement handler.");
+				Log.info("Callback inserted. Using new movement handler.");
 				PlayerMovementManager.callbackInjected = true;
 			}
 		}
