@@ -1,23 +1,24 @@
+/**
+ * Copyright (c) 2011-2014, SpaceToad and the BuildCraft Team
+ * http://www.mod-buildcraft.com
+ *
+ * BuildCraft is distributed under the terms of the Minecraft Mod Public
+ * License 1.0, or MMPL. Please check the contents of the license located in
+ * http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
 package buildcraft.api.filler;
 
-import buildcraft.api.core.IBox;
+import net.minecraft.util.IIcon;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Icon;
 
 public interface IFillerPattern {
 
-	public int getId();
-
-	public void setId(int id);
-
-	public boolean iteratePattern(TileEntity tile, IBox box, ItemStack stackToPlace);
+	String getUniqueTag();
 
 	@SideOnly(Side.CLIENT)
-	public Icon getTexture();
+	IIcon getIcon();
 
-	public String getName();
-
+	String getDisplayName();
 }

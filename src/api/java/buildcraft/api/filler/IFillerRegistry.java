@@ -1,15 +1,26 @@
+/**
+ * Copyright (c) 2011-2014, SpaceToad and the BuildCraft Team
+ * http://www.mod-buildcraft.com
+ *
+ * BuildCraft is distributed under the terms of the Minecraft Mod Public
+ * License 1.0, or MMPL. Please check the contents of the license located in
+ * http://www.mod-buildcraft.com/MMPL-1.0.txt
+ */
 package buildcraft.api.filler;
 
-import net.minecraft.inventory.IInventory;
+import java.util.Set;
+
+import buildcraft.api.gates.IAction;
 
 public interface IFillerRegistry {
 
-	public void addRecipe(IFillerPattern pattern, Object aobj[]);
+	void addPattern(IFillerPattern pattern);
 
-	public IFillerPattern findMatchingRecipe(IInventory inventorycrafting);
+	IFillerPattern getPattern(String patternName);
 
-	public int getPatternNumber(IFillerPattern pattern);
+	IFillerPattern getNextPattern(IFillerPattern currentPattern);
 
-	public IFillerPattern getPattern(int n);
+	IFillerPattern getPreviousPattern(IFillerPattern currentPattern);
 
+	Set<? extends IAction> getActions();
 }
