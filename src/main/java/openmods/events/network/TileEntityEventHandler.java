@@ -1,4 +1,4 @@
-package openmods.network.events;
+package openmods.events.network;
 
 import openmods.Log;
 import openmods.tileentity.OpenTileEntity;

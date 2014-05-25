@@ -3,12 +3,10 @@ package openmods.sync;
 import java.util.Set;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import openmods.network.PacketHandler;
-
-import com.google.common.collect.ImmutableSet;
+import openmods.utils.NetUtils;
 
 public class SyncMapEntity<H extends Entity & ISyncHandler> extends SyncMap<H> {
 
@@ -22,9 +20,8 @@ public class SyncMapEntity<H extends Entity & ISyncHandler> extends SyncMap<H> {
 	}
 
 	@Override
-	protected Set<EntityPlayer> getPlayersWatching() {
-		if (handler.worldObj instanceof WorldServer) { return PacketHandler.getPlayersWatchingEntity((WorldServer)handler.worldObj, handler.getEntityId()); }
-		return ImmutableSet.of();
+	protected Set<EntityPlayerMP> getPlayersWatching() {
+		return NetUtils.getPlayersWatchingEntity((WorldServer)handler.worldObj, handler.getEntityId());
 	}
 
 	@Override

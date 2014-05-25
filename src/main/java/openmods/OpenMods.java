@@ -7,13 +7,12 @@ import net.minecraftforge.common.config.Configuration;
 import openmods.config.CommandConfig;
 import openmods.config.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
+import openmods.events.network.CoreEventTypes;
+import openmods.events.network.TileEntityEventHandler;
 import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
-import openmods.network.EventPacket;
-import openmods.network.events.TileEntityEventHandler;
 import openmods.proxy.IOpenModsProxy;
-import openmods.sync.SyncableManager;
 import cpw.mods.fml.common.*;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -28,11 +27,9 @@ public class OpenMods {
 	@SidedProxy(clientSide = "openmods.proxy.OpenClientProxy", serverSide = "openmods.proxy.OpenServerProxy")
 	public static IOpenModsProxy proxy;
 
-	public static SyncableManager syncableManager;
-
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent evt) {
-		EventPacket.registerCorePackets();
+		CoreEventTypes.registerAll();
 
 		final File configFile = evt.getSuggestedConfigurationFile();
 		Configuration config = new Configuration(configFile);
@@ -50,7 +47,6 @@ public class OpenMods {
 
 	@EventHandler
 	public void init(FMLInitializationEvent evt) {
-		syncableManager = new SyncableManager();
 		proxy.init();
 	}
 

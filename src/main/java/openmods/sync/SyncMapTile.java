@@ -2,13 +2,11 @@ package openmods.sync;
 
 import java.util.Set;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import openmods.network.PacketHandler;
-
-import com.google.common.collect.ImmutableSet;
+import openmods.utils.NetUtils;
 
 public class SyncMapTile<H extends TileEntity & ISyncHandler> extends SyncMap<H> {
 
@@ -22,9 +20,8 @@ public class SyncMapTile<H extends TileEntity & ISyncHandler> extends SyncMap<H>
 	}
 
 	@Override
-	protected Set<EntityPlayer> getPlayersWatching() {
-		if (handler.getWorldObj() instanceof WorldServer) { return PacketHandler.getPlayersWatchingBlock((WorldServer)handler.getWorldObj(), handler.xCoord, handler.zCoord); }
-		return ImmutableSet.of();
+	protected Set<EntityPlayerMP> getPlayersWatching() {
+		return NetUtils.getPlayersWatchingBlock((WorldServer)handler.getWorldObj(), handler.xCoord, handler.zCoord);
 	}
 
 	@Override

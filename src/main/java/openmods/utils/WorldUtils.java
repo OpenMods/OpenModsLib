@@ -7,6 +7,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
+import openmods.OpenMods;
+
+import com.google.common.base.Preconditions;
+
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
 
 public class WorldUtils {
 
@@ -36,5 +42,18 @@ public class WorldUtils {
 			return !(entity instanceof EntityPlayer);
 		}
 	};
+
+	public static World getWorld(int dimensionId) {
+		World result;
+		if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
+			result = OpenMods.proxy.getServerWorld(dimensionId);
+		} else {
+			result = OpenMods.proxy.getClientWorld();
+			Preconditions.checkArgument(result.provider.dimensionId == dimensionId, "Invalid dimension id");
+		}
+
+		Preconditions.checkNotNull(result, "Invalid world dimension %d", dimensionId);
+		return result;
+	}
 
 }

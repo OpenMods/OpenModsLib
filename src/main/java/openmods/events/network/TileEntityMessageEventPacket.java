@@ -1,23 +1,22 @@
-package openmods.network.events;
+package openmods.events.network;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
-import openmods.network.EventPacket;
-import openmods.network.IEventPacketType;
-import openmods.network.PacketHandler;
+import openmods.network.event.EventPacket;
+import openmods.network.event.IEventPacketType;
 import openmods.tileentity.OpenTileEntity;
-
-import com.google.common.base.Preconditions;
+import openmods.utils.WorldUtils;
 
 public class TileEntityMessageEventPacket extends EventPacket {
 
+	public static final IEventPacketType EVENT_TYPE = CoreEventTypes.TILE_ENTITY_NOTIFY;
+
+	public int dimension;
 	public int xCoord;
 	public int yCoord;
 	public int zCoord;
@@ -25,6 +24,7 @@ public class TileEntityMessageEventPacket extends EventPacket {
 	public TileEntityMessageEventPacket() {}
 
 	public TileEntityMessageEventPacket(OpenTileEntity tile) {
+		dimension = tile.getWorldObj().provider.dimensionId;
 		xCoord = tile.xCoord;
 		yCoord = tile.yCoord;
 		zCoord = tile.zCoord;
@@ -69,24 +69,10 @@ public class TileEntityMessageEventPacket extends EventPacket {
 		info.add(String.format("%d,%d,%d", xCoord, yCoord, zCoord));
 	}
 
-	protected World getWorld() {
-		return ((EntityPlayer)player).worldObj;
-	}
-
 	public OpenTileEntity getTileEntity() {
-		World world = getWorld();
-		Preconditions.checkNotNull(world, "Invalid packet data");
+		World world = WorldUtils.getWorld(dimension);
 
 		TileEntity te = world.getTileEntity(xCoord, yCoord, zCoord);
 		return (te instanceof OpenTileEntity)? (OpenTileEntity)te : null;
-	}
-
-	public void sendToWatchers(WorldServer world) {
-		sendToPlayers(PacketHandler.getPlayersWatchingBlock(world, xCoord, zCoord));
-	}
-
-	@Override
-	public IEventPacketType getType() {
-		return CoreEventTypes.TILE_ENTITY_NOTIFY;
 	}
 }

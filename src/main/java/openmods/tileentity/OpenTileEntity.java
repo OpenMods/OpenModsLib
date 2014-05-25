@@ -7,7 +7,7 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.block.OpenBlock;
-import openmods.network.events.TileEntityMessageEventPacket;
+import openmods.events.network.TileEntityMessageEventPacket;
 import openmods.utils.Coord;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;

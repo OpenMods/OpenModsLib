@@ -1,6 +1,8 @@
 package openmods.sync;
 
-import ibxm.Player;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.Unpooled;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -10,21 +12,17 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import openmods.LibConfig;
 import openmods.Log;
-import openmods.OpenMods;
-import openmods.network.PacketHandler;
-import openmods.network.PacketLogger;
 import openmods.utils.ByteUtils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
+
+import cpw.mods.fml.common.network.ByteBufUtils;
 
 public abstract class SyncMap<H extends ISyncHandler> {
 
@@ -163,7 +161,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 
 	protected abstract HandlerType getHandlerType();
 
-	protected abstract Set<EntityPlayer> getPlayersWatching();
+	protected abstract Set<EntityPlayerMP> getPlayersWatching();
 
 	protected abstract World getWorld();
 
@@ -172,37 +170,34 @@ public abstract class SyncMap<H extends ISyncHandler> {
 	public Set<ISyncableObject> sync() {
 		if (isInvalid()) return ImmutableSet.of();
 
-		Set<EntityPlayer> players = getPlayersWatching();
+		Preconditions.checkState(!getWorld().isRemote, "This method can only be used server side");
+		Set<EntityPlayerMP> players = getPlayersWatching();
 		Set<ISyncableObject> changes = listChanges();
 		final boolean hasChanges = !changes.isEmpty();
 
-		if (!getWorld().isRemote) {
-			Packet changePacket = null;
-			Packet fullPacket = null;
+		List<EntityPlayerMP> fullPacketTargets = Lists.newArrayList();
+		List<EntityPlayerMP> deltaPacketTargets = Lists.newArrayList();
 
-			try {
-				for (EntityPlayer player : players) {
-					if (knownUsers.contains(player.getEntityId())) {
-						if (hasChanges) {
-							if (changePacket == null) changePacket = createPacket(false, false);
-							OpenMods.proxy.sendPacketToPlayer((Player)player, changePacket);
-						}
-					} else {
-						knownUsers.add(player.getEntityId());
-						if (fullPacket == null) fullPacket = createPacket(true, false);
-						OpenMods.proxy.sendPacketToPlayer((Player)player, fullPacket);
-					}
-				}
-			} catch (IOException e) {
-				Log.warn(e, "IOError during downstream sync");
+		for (EntityPlayerMP player : players) {
+			if (knownUsers.contains(player.getEntityId())) {
+				if (hasChanges) deltaPacketTargets.add(player);
+			} else {
+				knownUsers.add(player.getEntityId());
+				fullPacketTargets.add(player);
 			}
-		} else if (hasChanges) {
-			try {
-				OpenMods.proxy.sendPacketToServer(createPacket(false, true));
-			} catch (IOException e) {
-				Log.warn(e, "IOError during upstream sync");
+		}
+		try {
+			if (!deltaPacketTargets.isEmpty()) {
+				ByteBuf deltaPayload = createPayload(false);
+				SyncChannelHolder.INSTANCE.sendPayloadToPlayers(deltaPayload, deltaPacketTargets);
 			}
-			knownUsers.clear();
+
+			if (!fullPacketTargets.isEmpty()) {
+				ByteBuf deltaPayload = createPayload(true);
+				SyncChannelHolder.INSTANCE.sendPayloadToPlayers(deltaPayload, fullPacketTargets);
+			}
+		} catch (IOException e) {
+			Log.warn(e, "IOError during downstream sync");
 		}
 
 		markAllAsClean();
@@ -218,24 +213,17 @@ public abstract class SyncMap<H extends ISyncHandler> {
 		return changes;
 	}
 
-	public Packet createPacket(boolean fullPacket, boolean toServer) throws IOException {
-		ByteArrayDataOutput bos = ByteStreams.newDataOutput();
-		bos.writeBoolean(toServer);
-		if (toServer) {
-			int dimension = getWorld().provider.dimensionId;
-			bos.writeInt(dimension);
-		}
-		HandlerType type = getHandlerType();
-		ByteUtils.writeVLI(bos, type.ordinal());
-		type.writeHandlerInfo(handler, bos);
-		int count = writeToStream(bos, fullPacket);
-		Packet250CustomPayload packet = new Packet250CustomPayload();
-		packet.channel = PacketHandler.CHANNEL_SYNC;
-		packet.data = bos.toByteArray();
-		packet.length = packet.data.length;
+	public ByteBuf createPayload(boolean fullPacket) throws IOException {
+		ByteBuf output = Unpooled.buffer();
 
-		if (LibConfig.logPackets) PacketLogger.log(packet, false, handler.toString(), handler.getClass().toString(), Integer.toString(count));
-		return packet;
+		HandlerType type = getHandlerType();
+		ByteBufUtils.writeVarInt(output, type.ordinal(), 5);
+
+		DataOutput dataOutput = new ByteBufOutputStream(output);
+		type.writeHandlerInfo(handler, dataOutput);
+		writeToStream(dataOutput, fullPacket);
+
+		return output;
 	}
 
 	public static ISyncHandler findSyncMap(World world, DataInput input) throws IOException {

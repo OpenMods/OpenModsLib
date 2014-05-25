@@ -18,24 +18,27 @@ public class PacketChunker {
 
 	public static final int MAX_CHUNK_SIZE = Short.MAX_VALUE - 100;
 
+	public static final int PACKET_SIZE_S3F = 0x001FFFF0;
+	public static final int PACKET_SIZE_C17 = 0x00007FFF;
+
 	/***
 	 * Split a byte array into one or more chunks with headers
 	 * 
 	 * @param data
 	 * @return the list of chunks
 	 */
-	public byte[][] splitIntoChunks(byte[] data) {
+	public byte[][] splitIntoChunks(byte[] data, int maxChunkSize) {
 
-		final int numChunks = (data.length + MAX_CHUNK_SIZE - 1) / MAX_CHUNK_SIZE;
+		final int numChunks = (data.length + maxChunkSize - 1) / maxChunkSize;
 		Preconditions.checkArgument(numChunks < 256, "%s chunks? Way too much data, man.", numChunks);
 		byte[][] result = new byte[numChunks][];
 
 		int chunkOffset = 0;
 		for (int chunkIndex = 0; chunkIndex < numChunks; chunkIndex++) {
 			// size of the current chunk
-			int chunkSize = Math.min(data.length - chunkOffset, MAX_CHUNK_SIZE);
+			int chunkSize = Math.min(data.length - chunkOffset, maxChunkSize);
 
-			ByteArrayDataOutput buf = ByteStreams.newDataOutput(MAX_CHUNK_SIZE);
+			ByteArrayDataOutput buf = ByteStreams.newDataOutput(maxChunkSize);
 
 			buf.writeByte(numChunks);
 			if (numChunks > 1) {
@@ -60,7 +63,7 @@ public class PacketChunker {
 	 *            one of the chunks
 	 * @return the full byte array or null if not complete
 	 */
-	public byte[] consumeChunk(byte[] payload) {
+	public synchronized byte[] consumeChunk(byte[] payload) {
 		ByteArrayDataInput input = ByteStreams.newDataInput(payload);
 		int numChunks = UnsignedBytes.toInt(input.readByte());
 

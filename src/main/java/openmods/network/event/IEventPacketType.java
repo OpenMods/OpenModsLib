@@ -1,9 +1,9 @@
-package openmods.network;
+package openmods.network.event;
 
 public interface IEventPacketType {
 	public abstract EventPacket createPacket();
 
-	public abstract PacketDirection getDirection();
+	public abstract PacketDirectionValidator getDirection();
 
 	public boolean isCompressed();
 
