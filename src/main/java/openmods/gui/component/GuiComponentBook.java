@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -15,6 +16,8 @@ import openmods.utils.render.FakeIcon;
 import com.google.common.collect.Lists;
 
 public class GuiComponentBook extends BaseComponent implements IComponentListener {
+
+	private static final ResourceLocation PAGETURN = new ResourceLocation("openmodslib", "pageturn");
 
 	private GuiComponentSprite imgLeftBackground;
 	private GuiComponentSprite imgRightBackground;
@@ -166,8 +169,7 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 		}
 		if (oldIndex != index) {
 			Minecraft mc = Minecraft.getMinecraft();
-			// TODO: check sound stuff
-			// mc.getSoundHandler().playSoundFX("openmodslib:pageturn", 1.0F, 1.0F);
+			mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(PAGETURN, 1.0f));
 		}
 		enablePages();
 	}
