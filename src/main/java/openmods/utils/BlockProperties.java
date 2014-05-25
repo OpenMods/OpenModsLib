@@ -43,12 +43,6 @@ public class BlockProperties {
 		return world.isBlockNormalCubeDefault(c.x, c.y, c.z, false);
 	}
 
-	public static boolean isBlockOpaqueCube(Coord c, World world) {
-		// TODO: Fix
-		// return world.(c.x, c.y, c.z);
-		return true;
-	}
-
 	public static boolean isWood(Coord c, World world) {
 		Block block = getBlock(c, world);
 		return block != null && block.isWood(world, c.x, c.y, c.z);

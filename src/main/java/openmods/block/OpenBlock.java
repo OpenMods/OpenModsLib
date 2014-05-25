@@ -257,7 +257,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		x += side.offsetX;
 		y += side.offsetY;
 		z += side.offsetZ;
-		return world.isSideSolid(x, y, z, side.getOpposite(), true); // TODO: check default
+		return world.isSideSolid(x, y, z, side.getOpposite(), false);
 	}
 
 	public final static boolean areNeighborBlocksSolid(World world, int x, int y, int z, ForgeDirection... sides) {
@@ -268,18 +268,14 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void onNeighborChange(IBlockAccess world, int x, int y, int z, int tileX, int tileY, int tileZ) {
+	public void onNeighborBlockChange(World world, int x, int y, int z, Block neighbour) {
 		TileEntity te = world.getTileEntity(x, y, z);
-		if (te instanceof INeighbourAwareTile) {
-			((INeighbourAwareTile)te).onNeighbourChanged(tileX, tileY, tileZ);
-		}
+		if (te instanceof INeighbourAwareTile) ((INeighbourAwareTile)te).onNeighbourChanged();
+
 		if (te instanceof ISurfaceAttachment) {
 			ForgeDirection direction = ((ISurfaceAttachment)te).getSurfaceDirection();
 			if (!isNeighborBlockSolid(world, x, y, z, direction)) {
-				if (world instanceof World) {
-					// TODO: Feels wrong, check
-					((World)world).func_147480_a(x, y, z, true);
-				}
+				world.func_147480_a(x, y, z, true);
 			}
 		}
 	}

@@ -23,9 +23,7 @@ public class ItemUtils {
 	}
 
 	public static NBTTagCompound getItemTag(ItemStack stack) {
-		// TODO: check it's fine without a name
 		if (stack.stackTagCompound == null) stack.stackTagCompound = new NBTTagCompound();
-
 		return stack.stackTagCompound;
 	}
 

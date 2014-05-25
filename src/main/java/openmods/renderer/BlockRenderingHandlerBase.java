@@ -50,7 +50,6 @@ public abstract class BlockRenderingHandlerBase implements ISimpleBlockRendering
 		TileEntity te = null;
 		if (openBlock != null && openBlock.useTESRForInventory()) {
 			Class<? extends TileEntity> teClass = openBlock.getTileClass();
-			// TODO: make it better
 			if (teClass != null && TileEntityRendererDispatcher.instance.mapSpecialRenderers.containsKey(teClass)) {
 				te = getTileEntityForBlock(openBlock);
 				if (te instanceof OpenTileEntity) ((OpenTileEntity)te).prepareForInventoryRender(block, metadata);

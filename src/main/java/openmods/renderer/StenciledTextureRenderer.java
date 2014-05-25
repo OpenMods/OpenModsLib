@@ -1,8 +1,8 @@
 package openmods.renderer;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.ResourceLocation;
+import openmods.utils.TextureUtils;
 import openmods.utils.render.RenderUtils;
 
 import org.lwjgl.opengl.GL11;
@@ -34,9 +34,7 @@ public class StenciledTextureRenderer extends StencilRendererHandler {
 		GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
 		GL11.glStencilFunc(GL11.GL_EQUAL, stencilMask, stencilMask);
 
-		// TODO: confirm
-		// context.renderEngine.bindTexture(texture);
-		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
+		TextureUtils.bindTextureToClient(texture);
 
 		RenderUtils.disableLightmap();
 		GL11.glDisable(GL11.GL_LIGHTING);

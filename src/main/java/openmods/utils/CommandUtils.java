@@ -33,13 +33,7 @@ public class CommandUtils {
 		return filterPrefixes(prefix, getPlayerNames());
 	}
 
-	public static void respond(ICommandSender sender, String format) {
-		// TODO: check
-		sender.addChatMessage(new ChatComponentTranslation(format));
-	}
-
 	public static void respond(ICommandSender sender, String format, Object... args) {
-		// TODO: check
 		sender.addChatMessage(new ChatComponentTranslation(format, args));
 	}
 

@@ -22,7 +22,6 @@ public class EntityUtils {
 
 		if (entity == null || entity.worldObj == null) { return null; }
 
-		// TODO: Check 5th param is fine
 		return entity.worldObj.func_147447_a(
 				getCurrentPosition(entity),
 				getPredictedPosition(entity),

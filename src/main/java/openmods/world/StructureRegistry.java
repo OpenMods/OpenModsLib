@@ -130,7 +130,6 @@ public class StructureRegistry {
 			@Override
 			public void visit(MapGenStructure structure) {
 				try {
-					// TODO: confirm correct srg name
 					ChunkPosition structPos = structure.func_151545_a(world, x, y, z);
 
 					if (structPos != null) {
@@ -155,7 +154,6 @@ public class StructureRegistry {
 				String structType = identifyStructure(structure);
 				if (name.equals(structType)) {
 					try {
-						// TODO: confirm correct srg name
 						ChunkPosition structPos = structure.func_151545_a(world, x, y, z);
 						if (structPos != null) result.add(structPos);
 					} catch (IndexOutOfBoundsException e) {

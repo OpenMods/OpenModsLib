@@ -1,5 +1,7 @@
 package openmods.fakeplayer;
 
+import java.util.UUID;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.Item;
@@ -24,8 +26,12 @@ import cpw.mods.fml.common.eventhandler.Event;
 public class OpenModsFakePlayer extends FakePlayer {
 
 	OpenModsFakePlayer(WorldServer world, int id) {
-		// TODO: fix
-		super(world, new GameProfile("41C82C87-7AfB-4024-BA57-13D2C99CAE77", String.format("OpenModsFakePlayer-%03d", id)));
+		super(world, createProfile(String.format("OpenModsFakePlayer-%03d", id)));
+	}
+	
+	private static GameProfile createProfile(String name) {
+		UUID uuid = UUID.fromString(name);
+		return new GameProfile(uuid.toString(), name);
 	}
 
 	@Override
@@ -89,7 +95,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 		setPosition(x + 0.5F, y - 1.5, z + 0.5F);
 		Preconditions.checkArgument(direction == ForgeDirection.DOWN, "Other directions than down is not implemented");
 		setRotation(0, 90);
-		// TODO: Check. Stupid method with a stupid name and unused parameters
+
 		EntityItem entityItem = dropPlayerItemWithRandomChoice(itemStack, false);
 		entityItem.motionX = 0;
 		entityItem.motionY = 0;
