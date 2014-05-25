@@ -6,6 +6,7 @@ import java.util.Map;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
@@ -15,12 +16,8 @@ public class FeatureManager {
 
 	public static final String CATEGORY_BLOCKS = "blocks";
 
-	public static final FeatureManager INSTANCE = new FeatureManager();
-
 	private final Table<String, String, Boolean> features = HashBasedTable.create();
-
-	private FeatureManager() {}
-
+	
 	public void collectFromItems(Class<?> itemContainer) {
 		for (Field f : itemContainer.getFields()) {
 			RegisterItem item = f.getAnnotation(RegisterItem.class);
@@ -62,6 +59,15 @@ public class FeatureManager {
 
 	public boolean isEnabled(String category, String name) {
 		Boolean result = features.get(category, name);
-		return result != null? result : false;
+		Preconditions.checkNotNull(result, "Invalid feature name %s.%s", category, name);
+		return result;
+	}
+	
+	public boolean isBlockEnabled(String name) {
+		return isEnabled(CATEGORY_BLOCKS, name);
+	}
+	
+	public boolean isItemEnabled(String name) {
+		return isEnabled(CATEGORY_ITEMS, name);
 	}
 }
