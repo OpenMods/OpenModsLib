@@ -257,6 +257,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		x += side.offsetX;
 		y += side.offsetY;
 		z += side.offsetZ;
+		//TODO: issBlockSolid?? (check when possible)
 		return world.isSideSolid(x, y, z, side.getOpposite(), false);
 	}
 
