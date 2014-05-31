@@ -30,7 +30,6 @@ public class PacketHandler implements IPacketHandler {
 
 	@Override
 	public void onPacketData(INetworkManager manager, Packet250CustomPayload packet, Player player) {
-
 		try {
 			if (packet.channel.equals(CHANNEL_SYNC)) {
 				OpenMods.syncableManager.handlePacket(packet);
@@ -80,5 +79,4 @@ public class PacketHandler implements IPacketHandler {
 
 		return ImmutableSet.copyOf(trackingPlayers);
 	}
-
 }

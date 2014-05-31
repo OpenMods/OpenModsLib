@@ -11,14 +11,14 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.Packet250CustomPayload;
+import net.minecraft.network.packet.Packet131MapData;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import openmods.LibConfig;
 import openmods.Log;
 import openmods.OpenMods;
-import openmods.network.PacketHandler;
 import openmods.network.PacketLogger;
+import openmods.network.TinyPacketHandler;
 import openmods.utils.ByteUtils;
 
 import com.google.common.base.Preconditions;
@@ -26,9 +26,12 @@ import com.google.common.collect.*;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
+import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.common.network.Player;
 
 public abstract class SyncMap<H extends ISyncHandler> {
+
+	private static final int MAX_OBJECT_NUM = 16;
 
 	public enum HandlerType {
 		TILE_ENTITY {
@@ -108,6 +111,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 	}
 
 	public void put(String name, ISyncableObject value) {
+		Preconditions.checkState(index < MAX_OBJECT_NUM, "Can't add more than %s objects", MAX_OBJECT_NUM);
 		nameMap.put(name, index);
 		objects[index++] = value;
 	}
@@ -124,14 +128,19 @@ public abstract class SyncMap<H extends ISyncHandler> {
 	public Set<ISyncableObject> readFromStream(DataInput dis) throws IOException {
 		short mask = dis.readShort();
 		Set<ISyncableObject> changes = Sets.newIdentityHashSet();
-		for (int i = 0; i < 16; i++) {
-			if (objects[i] != null) {
-				if (ByteUtils.get(mask, i)) {
-					objects[i].readFromStream(dis);
-					changes.add(objects[i]);
-					objects[i].resetChangeTimer(getWorld());
+		int currentBit = 0;
+
+		while (mask != 0) {
+			if ((mask & 1) != 0) {
+				final ISyncableObject object = objects[currentBit];
+				if (object != null) {
+					object.readFromStream(dis);
+					changes.add(object);
+					object.resetChangeTimer(getWorld());
 				}
 			}
+			currentBit++;
+			mask >>= 1;
 		}
 		return changes;
 	}
@@ -139,15 +148,17 @@ public abstract class SyncMap<H extends ISyncHandler> {
 	public int writeToStream(DataOutput dos, boolean regardless) throws IOException {
 		int count = 0;
 		short mask = 0;
-		for (int i = 0; i < 16; i++) {
-			mask = ByteUtils.set(mask, i, objects[i] != null
-					&& (regardless || objects[i].isDirty()));
+		for (int i = 0; i < index; i++) {
+			final ISyncableObject object = objects[i];
+			mask = ByteUtils.set(mask, i, object != null
+					&& (regardless || object.isDirty()));
 		}
 		dos.writeShort(mask);
-		for (int i = 0; i < 16; i++) {
-			if (objects[i] != null && (regardless || objects[i].isDirty())) {
-				objects[i].writeToStream(dos, regardless);
-				objects[i].resetChangeTimer(getWorld());
+		for (int i = 0; i < index; i++) {
+			final ISyncableObject object = objects[i];
+			if (object != null && (regardless || object.isDirty())) {
+				object.writeToStream(dos, regardless);
+				object.resetChangeTimer(getWorld());
 				count++;
 			}
 		}
@@ -156,7 +167,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 	}
 
 	public void markAllAsClean() {
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < index; i++) {
 			if (objects[i] != null) {
 				objects[i].markClean();
 			}
@@ -231,10 +242,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 		ByteUtils.writeVLI(bos, type.ordinal());
 		type.writeHandlerInfo(handler, bos);
 		int count = writeToStream(bos, fullPacket);
-		Packet250CustomPayload packet = new Packet250CustomPayload();
-		packet.channel = PacketHandler.CHANNEL_SYNC;
-		packet.data = bos.toByteArray();
-		packet.length = packet.data.length;
+		Packet131MapData packet = PacketDispatcher.getTinyPacket(OpenMods.instance, TinyPacketHandler.TYPE_SYNC, bos.toByteArray());
 
 		if (LibConfig.logPackets) PacketLogger.log(packet, false, handler.toString(), handler.getClass().toString(), Integer.toString(count));
 		return packet;

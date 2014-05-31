@@ -12,6 +12,7 @@ import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
 import openmods.network.EventPacket;
 import openmods.network.PacketHandler;
+import openmods.network.TinyPacketHandler;
 import openmods.network.events.TileEntityEventHandler;
 import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncableManager;
@@ -22,7 +23,9 @@ import cpw.mods.fml.common.event.*;
 import cpw.mods.fml.common.network.NetworkMod;
 
 @Mod(modid = "OpenMods", name = "OpenMods", version = "0.5", dependencies = "required-after:OpenModsCore")
-@NetworkMod(serverSideRequired = true, clientSideRequired = false, channels = { PacketHandler.CHANNEL_SYNC, PacketHandler.CHANNEL_EVENTS }, packetHandler = PacketHandler.class)
+@NetworkMod(serverSideRequired = true, clientSideRequired = false,
+		channels = { PacketHandler.CHANNEL_SYNC, PacketHandler.CHANNEL_EVENTS }, packetHandler = PacketHandler.class,
+		tinyPacketHandler = TinyPacketHandler.class)
 public class OpenMods {
 
 	@Instance(value = "OpenMods")
