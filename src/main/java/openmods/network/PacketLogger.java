@@ -21,19 +21,19 @@ public class PacketLogger {
 	private static final String TINY_PACKET_TYPE = "packet131";
 
 	public static void log(Packet250CustomPayload packet, boolean incoming, Collection<String> extras) {
-		log(CHANNEL_PACKET_TYPE, packet.channel, packet.data.length, incoming, extras);
+		log(CHANNEL_PACKET_TYPE, packet.channel, packet.getPacketSize(), incoming, extras);
 	}
 
 	public static void log(Packet250CustomPayload packet, boolean incoming, String... extras) {
-		log(CHANNEL_PACKET_TYPE, packet.channel, packet.data.length, incoming, Arrays.asList(extras));
+		log(CHANNEL_PACKET_TYPE, packet.channel, packet.getPacketSize(), incoming, Arrays.asList(extras));
 	}
 
 	public static void log(Packet131MapData packet, boolean incoming, Collection<String> extras) {
-		log(TINY_PACKET_TYPE, packet.uniqueID, packet.itemData.length, incoming, extras);
+		log(TINY_PACKET_TYPE, packet.uniqueID, packet.getPacketSize(), incoming, extras);
 	}
 
 	public static void log(Packet131MapData packet, boolean incoming, String... extras) {
-		log(TINY_PACKET_TYPE, packet.uniqueID, packet.itemData.length, incoming, Arrays.asList(extras));
+		log(TINY_PACKET_TYPE, packet.uniqueID, packet.getPacketSize(), incoming, Arrays.asList(extras));
 	}
 
 	public static void log(String type, Object source, int payloadLength, boolean incoming, Collection<String> extras) {
