@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import net.minecraft.network.INetHandler;
+import openmods.OpenMods;
 import openmods.utils.io.PacketChunker;
 
 import com.google.common.base.Preconditions;
@@ -69,6 +71,7 @@ public class EventPacketCodec extends MessageToMessageCodec<FMLProxyPacket, Even
 		Channel channel = ctx.channel();
 
 		Side side = channel.attr(NetworkRegistry.CHANNEL_SOURCE).get();
+
 		PacketDirectionValidator validator = type.getDirection();
 		Preconditions.checkState(validator != null && validator.validateSend(side),
 				"Invalid direction: receiving packet %s on side %s", msg.getClass(), side);
@@ -93,6 +96,9 @@ public class EventPacketCodec extends MessageToMessageCodec<FMLProxyPacket, Even
 		EventPacket event = type.createPacket();
 		event.readFromStream(data);
 		event.dispatcher = msg.getDispatcher();
+
+		INetHandler handler = msg.handler();
+		if (handler != null) event.sender = OpenMods.proxy.getPlayerFromHandler(handler);
 		input.close();
 
 		out.add(event);

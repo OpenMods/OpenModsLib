@@ -4,6 +4,7 @@ import java.io.File;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.network.INetHandler;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.network.IGuiHandler;
 
@@ -32,4 +33,6 @@ public interface IOpenModsProxy {
 	public void postInit();
 
 	public void setNowPlayingTitle(String nowPlaying);
+
+	public EntityPlayer getPlayerFromHandler(INetHandler handler);
 }

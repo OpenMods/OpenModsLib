@@ -186,15 +186,15 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		super.breakBlock(world, x, y, z, par5, par6);
 	}
 
-	private void getTileEntityDrops(TileEntity te, List<ItemStack> result) {
+	private void getTileEntityDrops(TileEntity te, List<ItemStack> result, int fortune) {
 		if (te != null) {
 			BlockUtils.getTileInventoryDrops(te, result);
-			if (te instanceof ISpecialDrops) ((ISpecialDrops)te).addDrops(result);
-			getCustomTileEntityDrops(te, result);
+			if (te instanceof ISpecialDrops) ((ISpecialDrops)te).addDrops(result, fortune);
+			getCustomTileEntityDrops(te, result, fortune);
 		}
 	}
 
-	protected void getCustomTileEntityDrops(TileEntity te, List<ItemStack> result) {}
+	protected void getCustomTileEntityDrops(TileEntity te, List<ItemStack> result, int fortune) {}
 
 	protected boolean hasNormalDrops() {
 		return true;
@@ -212,7 +212,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		if (hasTileEntityDrops() && !player.capabilities.isCreativeMode) {
 			final TileEntity te = world.getTileEntity(x, y, z);
 			List<ItemStack> teDrops = Lists.newArrayList();
-			getTileEntityDrops(te, teDrops);
+			getTileEntityDrops(te, teDrops, 0);
 			for (ItemStack drop : teDrops)
 				dropBlockAsItem(world, x, y, z, drop);
 		}
@@ -226,7 +226,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		if (hasNormalDrops()) result.addAll(super.getDrops(world, x, y, z, metadata, fortune));
 		if (hasTileEntityDrops()) {
 			final TileEntity te = world.getTileEntity(x, y, z);
-			getTileEntityDrops(te, result);
+			getTileEntityDrops(te, result, fortune);
 		}
 
 		return result;
@@ -257,7 +257,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		x += side.offsetX;
 		y += side.offsetY;
 		z += side.offsetZ;
-		//TODO: issBlockSolid?? (check when possible)
+		// TODO: issBlockSolid?? (check when possible)
 		return world.isSideSolid(x, y, z, side.getOpposite(), false);
 	}
 

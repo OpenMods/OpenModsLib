@@ -95,7 +95,7 @@ public class EventPacketManager {
 	}
 
 	public void sendToAll(EventPacket event) {
-		sendEvent(event, OutboundTarget.PLAYER, null, Side.SERVER);
+		sendEvent(event, OutboundTarget.ALL, null, Side.SERVER);
 	}
 
 	public void sendToAllAround(EventPacket event, TargetPoint point) {

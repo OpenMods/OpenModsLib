@@ -7,7 +7,9 @@ import java.util.List;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import openmods.network.DimCoord;
 import openmods.network.event.EventPacket;
+import openmods.network.event.EventPacketManager;
 import openmods.network.event.IEventPacketType;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.WorldUtils;
@@ -74,5 +76,13 @@ public class TileEntityMessageEventPacket extends EventPacket {
 
 		TileEntity te = world.getTileEntity(xCoord, yCoord, zCoord);
 		return (te instanceof OpenTileEntity)? (OpenTileEntity)te : null;
+	}
+
+	public void sendToWatchers() {
+		EventPacketManager.INSTANCE.sendToBlockWatchers(this, getDimCoords());
+	}
+
+	public DimCoord getDimCoords() {
+		return new DimCoord(dimension, xCoord, yCoord, zCoord);
 	}
 }

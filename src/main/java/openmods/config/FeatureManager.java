@@ -17,7 +17,7 @@ public class FeatureManager {
 	public static final String CATEGORY_BLOCKS = "blocks";
 
 	private final Table<String, String, Boolean> features = HashBasedTable.create();
-	
+
 	public void collectFromItems(Class<?> itemContainer) {
 		for (Field f : itemContainer.getFields()) {
 			RegisterItem item = f.getAnnotation(RegisterItem.class);
@@ -62,11 +62,11 @@ public class FeatureManager {
 		Preconditions.checkNotNull(result, "Invalid feature name %s.%s", category, name);
 		return result;
 	}
-	
+
 	public boolean isBlockEnabled(String name) {
 		return isEnabled(CATEGORY_BLOCKS, name);
 	}
-	
+
 	public boolean isItemEnabled(String name) {
 		return isEnabled(CATEGORY_ITEMS, name);
 	}

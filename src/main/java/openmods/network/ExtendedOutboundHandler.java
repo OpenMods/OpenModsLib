@@ -1,8 +1,6 @@
 package openmods.network;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.*;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.util.AttributeKey;
 
@@ -29,17 +27,19 @@ public class ExtendedOutboundHandler extends ChannelOutboundHandlerAdapter {
 			return;
 		}
 
-		IPacketTargetSelector target = ctx.channel().attr(MESSAGETARGET).get();
+		final Channel channel = ctx.channel();
+
+		IPacketTargetSelector target = channel.attr(MESSAGETARGET).get();
 		if (target == null) {
 			ctx.write(msg);
 			return;
 		}
 
-		Side channelSide = ctx.channel().attr(NetworkRegistry.CHANNEL_SOURCE).get();
+		Side channelSide = channel.attr(NetworkRegistry.CHANNEL_SOURCE).get();
 
 		Preconditions.checkState(target.isAllowedOnSide(channelSide), "Packet not allowed on side");
 
-		Object arg = ctx.channel().attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).get();
+		Object arg = channel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).get();
 
 		Collection<NetworkDispatcher> dispatchers = Lists.newArrayList();
 		target.listDispatchers(arg, dispatchers);

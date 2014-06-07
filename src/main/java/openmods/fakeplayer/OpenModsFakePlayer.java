@@ -28,7 +28,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 	OpenModsFakePlayer(WorldServer world, int id) {
 		super(world, createProfile(String.format("OpenModsFakePlayer-%03d", id)));
 	}
-	
+
 	private static GameProfile createProfile(String name) {
 		UUID uuid = UUID.fromString(name);
 		return new GameProfile(uuid.toString(), name);
