@@ -13,8 +13,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import openmods.Log;
 import openmods.config.RegisterBlock.RegisterTileEntity;
 
@@ -89,23 +87,38 @@ public class ConfigProcessing {
 
 	private interface IAnnotationProcessor<I, A extends Annotation> {
 		public void process(I entry, A annotation);
+
+		public String getEntryName(A annotation);
+
+		public boolean isEnabled(String name);
 	}
 
-	public static <I, A extends Annotation> void processAnnotations(Class<?> config, Class<I> fieldClass, Class<A> annotationClass, IAnnotationProcessor<I, A> processor) {
+	public static <I, A extends Annotation> void processAnnotations(Class<?> config, Class<I> fieldClass, Class<A> annotationClass, FactoryRegistry<I> factory, IAnnotationProcessor<I, A> processor) {
 		for (Field f : config.getFields()) {
 			if (Modifier.isStatic(f.getModifiers()) && fieldClass.isAssignableFrom(f.getType())) {
+				if (f.isAnnotationPresent(IgnoreFeature.class)) continue;
 				A annotation = f.getAnnotation(annotationClass);
-				if (annotation != null) {
-					try {
-						@SuppressWarnings("unchecked")
-						I entry = (I)f.get(null);
-						if (entry != null) processor.process(entry, annotation);
-					} catch (Exception e) {
-						throw Throwables.propagate(e);
-					}
-				} else {
+				if (annotation == null) {
 					Log.warn("Field %s has valid type %s for registration, but no annotation %s", f, fieldClass, annotationClass);
+					continue;
 				}
+
+				String name = processor.getEntryName(annotation);
+				if (!processor.isEnabled(name)) {
+					Log.info("Item %s (from field %s) is disabled", name, f);
+					continue;
+				}
+
+				@SuppressWarnings("unchecked")
+				Class<? extends I> fieldType = (Class<? extends I>)f.getType();
+				I entry = factory.construct(name, fieldType);
+				if (entry == null) continue;
+				try {
+					f.set(null, entry);
+				} catch (Exception e) {
+					throw Throwables.propagate(e);
+				}
+				processor.process(entry, annotation);
 			}
 		}
 	}
@@ -118,8 +131,8 @@ public class ConfigProcessing {
 		return a + "_" + b;
 	}
 
-	public static void registerItems(Class<?> klazz, final String mod) {
-		processAnnotations(klazz, Item.class, RegisterItem.class, new IAnnotationProcessor<Item, RegisterItem>() {
+	public static void registerItems(Class<?> klazz, final String mod, final FeatureManager features, final FactoryRegistry<Item> factories) {
+		processAnnotations(klazz, Item.class, RegisterItem.class, factories, new IAnnotationProcessor<Item, RegisterItem>() {
 			@Override
 			public void process(Item item, RegisterItem annotation) {
 				String name = dotName(mod, annotation.name());
@@ -132,11 +145,21 @@ public class ConfigProcessing {
 					item.setUnlocalizedName(unlocalizedName);
 				}
 			}
+
+			@Override
+			public String getEntryName(RegisterItem annotation) {
+				return annotation.name();
+			}
+
+			@Override
+			public boolean isEnabled(String name) {
+				return features.isItemEnabled(name);
+			}
 		});
 	}
 
-	public static void registerBlocks(Class<?> klazz, final String mod) {
-		processAnnotations(klazz, Block.class, RegisterBlock.class, new IAnnotationProcessor<Block, RegisterBlock>() {
+	public static void registerBlocks(Class<?> klazz, final String mod, final FeatureManager features, final FactoryRegistry<Block> factories) {
+		processAnnotations(klazz, Block.class, RegisterBlock.class, factories, new IAnnotationProcessor<Block, RegisterBlock>() {
 			@Override
 			public void process(Block block, RegisterBlock annotation) {
 				final String name = annotation.name();
@@ -164,20 +187,15 @@ public class ConfigProcessing {
 					GameRegistry.registerTileEntity(te.cls(), teName);
 				}
 			}
-		});
-	}
 
-	public static void registerFluids(Class<?> klazz, final String mod) {
-		processAnnotations(klazz, Fluid.class, RegisterFluid.class, new IAnnotationProcessor<Fluid, RegisterFluid>() {
 			@Override
-			public void process(Fluid fluid, RegisterFluid annotation) {
-				fluid.setDensity(annotation.density());
-				fluid.setGaseous(annotation.gaseous());
-				fluid.setLuminosity(annotation.luminosity());
-				fluid.setViscosity(annotation.viscosity());
-				FluidRegistry.registerFluid(fluid);
-				fluid.setUnlocalizedName(String.format("%s.%s", mod, annotation.name()));
+			public String getEntryName(RegisterBlock annotation) {
+				return annotation.name();
+			}
 
+			@Override
+			public boolean isEnabled(String name) {
+				return features.isBlockEnabled(name);
 			}
 		});
 	}
