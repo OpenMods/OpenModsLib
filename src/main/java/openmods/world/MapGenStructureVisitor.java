@@ -109,7 +109,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 				Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE
 				);
 
-		modifiedMethod = new MethodMatcher(obfClassName, descriptor, "getNearestInstance", "func_75050_a");
+		modifiedMethod = new MethodMatcher(obfClassName, descriptor, "func_151545_a", "func_151545_a");
 		markerMethod = new MethodMatcher(structureStartCls, "()Z", "isSizeableStructure", "func_75069_d");
 	}
 
