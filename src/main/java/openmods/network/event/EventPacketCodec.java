@@ -73,7 +73,7 @@ public class EventPacketCodec extends MessageToMessageCodec<FMLProxyPacket, Even
 		Side side = channel.attr(NetworkRegistry.CHANNEL_SOURCE).get();
 
 		PacketDirectionValidator validator = type.getDirection();
-		Preconditions.checkState(validator != null && validator.validateSend(side),
+		Preconditions.checkState(validator != null && validator.validateReceive(side),
 				"Invalid direction: receiving packet %s on side %s", msg.getClass(), side);
 
 		InputStream input;
