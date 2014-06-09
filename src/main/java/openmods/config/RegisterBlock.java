@@ -29,4 +29,6 @@ public @interface RegisterBlock {
 	public String unlocalizedName() default DEFAULT;
 
 	public boolean isEnabled() default true;
+
+	public boolean isConfigurable() default true;
 }
