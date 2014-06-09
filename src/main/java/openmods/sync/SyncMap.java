@@ -225,7 +225,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 
 	public ByteBuf createPayload(boolean fullPacket) throws IOException {
 		ByteBuf output = Unpooled.buffer();
-		
+
 		HandlerType type = getHandlerType();
 		ByteBufUtils.writeVarInt(output, type.ordinal(), 5);
 

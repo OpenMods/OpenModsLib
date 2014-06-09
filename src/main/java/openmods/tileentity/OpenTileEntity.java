@@ -139,7 +139,7 @@ public abstract class OpenTileEntity extends TileEntity {
 	}
 
 	public AxisAlignedBB getBB() {
-		return AxisAlignedBB.getAABBPool().getAABB(xCoord, yCoord, zCoord, xCoord + 1, yCoord + 1, zCoord + 1);
+		return AxisAlignedBB.getBoundingBox(xCoord, yCoord, zCoord, xCoord + 1, yCoord + 1, zCoord + 1);
 	}
 
 	public boolean isRenderedInInventory() {
