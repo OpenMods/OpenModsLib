@@ -67,7 +67,12 @@ public class Trackball {
 		if (Math.abs(dot - 1) < 0.0001) return lastTransform;
 
 		Vector3f axis = Vector3f.cross(dragStart, current, null);
-		axis.normalise();
+
+		try {
+			axis.normalise();
+		} catch (IllegalStateException e) { // Zero length vector
+			return lastTransform;
+		}
 
 		float angle = 2 * (float)(Math.acos(dot));
 

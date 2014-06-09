@@ -26,6 +26,8 @@ import cpw.mods.fml.common.network.ByteBufUtils;
 
 public abstract class SyncMap<H extends ISyncHandler> {
 
+	private static final int MAX_OBJECT_NUM = 16;
+
 	public enum HandlerType {
 		TILE_ENTITY {
 
@@ -104,6 +106,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 	}
 
 	public void put(String name, ISyncableObject value) {
+		Preconditions.checkState(index < MAX_OBJECT_NUM, "Can't add more than %s objects", MAX_OBJECT_NUM);
 		nameMap.put(name, index);
 		objects[index++] = value;
 	}
@@ -120,14 +123,19 @@ public abstract class SyncMap<H extends ISyncHandler> {
 	public Set<ISyncableObject> readFromStream(DataInput dis) throws IOException {
 		short mask = dis.readShort();
 		Set<ISyncableObject> changes = Sets.newIdentityHashSet();
-		for (int i = 0; i < 16; i++) {
-			if (objects[i] != null) {
-				if (ByteUtils.get(mask, i)) {
-					objects[i].readFromStream(dis);
-					changes.add(objects[i]);
-					objects[i].resetChangeTimer(getWorld());
+		int currentBit = 0;
+
+		while (mask != 0) {
+			if ((mask & 1) != 0) {
+				final ISyncableObject object = objects[currentBit];
+				if (object != null) {
+					object.readFromStream(dis);
+					changes.add(object);
+					object.resetChangeTimer(getWorld());
 				}
 			}
+			currentBit++;
+			mask >>= 1;
 		}
 		return changes;
 	}
@@ -135,15 +143,17 @@ public abstract class SyncMap<H extends ISyncHandler> {
 	public int writeToStream(DataOutput dos, boolean regardless) throws IOException {
 		int count = 0;
 		short mask = 0;
-		for (int i = 0; i < 16; i++) {
-			mask = ByteUtils.set(mask, i, objects[i] != null
-					&& (regardless || objects[i].isDirty()));
+		for (int i = 0; i < index; i++) {
+			final ISyncableObject object = objects[i];
+			mask = ByteUtils.set(mask, i, object != null
+					&& (regardless || object.isDirty()));
 		}
 		dos.writeShort(mask);
-		for (int i = 0; i < 16; i++) {
-			if (objects[i] != null && (regardless || objects[i].isDirty())) {
-				objects[i].writeToStream(dos, regardless);
-				objects[i].resetChangeTimer(getWorld());
+		for (int i = 0; i < index; i++) {
+			final ISyncableObject object = objects[i];
+			if (object != null && (regardless || object.isDirty())) {
+				object.writeToStream(dos, regardless);
+				object.resetChangeTimer(getWorld());
 				count++;
 			}
 		}
@@ -152,7 +162,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 	}
 
 	public void markAllAsClean() {
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < index; i++) {
 			if (objects[i] != null) {
 				objects[i].markClean();
 			}
@@ -215,7 +225,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 
 	public ByteBuf createPayload(boolean fullPacket) throws IOException {
 		ByteBuf output = Unpooled.buffer();
-
+		
 		HandlerType type = getHandlerType();
 		ByteBufUtils.writeVarInt(output, type.ordinal(), 5);
 

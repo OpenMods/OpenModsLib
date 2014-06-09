@@ -16,6 +16,7 @@ import openmods.integration.modules.BuildCraftPipes;
 import openmods.sync.SyncableFlags;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -102,9 +103,10 @@ public class InventoryUtils {
 			}
 		}
 
-		if (attemptSlots.isEmpty()) return;
 		// if we've defining a specific slot, we'll just use that
-		if (intoSlot > -1 && !attemptSlots.contains(intoSlot)) return;
+		if (intoSlot > -1) attemptSlots.retainAll(ImmutableSet.of(intoSlot));
+
+		if (attemptSlots.isEmpty()) return;
 
 		for (Integer slot : attemptSlots) {
 			if (stack.stackSize <= 0) break;
