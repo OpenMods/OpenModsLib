@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.DimensionManager;
 import openmods.Log;
-import openmods.config.CommandConfig;
+import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
 import cpw.mods.fml.client.FMLClientHandler;

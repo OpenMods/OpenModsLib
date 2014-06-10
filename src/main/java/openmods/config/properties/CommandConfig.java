@@ -1,4 +1,4 @@
-package openmods.config;
+package openmods.config.properties;
 
 import static openmods.utils.CommandUtils.error;
 import static openmods.utils.CommandUtils.filterPrefixes;
@@ -11,7 +11,7 @@ import java.util.Set;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import openmods.Log;
-import openmods.config.ConfigProcessing.ModConfig;
+import openmods.config.properties.ConfigProcessing.ModConfig;
 import openmods.utils.io.StringConversionException;
 
 import org.apache.commons.lang3.ArrayUtils;

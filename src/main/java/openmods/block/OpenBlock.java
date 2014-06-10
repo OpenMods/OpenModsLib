@@ -17,7 +17,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.Log;
 import openmods.api.*;
-import openmods.config.IRegisterableBlock;
+import openmods.config.game.IRegisterableBlock;
 import openmods.sync.SyncableDirection;
 import openmods.tileentity.OpenTileEntity;
 import openmods.tileentity.SyncedTileEntity;

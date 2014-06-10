@@ -1,4 +1,4 @@
-package openmods.config;
+package openmods.config.properties;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;

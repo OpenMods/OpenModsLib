@@ -1,4 +1,4 @@
-package openmods.config;
+package openmods.config.properties;
 
 import java.lang.annotation.*;
 

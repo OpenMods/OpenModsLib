@@ -1,4 +1,4 @@
-package openmods.config;
+package openmods.config.game;
 
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;

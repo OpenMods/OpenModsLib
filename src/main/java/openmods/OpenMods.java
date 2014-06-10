@@ -4,8 +4,8 @@ import java.io.File;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import openmods.config.CommandConfig;
-import openmods.config.ConfigProcessing;
+import openmods.config.properties.CommandConfig;
+import openmods.config.properties.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
 import openmods.events.network.CoreEventTypes;
 import openmods.events.network.TileEntityEventHandler;

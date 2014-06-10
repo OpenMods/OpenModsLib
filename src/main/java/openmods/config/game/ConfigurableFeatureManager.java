@@ -1,20 +1,18 @@
-package openmods.config;
+package openmods.config.game;
 
 import java.lang.reflect.Field;
 import java.util.Map;
 
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import openmods.config.BlockInstances;
+import openmods.config.ItemInstances;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
-public class FeatureManager {
-
-	public static final String CATEGORY_ITEMS = "items";
-
-	public static final String CATEGORY_BLOCKS = "blocks";
+public class ConfigurableFeatureManager extends AbstractFeatureManager {
 
 	private static class FeatureEntry {
 		public boolean isEnabled;
@@ -28,7 +26,7 @@ public class FeatureManager {
 
 	private final Table<String, String, FeatureEntry> features = HashBasedTable.create();
 
-	public void collectFromItems(Class<?> itemContainer) {
+	public void collectFromItems(Class<? extends ItemInstances> itemContainer) {
 		for (Field f : itemContainer.getFields()) {
 			RegisterItem item = f.getAnnotation(RegisterItem.class);
 			if (item == null) continue;
@@ -36,7 +34,7 @@ public class FeatureManager {
 		}
 	}
 
-	public void collectFromBlocks(Class<?> blockContainer) {
+	public void collectFromBlocks(Class<? extends BlockInstances> blockContainer) {
 		for (Field f : blockContainer.getFields()) {
 			RegisterBlock item = f.getAnnotation(RegisterBlock.class);
 			if (item == null) continue;
@@ -61,17 +59,10 @@ public class FeatureManager {
 		}
 	}
 
+	@Override
 	public boolean isEnabled(String category, String name) {
 		FeatureEntry result = features.get(category, name);
 		Preconditions.checkNotNull(result, "Invalid feature name %s.%s", category, name);
 		return result.isEnabled;
-	}
-
-	public boolean isBlockEnabled(String name) {
-		return isEnabled(CATEGORY_BLOCKS, name);
-	}
-
-	public boolean isItemEnabled(String name) {
-		return isEnabled(CATEGORY_ITEMS, name);
 	}
 }

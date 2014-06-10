@@ -1,7 +1,7 @@
 package openmods;
 
-import openmods.config.ConfigProperty;
-import openmods.config.OnLineModifiable;
+import openmods.config.properties.ConfigProperty;
+import openmods.config.properties.OnLineModifiable;
 
 public class LibConfig {
 	@OnLineModifiable
