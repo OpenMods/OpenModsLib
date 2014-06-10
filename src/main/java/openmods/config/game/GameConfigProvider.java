@@ -22,8 +22,6 @@ import com.google.common.collect.Maps;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.event.FMLMissingMappingsEvent.MissingMapping;
-import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
-import cpw.mods.fml.common.registry.GameData;
 import cpw.mods.fml.common.registry.GameRegistry;
 
 public class GameConfigProvider {
@@ -204,18 +202,11 @@ public class GameConfigProvider {
 	}
 
 	public void handleRemaps(Collection<MissingMapping> mappings) {
-		final FMLControlledNamespacedRegistry<Block> blockRegistry = GameData.getBlockRegistry();
-		final FMLControlledNamespacedRegistry<Item> itemRegistry = GameData.getItemRegistry();
-
 		for (MissingMapping mapping : mappings) {
 			switch (mapping.type) {
 				case BLOCK: {
 					Block remap = blockRemaps.get(mapping.name);
-					if (remap != null) {
-						String remapedName = blockRegistry.getNameForObject(remap);
-						Log.info("Remapping block %s to %s (%s)", mapping.name, remapedName, remap);
-						mapping.remap(remap);
-					}
+					if (remap != null) mapping.remap(remap);
 					break;
 				}
 				case ITEM: {
@@ -226,12 +217,7 @@ public class GameConfigProvider {
 						if (blockRemap != null) remap = Item.getItemFromBlock(blockRemap);
 					}
 
-					if (remap != null) {
-						String remapedName = itemRegistry.getNameForObject(remap);
-						Log.info("Remapping item %s to %s (%s)", mapping.name, remapedName, remap);
-						mapping.remap(remap);
-						break;
-					}
+					if (remap != null) mapping.remap(remap);
 				}
 
 				default:
