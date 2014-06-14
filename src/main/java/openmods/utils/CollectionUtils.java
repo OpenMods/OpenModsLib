@@ -9,15 +9,23 @@ import java.util.Map.Entry;
 import openmods.utils.io.IStreamReadable;
 import openmods.utils.io.IStreamWriteable;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 public class CollectionUtils {
 
 	public static final Random rnd = new Random();
 
+	public static <T> T getFirst(Collection<T> collection) {
+		Preconditions.checkArgument(!collection.isEmpty(), "Collection cannot be empty");
+		return collection.iterator().next();
+	}
+
 	public static <T> T getRandom(Collection<T> collection) {
-		if (collection.isEmpty()) return null;
-		int randomIndex = rnd.nextInt(collection.size());
+		final int size = collection.size();
+		Preconditions.checkArgument(size > 0, "Can't select from empty collection");
+		if (size == 1) return getFirst(collection);
+		int randomIndex = rnd.nextInt(size);
 		int i = 0;
 		for (T obj : collection) {
 			if (i == randomIndex) return obj;
@@ -27,7 +35,10 @@ public class CollectionUtils {
 	}
 
 	public static <T> T getRandom(List<T> list) {
-		if (list.isEmpty()) return null;
+		final int size = list.size();
+		Preconditions.checkArgument(size > 0, "Can't select from empty list");
+		if (size == 0) return null;
+		if (size == 1) return list.get(0);
 		int randomIndex = rnd.nextInt(list.size());
 		return list.get(randomIndex);
 	}

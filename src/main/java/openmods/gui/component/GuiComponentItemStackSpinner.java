@@ -5,7 +5,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -13,9 +12,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraftforge.client.*;
 import net.minecraftforge.client.IItemRenderer.ItemRenderType;
+import openmods.utils.TextureUtils;
 
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 public class GuiComponentItemStackSpinner extends BaseComponent {
 
@@ -62,37 +61,31 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 		GL11.glPushMatrix();
 		Minecraft mc = Minecraft.getMinecraft();
 		EntityLivingBase player = mc.thePlayer;
-		TextureManager texturemanager = mc.getTextureManager();
+
+		Item item = itemStack.getItem();
 
 		Block block = null;
-		Item item = itemStack.getItem();
-		if (item instanceof ItemBlock)
-		{
-			block = Block.getBlockFromItem(item);
-		}
+		if (item instanceof ItemBlock) block = Block.getBlockFromItem(item);
 
+		TextureUtils.bindItemStackTexture(itemStack);
+
+		GL11.glDisable(GL11.GL_LIGHTING);
 		IItemRenderer customRenderer = MinecraftForgeClient.getItemRenderer(itemStack, ItemRenderType.ENTITY);
-		if (customRenderer != null)
-		{
-			texturemanager.bindTexture(texturemanager.getResourceLocation(itemStack.getItemSpriteNumber()));
+		if (customRenderer != null) {
 			ForgeHooksClient.renderEquippedItem(ItemRenderType.EQUIPPED, customRenderer, blockRenderer, player, itemStack);
-		}
-		else if (block != null && itemStack.getItemSpriteNumber() == 0 && RenderBlocks.renderItemIn3d(block.getRenderType()))
-		{
-			texturemanager.bindTexture(texturemanager.getResourceLocation(0));
+		} else if (block != null && itemStack.getItemSpriteNumber() == 0 && RenderBlocks.renderItemIn3d(block.getRenderType())) {
 			blockRenderer.renderBlockAsItem(block, itemStack.getItemDamage(), 1.0F);
+		} else {
+			renderItem(itemStack, player);
 		}
-		else
-		{
-			IIcon icon = player.getItemIcon(itemStack, 0);
-			if (icon == null)
-			{
-				GL11.glPopMatrix();
-				return;
-			}
-			texturemanager.bindTexture(texturemanager.getResourceLocation(itemStack.getItemSpriteNumber()));
+		GL11.glEnable(GL11.GL_LIGHTING);
+		GL11.glPopMatrix();
+	}
+
+	private static void renderItem(ItemStack itemStack, EntityLivingBase player) {
+		IIcon icon = player.getItemIcon(itemStack, 0);
+		if (icon != null) {
 			Tessellator tessellator = Tessellator.instance;
-			GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 			GL11.glTranslatef(-0.5f, -0.5f, 0);
 			ItemRenderer.renderItemIn2D(
 					tessellator,
@@ -104,9 +97,6 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 					icon.getIconHeight(),
 					0.0625F
 					);
-
-			GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 		}
-		GL11.glPopMatrix();
 	}
 }

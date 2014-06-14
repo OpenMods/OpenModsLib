@@ -94,7 +94,7 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 			for (Integer id : ids) {
 				IStructureElement element = elements.get(id);
 				if (element == null) onConsistencyCheckFail();
-				element.readFromStream(input);
+				else element.readFromStream(input);
 			}
 		} catch (IOException e) {
 			throw Throwables.propagate(e);

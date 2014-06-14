@@ -13,6 +13,7 @@ import org.apache.commons.lang3.text.WordUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class ColorUtils {
 
@@ -58,7 +59,7 @@ public class ColorUtils {
 		public final String oreName;
 		public final String name;
 
-		public ColorMeta(int rgb, int vanillaId, int oreId, String name, String oreName) {
+		private ColorMeta(int rgb, int vanillaId, int oreId, String name, String oreName) {
 			this.rgb = rgb;
 			this.vanillaId = vanillaId;
 			this.oreId = oreId;
@@ -107,10 +108,13 @@ public class ColorUtils {
 		addEntry("white", 0xF0F0F0, WHITE);
 	}
 
-	public static ColorMeta stackToColor(ItemStack stack) {
-		int oreId = OreDictionary.getOreID(stack);
-		if (oreId < 0) return null;
-		return COLORS_BY_ORE_ID.get(oreId);
+	public static Set<ColorMeta> stackToColor(ItemStack stack) {
+		Set<ColorMeta> result = Sets.newIdentityHashSet();
+		for (int oreId : OreDictionary.getOreIDs(stack)) {
+			ColorMeta meta = COLORS_BY_ORE_ID.get(oreId);
+			if (meta != null) result.add(meta);
+		}
+		return result;
 	}
 
 	public static ColorMeta oreIdToColor(int oreId) {

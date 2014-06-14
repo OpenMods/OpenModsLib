@@ -106,7 +106,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 		if (itemStack == null) return false;
 
 		final int opposite = side.getOpposite().ordinal();
-		PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(this, Action.RIGHT_CLICK_BLOCK, x, y, z, opposite);
+		PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(this, Action.RIGHT_CLICK_BLOCK, x, y, z, opposite, worldObj);
 
 		if (event.isCanceled()) { return false; }
 

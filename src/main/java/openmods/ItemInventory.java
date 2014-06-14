@@ -1,28 +1,22 @@
 package openmods;
 
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import openmods.utils.ItemUtils;
+
+import com.google.common.base.Preconditions;
 
 public class ItemInventory extends GenericInventory {
 
 	public static final String TAG_INVENTORY = "inventory";
 
-	private final EntityPlayer player;
-	private final ItemStack inventoryStack;
-	private final int inventorySlot;
+	protected final ItemStack containerStack;
 
-	public ItemInventory(EntityPlayer _player, int size) {
-		this(_player, size, _player.inventory.currentItem);
-	}
-
-	public ItemInventory(EntityPlayer _player, int size, int inventorySlot) {
+	public ItemInventory(ItemStack containerStack, int size) {
 		super("", false, size);
-		player = _player;
-		this.inventorySlot = inventorySlot;
-		inventoryStack = player.inventory.getStackInSlot(inventorySlot);
-		final NBTTagCompound tag = ItemUtils.getItemTag(inventoryStack);
+		Preconditions.checkNotNull(containerStack);
+		this.containerStack = containerStack;
+		final NBTTagCompound tag = ItemUtils.getItemTag(containerStack);
 		readFromNBT(getInventoryTag(tag));
 
 	}
@@ -30,17 +24,12 @@ public class ItemInventory extends GenericInventory {
 	@Override
 	public void onInventoryChanged(int slotNumber) {
 		super.onInventoryChanged(slotNumber);
-		ItemStack currentStack = player.inventory.getStackInSlot(inventorySlot);
-		if (currentStack == null || !currentStack.isItemEqual(inventoryStack)) {
-			player.closeScreen();
-			return;
-		}
-		NBTTagCompound tag = ItemUtils.getItemTag(currentStack);
+
+		NBTTagCompound tag = ItemUtils.getItemTag(containerStack);
 		NBTTagCompound inventoryTag = getInventoryTag(tag);
 		writeToNBT(inventoryTag);
 		tag.setTag(TAG_INVENTORY, inventoryTag);
-		currentStack.setTagCompound(tag);
-		player.inventory.setInventorySlotContents(inventorySlot, currentStack);
+		containerStack.setTagCompound(tag);
 	}
 
 	public static NBTTagCompound getInventoryTag(NBTTagCompound tag) {

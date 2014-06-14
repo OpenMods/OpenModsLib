@@ -54,10 +54,12 @@ public class InventoryUtils {
 		}
 	}
 
+	public static boolean areItemAndTagEqual(final ItemStack stackA, ItemStack stackB) {
+		return stackA.isItemEqual(stackB) && ItemStack.areItemStackTagsEqual(stackA, stackB);
+	}
+
 	public static boolean areMergeCandidates(ItemStack source, ItemStack target) {
-		return source.isItemEqual(target)
-				&& ItemStack.areItemStackTagsEqual(source, target)
-				&& target.stackSize < target.getMaxStackSize();
+		return areItemAndTagEqual(source, target) && target.stackSize < target.getMaxStackSize();
 	}
 
 	public static void insertItemIntoInventory(IInventory inventory, ItemStack stack) {
@@ -85,17 +87,15 @@ public class InventoryUtils {
 			targetInventory = copy;
 		}
 
-		Set<Integer> attemptSlots = Sets.newTreeSet();
+		final Set<Integer> attemptSlots = Sets.newTreeSet();
 
 		// if it's a sided inventory, get all the accessible slots
 		final boolean isSidedInventory = inventory instanceof ISidedInventory && side != ForgeDirection.UNKNOWN;
 
 		if (isSidedInventory) {
 			int[] accessibleSlots = ((ISidedInventory)inventory).getAccessibleSlotsFromSide(sideId);
-			if (attemptSlots != null) {
-				for (int slot : accessibleSlots)
-					attemptSlots.add(slot);
-			}
+			for (int slot : accessibleSlots)
+				attemptSlots.add(slot);
 		} else {
 			// if it's just a standard inventory, get all slots
 			for (int a = 0; a < inventory.getSizeInventory(); a++) {

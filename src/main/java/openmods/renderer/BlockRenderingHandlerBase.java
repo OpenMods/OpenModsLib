@@ -70,7 +70,7 @@ public abstract class BlockRenderingHandlerBase implements ISimpleBlockRendering
 
 			if (openBlock == null || openBlock.shouldRenderBlock()) {
 				ForgeDirection rotation;
-				if (block instanceof OpenBlock) {
+				if (openBlock != null) {
 					rotation = openBlock.getInventoryRenderRotation();
 					openBlock.setBoundsBasedOnRotation(rotation);
 					RenderUtils.rotateFacesOnRenderer(openBlock, rotation, renderer);

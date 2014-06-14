@@ -1,7 +1,9 @@
 package openmods.utils;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import openmods.Log;
 
@@ -9,8 +11,9 @@ public final class TextureUtils {
 
 	public static void bindTextureToClient(ResourceLocation texture) {
 		if (texture != null) {
-			if (Minecraft.getMinecraft() != null) {
-				Minecraft.getMinecraft().renderEngine.bindTexture(texture);
+			final Minecraft mc = Minecraft.getMinecraft();
+			if (mc != null) {
+				mc.renderEngine.bindTexture(texture);
 			} else {
 				Log.warn("Binding texture to null client.");
 			}
@@ -29,5 +32,16 @@ public final class TextureUtils {
 
 	public static int getRandomNumber() {
 		return 4;
+	}
+
+	public static void bindItemStackTexture(ItemStack itemStack) {
+		final Minecraft mc = Minecraft.getMinecraft();
+		if (mc != null) {
+			TextureManager manager = mc.getTextureManager();
+			final ResourceLocation resourceLocation = manager.getResourceLocation(itemStack.getItemSpriteNumber());
+			manager.bindTexture(resourceLocation);
+		} else {
+			Log.warn("Binding texture to null client.");
+		}
 	}
 }
