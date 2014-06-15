@@ -8,7 +8,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
-import openmods.tileentity.SyncedTileEntity;
 import openmods.utils.InventoryUtils;
 
 public abstract class ContainerBase<T> extends Container {
@@ -168,15 +167,6 @@ public abstract class ContainerBase<T> extends Container {
 			}
 		}
 		return players;
-	}
-
-	@Override
-	public void detectAndSendChanges() {
-		super.detectAndSendChanges();
-		T te = getOwner();
-		if (te instanceof SyncedTileEntity) {
-			((SyncedTileEntity)te).sync();
-		}
 	}
 
 	public void onButtonClicked(EntityPlayer player, int buttonId) {}

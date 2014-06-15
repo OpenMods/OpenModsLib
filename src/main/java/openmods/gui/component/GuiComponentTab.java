@@ -10,17 +10,18 @@ import org.lwjgl.opengl.GL12;
 
 public class GuiComponentTab extends GuiComponentBox {
 
+	private static final int FOLDED_WIDTH = 24;
+	private static final int FOLDED_HEIGHT = 24;
 	protected static RenderItem itemRenderer = new RenderItem();
-	protected GuiComponentTabs container;
-	protected int expandedWidth;
-	protected int expandedHeight;
+	protected final int expandedWidth;
+	protected final int expandedHeight;
 	private boolean active = false;
 	private ItemStack iconStack;
 	private double dWidth;
 	private double dHeight;
 
 	public GuiComponentTab(int color, ItemStack iconStack, int expandedWidth, int expandedHeight) {
-		super(0, 0, 24, 24, 0, 5, color);
+		super(-4, 0, FOLDED_WIDTH, FOLDED_HEIGHT, 0, 5, color);
 		this.expandedWidth = expandedWidth;
 		this.expandedHeight = expandedHeight;
 		this.iconStack = iconStack;
@@ -38,19 +39,19 @@ public class GuiComponentTab extends GuiComponentBox {
 	public void renderLeftEdge(int offsetX, int offsetY) {}
 
 	@Override
+	protected boolean areChildrenActive() {
+		return active && width == expandedWidth && height == expandedHeight;
+	}
+
+	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		double targetWidth = active? expandedWidth : 24;
-		double targetHeight = active? expandedHeight : 24;
-		if (width != targetWidth) {
-			dWidth += (targetWidth - dWidth) / 4;
-		}
-		if (height != targetHeight) {
-			dHeight += (targetHeight - dHeight) / 4;
-		}
+		double targetWidth = active? expandedWidth : FOLDED_WIDTH;
+		double targetHeight = active? expandedHeight : FOLDED_HEIGHT;
+		if (width != targetWidth) dWidth += (targetWidth - dWidth) / 4;
+		if (height != targetHeight) dHeight += (targetHeight - dHeight) / 4;
+
 		width = (int)Math.round(dWidth);
 		height = (int)Math.round(dHeight);
-		renderChildren = active && width == targetWidth
-				&& height == targetHeight;
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 
 		GL11.glColor4f(1, 1, 1, 1);
@@ -63,20 +64,8 @@ public class GuiComponentTab extends GuiComponentBox {
 		GL11.glDisable(GL11.GL_LIGHTING);
 	}
 
-	@Override
-	public void mouseClicked(int x, int y, int button) {
-		super.mouseClicked(x, y, button);
-		// This method is only ever called if it's hovered.
-		// New logic FTW! -NC
-
-		// We do however wish to stop expansion and contraction outside the
-		// 24x24 button area
-		if (x > 24 || y > 24) return;
-		container.onTabClicked(this);
-	}
-
-	public void setContainer(GuiComponentTabs container) {
-		this.container = container;
+	public boolean isOrigin(int x, int y) {
+		return x < FOLDED_WIDTH && y < FOLDED_WIDTH;
 	}
 
 	public void setActive(boolean active) {

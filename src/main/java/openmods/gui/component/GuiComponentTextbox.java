@@ -15,8 +15,6 @@ public class GuiComponentTextbox extends BaseComponent {
 		this.width = width;
 		this.height = height;
 		textfield = new GuiTextField(Minecraft.getMinecraft().fontRenderer, x, y, width, height);
-		// textfield.setEnableBackgroundDrawing(false);
-		// commandTextField.mouseClicked(par1, par2, par3);
 	}
 
 	public GuiComponentTextbox setText(String text) {
@@ -46,8 +44,8 @@ public class GuiComponentTextbox extends BaseComponent {
 	}
 
 	@Override
-	public void mouseClicked(int mouseX, int mouseY, int button) {
-		super.mouseClicked(mouseX, mouseY, button);
+	public void mouseDown(int mouseX, int mouseY, int button) {
+		super.mouseDown(mouseX, mouseY, button);
 		textfield.mouseClicked(mouseX + x, mouseY + y, button);
 	}
 

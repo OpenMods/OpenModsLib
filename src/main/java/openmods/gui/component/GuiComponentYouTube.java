@@ -44,8 +44,8 @@ public class GuiComponentYouTube extends BaseComponent {
 	}
 
 	@Override
-	public void mouseClicked(int mouseX, int mouseY, int button) {
-		super.mouseClicked(mouseX, mouseY, button);
+	public void mouseDown(int mouseX, int mouseY, int button) {
+		super.mouseDown(mouseX, mouseY, button);
 		URI uri = URI.create(url);
 		if (uri != null) {
 			if (Minecraft.getMinecraft().gameSettings.chatLinksPrompt) {

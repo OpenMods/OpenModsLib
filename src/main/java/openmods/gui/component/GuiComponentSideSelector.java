@@ -1,5 +1,8 @@
 package openmods.gui.component;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderBlocks;
@@ -14,7 +17,6 @@ import openmods.gui.misc.*;
 import openmods.gui.misc.SidePicker.HitCoord;
 import openmods.gui.misc.SidePicker.Side;
 import openmods.gui.misc.Trackball.TrackballWrapper;
-import openmods.sync.SyncableFlags;
 import openmods.utils.MathUtils;
 
 import org.lwjgl.input.Mouse;
@@ -28,18 +30,19 @@ public class GuiComponentSideSelector extends BaseComponent {
 
 	public double scale;
 	private ForgeDirection lastSideHovered;
-	private int movedTicks = 0;
-	public SyncableFlags enabledDirections;
-	private Block block;
-	private boolean isInitialized;
-	private int meta = 0;
-	private TileEntity te;
-	private boolean highlightSelectedSides = false;
+	private final EnumSet<ForgeDirection> selectedSides = EnumSet.noneOf(ForgeDirection.class);
+	private boolean highlightSelectedSides = true;
+	private int ticksSinceLastMouseEvent;
 
-	public GuiComponentSideSelector(int x, int y, double scale, TileEntity te, int meta, Block block, SyncableFlags directions, boolean highlightSelectedSides) {
+	private boolean isInitialized;
+
+	private Block block;
+	private int meta;
+	private TileEntity te;
+
+	public GuiComponentSideSelector(int x, int y, double scale, Block block, int meta, TileEntity te, boolean highlightSelectedSides) {
 		super(x, y);
 		this.scale = scale;
-		this.enabledDirections = directions;
 		this.block = block;
 		this.meta = meta;
 		this.te = te;
@@ -48,31 +51,30 @@ public class GuiComponentSideSelector extends BaseComponent {
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+		ticksSinceLastMouseEvent++;
 		if (isInitialized == false || Mouse.isButtonDown(2)) {
 			trackball.setTransform(MathUtils.createEntityRotateMatrix(minecraft.renderViewEntity));
 			isInitialized = true;
 		}
 		GL11.glPushMatrix();
-		Tessellator t = Tessellator.instance;
+		Tessellator tessellator = Tessellator.instance;
 		GL11.glTranslated(offsetX + x + (scale / 2), offsetY + y + (scale / 2), scale);
 		GL11.glScaled(scale, -scale, scale);
 		// TODO: replace with proper width,height
 		// TODO: Get Mikee to check that I did this right -- NeverCast
 		trackball.update(mouseX - getWidth(), -(mouseY - getHeight()));
 		if (te != null) TileEntityRendererDispatcher.instance.renderTileEntityAt(te, -0.5, -0.5, -0.5, 0.0F);
-		else drawBlock(minecraft.renderEngine, t);
+		else drawBlock(minecraft.renderEngine, tessellator);
 
 		SidePicker picker = new SidePicker(0.5);
 
 		HitCoord coord = picker.getNearestHit();
 
-		if (coord != null) drawHighlight(t, coord.side, 0x444444);
+		if (coord != null) drawHighlight(tessellator, coord.side, 0x444444);
 
 		if (highlightSelectedSides) {
-			for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-				if (enabledDirections.get(dir.ordinal())) {
-					drawHighlight(t, Side.fromForgeDirection(dir), 0xCC0000);
-				}
+			for (ForgeDirection dir : selectedSides) {
+				drawHighlight(tessellator, Side.fromForgeDirection(dir), 0xCC0000);
 			}
 		}
 
@@ -82,7 +84,6 @@ public class GuiComponentSideSelector extends BaseComponent {
 	}
 
 	private static void drawHighlight(Tessellator t, SidePicker.Side side, int color) {
-
 		GL11.glDisable(GL11.GL_LIGHTING);
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glDisable(GL11.GL_DEPTH_TEST);
@@ -143,40 +144,33 @@ public class GuiComponentSideSelector extends BaseComponent {
 		t.startDrawingQuads();
 
 		blockRender.renderFaceXNeg(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(4, meta));
-
 		blockRender.renderFaceXPos(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(5, meta));
-
 		blockRender.renderFaceYPos(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(1, meta));
-
 		blockRender.renderFaceYNeg(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(0, meta));
-
 		blockRender.renderFaceZNeg(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(2, meta));
-
 		blockRender.renderFaceZPos(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(3, meta));
 
 		t.draw();
 	}
 
-	@Override
-	public void mouseClickMove(int mouseX, int mouseY, int button, long time) {
-		super.mouseClickMove(mouseX, mouseY, button, time);
-		movedTicks++;
+	private void toggleSide(ForgeDirection side) {
+		if (selectedSides.contains(side)) selectedSides.remove(side);
+		else selectedSides.add(side);
 	}
 
 	@Override
-	public void mouseMovedOrUp(int mouseX, int mouseY, int button) {
-		super.mouseMovedOrUp(mouseX, mouseY, button);
-		if (button == 0 && movedTicks < 5 && lastSideHovered != null
-				&& lastSideHovered != ForgeDirection.UNKNOWN) {
-			this.enabledDirections.toggle(lastSideHovered.ordinal());
-			movedTicks = 5;
+	public void mouseUp(int mouseX, int mouseY, int button) {
+		super.mouseDown(mouseX, mouseY, button);
+		if (button == 0 && ticksSinceLastMouseEvent < 10 && lastSideHovered != null && lastSideHovered != ForgeDirection.UNKNOWN) {
+			toggleSide(lastSideHovered);
+			ticksSinceLastMouseEvent = 0;
 		}
 	}
 
 	@Override
-	public void mouseClicked(int mouseX, int mouseY, int button) {
-		super.mouseClicked(mouseX, mouseY, button);
-		movedTicks = 0;
+	public void mouseDown(int mouseX, int mouseY, int button) {
+		super.mouseDown(mouseX, mouseY, button);
+		ticksSinceLastMouseEvent = 0;
 		lastSideHovered = null;
 	}
 
@@ -188,5 +182,9 @@ public class GuiComponentSideSelector extends BaseComponent {
 	@Override
 	public int getHeight() {
 		return 50;
+	}
+
+	public Set<ForgeDirection> getSelectedSides() {
+		return selectedSides;
 	}
 }

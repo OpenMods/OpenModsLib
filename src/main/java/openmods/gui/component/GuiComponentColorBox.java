@@ -1,20 +1,20 @@
 package openmods.gui.component;
 
-import openmods.sync.SyncableInt;
-
 public class GuiComponentColorBox extends GuiComponentRect {
 
-	private SyncableInt syncableColor;
+	private int color;
 
-	public GuiComponentColorBox(int x, int y, int width, int height, SyncableInt color) {
+	public GuiComponentColorBox(int x, int y, int width, int height, int color) {
 		super(x, y, width, height, 0xFF000000);
-		this.syncableColor = color;
+		this.color = color;
 	}
 
 	@Override
 	public int getColorForRender() {
-		int col = syncableColor.getValue();
-		return col | (0xFF << 24);
+		return color | (0xFF << 24);
 	}
 
+	public void setColor(int color) {
+		this.color = color;
+	}
 }

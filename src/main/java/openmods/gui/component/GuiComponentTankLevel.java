@@ -19,9 +19,8 @@ public class GuiComponentTankLevel extends GuiComponentBox {
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
+		if (tank == null) return;
 		FluidStack stack = tank.getFluid();
-		double percentFull = Math.max(0, Math.min(1, (double)tank.getFluidAmount()
-				/ (double)tank.getCapacity()));
 		if (stack != null && stack.getFluid() != null) {
 			minecraft.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
 			Tessellator tessellator = Tessellator.instance;
@@ -29,6 +28,7 @@ public class GuiComponentTankLevel extends GuiComponentBox {
 			tessellator.setColorOpaque_F(1, 1, 1);
 			IIcon icon = stack.getFluid().getIcon();
 			if (icon != null) {
+				double percentFull = Math.max(0, Math.min(1, (double)stack.amount / (double)tank.getCapacity()));
 				double fluidHeight = (height - 3) * percentFull;
 				tessellator.addVertexWithUV(offsetX + x + 3, offsetY + y
 						+ height - 3, this.zLevel, icon.getMinU(), icon.getMaxV());

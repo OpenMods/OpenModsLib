@@ -1,7 +1,6 @@
 package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
-import openmods.sync.SyncableFloat;
 
 public class GuiComponentLevel extends BaseComponent {
 	private int width;
@@ -10,7 +9,6 @@ public class GuiComponentLevel extends BaseComponent {
 	private int bColor;
 	private float value;
 	private float min, max;
-	private SyncableFloat valueObj = null;
 
 	public GuiComponentLevel(int x, int y, int width, int height, int levelColor, int backgroundColor, float min, float max, float value) {
 		super(x, y);
@@ -21,18 +19,6 @@ public class GuiComponentLevel extends BaseComponent {
 		this.min = min;
 		this.max = max;
 		this.value = value;
-	}
-
-	public GuiComponentLevel(int x, int y, int width, int height, int levelColor, int backgroundColor, float min, float max, SyncableFloat value) {
-		super(x, y);
-		this.width = width;
-		this.height = height;
-		this.fColor = levelColor;
-		this.bColor = backgroundColor;
-		this.min = min;
-		this.max = max;
-		this.value = value.getValue();
-		this.valueObj = value;
 	}
 
 	@Override
@@ -50,7 +36,6 @@ public class GuiComponentLevel extends BaseComponent {
 	}
 
 	public float getValue() {
-		if (valueObj != null) return valueObj.getValue();
 		return value;
 	}
 

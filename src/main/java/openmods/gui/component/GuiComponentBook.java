@@ -10,12 +10,13 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
-import openmods.sync.SyncableString;
+import net.minecraft.util.StatCollector;
+import openmods.gui.listener.IMouseDownListener;
 import openmods.utils.render.FakeIcon;
 
 import com.google.common.collect.Lists;
 
-public class GuiComponentBook extends BaseComponent implements IComponentListener {
+public class GuiComponentBook extends BaseComponent {
 
 	private static final ResourceLocation PAGETURN = new ResourceLocation("openmodslib", "pageturn");
 
@@ -26,10 +27,7 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 	private GuiComponentLabel pageNumberLeft;
 	private GuiComponentLabel pageNumberRight;
 
-	private SyncableString strPageNumberLeft;
-	private SyncableString strPageNumberRight;
-
-	public static IIcon iconPageLeft = FakeIcon.createSheetIcon(-45, 0, -211, 180);
+	public static IIcon iconPageLeft = FakeIcon.createSheetIcon(211, 0, -211, 180);
 	public static IIcon iconPageRight = FakeIcon.createSheetIcon(0, 0, 211, 180);
 	public static IIcon iconPrev = FakeIcon.createSheetIcon(57, 226, 18, 10);
 	public static IIcon iconNext = FakeIcon.createSheetIcon(57, 213, 18, 10);
@@ -48,16 +46,28 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 		imgLeftBackground = new GuiComponentSprite(0, 0, iconPageLeft, texture);
 		imgRightBackground = new GuiComponentSprite(0, 0, iconPageRight, texture);
 
-		imgPrev = new GuiComponentSpriteButton(24, 158, iconPrev, iconPrevHover, texture);
-		imgPrev.addListener(this);
-		imgNext = new GuiComponentSpriteButton(380, 158, iconNext, iconNextHover, texture);
-		imgNext.addListener(this);
+		imgRightBackground.setX(iconPageRight.getIconWidth());
 
-		strPageNumberLeft = new SyncableString("[page]");
-		strPageNumberRight = new SyncableString("[page]");
-		pageNumberLeft = new GuiComponentLabel(85, 163, 100, 10, strPageNumberLeft);
+		imgPrev = new GuiComponentSpriteButton(24, 158, iconPrev, iconPrevHover, texture);
+		imgPrev.addListener(new IMouseDownListener() {
+			@Override
+			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
+				if (index > 0) changePage(index - 2);
+				enablePages();
+			}
+		});
+		imgNext = new GuiComponentSpriteButton(380, 158, iconNext, iconNextHover, texture);
+		imgNext.addListener(new IMouseDownListener() {
+			@Override
+			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
+				if (index < pages.size() - 2) changePage(index + 2);
+				enablePages();
+			}
+		});
+
+		pageNumberLeft = new GuiComponentLabel(85, 163, 100, 10, "XXX");
 		pageNumberLeft.setScale(0.5f);
-		pageNumberRight = new GuiComponentLabel(295, 163, 100, 10, strPageNumberRight);
+		pageNumberRight = new GuiComponentLabel(295, 163, 100, 10, "XXX");
 		pageNumberRight.setScale(0.5f);
 
 		addComponent(imgLeftBackground);
@@ -87,7 +97,7 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 
 	@Override
 	public int getWidth() {
-		return iconPageRight.getIconHeight() * 2;
+		return iconPageRight.getIconWidth() * 2;
 	}
 
 	@Override
@@ -141,49 +151,25 @@ public class GuiComponentBook extends BaseComponent implements IComponentListene
 
 		imgNext.setEnabled(index < pages.size() - 2);
 		imgPrev.setEnabled(index > 0);
-		strPageNumberLeft.setValue(String.format("Page %s of %s", index + 1, totalPageCount));
-		strPageNumberRight.setValue(String.format("Page %s of %s", index + 2, totalPageCount));
+		pageNumberLeft.setText(StatCollector.translateToLocalFormatted("openblocks.misc.page", index + 1, totalPageCount));
+		pageNumberRight.setText(StatCollector.translateToLocalFormatted("openblocks.misc.page", index + 2, totalPageCount));
 	}
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		imgRightBackground.setX(iconPageRight.getIconWidth());
 		if (index + 1 < pages.size()) {
 			pages.get(index + 1).setX(iconPageRight.getIconWidth());
 		}
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 	}
 
-	@Override
-	public void componentMouseDown(BaseComponent component, int offsetX, int offsetY, int button) {
-		int oldIndex = index;
-		if (component == imgPrev) {
-			if (index > 0) {
-				index -= 2;
-			}
-		}
-		if (component == imgNext) {
-			if (index < pages.size() - 2) {
-				index += 2;
-			}
-		}
-		if (oldIndex != index) {
+	private void changePage(int newPage) {
+		if (newPage != index) {
+			index = newPage;
+			enablePages();
 			Minecraft mc = Minecraft.getMinecraft();
 			mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(PAGETURN, 1.0f));
 		}
-		enablePages();
 	}
-
-	@Override
-	public void componentMouseDrag(BaseComponent component, int offsetX, int offsetY, int button, long time) {}
-
-	@Override
-	public void componentMouseMove(BaseComponent component, int offsetX, int offsetY) {}
-
-	@Override
-	public void componentMouseUp(BaseComponent component, int offsetX, int offsetY, int button) {}
-
-	@Override
-	public void componentKeyTyped(BaseComponent component, char par1, int par2) {}
 
 }

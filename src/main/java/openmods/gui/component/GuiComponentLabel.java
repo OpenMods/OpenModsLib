@@ -1,55 +1,49 @@
 package openmods.gui.component;
 
+import java.util.List;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
-import openmods.sync.SyncableString;
 
 import org.lwjgl.opengl.GL11;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 public class GuiComponentLabel extends BaseComponent {
 
 	private String text;
-	private SyncableString textObj;
 	private float scale = 1f;
-	private String textDelta;
-	private String[] formattedText;
-	private int maxHeight, maxWidth;
+	private List<String> formattedText;
+	private int maxHeight;
+	private int maxWidth;
 	private float additionalScale = 1.0f;
 	private int additionalLineHeight = 0;
+	private List<String> tooltip;
 
 	private static FontRenderer getFontRenderer() {
 		return Minecraft.getMinecraft().fontRenderer;
-	}
-
-	public GuiComponentLabel(int x, int y, int width, int height, SyncableString txt) {
-		this(x, y, width, height, txt.getValue());
-		textObj = txt;
 	}
 
 	public GuiComponentLabel(int x, int y, String text) {
 		this(x, y, getFontRenderer().getStringWidth(text), getFontRenderer().FONT_HEIGHT, text);
 	}
 
-	public GuiComponentLabel(int x, int y, SyncableString txt) {
-		this(x, y, txt.getValue());
-		textObj = txt;
-	}
-
 	public GuiComponentLabel(int x, int y, int width, int height, String text) {
 		super(x, y);
 		this.text = text;
-		this.formattedText = new String[10];
-		setMaxHeight(height);
-		setMaxWidth(width);
+		this.maxHeight = height;
+		this.maxWidth = width;
 	}
 
 	@SuppressWarnings("unchecked")
-	private void compileFormattedText(FontRenderer fr) {
-		// if (textDelta != null && textDelta.equals(getText())) return;
-		textDelta = getText();
-		if (textDelta == null) return;
-		formattedText = (String[])fr.listFormattedStringToWidth(textDelta, getMaxWidth()).toArray(formattedText);
+	public List<String> getFormattedText(FontRenderer fr) {
+		if (formattedText == null) {
+			if (Strings.isNullOrEmpty(text)) formattedText = ImmutableList.of();
+			else formattedText = ImmutableList.copyOf(fr.listFormattedStringToWidth(text, getMaxWidth()));
+		}
+		return formattedText;
 	}
 
 	@Override
@@ -63,10 +57,9 @@ public class GuiComponentLabel extends BaseComponent {
 		GL11.glPushMatrix();
 		GL11.glTranslated(offsetX + x, offsetY + y, 1);
 		GL11.glScalef(scale * additionalScale, scale * additionalScale, scale * additionalScale);
-		compileFormattedText(minecraft.fontRenderer);
 		int offset = 0;
 		int lineCount = 0;
-		for (String s : formattedText) {
+		for (String s : getFormattedText(minecraft.fontRenderer)) {
 			if (s == null) break;
 			minecraft.fontRenderer.drawString(s, 0, offset, 4210752);
 			offset += getFontHeight();
@@ -75,12 +68,19 @@ public class GuiComponentLabel extends BaseComponent {
 		GL11.glPopMatrix();
 	}
 
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
+		if (tooltip != null && !tooltip.isEmpty()) {
+			drawHoveringText(tooltip, offsetX + mouseX, offsetY + mouseY, minecraft.fontRenderer);
+		}
+	}
+
 	private int calculateHeight() {
 		FontRenderer fr = getFontRenderer();
-		compileFormattedText(fr);
 		int offset = 0;
 		int lineCount = 0;
-		for (String s : formattedText) {
+		for (String s : getFormattedText(fr)) {
 			if (s == null) break;
 			offset += getFontHeight();
 			if (++lineCount >= getMaxLines()) break;
@@ -90,14 +90,13 @@ public class GuiComponentLabel extends BaseComponent {
 
 	private int calculateWidth() {
 		FontRenderer fr = getFontRenderer();
-		compileFormattedText(fr);
-		float maxWidth = 0;
-		for (String s : formattedText) {
+		int maxWidth = 0;
+		for (String s : getFormattedText(fr)) {
 			if (s == null) break;
-			float width = fr.getStringWidth(s);
+			int width = fr.getStringWidth(s);
 			if (width > maxWidth) maxWidth = width;
 		}
-		return (int)maxWidth;
+		return maxWidth;
 	}
 
 	public GuiComponentLabel setScale(float scale) {
@@ -132,8 +131,7 @@ public class GuiComponentLabel extends BaseComponent {
 	}
 
 	public int getMaxLines() {
-		return (int)Math.floor(getMaxHeight() / (scale / additionalScale)
-				/ getFontHeight());
+		return (int)Math.floor(getMaxHeight() / (scale / additionalScale) / getFontHeight());
 	}
 
 	public int getMaxWidth() {
@@ -151,7 +149,24 @@ public class GuiComponentLabel extends BaseComponent {
 	}
 
 	public String getText() {
-		String pre = (textObj != null? textObj.getValue() : text);
-		return pre == null? "" : pre;
+		return text;
+	}
+
+	public void setText(String text) {
+		this.formattedText = null;
+		this.text = Strings.nullToEmpty(text);
+	}
+
+	public boolean isOverflowing() {
+		FontRenderer fr = getFontRenderer();
+		return getFormattedText(fr).size() > getMaxLines();
+	}
+
+	public void setTooltip(List<String> tooltip) {
+		this.tooltip = tooltip;
+	}
+
+	public void clearTooltip() {
+		this.tooltip = null;
 	}
 }

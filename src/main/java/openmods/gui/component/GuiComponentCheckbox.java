@@ -1,23 +1,18 @@
 package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
-import openmods.sync.SyncableFlags;
 
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentCheckbox extends BaseComponent {
 
 	protected int color;
+	private boolean value;
 
-	protected boolean isMouseOver = false;
-	protected SyncableFlags flags;
-	protected int flagSlot;
-
-	public GuiComponentCheckbox(int x, int y, SyncableFlags flags, int flagSlot, int color) {
+	public GuiComponentCheckbox(int x, int y, boolean initialValue, int color) {
 		super(x, y);
 		this.color = color;
-		this.flags = flags;
-		this.flagSlot = flagSlot;
+		this.value = initialValue;
 	}
 
 	@Override
@@ -25,23 +20,13 @@ public class GuiComponentCheckbox extends BaseComponent {
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		GL11.glColor4f(1, 1, 1, 1);
 		bindComponentsSheet();
-		drawTexturedModalRect(offsetX + x, offsetY + y, flags.get(flagSlot)? 16 : 0, 62, 8, 8);
+		drawTexturedModalRect(offsetX + x, offsetY + y, value? 16 : 0, 62, 8, 8);
 	}
 
 	@Override
-	public void mouseClicked(int x, int y, int button) {
-		super.mouseClicked(x, y, button);
-		flags.toggle(flagSlot);
-	}
-
-	@Override
-	public void mouseMovedOrUp(int mouseX, int mouseY, int button) {
-		super.mouseMovedOrUp(mouseX, mouseY, button);
-		// The button in a MoveOrUp event is -1 on a move
-		// Because these methods are ONLY called if the component
-		// Is under the cursor. This actually makes logical sense ;)
-		// -NC
-		isMouseOver = button == -1;
+	public void mouseDown(int x, int y, int button) {
+		super.mouseDown(x, y, button);
+		value = !value;
 	}
 
 	@Override

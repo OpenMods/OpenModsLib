@@ -12,17 +12,11 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 public class GuiComponentCraftingGrid extends GuiComponentSprite {
-
-	private static final int CRAZY_1 = 0x505000FF;
-	private static final int CRAZY_2 = (CRAZY_1 & 0xFEFEFE) >> 1 | CRAZY_1 & -0xFF000000;
-	private static final int CRAZY_3 = 0xF0100010;
-
 	protected static RenderItem itemRenderer = new RenderItem();
 	private ItemStack[] items;
 
@@ -60,56 +54,6 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		if (tooltip != null) {
 			drawItemStackTooltip(tooltip, relativeMouseX + 25, relativeMouseY + 30);
 		}
-	}
-
-	protected void drawHoveringText(List<String> lines, int x, int y, FontRenderer font) {
-		if (lines.isEmpty()) return;
-
-		GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-		// RenderHelper.disableStandardItemLighting();
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		int width = 0;
-
-		for (String s : lines) {
-			int l = font.getStringWidth(s);
-			if (l > width) width = l;
-		}
-
-		final int i1 = x + 12;
-		int j1 = y - 12;
-
-		final int lineCount = lines.size();
-
-		int height = 8;
-		if (lineCount > 1) height += 2 + (lineCount - 1) * 10;
-
-		this.zLevel = 350.0F;
-		itemRenderer.zLevel = 350.0F;
-
-		drawGradientRect(i1 - 3, j1 - 4, i1 + width + 3, j1 - 3, CRAZY_3, CRAZY_3);
-		drawGradientRect(i1 - 3, j1 + height + 3, i1 + width + 3, j1 + height + 4, CRAZY_3, CRAZY_3);
-		drawGradientRect(i1 - 3, j1 - 3, i1 + width + 3, j1 + height + 3, CRAZY_3, CRAZY_3);
-		drawGradientRect(i1 - 4, j1 - 3, i1 - 3, j1 + height + 3, CRAZY_3, CRAZY_3);
-		drawGradientRect(i1 + width + 3, j1 - 3, i1 + width + 4, j1 + height + 3, CRAZY_3, CRAZY_3);
-
-		drawGradientRect(i1 - 3, j1 - 3 + 1, i1 - 3 + 1, j1 + height + 3 - 1, CRAZY_1, CRAZY_2);
-		drawGradientRect(i1 + width + 2, j1 - 3 + 1, i1 + width + 3, j1 + height + 3 - 1, CRAZY_1, CRAZY_2);
-		drawGradientRect(i1 - 3, j1 - 3, i1 + width + 3, j1 - 3 + 1, CRAZY_1, CRAZY_1);
-		drawGradientRect(i1 - 3, j1 + height + 2, i1 + width + 3, j1 + height + 3, CRAZY_2, CRAZY_2);
-
-		for (int i = 0; i < lineCount; ++i) {
-			String s1 = lines.get(i);
-			font.drawStringWithShadow(s1, i1, j1, -1);
-			if (i == 0) j1 += 2;
-			j1 += 10;
-		}
-
-		this.zLevel = 0.0F;
-		itemRenderer.zLevel = 0.0F;
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		// RenderHelper.enableStandardItemLighting();
-		GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-
 	}
 
 	protected void drawItemStackTooltip(ItemStack stack, int x, int y) {

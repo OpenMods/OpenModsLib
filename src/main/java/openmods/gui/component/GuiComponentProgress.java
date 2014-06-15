@@ -1,15 +1,14 @@
 package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
-import openmods.sync.SyncableProgress;
 
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentProgress extends BaseComponent {
 
-	private SyncableProgress progress;
+	private float progress;
 
-	public GuiComponentProgress(int x, int y, SyncableProgress progress) {
+	public GuiComponentProgress(int x, int y, float progress) {
 		super(x, y);
 		this.progress = progress;
 	}
@@ -20,7 +19,7 @@ public class GuiComponentProgress extends BaseComponent {
 		bindComponentsSheet();
 		GL11.glColor3f(1, 1, 1);
 		drawTexturedModalRect(offsetX + x, offsetY + y, 0, 38, getWidth(), getHeight());
-		int pxProgress = (int)Math.round(getWidth() * progress.getPercent());
+		int pxProgress = Math.round(getWidth() * progress);
 		drawTexturedModalRect(offsetX + x, offsetY + y, 0, 50, pxProgress, getHeight());
 	}
 
@@ -34,4 +33,7 @@ public class GuiComponentProgress extends BaseComponent {
 		return 12;
 	}
 
+	public void setProgress(float progress) {
+		this.progress = progress;
+	}
 }

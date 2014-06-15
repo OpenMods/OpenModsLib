@@ -1,9 +1,7 @@
 package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
-import openmods.sync.SyncableInt;
 
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentSlider extends BaseComponent {
@@ -13,32 +11,30 @@ public class GuiComponentSlider extends BaseComponent {
 	private int width;
 	private int min;
 	private int max;
-	private SyncableInt value;
+	private int value;
 	private double stepSize;
 	private int steps;
-	private boolean isDragging = false;
 	private int startDragX;
 	private boolean showValue = true;
 
-	public GuiComponentSlider(int x, int y, int width, int min, int max, SyncableInt val, boolean showValue) {
-		this(x, y, width, min, max, val);
+	public GuiComponentSlider(int x, int y, int width, int min, int max, int initialValue, boolean showValue) {
+		this(x, y, width, min, max, initialValue);
 		this.showValue = showValue;
 	}
 
-	public GuiComponentSlider(int x, int y, int width, int min, int max, SyncableInt val) {
+	public GuiComponentSlider(int x, int y, int width, int min, int max, int initialValue) {
 		super(x, y);
 		this.width = width;
 		this.min = min;
 		this.max = max;
 		this.steps = max - min;
-		this.value = val;
+		this.value = initialValue;
 		this.stepSize = (double)(width - HANDLE_SIZE - 2) / (double)steps;
 	}
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
-		int level = value.getValue();
 		GL11.glColor4f(1, 1, 1, 1);
 		int left = offsetX + x;
 		int top = offsetY + y;
@@ -51,34 +47,31 @@ public class GuiComponentSlider extends BaseComponent {
 		drawTexturedModalRect(0, 0, 1, 70, 1, getHeight());
 		GL11.glPopMatrix();
 		drawTexturedModalRect(left + getWidth() - 1, top, 2, 70, 1, getHeight());
-		int handleX = (int)Math.floor(barStartX + stepSize * (level - min));
-		if (Mouse.isButtonDown(0)) {
-			if (!isDragging && mouseX + offsetX > handleX
-					&& mouseX + offsetX < handleX + 8 && mouseY > y
-					&& mouseY < y + getHeight()) {
-				isDragging = true;
-				startDragX = mouseX - handleX;
-			}
-		} else {
-			if (isDragging) {
-				isDragging = false;
-				onMouseUp();
-			}
-		}
-		if (isDragging) {
-			int offX = mouseX - barStartX - startDragX;
-			level = min + (int)Math.round(offX / stepSize);
-		}
-		level = Math.max(min, Math.min(max, level));
+		int handleX = (int)Math.floor(barStartX + stepSize * (value - min));
+
+		value = Math.max(min, Math.min(max, value));
 		drawTexturedModalRect(handleX, top + 1, 3, 70, 9, 10);
 		if (showValue) {
-			String label = formatValue(level);
+			String label = formatValue(value);
 			int strWidth = minecraft.fontRenderer.getStringWidth(label);
 			minecraft.fontRenderer.drawString(label, handleX + 4
 					- (strWidth / 2), top + 15, 4210752);
 		}
-		value.setValue(level);
+	}
 
+	@Override
+	public void mouseDown(int mouseX, int mouseY, int button) {
+		super.mouseDown(mouseX, mouseY, button);
+		if (button == 0) startDragX = mouseX;
+	}
+
+	@Override
+	public void mouseDrag(int mouseX, int mouseY, int button, long time) {
+		super.mouseDrag(mouseX, mouseY, button, time);
+		if (button == 0) {
+			int offX = mouseX - startDragX;
+			value = min + (int)Math.round(offX / stepSize);
+		}
 	}
 
 	public String formatValue(int value) {
@@ -95,11 +88,11 @@ public class GuiComponentSlider extends BaseComponent {
 		return 12;
 	}
 
-	public boolean isDragging() {
-		return isDragging;
+	public int getValue() {
+		return value;
 	}
 
-	public void onMouseUp() {
-
+	public void setValue(int value) {
+		this.value = value;
 	}
 }
