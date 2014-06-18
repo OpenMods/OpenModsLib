@@ -31,7 +31,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncHa
 	}
 
 	public void onServerSync(Set<ISyncableObject> changed) {
-		worldObj.markTileEntityChunkModified(xCoord, yCoord, zCoord, this);
+		markUpdated();
 	}
 
 	@Override

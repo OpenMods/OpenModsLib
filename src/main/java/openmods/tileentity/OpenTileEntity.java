@@ -2,10 +2,13 @@ package openmods.tileentity;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeDirection;
+import openmods.GenericInventory;
+import openmods.api.IInventoryCallback;
 import openmods.block.OpenBlock;
 import openmods.network.events.TileEntityMessageEventPacket;
 import openmods.utils.Coord;
@@ -148,5 +151,22 @@ public abstract class OpenTileEntity extends TileEntity {
 
 	public void onEvent(TileEntityMessageEventPacket event) {
 		/* when an event is received */
+	}
+
+	public void markUpdated() {
+		worldObj.markTileEntityChunkModified(xCoord, yCoord, zCoord, this);
+	}
+
+	protected IInventoryCallback createInventoryCallback() {
+		return new IInventoryCallback() {
+			@Override
+			public void onInventoryChanged(IInventory inventory, int slotNumber) {
+				markUpdated();
+			}
+		};
+	}
+
+	protected GenericInventory registerInventoryCallback(GenericInventory inventory) {
+		return inventory.addCallback(createInventoryCallback());
 	}
 }
