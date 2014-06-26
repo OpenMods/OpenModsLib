@@ -107,10 +107,6 @@ public class GenericTank extends FluidTank {
 		else return BuildCraftPipes.access().tryAcceptIntoPipe(otherTank, toFill, fillSide);
 	}
 
-	public void distributeToSides(int maxAmount, TileEntity currentTile) {
-		distributeToSides(maxAmount, currentTile);
-	}
-
 	public void distributeToSides(int amountPerTick, World world, Coord coord, SyncableFlags sides) {
 		if (world == null) return;
 
