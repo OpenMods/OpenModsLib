@@ -8,16 +8,12 @@ import java.util.List;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import openmods.network.DimCoord;
-import openmods.network.event.EventPacket;
-import openmods.network.event.EventPacketManager;
-import openmods.network.event.IEventPacketType;
+import openmods.network.event.NetworkEvent;
+import openmods.network.event.NetworkEventManager;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.WorldUtils;
 
-public class TileEntityMessageEventPacket extends EventPacket {
-
-	public static final IEventPacketType EVENT_TYPE = CoreEventTypes.TILE_ENTITY_NOTIFY;
-
+public class TileEntityMessageEventPacket extends NetworkEvent {
 	public int dimension;
 	public int xCoord;
 	public int yCoord;
@@ -79,7 +75,7 @@ public class TileEntityMessageEventPacket extends EventPacket {
 	}
 
 	public void sendToWatchers() {
-		EventPacketManager.INSTANCE.sendToBlockWatchers(this, getDimCoords());
+		NetworkEventManager.INSTANCE.dispatcher().sendToBlockWatchers(this, getDimCoords());
 	}
 
 	public DimCoord getDimCoords() {

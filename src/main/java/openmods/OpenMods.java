@@ -7,11 +7,13 @@ import net.minecraftforge.common.config.Configuration;
 import openmods.config.properties.CommandConfig;
 import openmods.config.properties.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
-import openmods.events.network.CoreEventTypes;
 import openmods.events.network.TileEntityEventHandler;
+import openmods.events.network.TileEntityMessageEventPacket;
 import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
+import openmods.network.IdSyncManager;
+import openmods.network.event.NetworkEventManager;
 import openmods.proxy.IOpenModsProxy;
 import cpw.mods.fml.common.*;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -29,7 +31,8 @@ public class OpenMods {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent evt) {
-		CoreEventTypes.registerAll();
+		NetworkEventManager.INSTANCE.startRegistration()
+				.register(TileEntityMessageEventPacket.class);
 
 		final File configFile = evt.getSuggestedConfigurationFile();
 		Configuration config = new Configuration(configFile);
@@ -55,6 +58,9 @@ public class OpenMods {
 		Integration.addModule(new BuildCraftPipes());
 		Integration.loadModules();
 		proxy.postInit();
+
+		NetworkEventManager.INSTANCE.finalizeRegistration();
+		IdSyncManager.INSTANCE.finishLoading();
 	}
 
 	@EventHandler

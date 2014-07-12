@@ -24,26 +24,27 @@ import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import cpw.mods.fml.relauncher.Side;
 
 @Sharable
-public class EventPacketCodec extends MessageToMessageCodec<FMLProxyPacket, EventPacket> {
+public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, NetworkEvent> {
 
 	private final PacketChunker chunker = new PacketChunker();
 
-	private final EventPacketRegistry registry;
+	private final ModEventChannel registry;
 
-	public EventPacketCodec(EventPacketRegistry registry) {
+	public NetworkEventCodec(ModEventChannel registry) {
 		this.registry = registry;
 	}
 
 	@Override
-	protected void encode(ChannelHandlerContext ctx, EventPacket msg, List<Object> out) throws Exception {
-		IEventPacketType type = registry.getTypeForClass(msg.getClass());
+	protected void encode(ChannelHandlerContext ctx, NetworkEvent msg, List<Object> out) throws IOException {
+		int id = registry.getIdForClass(msg.getClass());
+		INetworkEventType type = registry.getTypeForId(id);
 
 		byte[] payload = toRawBytes(msg, type.isCompressed());
 		Channel channel = ctx.channel();
 		String channelName = channel.attr(NetworkRegistry.FML_CHANNEL).get();
 
 		Side side = channel.attr(NetworkRegistry.CHANNEL_SOURCE).get();
-		PacketDirectionValidator validator = type.getDirection();
+		EventDirection validator = type.getDirection();
 		Preconditions.checkState(validator != null && validator.validateSend(side),
 				"Invalid direction: sending packet %s on side %s", msg.getClass(), side);
 
@@ -51,12 +52,12 @@ public class EventPacketCodec extends MessageToMessageCodec<FMLProxyPacket, Even
 			final int maxChunkSize = side == Side.SERVER? PacketChunker.PACKET_SIZE_S3F : PacketChunker.PACKET_SIZE_C17;
 			byte[][] chunked = chunker.splitIntoChunks(payload, maxChunkSize);
 			for (byte[] chunk : chunked) {
-				FMLProxyPacket partialPacket = createPacket(type, chunk, channelName);
+				FMLProxyPacket partialPacket = createPacket(id, chunk, channelName);
 				partialPacket.setDispatcher(msg.dispatcher);
 				out.add(partialPacket);
 			}
 		} else {
-			FMLProxyPacket partialPacket = createPacket(type, payload, channelName);
+			FMLProxyPacket partialPacket = createPacket(id, payload, channelName);
 			partialPacket.setDispatcher(msg.dispatcher);
 			out.add(partialPacket);
 		}
@@ -66,13 +67,13 @@ public class EventPacketCodec extends MessageToMessageCodec<FMLProxyPacket, Even
 	protected void decode(ChannelHandlerContext ctx, FMLProxyPacket msg, List<Object> out) throws Exception {
 		ByteBuf payload = msg.payload();
 		int typeId = ByteBufUtils.readVarInt(payload, 5);
-		IEventPacketType type = registry.getTypeForId(typeId);
+		INetworkEventType type = registry.getTypeForId(typeId);
 
 		Channel channel = ctx.channel();
 
 		Side side = channel.attr(NetworkRegistry.CHANNEL_SOURCE).get();
 
-		PacketDirectionValidator validator = type.getDirection();
+		EventDirection validator = type.getDirection();
 		Preconditions.checkState(validator != null && validator.validateReceive(side),
 				"Invalid direction: receiving packet %s on side %s", msg.getClass(), side);
 
@@ -93,7 +94,7 @@ public class EventPacketCodec extends MessageToMessageCodec<FMLProxyPacket, Even
 
 		DataInput data = new DataInputStream(input);
 
-		EventPacket event = type.createPacket();
+		NetworkEvent event = type.createPacket();
 		event.readFromStream(data);
 		event.dispatcher = msg.getDispatcher();
 
@@ -104,15 +105,15 @@ public class EventPacketCodec extends MessageToMessageCodec<FMLProxyPacket, Even
 		out.add(event);
 	}
 
-	private static FMLProxyPacket createPacket(IEventPacketType type, byte[] payload, String channel) {
+	private static FMLProxyPacket createPacket(int id, byte[] payload, String channel) {
 		ByteBuf buf = Unpooled.buffer(payload.length + 5);
-		ByteBufUtils.writeVarInt(buf, type.getId(), 5);
+		ByteBufUtils.writeVarInt(buf, id, 5);
 		buf.writeBytes(payload);
 		FMLProxyPacket partialPacket = new FMLProxyPacket(buf.copy(), channel);
 		return partialPacket;
 	}
 
-	private static byte[] toRawBytes(EventPacket event, boolean compress) throws IOException {
+	private static byte[] toRawBytes(NetworkEvent event, boolean compress) throws IOException {
 		ByteArrayOutputStream payload = new ByteArrayOutputStream();
 
 		OutputStream stream = compress? new GZIPOutputStream(payload) : payload;

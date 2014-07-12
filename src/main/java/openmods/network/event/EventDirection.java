@@ -2,8 +2,8 @@ package openmods.network.event;
 
 import cpw.mods.fml.relauncher.Side;
 
-public abstract class PacketDirectionValidator {
-	public static final PacketDirectionValidator C2S = new PacketDirectionValidator() {
+public enum EventDirection {
+	C2S {
 		@Override
 		public boolean validateSend(Side side) {
 			return side == Side.CLIENT;
@@ -13,9 +13,8 @@ public abstract class PacketDirectionValidator {
 		public boolean validateReceive(Side side) {
 			return side == Side.SERVER;
 		}
-	};
-
-	public static final PacketDirectionValidator S2C = new PacketDirectionValidator() {
+	},
+	S2C {
 		@Override
 		public boolean validateSend(Side side) {
 			return side == Side.SERVER;
@@ -25,9 +24,8 @@ public abstract class PacketDirectionValidator {
 		public boolean validateReceive(Side side) {
 			return side == Side.CLIENT;
 		}
-	};
-
-	public static final PacketDirectionValidator ANY = new PacketDirectionValidator() {
+	},
+	ANY {
 		@Override
 		public boolean validateSend(Side side) {
 			return true;

@@ -14,9 +14,9 @@ import com.google.common.collect.Lists;
 import cpw.mods.fml.common.eventhandler.Event;
 import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
 
-public abstract class EventPacket extends Event {
+public abstract class NetworkEvent extends Event {
 
-	final List<EventPacket> replies = Lists.newArrayList();
+	final List<NetworkEvent> replies = Lists.newArrayList();
 
 	NetworkDispatcher dispatcher;
 
@@ -28,21 +28,21 @@ public abstract class EventPacket extends Event {
 
 	protected void appendLogInfo(List<String> info) {}
 
-	public void reply(EventPacket reply) {
+	public void reply(NetworkEvent reply) {
 		Preconditions.checkState(dispatcher != null, "Can't call this method outside event handler");
 		reply.dispatcher = dispatcher;
 		this.replies.add(reply);
 	}
 
 	public void sendToAll() {
-		EventPacketManager.INSTANCE.sendToAll(this);
+		NetworkEventManager.INSTANCE.dispatcher().sendToAll(this);
 	}
 
 	public void sendToServer() {
-		EventPacketManager.INSTANCE.sendToServer(this);
+		NetworkEventManager.INSTANCE.dispatcher().sendToServer(this);
 	}
 
 	public void sendToPlayer(EntityPlayerMP player) {
-		EventPacketManager.INSTANCE.sendToPlayer(this, player);
+		NetworkEventManager.INSTANCE.dispatcher().sendToPlayer(this, player);
 	}
 }
