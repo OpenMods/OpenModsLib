@@ -1,30 +1,24 @@
 package openmods.network.event;
 
-import java.util.Map;
-
 import openmods.datastore.DataStoreBuilder;
-import openmods.datastore.DataStoreKey;
 import openmods.datastore.IDataVisitor;
 import openmods.network.IdSyncManager;
+import openmods.utils.io.TypeRW;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.LoaderState;
-import cpw.mods.fml.common.ModContainer;
 
 public class NetworkEventManager {
 
-	public static final String CHANNEL_NAME = "OpenMods|I";
-
 	public static class RegistrationContext {
-		private int currentId = (int)(System.nanoTime() % 100);
+		private int currentId = 0;
 
 		private DataStoreBuilder<String, Integer> builder;
 
-		private RegistrationContext(DataStoreBuilder<String, Integer> builder) {
-			this.builder = builder;
+		private RegistrationContext() {
+			this.builder = IdSyncManager.INSTANCE.createDataStore("events", String.class, Integer.class);
 		}
 
 		public RegistrationContext register(Class<? extends NetworkEvent> cls) {
@@ -33,12 +27,12 @@ public class NetworkEventManager {
 			return this;
 		}
 
-		DataStoreKey<String, Integer> register(IDataVisitor<String, Integer> eventIdVisitor) {
-			builder.setDefaultReadersWriters();
+		void register(IDataVisitor<String, Integer> eventIdVisitor) {
+			builder.setDefaultKeyReaderWriter();
+			builder.setValueReaderWriter(TypeRW.VLI_SERIALIZABLE);
 			builder.addVisitor(eventIdVisitor);
-			DataStoreKey<String, Integer> result = builder.register();
+			builder.register();
 			builder = null;
-			return result;
 		}
 	}
 
@@ -46,34 +40,26 @@ public class NetworkEventManager {
 
 	public static final NetworkEventManager INSTANCE = new NetworkEventManager();
 
-	private final NetworkEventDispatcher dispatcher = new NetworkEventDispatcher();
+	private final NetworkEventRegistry registry = new NetworkEventRegistry();
 
-	private final Map<String, RegistrationContext> registries = Maps.newHashMap();
+	private final NetworkEventDispatcher dispatcher = new NetworkEventDispatcher(registry);
+
+	private RegistrationContext registrationContext;
 
 	public RegistrationContext startRegistration() {
 		Preconditions.checkState(Loader.instance().isInState(LoaderState.PREINITIALIZATION), "This method can only be called in pre-initialization state");
-		ModContainer container = Loader.instance().activeModContainer();
-		Preconditions.checkNotNull(container, "This method can only be called in during mod initialization");
 
-		String modId = container.getModId();
-		RegistrationContext registry = registries.get(modId);
-		if (registry == null) {
-			final DataStoreBuilder<String, Integer> builder = IdSyncManager.INSTANCE.createDataStore("events", modId, String.class, Integer.class);
-			registry = new RegistrationContext(builder);
-			registries.put(modId, registry);
-		}
-
-		return registry;
+		if (registrationContext == null) registrationContext = new RegistrationContext();
+		return registrationContext;
 	}
 
 	public void finalizeRegistration() {
 		Preconditions.checkState(Loader.instance().isInState(LoaderState.POSTINITIALIZATION), "This method can only be called in post-initialization state");
-		for (Map.Entry<String, RegistrationContext> e : registries.entrySet()) {
-			final ModEventChannel channel = new ModEventChannel(e.getKey(), dispatcher);
-			e.getValue().register(channel);
-		}
 
-		registries.clear();
+		if (registrationContext != null) {
+			registrationContext.register(registry);
+			registrationContext = null;
+		}
 	}
 
 	public NetworkEventDispatcher dispatcher() {

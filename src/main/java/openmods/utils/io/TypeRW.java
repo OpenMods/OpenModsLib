@@ -343,6 +343,19 @@ public abstract class TypeRW<T> implements INBTSerializable<T>, IStreamSerializa
 		}
 	};
 
+	public static final IStreamSerializable<Integer> VLI_SERIALIZABLE = new IStreamSerializable<Integer>() {
+
+		@Override
+		public void writeToStream(Integer o, DataOutput output) throws IOException {
+			ByteUtils.writeVLI(output, o);
+		}
+
+		@Override
+		public Integer readFromStream(DataInput input) throws IOException {
+			return ByteUtils.readVLI(input);
+		}
+	};
+
 	public static final Map<Class<?>, TypeRW<?>> TYPES = ImmutableMap.<Class<?>, TypeRW<?>> builder()
 			.put(Integer.class, INTEGER)
 			.put(int.class, INTEGER)

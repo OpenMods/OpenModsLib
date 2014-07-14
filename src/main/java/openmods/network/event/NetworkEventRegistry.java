@@ -5,61 +5,33 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import java.util.Map;
 
 import openmods.datastore.IDataVisitor;
-import openmods.network.ExtendedOutboundHandler;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 
-import cpw.mods.fml.common.network.FMLEmbeddedChannel;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.relauncher.Side;
-
-public class ModEventChannel implements IDataVisitor<String, Integer> {
+public class NetworkEventRegistry implements IDataVisitor<String, Integer> {
 
 	private final TIntObjectHashMap<INetworkEventType> idToType = new TIntObjectHashMap<INetworkEventType>();
 
 	private final Map<Class<? extends NetworkEvent>, Integer> clsToId = Maps.newIdentityHashMap();
 
-	private final Map<Side, FMLEmbeddedChannel> channels;
-
-	private final NetworkEventDispatcher dispatcher;
-
-	public final String modId;
-
-	public ModEventChannel(String modId, NetworkEventDispatcher dispatcher) {
-		this.modId = modId;
-		this.dispatcher = dispatcher;
-
-		NetworkEventCodec codec = new NetworkEventCodec(this);
-
-		String channelId = modId + "|E";
-		this.channels = NetworkRegistry.INSTANCE.newChannel(channelId, codec, new NetworkEventInboundHandler());
-
-		ExtendedOutboundHandler.install(this.channels);
-	}
+	public NetworkEventRegistry() {}
 
 	int getIdForClass(Class<? extends NetworkEvent> cls) {
 		Integer result = clsToId.get(cls);
-		Preconditions.checkNotNull(result, "Class %s is not registered for modid %s", cls, modId);
+		Preconditions.checkNotNull(result, "Class %s is not registered", cls);
 		return result;
 	}
 
 	INetworkEventType getTypeForId(int id) {
 		INetworkEventType result = idToType.get(id);
-		Preconditions.checkNotNull(result, "Id %s is not registered for modid %s", id, modId);
+		Preconditions.checkNotNull(result, "Id %s is not registered", id);
 		return result;
-	}
-
-	public FMLEmbeddedChannel channel(Side side) {
-		return channels.get(side);
 	}
 
 	@Override
 	public void begin(int size) {
-		for (Class<? extends NetworkEvent> cls : clsToId.keySet())
-			dispatcher.unregister(cls);
-
 		idToType.clear();
 		clsToId.clear();
 	}
@@ -135,7 +107,6 @@ public class ModEventChannel implements IDataVisitor<String, Integer> {
 		INetworkEventType type = createPacketType(cls);
 		idToType.put(eventId, type);
 		clsToId.put(cls, eventId);
-		dispatcher.register(cls, this);
 	}
 
 	@Override

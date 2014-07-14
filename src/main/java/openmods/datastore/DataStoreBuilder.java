@@ -3,9 +3,7 @@ package openmods.datastore;
 import java.util.List;
 import java.util.Map;
 
-import openmods.utils.io.IStreamReadable;
-import openmods.utils.io.IStreamWriteable;
-import openmods.utils.io.TypeRW;
+import openmods.utils.io.*;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -106,12 +104,22 @@ public class DataStoreBuilder<K, V> {
 		this.valueWriter = valueWriter;
 	}
 
+	public void setKeyReaderWriter(IStreamSerializable<K> rw) {
+		this.keyReader = rw;
+		this.keyWriter = rw;
+	}
+
 	public void setKeyReader(IStreamReadable<K> keyReader) {
 		this.keyReader = keyReader;
 	}
 
 	public void setValueReader(IStreamReadable<V> valueReader) {
 		this.valueReader = valueReader;
+	}
+
+	public void setValueReaderWriter(IStreamSerializable<V> rw) {
+		this.valueReader = rw;
+		this.valueWriter = rw;
 	}
 
 	public void addVisitor(IDataVisitor<K, V> visitor) {

@@ -28,9 +28,9 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 
 	private final PacketChunker chunker = new PacketChunker();
 
-	private final ModEventChannel registry;
+	private final NetworkEventRegistry registry;
 
-	public NetworkEventCodec(ModEventChannel registry) {
+	public NetworkEventCodec(NetworkEventRegistry registry) {
 		this.registry = registry;
 	}
 
