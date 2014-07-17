@@ -41,7 +41,6 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 
 		byte[] payload = toRawBytes(msg, type.isCompressed());
 		Channel channel = ctx.channel();
-		String channelName = channel.attr(NetworkRegistry.FML_CHANNEL).get();
 
 		Side side = channel.attr(NetworkRegistry.CHANNEL_SOURCE).get();
 		EventDirection validator = type.getDirection();
@@ -52,12 +51,12 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 			final int maxChunkSize = side == Side.SERVER? PacketChunker.PACKET_SIZE_S3F : PacketChunker.PACKET_SIZE_C17;
 			byte[][] chunked = chunker.splitIntoChunks(payload, maxChunkSize);
 			for (byte[] chunk : chunked) {
-				FMLProxyPacket partialPacket = createPacket(id, chunk, channelName);
+				FMLProxyPacket partialPacket = createPacket(id, chunk);
 				partialPacket.setDispatcher(msg.dispatcher);
 				out.add(partialPacket);
 			}
 		} else {
-			FMLProxyPacket partialPacket = createPacket(id, payload, channelName);
+			FMLProxyPacket partialPacket = createPacket(id, payload);
 			partialPacket.setDispatcher(msg.dispatcher);
 			out.add(partialPacket);
 		}
@@ -102,14 +101,17 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 		if (handler != null) event.sender = OpenMods.proxy.getPlayerFromHandler(handler);
 		input.close();
 
+		int bufferJunkSize = input.available();
+		Preconditions.checkState(bufferJunkSize == 0, "%s junk bytes left in buffer, event", bufferJunkSize, event);
+
 		out.add(event);
 	}
 
-	private static FMLProxyPacket createPacket(int id, byte[] payload, String channel) {
+	private static FMLProxyPacket createPacket(int id, byte[] payload) {
 		ByteBuf buf = Unpooled.buffer(payload.length + 5);
 		ByteBufUtils.writeVarInt(buf, id, 5);
 		buf.writeBytes(payload);
-		FMLProxyPacket partialPacket = new FMLProxyPacket(buf.copy(), channel);
+		FMLProxyPacket partialPacket = new FMLProxyPacket(buf.copy(), NetworkEventDispatcher.CHANNEL_NAME);
 		return partialPacket;
 	}
 

@@ -8,7 +8,12 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.block.OpenBlock;
 import openmods.events.network.TileEntityMessageEventPacket;
+import openmods.network.rpc.RpcCallDispatcher;
+import openmods.network.rpc.targets.TileEntityTargetWrapper;
 import openmods.utils.Coord;
+
+import com.google.common.base.Preconditions;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -148,5 +153,13 @@ public abstract class OpenTileEntity extends TileEntity {
 
 	public void onEvent(TileEntityMessageEventPacket event) {
 		/* when an event is received */
+	}
+
+	public <T> T getRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
+		Preconditions.checkArgument(mainIntf.isInstance(this));
+		for (Class<?> cls : extraIntf)
+			Preconditions.checkArgument(cls.isInstance(this));
+
+		return RpcCallDispatcher.INSTANCE.createProxy(new TileEntityTargetWrapper(this), mainIntf, extraIntf);
 	}
 }

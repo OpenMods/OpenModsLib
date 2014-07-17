@@ -233,7 +233,7 @@ public abstract class SyncMap<H extends ISyncHandler> {
 		type.writeHandlerInfo(handler, dataOutput);
 		writeToStream(dataOutput, fullPacket);
 
-		return output;
+		return output.copy();
 	}
 
 	public static ISyncHandler findSyncMap(World world, DataInput input) throws IOException {

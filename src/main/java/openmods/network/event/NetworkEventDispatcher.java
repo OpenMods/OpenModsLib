@@ -10,15 +10,17 @@ import cpw.mods.fml.relauncher.Side;
 
 public class NetworkEventDispatcher extends Dispatcher<NetworkEvent> {
 
+	public static final String CHANNEL_NAME = "OpenMods|E";
+
 	private final Map<Side, FMLEmbeddedChannel> channels;
 
 	public NetworkEventDispatcher(NetworkEventRegistry registry) {
-		this.channels = NetworkRegistry.INSTANCE.newChannel("OpenMods|E", new NetworkEventCodec(registry), new NetworkEventInboundHandler());
+		this.channels = NetworkRegistry.INSTANCE.newChannel(CHANNEL_NAME, new NetworkEventCodec(registry), new NetworkEventInboundHandler());
 		ExtendedOutboundHandler.install(this.channels);
 	}
 
 	@Override
-	protected FMLEmbeddedChannel getChannel(NetworkEvent msg, Side side) {
+	protected FMLEmbeddedChannel getChannel(Side side) {
 		return channels.get(side);
 	}
 

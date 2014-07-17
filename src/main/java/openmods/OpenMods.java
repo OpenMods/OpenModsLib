@@ -14,6 +14,9 @@ import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
 import openmods.network.IdSyncManager;
 import openmods.network.event.NetworkEventManager;
+import openmods.network.rpc.RpcCallDispatcher;
+import openmods.network.rpc.targets.EntityTargetWrapper;
+import openmods.network.rpc.targets.TileEntityTargetWrapper;
 import openmods.proxy.IOpenModsProxy;
 import cpw.mods.fml.common.*;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -33,6 +36,10 @@ public class OpenMods {
 	public void preInit(FMLPreInitializationEvent evt) {
 		NetworkEventManager.INSTANCE.startRegistration()
 				.register(TileEntityMessageEventPacket.class);
+
+		RpcCallDispatcher.INSTANCE.startRegistration()
+				.registerTargetWrapper(EntityTargetWrapper.class)
+				.registerTargetWrapper(TileEntityTargetWrapper.class);
 
 		final File configFile = evt.getSuggestedConfigurationFile();
 		Configuration config = new Configuration(configFile);
@@ -60,6 +67,9 @@ public class OpenMods {
 		proxy.postInit();
 
 		NetworkEventManager.INSTANCE.finalizeRegistration();
+		RpcCallDispatcher.INSTANCE.finishRegistration();
+
+		// must be after all builders are done
 		IdSyncManager.INSTANCE.finishLoading();
 	}
 

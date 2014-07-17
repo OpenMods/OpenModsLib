@@ -83,6 +83,8 @@ public class IdSyncManager extends DataStoreManager {
 					DataInput input = new DataInputStream(compressed);
 
 					String keyId = input.readUTF();
+
+					Log.debug("Received data store for key %s, packet size = %d", keyId, buf.writerIndex());
 					DataStoreWrapper<?, ?> wrapper = getDataStoreMeta(keyId);
 					DataStoreReader<?, ?> reader = wrapper.createReader();
 					reader.read(input);
@@ -114,7 +116,7 @@ public class IdSyncManager extends DataStoreManager {
 				try {
 					evt.manager.channel().pipeline().remove("openmods:id_injector");
 				} catch (NoSuchElementException e) {
-					Log.warn(e, "Failed to remove handshake injections");
+					// NO-OP - possibly removed earlier
 				}
 			}
 		}
@@ -144,7 +146,7 @@ public class IdSyncManager extends DataStoreManager {
 			throw new RuntimeException(e);
 		}
 
-		return new FMLProxyPacket(payload, CHANNEL_NAME);
+		return new FMLProxyPacket(payload.copy(), CHANNEL_NAME);
 	}
 
 	private IdSyncManager() {

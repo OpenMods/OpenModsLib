@@ -15,8 +15,12 @@ public class AnnotationMap {
 			this.annotations.put(a.annotationType(), a);
 	}
 
+	public boolean hasAnnotation(Class<? extends Annotation> cls) {
+		return annotations.get(cls) != null;
+	}
+
 	@SuppressWarnings("unchecked")
-	public <T> T get(Class<? extends T> cls) {
+	public <T extends Annotation> T get(Class<? extends T> cls) {
 		Annotation a = annotations.get(cls);
 		return cls.isInstance(a)? (T)a : null;
 	}
