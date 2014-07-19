@@ -243,7 +243,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 		Type wrappedInterface = builder.getInterfaceType(annotationHint);
 		boolean notYetDeclared = interfaces.add(wrappedInterface.getInternalName());
 		Preconditions.checkState(notYetDeclared, "%s already implements interface %s", clsName, wrappedInterface);
-		Log.info("Adding interface %s to %s", wrappedInterface.getInternalName(), clsName);
+		Log.debug("Adding interface %s to %s", wrappedInterface.getInternalName(), clsName);
 		for (Method m : getInterfaceMethods(wrappedInterface)) {
 			MethodAdder prev = methodsToAdd.put(m, builder.createMethod(wrappedInterface));
 			if (prev != null) Preconditions.checkState(overrides.contains(m), "Included method '%s' conflict, interfaces = %s,%s", m, wrappedInterface, prev.intf);

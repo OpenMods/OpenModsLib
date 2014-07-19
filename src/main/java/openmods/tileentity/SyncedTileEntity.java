@@ -11,14 +11,39 @@ import net.minecraftforge.common.util.ForgeDirection;
 import openmods.Log;
 import openmods.sync.*;
 
-public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncHandler {
+public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncProvider {
 
 	protected SyncMapTile<SyncedTileEntity> syncMap;
 
 	public SyncedTileEntity() {
 		syncMap = new SyncMapTile<SyncedTileEntity>(this);
 		createSyncedFields();
-		syncMap.autoregister();
+		SyncObjectScanner.INSTANCE.registerAllFields(syncMap, this);
+
+		syncMap.addSyncListener(new ISyncListener() {
+			@Override
+			public void onSync(Set<ISyncableObject> changes) {
+				worldObj.markTileEntityChunkModified(xCoord, yCoord, zCoord, SyncedTileEntity.this);
+			}
+		});
+	}
+
+	protected ISyncListener createRenderUpdateListener() {
+		return new ISyncListener() {
+			@Override
+			public void onSync(Set<ISyncableObject> changes) {
+				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+			}
+		};
+	}
+
+	protected ISyncListener createRenderUpdateListener(final ISyncableObject target) {
+		return new ISyncListener() {
+			@Override
+			public void onSync(Set<ISyncableObject> changes) {
+				if (changes.contains(target)) worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+			}
+		};
 	}
 
 	protected abstract void createSyncedFields();
@@ -28,12 +53,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncHa
 	}
 
 	public void sync() {
-		Set<ISyncableObject> changed = syncMap.sync();
-		if (!changed.isEmpty()) onServerSync(changed);
-	}
-
-	public void onServerSync(Set<ISyncableObject> changed) {
-		worldObj.markTileEntityChunkModified(xCoord, yCoord, zCoord, this);
+		syncMap.sync();
 	}
 
 	@Override

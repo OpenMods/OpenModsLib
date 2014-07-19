@@ -6,23 +6,15 @@ import java.io.IOException;
 
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
-import openmods.OpenMods;
 import openmods.liquids.GenericTank;
 
 public class SyncableTank extends GenericTank implements ISyncableObject {
 
 	private boolean dirty = false;
-	private long ticksSinceChange = 0;
 
 	public SyncableTank(int capacity, FluidStack... acceptableFluids) {
 		super(capacity, acceptableFluids);
-	}
-
-	@Override
-	public int getTicksSinceChange(World world) {
-		return (int)(OpenMods.proxy.getTicks(world) - ticksSinceChange);
 	}
 
 	@Override
@@ -105,11 +97,6 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 		FluidStack drained = super.drain(maxDrain, doDrain);
 		if (doDrain && drained != null) markDirty();
 		return drained;
-	}
-
-	@Override
-	public void resetChangeTimer(World world) {
-		ticksSinceChange = OpenMods.proxy.getTicks(world);
 	}
 
 }

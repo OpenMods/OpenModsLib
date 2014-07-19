@@ -7,17 +7,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
-import openmods.OpenMods;
-import openmods.proxy.IOpenModsProxy;
 import openmods.utils.ByteUtils;
 
 public class SyncableFlags extends SyncableObjectBase {
 
 	private short value;
 	private short previousValue;
-	protected long[] timeLastSet = new long[16];
-	protected long[] timeLastUnset = new long[16];
 
 	public SyncableFlags() {}
 
@@ -62,30 +57,9 @@ public class SyncableFlags extends SyncableObjectBase {
 	public void set(int slot, boolean bool) {
 		short newVal = ByteUtils.set(value, slot, bool);
 		if (newVal != value) {
-			if (bool) {
-				timeLastSet[slot] = 0;
-			} else {
-				timeLastUnset[slot] = 0;
-			}
 			markDirty();
+			value = newVal;
 		}
-		value = newVal;
-	}
-
-	public int ticksSinceSet(IOpenModsProxy proxy, World world, Enum<?> slot) {
-		return ticksSinceSet(proxy, world, slot.ordinal());
-	}
-
-	public int ticksSinceSet(IOpenModsProxy proxy, World world, int slot) {
-		return (int)(proxy.getTicks(world) - timeLastSet[slot]);
-	}
-
-	public int ticksSinceUnset(IOpenModsProxy proxy, World world, Enum<?> slot) {
-		return ticksSinceUnset(proxy, world, slot.ordinal());
-	}
-
-	public int ticksSinceUnset(IOpenModsProxy proxy, World world, int slot) {
-		return (int)(proxy.getTicks(world) - timeLastUnset[slot]);
 	}
 
 	public boolean get(Enum<?> slot) {
@@ -128,20 +102,5 @@ public class SyncableFlags extends SyncableObjectBase {
 	@Override
 	public void readFromNBT(NBTTagCompound tag, String name) {
 		value = tag.getShort(name);
-	}
-
-	@Override
-	public void resetChangeTimer(World world) {
-		super.resetChangeTimer(world);
-		long time = OpenMods.proxy.getTicks(world);
-		for (int i = 0; i < timeLastSet.length; i++) {
-			if (hasSlotChanged(i)) {
-				if (get(i)) {
-					timeLastSet[i] = time;
-				} else {
-					timeLastUnset[i] = time;
-				}
-			}
-		}
 	}
 }

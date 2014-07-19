@@ -5,7 +5,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
 
 public interface ISyncableObject {
 	public boolean isDirty();
@@ -17,10 +16,6 @@ public interface ISyncableObject {
 	public void readFromStream(DataInput stream) throws IOException;
 
 	public void writeToStream(DataOutput stream, boolean fullData) throws IOException;
-
-	public void resetChangeTimer(World world);
-
-	public int getTicksSinceChange(World world);
 
 	public void writeToNBT(NBTTagCompound nbt, String name);
 
