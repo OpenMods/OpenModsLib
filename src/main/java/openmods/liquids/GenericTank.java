@@ -9,9 +9,9 @@ import net.minecraftforge.fluids.*;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.integration.modules.BuildCraftPipes;
-import openmods.sync.SyncableFlags;
 import openmods.utils.BlockUtils;
 import openmods.utils.Coord;
+import openmods.utils.DirUtils;
 
 import com.google.common.collect.Lists;
 
@@ -56,19 +56,12 @@ public class GenericTank extends FluidTank {
 		return tile instanceof IFluidHandler;
 	}
 
-	private static Set<ForgeDirection> getSurroundingTanks(World world, Coord coord, SyncableFlags sides) {
+	private static Set<ForgeDirection> getSurroundingTanks(World world, Coord coord, Set<ForgeDirection> sides) {
 		EnumSet<ForgeDirection> result = EnumSet.noneOf(ForgeDirection.class);
-		if (sides == null) {
-			for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
-				if (isNeighbourTank(world, coord, dir)) result.add(dir);
-		}
-		else
-		{
-			for (Integer s : sides.getActiveSlots()) {
-				ForgeDirection dir = ForgeDirection.getOrientation(s);
-				if (isNeighbourTank(world, coord, dir)) result.add(dir);
-			}
-		}
+		if (sides == null) sides = DirUtils.VALID_DIRECTIONS;
+
+		for (ForgeDirection dir : sides)
+			if (isNeighbourTank(world, coord, dir)) result.add(dir);
 
 		return result;
 	}
@@ -91,7 +84,7 @@ public class GenericTank extends FluidTank {
 		return super.fill(resource, doFill);
 	}
 
-	private void periodicUpdateNeighbours(World world, Coord coord, SyncableFlags sides) {
+	private void periodicUpdateNeighbours(World world, Coord coord, Set<ForgeDirection> sides) {
 		long currentTime = OpenMods.proxy.getTicks(world);
 		if (currentTime - lastUpdate > 10) {
 			surroundingTanks = Lists.newArrayList(getSurroundingTanks(world, coord, sides));
@@ -111,7 +104,7 @@ public class GenericTank extends FluidTank {
 		distributeToSides(maxAmount, currentTile);
 	}
 
-	public void distributeToSides(int amountPerTick, World world, Coord coord, SyncableFlags sides) {
+	public void distributeToSides(int amountPerTick, World world, Coord coord, Set<ForgeDirection> sides) {
 		if (world == null) return;
 
 		if (getFluidAmount() <= 0) return;
@@ -143,7 +136,7 @@ public class GenericTank extends FluidTank {
 		fillFromSides(maxAmount, world, coord, null);
 	}
 
-	public void fillFromSides(int maxAmount, World world, Coord coord, SyncableFlags sides) {
+	public void fillFromSides(int maxAmount, World world, Coord coord, Set<ForgeDirection> sides) {
 		if (world == null) return;
 
 		int toDrain = Math.min(maxAmount, getSpace());

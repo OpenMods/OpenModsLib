@@ -7,15 +7,15 @@ import java.io.IOException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
-import openmods.network.rpc.ITargetWrapper;
+import openmods.network.rpc.IRpcTarget;
 
-public class EntityTargetWrapper implements ITargetWrapper {
+public class EntityRpcTarget implements IRpcTarget {
 
 	private Entity entity;
 
-	public EntityTargetWrapper() {}
+	public EntityRpcTarget() {}
 
-	public EntityTargetWrapper(Entity entity) {
+	public EntityRpcTarget(Entity entity) {
 		this.entity = entity;
 	}
 
@@ -36,4 +36,7 @@ public class EntityTargetWrapper implements ITargetWrapper {
 		World world = player.worldObj;
 		entity = world.getEntityByID(entityId);
 	}
+
+	@Override
+	public void afterCall() {}
 }

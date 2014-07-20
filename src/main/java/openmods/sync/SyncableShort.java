@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-public class SyncableShort extends SyncableObjectBase {
+public class SyncableShort extends SyncableObjectBase implements ISyncableValueProvider<Short> {
 
 	private short value = 0;
 
@@ -22,17 +22,22 @@ public class SyncableShort extends SyncableObjectBase {
 	}
 
 	public void modify(short by) {
-		setValue((short)(value + by));
+		set((short)(value + by));
 	}
 
-	public void setValue(short val) {
+	public void set(short val) {
 		if (val != value) {
 			value = val;
 			markDirty();
 		}
 	}
 
-	public short getValue() {
+	public short get() {
+		return value;
+	}
+
+	@Override
+	public Short getValue() {
 		return value;
 	}
 

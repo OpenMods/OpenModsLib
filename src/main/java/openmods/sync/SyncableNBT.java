@@ -10,7 +10,7 @@ import net.minecraft.nbt.NBTTagCompound;
 /***
  * Note: you must manually .markDirty() right now
  */
-public class SyncableNBT extends SyncableObjectBase {
+public class SyncableNBT extends SyncableObjectBase implements ISyncableValueProvider<NBTTagCompound> {
 
 	private NBTTagCompound tag;
 
@@ -19,15 +19,16 @@ public class SyncableNBT extends SyncableObjectBase {
 	}
 
 	public SyncableNBT(NBTTagCompound nbt) {
-		tag = nbt;
+		tag = (NBTTagCompound)nbt.copy();
 	}
 
-	public NBTTagCompound getTag() {
-		return tag;
+	@Override
+	public NBTTagCompound getValue() {
+		return (NBTTagCompound)tag.copy();
 	}
 
-	public void setTag(NBTTagCompound tag) {
-		this.tag = tag;
+	public void setValue(NBTTagCompound tag) {
+		this.tag = (NBTTagCompound)tag.copy();
 	}
 
 	@Override

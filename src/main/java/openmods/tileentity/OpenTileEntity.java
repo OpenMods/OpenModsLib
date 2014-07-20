@@ -8,16 +8,16 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.block.OpenBlock;
 import openmods.events.network.TileEntityMessageEventPacket;
+import openmods.network.rpc.IRpcTarget;
+import openmods.network.rpc.IRpcTargetProvider;
 import openmods.network.rpc.RpcCallDispatcher;
-import openmods.network.rpc.targets.TileEntityTargetWrapper;
+import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.utils.Coord;
-
-import com.google.common.base.Preconditions;
-
+import openmods.utils.TypeUtils;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public abstract class OpenTileEntity extends TileEntity {
+public abstract class OpenTileEntity extends TileEntity implements IRpcTargetProvider {
 
 	private boolean initialized = false;
 	private boolean isActive = false;
@@ -155,11 +155,13 @@ public abstract class OpenTileEntity extends TileEntity {
 		/* when an event is received */
 	}
 
-	public <T> T getRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
-		Preconditions.checkArgument(mainIntf.isInstance(this));
-		for (Class<?> cls : extraIntf)
-			Preconditions.checkArgument(cls.isInstance(this));
+	@Override
+	public IRpcTarget createRpcTarget() {
+		return new TileEntityRpcTarget(this);
+	}
 
-		return RpcCallDispatcher.INSTANCE.createProxy(new TileEntityTargetWrapper(this), mainIntf, extraIntf);
+	public <T> T getRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
+		TypeUtils.isInstance(this, mainIntf, extraIntf);
+		return RpcCallDispatcher.INSTANCE.createProxy(createRpcTarget(), mainIntf, extraIntf);
 	}
 }

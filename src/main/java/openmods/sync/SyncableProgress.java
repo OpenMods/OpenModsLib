@@ -17,7 +17,7 @@ public class SyncableProgress extends SyncableInt {
 	}
 
 	public void reset() {
-		setValue(0);
+		set(0);
 	}
 
 	public void increase() {

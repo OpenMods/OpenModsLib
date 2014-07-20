@@ -8,7 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import com.google.common.primitives.SignedBytes;
 
-public class SyncableByte extends SyncableObjectBase {
+public class SyncableByte extends SyncableObjectBase implements ISyncableValueProvider<Byte> {
 
 	private byte value;
 
@@ -18,14 +18,19 @@ public class SyncableByte extends SyncableObjectBase {
 
 	public SyncableByte() {}
 
-	public void setValue(byte newValue) {
+	public void set(byte newValue) {
 		if (newValue != value) {
 			value = newValue;
 			markDirty();
 		}
 	}
 
-	public byte getValue() {
+	public byte get() {
+		return value;
+	}
+
+	@Override
+	public Byte getValue() {
 		return value;
 	}
 
@@ -50,6 +55,6 @@ public class SyncableByte extends SyncableObjectBase {
 	}
 
 	public void modify(int by) {
-		setValue(SignedBytes.checkedCast(value + by));
+		set(SignedBytes.checkedCast(value + by));
 	}
 }

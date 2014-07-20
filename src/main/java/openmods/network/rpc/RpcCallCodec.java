@@ -37,7 +37,7 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 		DataOutput output = new ByteBufOutputStream(buf);
 
 		{
-			final ITargetWrapper targetWrapper = call.target;
+			final IRpcTarget targetWrapper = call.target;
 			int targetId = targetRegistry.getWrapperId(targetWrapper.getClass());
 			ByteUtils.writeVLI(output, targetId);
 			targetWrapper.writeToStream(output);
@@ -59,7 +59,7 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 	protected void decode(ChannelHandlerContext ctx, FMLProxyPacket msg, List<Object> out) throws Exception {
 		ByteBufInputStream input = new ByteBufInputStream(msg.payload());
 
-		final ITargetWrapper target;
+		final IRpcTarget target;
 		final Method method;
 		final Object[] args;
 

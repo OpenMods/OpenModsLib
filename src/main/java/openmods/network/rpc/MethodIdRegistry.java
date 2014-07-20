@@ -1,7 +1,6 @@
 package openmods.network.rpc;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.Set;
 
 import openmods.datastore.IDataVisitor;
@@ -10,19 +9,11 @@ import org.apache.commons.lang3.ClassUtils;
 import org.objectweb.asm.Type;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.*;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Sets;
 
 public class MethodIdRegistry implements IDataVisitor<String, Integer> {
-	public static class InterfaceMeta {
-		private final Map<Method, Integer> methodIds = Maps.newHashMap();
-
-		public int getMethodId(Method method) {
-			Integer id = methodIds.get(method);
-			Preconditions.checkNotNull(id, "Method %s is not registered for this interface", method);
-			return id;
-		}
-	}
-
 	private final Set<Class<?>> registeredInterfaces = Sets.newHashSet();
 
 	private final BiMap<Method, Integer> methodIds = HashBiMap.create();
@@ -33,7 +24,7 @@ public class MethodIdRegistry implements IDataVisitor<String, Integer> {
 
 	public int methodToId(Method method) {
 		Integer id = methodIds.get(method);
-		Preconditions.checkNotNull(id, "Method %s is not registered", method);
+		Preconditions.checkNotNull(id, "Method %s is ignored or not registered", method);
 		return id;
 	}
 

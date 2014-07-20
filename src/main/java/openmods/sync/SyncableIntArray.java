@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-public class SyncableIntArray extends SyncableObjectBase {
+public class SyncableIntArray extends SyncableObjectBase implements ISyncableValueProvider<int[]> {
 
 	private int[] value;
 
@@ -37,6 +37,7 @@ public class SyncableIntArray extends SyncableObjectBase {
 		return value[offset];
 	}
 
+	@Override
 	public int[] getValue() {
 		return value;
 	}

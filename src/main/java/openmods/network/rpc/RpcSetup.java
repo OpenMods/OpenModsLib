@@ -41,16 +41,18 @@ public class RpcSetup {
 
 		Preconditions.checkArgument(intf.isInterface(), "Class %s is not interface", intf);
 
-		for (Method m : intf.getMethods()) {
+		for (Method m : intf.getDeclaredMethods()) {
+			if (m.isAnnotationPresent(RpcIgnore.class)) continue;
 			Preconditions.checkArgument(m.getReturnType() == void.class, "RPC methods cannot have return type (method = %s)", m);
 			String desc = Type.getMethodDescriptor(m);
 			String entry = m.getDeclaringClass().getName() + ID_FIELDS_SEPARATOR + m.getName() + ID_FIELDS_SEPARATOR + desc;
-			methodsStoreBuilder.addEntry(entry, currentMethodId++);
+
+			if (!methodsStoreBuilder.isRegistered(entry)) methodsStoreBuilder.addEntry(entry, currentMethodId++);
 		}
 		return this;
 	}
 
-	public RpcSetup registerTargetWrapper(Class<? extends ITargetWrapper> wrapperCls) {
+	public RpcSetup registerTargetWrapper(Class<? extends IRpcTarget> wrapperCls) {
 		Preconditions.checkState(Loader.instance().isInState(LoaderState.PREINITIALIZATION), "This method can only be called in pre-initialization state");
 		targetsStoreBuilder.addEntry(wrapperCls.getName(), currentWrapperId++);
 		return this;

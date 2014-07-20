@@ -13,7 +13,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.GenericInventory;
 import openmods.integration.modules.BuildCraftPipes;
-import openmods.sync.SyncableFlags;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
@@ -246,12 +245,10 @@ public class InventoryUtils {
 	 */
 	public static Set<Integer> getSlotsWithStack(IInventory inventory, ItemStack stack) {
 		inventory = getInventory(inventory);
-		Set<Integer> slots = new HashSet<Integer>();
+		Set<Integer> slots = Sets.newHashSet();
 		for (int i = 0; i < inventory.getSizeInventory(); i++) {
 			ItemStack stackInSlot = inventory.getStackInSlot(i);
-			if (stackInSlot != null && stackInSlot.isItemEqual(stack)) {
-				slots.add(i);
-			}
+			if (stackInSlot != null && stackInSlot.isItemEqual(stack)) slots.add(i);
 		}
 		return slots;
 	}
@@ -322,51 +319,31 @@ public class InventoryUtils {
 		return null;
 	}
 
-	public static int moveItemsFromOneOfSides(TileEntity currentTile, int maxAmount, int intoSlot, SyncableFlags sideFlags) {
-		return moveItemsFromOneOfSides(currentTile, null, maxAmount, intoSlot, sideFlags);
+	public static int moveItemsFromOneOfSides(TileEntity te, IInventory inv, int maxAmount, int intoSlot, Set<ForgeDirection> sides) {
+		return moveItemsFromOneOfSides(te, inv, null, maxAmount, intoSlot, sides);
 	}
 
-	public static int moveItemsFromOneOfSides(TileEntity intoInventory, ItemStack stack, int maxAmount, Enum<?> intoSlot, SyncableFlags sideFlags) {
-		return moveItemsFromOneOfSides(intoInventory, stack, maxAmount, intoSlot.ordinal(), sideFlags);
-	}
+	public static int moveItemsFromOneOfSides(TileEntity te, IInventory inv, ItemStack filterStack, int maxAmount, int intoSlot, Set<ForgeDirection> sides) {
+		List<ForgeDirection> shuffledSides = Lists.newArrayList(sides);
+		Collections.shuffle(shuffledSides);
 
-	/***
-	 * 
-	 * @param intoInventory
-	 * @param stack
-	 * @param maxAmount
-	 * @param intoSlot
-	 * @param back
-	 * @return
-	 */
-	public static int moveItemsFromOneOfSides(TileEntity intoInventory, ItemStack stack, int maxAmount, int intoSlot, SyncableFlags sideFlags) {
-
-		// shuffle the active sides
-		List<Integer> sides = new ArrayList<Integer>();
-		sides.addAll(sideFlags.getActiveSlots());
-		Collections.shuffle(sides);
-
-		if (!(intoInventory instanceof IInventory)) { return 0; }
+		IInventory ourInventory = getInventory(inv);
 
 		// loop through the shuffled sides
-
-		for (Integer dir : sides) {
-			ForgeDirection directionToExtractItem = ForgeDirection.getOrientation(dir);
-			TileEntity tileOnSurface = BlockUtils.getTileInDirection(intoInventory, directionToExtractItem);
+		for (ForgeDirection dir : sides) {
+			TileEntity tileOnSurface = BlockUtils.getTileInDirection(te, dir);
 			// if it's an inventory
 			if (tileOnSurface instanceof IInventory) {
-				// get the slots that contain the stack we want
-				Set<Integer> slots = null;
-				if (stack == null) {
-					slots = getAllSlots((IInventory)tileOnSurface);
-				} else {
-					slots = InventoryUtils.getSlotsWithStack((IInventory)tileOnSurface, stack);
-				}
-				// for each of the slots
+				final IInventory neighbor = (IInventory)tileOnSurface;
+
+				Set<Integer> slots;
+
+				if (filterStack == null) slots = getAllSlots(neighbor);
+				else slots = getSlotsWithStack(neighbor, filterStack);
+
 				for (Integer slot : slots) {
-					// if we can move it into our machine
-					int moved = InventoryUtils.moveItemInto((IInventory)tileOnSurface, slot, getInventory((IInventory)intoInventory), intoSlot, maxAmount, directionToExtractItem.getOpposite(), true);
-					if (moved > 0) { return moved; }
+					int moved = InventoryUtils.moveItemInto(neighbor, slot, ourInventory, intoSlot, maxAmount, dir.getOpposite(), true);
+					if (moved > 0) return moved;
 				}
 			}
 		}
@@ -430,42 +407,27 @@ public class InventoryUtils {
 		return slots;
 	}
 
-	public static int moveItemsToOneOfSides(TileEntity currentTile, Enum<?> fromSlot, int maxAmount, SyncableFlags sideFlags) {
-		return moveItemsToOneOfSides(currentTile, fromSlot.ordinal(), maxAmount, sideFlags);
-	}
-
-	public static int moveItemsToOneOfSides(TileEntity currentTile, int fromSlot, int maxAmount, SyncableFlags sideFlags) {
-
-		// if the current tile isn't an inventory, do nothing
-		if (!(currentTile instanceof IInventory)) { return 0; }
-
+	public static int moveItemsToOneOfSides(TileEntity te, IInventory inv, int fromSlot, int maxAmount, Set<ForgeDirection> sides) {
 		// wrap it. Sure, we dont need to really as this'll never be a double
-		// chest
-		// but, whatevs.
-		IInventory inventory = getInventory((IInventory)currentTile);
+		// chest but, whatevs. (M?)
+		final IInventory inventory = getInventory(inv);
 
 		// if we've not got a stack in that slot, we dont care.
-		if (inventory.getStackInSlot(fromSlot) == null) { return 0; }
+		if (inventory.getStackInSlot(fromSlot) == null) return 0;
 
 		// shuffle the sides that have been passed in
-		List<Integer> sides = new ArrayList<Integer>();
-		sides.addAll(sideFlags.getActiveSlots());
-		Collections.shuffle(sides);
+		List<ForgeDirection> shuffledSides = Lists.newArrayList(sides);
+		Collections.shuffle(shuffledSides);
 
-		for (Integer dir : sides) {
-
+		for (ForgeDirection dir : shuffledSides) {
 			// grab the tile in the current direction
-			ForgeDirection directionToOutputItem = ForgeDirection.getOrientation(dir);
-			TileEntity tileOnSurface = currentTile.getWorldObj().getTileEntity(currentTile.xCoord
-					+ directionToOutputItem.offsetX, currentTile.yCoord
-					+ directionToOutputItem.offsetY, currentTile.zCoord
-					+ directionToOutputItem.offsetZ);
+			TileEntity tileOnSurface = BlockUtils.getTileInDirection(te, dir);
 			if (tileOnSurface == null) { return 0; }
 
-			int moved = InventoryUtils.moveItemInto(inventory, fromSlot, tileOnSurface, -1, maxAmount, directionToOutputItem, true);
+			int moved = InventoryUtils.moveItemInto(inventory, fromSlot, tileOnSurface, -1, maxAmount, dir, true);
 			// move the object from our inventory, in the specified slot, to a
 			// pipe or any slot in an inventory in a particular direction
-			if (moved > 0) { return moved; }
+			if (moved > 0) return moved;
 		}
 		return 0;
 	}

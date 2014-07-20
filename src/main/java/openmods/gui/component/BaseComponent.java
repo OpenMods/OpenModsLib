@@ -17,6 +17,22 @@ import com.google.common.collect.Lists;
 
 public abstract class BaseComponent extends Gui {
 
+	public abstract static class ListenerNotifier<T> {
+		private final Class<? extends T> selectedClass;
+
+		protected ListenerNotifier(Class<? extends T> selectedClass) {
+			this.selectedClass = selectedClass;
+		}
+
+		protected abstract void call(T listener);
+
+		@SuppressWarnings("unchecked")
+		private void notify(Iterable<IListenerBase> listeners) {
+			for (IListenerBase listener : listeners)
+				if (selectedClass.isInstance(listener)) call((T)listener);
+		}
+	}
+
 	private static final int CRAZY_1 = 0x505000FF;
 	private static final int CRAZY_2 = (CRAZY_1 & 0xFEFEFE) >> 1 | CRAZY_1 & -0xFF000000;
 	private static final int CRAZY_3 = 0xF0100010;
@@ -224,6 +240,10 @@ public abstract class BaseComponent extends Gui {
 			if (isComponentCapturingMouse(component, mouseX, mouseY)) {
 				component.mouseDrag(mouseX - component.x, mouseY - component.y, button, time);
 			}
+	}
+
+	protected void notifyListeners(ListenerNotifier<?> selector) {
+		selector.notify(listeners);
 	}
 
 	protected void drawHoveringText(List<String> lines, int x, int y, FontRenderer font) {

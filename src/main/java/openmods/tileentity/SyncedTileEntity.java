@@ -9,9 +9,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.Log;
+import openmods.network.rpc.IRpcTarget;
+import openmods.network.rpc.RpcCallDispatcher;
+import openmods.network.rpc.targets.SyncRpcTarget;
 import openmods.sync.*;
+import openmods.utils.TypeUtils;
 
-public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncProvider {
+public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMapProvider {
 
 	protected SyncMapTile<SyncedTileEntity> syncMap;
 
@@ -88,6 +92,12 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncPr
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
 		syncMap.readFromNBT(tag);
+	}
+
+	public <T> T createRpcProxy(ISyncableObject object, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+		TypeUtils.isInstance(object, mainIntf, extraIntf);
+		IRpcTarget target = new SyncRpcTarget.SyncTileEntityRpcTarget(this, object);
+		return RpcCallDispatcher.INSTANCE.createProxy(target, mainIntf, extraIntf);
 	}
 
 }

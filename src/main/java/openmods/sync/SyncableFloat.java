@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-public class SyncableFloat extends SyncableObjectBase {
+public class SyncableFloat extends SyncableObjectBase implements ISyncableValueProvider<Float> {
 
 	public static final float EPSILON = 0.0001f;
 	private float value;
@@ -17,14 +17,19 @@ public class SyncableFloat extends SyncableObjectBase {
 
 	public SyncableFloat() {}
 
-	public void setValue(float newValue) {
+	public void set(float newValue) {
 		if (!equals(newValue)) {
 			value = newValue;
 			markDirty();
 		}
 	}
 
-	public float getValue() {
+	public float get() {
+		return value;
+	}
+
+	@Override
+	public Float getValue() {
 		return value;
 	}
 
@@ -53,6 +58,6 @@ public class SyncableFloat extends SyncableObjectBase {
 	}
 
 	public void modify(float by) {
-		setValue(value + by);
+		set(value + by);
 	}
 }

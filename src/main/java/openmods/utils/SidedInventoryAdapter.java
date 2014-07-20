@@ -8,7 +8,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
-import openmods.sync.SyncableFlags;
+import net.minecraftforge.common.util.ForgeDirection;
+import openmods.utils.bitmap.IReadableBitMap;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -18,17 +19,17 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	private final IInventory inventory;
 
 	private class SlotInfo {
-		private final SyncableFlags sideFlags;
+		private final IReadableBitMap<ForgeDirection> sideFlags;
 		private final boolean canInsert;
 		private final boolean canExtract;
 
-		private SlotInfo(SyncableFlags sideFlags, boolean canInsert, boolean canExtract) {
+		private SlotInfo(IReadableBitMap<ForgeDirection> sideFlags, boolean canInsert, boolean canExtract) {
 			this.sideFlags = sideFlags;
 			this.canInsert = canInsert;
 			this.canExtract = canExtract;
 		}
 
-		private boolean canAccessFromSite(int side) {
+		private boolean canAccessFromSite(ForgeDirection side) {
 			return sideFlags.get(side);
 		}
 	}
@@ -39,20 +40,20 @@ public class SidedInventoryAdapter implements ISidedInventory {
 		this.inventory = inventory;
 	}
 
-	public void registerSlot(Enum<?> slot, SyncableFlags sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerSlot(Enum<?> slot, IReadableBitMap<ForgeDirection> sideFlags, boolean canInsert, boolean canExtract) {
 		registerSlot(slot.ordinal(), sideFlags, canInsert, canExtract);
 	}
 
-	public void registerSlot(int slot, SyncableFlags sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerSlot(int slot, IReadableBitMap<ForgeDirection> sideFlags, boolean canInsert, boolean canExtract) {
 		slots.put(slot, new SlotInfo(sideFlags, canInsert, canExtract));
 	}
 
-	public void registerSlots(int start, int count, SyncableFlags sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerSlots(int start, int count, IReadableBitMap<ForgeDirection> sideFlags, boolean canInsert, boolean canExtract) {
 		for (int i = start; i < start + count; i++)
 			registerSlot(i, sideFlags, canInsert, canExtract);
 	}
 
-	public void registerAllSlots(SyncableFlags sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerAllSlots(IReadableBitMap<ForgeDirection> sideFlags, boolean canInsert, boolean canExtract) {
 		for (int i = 0; i < inventory.getSizeInventory(); i++)
 			registerSlot(i, sideFlags, canInsert, canExtract);
 	}
@@ -99,9 +100,10 @@ public class SidedInventoryAdapter implements ISidedInventory {
 
 	@Override
 	public int[] getAccessibleSlotsFromSide(int side) {
+		ForgeDirection dir = ForgeDirection.getOrientation(side);
 		Set<Integer> result = Sets.newHashSet();
 		for (Entry<Integer, SlotInfo> entry : slots.entrySet()) {
-			if (entry.getValue().canAccessFromSite(side)) result.add(entry.getKey());
+			if (entry.getValue().canAccessFromSite(dir)) result.add(entry.getKey());
 		}
 
 		int tmp[] = new int[result.size()];
@@ -113,16 +115,18 @@ public class SidedInventoryAdapter implements ISidedInventory {
 
 	@Override
 	public boolean canInsertItem(int slotIndex, ItemStack itemstack, int side) {
+		ForgeDirection dir = ForgeDirection.getOrientation(side);
 		SlotInfo slot = slots.get(slotIndex);
 		if (slot == null) return false;
-		return slot.canInsert && slot.canAccessFromSite(side) && inventory.isItemValidForSlot(slotIndex, itemstack);
+		return slot.canInsert && slot.canAccessFromSite(dir) && inventory.isItemValidForSlot(slotIndex, itemstack);
 	}
 
 	@Override
 	public boolean canExtractItem(int slotIndex, ItemStack itemstack, int side) {
+		ForgeDirection dir = ForgeDirection.getOrientation(side);
 		SlotInfo slot = slots.get(slotIndex);
 		if (slot == null) return false;
-		return slot.canExtract && slot.canAccessFromSite(side);
+		return slot.canExtract && slot.canAccessFromSite(dir);
 	}
 
 	@Override

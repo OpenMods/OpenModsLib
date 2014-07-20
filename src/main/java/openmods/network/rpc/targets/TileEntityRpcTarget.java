@@ -7,15 +7,15 @@ import java.io.IOException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import openmods.network.rpc.ITargetWrapper;
+import openmods.network.rpc.IRpcTarget;
 
-public class TileEntityTargetWrapper implements ITargetWrapper {
+public class TileEntityRpcTarget implements IRpcTarget {
 
 	private TileEntity te;
 
-	public TileEntityTargetWrapper() {}
+	public TileEntityRpcTarget() {}
 
-	public TileEntityTargetWrapper(TileEntity te) {
+	public TileEntityRpcTarget(TileEntity te) {
 		this.te = te;
 	}
 
@@ -40,5 +40,8 @@ public class TileEntityTargetWrapper implements ITargetWrapper {
 		World world = player.worldObj;
 		te = world.getTileEntity(x, y, z);
 	}
+
+	@Override
+	public void afterCall() {}
 
 }

@@ -1,7 +1,5 @@
 package openmods.sync;
 
-public interface ISyncProvider {
-
+public interface ISyncMapProvider {
 	public SyncMap<?> getSyncMap();
-
 }

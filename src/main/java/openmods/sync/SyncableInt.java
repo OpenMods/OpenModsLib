@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-public class SyncableInt extends SyncableObjectBase {
+public class SyncableInt extends SyncableObjectBase implements ISyncableValueProvider<Integer> {
 
 	protected int value = 0;
 
@@ -22,17 +22,22 @@ public class SyncableInt extends SyncableObjectBase {
 	}
 
 	public void modify(int by) {
-		setValue(value + by);
+		set(value + by);
 	}
 
-	public void setValue(int val) {
+	public void set(int val) {
 		if (val != value) {
 			value = val;
 			markDirty();
 		}
 	}
 
-	public int getValue() {
+	public int get() {
+		return value;
+	}
+
+	@Override
+	public Integer getValue() {
 		return value;
 	}
 

@@ -19,7 +19,7 @@ public class InboundSyncHandler extends SimpleChannelInboundHandler<FMLProxyPack
 		ByteBuf payload = msg.payload();
 		ByteBufInputStream input = new ByteBufInputStream(payload);
 
-		ISyncProvider provider = SyncMap.findSyncMap(world, input);
+		ISyncMapProvider provider = SyncMap.findSyncMap(world, input);
 		if (provider != null) provider.getSyncMap().readFromStream(input);
 	}
 }

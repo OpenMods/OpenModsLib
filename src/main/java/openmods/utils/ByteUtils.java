@@ -3,29 +3,85 @@ package openmods.utils;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.UnmodifiableIterator;
 
 public class ByteUtils {
 
-	public static short set(short val, int slot, boolean bool) {
-		if (get(val, slot) != bool) {
-			val += bool? (1 << slot) : -(1 << slot);
+	public abstract static class BitIterator extends UnmodifiableIterator<Boolean> {
+		private int value;
+
+		public BitIterator(int value) {
+			this.value = value;
 		}
-		return val;
+
+		@Override
+		public boolean hasNext() {
+			return value != 0;
+		}
+
+		@Override
+		public Boolean next() {
+			boolean result = (value & 1) != 0;
+			value >>= 1;
+			return result;
+		}
 	}
 
-	public static short set(short val, Enum<?> slot, boolean bool) {
-		return set(val, slot.ordinal(), bool);
+	public abstract static class CountingBitIterator<T> extends UnmodifiableIterator<T> {
+		private int value;
+		private int count;
+
+		public CountingBitIterator(int value) {
+			this.value = value;
+		}
+
+		protected abstract T convert(int bit);
+
+		@Override
+		public boolean hasNext() {
+			return value != 0;
+		}
+
+		@Override
+		public T next() {
+			while (value != 0) {
+				final boolean result = (value & 1) != 0;
+
+				value >>= 1;
+
+				if (result) return convert(count++);
+				else ++count;
+			}
+			throw new IllegalStateException();
+		}
 	}
 
-	public static boolean get(short val, int slot) {
+	public static int on(int val, int bit) {
+		return val | (1 << bit);
+	}
+
+	public static int off(int val, int bit) {
+		return val & ~(1 << bit);
+	}
+
+	public static int set(int val, int bit, boolean flag) {
+		return flag? (val | (1 << bit)) : (val & ~(1 << bit));
+	}
+
+	public static long set(long val, int bit, boolean flag) {
+		return flag? (val | (1 << bit)) : (val & ~(1 << bit));
+	}
+
+	public static boolean get(int val, int slot) {
 		return (val & (1 << slot)) != 0;
 	}
 
-	public static boolean get(short val, Enum<?> slot) {
-		return get(val, slot.ordinal());
+	public static boolean get(long val, int slot) {
+		return (val & (1 << slot)) != 0;
 	}
 
 	public static void writeVLI(DataOutput output, int value) {
@@ -80,5 +136,17 @@ public class ByteUtils {
 
 	public static boolean isPowerOfTwo(int size) {
 		return (size & (size - 1)) == 0;
+	}
+
+	public static int enumSetToBits(Set<? extends Enum<?>> dirs) {
+		int value = 0;
+
+		for (Enum<?> e : dirs) {
+			final int bit = e.ordinal();
+			Preconditions.checkArgument(bit < Integer.SIZE, "Enum %s has too many values", e.getClass());
+			value = on(value, bit);
+		}
+
+		return value;
 	}
 }

@@ -20,7 +20,7 @@ public class RpcProxyFactory {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T createClientProxy(ClassLoader loader, final ITargetWrapper wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+	public <T> T createClientProxy(ClassLoader loader, final IRpcTarget wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		Class<?> allInterfaces[] = ArrayUtils.add(extraIntf, mainIntf);
 
 		for (Class<?> intf : allInterfaces)

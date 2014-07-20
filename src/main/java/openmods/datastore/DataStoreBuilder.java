@@ -50,6 +50,10 @@ public class DataStoreBuilder<K, V> {
 		return key;
 	}
 
+	public boolean isRegistered(K key) {
+		return values.containsKey(key);
+	}
+
 	public void addEntry(K key, V value) {
 		Preconditions.checkNotNull(key, "Null key not allowed");
 		Preconditions.checkNotNull(value, "Null values not allowed");

@@ -8,7 +8,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import openmods.utils.NetUtils;
 
-public class SyncMapEntity<H extends Entity & ISyncProvider> extends SyncMap<H> {
+public class SyncMapEntity<H extends Entity & ISyncMapProvider> extends SyncMap<H> {
 
 	public SyncMapEntity(H handler) {
 		super(handler);

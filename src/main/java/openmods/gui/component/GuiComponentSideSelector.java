@@ -13,20 +13,29 @@ import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+import openmods.gui.listener.IListenerBase;
+import openmods.gui.logic.IValueUpdateAction;
+import openmods.gui.logic.SideSelectorUpdater;
 import openmods.gui.misc.*;
 import openmods.gui.misc.SidePicker.HitCoord;
 import openmods.gui.misc.SidePicker.Side;
 import openmods.gui.misc.Trackball.TrackballWrapper;
+import openmods.sync.IValueProvider;
 import openmods.utils.MathUtils;
+import openmods.utils.bitmap.IRpcDirectionBitMap;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentSideSelector extends BaseComponent {
 
-	RenderBlocks blockRender = new RenderBlocks();
+	public static interface ISideSelectedListener extends IListenerBase {
+		public void onSideToggled(ForgeDirection side, boolean currentState);
+	}
 
-	private TrackballWrapper trackball = new TrackballWrapper(1, 40);
+	private final RenderBlocks blockRender = new RenderBlocks();
+
+	private final TrackballWrapper trackball = new TrackballWrapper(1, 40);
 
 	public double scale;
 	private ForgeDirection lastSideHovered;
@@ -154,8 +163,18 @@ public class GuiComponentSideSelector extends BaseComponent {
 	}
 
 	private void toggleSide(ForgeDirection side) {
-		if (selectedSides.contains(side)) selectedSides.remove(side);
-		else selectedSides.add(side);
+		boolean wasntPresent = !selectedSides.remove(side);
+		if (wasntPresent) selectedSides.add(side);
+		notifyListeners(side, wasntPresent);
+	}
+
+	private void notifyListeners(final ForgeDirection side, final boolean wasntPresent) {
+		notifyListeners(new ListenerNotifier<ISideSelectedListener>(ISideSelectedListener.class) {
+			@Override
+			protected void call(ISideSelectedListener listener) {
+				listener.onSideToggled(side, wasntPresent);
+			}
+		});
 	}
 
 	@Override
@@ -184,7 +203,14 @@ public class GuiComponentSideSelector extends BaseComponent {
 		return 50;
 	}
 
-	public Set<ForgeDirection> getSelectedSides() {
-		return selectedSides;
+	public void setSides(Set<ForgeDirection> dirs) {
+		selectedSides.clear();
+		selectedSides.addAll(dirs);
+	}
+
+	public IValueUpdateAction createUpdater(IValueProvider<Set<ForgeDirection>> source, IRpcDirectionBitMap updater) {
+		SideSelectorUpdater toolUpdater = new SideSelectorUpdater(source, updater, this);
+		addListener(toolUpdater);
+		return toolUpdater;
 	}
 }

@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-public class SyncableByteArray extends SyncableObjectBase {
+public class SyncableByteArray extends SyncableObjectBase implements ISyncableValueProvider<byte[]> {
 
 	private byte[] value = new byte[0];
 
@@ -23,6 +23,7 @@ public class SyncableByteArray extends SyncableObjectBase {
 		}
 	}
 
+	@Override
 	public byte[] getValue() {
 		return value;
 	}

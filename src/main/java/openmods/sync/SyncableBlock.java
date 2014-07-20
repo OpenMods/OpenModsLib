@@ -14,7 +14,7 @@ import com.google.common.base.Strings;
 
 import cpw.mods.fml.common.registry.GameData;
 
-public class SyncableBlock extends SyncableObjectBase {
+public class SyncableBlock extends SyncableObjectBase implements ISyncableValueProvider<Block> {
 
 	private Block block;
 
@@ -43,6 +43,7 @@ public class SyncableBlock extends SyncableObjectBase {
 		if (!Strings.isNullOrEmpty(blockName)) block = GameData.getBlockRegistry().getObject(blockName);
 	}
 
+	@Override
 	public Block getValue() {
 		return Objects.firstNonNull(block, Blocks.air);
 	}

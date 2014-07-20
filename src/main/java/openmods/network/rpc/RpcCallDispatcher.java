@@ -47,7 +47,7 @@ public class RpcCallDispatcher extends Dispatcher<RpcCall> {
 		setup = null;
 	}
 
-	public <T> T createProxy(ITargetWrapper wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+	public <T> T createProxy(IRpcTarget wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		return proxyFactory.createClientProxy(getClass().getClassLoader(), wrapper, mainIntf, extraIntf);
 	}
 }

@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
 
-public class SyncableBoolean extends SyncableObjectBase {
+public class SyncableBoolean extends SyncableObjectBase implements ISyncableValueProvider<Boolean> {
 
 	private boolean value;
 
@@ -16,14 +16,19 @@ public class SyncableBoolean extends SyncableObjectBase {
 
 	public SyncableBoolean() {}
 
-	public void setValue(boolean newValue) {
+	public void set(boolean newValue) {
 		if (newValue != value) {
 			value = newValue;
 			markDirty();
 		}
 	}
 
-	public boolean getValue() {
+	public boolean get() {
+		return value;
+	}
+
+	@Override
+	public Boolean getValue() {
 		return value;
 	}
 

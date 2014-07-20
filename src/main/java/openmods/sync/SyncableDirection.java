@@ -7,7 +7,7 @@ import java.io.IOException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class SyncableDirection extends SyncableObjectBase {
+public class SyncableDirection extends SyncableObjectBase implements ISyncableValueProvider<ForgeDirection> {
 
 	private ForgeDirection value = ForgeDirection.UNKNOWN;
 
@@ -16,6 +16,7 @@ public class SyncableDirection extends SyncableObjectBase {
 		setValue(dir);
 	}
 
+	@Override
 	public ForgeDirection getValue() {
 		return value;
 	}

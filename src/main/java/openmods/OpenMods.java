@@ -15,9 +15,12 @@ import openmods.integration.modules.BuildCraftPipes;
 import openmods.network.IdSyncManager;
 import openmods.network.event.NetworkEventManager;
 import openmods.network.rpc.RpcCallDispatcher;
-import openmods.network.rpc.targets.EntityTargetWrapper;
-import openmods.network.rpc.targets.TileEntityTargetWrapper;
+import openmods.network.rpc.targets.EntityRpcTarget;
+import openmods.network.rpc.targets.SyncRpcTarget;
+import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.proxy.IOpenModsProxy;
+import openmods.utils.bitmap.IRpcDirectionBitMap;
+import openmods.utils.bitmap.IRpcIntBitMap;
 import cpw.mods.fml.common.*;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -38,8 +41,12 @@ public class OpenMods {
 				.register(TileEntityMessageEventPacket.class);
 
 		RpcCallDispatcher.INSTANCE.startRegistration()
-				.registerTargetWrapper(EntityTargetWrapper.class)
-				.registerTargetWrapper(TileEntityTargetWrapper.class);
+				.registerInterface(IRpcDirectionBitMap.class)
+				.registerInterface(IRpcIntBitMap.class)
+				.registerTargetWrapper(EntityRpcTarget.class)
+				.registerTargetWrapper(TileEntityRpcTarget.class)
+				.registerTargetWrapper(SyncRpcTarget.SyncEntityRpcTarget.class)
+				.registerTargetWrapper(SyncRpcTarget.SyncTileEntityRpcTarget.class);
 
 		final File configFile = evt.getSuggestedConfigurationFile();
 		Configuration config = new Configuration(configFile);

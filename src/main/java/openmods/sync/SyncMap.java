@@ -25,22 +25,22 @@ import com.google.common.collect.Sets;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 
-public abstract class SyncMap<H extends ISyncProvider> {
+public abstract class SyncMap<H extends ISyncMapProvider> {
 
-	private static final int MAX_OBJECT_NUM = 16;
+	private static final int MAX_OBJECT_NUM = Short.SIZE;
 
 	public enum HandlerType {
 		TILE_ENTITY {
 
 			@Override
-			public ISyncProvider findHandler(World world, DataInput input) throws IOException {
+			public ISyncMapProvider findHandler(World world, DataInput input) throws IOException {
 				int x = input.readInt();
 				int y = input.readInt();
 				int z = input.readInt();
 				if (world != null) {
 					if (world.blockExists(x, y, z)) {
 						TileEntity tile = world.getTileEntity(x, y, z);
-						if (tile instanceof ISyncProvider) return (ISyncProvider)tile;
+						if (tile instanceof ISyncMapProvider) return (ISyncMapProvider)tile;
 					}
 				}
 
@@ -49,7 +49,7 @@ public abstract class SyncMap<H extends ISyncProvider> {
 			}
 
 			@Override
-			public void writeHandlerInfo(ISyncProvider handler, DataOutput output) throws IOException {
+			public void writeHandlerInfo(ISyncMapProvider handler, DataOutput output) throws IOException {
 				try {
 					TileEntity te = (TileEntity)handler;
 					output.writeInt(te.xCoord);
@@ -64,18 +64,18 @@ public abstract class SyncMap<H extends ISyncProvider> {
 		ENTITY {
 
 			@Override
-			public ISyncProvider findHandler(World world, DataInput input) throws IOException {
+			public ISyncMapProvider findHandler(World world, DataInput input) throws IOException {
 				int entityId = input.readInt();
 				Entity entity = world.getEntityByID(entityId);
-				if (entity instanceof ISyncProvider)
-				return (ISyncProvider)entity;
+				if (entity instanceof ISyncMapProvider)
+				return (ISyncMapProvider)entity;
 
 				Log.warn("Invalid handler info: can't find ISyncHandler entity id %d", entityId);
 				return null;
 			}
 
 			@Override
-			public void writeHandlerInfo(ISyncProvider handler, DataOutput output) throws IOException {
+			public void writeHandlerInfo(ISyncMapProvider handler, DataOutput output) throws IOException {
 				try {
 					Entity e = (Entity)handler;
 					output.writeInt(e.getEntityId());
@@ -86,9 +86,9 @@ public abstract class SyncMap<H extends ISyncProvider> {
 
 		};
 
-		public abstract ISyncProvider findHandler(World world, DataInput input) throws IOException;
+		public abstract ISyncMapProvider findHandler(World world, DataInput input) throws IOException;
 
-		public abstract void writeHandlerInfo(ISyncProvider handler, DataOutput output) throws IOException;
+		public abstract void writeHandlerInfo(ISyncMapProvider handler, DataOutput output) throws IOException;
 
 		private static final HandlerType[] TYPES = values();
 	}
@@ -97,10 +97,12 @@ public abstract class SyncMap<H extends ISyncProvider> {
 
 	private Set<Integer> knownUsers = Sets.newHashSet();
 
-	protected ISyncableObject[] objects = new ISyncableObject[16];
-	protected Map<String, ISyncableObject> nameMap = Maps.newHashMap();
-	protected Set<ISyncListener> syncListeners = Sets.newIdentityHashSet();
-	protected Set<ISyncListener> updateListeners = Sets.newIdentityHashSet();
+	private ISyncableObject[] objects = new ISyncableObject[16];
+	private Map<String, ISyncableObject> nameMap = Maps.newHashMap();
+	private Map<ISyncableObject, Integer> objectToId = Maps.newIdentityHashMap();
+
+	private Set<ISyncListener> syncListeners = Sets.newIdentityHashSet();
+	private Set<ISyncListener> updateListeners = Sets.newIdentityHashSet();
 
 	private int index = 0;
 
@@ -110,12 +112,31 @@ public abstract class SyncMap<H extends ISyncProvider> {
 
 	public void put(String name, ISyncableObject value) {
 		Preconditions.checkState(index < MAX_OBJECT_NUM, "Can't add more than %s objects", MAX_OBJECT_NUM);
-		objects[index++] = value;
+		int objId = index++;
+		objects[objId] = value;
 		nameMap.put(name, value);
+		Integer prev = objectToId.put(value, objId);
+		Preconditions.checkState(prev == null, "Object %s registered twice, under ids %s and %s", value, prev, objId);
 	}
 
 	public ISyncableObject get(String name) {
-		return nameMap.get(name);
+		ISyncableObject result = nameMap.get(name);
+		if (result == null) throw new NoSuchElementException(name);
+		return result;
+	}
+
+	public ISyncableObject get(int objectId) {
+		try {
+			return objects[objectId];
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new NoSuchElementException(Integer.toString(objectId));
+		}
+	}
+
+	public int getId(ISyncableObject object) {
+		Integer result = objectToId.get(object);
+		if (result == null) throw new NoSuchElementException(String.valueOf(object));
+		return result;
 	}
 
 	public int size() {
@@ -123,7 +144,7 @@ public abstract class SyncMap<H extends ISyncProvider> {
 	}
 
 	public void readFromStream(DataInput dis) throws IOException {
-		short mask = dis.readShort();
+		int mask = dis.readShort();
 		Set<ISyncableObject> changes = Sets.newIdentityHashSet();
 		int currentBit = 0;
 
@@ -142,23 +163,22 @@ public abstract class SyncMap<H extends ISyncProvider> {
 		if (!changes.isEmpty()) notifySyncListeners(updateListeners, Collections.unmodifiableSet(changes));
 	}
 
-	private int writeToStream(DataOutput dos, boolean fullPacket) throws IOException {
-		int count = 0;
-		short mask = 0;
+	private void writeToStream(DataOutput dos, boolean fullPacket) throws IOException {
+		int mask = 0;
 		for (int i = 0; i < index; i++) {
 			final ISyncableObject object = objects[i];
-			mask = ByteUtils.set(mask, i, object != null && (fullPacket || object.isDirty()));
+			if (object != null && (fullPacket || object.isDirty())) {
+				mask = ByteUtils.on(mask, i);
+			}
 		}
 		dos.writeShort(mask);
+
 		for (int i = 0; i < index; i++) {
 			final ISyncableObject object = objects[i];
 			if (object != null && (fullPacket || object.isDirty())) {
 				object.writeToStream(dos, fullPacket);
-				count++;
 			}
 		}
-
-		return count;
 	}
 
 	protected abstract HandlerType getHandlerType();
@@ -241,7 +261,7 @@ public abstract class SyncMap<H extends ISyncProvider> {
 		return output.copy();
 	}
 
-	public static ISyncProvider findSyncMap(World world, DataInput input) throws IOException {
+	public static ISyncMapProvider findSyncMap(World world, DataInput input) throws IOException {
 		int handlerTypeId = ByteUtils.readVLI(input);
 
 		// If this happens, abort! Serious bug!
@@ -249,7 +269,7 @@ public abstract class SyncMap<H extends ISyncProvider> {
 
 		HandlerType handlerType = HandlerType.TYPES[handlerTypeId];
 
-		ISyncProvider handler = handlerType.findHandler(world, input);
+		ISyncMapProvider handler = handlerType.findHandler(world, input);
 		return handler;
 	}
 
@@ -288,5 +308,9 @@ public abstract class SyncMap<H extends ISyncProvider> {
 
 	public void addUpdateListener(ISyncListener listener) {
 		updateListeners.add(listener);
+	}
+
+	public void removeUpdateListener(ISyncListener dispatcher) {
+		updateListeners.remove(dispatcher);
 	}
 }

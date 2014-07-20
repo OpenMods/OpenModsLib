@@ -9,7 +9,7 @@ import com.google.common.collect.HashBiMap;
 
 public class TargetWrapperRegistry implements IDataVisitor<String, Integer> {
 
-	private BiMap<Class<? extends ITargetWrapper>, Integer> wrapperCls = HashBiMap.create();
+	private BiMap<Class<? extends IRpcTarget>, Integer> wrapperCls = HashBiMap.create();
 
 	@Override
 	public void begin(int size) {
@@ -25,7 +25,7 @@ public class TargetWrapperRegistry implements IDataVisitor<String, Integer> {
 			throw new IllegalArgumentException(String.format("Failed to load class %s", clsName), e);
 		}
 
-		Preconditions.checkArgument(ITargetWrapper.class.isAssignableFrom(cls), "Class %s is not ITargetWrapper", cls);
+		Preconditions.checkArgument(IRpcTarget.class.isAssignableFrom(cls), "Class %s is not ITargetWrapper", cls);
 
 		try {
 			cls.getConstructor();
@@ -36,21 +36,21 @@ public class TargetWrapperRegistry implements IDataVisitor<String, Integer> {
 		}
 
 		@SuppressWarnings("unchecked")
-		final Class<? extends ITargetWrapper> wrapperCls = (Class<? extends ITargetWrapper>)cls;
+		final Class<? extends IRpcTarget> wrapperCls = (Class<? extends IRpcTarget>)cls;
 		this.wrapperCls.put(wrapperCls, clsId);
 	}
 
 	@Override
 	public void end() {}
 
-	public int getWrapperId(Class<? extends ITargetWrapper> cls) {
+	public int getWrapperId(Class<? extends IRpcTarget> cls) {
 		Integer id = wrapperCls.get(cls);
 		Preconditions.checkNotNull(id, "Wrapper class %s is not registered", cls);
 		return id;
 	}
 
-	public ITargetWrapper createWrapperFromId(int id) {
-		Class<? extends ITargetWrapper> cls = wrapperCls.inverse().get(id);
+	public IRpcTarget createWrapperFromId(int id) {
+		Class<? extends IRpcTarget> cls = wrapperCls.inverse().get(id);
 		Preconditions.checkNotNull(cls, "Can't find class for id %s", id);
 
 		try {

@@ -3,18 +3,95 @@ package openmods.sync;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
 import openmods.utils.ByteUtils;
+import openmods.utils.bitmap.IBitMap;
+import openmods.utils.bitmap.IRpcIntBitMap;
 
-public class SyncableFlags extends SyncableObjectBase {
+import com.google.common.base.Preconditions;
 
-	private short value;
-	private short previousValue;
+public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIntBitMap, IBitMap<Integer> {
 
-	public SyncableFlags() {}
+	private static class ByteFlags extends SyncableFlags {
+		@Override
+		public void readFromStream(DataInput stream) throws IOException {
+			value = stream.readByte();
+		}
+
+		@Override
+		public void writeToStream(DataOutput stream, boolean fullData) throws IOException {
+			stream.writeByte(value);
+		}
+
+		@Override
+		public void writeToNBT(NBTTagCompound tag, String name) {
+			tag.setByte(name, (byte)value);
+		}
+
+		@Override
+		public void readFromNBT(NBTTagCompound tag, String name) {
+			value = tag.getByte(name);
+		}
+	}
+
+	private static class ShortFlags extends SyncableFlags {
+		@Override
+		public void readFromStream(DataInput stream) throws IOException {
+			value = stream.readShort();
+		}
+
+		@Override
+		public void writeToStream(DataOutput stream, boolean fullData) throws IOException {
+			stream.writeShort(value);
+		}
+
+		@Override
+		public void writeToNBT(NBTTagCompound tag, String name) {
+			tag.setShort(name, (short)value);
+		}
+
+		@Override
+		public void readFromNBT(NBTTagCompound tag, String name) {
+			value = tag.getShort(name);
+		}
+	}
+
+	private static class IntFlags extends SyncableFlags {
+		@Override
+		public void readFromStream(DataInput stream) throws IOException {
+			value = stream.readInt();
+		}
+
+		@Override
+		public void writeToStream(DataOutput stream, boolean fullData) throws IOException {
+			stream.writeInt(value);
+		}
+
+		@Override
+		public void writeToNBT(NBTTagCompound tag, String name) {
+			tag.setInteger(name, value);
+		}
+
+		@Override
+		public void readFromNBT(NBTTagCompound tag, String name) {
+			value = tag.getInteger(name);
+		}
+	}
+
+	public static SyncableFlags create(int bitCount) {
+		Preconditions.checkArgument(bitCount > 0, "Bit count must be positive");
+		if (bitCount <= Byte.SIZE) return new ByteFlags();
+		if (bitCount <= Short.SIZE) return new ShortFlags();
+		if (bitCount <= Integer.SIZE) return new IntFlags();
+
+		throw new IllegalArgumentException("Too many bits. Split some fields or implement LongFlags or BigIntFlags");
+	}
+
+	protected int value;
+	private int previousValue;
+
+	protected SyncableFlags() {}
 
 	public void on(Enum<?> slot) {
 		on(slot.ordinal());
@@ -22,6 +99,11 @@ public class SyncableFlags extends SyncableObjectBase {
 
 	public void on(int slot) {
 		set(slot, true);
+	}
+
+	@Override
+	public void mark(Integer value) {
+		on(value);
 	}
 
 	public void off(Enum<?> slot) {
@@ -32,30 +114,37 @@ public class SyncableFlags extends SyncableObjectBase {
 		set(slot, false);
 	}
 
+	@Override
+	public void clear(Integer value) {
+		off(value);
+	}
+
 	public void set(Enum<?> slot, boolean bool) {
 		set(slot.ordinal(), bool);
 	}
 
 	public void toggle(int slot) {
-		set(slot, !get(slot));
+		set(value ^ (1 << slot));
+	}
+
+	@Override
+	public void toggle(Integer value) {
+		toggle(value);
 	}
 
 	public void toggle(Enum<?> slot) {
 		toggle(slot.ordinal());
 	}
 
-	public Set<Integer> getActiveSlots() {
-		Set<Integer> set = new HashSet<Integer>();
-		for (int i = 0; i < 16; i++) {
-			if (get(i)) {
-				set.add(i);
-			}
+	private void set(int value) {
+		if (value != this.value) {
+			markDirty();
+			this.value = (short)value;
 		}
-		return set;
 	}
 
 	public void set(int slot, boolean bool) {
-		short newVal = ByteUtils.set(value, slot, bool);
+		short newVal = (short)ByteUtils.set(value, slot, bool);
 		if (newVal != value) {
 			markDirty();
 			value = newVal;
@@ -70,12 +159,18 @@ public class SyncableFlags extends SyncableObjectBase {
 		return ByteUtils.get(value, slot);
 	}
 
+	@Override
+	public boolean get(Integer value) {
+		return get(value);
+	}
+
 	public boolean hasSlotChanged(Enum<?> slot) {
 		return hasSlotChanged(slot.ordinal());
 	}
 
 	public boolean hasSlotChanged(int slot) {
-		return ByteUtils.get(value, slot) != ByteUtils.get(previousValue, slot);
+		int mask = 1 << slot;
+		return (value & mask) == (previousValue & mask);
 	}
 
 	@Override
@@ -85,22 +180,8 @@ public class SyncableFlags extends SyncableObjectBase {
 	}
 
 	@Override
-	public void readFromStream(DataInput stream) throws IOException {
-		value = stream.readShort();
-	}
-
-	@Override
-	public void writeToStream(DataOutput stream, boolean fullData) throws IOException {
-		stream.writeShort(value);
-	}
-
-	@Override
-	public void writeToNBT(NBTTagCompound tag, String name) {
-		tag.setShort(name, value);
-	}
-
-	@Override
-	public void readFromNBT(NBTTagCompound tag, String name) {
-		value = tag.getShort(name);
+	public void clearAll() {
+		value = 0;
+		markDirty();
 	}
 }
