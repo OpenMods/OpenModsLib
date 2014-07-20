@@ -41,9 +41,11 @@ public class RpcSetup {
 
 		Preconditions.checkArgument(intf.isInterface(), "Class %s is not interface", intf);
 
-		for (Method m : intf.getDeclaredMethods()) {
+		for (Method m : intf.getMethods()) {
 			if (m.isAnnotationPresent(RpcIgnore.class)) continue;
 			Preconditions.checkArgument(m.getReturnType() == void.class, "RPC methods cannot have return type (method = %s)", m);
+			MethodParamsCodec.create(m).validate();
+
 			String desc = Type.getMethodDescriptor(m);
 			String entry = m.getDeclaringClass().getName() + ID_FIELDS_SEPARATOR + m.getName() + ID_FIELDS_SEPARATOR + desc;
 

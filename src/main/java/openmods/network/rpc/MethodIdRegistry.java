@@ -69,6 +69,8 @@ public class MethodIdRegistry implements IDataVisitor<String, Integer> {
 			throw new RuntimeException(String.format("Malformed entry %s in method id", methodDesc), e);
 		}
 
+		MethodParamsCodec.create(method).validate();
+
 		methodIds.put(method, id);
 
 		final Class<?> declaringClass = method.getDeclaringClass();

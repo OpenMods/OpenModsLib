@@ -28,8 +28,23 @@ public class MethodParamsCodec {
 			this.type = type;
 			AnnotationMap annotationsMap = new AnnotationMap(annotations);
 			isNullable = annotationsMap.hasAnnotation(NullableArg.class);
+		}
 
-			Preconditions.checkState(!type.isPrimitive() || !isNullable, "Primitive types can't be nullable");
+		public void validate() {
+			validate(type);
+		}
+
+		private void validate(Class<?> cls) {
+			Preconditions.checkState(!cls.isPrimitive() || !isNullable, "Primitive types can't be nullable");
+
+			if (type.isArray()) validate(type.getComponentType());
+			else if (type.isEnum()) {
+				// NO-OP, enums are always valid, unless...
+				// TODO: size validation? is that even possible?
+			} else {
+				IStreamReadable<?> reader = TypeRW.TYPES.get(type);
+				Preconditions.checkNotNull(reader, "Failed to find reader for type %s", type);
+			}
 		}
 
 		@Override
@@ -163,6 +178,16 @@ public class MethodParamsCodec {
 		IStreamReadable<?> reader = TypeRW.TYPES.get(type);
 		Preconditions.checkNotNull(reader, "Failed to find reader for type %s", type);
 		return reader.readFromStream(input);
+	}
+
+	public void validate() {
+		for (int i = 0; i < params.length; i++) {
+			try {
+				params[i].validate();
+			} catch (Exception e) {
+				throw new IllegalStateException(String.format("Failed to validate arg %d of method %s", i, method), e);
+			}
+		}
 	}
 
 	private static final Map<Method, MethodParamsCodec> CACHE = Maps.newHashMap();
