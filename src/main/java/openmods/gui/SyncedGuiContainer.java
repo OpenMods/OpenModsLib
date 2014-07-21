@@ -11,7 +11,8 @@ public class SyncedGuiContainer<T extends ContainerBase<? extends ISyncMapProvid
 
 	public SyncedGuiContainer(T container, int width, int height, String name) {
 		super(container, width, height, name);
-		container.getOwner().getSyncMap().addUpdateListener(dispatcher);
+
+		if (dispatcher != null) dispatcher.triggerAll();
 	}
 
 	private SyncObjectUpdateDispatcher dispatcher() {

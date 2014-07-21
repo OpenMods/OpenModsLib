@@ -6,7 +6,7 @@ import openmods.gui.component.BaseComponent;
 import openmods.gui.component.GuiComponentPanel;
 
 public abstract class BaseGuiContainer<T extends ContainerBase<?>> extends ComponentGui {
-	protected String name;
+	protected final String name;
 
 	public BaseGuiContainer(T container, int width, int height, String name) {
 		super(container, width, height);

@@ -9,6 +9,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.util.ResourceLocation;
 import openmods.gui.listener.*;
 import openmods.utils.TextureUtils;
+import openmods.utils.TypeVisitor;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -16,22 +17,6 @@ import org.lwjgl.opengl.GL12;
 import com.google.common.collect.Lists;
 
 public abstract class BaseComponent extends Gui {
-
-	public abstract static class ListenerNotifier<T> {
-		private final Class<? extends T> selectedClass;
-
-		protected ListenerNotifier(Class<? extends T> selectedClass) {
-			this.selectedClass = selectedClass;
-		}
-
-		protected abstract void call(T listener);
-
-		@SuppressWarnings("unchecked")
-		private void notify(Iterable<IListenerBase> listeners) {
-			for (IListenerBase listener : listeners)
-				if (selectedClass.isInstance(listener)) call((T)listener);
-		}
-	}
 
 	private static final int CRAZY_1 = 0x505000FF;
 	private static final int CRAZY_2 = (CRAZY_1 & 0xFEFEFE) >> 1 | CRAZY_1 & -0xFF000000;
@@ -41,25 +26,6 @@ public abstract class BaseComponent extends Gui {
 
 	protected void bindComponentsSheet() {
 		TextureUtils.bindTextureToClient(TEXTURE_SHEET);
-	}
-
-	public enum TabColor {
-		blue(0x8784c8),
-		lightblue(0x84c7c8),
-		green(0x84c892),
-		yellow(0xc7c884),
-		red(0xc88a84),
-		purple(0xc884bf);
-
-		private int color;
-
-		TabColor(int col) {
-			this.color = col;
-		}
-
-		public int getColor() {
-			return color;
-		}
 	}
 
 	protected String name = null;
@@ -242,8 +208,8 @@ public abstract class BaseComponent extends Gui {
 			}
 	}
 
-	protected void notifyListeners(ListenerNotifier<?> selector) {
-		selector.notify(listeners);
+	protected <L extends IListenerBase> void notifyListeners(TypeVisitor<L> selector) {
+		selector.visit(listeners);
 	}
 
 	protected void drawHoveringText(List<String> lines, int x, int y, FontRenderer font) {

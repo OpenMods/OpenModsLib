@@ -5,6 +5,8 @@ public interface IRpcIntBitMap {
 
 	public abstract void clear(Integer value);
 
+	public abstract void set(Integer key, boolean value);
+
 	public abstract void toggle(Integer value);
 
 	public abstract void clearAll();

@@ -80,4 +80,11 @@ public class SyncableDirs extends SyncableObjectBase implements IRpcDirectionBit
 		if (!dirs.remove(value)) dirs.add(value);
 		markDirty();
 	}
+
+	@Override
+	public void set(ForgeDirection key, boolean value) {
+		if (value) dirs.add(key);
+		else dirs.remove(key);
+		markDirty();
+	}
 }

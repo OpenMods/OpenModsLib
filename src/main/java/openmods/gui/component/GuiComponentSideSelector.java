@@ -13,21 +13,20 @@ import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+import openmods.api.IValueReceiver;
 import openmods.gui.listener.IListenerBase;
-import openmods.gui.logic.IValueUpdateAction;
-import openmods.gui.logic.SideSelectorUpdater;
 import openmods.gui.misc.*;
 import openmods.gui.misc.SidePicker.HitCoord;
 import openmods.gui.misc.SidePicker.Side;
 import openmods.gui.misc.Trackball.TrackballWrapper;
-import openmods.sync.IValueProvider;
 import openmods.utils.MathUtils;
-import openmods.utils.bitmap.IRpcDirectionBitMap;
+import openmods.utils.TypeVisitor;
+import openmods.utils.bitmap.IReadableBitMap;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-public class GuiComponentSideSelector extends BaseComponent {
+public class GuiComponentSideSelector extends BaseComponent implements IValueReceiver<Set<ForgeDirection>> {
 
 	public static interface ISideSelectedListener extends IListenerBase {
 		public void onSideToggled(ForgeDirection side, boolean currentState);
@@ -39,7 +38,7 @@ public class GuiComponentSideSelector extends BaseComponent {
 
 	public double scale;
 	private ForgeDirection lastSideHovered;
-	private final EnumSet<ForgeDirection> selectedSides = EnumSet.noneOf(ForgeDirection.class);
+	private final Set<ForgeDirection> selectedSides = EnumSet.noneOf(ForgeDirection.class);
 	private boolean highlightSelectedSides = true;
 	private int ticksSinceLastMouseEvent;
 
@@ -73,7 +72,7 @@ public class GuiComponentSideSelector extends BaseComponent {
 		// TODO: Get Mikee to check that I did this right -- NeverCast
 		trackball.update(mouseX - getWidth(), -(mouseY - getHeight()));
 		if (te != null) TileEntityRendererDispatcher.instance.renderTileEntityAt(te, -0.5, -0.5, -0.5, 0.0F);
-		else drawBlock(minecraft.renderEngine, tessellator);
+		if (block != null) drawBlock(minecraft.renderEngine, tessellator);
 
 		SidePicker picker = new SidePicker(0.5);
 
@@ -149,7 +148,7 @@ public class GuiComponentSideSelector extends BaseComponent {
 	private void drawBlock(TextureManager manager, Tessellator t) {
 		GL11.glColor4f(1, 1, 1, 1);
 		manager.bindTexture(TextureMap.locationBlocksTexture);
-		blockRender.setRenderBounds(0, 0, 0, 1, 1, 1);
+		blockRender.setRenderBoundsFromBlock(block);
 		t.startDrawingQuads();
 
 		blockRender.renderFaceXNeg(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(4, meta));
@@ -169,9 +168,9 @@ public class GuiComponentSideSelector extends BaseComponent {
 	}
 
 	private void notifyListeners(final ForgeDirection side, final boolean wasntPresent) {
-		notifyListeners(new ListenerNotifier<ISideSelectedListener>(ISideSelectedListener.class) {
+		notifyListeners(new TypeVisitor<ISideSelectedListener>() {
 			@Override
-			protected void call(ISideSelectedListener listener) {
+			protected void visit(ISideSelectedListener listener) {
 				listener.onSideToggled(side, wasntPresent);
 			}
 		});
@@ -203,14 +202,16 @@ public class GuiComponentSideSelector extends BaseComponent {
 		return 50;
 	}
 
-	public void setSides(Set<ForgeDirection> dirs) {
+	@Override
+	public void setValue(Set<ForgeDirection> dirs) {
 		selectedSides.clear();
 		selectedSides.addAll(dirs);
 	}
 
-	public IValueUpdateAction createUpdater(IValueProvider<Set<ForgeDirection>> source, IRpcDirectionBitMap updater) {
-		SideSelectorUpdater toolUpdater = new SideSelectorUpdater(source, updater, this);
-		addListener(toolUpdater);
-		return toolUpdater;
+	public void setValue(IReadableBitMap<ForgeDirection> dirs) {
+		selectedSides.clear();
+
+		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+			if (dirs.get(dir)) selectedSides.add(dir);
 	}
 }

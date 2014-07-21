@@ -7,6 +7,8 @@ public interface IRpcDirectionBitMap {
 
 	public void clear(ForgeDirection value);
 
+	public abstract void set(ForgeDirection key, boolean value);
+
 	public void toggle(ForgeDirection value);
 
 	public abstract void clearAll();

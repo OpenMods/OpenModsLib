@@ -23,9 +23,9 @@ public class TypeUtils {
 	}
 
 	public static void isInstance(Object o, Class<?> mainCls, Class<?>... extraCls) {
-		Preconditions.checkArgument(mainCls.isInstance(o));
+		Preconditions.checkArgument(mainCls.isInstance(o), "%s is not instance of %s", o, mainCls);
 		for (Class<?> cls : extraCls)
-			Preconditions.checkArgument(cls.isInstance(o));
+			Preconditions.checkArgument(cls.isInstance(o), "%s is not instance of %s", o, cls);
 	}
 
 }

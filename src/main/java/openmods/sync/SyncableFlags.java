@@ -151,6 +151,11 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 		}
 	}
 
+	@Override
+	public void set(Integer slot, boolean bool) {
+		set(slot.intValue(), bool);
+	}
+
 	public boolean get(Enum<?> slot) {
 		return get(slot.ordinal());
 	}
@@ -161,7 +166,7 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 
 	@Override
 	public boolean get(Integer value) {
-		return get(value);
+		return get(value.intValue());
 	}
 
 	public boolean hasSlotChanged(Enum<?> slot) {

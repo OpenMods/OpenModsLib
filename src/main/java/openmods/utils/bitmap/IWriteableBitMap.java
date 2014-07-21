@@ -2,12 +2,14 @@ package openmods.utils.bitmap;
 
 public interface IWriteableBitMap<T> {
 
-	public abstract void mark(T value);
+	public void mark(T value);
 
-	public abstract void clear(T value);
+	public void clear(T value);
 
-	public abstract void toggle(T value);
+	public void set(T key, boolean value);
 
-	public abstract void clearAll();
+	public void toggle(T value);
+
+	public void clearAll();
 
 }

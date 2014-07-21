@@ -454,7 +454,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 */
 	@Override
 	@SideOnly(Side.CLIENT)
-	public IIcon getIcon(int side, int metadata) {
+	public final IIcon getIcon(int side, int metadata) {
 		ForgeDirection newRotation = rotateSideByMetadata(side, metadata);
 		return getUnrotatedTexture(newRotation);
 	}
