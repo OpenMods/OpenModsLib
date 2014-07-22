@@ -1,10 +1,13 @@
 package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.MathHelper;
+import openmods.api.IValueReceiver;
+import openmods.gui.listener.IValueChangedListener;
 
 import org.lwjgl.opengl.GL11;
 
-public class GuiComponentSlider extends BaseComponent {
+public class GuiComponentSlider extends BaseComponent implements IValueReceiver<Integer> {
 
 	private static final int HANDLE_SIZE = 8;
 
@@ -13,9 +16,9 @@ public class GuiComponentSlider extends BaseComponent {
 	private int max;
 	private int value;
 	private double stepSize;
-	private int steps;
-	private int startDragX;
 	private boolean showValue = true;
+
+	private IValueChangedListener<Integer> listener;
 
 	public GuiComponentSlider(int x, int y, int width, int min, int max, int initialValue, boolean showValue) {
 		this(x, y, width, min, max, initialValue);
@@ -27,9 +30,10 @@ public class GuiComponentSlider extends BaseComponent {
 		this.width = width;
 		this.min = min;
 		this.max = max;
-		this.steps = max - min;
 		this.value = initialValue;
-		this.stepSize = (double)(width - HANDLE_SIZE - 2) / (double)steps;
+
+		int steps = max - min + 1;
+		this.stepSize = (double)(width - 2 * HANDLE_SIZE / 2 - 2) / (double)steps;
 	}
 
 	@Override
@@ -47,30 +51,29 @@ public class GuiComponentSlider extends BaseComponent {
 		drawTexturedModalRect(0, 0, 1, 70, 1, getHeight());
 		GL11.glPopMatrix();
 		drawTexturedModalRect(left + getWidth() - 1, top, 2, 70, 1, getHeight());
-		int handleX = (int)Math.floor(barStartX + stepSize * (value - min));
+		int handleX = (int)Math.floor(barStartX + stepSize * (value - min + 1));
 
-		value = Math.max(min, Math.min(max, value));
 		drawTexturedModalRect(handleX, top + 1, 3, 70, 9, 10);
 		if (showValue) {
 			String label = formatValue(value);
 			int strWidth = minecraft.fontRenderer.getStringWidth(label);
-			minecraft.fontRenderer.drawString(label, handleX + 4
-					- (strWidth / 2), top + 15, 4210752);
+			minecraft.fontRenderer.drawString(label, handleX + 4 - (strWidth / 2), top + 15, 4210752);
 		}
-	}
-
-	@Override
-	public void mouseDown(int mouseX, int mouseY, int button) {
-		super.mouseDown(mouseX, mouseY, button);
-		if (button == 0) startDragX = mouseX;
 	}
 
 	@Override
 	public void mouseDrag(int mouseX, int mouseY, int button, long time) {
 		super.mouseDrag(mouseX, mouseY, button, time);
 		if (button == 0) {
-			int offX = mouseX - startDragX;
-			value = min + (int)Math.round(offX / stepSize);
+			int offX = mouseX - HANDLE_SIZE / 2;
+			if (offX < 0) return;
+			final int newValue = min + MathHelper.floor_double(offX / stepSize);
+			final int boundedValue = Math.max(min, Math.min(max, newValue));
+
+			if (boundedValue != value) {
+				value = boundedValue;
+				if (listener != null) listener.valueChanged(value);
+			}
 		}
 	}
 
@@ -92,7 +95,12 @@ public class GuiComponentSlider extends BaseComponent {
 		return value;
 	}
 
-	public void setValue(int value) {
+	@Override
+	public void setValue(Integer value) {
 		this.value = value;
+	}
+
+	public void setListener(IValueChangedListener<Integer> listener) {
+		this.listener = listener;
 	}
 }

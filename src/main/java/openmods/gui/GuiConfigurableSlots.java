@@ -69,7 +69,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 	}
 
 	private void setupSelector(GuiComponentSideSelector selector, IValueProvider<Set<ForgeDirection>> source, final IWriteableBitMap<ForgeDirection> updater) {
-		selector.addListener(new ISideSelectedListener() {
+		selector.setListener(new ISideSelectedListener() {
 			@Override
 			public void onSideToggled(ForgeDirection side, boolean currentState) {
 				updater.set(side, currentState);
@@ -80,7 +80,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 	}
 
 	private void setupCheckBox(final GuiComponentCheckbox checkbox, IValueProvider<Boolean> source, final IValueReceiver<Boolean> updater) {
-		checkbox.addListener(new IValueChangedListener<Boolean>() {
+		checkbox.setListener(new IValueChangedListener<Boolean>() {
 			@Override
 			public void valueChanged(Boolean value) {
 				updater.setValue(value);

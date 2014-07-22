@@ -1,6 +1,8 @@
 package openmods.gui.component;
 
-public class GuiComponentColorBox extends GuiComponentRect {
+import openmods.api.IValueReceiver;
+
+public class GuiComponentColorBox extends GuiComponentRect implements IValueReceiver<Integer> {
 
 	private int color;
 
@@ -14,7 +16,8 @@ public class GuiComponentColorBox extends GuiComponentRect {
 		return color | (0xFF << 24);
 	}
 
-	public void setColor(int color) {
+	@Override
+	public void setValue(Integer color) {
 		this.color = color;
 	}
 }

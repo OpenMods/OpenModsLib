@@ -4,43 +4,78 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.IIcon;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.IFluidTank;
+import openmods.api.IValueReceiver;
 
 public class GuiComponentTankLevel extends GuiComponentBox {
 
-	protected IFluidTank tank;
+	private FluidStack fluidStack;
 
-	public GuiComponentTankLevel(int x, int y, int width, int height, IFluidTank tank) {
+	private int capacity;
+
+	public GuiComponentTankLevel(int x, int y, int width, int height, int capacity) {
 		super(x, y, width, height, 0, 0, 0xc6c6c6);
-		this.tank = tank;
+		this.capacity = capacity;
 	}
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
-		if (tank == null) return;
-		FluidStack stack = tank.getFluid();
-		if (stack != null && stack.getFluid() != null) {
-			minecraft.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
-			Tessellator tessellator = Tessellator.instance;
-			tessellator.startDrawingQuads();
-			tessellator.setColorOpaque_F(1, 1, 1);
-			IIcon icon = stack.getFluid().getIcon();
-			if (icon != null) {
-				double percentFull = Math.max(0, Math.min(1, (double)stack.amount / (double)tank.getCapacity()));
-				double fluidHeight = (height - 3) * percentFull;
-				tessellator.addVertexWithUV(offsetX + x + 3, offsetY + y
-						+ height - 3, this.zLevel, icon.getMinU(), icon.getMaxV());
-				tessellator.addVertexWithUV(offsetX + x + width - 3, offsetY
-						+ y + height - 3, this.zLevel, icon.getMaxU(), icon.getMaxV());
-				tessellator.addVertexWithUV(offsetX + x + width - 3, offsetY
-						+ y + (height - fluidHeight), this.zLevel, icon.getMaxU(), icon.getMinV());
-				tessellator.addVertexWithUV(offsetX + x + 3, offsetY + y
-						+ (height - fluidHeight), this.zLevel, icon.getMinU(), icon.getMinV());
-				tessellator.draw();
-			}
+		if (fluidStack == null) return;
+		final Fluid fluid = fluidStack.getFluid();
+		if (fluid == null) return;
+
+		minecraft.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
+		Tessellator tessellator = Tessellator.instance;
+		tessellator.startDrawingQuads();
+		tessellator.setColorOpaque_F(1, 1, 1);
+		IIcon icon = fluid.getIcon();
+		if (icon != null) {
+			double percentFull = Math.max(0, Math.min(1, (double)fluidStack.amount / (double)capacity));
+			double fluidHeight = (height - 3) * percentFull;
+			final int posX = offsetX + x;
+			final int posY = offsetY + y;
+
+			final float minU = icon.getMinU();
+			final float maxU = icon.getMaxU();
+
+			final float minV = icon.getMinV();
+			final float maxV = icon.getMaxV();
+
+			tessellator.addVertexWithUV(posX + 3, posY + height - 3, this.zLevel, minU, maxV);
+			tessellator.addVertexWithUV(posX + width - 3, posY + height - 3, this.zLevel, maxU, maxV);
+			tessellator.addVertexWithUV(posX + width - 3, posY + (height - fluidHeight), this.zLevel, maxU, minV);
+			tessellator.addVertexWithUV(posX + 3, posY + (height - fluidHeight), this.zLevel, minU, minV);
+			tessellator.draw();
 		}
+
+	}
+
+	public void setFluid(FluidStack value) {
+		fluidStack = value;
+	}
+
+	public void setCapacity(int capacity) {
+		this.capacity = capacity;
+	}
+
+	public IValueReceiver<FluidStack> fluidReceiver() {
+		return new IValueReceiver<FluidStack>() {
+			@Override
+			public void setValue(FluidStack value) {
+				fluidStack = value;
+			}
+		};
+	}
+
+	public IValueReceiver<Integer> capacityReceiver() {
+		return new IValueReceiver<Integer>() {
+			@Override
+			public void setValue(Integer value) {
+				capacity = value;
+			}
+		};
 	}
 
 }

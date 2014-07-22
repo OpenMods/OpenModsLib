@@ -20,7 +20,6 @@ import openmods.gui.misc.SidePicker.HitCoord;
 import openmods.gui.misc.SidePicker.Side;
 import openmods.gui.misc.Trackball.TrackballWrapper;
 import openmods.utils.MathUtils;
-import openmods.utils.TypeVisitor;
 import openmods.utils.bitmap.IReadableBitMap;
 
 import org.lwjgl.input.Mouse;
@@ -43,6 +42,8 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	private int ticksSinceLastMouseEvent;
 
 	private boolean isInitialized;
+
+	private ISideSelectedListener sideSelectedListener;
 
 	private Block block;
 	private int meta;
@@ -168,12 +169,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	}
 
 	private void notifyListeners(final ForgeDirection side, final boolean wasntPresent) {
-		notifyListeners(new TypeVisitor<ISideSelectedListener>() {
-			@Override
-			protected void visit(ISideSelectedListener listener) {
-				listener.onSideToggled(side, wasntPresent);
-			}
-		});
+		if (sideSelectedListener != null) sideSelectedListener.onSideToggled(side, wasntPresent);
 	}
 
 	@Override
@@ -213,5 +209,9 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
 			if (dirs.get(dir)) selectedSides.add(dir);
+	}
+
+	public void setListener(ISideSelectedListener sideSelectedListener) {
+		this.sideSelectedListener = sideSelectedListener;
 	}
 }

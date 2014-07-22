@@ -15,7 +15,7 @@ public class SyncedGuiContainer<T extends ContainerBase<? extends ISyncMapProvid
 		if (dispatcher != null) dispatcher.triggerAll();
 	}
 
-	private SyncObjectUpdateDispatcher dispatcher() {
+	protected SyncObjectUpdateDispatcher dispatcher() {
 		if (dispatcher == null) {
 			dispatcher = new SyncObjectUpdateDispatcher();
 			getContainer().getOwner().getSyncMap().addUpdateListener(dispatcher);

@@ -49,7 +49,7 @@ public class GuiComponentBook extends BaseComponent {
 		imgRightBackground.setX(iconPageRight.getIconWidth());
 
 		imgPrev = new GuiComponentSpriteButton(24, 158, iconPrev, iconPrevHover, texture);
-		imgPrev.addListener(new IMouseDownListener() {
+		imgPrev.setListener(new IMouseDownListener() {
 			@Override
 			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
 				if (index > 0) changePage(index - 2);
@@ -57,7 +57,7 @@ public class GuiComponentBook extends BaseComponent {
 			}
 		});
 		imgNext = new GuiComponentSpriteButton(380, 158, iconNext, iconNextHover, texture);
-		imgNext.addListener(new IMouseDownListener() {
+		imgNext.setListener(new IMouseDownListener() {
 			@Override
 			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
 				if (index < pages.size() - 2) changePage(index + 2);

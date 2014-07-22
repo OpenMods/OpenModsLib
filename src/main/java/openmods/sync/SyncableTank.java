@@ -7,9 +7,10 @@ import java.io.IOException;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.FluidStack;
+import openmods.api.IValueProvider;
 import openmods.liquids.GenericTank;
 
-public class SyncableTank extends GenericTank implements ISyncableObject {
+public class SyncableTank extends GenericTank implements ISyncableObject, IValueProvider<FluidStack> {
 
 	private boolean dirty = false;
 
@@ -97,6 +98,12 @@ public class SyncableTank extends GenericTank implements ISyncableObject {
 		FluidStack drained = super.drain(maxDrain, doDrain);
 		if (doDrain && drained != null) markDirty();
 		return drained;
+	}
+
+	@Override
+	public FluidStack getValue() {
+		FluidStack stack = super.getFluid();
+		return stack != null? stack.copy() : null;
 	}
 
 }

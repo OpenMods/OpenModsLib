@@ -4,13 +4,16 @@ import java.awt.Color;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
+import openmods.api.IValueReceiver;
+import openmods.gui.listener.IValueChangedListener;
 
 import org.lwjgl.opengl.GL11;
 
-public class GuiComponentColorPicker extends BaseComponent {
+public class GuiComponentColorPicker extends BaseComponent implements IValueReceiver<Integer> {
 	private int pointX = 0;
 	private int pointY = 0;
 	public int tone;
+	private IValueChangedListener<Integer> listener;
 
 	public GuiComponentColorPicker(int x, int y) {
 		super(x, y);
@@ -51,6 +54,7 @@ public class GuiComponentColorPicker extends BaseComponent {
 		if (mouseY > getColorsHeight()) { return; }
 		pointX = mouseX;
 		pointY = mouseY;
+		notifyListeners();
 	}
 
 	// Drag support
@@ -60,6 +64,11 @@ public class GuiComponentColorPicker extends BaseComponent {
 		if (mouseY > getColorsHeight()) { return; }
 		pointX = mouseX;
 		pointY = mouseY;
+		notifyListeners();
+	}
+
+	private void notifyListeners() {
+		if (listener != null) listener.valueChanged(getColor());
 	}
 
 	@Override
@@ -96,5 +105,14 @@ public class GuiComponentColorPicker extends BaseComponent {
 				renderY + pointY - 1,
 				renderX + pointX + 1,
 				renderY + pointY + 1, 0xCCCC0000);
+	}
+
+	@Override
+	public void setValue(Integer value) {
+		setFromColor(value);
+	}
+
+	public void setListener(IValueChangedListener<Integer> listener) {
+		this.listener = listener;
 	}
 }

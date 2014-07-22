@@ -9,12 +9,9 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.util.ResourceLocation;
 import openmods.gui.listener.*;
 import openmods.utils.TextureUtils;
-import openmods.utils.TypeVisitor;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-
-import com.google.common.collect.Lists;
 
 public abstract class BaseComponent extends Gui {
 
@@ -32,6 +29,11 @@ public abstract class BaseComponent extends Gui {
 	protected int x;
 	protected int y;
 	protected boolean enabled = true;
+
+	private IKeyTypedListener keyListener;
+	private IMouseDownListener mouseDownListener;
+	private IMouseUpListener mouseUpListener;
+	private IMouseDragListener mouseDragListener;
 
 	public BaseComponent(int x, int y) {
 		this.x = x;
@@ -92,7 +94,6 @@ public abstract class BaseComponent extends Gui {
 		return mouseX >= x && mouseX < x + getWidth() && mouseY >= y && mouseY < y + getHeight();
 	}
 
-	private List<IListenerBase> listeners = Lists.newArrayList();
 	public List<BaseComponent> components = new ArrayList<BaseComponent>();
 
 	public BaseComponent addComponent(BaseComponent component) {
@@ -108,17 +109,20 @@ public abstract class BaseComponent extends Gui {
 		return null;
 	}
 
-	public void addListener(IListenerBase listener) {
-		listeners.add(listener);
+	public void setListener(IKeyTypedListener keyListener) {
+		this.keyListener = keyListener;
 	}
 
-	public void removeListener(IListenerBase listener) {
-		if (!listeners.contains(listener)) return;
-		listeners.remove(listener);
+	public void setListener(IMouseDownListener mouseDownListener) {
+		this.mouseDownListener = mouseDownListener;
 	}
 
-	public void clearListeners() {
-		listeners.clear();
+	public void setListener(IMouseUpListener mouseUpListener) {
+		this.mouseUpListener = mouseUpListener;
+	}
+
+	public void setListener(IMouseDragListener mouseDragListener) {
+		this.mouseDragListener = mouseDragListener;
 	}
 
 	private static boolean isComponentEnabled(BaseComponent component) {
@@ -153,10 +157,7 @@ public abstract class BaseComponent extends Gui {
 	}
 
 	public void keyTyped(char keyChar, int keyCode) {
-		for (IListenerBase listener : listeners)
-			if (listener instanceof IKeyTypedListener) {
-				((IKeyTypedListener)listener).componentKeyTyped(this, keyChar, keyCode);
-			}
+		if (keyListener != null) keyListener.componentKeyTyped(this, keyChar, keyCode);
 
 		if (!areChildrenActive()) return;
 
@@ -167,10 +168,7 @@ public abstract class BaseComponent extends Gui {
 	}
 
 	public void mouseDown(int mouseX, int mouseY, int button) {
-		for (IListenerBase listener : listeners)
-			if (listener instanceof IMouseDownListener) {
-				((IMouseDownListener)listener).componentMouseDown(this, mouseX, mouseY, button);
-			}
+		if (mouseDownListener != null) mouseDownListener.componentMouseDown(this, mouseX, mouseY, button);
 
 		if (!areChildrenActive()) return;
 
@@ -181,10 +179,7 @@ public abstract class BaseComponent extends Gui {
 	}
 
 	public void mouseUp(int mouseX, int mouseY, int button) {
-		for (IListenerBase listener : listeners)
-			if (listener instanceof IMouseMoveListener) {
-				((IMouseUpListener)listener).componentMouseUp(this, mouseX, mouseY, button);
-			}
+		if (mouseUpListener != null) mouseUpListener.componentMouseUp(this, mouseX, mouseY, button);
 
 		if (!areChildrenActive()) return;
 
@@ -195,10 +190,7 @@ public abstract class BaseComponent extends Gui {
 	}
 
 	public void mouseDrag(int mouseX, int mouseY, int button, /* love you */long time) {
-		for (IListenerBase listener : listeners)
-			if (listener instanceof IMouseDragListener) {
-				((IMouseDragListener)listener).componentMouseDrag(this, mouseX, mouseY, button, time);
-			}
+		if (mouseDragListener != null) mouseDragListener.componentMouseDrag(this, mouseX, mouseY, button, time);
 
 		if (!areChildrenActive()) return;
 
@@ -206,10 +198,6 @@ public abstract class BaseComponent extends Gui {
 			if (isComponentCapturingMouse(component, mouseX, mouseY)) {
 				component.mouseDrag(mouseX - component.x, mouseY - component.y, button, time);
 			}
-	}
-
-	protected <L extends IListenerBase> void notifyListeners(TypeVisitor<L> selector) {
-		selector.visit(listeners);
 	}
 
 	protected void drawHoveringText(List<String> lines, int x, int y, FontRenderer font) {

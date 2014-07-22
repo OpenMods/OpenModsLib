@@ -3,13 +3,13 @@ package openmods.gui.component;
 import net.minecraft.client.Minecraft;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
-import openmods.utils.TypeVisitor;
 
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentCheckbox extends BaseComponent implements IValueReceiver<Boolean> {
 	protected int color;
 	private boolean value;
+	private IValueChangedListener<Boolean> listener;
 
 	public GuiComponentCheckbox(int x, int y, boolean initialValue, int color) {
 		super(x, y);
@@ -29,13 +29,7 @@ public class GuiComponentCheckbox extends BaseComponent implements IValueReceive
 	public void mouseDown(int x, int y, int button) {
 		super.mouseDown(x, y, button);
 		value = !value;
-
-		notifyListeners(new TypeVisitor<IValueChangedListener<Boolean>>() {
-			@Override
-			protected void visit(IValueChangedListener<Boolean> listener) {
-				listener.valueChanged(value);
-			}
-		});
+		if (listener != null) listener.valueChanged(value);
 	}
 
 	@Override
@@ -55,5 +49,9 @@ public class GuiComponentCheckbox extends BaseComponent implements IValueReceive
 	@Override
 	public void setValue(Boolean value) {
 		this.value = value;
+	}
+
+	public void setListener(IValueChangedListener<Boolean> listener) {
+		this.listener = listener;
 	}
 }

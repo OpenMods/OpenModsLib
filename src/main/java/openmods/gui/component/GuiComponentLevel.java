@@ -1,8 +1,9 @@
 package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
+import openmods.api.IValueReceiver;
 
-public class GuiComponentLevel extends BaseComponent {
+public class GuiComponentLevel extends BaseComponent implements IValueReceiver<Float> {
 	private int width;
 	private int height;
 	private int fColor;
@@ -31,7 +32,8 @@ public class GuiComponentLevel extends BaseComponent {
 		return height;
 	}
 
-	public void setValue(float v) {
+	@Override
+	public void setValue(Float v) {
 		this.value = v;
 	}
 

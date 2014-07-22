@@ -160,7 +160,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return new TileEntityRpcTarget(this);
 	}
 
-	public <T> T getRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
+	public <T> T createRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		TypeUtils.isInstance(this, mainIntf, extraIntf);
 		return RpcCallDispatcher.INSTANCE.createProxy(createRpcTarget(), mainIntf, extraIntf);
 	}

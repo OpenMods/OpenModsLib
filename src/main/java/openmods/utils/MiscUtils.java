@@ -58,4 +58,8 @@ public class MiscUtils {
 		scanner.close();
 		return arraylist.toArray(new String[arraylist.size()]);
 	}
+
+	public static RuntimeException unhandledEnum(Enum<?> e) {
+		throw new IllegalArgumentException(e.toString());
+	}
 }
