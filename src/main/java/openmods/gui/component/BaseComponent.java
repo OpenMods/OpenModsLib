@@ -24,7 +24,6 @@ public abstract class BaseComponent extends Gui {
 		TextureUtils.bindTextureToClient(TEXTURE_SHEET);
 	}
 
-	protected String name = null;
 	protected int x;
 	protected int y;
 	protected boolean enabled = true;
@@ -58,15 +57,6 @@ public abstract class BaseComponent extends Gui {
 	public abstract int getWidth();
 
 	public abstract int getHeight();
-
-	public String getName() {
-		return name;
-	}
-
-	public BaseComponent setName(String name) {
-		this.name = name;
-		return this;
-	}
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;

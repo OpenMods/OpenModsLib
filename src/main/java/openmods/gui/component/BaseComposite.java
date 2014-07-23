@@ -23,14 +23,6 @@ public abstract class BaseComposite extends BaseComponent {
 		return this;
 	}
 
-	public BaseComponent childByName(String componentName) {
-		if (componentName == null) return null;
-		for (BaseComponent component : components) {
-			if (componentName.equals(component.getName())) { return component; }
-		}
-		return null;
-	}
-
 	private static boolean isComponentEnabled(BaseComponent component) {
 		return component != null && component.isEnabled();
 	}

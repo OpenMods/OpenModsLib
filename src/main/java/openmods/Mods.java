@@ -1,17 +1,5 @@
 package openmods;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.ModContainer;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
-
 public class Mods {
 	public static final String APPLIEDENERGISTICS = "AppliedEnergistics";
 	public static final String ARMORSTATUSHUD = "ArmorStatusHUD";
@@ -67,55 +55,4 @@ public class Mods {
 	public static final String WIRELESSREDSTONECBE = "WR-CBE|Core";
 	public static final String WORLDSTATECHECKPOINTS = "WorldStateCheckpoints";
 	public static final String FLANSMOD = "FlansMod";
-
-	public static ModContainer getModForItemStack(ItemStack stack) {
-		Item item = stack.getItem();
-		if (item == null) return null;
-
-		Class<?> klazz = item.getClass();
-
-		if (klazz.getName().startsWith("net.minecraft")) return null;
-
-		UniqueIdentifier identifier = GameRegistry.findUniqueIdentifierFor(item);
-
-		if (identifier == null && item instanceof ItemBlock) {
-			Block block = ((ItemBlock)item).field_150939_a;
-			if (block != null) {
-				identifier = GameRegistry.findUniqueIdentifierFor(block);
-				klazz = block.getClass();
-			}
-		}
-
-		Map<String, ModContainer> modList = Loader.instance().getIndexedModList();
-
-		if (identifier != null) {
-			ModContainer container = modList.get(identifier.modId);
-			if (container != null) return container;
-		}
-
-		String[] itemClassParts = klazz.getName().split("\\.");
-		ModContainer closestMatch = null;
-		int mostMatchingPackages = 0;
-		for (Entry<String, ModContainer> entry : modList.entrySet()) {
-			Object mod = entry.getValue().getMod();
-			if (mod == null) continue;
-
-			String[] modClassParts = mod.getClass().getName().split("\\.");
-			int packageMatches = 0;
-			for (int i = 0; i < modClassParts.length; ++i) {
-				if (i < itemClassParts.length && itemClassParts[i] != null
-						&& itemClassParts[i].equals(modClassParts[i])) {
-					++packageMatches;
-				} else {
-					break;
-				}
-			}
-			if (packageMatches > mostMatchingPackages) {
-				mostMatchingPackages = packageMatches;
-				closestMatch = entry.getValue();
-			}
-		}
-
-		return closestMatch;
-	}
 }
