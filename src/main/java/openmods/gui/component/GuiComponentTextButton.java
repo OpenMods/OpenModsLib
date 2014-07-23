@@ -32,4 +32,7 @@ public class GuiComponentTextButton extends GuiComponentButton {
 		minecraft.fontRenderer.drawString(text, offsetX + x + offX, offsetY + y + offY, 4210752);
 	}
 
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
+
 }

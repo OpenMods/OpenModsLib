@@ -10,7 +10,7 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import openmods.utils.render.FakeIcon;
 
-public class GuiComponentYouTube extends BaseComponent {
+public class GuiComponentYouTube extends EmptyComposite {
 
 	private static final ResourceLocation texture = new ResourceLocation("openmodslib:textures/gui/book.png");
 	public static IIcon icon = FakeIcon.createSheetIcon(0, 236, 12, 8);
@@ -24,23 +24,13 @@ public class GuiComponentYouTube extends BaseComponent {
 	public static URI youtubeUrl;
 
 	public GuiComponentYouTube(int x, int y, String url) {
-		super(x, y);
+		super(x, y, 50, 8);
 		label = new GuiComponentLabel(15, 2, "Watch video");
 		label.setScale(0.5f);
 		image = new GuiComponentSprite(0, 0, icon, texture);
 		addComponent(label);
 		addComponent(image);
 		this.url = url;
-	}
-
-	@Override
-	public int getWidth() {
-		return 50;
-	}
-
-	@Override
-	public int getHeight() {
-		return 8;
 	}
 
 	@Override
@@ -62,5 +52,4 @@ public class GuiComponentYouTube extends BaseComponent {
 			Desktop.getDesktop().browse(uri);
 		} catch (IOException e) {}
 	}
-
 }

@@ -44,7 +44,6 @@ public class GuiComponentSprite extends BaseComponent {
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		if (!overlay_mode) {
 			doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
 		}
@@ -52,7 +51,6 @@ public class GuiComponentSprite extends BaseComponent {
 
 	@Override
 	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
 		if (overlay_mode) {
 			doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
 		}

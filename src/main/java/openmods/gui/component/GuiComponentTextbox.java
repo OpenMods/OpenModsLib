@@ -33,9 +33,11 @@ public class GuiComponentTextbox extends BaseComponent implements IValueReceiver
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		textfield.drawTextBox();
 	}
+
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	@Override
 	public void keyTyped(char par1, int par2) {

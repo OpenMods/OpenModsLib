@@ -48,7 +48,6 @@ public class GuiComponentLabel extends BaseComponent {
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		Minecraft mc = Minecraft.getMinecraft();
 		ScaledResolution sr = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
 		additionalScale = sr.getScaleFactor() % 2 == 1 && scale < 1f? 0.667f : 1f;
@@ -70,7 +69,6 @@ public class GuiComponentLabel extends BaseComponent {
 
 	@Override
 	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
 		if (tooltip != null && !tooltip.isEmpty()) {
 			drawHoveringText(tooltip, offsetX + mouseX, offsetY + mouseY, minecraft.fontRenderer);
 		}

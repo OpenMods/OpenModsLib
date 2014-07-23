@@ -1,28 +1,21 @@
 package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
+import openmods.api.IValueReceiver;
 
-public class GuiComponentRect extends BaseComponent {
+public class GuiComponentRect extends GuiComponentResizable implements IValueReceiver<Integer> {
 
-	private int width;
-	private int height;
 	private int color;
+	private final int mask;
 
 	public GuiComponentRect(int x, int y, int width, int height, int color) {
-		super(x, y);
-		this.width = width;
-		this.height = height;
-		this.color = color;
+		this(x, y, width, height, color, 0xFF000000);
 	}
 
-	@Override
-	public int getWidth() {
-		return width;
-	}
-
-	@Override
-	public int getHeight() {
-		return height;
+	public GuiComponentRect(int x, int y, int width, int height, int color, int mask) {
+		super(x, y, width, height);
+		this.mask = mask;
+		this.color = color | mask;
 	}
 
 	public int getColorForRender() {
@@ -31,10 +24,16 @@ public class GuiComponentRect extends BaseComponent {
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		int oX = x + offsetX;
 		int oY = y + offsetY;
 		drawRect(oX, oY, oX + width, oY + height, getColorForRender());
 	}
 
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
+
+	@Override
+	public void setValue(Integer color) {
+		this.color = color | mask;
+	}
 }

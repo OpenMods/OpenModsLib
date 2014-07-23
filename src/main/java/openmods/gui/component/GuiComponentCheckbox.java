@@ -19,11 +19,13 @@ public class GuiComponentCheckbox extends BaseComponent implements IValueReceive
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		GL11.glColor4f(1, 1, 1, 1);
 		bindComponentsSheet();
 		drawTexturedModalRect(offsetX + x, offsetY + y, value? 16 : 0, 62, 8, 8);
 	}
+
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	@Override
 	public void mouseDown(int x, int y, int button) {

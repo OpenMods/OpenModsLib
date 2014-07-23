@@ -1,6 +1,5 @@
 package openmods.gui.component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
@@ -21,7 +20,7 @@ public abstract class BaseComponent extends Gui {
 
 	public final static ResourceLocation TEXTURE_SHEET = new ResourceLocation("openmodslib", "textures/gui/components.png");
 
-	protected void bindComponentsSheet() {
+	public static void bindComponentsSheet() {
 		TextureUtils.bindTextureToClient(TEXTURE_SHEET);
 	}
 
@@ -77,36 +76,8 @@ public abstract class BaseComponent extends Gui {
 		return enabled;
 	}
 
-	protected boolean areChildrenActive() {
-		return true;
-	}
-
-	/**
-	 * If the mouse position is inside this component
-	 * 
-	 * @param mouseX
-	 *            X position relative from this components parent
-	 * @param mouseY
-	 *            Y position relative from this components parent
-	 * @return true if the X and Y are inside this components area
-	 */
 	public boolean isMouseOver(int mouseX, int mouseY) {
 		return mouseX >= x && mouseX < x + getWidth() && mouseY >= y && mouseY < y + getHeight();
-	}
-
-	public List<BaseComponent> components = new ArrayList<BaseComponent>();
-
-	public BaseComponent addComponent(BaseComponent component) {
-		components.add(component);
-		return this;
-	}
-
-	public BaseComponent childByName(String componentName) {
-		if (componentName == null) return null;
-		for (BaseComponent component : components) {
-			if (componentName.equals(component.getName())) { return component; }
-		}
-		return null;
 	}
 
 	public void setListener(IKeyTypedListener keyListener) {
@@ -125,79 +96,24 @@ public abstract class BaseComponent extends Gui {
 		this.mouseDragListener = mouseDragListener;
 	}
 
-	private static boolean isComponentEnabled(BaseComponent component) {
-		return component != null && component.isEnabled();
-	}
+	public abstract void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY);
 
-	private static boolean isComponentCapturingMouse(BaseComponent component, int mouseX, int mouseY) {
-		return isComponentEnabled(component) && component.isMouseOver(mouseX, mouseY);
-	}
-
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (!areChildrenActive()) return;
-
-		for (BaseComponent component : components)
-			if (isComponentEnabled(component)) {
-				component.render(minecraft,
-						offsetX + this.x, offsetY + this.y,
-						mouseX - this.x, mouseY - this.y);
-			}
-	}
-
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (!areChildrenActive()) return;
-
-		for (BaseComponent component : components)
-			if (isComponentEnabled(component)) {
-				component.renderOverlay(minecraft,
-						offsetX + this.x, offsetY + this.y,
-						mouseX - this.x, mouseY - this.y);
-			}
-
-	}
+	public abstract void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY);
 
 	public void keyTyped(char keyChar, int keyCode) {
 		if (keyListener != null) keyListener.componentKeyTyped(this, keyChar, keyCode);
-
-		if (!areChildrenActive()) return;
-
-		for (BaseComponent component : components)
-			if (isComponentEnabled(component)) {
-				component.keyTyped(keyChar, keyCode);
-			}
 	}
 
 	public void mouseDown(int mouseX, int mouseY, int button) {
 		if (mouseDownListener != null) mouseDownListener.componentMouseDown(this, mouseX, mouseY, button);
-
-		if (!areChildrenActive()) return;
-
-		for (BaseComponent component : components)
-			if (isComponentCapturingMouse(component, mouseX, mouseY)) {
-				component.mouseDown(mouseX - component.x, mouseY - component.y, button);
-			}
 	}
 
 	public void mouseUp(int mouseX, int mouseY, int button) {
 		if (mouseUpListener != null) mouseUpListener.componentMouseUp(this, mouseX, mouseY, button);
-
-		if (!areChildrenActive()) return;
-
-		for (BaseComponent component : components)
-			if (isComponentCapturingMouse(component, mouseX, mouseY)) {
-				component.mouseUp(mouseX - component.x, mouseY - component.y, button);
-			}
 	}
 
 	public void mouseDrag(int mouseX, int mouseY, int button, /* love you */long time) {
 		if (mouseDragListener != null) mouseDragListener.componentMouseDrag(this, mouseX, mouseY, button, time);
-
-		if (!areChildrenActive()) return;
-
-		for (BaseComponent component : components)
-			if (isComponentCapturingMouse(component, mouseX, mouseY)) {
-				component.mouseDrag(mouseX - component.x, mouseY - component.y, button, time);
-			}
 	}
 
 	protected void drawHoveringText(List<String> lines, int x, int y, FontRenderer font) {

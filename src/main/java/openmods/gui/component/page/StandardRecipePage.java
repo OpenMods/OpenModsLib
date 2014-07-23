@@ -1,4 +1,4 @@
-package openmods.gui.component;
+package openmods.gui.component.page;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -7,16 +7,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.*;
 import net.minecraft.util.IIcon;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
+import openmods.gui.component.*;
 import openmods.utils.render.FakeIcon;
 
-public class GuiComponentStandardRecipePage extends BaseComponent {
-
-	private static final ResourceLocation texture = new ResourceLocation("openmodslib:textures/gui/book.png");
+public class StandardRecipePage extends PageBase {
 
 	public static IIcon iconCraftingGrid = FakeIcon.createSheetIcon(0, 180, 56, 56);
 	public static IIcon iconArrow = FakeIcon.createSheetIcon(60, 198, 48, 15);
@@ -27,9 +25,7 @@ public class GuiComponentStandardRecipePage extends BaseComponent {
 	private GuiComponentLabel lblTitle;
 	private GuiComponentItemStackSpinner outputSpinner;
 
-	public GuiComponentStandardRecipePage(String title, String description, String videoLink, ItemStack resultingItem) {
-		super(0, 0);
-
+	public StandardRecipePage(String title, String description, String videoLink, ItemStack resultingItem) {
 		String translatedTitle = StatCollector.translateToLocal(title);
 		String translatedDescription = StatCollector.translateToLocal(description).replaceAll("\\\\n", "\n");
 		String translatedLink = StatCollector.translateToLocal(videoLink);
@@ -39,8 +35,8 @@ public class GuiComponentStandardRecipePage extends BaseComponent {
 		}
 		lblTitle = new GuiComponentLabel((getWidth() - Minecraft.getMinecraft().fontRenderer.getStringWidth(translatedTitle)) / 2, 12, translatedTitle);
 		lblDescription = new GuiComponentLabel(27, 95, 340, 51, translatedDescription);
-		arrow = new GuiComponentSprite(90, 50, iconArrow, texture);
-		craftingGrid = new GuiComponentCraftingGrid(25, 30, getFirstRecipeForItem(resultingItem), iconCraftingGrid, texture);
+		arrow = new GuiComponentSprite(90, 50, iconArrow, BOOK_TEXTURE);
+		craftingGrid = new GuiComponentCraftingGrid(25, 30, getFirstRecipeForItem(resultingItem), iconCraftingGrid, BOOK_TEXTURE);
 
 		lblDescription.setScale(0.5f);
 		lblDescription.setAdditionalLineHeight(4);
@@ -125,15 +121,4 @@ public class GuiComponentStandardRecipePage extends BaseComponent {
 		}
 		return null;
 	}
-
-	@Override
-	public int getWidth() {
-		return 220;
-	}
-
-	@Override
-	public int getHeight() {
-		return 200;
-	}
-
 }

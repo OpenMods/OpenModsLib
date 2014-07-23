@@ -38,7 +38,6 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		GL11.glColor4f(1, 1, 1, 1);
 		int left = offsetX + x;
 		int top = offsetY + y;
@@ -60,6 +59,9 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 			minecraft.fontRenderer.drawString(label, handleX + 4 - (strWidth / 2), top + 15, 4210752);
 		}
 	}
+
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	@Override
 	public void mouseDrag(int mouseX, int mouseY, int button, long time) {

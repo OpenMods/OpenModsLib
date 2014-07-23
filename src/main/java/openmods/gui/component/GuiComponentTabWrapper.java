@@ -3,8 +3,7 @@ package openmods.gui.component;
 import net.minecraft.client.Minecraft;
 import openmods.gui.listener.IMouseDownListener;
 
-public class GuiComponentTabWrapper extends BaseComponent {
-
+public class GuiComponentTabWrapper extends BaseComposite {
 	protected final BaseComponent mainComponent;
 	protected GuiComponentTab activeTab;
 
@@ -15,7 +14,7 @@ public class GuiComponentTabWrapper extends BaseComponent {
 	}
 
 	@Override
-	public BaseComponent addComponent(BaseComponent component) {
+	public BaseComposite addComponent(BaseComponent component) {
 		super.addComponent(component);
 		if (component instanceof GuiComponentTab) {
 			final GuiComponentTab tab = (GuiComponentTab)component;
@@ -38,15 +37,20 @@ public class GuiComponentTabWrapper extends BaseComponent {
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
+	protected void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+		realignTabsVertically();
+	}
+
+	private int realignTabsVertically() {
 		int oY = mainComponent.getY() + 4;
+
 		for (BaseComponent component : components) {
 			if (component instanceof GuiComponentTab) {
 				component.setY(oY);
 				oY += ((GuiComponentTab)component).getHeight() - 1;
 			}
 		}
+		return oY;
 	}
 
 	public void onTabClicked(GuiComponentTab tab) {

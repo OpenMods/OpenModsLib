@@ -2,7 +2,7 @@ package openmods.gui;
 
 import net.minecraft.util.StatCollector;
 import openmods.container.ContainerBase;
-import openmods.gui.component.BaseComponent;
+import openmods.gui.component.BaseComposite;
 import openmods.gui.component.GuiComponentPanel;
 
 public abstract class BaseGuiContainer<T extends ContainerBase<?>> extends ComponentGui {
@@ -14,7 +14,7 @@ public abstract class BaseGuiContainer<T extends ContainerBase<?>> extends Compo
 	}
 
 	@Override
-	protected BaseComponent createRoot() {
+	protected BaseComposite createRoot() {
 		return new GuiComponentPanel(0, 0, xSize, ySize, getContainer());
 	}
 

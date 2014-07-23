@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
+import openmods.gui.misc.BoxRenderer;
 import openmods.gui.misc.ISlotBackgroundRenderer;
 
 import org.lwjgl.opengl.GL11;
@@ -15,7 +16,9 @@ import org.lwjgl.opengl.GL11;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
-public class GuiComponentPanel extends GuiComponentBox {
+public class GuiComponentPanel extends GuiComponentResizableComposite {
+
+	private static final BoxRenderer BOX_RENDERER = new BoxRenderer(0, 5);
 
 	public static final ISlotBackgroundRenderer normalSlot = new ISlotBackgroundRenderer() {
 		@Override
@@ -41,7 +44,7 @@ public class GuiComponentPanel extends GuiComponentBox {
 	private WeakReference<Container> container;
 
 	public GuiComponentPanel(int x, int y, int width, int height, Container container) {
-		super(x, y, width, height, 0, 5, 0xFFFFFF);
+		super(x, y, width, height);
 		this.container = new WeakReference<Container>(container);
 	}
 
@@ -49,12 +52,19 @@ public class GuiComponentPanel extends GuiComponentBox {
 		slotRenderers.put(slotId, renderer);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public void render(Minecraft minecraft, int x, int y, int mouseX, int mouseY) {
-		super.render(minecraft, x, y, mouseX, mouseY);
-		GL11.glColor4f(1, 1, 1, 1);
+	protected void renderComponentBackground(Minecraft minecraft, int x, int y, int mouseX, int mouseY) {
+		GL11.glColor3f(1, 1, 1);
 		bindComponentsSheet();
+		BOX_RENDERER.render(this, this.x + x, this.y + y, width, height, 0xFFFFFFFF);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	protected void renderComponentForeground(Minecraft minecraft, int x, int y, int mouseX, int mouseY) {
+		GL11.glColor3f(1, 1, 1);
+		bindComponentsSheet();
+
 		if (container != null && container.get() != null) {
 			for (Slot slot : (List<Slot>)container.get().inventorySlots) {
 				Objects.firstNonNull(slotRenderers.get(slot.slotNumber), normalSlot).render(this, slot);

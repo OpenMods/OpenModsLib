@@ -92,6 +92,9 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		GL11.glPopMatrix();
 	}
 
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
+
 	private static void drawHighlight(Tessellator t, SidePicker.Side side, int color) {
 		GL11.glDisable(GL11.GL_LIGHTING);
 		GL11.glEnable(GL11.GL_BLEND);

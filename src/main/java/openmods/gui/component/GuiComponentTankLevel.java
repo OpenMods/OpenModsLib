@@ -7,21 +7,27 @@ import net.minecraft.util.IIcon;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueReceiver;
+import openmods.gui.misc.BoxRenderer;
 
-public class GuiComponentTankLevel extends GuiComponentBox {
+public class GuiComponentTankLevel extends GuiComponentResizable {
+
+	private static final BoxRenderer BOX_RENDERER = new BoxRenderer(0, 0);
+	private static final int BORDER_COLOR = 0xc6c6c6;
 
 	private FluidStack fluidStack;
 
 	private int capacity;
 
 	public GuiComponentTankLevel(int x, int y, int width, int height, int capacity) {
-		super(x, y, width, height, 0, 0, 0xc6c6c6);
+		super(x, y, width, height);
 		this.capacity = capacity;
 	}
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
+		bindComponentsSheet();
+		BOX_RENDERER.render(this, x + offsetX, y + offsetY, width, height, BORDER_COLOR);
+
 		if (fluidStack == null) return;
 		final Fluid fluid = fluidStack.getFluid();
 		if (fluid == null) return;
@@ -49,8 +55,10 @@ public class GuiComponentTankLevel extends GuiComponentBox {
 			tessellator.addVertexWithUV(posX + 3, posY + (height - fluidHeight), this.zLevel, minU, minV);
 			tessellator.draw();
 		}
-
 	}
+
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	public void setFluid(FluidStack value) {
 		fluidStack = value;

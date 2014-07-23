@@ -3,14 +3,14 @@ package openmods.gui;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.inventory.Container;
-import openmods.gui.component.BaseComponent;
+import openmods.gui.component.BaseComposite;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 public abstract class ComponentGui extends GuiContainer {
 
-	protected final BaseComponent root;
+	protected final BaseComposite root;
 
 	public ComponentGui(Container container, int width, int height) {
 		super(container);
@@ -19,7 +19,7 @@ public abstract class ComponentGui extends GuiContainer {
 		root = createRoot();
 	}
 
-	protected abstract BaseComponent createRoot();
+	protected abstract BaseComposite createRoot();
 
 	@Override
 	protected void mouseClicked(int x, int y, int button) {

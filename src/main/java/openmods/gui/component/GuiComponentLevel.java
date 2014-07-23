@@ -51,7 +51,6 @@ public class GuiComponentLevel extends BaseComponent implements IValueReceiver<F
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		int oX = x + offsetX;
 		int oY = y + offsetY;
 		// Fill with background
@@ -59,4 +58,7 @@ public class GuiComponentLevel extends BaseComponent implements IValueReceiver<F
 		// Draw level
 		drawRect(oX, oY + (height - (int)getFillHeight()), oX + width, oY + height, fColor);
 	}
+
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 }

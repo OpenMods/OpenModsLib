@@ -28,4 +28,6 @@ public class GuiComponentIconButton extends GuiComponentButton {
 		drawTexturedModelRectFromIcon(offsetX + x + offset, offsetY + y + offset, icon, icon.getIconWidth(), icon.getIconHeight());
 	}
 
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 }

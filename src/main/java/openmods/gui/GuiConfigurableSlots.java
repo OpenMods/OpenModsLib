@@ -24,7 +24,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 
 	protected abstract Iterable<E> getSlots();
 
-	protected abstract void addCustomizations(BaseComponent root);
+	protected abstract void addCustomizations(BaseComposite root);
 
 	protected abstract GuiComponentTab createTab(E slot);
 
@@ -39,13 +39,13 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 	protected abstract GuiComponentLabel createLabel(E slot);
 
 	@Override
-	protected final BaseComponent createRoot() {
+	protected final BaseComposite createRoot() {
 		T te = getContainer().getOwner();
 
 		final int meta = te.getBlockMetadata();
 		final Block block = te.getBlockType();
 
-		BaseComponent main = super.createRoot();
+		BaseComposite main = super.createRoot();
 		addCustomizations(main);
 
 		GuiComponentTabWrapper tabs = new GuiComponentTabWrapper(0, 0, main);

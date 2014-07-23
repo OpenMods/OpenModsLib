@@ -42,8 +42,10 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 	}
 
 	@Override
+	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
+
+	@Override
 	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
 		GL11.glPushMatrix();
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		float scale = 30.0f;

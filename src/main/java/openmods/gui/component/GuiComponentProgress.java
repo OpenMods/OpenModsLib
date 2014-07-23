@@ -17,13 +17,15 @@ public class GuiComponentProgress extends BaseComponent {
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 		bindComponentsSheet();
 		GL11.glColor3f(1, 1, 1);
 		drawTexturedModalRect(offsetX + x, offsetY + y, 0, 38, getWidth(), getHeight());
 		int pxProgress = Math.round(progress * scale);
 		drawTexturedModalRect(offsetX + x, offsetY + y, 0, 50, pxProgress, getHeight());
 	}
+
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	@Override
 	public int getWidth() {

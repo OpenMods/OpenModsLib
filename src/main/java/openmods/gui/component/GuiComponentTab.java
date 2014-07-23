@@ -1,14 +1,16 @@
 package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.item.ItemStack;
+import openmods.gui.misc.BoxRenderer;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-public class GuiComponentTab extends GuiComponentBox {
+public class GuiComponentTab extends GuiComponentResizableComposite {
 
 	private static final int FOLDED_WIDTH = 24;
 	private static final int FOLDED_HEIGHT = 24;
@@ -17,26 +19,28 @@ public class GuiComponentTab extends GuiComponentBox {
 	protected final int expandedHeight;
 	private boolean active = false;
 	private ItemStack iconStack;
-	private double dWidth;
-	private double dHeight;
+	private double dWidth = FOLDED_WIDTH;
+	private double dHeight = FOLDED_HEIGHT;
+	private int color;
+
+	private static final BoxRenderer BOX_RENDERER = new BoxRenderer(0, 5) {
+		@Override
+		protected void renderTopLeftCorner(Gui gui) {}
+
+		@Override
+		protected void renderBottomLeftCorner(Gui gui, int height) {}
+
+		@Override
+		protected void renderLeftEdge(Gui gui, int height) {}
+	};
 
 	public GuiComponentTab(int color, ItemStack iconStack, int expandedWidth, int expandedHeight) {
-		super(-4, 0, FOLDED_WIDTH, FOLDED_HEIGHT, 0, 5, color);
+		super(-5, 0, FOLDED_WIDTH, FOLDED_HEIGHT);
 		this.expandedWidth = expandedWidth;
 		this.expandedHeight = expandedHeight;
 		this.iconStack = iconStack;
-		this.dWidth = 24.0;
-		this.dHeight = 24.0;
+		this.color = color;
 	}
-
-	@Override
-	public void renderTopLeftCorner(int offsetX, int offsetY) {}
-
-	@Override
-	public void renderBottomLeftCorner(int offsetX, int offsetY) {}
-
-	@Override
-	public void renderLeftEdge(int offsetX, int offsetY) {}
 
 	@Override
 	protected boolean areChildrenActive() {
@@ -44,7 +48,7 @@ public class GuiComponentTab extends GuiComponentBox {
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		double targetWidth = active? expandedWidth : FOLDED_WIDTH;
 		double targetHeight = active? expandedHeight : FOLDED_HEIGHT;
 		if (width != targetWidth) dWidth += (targetWidth - dWidth) / 4;
@@ -52,7 +56,9 @@ public class GuiComponentTab extends GuiComponentBox {
 
 		width = (int)Math.round(dWidth);
 		height = (int)Math.round(dHeight);
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
+
+		bindComponentsSheet();
+		BOX_RENDERER.render(this, offsetX + x, offsetY + y, width, height, color);
 
 		GL11.glColor4f(1, 1, 1, 1);
 		RenderHelper.enableGUIStandardItemLighting();

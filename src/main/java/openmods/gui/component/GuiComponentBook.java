@@ -11,12 +11,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
+import openmods.gui.component.page.StandardRecipePage;
 import openmods.gui.listener.IMouseDownListener;
 import openmods.utils.render.FakeIcon;
 
 import com.google.common.collect.Lists;
 
-public class GuiComponentBook extends BaseComponent {
+public class GuiComponentBook extends BaseComposite {
 
 	private static final ResourceLocation PAGETURN = new ResourceLocation("openmodslib", "pageturn");
 
@@ -129,7 +130,7 @@ public class GuiComponentBook extends BaseComponent {
 			String fullName = String.format("%s.%s.%s.name", type, modId, name);
 			String description = String.format("%s.%s.%s.description", type, modId, name);
 			String video = String.format("%s.%s.%s.video", type, modId, name);
-			addPage(new GuiComponentStandardRecipePage(fullName, description, video, stack));
+			addPage(new StandardRecipePage(fullName, description, video, stack));
 			return true;
 		}
 		return false;
@@ -156,11 +157,10 @@ public class GuiComponentBook extends BaseComponent {
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (index + 1 < pages.size()) {
 			pages.get(index + 1).setX(iconPageRight.getIconWidth());
 		}
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
 	}
 
 	private void changePage(int newPage) {
