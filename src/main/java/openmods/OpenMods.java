@@ -26,7 +26,7 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.event.*;
 
-@Mod(modid = "OpenMods", name = "OpenMods", version = "0.5.1", dependencies = "required-after:OpenModsCore")
+@Mod(modid = "OpenMods", name = "OpenMods", version = "0.6", dependencies = "required-after:OpenModsCore")
 public class OpenMods {
 
 	@Instance(value = "OpenMods")
