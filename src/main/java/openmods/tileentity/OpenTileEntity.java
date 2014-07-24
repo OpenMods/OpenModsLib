@@ -2,10 +2,13 @@ package openmods.tileentity;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+import openmods.GenericInventory;
+import openmods.api.IInventoryCallback;
 import openmods.block.OpenBlock;
 import openmods.events.network.TileEntityMessageEventPacket;
 import openmods.network.rpc.IRpcTarget;
@@ -160,5 +163,22 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	public <T> T createRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		TypeUtils.isInstance(this, mainIntf, extraIntf);
 		return RpcCallDispatcher.INSTANCE.createProxy(createRpcTarget(), mainIntf, extraIntf);
+	}
+
+	public void markUpdated() {
+		worldObj.markTileEntityChunkModified(xCoord, yCoord, zCoord, this);
+	}
+
+	protected IInventoryCallback createInventoryCallback() {
+		return new IInventoryCallback() {
+			@Override
+			public void onInventoryChanged(IInventory inventory, int slotNumber) {
+				markUpdated();
+			}
+		};
+	}
+
+	protected GenericInventory registerInventoryCallback(GenericInventory inventory) {
+		return inventory.addCallback(createInventoryCallback());
 	}
 }

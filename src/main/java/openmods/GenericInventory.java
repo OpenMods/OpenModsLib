@@ -28,8 +28,9 @@ public class GenericInventory implements IInventory {
 		this.inventoryContents = new ItemStack[size];
 	}
 
-	public void addCallback(IInventoryCallback callback) {
+	public GenericInventory addCallback(IInventoryCallback callback) {
 		callbacks.add(callback);
+		return this;
 	}
 
 	@Override

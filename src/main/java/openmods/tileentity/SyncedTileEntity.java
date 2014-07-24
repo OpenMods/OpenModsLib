@@ -27,7 +27,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		syncMap.addSyncListener(new ISyncListener() {
 			@Override
 			public void onSync(Set<ISyncableObject> changes) {
-				worldObj.markTileEntityChunkModified(xCoord, yCoord, zCoord, SyncedTileEntity.this);
+				markUpdated();
 			}
 		});
 	}
