@@ -1,6 +1,7 @@
 package openmods.network.event;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -76,17 +77,12 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 		Preconditions.checkState(validator != null && validator.validateReceive(side),
 				"Invalid direction: receiving packet %s on side %s", msg.getClass(), side);
 
-		InputStream input;
-
-		byte[] bytes = new byte[payload.readableBytes()];
-		payload.readBytes(bytes);
+		InputStream input = new ByteBufInputStream(payload);
 
 		if (type.isChunked()) {
-			byte[] fullPayload = chunker.consumeChunk(bytes);
+			byte[] fullPayload = chunker.consumeChunk(input, input.available());
 			if (fullPayload == null) return;
 			input = new ByteArrayInputStream(fullPayload);
-		} else {
-			input = new ByteArrayInputStream(bytes);
 		}
 
 		if (type.isCompressed()) input = new GZIPInputStream(input);
@@ -99,10 +95,13 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 
 		INetHandler handler = msg.handler();
 		if (handler != null) event.sender = OpenMods.proxy.getPlayerFromHandler(handler);
-		input.close();
 
 		int bufferJunkSize = input.available();
-		Preconditions.checkState(bufferJunkSize == 0, "%s junk bytes left in buffer, event", bufferJunkSize, event);
+		if (bufferJunkSize > 0) {
+			// compressed stream neads extra read to realize it's finished
+			Preconditions.checkState(input.read() == -1, "%s junk bytes left in buffer, event", bufferJunkSize, event);
+		}
+		input.close();
 
 		out.add(event);
 	}

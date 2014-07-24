@@ -1,11 +1,10 @@
 package openmods.utils.io;
 
-import java.util.Arrays;
+import java.io.*;
 import java.util.Map;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.common.primitives.UnsignedBytes;
@@ -54,6 +53,15 @@ public class PacketChunker {
 		return result;
 	}
 
+	public byte[] consumeChunk(byte[] payload) throws IOException {
+		return consumeChunk(ByteStreams.newDataInput(payload), payload.length);
+	}
+
+	public byte[] consumeChunk(InputStream stream, int payloadLength) throws IOException {
+		DataInput data = new DataInputStream(stream);
+		return consumeChunk(data, payloadLength);
+	}
+
 	/***
 	 * Get the bytes from the packet. If the total packet is not yet complete
 	 * (and we're waiting for more to complete the sequence), we return null.
@@ -63,11 +71,14 @@ public class PacketChunker {
 	 *            one of the chunks
 	 * @return the full byte array or null if not complete
 	 */
-	public synchronized byte[] consumeChunk(byte[] payload) {
-		ByteArrayDataInput input = ByteStreams.newDataInput(payload);
+	public synchronized byte[] consumeChunk(DataInput input, int payloadLength) throws IOException {
 		int numChunks = UnsignedBytes.toInt(input.readByte());
 
-		if (numChunks == 1) return Arrays.copyOfRange(payload, 1, payload.length);
+		if (numChunks == 1) {
+			byte[] payload = new byte[payloadLength - 1];
+			input.readFully(payload);
+			return payload;
+		}
 
 		int chunkIndex = UnsignedBytes.toInt(input.readByte());
 		byte incomingPacketId = input.readByte();
@@ -79,7 +90,7 @@ public class PacketChunker {
 			chunks.put(incomingPacketId, alreadyReceived);
 		}
 
-		byte[] chunkBytes = new byte[payload.length - 3];
+		byte[] chunkBytes = new byte[payloadLength - 3];
 		input.readFully(chunkBytes);
 
 		alreadyReceived[chunkIndex] = chunkBytes;
