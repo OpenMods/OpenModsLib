@@ -8,7 +8,7 @@ public abstract class PageBase extends BaseComposite {
 
 	public static final PageBase BLANK_PAGE = new PageBase() {};
 
-	public static final ResourceLocation BOOK_TEXTURE = new ResourceLocation("openblocks:textures/gui/bookimage.png");
+	public static final ResourceLocation BOOK_TEXTURE = new ResourceLocation("openmodslib:textures/gui/book.png");
 
 	public PageBase() {
 		super(0, 0);

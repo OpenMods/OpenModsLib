@@ -44,20 +44,16 @@ public class GuiComponentSprite extends BaseComponent {
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (!overlay_mode) {
-			doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
-		}
+		if (!overlay_mode) doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
 	}
 
 	@Override
 	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (overlay_mode) {
-			doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
-		}
+		if (overlay_mode) doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
 	}
 
 	protected void doRender(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (icon == null) { return; }
+		if (icon == null) return;
 		if (texture != null) minecraft.renderEngine.bindTexture(texture);
 		GL11.glColor3f(r, g, b);
 		drawTexturedModelRectFromIcon(offsetX + x, offsetY + y, icon, icon.getIconWidth(), icon.getIconHeight());
@@ -65,14 +61,12 @@ public class GuiComponentSprite extends BaseComponent {
 
 	@Override
 	public int getWidth() {
-		if (icon != null) { return icon.getIconWidth(); }
-		return 0;
+		return icon != null? icon.getIconWidth() : 0;
 	}
 
 	@Override
 	public int getHeight() {
-		if (icon != null) { return icon.getIconHeight(); }
-		return 0;
+		return icon != null? icon.getIconHeight() : 0;
 	}
 
 	public void setIcon(IIcon icon) {

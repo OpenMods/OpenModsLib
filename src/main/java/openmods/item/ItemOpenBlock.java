@@ -80,7 +80,7 @@ public class ItemOpenBlock extends ItemBlock {
 
 		if (ownBlock instanceof OpenBlock) ((OpenBlock)ownBlock).onBlockPlacedBy(world, player, stack, x, y, z, sideDir, hitX, hitY, hitZ, newMeta);
 
-		world.playSoundEffect(x + 0.5, y + 0.5, z + 0.5, ownBlock.stepSound.getStepResourcePath(), (ownBlock.stepSound.getVolume() + 1.0F) / 2.0F, ownBlock.stepSound.getPitch() * 0.8F);
+		world.playSoundEffect(x + 0.5, y + 0.5, z + 0.5, ownBlock.stepSound.getBreakSound(), (ownBlock.stepSound.getVolume() + 1.0F) / 2.0F, ownBlock.stepSound.getPitch() * 0.8F);
 		afterBlockPlaced(stack, player, world, x, y, z);
 
 		return true;

@@ -257,7 +257,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		x += side.offsetX;
 		y += side.offsetY;
 		z += side.offsetZ;
-		// TODO: issBlockSolid?? (check when possible)
 		return world.isSideSolid(x, y, z, side.getOpposite(), false);
 	}
 
@@ -415,7 +414,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		textures[direction.ordinal()] = icon;
 	}
 
-	protected final IIcon getUnrotatedTexture(ForgeDirection direction) {
+	protected IIcon getUnrotatedTexture(ForgeDirection direction) {
 		if (direction != ForgeDirection.UNKNOWN) {
 			final int directionId = direction.ordinal();
 			if (textures[directionId] != null) return textures[directionId];

@@ -94,10 +94,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		int x = xCoord + direction.offsetX;
 		int y = yCoord + direction.offsetY;
 		int z = zCoord + direction.offsetZ;
-		/*
-		 * TODO: Mikee, getBlockTileEntity returns null anyway, why the extra
-		 * block check ?
-		 */
+
 		if (worldObj != null && worldObj.blockExists(x, y, z)) { return worldObj.getTileEntity(x, y, z); }
 		return null;
 	}

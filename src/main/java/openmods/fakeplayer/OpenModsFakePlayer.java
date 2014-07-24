@@ -30,7 +30,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 	}
 
 	private static GameProfile createProfile(String name) {
-		UUID uuid = UUID.fromString(name);
+		UUID uuid = UUID.nameUUIDFromBytes(name.getBytes());
 		return new GameProfile(uuid.toString(), name);
 	}
 
@@ -114,7 +114,6 @@ public class OpenModsFakePlayer extends FakePlayer {
 
 		if (usedItem.onItemUseFirst(itemStack, this, worldObj, x, y, z, opposite, deltaX, deltaY, deltaZ)) { return true; }
 
-		// TODO: doesSneakBypassUse ? reversed? uh.
 		if (event.useBlock != Event.Result.DENY && (isSneaking() || usedItem.doesSneakBypassUse(worldObj, x, y, z, this))) {
 			Block block = worldObj.getBlock(x, y, z);
 			if (block != null) try {
