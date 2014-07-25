@@ -70,7 +70,7 @@ public class BitMapUtils {
 		};
 	}
 
-	public static <T> IValueReceiver<Boolean> singleBitReceiver(final IRpcIntBitMap map, final int key) {
+	public static IValueReceiver<Boolean> singleBitReceiver(final IRpcIntBitMap map, final int key) {
 		return new IValueReceiver<Boolean>() {
 			@Override
 			public void setValue(Boolean value) {
