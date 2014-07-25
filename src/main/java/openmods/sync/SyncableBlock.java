@@ -1,7 +1,7 @@
 package openmods.sync;
 
-import java.io.DataInput;
-import java.io.DataOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 import net.minecraft.block.Block;
@@ -19,13 +19,13 @@ public class SyncableBlock extends SyncableObjectBase implements ISyncableValueP
 	private Block block;
 
 	@Override
-	public void readFromStream(DataInput stream) throws IOException {
+	public void readFromStream(DataInputStream stream) throws IOException {
 		int blockId = ByteUtils.readVLI(stream);
 		block = Block.getBlockById(blockId);
 	}
 
 	@Override
-	public void writeToStream(DataOutput stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
 		int blockId = Block.getIdFromBlock(block);
 		if (blockId < 0) blockId = 0;
 		ByteUtils.writeVLI(stream, blockId);

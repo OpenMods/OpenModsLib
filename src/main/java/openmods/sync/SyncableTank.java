@@ -1,7 +1,7 @@
 package openmods.sync;
 
-import java.io.DataInput;
-import java.io.DataOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 import net.minecraft.nbt.CompressedStreamTools;
@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueProvider;
 import openmods.liquids.GenericTank;
+import openmods.utils.ByteUtils;
 
 public class SyncableTank extends GenericTank implements ISyncableObject, IValueProvider<FluidStack> {
 
@@ -34,17 +35,12 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 	}
 
 	@Override
-	public void readFromStream(DataInput stream) throws IOException {
-		int fluidId = stream.readInt();
-		if (fluidId > -1) {
+	public void readFromStream(DataInputStream stream) throws IOException {
+		if (stream.readBoolean()) {
+			int fluidId = ByteUtils.readVLI(stream);
 			int fluidAmount = stream.readInt();
-			short len = stream.readShort();
 			NBTTagCompound tag = null;
-			if (len > 0) {
-				byte[] bytes = new byte[len];
-				stream.readFully(bytes);
-				tag = CompressedStreamTools.decompress(bytes);
-			}
+			if (stream.readBoolean()) tag = CompressedStreamTools.readCompressed(stream);
 			this.fluid = new FluidStack(fluidId, fluidAmount, tag);
 		} else {
 			this.fluid = null;
@@ -52,20 +48,19 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 	}
 
 	@Override
-	public void writeToStream(DataOutput stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
 		if (fluid != null) {
-			stream.writeInt(fluid.fluidID);
+			stream.writeBoolean(true);
+			ByteUtils.writeVLI(stream, fluid.fluidID);
 			stream.writeInt(fluid.amount);
-			if (fluid.tag == null) {
-				stream.writeShort(-1);
-			}
-			else {
-				byte[] bytes = CompressedStreamTools.compress(fluid.tag);
-				stream.writeShort(bytes.length);
-				stream.write(bytes);
+			if (fluid.tag != null) {
+				stream.writeBoolean(true);
+				CompressedStreamTools.writeCompressed(fluid.tag, stream);
+			} else {
+				stream.writeBoolean(false);
 			}
 		} else {
-			stream.writeInt(-1);
+			stream.writeBoolean(false);
 		}
 	}
 

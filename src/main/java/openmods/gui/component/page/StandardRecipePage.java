@@ -1,9 +1,15 @@
 package openmods.gui.component.page;
 
+import java.awt.Desktop;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiConfirmOpenLink;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.*;
 import net.minecraft.util.IIcon;
@@ -12,12 +18,14 @@ import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 import openmods.gui.component.*;
+import openmods.gui.listener.IMouseDownListener;
 import openmods.utils.render.FakeIcon;
 
 public class StandardRecipePage extends PageBase {
 
 	public static IIcon iconCraftingGrid = FakeIcon.createSheetIcon(0, 180, 56, 56);
 	public static IIcon iconArrow = FakeIcon.createSheetIcon(60, 198, 48, 15);
+	public static IIcon iconYoutube = FakeIcon.createSheetIcon(0, 236, 12, 8);
 
 	private GuiComponentCraftingGrid craftingGrid;
 	private GuiComponentSprite arrow;
@@ -31,7 +39,7 @@ public class StandardRecipePage extends PageBase {
 		String translatedLink = StatCollector.translateToLocal(videoLink);
 
 		if (videoLink != "" && !videoLink.equals(translatedLink)) {
-			addComponent(new GuiComponentYouTube(25, 146, translatedLink));
+			addComponent(createYoutubeButton(25, 146, translatedLink));
 		}
 		lblTitle = new GuiComponentLabel((getWidth() - Minecraft.getMinecraft().fontRenderer.getStringWidth(translatedTitle)) / 2, 12, translatedTitle);
 		lblDescription = new GuiComponentLabel(27, 95, 340, 51, translatedDescription);
@@ -49,6 +57,45 @@ public class StandardRecipePage extends PageBase {
 		addComponent(outputSpinner);
 		addComponent(craftingGrid);
 
+	}
+
+	private static void openURI(URI uri) {
+		try {
+			Desktop.getDesktop().browse(uri);
+		} catch (IOException e) {}
+	}
+
+	private BaseComponent createYoutubeButton(int x, int y, final String link) {
+		EmptyComposite result = new EmptyComposite(x, y, 50, 8);
+
+		GuiComponentLabel label = new GuiComponentLabel(15, 2, StatCollector.translateToLocal("openblocks.gui.watch_video"));
+		label.setScale(0.5f);
+		result.addComponent(label);
+
+		GuiComponentSprite image = new GuiComponentSprite(0, 0, iconYoutube, BOOK_TEXTURE);
+		result.addComponent(image);
+
+		final URI uri = URI.create(link);
+		result.setListener(new IMouseDownListener() {
+			@Override
+			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
+				final Minecraft mc = Minecraft.getMinecraft();
+				if (mc.gameSettings.chatLinksPrompt) {
+					final GuiScreen prevGui = mc.currentScreen;
+					mc.displayGuiScreen(new GuiConfirmOpenLink(new GuiYesNoCallback() {
+						@Override
+						public void confirmClicked(boolean result, int id) {
+							if (result) openURI(uri);
+							mc.displayGuiScreen(prevGui);
+						}
+					}, link, 0, false));
+				} else {
+					openURI(uri);
+				}
+			}
+		});
+
+		return result;
 	}
 
 	@SuppressWarnings("unchecked")

@@ -1,7 +1,7 @@
 package openmods.sync;
 
-import java.io.DataInput;
-import java.io.DataOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 import net.minecraft.nbt.CompressedStreamTools;
@@ -32,25 +32,22 @@ public class SyncableNBT extends SyncableObjectBase implements ISyncableValuePro
 	}
 
 	@Override
-	public void readFromStream(DataInput stream) throws IOException {
-		short length = stream.readShort();
-		if (length < 0) {
-			tag = null;
+	public void readFromStream(DataInputStream stream) throws IOException {
+		if (stream.readBoolean()) {
+			tag = CompressedStreamTools.readCompressed(stream);
 		} else {
-			byte[] abyte = new byte[length];
-			stream.readFully(abyte);
-			tag = CompressedStreamTools.decompress(abyte);
+			tag = null;
 		}
+
 	}
 
 	@Override
-	public void writeToStream(DataOutput stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
 		if (tag == null) {
-			stream.writeShort(-1);
+			stream.writeBoolean(false);
 		} else {
-			byte[] abyte = CompressedStreamTools.compress(tag);
-			stream.writeShort((short)abyte.length);
-			stream.write(abyte);
+			stream.writeBoolean(true);
+			CompressedStreamTools.writeCompressed(tag, stream);
 		}
 	}
 

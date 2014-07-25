@@ -5,6 +5,9 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+
+import java.io.DataInputStream;
+
 import net.minecraft.world.World;
 import openmods.OpenMods;
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
@@ -17,7 +20,7 @@ public class InboundSyncHandler extends SimpleChannelInboundHandler<FMLProxyPack
 		World world = OpenMods.proxy.getClientWorld();
 
 		ByteBuf payload = msg.payload();
-		ByteBufInputStream input = new ByteBufInputStream(payload);
+		DataInputStream input = new DataInputStream(new ByteBufInputStream(payload));
 
 		ISyncMapProvider provider = SyncMap.findSyncMap(world, input);
 		if (provider != null) provider.getSyncMap().readFromStream(input);

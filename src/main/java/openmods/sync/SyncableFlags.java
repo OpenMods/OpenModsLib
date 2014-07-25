@@ -1,7 +1,7 @@
 package openmods.sync;
 
-import java.io.DataInput;
-import java.io.DataOutput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
@@ -15,12 +15,12 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 
 	private static class ByteFlags extends SyncableFlags {
 		@Override
-		public void readFromStream(DataInput stream) throws IOException {
+		public void readFromStream(DataInputStream stream) throws IOException {
 			value = stream.readByte();
 		}
 
 		@Override
-		public void writeToStream(DataOutput stream, boolean fullData) throws IOException {
+		public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
 			stream.writeByte(value);
 		}
 
@@ -37,12 +37,12 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 
 	private static class ShortFlags extends SyncableFlags {
 		@Override
-		public void readFromStream(DataInput stream) throws IOException {
+		public void readFromStream(DataInputStream stream) throws IOException {
 			value = stream.readShort();
 		}
 
 		@Override
-		public void writeToStream(DataOutput stream, boolean fullData) throws IOException {
+		public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
 			stream.writeShort(value);
 		}
 
@@ -59,12 +59,12 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 
 	private static class IntFlags extends SyncableFlags {
 		@Override
-		public void readFromStream(DataInput stream) throws IOException {
+		public void readFromStream(DataInputStream stream) throws IOException {
 			value = stream.readInt();
 		}
 
 		@Override
-		public void writeToStream(DataOutput stream, boolean fullData) throws IOException {
+		public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
 			stream.writeInt(value);
 		}
 

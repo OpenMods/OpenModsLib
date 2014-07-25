@@ -31,7 +31,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 
 	private static GameProfile createProfile(String name) {
 		UUID uuid = UUID.nameUUIDFromBytes(name.getBytes());
-		return new GameProfile(uuid.toString(), name);
+		return new GameProfile(uuid, name);
 	}
 
 	@Override

@@ -45,7 +45,7 @@ public class CommandUtils {
 		EntityPlayerMP player = PlayerSelector.matchOnePlayer(sender, playerName);
 		if (player != null) return player;
 
-		player = MinecraftServer.getServer().getConfigurationManager().getPlayerForUsername(playerName);
+		player = MinecraftServer.getServer().getConfigurationManager().func_152612_a(playerName);
 		if (player != null) return player;
 
 		throw new PlayerNotFoundException();

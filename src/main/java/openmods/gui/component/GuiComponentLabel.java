@@ -49,7 +49,7 @@ public class GuiComponentLabel extends BaseComponent {
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		Minecraft mc = Minecraft.getMinecraft();
-		ScaledResolution sr = new ScaledResolution(mc.gameSettings, mc.displayWidth, mc.displayHeight);
+		ScaledResolution sr = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
 		additionalScale = sr.getScaleFactor() % 2 == 1 && scale < 1f? 0.667f : 1f;
 		if (getMaxHeight() < minecraft.fontRenderer.FONT_HEIGHT) return;
 		if (getMaxWidth() < minecraft.fontRenderer.getCharWidth('m')) return;

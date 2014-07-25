@@ -4,9 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -143,7 +141,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 		return index;
 	}
 
-	public void readFromStream(DataInput dis) throws IOException {
+	public void readFromStream(DataInputStream dis) throws IOException {
 		int mask = dis.readShort();
 		Set<ISyncableObject> changes = Sets.newIdentityHashSet();
 		int currentBit = 0;
@@ -163,7 +161,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 		if (!changes.isEmpty()) notifySyncListeners(updateListeners, Collections.unmodifiableSet(changes));
 	}
 
-	private void writeToStream(DataOutput dos, boolean fullPacket) throws IOException {
+	private void writeToStream(DataOutputStream dos, boolean fullPacket) throws IOException {
 		int mask = 0;
 		for (int i = 0; i < index; i++) {
 			final ISyncableObject object = objects[i];
@@ -254,7 +252,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 		HandlerType type = getHandlerType();
 		ByteBufUtils.writeVarInt(output, type.ordinal(), 5);
 
-		DataOutput dataOutput = new ByteBufOutputStream(output);
+		DataOutputStream dataOutput = new DataOutputStream(new ByteBufOutputStream(output));
 		type.writeHandlerInfo(handler, dataOutput);
 		writeToStream(dataOutput, fullPacket);
 

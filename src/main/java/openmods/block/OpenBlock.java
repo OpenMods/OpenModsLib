@@ -205,19 +205,27 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z) {
+	public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
 		// This is last place we have TE, before it's removed,
 		// When removed by player, it will be already unavailable in
 		// getBlockDropped
-		if (hasTileEntityDrops() && !player.capabilities.isCreativeMode) {
+		// TODO: evaluate, if new behaviour can be used
+		if (willHarvest && hasTileEntityDrops() && !player.capabilities.isCreativeMode) {
 			final TileEntity te = world.getTileEntity(x, y, z);
-			List<ItemStack> teDrops = Lists.newArrayList();
-			getTileEntityDrops(te, teDrops, 0);
-			for (ItemStack drop : teDrops)
-				dropBlockAsItem(world, x, y, z, drop);
+
+			boolean result = super.removedByPlayer(world, player, x, y, z, willHarvest);
+
+			if (result) {
+				List<ItemStack> teDrops = Lists.newArrayList();
+				getTileEntityDrops(te, teDrops, 0);
+				for (ItemStack drop : teDrops)
+					dropBlockAsItem(world, x, y, z, drop);
+			}
+
+			return result;
 		}
 
-		return super.removedByPlayer(world, player, x, y, z);
+		return super.removedByPlayer(world, player, x, y, z, willHarvest);
 	}
 
 	@Override
