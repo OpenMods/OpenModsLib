@@ -20,8 +20,7 @@ public class SelectMultiplePlayers implements IPacketTargetSelector {
 		try {
 			@SuppressWarnings("unchecked")
 			Collection<EntityPlayerMP> players = (Collection<EntityPlayerMP>)arg;
-			for (Object o : players) {
-				EntityPlayerMP player = (EntityPlayerMP)o;
+			for (EntityPlayerMP player : players) {
 				NetworkDispatcher dispatcher = NetUtils.getPlayerDispatcher(player);
 				result.add(dispatcher);
 			}

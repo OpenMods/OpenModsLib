@@ -19,6 +19,7 @@ import openmods.network.rpc.targets.EntityRpcTarget;
 import openmods.network.rpc.targets.SyncRpcTarget;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.proxy.IOpenModsProxy;
+import openmods.sync.SyncChannelHolder;
 import openmods.utils.bitmap.IRpcDirectionBitMap;
 import openmods.utils.bitmap.IRpcIntBitMap;
 import cpw.mods.fml.common.*;
@@ -37,6 +38,8 @@ public class OpenMods {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent evt) {
+		SyncChannelHolder.ensureLoaded();
+
 		NetworkEventManager.INSTANCE.startRegistration()
 				.register(TileEntityMessageEventPacket.class);
 

@@ -38,4 +38,6 @@ public class SyncChannelHolder {
 		ExtendedOutboundHandler.selectTargets(channel, new SelectMultiplePlayers(), players);
 		channel.writeAndFlush(packet).addListener(NetUtils.THROWING_LISTENER);
 	}
+
+	public static void ensureLoaded() {}
 }
