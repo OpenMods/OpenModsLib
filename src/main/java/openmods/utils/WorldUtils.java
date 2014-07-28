@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.command.IEntitySelector;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 
@@ -36,5 +37,14 @@ public class WorldUtils {
 			return !(entity instanceof EntityPlayer);
 		}
 	};
+
+	public static boolean isTileEntityValid(TileEntity te) {
+		if (te.isInvalid()) return false;
+
+		World world = te.worldObj;
+		if (world == null) return false;
+
+		return world.blockExists(te.xCoord, te.yCoord, te.zCoord);
+	}
 
 }
