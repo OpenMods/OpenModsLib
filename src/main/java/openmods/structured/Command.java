@@ -203,12 +203,12 @@ public abstract class Command {
 		}
 
 		@Override
-		protected void readDataFromStream(DataInput input) throws IOException {
+		protected void readDataFromStream(DataInput input) {
 			CollectionUtils.readSortedIdList(input, idList);
 		}
 
 		@Override
-		protected void writeDataToStream(DataOutput output) throws IOException {
+		protected void writeDataToStream(DataOutput output) {
 			CollectionUtils.writeSortedIdList(output, idList);
 		}
 	}

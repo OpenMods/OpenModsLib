@@ -346,12 +346,12 @@ public abstract class TypeRW<T> implements INBTSerializable<T>, IStreamSerializa
 	public static final IStreamSerializable<Integer> VLI_SERIALIZABLE = new IStreamSerializable<Integer>() {
 
 		@Override
-		public void writeToStream(Integer o, DataOutput output) throws IOException {
+		public void writeToStream(Integer o, DataOutput output) {
 			ByteUtils.writeVLI(output, o);
 		}
 
 		@Override
-		public Integer readFromStream(DataInput input) throws IOException {
+		public Integer readFromStream(DataInput input) {
 			return ByteUtils.readVLI(input);
 		}
 	};

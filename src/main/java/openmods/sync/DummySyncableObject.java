@@ -2,7 +2,6 @@ package openmods.sync;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
 import openmods.Log;
@@ -12,12 +11,12 @@ public class DummySyncableObject extends SyncableObjectBase {
 	public static final DummySyncableObject INSTANCE = new DummySyncableObject();
 
 	@Override
-	public void readFromStream(DataInputStream stream) throws IOException {
+	public void readFromStream(DataInputStream stream) {
 		Log.warn("Trying to read dummy syncable object");
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream, boolean fullData) {
 		Log.warn("Trying to write dummy syncable object");
 	}
 
