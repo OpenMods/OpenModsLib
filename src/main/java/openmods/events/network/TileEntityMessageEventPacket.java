@@ -30,6 +30,7 @@ public class TileEntityMessageEventPacket extends NetworkEvent {
 
 	@Override
 	protected final void readFromStream(DataInput input) throws IOException {
+		dimension = input.readInt();
 		xCoord = input.readInt();
 		yCoord = input.readInt();
 		zCoord = input.readInt();
@@ -45,6 +46,7 @@ public class TileEntityMessageEventPacket extends NetworkEvent {
 
 	@Override
 	protected final void writeToStream(DataOutput output) throws IOException {
+		output.writeInt(dimension);
 		output.writeInt(xCoord);
 		output.writeInt(yCoord);
 		output.writeInt(zCoord);

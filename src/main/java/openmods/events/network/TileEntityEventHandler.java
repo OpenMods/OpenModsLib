@@ -12,7 +12,7 @@ public class TileEntityEventHandler {
 		if (tile != null) {
 			tile.onEvent(event);
 		} else {
-			Log.warn("Received packet for invalid te @ (%d,%d,%d)", event.xCoord, event.yCoord, event.zCoord);
+			Log.warn("Received packet for invalid te @ (%d: %d,%d,%d)", event.dimension, event.xCoord, event.yCoord, event.zCoord);
 		}
 	}
 }
