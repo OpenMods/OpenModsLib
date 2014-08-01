@@ -1,14 +1,13 @@
 package openmods.network.rpc;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Set;
 
 import openmods.datastore.IDataVisitor;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.objectweb.asm.Type;
-
-import scala.actors.threadpool.Arrays;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
@@ -50,7 +49,7 @@ public class MethodIdRegistry implements IDataVisitor<String, Integer> {
 		org.objectweb.asm.commons.Method method = new org.objectweb.asm.commons.Method(parts[1], parts[2]);
 
 		Type[] argTypes = method.getArgumentTypes();
-		Class<?>[] argCls = convertTypesToClasses(argTypes);
+		Class<?>[] argCls = convertTypesToClasses(argTypes, declaringCls.getClassLoader());
 
 		try {
 			return declaringCls.getMethod(method.getName(), argCls);
@@ -61,10 +60,10 @@ public class MethodIdRegistry implements IDataVisitor<String, Integer> {
 		}
 	}
 
-	private static Class<?>[] convertTypesToClasses(Type[] argTypes) throws ClassNotFoundException {
+	private static Class<?>[] convertTypesToClasses(Type[] argTypes, ClassLoader loader) throws ClassNotFoundException {
 		Class<?>[] argCls = new Class<?>[argTypes.length];
 		for (int i = 0; i < argCls.length; i++)
-			argCls[i] = ClassUtils.getClass(argTypes[i].getClassName());
+			argCls[i] = ClassUtils.getClass(loader, argTypes[i].getClassName(), false);
 		return argCls;
 	}
 
