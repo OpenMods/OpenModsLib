@@ -5,6 +5,7 @@ import java.net.URLConnection;
 import java.util.*;
 
 import openmods.Log;
+import openmods.api.IValueReceiver;
 
 public class MiscUtils {
 	private static final String[] EMPTY = new String[] {};
@@ -61,5 +62,14 @@ public class MiscUtils {
 
 	public static RuntimeException unhandledEnum(Enum<?> e) {
 		throw new IllegalArgumentException(e.toString());
+	}
+
+	public static <T> IValueReceiver<T> createTextValueReceiver(final IValueReceiver<String> target) {
+		return new IValueReceiver<T>() {
+			@Override
+			public void setValue(T value) {
+				target.setValue(value != null? value.toString() : null);
+			}
+		};
 	}
 }

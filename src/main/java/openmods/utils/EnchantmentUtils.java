@@ -22,7 +22,11 @@ public class EnchantmentUtils {
 	public static int calcEnchantability(ItemStack itemStack, int power, boolean max) {
 		Item item = itemStack.getItem();
 		int k = item.getItemEnchantability();
-		if (k <= 0) { return 0; }
+		return calcEnchantability(k, power, max);
+	}
+
+	public static int calcEnchantability(int enchantability, int power, boolean max) {
+		if (enchantability <= 0) { return 0; }
 		if (power > 15) {
 			power = 15;
 		}
@@ -108,32 +112,29 @@ public class EnchantmentUtils {
 		return i - 1;
 	}
 
-	public static double getPower(World worldObj, int xCoord, int yCoord, int zCoord) {
-
-		int j;
+	public static float getPower(World worldObj, int xCoord, int yCoord, int zCoord) {
 		float power = 0;
 
-		for (j = -1; j <= 1; ++j) {
-			for (int k = -1; k <= 1; ++k) {
-				if ((j != 0 || k != 0)
-						&& worldObj.isAirBlock(xCoord + k, yCoord, zCoord + j)
-						&& worldObj.isAirBlock(xCoord + k, yCoord + 1, zCoord
-								+ j)) {
+		for (int x = -1; x <= 1; ++x) {
+			for (int z = -1; z <= 1; ++z) {
+				final int innerX = xCoord + z;
+				final int innerZ = zCoord + x;
+				final int outerX = xCoord + z * 2;
+				final int outerZ = zCoord + x * 2;
+				final int middle = yCoord;
+				final int top = yCoord + 1;
+				if ((x != 0 || z != 0)
+						&& worldObj.isAirBlock(innerX, middle, innerZ)
+						&& worldObj.isAirBlock(innerX, top, innerZ)) {
 
-					power += ForgeHooks.getEnchantPower(worldObj, xCoord + k
-							* 2, yCoord, zCoord + j * 2);
-					power += ForgeHooks.getEnchantPower(worldObj, xCoord + k
-							* 2, yCoord + 1, zCoord + j * 2);
+					power += ForgeHooks.getEnchantPower(worldObj, outerX, middle, outerZ);
+					power += ForgeHooks.getEnchantPower(worldObj, outerX, top, outerZ);
 
-					if (k != 0 && j != 0) {
-						power += ForgeHooks.getEnchantPower(worldObj, xCoord
-								+ k * 2, yCoord, zCoord + j);
-						power += ForgeHooks.getEnchantPower(worldObj, xCoord
-								+ k * 2, yCoord + 1, zCoord + j);
-						power += ForgeHooks.getEnchantPower(worldObj, xCoord
-								+ k, yCoord, zCoord + j * 2);
-						power += ForgeHooks.getEnchantPower(worldObj, xCoord
-								+ k, yCoord + 1, zCoord + j * 2);
+					if (z != 0 && x != 0) {
+						power += ForgeHooks.getEnchantPower(worldObj, outerX, middle, innerZ);
+						power += ForgeHooks.getEnchantPower(worldObj, outerX, top, innerZ);
+						power += ForgeHooks.getEnchantPower(worldObj, innerX, middle, outerZ);
+						power += ForgeHooks.getEnchantPower(worldObj, innerX, top, outerZ);
 					}
 				}
 			}

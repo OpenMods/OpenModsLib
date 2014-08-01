@@ -35,5 +35,4 @@ public class ValueCopyAction<T> implements IValueUpdateAction {
 	public static <T> ValueCopyAction<T> create(Object trigger, IValueProvider<T> provider, IValueReceiver<T> receiver) {
 		return new ValueCopyAction<T>(trigger, provider, receiver);
 	}
-
 }

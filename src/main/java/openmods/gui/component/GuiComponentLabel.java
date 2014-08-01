@@ -5,13 +5,14 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
+import openmods.api.IValueReceiver;
 
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
-public class GuiComponentLabel extends BaseComponent {
+public class GuiComponentLabel extends BaseComponent implements IValueReceiver<String> {
 
 	private String text;
 	private float scale = 1f;
@@ -166,5 +167,10 @@ public class GuiComponentLabel extends BaseComponent {
 
 	public void clearTooltip() {
 		this.tooltip = null;
+	}
+
+	@Override
+	public void setValue(String value) {
+		setText(value);
 	}
 }
