@@ -8,6 +8,8 @@ import openmods.datastore.IDataVisitor;
 import org.apache.commons.lang3.ClassUtils;
 import org.objectweb.asm.Type;
 
+import scala.actors.threadpool.Arrays;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -50,7 +52,13 @@ public class MethodIdRegistry implements IDataVisitor<String, Integer> {
 		Type[] argTypes = method.getArgumentTypes();
 		Class<?>[] argCls = convertTypesToClasses(argTypes);
 
-		return declaringCls.getMethod(method.getName(), argCls);
+		try {
+			return declaringCls.getMethod(method.getName(), argCls);
+		} catch (NoSuchMethodException e) {
+			throw new IllegalArgumentException(
+					String.format("Can't find method, class %s has methods %s",
+							declaringCls, Arrays.toString(declaringCls.getMethods())), e);
+		}
 	}
 
 	private static Class<?>[] convertTypesToClasses(Type[] argTypes) throws ClassNotFoundException {
@@ -65,8 +73,8 @@ public class MethodIdRegistry implements IDataVisitor<String, Integer> {
 		final Method method;
 		try {
 			method = identifyMethod(methodDesc);
-		} catch (Exception e) {
-			throw new RuntimeException(String.format("Malformed entry %s in method id", methodDesc), e);
+		} catch (Throwable e) {
+			throw new IllegalArgumentException(String.format("Malformed entry '%s' in method id %d", methodDesc, id), e);
 		}
 
 		MethodParamsCodec.create(method).validate();
