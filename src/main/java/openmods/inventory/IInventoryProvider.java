@@ -1,4 +1,4 @@
-package openmods;
+package openmods.inventory;
 
 import net.minecraft.inventory.IInventory;
 

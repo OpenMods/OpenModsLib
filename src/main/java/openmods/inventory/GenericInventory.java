@@ -1,4 +1,4 @@
-package openmods;
+package openmods.inventory;
 
 import java.util.ArrayList;
 import java.util.Arrays;

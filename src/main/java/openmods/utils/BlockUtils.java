@@ -12,7 +12,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import openmods.IInventoryProvider;
+import openmods.inventory.IInventoryProvider;
 
 public class BlockUtils {
 

@@ -11,8 +11,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import openmods.GenericInventory;
 import openmods.integration.modules.BuildCraftPipes;
+import openmods.inventory.GenericInventory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;

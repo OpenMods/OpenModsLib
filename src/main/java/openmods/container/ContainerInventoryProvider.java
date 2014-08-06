@@ -1,7 +1,7 @@
 package openmods.container;
 
 import net.minecraft.inventory.IInventory;
-import openmods.IInventoryProvider;
+import openmods.inventory.IInventoryProvider;
 
 public abstract class ContainerInventoryProvider<T extends IInventoryProvider> extends ContainerBase<T> {
 
