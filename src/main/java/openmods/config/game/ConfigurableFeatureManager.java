@@ -24,6 +24,12 @@ public class ConfigurableFeatureManager extends AbstractFeatureManager {
 		}
 	}
 
+	public interface CustomFeatureRule {
+		public boolean isEnabled(boolean flag);
+	}
+
+	private final Table<String, String, CustomFeatureRule> customRules = HashBasedTable.create();
+
 	private final Table<String, String, FeatureEntry> features = HashBasedTable.create();
 
 	public void collectFromItems(Class<? extends ItemInstances> itemContainer) {
@@ -63,6 +69,13 @@ public class ConfigurableFeatureManager extends AbstractFeatureManager {
 	public boolean isEnabled(String category, String name) {
 		FeatureEntry result = features.get(category, name);
 		Preconditions.checkNotNull(result, "Invalid feature name %s.%s", category, name);
-		return result.isEnabled;
+
+		CustomFeatureRule rule = customRules.get(category, name);
+		return rule != null? rule.isEnabled(result.isEnabled) : result.isEnabled;
+	}
+
+	public void addCustomRule(String category, String name, CustomFeatureRule rule) {
+		CustomFeatureRule prev = customRules.put(category, name, rule);
+		Preconditions.checkState(prev == null, "Duplicate rule on %s:%s", category, name);
 	}
 }
