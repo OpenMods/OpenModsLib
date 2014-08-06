@@ -22,6 +22,7 @@ import openmods.proxy.IOpenModsProxy;
 import openmods.sync.SyncChannelHolder;
 import openmods.utils.bitmap.IRpcDirectionBitMap;
 import openmods.utils.bitmap.IRpcIntBitMap;
+import openmods.world.DelayedActionTickHandler;
 import cpw.mods.fml.common.*;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -61,6 +62,8 @@ public class OpenMods {
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);
 
 		MinecraftForge.EVENT_BUS.register(FakePlayerPool.instance);
+
+		FMLCommonHandler.instance().bus().register(DelayedActionTickHandler.INSTANCE);
 
 		proxy.preInit();
 	}
