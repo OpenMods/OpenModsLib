@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.command.IEntitySelector;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import openmods.OpenMods;
@@ -54,6 +55,13 @@ public class WorldUtils {
 
 		Preconditions.checkNotNull(result, "Invalid world dimension %d", dimensionId);
 		return result;
+	}
+
+	public static boolean isTileEntityValid(TileEntity te) {
+		if (te.isInvalid()) return false;
+
+		final World world = te.getWorldObj();
+		return (world != null)? world.blockExists(te.xCoord, te.yCoord, te.zCoord) : false;
 	}
 
 }

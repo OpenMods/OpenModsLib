@@ -44,6 +44,12 @@ public class OpenModsClassTransformer implements IClassTransformer {
 
 		if (name.startsWith("net.minecraft.")) return bytes;
 		// / no need for COMPUTE_FRAMES, we can handle simple stuff
-		return VisitorHelper.apply(bytes, 0, INCLUDING_CV);
+
+		try {
+			return VisitorHelper.apply(bytes, 0, INCLUDING_CV);
+		} catch (Throwable t) {
+			Log.severe(t, "Failed to apply including transformer on %s(%s)", name, transformedName);
+			throw t;
+		}
 	}
 }

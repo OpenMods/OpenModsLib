@@ -15,9 +15,7 @@ import openmods.integration.modules.BuildCraftPipes;
 import openmods.inventory.GenericInventory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 public class InventoryUtils {
 
@@ -405,6 +403,17 @@ public class InventoryUtils {
 			slots.add(i);
 		}
 		return slots;
+	}
+
+	public static Map<Integer, ItemStack> getAllItems(IInventory inventory) {
+		Map<Integer, ItemStack> result = Maps.newHashMap();
+		for (int i = 0; i < inventory.getSizeInventory(); i++) {
+			ItemStack stack = inventory.getStackInSlot(i);
+			if (stack != null) result.put(i, stack);
+		}
+
+		return result;
+
 	}
 
 	public static int moveItemsToOneOfSides(TileEntity te, IInventory inv, int fromSlot, int maxAmount, Set<ForgeDirection> sides) {

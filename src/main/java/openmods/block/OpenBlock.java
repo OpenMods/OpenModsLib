@@ -278,7 +278,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	@Override
 	public void onNeighborBlockChange(World world, int x, int y, int z, Block neighbour) {
 		TileEntity te = world.getTileEntity(x, y, z);
-		if (te instanceof INeighbourAwareTile) ((INeighbourAwareTile)te).onNeighbourChanged();
+		if (te instanceof INeighbourAwareTile) ((INeighbourAwareTile)te).onNeighbourChanged(neighbour);
 
 		if (te instanceof ISurfaceAttachment) {
 			ForgeDirection direction = ((ISurfaceAttachment)te).getSurfaceDirection();
