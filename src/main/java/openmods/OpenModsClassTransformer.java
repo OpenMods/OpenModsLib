@@ -10,6 +10,8 @@ import openmods.world.MapGenStructureVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
+import com.google.common.base.Throwables;
+
 public class OpenModsClassTransformer implements IClassTransformer {
 
 	private static boolean applyMovementTransformer = System.getProperty("openmods.legacy_movement") == null;
@@ -49,7 +51,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 			return VisitorHelper.apply(bytes, 0, INCLUDING_CV);
 		} catch (Throwable t) {
 			Log.severe(t, "Failed to apply including transformer on %s(%s)", name, transformedName);
-			throw t;
+			throw Throwables.propagate(t);
 		}
 	}
 }
