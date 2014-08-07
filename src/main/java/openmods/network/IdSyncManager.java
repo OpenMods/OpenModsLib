@@ -1,8 +1,8 @@
 package openmods.network;
 
 import io.netty.buffer.*;
-import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.*;
+import io.netty.channel.ChannelHandler.Sharable;
 
 import java.io.*;
 import java.util.Map;
@@ -101,12 +101,9 @@ public class IdSyncManager extends DataStoreManager {
 
 		@SubscribeEvent
 		public void onJoin(CustomPacketRegistrationEvent<? extends INetHandler> evt) {
-			if (!evt.manager.isLocalChannel()) {
-				if (evt.side == Side.SERVER) {
-					evt.manager.channel().pipeline().addAfter("fml:packet_handler", "openmods:id_injector", new ServerHandshakeHijacker());
-				} else {
-					evt.manager.channel().pipeline().addAfter("fml:packet_handler", "openmods:id_injector", new ClientHandshakeHijacker());
-				}
+			if (!evt.manager.isLocalChannel() && evt.registrations.contains(CHANNEL_NAME)) {
+				ChannelHandler handler = (evt.side == Side.SERVER)? new ServerHandshakeHijacker() : new ClientHandshakeHijacker();
+				evt.manager.channel().pipeline().addAfter("fml:packet_handler", "openmods:id_injector", handler);
 			}
 		}
 
