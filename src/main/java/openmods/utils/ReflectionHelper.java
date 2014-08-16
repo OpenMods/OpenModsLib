@@ -18,8 +18,16 @@ public class ReflectionHelper {
 	public static class MethodNotFound extends RuntimeException {
 		private static final long serialVersionUID = 4931028064550261584L;
 
-		private MethodNotFound(String method) {
-			super("Method not found: " + method);
+		private MethodNotFound(Class<?> cls, String[] names, Class<?>[] args) {
+			super("Method not found: " + cls + "." + Arrays.toString(names) + Arrays.toString(args));
+		}
+	}
+
+	public static class FieldNotFound extends RuntimeException {
+		private static final long serialVersionUID = 6119776323412256889L;
+
+		private FieldNotFound(Class<?> cls, String... names) {
+			super("Field not found: " + cls + "." + Arrays.toString(names));
 		}
 	}
 
@@ -84,7 +92,7 @@ public class ReflectionHelper {
 	@SuppressWarnings("unchecked")
 	public static <T> T getProperty(Class<?> klazz, Object instance, String... fields) {
 		Field field = getField(klazz == null? instance.getClass() : klazz, fields);
-		Preconditions.checkNotNull(field, "Fields %s not found", Arrays.toString(fields));
+
 		try {
 			return (T)field.get(instance);
 		} catch (Exception e) {
@@ -102,7 +110,7 @@ public class ReflectionHelper {
 
 	public static void setProperty(Class<?> klazz, Object instance, Object value, String... fields) {
 		Field field = getField(klazz == null? instance.getClass() : klazz, fields);
-		Preconditions.checkNotNull(field, "Fields %s not found", Arrays.toString(fields));
+
 		try {
 			field.set(instance, value);
 		} catch (Exception e) {
@@ -168,7 +176,7 @@ public class ReflectionHelper {
 			if (result != null) return result;
 		}
 
-		throw new MethodNotFound(klazz + "." + Arrays.toString(methodNames) + Arrays.toString(argTypes));
+		throw new MethodNotFound(klazz, methodNames, argTypes);
 	}
 
 	public static Method getMethod(Class<?> klazz, String[] methodNames, Class<?>... types) {
@@ -229,7 +237,8 @@ public class ReflectionHelper {
 				current = current.getSuperclass();
 			}
 		}
-		return null;
+
+		throw new FieldNotFound(klazz, fields);
 	}
 
 	public static Class<?> getClass(String className) {

@@ -5,21 +5,38 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderBlocks;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.EntityViewRenderEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
-import openmods.Log;
 import openmods.block.OpenBlock;
 import openmods.block.OpenBlock.BlockRotationMode;
 import openmods.utils.ColorUtils.RGB;
 
 import org.lwjgl.opengl.GL11;
 
-import cpw.mods.fml.relauncher.ReflectionHelper;
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class RenderUtils {
+
+	public static class FogColorUpdater {
+		@SubscribeEvent(priority = EventPriority.LOWEST)
+		public void onFogColor(EntityViewRenderEvent.FogColors evt) {
+			fogRed = evt.red;
+			fogGreen = evt.green;
+			fogBlue = evt.blue;
+		}
+	}
+
+	private static float fogRed;
+	private static float fogGreen;
+	private static float fogBlue;
 
 	public static void setupBillboard(Entity rve) {
 		GL11.glRotatef(-rve.rotationYaw, 0, 1, 0);
@@ -218,16 +235,11 @@ public class RenderUtils {
 	}
 
 	public static RGB getFogColor() {
-		try {
-			EntityRenderer re = Minecraft.getMinecraft().entityRenderer;
-			Float red = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorRed", "field_78518_n");
-			Float green = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorGreen", "field_78519_o");
-			Float blue = ReflectionHelper.getPrivateValue(EntityRenderer.class, re, "fogColorBlue", "field_78533_p");
-			return new RGB(red, green, blue);
-		} catch (Throwable t) {
-			Log.warn(t, "Can't get fog color");
-			return new RGB(1, 1, 1);
-		}
+		return new RGB(fogRed, fogGreen, fogBlue);
+	}
+	
+	public static void registerFogUpdater() {
+		MinecraftForge.EVENT_BUS.register(new FogColorUpdater());
 	}
 
 }

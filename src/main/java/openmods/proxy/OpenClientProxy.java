@@ -16,6 +16,7 @@ import openmods.Log;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
+import openmods.utils.render.RenderUtils;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.IGuiHandler;
@@ -68,6 +69,7 @@ public class OpenClientProxy implements IOpenModsProxy {
 	@Override
 	public void preInit() {
 		ClientCommandHandler.instance.registerCommand(new CommandConfig("om_config_c", false));
+		RenderUtils.registerFogUpdater();
 	}
 
 	@Override

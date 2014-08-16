@@ -21,7 +21,6 @@ public class FieldAccessHelpers {
 	@SuppressWarnings("unchecked")
 	public static <T> T getField(final Class<?> klazz, Object target, String field, T defaultValue) {
 		try {
-
 			Field f = ReflectionHelper.getField(klazz, field);
 			Object o = f.get(target);
 			if (o != null) return (T)o;

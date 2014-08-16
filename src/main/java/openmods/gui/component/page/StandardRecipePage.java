@@ -65,7 +65,7 @@ public class StandardRecipePage extends PageBase {
 		} catch (IOException e) {}
 	}
 
-	private BaseComponent createYoutubeButton(int x, int y, final String link) {
+	private static BaseComponent createYoutubeButton(int x, int y, final String link) {
 		EmptyComposite result = new EmptyComposite(x, y, 50, 8);
 
 		GuiComponentLabel label = new GuiComponentLabel(15, 2, StatCollector.translateToLocal("openblocks.gui.watch_video"));

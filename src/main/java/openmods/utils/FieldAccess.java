@@ -6,27 +6,32 @@ import com.google.common.base.Throwables;
 
 public class FieldAccess<T> {
 
-	public final T parent;
 	public final Field field;
 
-	public FieldAccess(T parent, Field field) {
-		this.parent = parent;
+	public FieldAccess(Field field) {
 		this.field = field;
+		field.setAccessible(true);
 	}
 
-	public Object get() {
+	@SuppressWarnings("unchecked")
+	public T get(Object target) {
 		try {
-			return field.get(parent);
+			return (T)field.get(target);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
 	}
 
-	public void set(Object value) {
+	public void set(Object target, T value) {
 		try {
-			field.set(parent, value);
+			field.set(target, value);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
+	}
+	
+	public static <T> FieldAccess<T> create(Class<?> cls, String... names) {
+		Field f = ReflectionHelper.getField(cls, names);
+		return new FieldAccess<T>(f);
 	}
 }
