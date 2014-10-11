@@ -22,6 +22,10 @@ public class CollectionUtils {
 	}
 
 	public static <T> T getRandom(Collection<T> collection) {
+		return getRandom(collection, rnd);
+	}
+
+	public static <T> T getRandom(Collection<T> collection, Random rand) {
 		final int size = collection.size();
 		Preconditions.checkArgument(size > 0, "Can't select from empty collection");
 		if (size == 1) return getFirst(collection);
@@ -35,6 +39,10 @@ public class CollectionUtils {
 	}
 
 	public static <T> T getRandom(List<T> list) {
+		return getRandom(list, rnd);
+	}
+
+	public static <T> T getRandom(List<T> list, Random rand) {
 		final int size = list.size();
 		Preconditions.checkArgument(size > 0, "Can't select from empty list");
 		if (size == 0) return null;

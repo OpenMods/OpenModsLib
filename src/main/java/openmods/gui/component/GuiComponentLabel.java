@@ -21,6 +21,7 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 	private int maxWidth;
 	private float additionalScale = 1.0f;
 	private int additionalLineHeight = 0;
+	private int color = 0xFF000000;
 	private List<String> tooltip;
 
 	private static FontRenderer getFontRenderer() {
@@ -55,6 +56,7 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 		if (getMaxHeight() < minecraft.fontRenderer.FONT_HEIGHT) return;
 		if (getMaxWidth() < minecraft.fontRenderer.getCharWidth('m')) return;
 		GL11.glPushMatrix();
+		GL11.glColor4ub((byte)(color >> 16), (byte)(color >> 8), (byte)color, (byte)(color >> 24));
 		GL11.glTranslated(offsetX + x, offsetY + y, 1);
 		GL11.glScalef(scale * additionalScale, scale * additionalScale, scale * additionalScale);
 		int offset = 0;
@@ -167,6 +169,14 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 
 	public void clearTooltip() {
 		this.tooltip = null;
+	}
+
+	public void setColorOpaque(int color) {
+		this.color = color | 0xFF000000;
+	}
+
+	public void setColor(int color) {
+		this.color = color;
 	}
 
 	@Override

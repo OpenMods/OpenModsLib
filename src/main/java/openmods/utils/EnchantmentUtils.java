@@ -55,36 +55,27 @@ public class EnchantmentUtils {
 	}
 
 	public static boolean enchantItem(ItemStack itemstack, int level, Random rand) {
+		if (itemstack == null) return false;
 
-		if (itemstack != null) {
+		@SuppressWarnings("unchecked")
+		List<EnchantmentData> enchantments = EnchantmentHelper.buildEnchantmentList(rand, itemstack, level);
+		if (enchantments == null || enchantments.isEmpty()) return false;
 
-			@SuppressWarnings("unchecked")
-			List<EnchantmentData> list = EnchantmentHelper.buildEnchantmentList(rand, itemstack, level);
-			boolean flag = itemstack.getItem() == Items.book;
-			if (list != null) {
+		boolean isBook = itemstack.getItem() == Items.book;
 
-				if (flag) {
-					itemstack.func_150996_a(Items.enchanted_book);
-				}
+		if (isBook) {
+			itemstack.func_150996_a(Items.enchanted_book);
 
-				int j = flag? rand.nextInt(list.size()) : -1;
-
-				for (int k = 0; k < list.size(); ++k) {
-					EnchantmentData enchantmentdata = list.get(k);
-
-					if (!flag || k == j) {
-						if (flag) {
-							Items.enchanted_book.addEnchantment(itemstack, enchantmentdata);
-						} else {
-							itemstack.addEnchantment(enchantmentdata.enchantmentobj, enchantmentdata.enchantmentLevel);
-						}
-					}
-				}
-			}
-
-			return true;
+			final int count = enchantments.size();
+			int ignored = count > 1? rand.nextInt(count) : -1;
+			for (int i = 0; i < count; i++)
+				if (i != ignored) Items.enchanted_book.addEnchantment(itemstack, enchantments.get(i));
+		} else {
+			for (EnchantmentData enchantment : enchantments)
+				itemstack.addEnchantment(enchantment.enchantmentobj, enchantment.enchantmentLevel);
 		}
-		return false;
+
+		return true;
 	}
 
 	public static int getExperienceForLevel(int level) {
