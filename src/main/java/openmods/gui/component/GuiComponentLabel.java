@@ -21,7 +21,6 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 	private int maxWidth;
 	private float additionalScale = 1.0f;
 	private int additionalLineHeight = 0;
-	private int color = 0xFF000000;
 	private List<String> tooltip;
 
 	private static FontRenderer getFontRenderer() {
@@ -51,19 +50,20 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
 		Minecraft mc = Minecraft.getMinecraft();
+		final FontRenderer fontRenderer = minecraft.fontRenderer;
+
 		ScaledResolution sr = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
 		additionalScale = sr.getScaleFactor() % 2 == 1 && scale < 1f? 0.667f : 1f;
-		if (getMaxHeight() < minecraft.fontRenderer.FONT_HEIGHT) return;
-		if (getMaxWidth() < minecraft.fontRenderer.getCharWidth('m')) return;
+		if (getMaxHeight() < fontRenderer.FONT_HEIGHT) return;
+		if (getMaxWidth() < fontRenderer.getCharWidth('m')) return;
 		GL11.glPushMatrix();
-		GL11.glColor4ub((byte)(color >> 16), (byte)(color >> 8), (byte)color, (byte)(color >> 24));
 		GL11.glTranslated(offsetX + x, offsetY + y, 1);
 		GL11.glScalef(scale * additionalScale, scale * additionalScale, scale * additionalScale);
 		int offset = 0;
 		int lineCount = 0;
-		for (String s : getFormattedText(minecraft.fontRenderer)) {
+		for (String s : getFormattedText(fontRenderer)) {
 			if (s == null) break;
-			minecraft.fontRenderer.drawString(s, 0, offset, 4210752);
+			fontRenderer.drawString(s, 0, offset, 4210752);
 			offset += getFontHeight();
 			if (++lineCount >= getMaxLines()) break;
 		}
@@ -169,14 +169,6 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 
 	public void clearTooltip() {
 		this.tooltip = null;
-	}
-
-	public void setColorOpaque(int color) {
-		this.color = color | 0xFF000000;
-	}
-
-	public void setColor(int color) {
-		this.color = color;
 	}
 
 	@Override

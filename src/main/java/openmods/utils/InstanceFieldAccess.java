@@ -31,16 +31,16 @@ public class InstanceFieldAccess<T> {
 			throw Throwables.propagate(e);
 		}
 	}
-	
+
 	public static <T> InstanceFieldAccess<T> create(Class<?> cls, Object target, String... names) {
 		Field f = ReflectionHelper.getField(cls, names);
 		return new InstanceFieldAccess<T>(target, f);
 	}
-	
+
 	public static <T> InstanceFieldAccess<T> create(Class<?> cls, String... names) {
 		return create(cls, null, names);
 	}
-	
+
 	public static <T> InstanceFieldAccess<T> create(Object target, String... names) {
 		return create(target.getClass(), target, names);
 	}

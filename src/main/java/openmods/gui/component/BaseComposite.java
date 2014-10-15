@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.client.Minecraft;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 public abstract class BaseComposite extends BaseComponent {
@@ -80,16 +81,24 @@ public abstract class BaseComposite extends BaseComponent {
 			}
 	}
 
+	// for freezing component list, since element layout may change during listener execution
+	private List<BaseComponent> selectComponentsCapturingMouse(int mouseX, int mouseY) {
+		ImmutableList.Builder<BaseComponent> result = ImmutableList.builder();
+
+		for (BaseComponent component : components)
+			if (isComponentCapturingMouse(component, mouseX, mouseY)) result.add(component);
+
+		return result.build();
+	}
+
 	@Override
 	public void mouseDown(int mouseX, int mouseY, int button) {
 		super.mouseDown(mouseX, mouseY, button);
 
 		if (!areChildrenActive()) return;
 
-		for (BaseComponent component : components)
-			if (isComponentCapturingMouse(component, mouseX, mouseY)) {
-				component.mouseDown(mouseX - component.x, mouseY - component.y, button);
-			}
+		for (BaseComponent component : selectComponentsCapturingMouse(mouseX, mouseY))
+			component.mouseDown(mouseX - component.x, mouseY - component.y, button);
 	}
 
 	@Override
@@ -98,10 +107,8 @@ public abstract class BaseComposite extends BaseComponent {
 
 		if (!areChildrenActive()) return;
 
-		for (BaseComponent component : components)
-			if (isComponentCapturingMouse(component, mouseX, mouseY)) {
-				component.mouseUp(mouseX - component.x, mouseY - component.y, button);
-			}
+		for (BaseComponent component : selectComponentsCapturingMouse(mouseX, mouseY))
+			component.mouseUp(mouseX - component.x, mouseY - component.y, button);
 	}
 
 	@Override
@@ -110,10 +117,8 @@ public abstract class BaseComposite extends BaseComponent {
 
 		if (!areChildrenActive()) return;
 
-		for (BaseComponent component : components)
-			if (isComponentCapturingMouse(component, mouseX, mouseY)) {
-				component.mouseDrag(mouseX - component.x, mouseY - component.y, button, time);
-			}
+		for (BaseComponent component : selectComponentsCapturingMouse(mouseX, mouseY))
+			component.mouseDrag(mouseX - component.x, mouseY - component.y, button, time);
 	}
 
 }

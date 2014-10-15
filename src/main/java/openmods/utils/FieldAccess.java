@@ -29,7 +29,7 @@ public class FieldAccess<T> {
 			throw Throwables.propagate(e);
 		}
 	}
-	
+
 	public static <T> FieldAccess<T> create(Class<?> cls, String... names) {
 		Field f = ReflectionHelper.getField(cls, names);
 		return new FieldAccess<T>(f);

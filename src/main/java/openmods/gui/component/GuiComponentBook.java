@@ -54,7 +54,6 @@ public class GuiComponentBook extends BaseComposite {
 			@Override
 			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
 				if (index > 0) changePage(index - 2);
-				enablePages();
 			}
 		});
 		imgNext = new GuiComponentSpriteButton(380, 158, iconNext, iconNextHover, texture);
@@ -62,7 +61,6 @@ public class GuiComponentBook extends BaseComposite {
 			@Override
 			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
 				if (index < pages.size() - 2) changePage(index + 2);
-				enablePages();
 			}
 		});
 
@@ -80,16 +78,6 @@ public class GuiComponentBook extends BaseComposite {
 
 		pages = Lists.newArrayList();
 
-	}
-
-	public boolean gotoPage(BaseComponent page) {
-		int pageIndex = pages.indexOf(page);
-		if (pageIndex > -1) {
-			index = pageIndex % 2 == 1? pageIndex - 1 : pageIndex;
-			enablePages();
-			return true;
-		}
-		return false;
 	}
 
 	public int getNumberOfPages() {
@@ -136,11 +124,6 @@ public class GuiComponentBook extends BaseComposite {
 		return false;
 	}
 
-	public void gotoIndex(int i) {
-		index = i;
-		enablePages();
-	}
-
 	public void enablePages() {
 		int i = 0;
 		for (BaseComponent page : pages) {
@@ -163,13 +146,25 @@ public class GuiComponentBook extends BaseComposite {
 		}
 	}
 
-	private void changePage(int newPage) {
+	public void changePage(int newPage) {
+		newPage &= ~1;
 		if (newPage != index) {
 			index = newPage;
 			enablePages();
-			Minecraft mc = Minecraft.getMinecraft();
-			mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(PAGETURN, 1.0f));
+			playPageTurnSound();
 		}
 	}
 
+	private static void playPageTurnSound() {
+		Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(PAGETURN, 1.0f));
+	}
+
+	public IMouseDownListener createBookmarkListener(final int index) {
+		return new IMouseDownListener() {
+			@Override
+			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
+				changePage(index);
+			}
+		};
+	}
 }

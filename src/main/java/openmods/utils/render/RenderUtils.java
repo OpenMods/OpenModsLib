@@ -237,7 +237,7 @@ public class RenderUtils {
 	public static RGB getFogColor() {
 		return new RGB(fogRed, fogGreen, fogBlue);
 	}
-	
+
 	public static void registerFogUpdater() {
 		MinecraftForge.EVENT_BUS.register(new FogColorUpdater());
 	}
