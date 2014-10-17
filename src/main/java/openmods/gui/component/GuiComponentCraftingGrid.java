@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import java.util.Iterator;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
@@ -36,8 +37,9 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		int itemBoxSize = 19;
 
 		ItemStack tooltip = null;
-		int i = 0;
-		for (ItemStack input : items) {
+
+		for (int i = 0; i < items.length; i++) {
+			ItemStack input = items[i];
 			if (input != null) {
 				int row = (i % 3);
 				int column = i / 3;
@@ -49,7 +51,6 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 					tooltip = input;
 				}
 			}
-			i++;
 		}
 		if (tooltip != null) {
 			drawItemStackTooltip(tooltip, relativeMouseX + 25, relativeMouseY + 30);
@@ -60,22 +61,26 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		final Minecraft mc = Minecraft.getMinecraft();
 		FontRenderer font = Objects.firstNonNull(stack.getItem().getFontRenderer(stack), mc.fontRenderer);
 
+		GL11.glColor3f(1, 1, 1);
+		GL11.glDisable(GL11.GL_LIGHTING);
 		@SuppressWarnings("unchecked")
 		List<String> list = stack.getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips);
 
 		List<String> colored = Lists.newArrayListWithCapacity(list.size());
-		colored.add(getRarityColor(stack) + list.get(0));
-		for (String line : list)
-			colored.add(EnumChatFormatting.GRAY + line);
+		Iterator<String> it = list.iterator();
+		colored.add(getRarityColor(stack) + it.next());
+
+		while (it.hasNext())
+			colored.add(EnumChatFormatting.GRAY + it.next());
 
 		drawHoveringText(colored, x, y, font);
 	}
 
-	protected EnumChatFormatting getRarityColor(ItemStack stack) {
+	private static EnumChatFormatting getRarityColor(ItemStack stack) {
 		return stack.getRarity().rarityColor;
 	}
 
-	private void drawItemStack(ItemStack par1ItemStack, int par2, int par3, String par4Str)
+	private void drawItemStack(ItemStack stack, int x, int y, String overlayText)
 	{
 		GL11.glTranslatef(0.0F, 0.0F, 32.0F);
 		this.zLevel = 200.0F;
@@ -84,10 +89,10 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		GL11.glColor3f(1f, 1f, 1f);
 		GL11.glEnable(GL11.GL_NORMALIZE);
 		FontRenderer font = null;
-		if (par1ItemStack != null) font = par1ItemStack.getItem().getFontRenderer(par1ItemStack);
+		if (stack != null) font = stack.getItem().getFontRenderer(stack);
 		if (font == null) font = Minecraft.getMinecraft().fontRenderer;
-		itemRenderer.renderItemAndEffectIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), par1ItemStack, par2, par3);
-		itemRenderer.renderItemOverlayIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), par1ItemStack, par2, par3, par4Str);
+		itemRenderer.renderItemAndEffectIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), stack, x, y);
+		itemRenderer.renderItemOverlayIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), stack, x, y, overlayText);
 		this.zLevel = 0.0F;
 		itemRenderer.zLevel = 0.0F;
 	}
