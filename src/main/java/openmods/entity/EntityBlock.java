@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -260,6 +261,13 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	@Override
 	public void writeSpawnData(ByteBuf data) {
 		data.writeBoolean(hasGravity);
+	}
+
+	@Override
+	public boolean attackEntityFrom(DamageSource p_70097_1_, float p_70097_2_) {
+		if (!isDead && !worldObj.isRemote) dropBlock();
+		setDead();
+		return false;
 	}
 
 	@Override
