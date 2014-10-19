@@ -7,6 +7,11 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public abstract class StencilRendererHandler {
 
+	public static final StencilRendererHandler DUMMY = new StencilRendererHandler() {
+		@Override
+		public void render(RenderGlobal context, float partialTickTime) {}
+	};
+
 	public abstract void render(RenderGlobal context, float partialTickTime);
 
 	private boolean renderThisTick;
