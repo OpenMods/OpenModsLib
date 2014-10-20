@@ -86,7 +86,7 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 	protected EntityPlayer getPlayer(FMLProxyPacket msg) {
 		INetHandler handler = msg.handler();
 		EntityPlayer player = OpenMods.proxy.getPlayerFromHandler(handler);
-		Preconditions.checkNotNull("Can't get player from handler %s", handler);
+		Preconditions.checkNotNull(player, "Can't get player from handler %s", handler);
 		return player;
 	}
 

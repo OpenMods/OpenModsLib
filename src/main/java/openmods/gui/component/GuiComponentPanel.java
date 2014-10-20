@@ -1,6 +1,5 @@
 package openmods.gui.component;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
 
@@ -41,11 +40,11 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 
 	private final Map<Integer, ISlotBackgroundRenderer> slotRenderers = Maps.newHashMap();
 
-	private WeakReference<Container> container;
+	private final Container container;
 
 	public GuiComponentPanel(int x, int y, int width, int height, Container container) {
 		super(x, y, width, height);
-		this.container = new WeakReference<Container>(container);
+		this.container = container;
 	}
 
 	public void setSlotRenderer(int slotId, ISlotBackgroundRenderer renderer) {
@@ -65,8 +64,8 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 		GL11.glColor3f(1, 1, 1);
 		bindComponentsSheet();
 
-		if (container != null && container.get() != null) {
-			for (Slot slot : (List<Slot>)container.get().inventorySlots) {
+		if (container != null) {
+			for (Slot slot : (List<Slot>)container.inventorySlots) {
 				Objects.firstNonNull(slotRenderers.get(slot.slotNumber), normalSlot).render(this, slot);
 			}
 		}

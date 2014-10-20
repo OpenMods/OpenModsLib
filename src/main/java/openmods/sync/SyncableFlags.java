@@ -129,7 +129,7 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 
 	@Override
 	public void toggle(Integer value) {
-		toggle(value);
+		toggle(value.intValue());
 	}
 
 	public void toggle(Enum<?> slot) {

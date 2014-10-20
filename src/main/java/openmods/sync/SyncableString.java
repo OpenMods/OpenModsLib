@@ -6,6 +6,8 @@ import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
 
+import com.google.common.base.Objects;
+
 public class SyncableString extends SyncableObjectBase implements ISyncableValueProvider<String> {
 
 	private String value;
@@ -19,7 +21,7 @@ public class SyncableString extends SyncableObjectBase implements ISyncableValue
 	}
 
 	public void setValue(String val) {
-		if (val != value) {
+		if (Objects.equal(val, value)) {
 			value = val;
 			markDirty();
 		}

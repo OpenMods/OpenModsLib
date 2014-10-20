@@ -2,9 +2,11 @@ package openmods.physics;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 public class Cloth {
 
-	private List<Constraint> constraints;
+	private List<Constraint> constraints = Lists.newArrayList();
 	public Point[][] points;
 	private double max_dim, spacing;
 	private int num_x_points, num_y_points, n_constraints;
