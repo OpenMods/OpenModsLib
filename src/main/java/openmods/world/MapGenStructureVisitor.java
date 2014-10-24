@@ -1,18 +1,17 @@
 package openmods.world;
 
+import openmods.Log;
+import openmods.asm.MappedType;
 import openmods.asm.MethodMatcher;
 import openmods.asm.VisitorHelper;
 
 import org.objectweb.asm.*;
 
-import cpw.mods.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
-import cpw.mods.fml.relauncher.FMLRelaunchLog;
-
 public class MapGenStructureVisitor extends ClassVisitor {
 
 	private final MethodMatcher modifiedMethod;
 	private final MethodMatcher markerMethod;
-	private String structureStartCls;
+	private final MappedType structureStartCls;
 
 	private class FixerMethodVisitor extends MethodVisitor {
 		public FixerMethodVisitor(MethodVisitor mv) {
@@ -35,9 +34,9 @@ public class MapGenStructureVisitor extends ClassVisitor {
 		@Override
 		public void visitTypeInsn(int opcode, String type) {
 			super.visitTypeInsn(opcode, type);
-			if (opcode == Opcodes.CHECKCAST && type.equals(structureStartCls)) {
+			if (opcode == Opcodes.CHECKCAST && type.equals(structureStartCls.name())) {
 				checkcastFound = true;
-				FMLRelaunchLog.info("[OpenBlocks] MapGenFix: Found checkcast to '%s'", type);
+				Log.info("Found checkcast to '%s'", type);
 			}
 		}
 
@@ -48,7 +47,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 			if (checkcastFound && opcode == Opcodes.ASTORE) {
 				localVarId = var;
 				checkcastFound = false;
-				FMLRelaunchLog.info("[OpenBlocks] MapGenFix: Found var: %d", localVarId);
+				Log.info("Found var: %d", localVarId);
 			}
 		}
 
@@ -67,9 +66,9 @@ public class MapGenStructureVisitor extends ClassVisitor {
 		@Override
 		public void visitMethodInsn(int opcode, String owner, String name, String desc) {
 			super.visitMethodInsn(opcode, owner, name, desc);
-			if (opcode == Opcodes.INVOKEVIRTUAL && owner.equals(structureStartCls) && markerMethod.match(name, desc)) {
+			if (opcode == Opcodes.INVOKEVIRTUAL && owner.equals(structureStartCls.name()) && markerMethod.match(name, desc)) {
 				markerMethodFound = true;
-				FMLRelaunchLog.info("[OpenBlocks] MapGenFix: Found 'StructureStart.isSizeableStructure' (%s.%s) call", owner, name);
+				Log.info("Found 'StructureStart.isSizeableStructure' (%s.%s) call", owner, name);
 			}
 		}
 
@@ -78,11 +77,11 @@ public class MapGenStructureVisitor extends ClassVisitor {
 			super.visitJumpInsn(opcode, label);
 
 			if (markerMethodFound && localVarId != null && opcode == Opcodes.IFEQ) {
-				FMLRelaunchLog.info("[OpenBlocks] MapGenFix: All conditions matched, inserting extra condition");
+				Log.info("All conditions matched, inserting extra condition");
 				super.visitVarInsn(Opcodes.ALOAD, localVarId); // hopefully
 																// 'structurestart'
 				String getComponentsMethodName = VisitorHelper.useSrgNames()? "func_75073_b" : "getComponents";
-				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, structureStartCls, getComponentsMethodName, "()Ljava/util/LinkedList;");
+				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, structureStartCls.name(), getComponentsMethodName, "()Ljava/util/LinkedList;");
 				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/LinkedList", "isEmpty", "()Z");
 				super.visitJumpInsn(Opcodes.IFNE, label);
 				markerMethodFound = false;
@@ -93,19 +92,13 @@ public class MapGenStructureVisitor extends ClassVisitor {
 	public MapGenStructureVisitor(String obfClassName, ClassVisitor cv) {
 		super(Opcodes.ASM4, cv);
 
-		structureStartCls = "net/minecraft/world/gen/structure/StructureStart";
-		String chunkPositionCls = "net/minecraft/world/ChunkPosition";
-		String worldCls = "net/minecraft/world/World";
-
-		if (VisitorHelper.useSrgNames()) {
-			structureStartCls = FMLDeobfuscatingRemapper.INSTANCE.unmap(structureStartCls);
-			chunkPositionCls = FMLDeobfuscatingRemapper.INSTANCE.unmap(chunkPositionCls);
-			worldCls = FMLDeobfuscatingRemapper.INSTANCE.unmap(worldCls);
-		}
+		structureStartCls = MappedType.of("net/minecraft/world/gen/structure/StructureStart");
+		MappedType chunkPositionCls = MappedType.of("net/minecraft/world/ChunkPosition");
+		MappedType worldCls = MappedType.of("net/minecraft/world/World");
 
 		String descriptor = Type.getMethodDescriptor(
-				Type.getObjectType(chunkPositionCls),
-				Type.getObjectType(worldCls),
+				chunkPositionCls.type(),
+				worldCls.type(),
 				Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE
 				);
 

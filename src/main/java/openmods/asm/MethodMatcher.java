@@ -15,6 +15,10 @@ public class MethodMatcher {
 		this.mcpName = mcpName;
 	}
 
+	public MethodMatcher(MappedType cls, String description, String mcpName, String srgName) {
+		this(cls.name(), description, mcpName, srgName);
+	}
+
 	public boolean match(String methodName, String methodDesc) {
 		if (!methodDesc.equals(description)) return false;
 		if (methodName.equals(mcpName)) return true;

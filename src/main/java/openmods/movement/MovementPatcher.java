@@ -1,15 +1,13 @@
 package openmods.movement;
 
 import openmods.Log;
+import openmods.asm.MappedType;
 import openmods.asm.MethodMatcher;
 import openmods.asm.StopTransforming;
-import openmods.asm.VisitorHelper;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.Method;
-
-import cpw.mods.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
 
 public class MovementPatcher extends ClassVisitor {
 
@@ -22,20 +20,13 @@ public class MovementPatcher extends ClassVisitor {
 	public MovementPatcher(String obfClassName, ClassVisitor cv) {
 		super(Opcodes.ASM4, cv);
 
-		String movementInputName = "net/minecraft/util/MovementInput";
-		String entityPlayerName = "net/minecraft/entity/player/EntityPlayer";
+		MappedType movementInput = MappedType.of("net/minecraft/util/MovementInput");
+		MappedType entityPlayer = MappedType.of("net/minecraft/entity/player/EntityPlayer");
 
-		if (VisitorHelper.useSrgNames()) {
-			movementInputName = FMLDeobfuscatingRemapper.INSTANCE.unmap(movementInputName);
-			entityPlayerName = FMLDeobfuscatingRemapper.INSTANCE.unmap(entityPlayerName);
-		}
-
-		Type movementInputType = Type.getObjectType(movementInputName);
-		Type entityPlayerType = Type.getObjectType(entityPlayerName);
-
-		callbackMethod = new Method("updateMovementState", Type.VOID_TYPE, ArrayUtils.toArray(movementInputType, entityPlayerType));
-		calledMethodMatcher = new MethodMatcher(movementInputName, "()V", "updatePlayerMoveState", "func_78898_a");
+		calledMethodMatcher = new MethodMatcher(movementInput, "()V", "updatePlayerMoveState", "func_78898_a");
 		injectedMethodMatcher = new MethodMatcher(obfClassName, "()V", "onLivingUpdate", "func_70636_d");
+
+		callbackMethod = new Method("updateMovementState", Type.VOID_TYPE, ArrayUtils.toArray(movementInput.type(), entityPlayer.type()));
 	}
 
 	@Override
