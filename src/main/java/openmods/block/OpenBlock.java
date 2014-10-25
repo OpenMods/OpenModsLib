@@ -18,39 +18,17 @@ import net.minecraftforge.common.util.ForgeDirection;
 import openmods.Log;
 import openmods.api.*;
 import openmods.config.game.IRegisterableBlock;
-import openmods.sync.SyncableDirection;
 import openmods.tileentity.OpenTileEntity;
-import openmods.tileentity.SyncedTileEntity;
 import openmods.utils.BlockNotifyFlags;
 import openmods.utils.BlockUtils;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenBlock extends Block implements IRegisterableBlock {
-
-	private static final String SYNCED_ROTATION_VAR = "_rotation2";
 	public static final int OPEN_MODS_TE_GUI = -1;
-
-	/***
-	 * The block rotation mode. Defines how many levels of rotation
-	 * a block can have
-	 */
-	public enum BlockRotationMode {
-		NONE(),
-		FOUR_DIRECTIONS(ForgeDirection.UP, ForgeDirection.DOWN),
-		SIX_DIRECTIONS(ForgeDirection.VALID_DIRECTIONS),
-		TWENTYFOUR_DIRECTIONS(ForgeDirection.VALID_DIRECTIONS);
-
-		private BlockRotationMode(ForgeDirection... rotations) {
-			this.rotations = rotations;
-		}
-
-		private final ForgeDirection[] rotations;
-	}
 
 	/***
 	 * The block placement mode. Does it rotate based on the surface
@@ -257,11 +235,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		if (tileEntity != null) {
 			this.teClass = tileEntity;
 			isBlockContainer = true;
-
-			if (blockRotationMode == BlockRotationMode.TWENTYFOUR_DIRECTIONS) {
-				Preconditions.checkArgument(SyncedTileEntity.class.isAssignableFrom(tileEntity),
-						"To use 24-direction rotations TE class '%s' needs to implement SyncedTileEntity", tileEntity);
-			}
 		}
 	}
 
@@ -362,45 +335,41 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 * This is called if your ItemBlock extends ItemOpenBlock
 	 */
 	public void onBlockPlacedBy(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, float hitX, float hitY, float hitZ, int meta) {
-		ForgeDirection additionalRotation = null;
-
-		// We use both for 24's, so force to angle
-		if (getRotationMode() == BlockRotationMode.TWENTYFOUR_DIRECTIONS) {
-			setPlacementMode(BlockPlacementMode.ENTITY_ANGLE);
-		}
-
-		switch (this.blockPlacementMode) {
-			case SURFACE:
-				meta = side.getOpposite().ordinal();
-				break;
-			default:
-				switch (getRotationMode()) {
-					case FOUR_DIRECTIONS:
-						meta = BlockUtils.get2dOrientation(player).ordinal();
-						break;
-					case SIX_DIRECTIONS:
-						meta = BlockUtils.get3dOrientation(player).ordinal();
-						break;
-					case TWENTYFOUR_DIRECTIONS:
-						meta = side.getOpposite().ordinal();
-						additionalRotation = BlockUtils.get2dOrientation(player);
-						break;
-					default:
-						break;
+		final ForgeDirection blockDir;
+		if (blockPlacementMode == BlockPlacementMode.SURFACE) {
+			blockDir = side.getOpposite();
+		} else {
+			switch (getRotationMode()) {
+				case TWO_DIRECTIONS: {
+					ForgeDirection normalDir = BlockUtils.get2dOrientation(player);
+					switch (normalDir) {
+						case EAST:
+						case WEST:
+							blockDir = ForgeDirection.WEST;
+							break;
+						case NORTH:
+						case SOUTH:
+						default:
+							blockDir = ForgeDirection.NORTH;
+					}
+					break;
 				}
+				case FOUR_DIRECTIONS:
+					blockDir = BlockUtils.get2dOrientation(player);
+					break;
+				case SIX_DIRECTIONS:
+					blockDir = BlockUtils.get3dOrientation(player);
+					break;
+				default:
+					blockDir = ForgeDirection.NORTH;
+					break;
+			}
 		}
-		world.setBlockMetadataWithNotify(x, y, z, meta, BlockNotifyFlags.ALL);
+
+		int blockMeta = blockRotationMode.toValue(blockDir);
+		world.setBlockMetadataWithNotify(x, y, z, blockMeta, BlockNotifyFlags.ALL);
 
 		TileEntity te = world.getTileEntity(x, y, z);
-
-		if (additionalRotation != null) {
-			Preconditions.checkState(te instanceof SyncedTileEntity,
-					"For 6+ levels of rotation you need to use a SyncedTileEntity, but '%s' on block '%s' is not one", te, this);
-			SyncedTileEntity ste = (SyncedTileEntity)te;
-			ste.addSyncedObject(SYNCED_ROTATION_VAR, new SyncableDirection(additionalRotation));
-			ste.sync();
-		}
-
 		if (te instanceof IPlaceAwareTile) ((IPlaceAwareTile)te).onBlockPlacedBy(player, side, stack, hitX, hitY, hitZ);
 	}
 
@@ -551,7 +520,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public boolean rotateBlock(World worldObj, int x, int y, int z, ForgeDirection axis) {
-		return canRotateWithTool() && RotationHelper.rotateBlock(this, worldObj, x, y, z, axis);
+		return canRotateWithTool() && RotationHelper.rotate(blockRotationMode, worldObj, x, y, z, axis);
 	}
 
 	@Override

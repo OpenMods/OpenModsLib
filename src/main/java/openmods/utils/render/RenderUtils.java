@@ -14,8 +14,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
+import openmods.block.BlockRotationMode;
 import openmods.block.OpenBlock;
-import openmods.block.OpenBlock.BlockRotationMode;
 import openmods.utils.ColorUtils.RGB;
 
 import org.lwjgl.opengl.GL11;
