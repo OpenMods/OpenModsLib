@@ -61,6 +61,12 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		SURFACE
 	}
 
+	public enum RenderMode {
+		TESR_ONLY,
+		BLOCK_ONLY,
+		BOTH
+	}
+
 	private String blockName;
 	private String modId;
 
@@ -68,17 +74,16 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 * The tile entity class associated with this block
 	 */
 	private Class<? extends TileEntity> teClass = null;
-	protected BlockRotationMode blockRotationMode;
-	protected BlockPlacementMode blockPlacementMode;
+	protected BlockRotationMode blockRotationMode = BlockRotationMode.NONE;
+	protected BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
 	protected ForgeDirection inventoryRenderRotation = ForgeDirection.WEST;
+	protected RenderMode renderMode = RenderMode.BLOCK_ONLY;
 
 	public IIcon[] textures = new IIcon[6];
 
 	protected OpenBlock(Material material) {
 		super(material);
 		setHardness(1.0F);
-		setRotationMode(BlockRotationMode.NONE);
-		setPlacementMode(BlockPlacementMode.ENTITY_ANGLE);
 
 		// I dont think vanilla actually uses this..
 		isBlockContainer = false;
@@ -102,6 +107,10 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	protected void setInventoryRenderRotation(ForgeDirection rotation) {
 		inventoryRenderRotation = rotation;
+	}
+
+	protected void setRenderMode(RenderMode renderMode) {
+		this.renderMode = renderMode;
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -522,16 +531,18 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		this.blockIcon = icon;
 	}
 
-	public abstract boolean shouldRenderBlock();
-
 	protected abstract Object getModInstance();
 
 	public void openGui(EntityPlayer player, World world, int x, int y, int z) {
 		player.openGui(getModInstance(), OPEN_MODS_TE_GUI, world, x, y, z);
 	}
 
-	public boolean useTESRForInventory() {
-		return true;
+	public final boolean shouldRenderBlock() {
+		return renderMode != RenderMode.TESR_ONLY;
+	}
+
+	public final boolean shouldRenderTesrInInventory() {
+		return renderMode != RenderMode.BLOCK_ONLY;
 	}
 
 	public boolean canRotateWithTool() {

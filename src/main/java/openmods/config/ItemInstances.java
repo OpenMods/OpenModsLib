@@ -1,5 +1,7 @@
 package openmods.config;
 
-public interface ItemInstances {
+import net.minecraft.item.Item;
+
+public interface ItemInstances extends InstanceContainer<Item> {
 
 }
