@@ -12,15 +12,21 @@ import cpw.mods.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
 
 public class VisitorHelper {
 
-	public static interface TransformProvider {
-		public ClassVisitor createVisitor(ClassVisitor cv);
+	public abstract static class TransformProvider {
+		private final int flags;
+
+		public TransformProvider(int flags) {
+			this.flags = flags;
+		}
+
+		public abstract ClassVisitor createVisitor(String name, ClassVisitor cv);
 	}
 
-	public static byte[] apply(byte[] bytes, int flags, TransformProvider context) {
+	public static byte[] apply(byte[] bytes, String name, TransformProvider context) {
 		Preconditions.checkNotNull(bytes);
 		ClassReader cr = new ClassReader(bytes);
-		ClassWriter cw = new ClassWriter(cr, flags);
-		ClassVisitor mod = context.createVisitor(cw);
+		ClassWriter cw = new ClassWriter(cr, context.flags);
+		ClassVisitor mod = context.createVisitor(name, cw);
 
 		try {
 			cr.accept(mod, 0);

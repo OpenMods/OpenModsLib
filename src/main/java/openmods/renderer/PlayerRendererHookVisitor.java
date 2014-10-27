@@ -11,6 +11,7 @@ import org.objectweb.asm.commons.Method;
 
 import com.google.common.base.Throwables;
 
+@SuppressWarnings("deprecation")
 public class PlayerRendererHookVisitor extends ClassVisitor {
 
 	private static class InjectorMethodVisitor extends MethodVisitor {

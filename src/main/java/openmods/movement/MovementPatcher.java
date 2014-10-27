@@ -9,6 +9,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.Method;
 
+@SuppressWarnings("deprecation")
 public class MovementPatcher extends ClassVisitor {
 
 	private static final String MANAGER_CLASS = Type.getInternalName(PlayerMovementManager.class);

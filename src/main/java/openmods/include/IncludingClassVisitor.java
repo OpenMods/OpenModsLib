@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+@SuppressWarnings("deprecation")
 public class IncludingClassVisitor extends ClassVisitor {
 
 	private class AnnotatedFieldFinder extends FieldVisitor implements IIncludedMethodBuilder {

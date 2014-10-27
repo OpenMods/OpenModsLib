@@ -7,6 +7,7 @@ import openmods.asm.VisitorHelper;
 
 import org.objectweb.asm.*;
 
+@SuppressWarnings("deprecation")
 public class MapGenStructureVisitor extends ClassVisitor {
 
 	private final MethodMatcher modifiedMethod;
