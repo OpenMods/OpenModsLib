@@ -53,19 +53,21 @@ public class ColorUtils {
 
 	public static class ColorMeta {
 		public final int rgb;
-		public final int vanillaId;
+		public final int vanillaDyeId;
+		public final int vanillaBlockId;
 		public final int oreId;
 		public final int bitmask;
 		public final String oreName;
 		public final String name;
 
-		private ColorMeta(int rgb, int vanillaId, int oreId, String name, String oreName) {
+		private ColorMeta(int rgb, int index, int oreId, String name, String oreName) {
 			this.rgb = rgb;
-			this.vanillaId = vanillaId;
+			this.vanillaDyeId = index;
+			this.vanillaBlockId = ~index & 15;
 			this.oreId = oreId;
 			this.oreName = oreName;
 			this.name = name;
-			this.bitmask = 1 << vanillaId;
+			this.bitmask = 1 << index;
 		}
 	}
 
@@ -74,19 +76,17 @@ public class ColorUtils {
 	private static final Map<String, ColorMeta> COLORS_BY_NAME = Maps.newHashMap();
 	private static final Map<Integer, ColorMeta> COLORS_BY_ORE_ID = Maps.newHashMap();
 	private static final Map<Integer, ColorMeta> COLORS_BY_BITMASK = Maps.newHashMap();
-	private static final Map<Integer, ColorMeta> COLORS_BY_VANILLA = Maps.newHashMap();
 
-	private static void addEntry(String name, int colorValue, int vanillaId) {
+	private static void addEntry(String name, int colorValue, int index) {
 		String oreName = "dye" + WordUtils.capitalize(name);
 		int oreId = OreDictionary.getOreID(oreName);
 		name = name.toLowerCase();
-		ColorMeta color = new ColorMeta(colorValue, vanillaId, oreId, name, oreName);
+		ColorMeta color = new ColorMeta(colorValue, index, oreId, name, oreName);
 		COLORS.add(color);
 		COLORS_BY_NAME.put(name, color);
 		COLORS_BY_ORE_NAME.put(oreName, color);
 		COLORS_BY_ORE_ID.put(oreId, color);
 		COLORS_BY_BITMASK.put(color.bitmask, color);
-		COLORS_BY_VANILLA.put(vanillaId, color);
 	}
 
 	static {
@@ -133,8 +133,12 @@ public class ColorUtils {
 		return COLORS_BY_BITMASK.get(bitmask);
 	}
 
-	public static ColorMeta vanillaToColor(int vanillaId) {
-		return COLORS_BY_VANILLA.get(vanillaId);
+	public static ColorMeta vanillaBlockToColor(int vanillaId) {
+		return COLORS.get(~vanillaId & 0xF);
+	}
+
+	public static ColorMeta vanillaDyeToColor(int vanillaId) {
+		return COLORS.get(vanillaId & 0xF);
 	}
 
 	public static Collection<ColorMeta> getAllColors() {
