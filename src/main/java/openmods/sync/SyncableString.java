@@ -21,7 +21,7 @@ public class SyncableString extends SyncableObjectBase implements ISyncableValue
 	}
 
 	public void setValue(String val) {
-		if (Objects.equal(val, value)) {
+		if (!Objects.equal(val, value)) {
 			value = val;
 			markDirty();
 		}
