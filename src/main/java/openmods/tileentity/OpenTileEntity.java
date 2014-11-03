@@ -43,11 +43,14 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	 * @return the block rotation
 	 */
 	public ForgeDirection getRotation() {
-		final OpenBlock block = getBlock();
-		if (isUsedForClientInventoryRendering) return block.getInventoryRenderRotation();
-		final BlockRotationMode rotationMode = block.getRotationMode();
+		final Block block = getBlockType();
+		if (!(block instanceof OpenBlock)) return ForgeDirection.NORTH;
+		final OpenBlock openBlock = (OpenBlock)block;
 
-		int metadata = getMetadata() & rotationMode.mask;
+		if (isUsedForClientInventoryRendering) return openBlock.getInventoryRenderRotation();
+		final BlockRotationMode rotationMode = openBlock.getRotationMode();
+
+		int metadata = getBlockMetadata() & rotationMode.mask;
 		return rotationMode.fromValue(metadata);
 	}
 
@@ -125,23 +128,6 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	@Override
 	public boolean shouldRefresh(Block oldBlock, Block newBlock, int oldMeta, int newMeta, World world, int x, int y, int z) {
 		return oldBlock != newBlock;
-	}
-
-	public OpenBlock getBlock() {
-		/* Hey look what I found */
-		if (this.blockType instanceof OpenBlock) { /*
-													 * This has broken other
-													 * mods in the past, not
-													 * this one!
-													 */
-			return (OpenBlock)this.blockType;
-		}
-		return OpenBlock.getOpenBlock(worldObj, xCoord, yCoord, zCoord);
-	}
-
-	public int getMetadata() {
-		if (blockMetadata > -1) { return blockMetadata; }
-		return this.blockMetadata = worldObj.getBlockMetadata(xCoord, yCoord, zCoord);
 	}
 
 	public void openGui(Object instance, EntityPlayer player) {
