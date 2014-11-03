@@ -106,6 +106,7 @@ minecraft {
     assetDir = "eclipse/assets"
     
     replaceIn "openmods/OpenMods.java"
+    replaceIn "openmods/OpenModsCore.java"
     replace '@VERSION@', mod_version
 }
 
