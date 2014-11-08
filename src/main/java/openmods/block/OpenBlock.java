@@ -350,7 +350,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 				case SIX_DIRECTIONS:
 					return BlockUtils.get3dOrientation(player);
 				default:
-					return ForgeDirection.NORTH;
+					return ForgeDirection.UNKNOWN;
 			}
 		}
 	}
@@ -498,7 +498,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public ForgeDirection[] getValidRotations(World worldObj, int x, int y, int z) {
-		if (!canRotateWithTool()) return BlockRotationMode.NONE.rotations;
+		if (!canRotateWithTool()) return RotationAxis.NO_AXIS;
 		return blockRotationMode.rotations;
 	}
 }

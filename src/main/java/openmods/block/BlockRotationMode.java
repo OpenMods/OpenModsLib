@@ -6,17 +6,11 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.collect.ImmutableSet;
 
-class Constants {
-	public static final ForgeDirection[] NO_AXIS = {};
-	public static final ForgeDirection[] SINGLE_AXIS = { ForgeDirection.UP, ForgeDirection.DOWN };
-	public static final ForgeDirection[] THREE_AXIS = ForgeDirection.VALID_DIRECTIONS;
-}
-
 public enum BlockRotationMode {
-	NONE(Constants.NO_AXIS, 0) {
+	NONE(RotationAxis.NO_AXIS, 0) {
 		@Override
 		public boolean isValid(ForgeDirection dir) {
-			return false;
+			return true;
 		}
 
 		@Override
@@ -29,7 +23,7 @@ public enum BlockRotationMode {
 			return 0;
 		}
 	},
-	TWO_DIRECTIONS(Constants.SINGLE_AXIS, 1, ForgeDirection.WEST, ForgeDirection.NORTH) {
+	TWO_DIRECTIONS(RotationAxis.SINGLE_AXIS, 1, ForgeDirection.WEST, ForgeDirection.NORTH) {
 		@Override
 		public ForgeDirection fromValue(int value) {
 			return ((value & 1) == 0)? ForgeDirection.WEST : ForgeDirection.NORTH;
@@ -49,7 +43,7 @@ public enum BlockRotationMode {
 			}
 		}
 	},
-	FOUR_DIRECTIONS(Constants.SINGLE_AXIS, 2, ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.EAST, ForgeDirection.WEST) {
+	FOUR_DIRECTIONS(RotationAxis.SINGLE_AXIS, 2, ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.EAST, ForgeDirection.WEST) {
 		@Override
 		public ForgeDirection fromValue(int value) {
 			switch (value & 3) {
@@ -82,7 +76,7 @@ public enum BlockRotationMode {
 			}
 		}
 	},
-	SIX_DIRECTIONS(Constants.THREE_AXIS, 3, ForgeDirection.VALID_DIRECTIONS) {
+	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, 3, ForgeDirection.VALID_DIRECTIONS) {
 		@Override
 		public ForgeDirection fromValue(int value) {
 			return ForgeDirection.getOrientation(value & 7);
