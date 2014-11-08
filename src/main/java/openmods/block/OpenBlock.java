@@ -30,10 +30,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public static final int OPEN_MODS_TE_GUI = -1;
 
-	/***
-	 * The block placement mode. Does it rotate based on the surface
-	 * it's placed on, or the
-	 */
 	public enum BlockPlacementMode {
 		ENTITY_ANGLE,
 		SURFACE
@@ -96,29 +92,8 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return inventoryRenderRotation;
 	}
 
-	/**
-	 * Set block bounds based on rotation
-	 * 
-	 * @param direction
-	 *            direction to apply bounds to
-	 */
-	public void setBoundsBasedOnRotation(ForgeDirection direction) {
+	public void setBoundsBasedOnRotation(ForgeDirection direction) {}
 
-	}
-
-	/**
-	 * Helper function to get the OpenBlock class for a block in the world
-	 * 
-	 * @param world
-	 *            world to get the block from
-	 * @param x
-	 *            X coord
-	 * @param y
-	 *            Y coord
-	 * @param z
-	 *            Z coord
-	 * @return OpenBlock instance of the block, or null if invalid
-	 */
 	public static OpenBlock getOpenBlock(IBlockAccess world, int x, int y, int z) {
 		if (world == null) return null;
 		Block block = world.getBlock(x, y, z);
@@ -385,15 +360,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return canPlaceBlockOnSide(world, x, y, z, ForgeDirection.getOrientation(side).getOpposite());
 	}
 
-	/***
-	 * 
-	 * @param world
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param side
-	 * @return
-	 */
 	public boolean canPlaceBlockOnSide(World world, int x, int y, int z, ForgeDirection side) {
 		return canPlaceBlockAt(world, x, y, z); // default to vanilla rules
 	}

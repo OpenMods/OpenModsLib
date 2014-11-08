@@ -28,20 +28,13 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 
 	private boolean isUsedForClientInventoryRendering = false;
 
-	/** set up the tile entity! called once upon creation */
-	public void setup() {
-		/** */
-	}
+	/** Place for TE specific setup. Called once upon creation */
+	public void setup() {}
 
 	public Coord getPosition() {
 		return new Coord(xCoord, yCoord, zCoord);
 	}
 
-	/**
-	 * Get the current block rotation
-	 * 
-	 * @return the block rotation
-	 */
 	public ForgeDirection getRotation() {
 		final Block block = getBlockType();
 		if (!(block instanceof OpenBlock)) return ForgeDirection.NORTH;
@@ -54,10 +47,6 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return rotationMode.fromValue(metadata);
 	}
 
-	/**
-	 * @param block
-	 * @param metadata
-	 */
 	@SideOnly(Side.CLIENT)
 	public void prepareForInventoryRender(Block block, int metadata) {
 		if (this.worldObj != null) {
@@ -142,9 +131,9 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return isUsedForClientInventoryRendering;
 	}
 
-	public void onEvent(TileEntityMessageEventPacket event) {
-		/* when an event is received */
-	}
+
+	/** Called when an event is received */
+	public void onEvent(TileEntityMessageEventPacket event) {}
 
 	@Override
 	public IRpcTarget createRpcTarget() {

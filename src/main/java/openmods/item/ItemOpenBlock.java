@@ -19,25 +19,10 @@ public class ItemOpenBlock extends ItemBlock {
 		return block != null && block.isReplaceable(world, x, y, z);
 	}
 
-	/**
-	 * 
-	 * @param stack
-	 * @param player
-	 * @param world
-	 * @param x
-	 * @param y
-	 * @param z
-	 */
 	protected void afterBlockPlaced(ItemStack stack, EntityPlayer player, World world, int x, int y, int z) {
 		stack.stackSize--;
 	}
 
-	/**
-	 * 
-	 * @param stack
-	 * @param player
-	 * @return
-	 */
 	protected boolean isStackValid(ItemStack stack, EntityPlayer player) {
 		return stack.stackSize >= 0;
 	}
