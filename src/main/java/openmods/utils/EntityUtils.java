@@ -29,4 +29,10 @@ public class EntityUtils {
 				true,
 				false);
 	}
+
+	private static final FieldAccess<Boolean> ENTITY_INVULNERABLE = FieldAccess.create(Entity.class, "invulnerable", "field_83001_bt");
+
+	public static void setEntityInvulnerable(Entity entity, boolean state) {
+		ENTITY_INVULNERABLE.set(entity, state);
+	}
 }
