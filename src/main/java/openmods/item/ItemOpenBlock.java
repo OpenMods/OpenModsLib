@@ -68,21 +68,30 @@ public class ItemOpenBlock extends ItemBlock {
 
 		if (!world.canPlaceEntityOnSide(ownBlock, x, y, z, false, side, player, stack)) return false;
 
-		// B: it's alread called in World.canPlaceEntityOnSide?
-		// if (ownBlock instanceof OpenBlock &&
-		// !((OpenBlock)ownBlock).canPlaceBlockOnSide(world, x, y, z,
-		// sideDir.getOpposite())) return false;
+		if (ownBlock instanceof OpenBlock) {
+			OpenBlock ob = (OpenBlock)ownBlock;
+			ForgeDirection blockDirection = ob.calculateSide(player, sideDir);
 
-		int newMeta = getMetadata(stack.getItemDamage());
-		newMeta = ownBlock.onBlockPlaced(world, x, y, z, side, hitX, hitY, hitZ, newMeta);
+			int newMeta = calculateBlockMeta(world, ownBlock, x, y, z, side, hitX, hitY, hitZ, stack.getItemDamage());
 
-		if (!placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, newMeta)) return false;
+			if (!ob.canPlaceBlock(world, player, stack, x, y, z, sideDir, blockDirection, hitX, hitY, hitZ, newMeta)) return false;
 
-		if (ownBlock instanceof OpenBlock) ((OpenBlock)ownBlock).onBlockPlacedBy(world, player, stack, x, y, z, sideDir, hitX, hitY, hitZ, newMeta);
+			if (!placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, newMeta)) return false;
+
+			ob.afterBlockPlaced(world, player, stack, x, y, z, sideDir, blockDirection, hitX, hitY, hitZ, newMeta);
+		} else {
+			int newMeta = calculateBlockMeta(world, ownBlock, x, y, z, side, hitX, hitY, hitZ, stack.getItemDamage());
+			if (!placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, newMeta)) return false;
+		}
 
 		world.playSoundEffect(x + 0.5, y + 0.5, z + 0.5, ownBlock.stepSound.getBreakSound(), (ownBlock.stepSound.getVolume() + 1.0F) / 2.0F, ownBlock.stepSound.getPitch() * 0.8F);
 		afterBlockPlaced(stack, player, world, x, y, z);
 
 		return true;
+	}
+
+	protected int calculateBlockMeta(World world, Block ownBlock, int x, int y, int z, int side, float hitX, float hitY, float hitZ, int damage) {
+		int newMeta = getMetadata(damage);
+		return ownBlock.onBlockPlaced(world, x, y, z, side, hitX, hitY, hitZ, newMeta);
 	}
 }

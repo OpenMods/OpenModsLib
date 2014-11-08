@@ -329,15 +329,33 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return null;
 	}
 
+	public boolean canPlaceBlock(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection sideDir, ForgeDirection blockDirection, float hitX, float hitY, float hitZ, int newMeta) {
+		return blockRotationMode.isValid(blockDirection);
+	}
+
 	/***
 	 * An extended block placement function which includes ALL the details
 	 * you'll ever need.
 	 * This is called if your ItemBlock extends ItemOpenBlock
 	 */
-	public void onBlockPlacedBy(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, float hitX, float hitY, float hitZ, int meta) {
-		final ForgeDirection blockDir;
+	public void afterBlockPlaced(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, ForgeDirection blockDir, float hitX, float hitY, float hitZ, int itemMeta) {
+		setRotationMeta(world, x, y, z, blockDir);
+		notifyTileEntity(world, player, stack, x, y, z, side, hitX, hitY, hitZ);
+	}
+
+	protected void notifyTileEntity(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, float hitX, float hitY, float hitZ) {
+		TileEntity te = world.getTileEntity(x, y, z);
+		if (te instanceof IPlaceAwareTile) ((IPlaceAwareTile)te).onBlockPlacedBy(player, side, stack, hitX, hitY, hitZ);
+	}
+
+	protected void setRotationMeta(World world, int x, int y, int z, ForgeDirection blockDir) {
+		int blockMeta = blockRotationMode.toValue(blockDir);
+		world.setBlockMetadataWithNotify(x, y, z, blockMeta, BlockNotifyFlags.ALL);
+	}
+
+	public ForgeDirection calculateSide(EntityPlayer player, ForgeDirection side) {
 		if (blockPlacementMode == BlockPlacementMode.SURFACE) {
-			blockDir = side.getOpposite();
+			return side.getOpposite();
 		} else {
 			switch (getRotationMode()) {
 				case TWO_DIRECTIONS: {
@@ -345,32 +363,21 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 					switch (normalDir) {
 						case EAST:
 						case WEST:
-							blockDir = ForgeDirection.WEST;
-							break;
+							return ForgeDirection.WEST;
 						case NORTH:
 						case SOUTH:
 						default:
-							blockDir = ForgeDirection.NORTH;
+							return ForgeDirection.NORTH;
 					}
-					break;
 				}
 				case FOUR_DIRECTIONS:
-					blockDir = BlockUtils.get2dOrientation(player);
-					break;
+					return BlockUtils.get2dOrientation(player);
 				case SIX_DIRECTIONS:
-					blockDir = BlockUtils.get3dOrientation(player);
-					break;
+					return BlockUtils.get3dOrientation(player);
 				default:
-					blockDir = ForgeDirection.NORTH;
-					break;
+					return ForgeDirection.NORTH;
 			}
 		}
-
-		int blockMeta = blockRotationMode.toValue(blockDir);
-		world.setBlockMetadataWithNotify(x, y, z, blockMeta, BlockNotifyFlags.ALL);
-
-		TileEntity te = world.getTileEntity(x, y, z);
-		if (te instanceof IPlaceAwareTile) ((IPlaceAwareTile)te).onBlockPlacedBy(player, side, stack, hitX, hitY, hitZ);
 	}
 
 	@Override

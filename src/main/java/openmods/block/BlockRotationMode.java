@@ -82,7 +82,7 @@ public enum BlockRotationMode {
 			}
 		}
 	},
-	SIX_DIRECTIONS(Constants.THREE_AXIS, 3) {
+	SIX_DIRECTIONS(Constants.THREE_AXIS, 3, ForgeDirection.VALID_DIRECTIONS) {
 		@Override
 		public ForgeDirection fromValue(int value) {
 			return ForgeDirection.getOrientation(value & 7);
