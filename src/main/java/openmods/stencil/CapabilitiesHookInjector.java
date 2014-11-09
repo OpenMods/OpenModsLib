@@ -1,6 +1,7 @@
 package openmods.stencil;
 
 import openmods.Log;
+import openmods.api.IResultListener;
 import openmods.asm.MethodMatcher;
 
 import org.objectweb.asm.*;
@@ -17,6 +18,8 @@ public class CapabilitiesHookInjector extends ClassVisitor {
 
 	private final MethodMatcher targetMethod;
 
+	private final IResultListener listener;
+
 	private class MethodInjector extends MethodVisitor {
 
 		public MethodInjector(MethodVisitor mv) {
@@ -28,6 +31,7 @@ public class CapabilitiesHookInjector extends ClassVisitor {
 			if (opcode == Opcodes.RETURN) {
 				Log.info("Injecting call into OpenGLHelper.init()");
 				super.visitMethodInsn(Opcodes.INVOKESTATIC, hookType.getInternalName(), hookMethod.getName(), hookMethod.getDescriptor());
+				listener.onSuccess();
 			}
 
 			super.visitInsn(opcode);
@@ -40,8 +44,10 @@ public class CapabilitiesHookInjector extends ClassVisitor {
 		return targetMethod.match(name, desc)? new MethodInjector(parent) : parent;
 	}
 
-	public CapabilitiesHookInjector(String rawCls, ClassVisitor cv) {
+	public CapabilitiesHookInjector(String rawCls, ClassVisitor cv, IResultListener listener) {
 		super(Opcodes.ASM4, cv);
+
+		this.listener = listener;
 
 		Type type = Type.getMethodType(Type.VOID_TYPE);
 		this.targetMethod = new MethodMatcher(rawCls.replace('.', '/'), type.getDescriptor(), "initializeTextures", "func_77474_a");

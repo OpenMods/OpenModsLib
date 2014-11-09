@@ -3,6 +3,7 @@ package openmods.renderer;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraftforge.common.MinecraftForge;
 import openmods.Log;
+import openmods.api.IResultListener;
 import openmods.asm.MappedType;
 import openmods.asm.MethodMatcher;
 
@@ -14,7 +15,7 @@ import com.google.common.base.Throwables;
 @SuppressWarnings("deprecation")
 public class PlayerRendererHookVisitor extends ClassVisitor {
 
-	private static class InjectorMethodVisitor extends MethodVisitor {
+	private class InjectorMethodVisitor extends MethodVisitor {
 
 		private final Method postMethod;
 
@@ -37,7 +38,7 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 				visitVarInsn(Opcodes.ALOAD, 1);
 				visitVarInsn(Opcodes.FLOAD, 4);
 				visitMethodInsn(Opcodes.INVOKESTATIC, hookCls.getInternalName(), postMethod.getName(), postMethod.getDescriptor());
-				Log.info("Injected!");
+				listener.onSuccess();
 			}
 
 			super.visitInsn(opcode);
@@ -48,10 +49,15 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 		MinecraftForge.EVENT_BUS.post(new PlayerBodyRenderEvent(player, partialTickTime));
 	}
 
+	private final IResultListener listener;
+
 	private final MethodMatcher modifiedMethod;
 
-	public PlayerRendererHookVisitor(String rendererTypeCls, ClassVisitor cv) {
+	public PlayerRendererHookVisitor(String rendererTypeCls, ClassVisitor cv, IResultListener listener) {
 		super(Opcodes.ASM4, cv);
+
+		this.listener = listener;
+
 		Type injectedMethodType = Type.getMethodType(Type.VOID_TYPE, MappedType.of(AbstractClientPlayer.class).type(), Type.FLOAT_TYPE, Type.FLOAT_TYPE, Type.FLOAT_TYPE);
 		modifiedMethod = new MethodMatcher(rendererTypeCls, injectedMethodType.getDescriptor(), "rotateCorpse", "func_77043_a");
 	}

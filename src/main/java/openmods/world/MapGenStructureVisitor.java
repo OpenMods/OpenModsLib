@@ -1,6 +1,7 @@
 package openmods.world;
 
 import openmods.Log;
+import openmods.api.IResultListener;
 import openmods.asm.MappedType;
 import openmods.asm.MethodMatcher;
 import openmods.asm.VisitorHelper;
@@ -13,6 +14,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 	private final MethodMatcher modifiedMethod;
 	private final MethodMatcher markerMethod;
 	private final MappedType structureStartCls;
+	private final IResultListener listener;
 
 	private class FixerMethodVisitor extends MethodVisitor {
 		public FixerMethodVisitor(MethodVisitor mv) {
@@ -85,13 +87,16 @@ public class MapGenStructureVisitor extends ClassVisitor {
 				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, structureStartCls.name(), getComponentsMethodName, "()Ljava/util/LinkedList;");
 				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/LinkedList", "isEmpty", "()Z");
 				super.visitJumpInsn(Opcodes.IFNE, label);
+				listener.onSuccess();
 				markerMethodFound = false;
 			}
 		}
 	}
 
-	public MapGenStructureVisitor(String obfClassName, ClassVisitor cv) {
+	public MapGenStructureVisitor(String obfClassName, ClassVisitor cv, IResultListener listener) {
 		super(Opcodes.ASM4, cv);
+
+		this.listener = listener;
 
 		structureStartCls = MappedType.of("net/minecraft/world/gen/structure/StructureStart");
 		MappedType chunkPositionCls = MappedType.of("net/minecraft/world/ChunkPosition");

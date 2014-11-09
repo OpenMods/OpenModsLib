@@ -16,24 +16,27 @@ import com.google.gson.GsonBuilder;
 
 public class ConfigProcessor {
 
-	public interface ValueSink {
-		public void valueParsed(String name, String value);
+	public interface UpdateListener {
+		public void valueSet(String value);
 	}
 
 	private static class EntryMeta {
 		public final int version;
 		public final String value;
 		public String[] comment;
+		public final transient UpdateListener listener;
 
-		public EntryMeta(String value, int version) {
+		public EntryMeta(String value, int version, UpdateListener listener) {
 			this.version = version;
 			this.value = value;
+			this.listener = listener;
 			this.comment = null;
 		}
 
-		public EntryMeta(String value, int version, String... comment) {
+		public EntryMeta(String value, int version, UpdateListener listener, String... comment) {
 			this.version = version;
 			this.value = value;
+			this.listener = listener;
 			this.comment = comment;
 		}
 
@@ -45,15 +48,17 @@ public class ConfigProcessor {
 
 	private Map<String, EntryMeta> entries = Maps.newHashMap();
 
-	public void addEntry(String name, int version, String defaultValue, String... comment) {
-		addEntry(name, new EntryMeta(defaultValue, version, comment));
+	public void addEntry(String name, int version, String defaultValue, UpdateListener listener, String... comment) {
+		Preconditions.checkNotNull(listener);
+		addEntry(name, new EntryMeta(defaultValue, version, listener, comment));
 	}
 
-	public void addEntry(String name, int version, String defaultValue) {
-		addEntry(name, new EntryMeta(defaultValue, version));
+	public void addEntry(String name, int version, String defaultValue, UpdateListener listener) {
+		Preconditions.checkNotNull(listener);
+		addEntry(name, new EntryMeta(defaultValue, version, listener));
 	}
 
-	private void addEntry(String name, final EntryMeta meta) {
+	private void addEntry(String name, EntryMeta meta) {
 		EntryMeta prev = entries.put(name, meta);
 		Preconditions.checkState(prev == null, "Duplicate property '%s': [%s, %s]", name, prev, meta);
 	}
@@ -62,7 +67,7 @@ public class ConfigProcessor {
 		private static final long serialVersionUID = -3851628207393131247L;
 	}
 
-	public void process(File config, ValueSink sink) {
+	public void process(File config) {
 		boolean modified = false;
 
 		Log.info("Parsing config file '%s'", config);
@@ -83,7 +88,7 @@ public class ConfigProcessor {
 					modified = true;
 				}
 
-				sink.valueParsed(key, actualEntry.value);
+				defaultEntry.listener.valueSet(actualEntry.value);
 			}
 		}
 
@@ -103,8 +108,11 @@ public class ConfigProcessor {
 			Log.warn("Adding new values: '%s'", added);
 			modified = true;
 
-			for (String key : added)
-				values.put(key, entries.get(key));
+			for (String key : added) {
+				final EntryMeta entry = entries.get(key);
+				values.put(key, entry);
+				entry.listener.valueSet(entry.value);
+			}
 		}
 
 		if (modified) {

@@ -6,7 +6,8 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 
 import openmods.Log;
-import openmods.config.simple.ConfigProcessor.ValueSink;
+import openmods.config.simple.ConfigProcessor.UpdateListener;
+import openmods.utils.FieldAccess;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -38,29 +39,19 @@ public class ClassFrontend {
 			Field prev = fields.put(name, f);
 			Preconditions.checkState(prev == null, "Duplicate field name: %s, fields: %s, %s", name, f, prev);
 
-			String defaultValue;
-			try {
-				f.setAccessible(true);
-				defaultValue = (String)f.get(null);
-			} catch (Throwable t) {
-				throw new IllegalStateException(String.format("Failed to get default value from field %s", f), t);
-			}
+			final FieldAccess<String> wrap = FieldAccess.create(f);
 
+			String defaultValue = wrap.get(null);
 			Preconditions.checkNotNull(defaultValue, "Field %s has no default value", f);
-			processor.addEntry(name, e.version(), defaultValue, e.comment());
+
+			processor.addEntry(name, e.version(), defaultValue, new UpdateListener() {
+				@Override
+				public void valueSet(String value) {
+					wrap.set(null, value);
+				}
+			}, e.comment());
 		}
 
-		processor.process(file, new ValueSink() {
-			@Override
-			public void valueParsed(String name, String value) {
-				Field f = fields.get(name);
-				Preconditions.checkNotNull(f, "Ooops, %s : %s", cls, name);
-				try {
-					f.set(null, value);
-				} catch (Throwable t) {
-					throw new IllegalStateException(String.format("Failed to set value to field %s", f), t);
-				}
-			}
-		});
+		processor.process(file);
 	}
 }

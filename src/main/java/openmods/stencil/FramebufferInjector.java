@@ -1,6 +1,7 @@
 package openmods.stencil;
 
 import openmods.Log;
+import openmods.api.IResultListener;
 import openmods.asm.MappedType;
 import openmods.asm.MethodMatcher;
 
@@ -18,6 +19,8 @@ public class FramebufferInjector extends ClassVisitor {
 	private static final Type hookType = Type.getType(FramebufferHooks.class);
 
 	private final String className;
+
+	private final IResultListener listener;
 
 	static {
 		Type createRenderbufferType = Type.getMethodType(Type.VOID_TYPE, Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE);
@@ -53,6 +56,7 @@ public class FramebufferInjector extends ClassVisitor {
 
 				Type methodType = Type.getMethodType(Type.VOID_TYPE, ownerType);
 				super.visitMethodInsn(Opcodes.INVOKESTATIC, hookType.getInternalName(), "attachRenderbuffer", methodType.getDescriptor());
+				listener.onSuccess();
 			} else {
 				super.visitMethodInsn(opcode, owner, name, desc);
 			}
@@ -67,8 +71,10 @@ public class FramebufferInjector extends ClassVisitor {
 		return targetMethod.match(name, desc)? new CreateFramebufferInjector(parent) : parent;
 	}
 
-	public FramebufferInjector(String rawCls, ClassVisitor cv) {
+	public FramebufferInjector(String rawCls, ClassVisitor cv, IResultListener listener) {
 		super(Opcodes.ASM4, cv);
+
+		this.listener = listener;
 
 		this.className = rawCls.replace('.', '/');
 		Type targetType = Type.getMethodType(Type.VOID_TYPE, Type.INT_TYPE, Type.INT_TYPE);

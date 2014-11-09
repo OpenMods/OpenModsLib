@@ -1,6 +1,7 @@
 package openmods.movement;
 
 import openmods.Log;
+import openmods.api.IResultListener;
 import openmods.asm.MappedType;
 import openmods.asm.MethodMatcher;
 import openmods.asm.StopTransforming;
@@ -17,9 +18,11 @@ public class MovementPatcher extends ClassVisitor {
 	private final Method callbackMethod;
 	private final MethodMatcher injectedMethodMatcher;
 	private final MethodMatcher calledMethodMatcher;
+	private final IResultListener listener;
 
-	public MovementPatcher(String obfClassName, ClassVisitor cv) {
+	public MovementPatcher(String obfClassName, ClassVisitor cv, IResultListener listener) {
 		super(Opcodes.ASM4, cv);
+		this.listener = listener;
 
 		MappedType movementInput = MappedType.of("net/minecraft/util/MovementInput");
 		MappedType entityPlayer = MappedType.of("net/minecraft/entity/player/EntityPlayer");
@@ -48,6 +51,7 @@ public class MovementPatcher extends ClassVisitor {
 				if (PlayerMovementManager.callbackInjected) {
 					Log.warn("Method code mismatch, aborting");
 					PlayerMovementManager.callbackInjected = false;
+					listener.onFailure();
 					throw new StopTransforming();
 				}
 				visitInsn(Opcodes.DUP); // duplicate movement handler
@@ -60,7 +64,7 @@ public class MovementPatcher extends ClassVisitor {
 				visitVarInsn(Opcodes.ALOAD, 0); // load this
 				visitMethodInsn(Opcodes.INVOKESTATIC, MANAGER_CLASS, callbackMethod.getName(), callbackMethod.getDescriptor());
 				Log.info("Callback inserted. Using new movement handler.");
-				PlayerMovementManager.callbackInjected = true;
+				listener.onSuccess();
 			}
 		}
 	}

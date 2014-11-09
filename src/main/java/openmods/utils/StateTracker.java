@@ -1,0 +1,72 @@
+package openmods.utils;
+
+import java.util.Map;
+
+import openmods.Log;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+public class StateTracker<T extends Enum<T>> {
+
+	public static class StateUpdater<T extends Enum<T>> {
+		private final String name;
+		private T state;
+
+		public StateUpdater(String name, T state) {
+			this.name = name;
+			this.state = state;
+		}
+
+		public T state() {
+			return state;
+		}
+
+		public void update(T state) {
+			Log.info("State of %s updated from %s to %s", name, this.state, state);
+			this.state = state;
+		}
+
+		public String name() {
+			return name;
+		}
+
+		@Override
+		public String toString() {
+			return "[" + name + ":" + state + "]";
+		}
+	}
+
+	private final Map<String, StateUpdater<T>> states = Maps.newHashMap();
+
+	private final T defaultInitialState;
+
+	public StateTracker(T defaultInitialState) {
+		this.defaultInitialState = defaultInitialState;
+	}
+
+	public StateUpdater<T> register(String name) {
+		return register(name, defaultInitialState);
+	}
+
+	public StateUpdater<T> register(String name, T initialState) {
+		StateUpdater<T> state = new StateUpdater<T>(name, initialState);
+		StateUpdater<T> prev = states.put(name, state);
+		Preconditions.checkState(prev == null, "Duplicated tracked name: %s", name);
+		return state;
+	}
+
+	public Map<String, T> states() {
+		ImmutableMap.Builder<String, T> result = ImmutableMap.builder();
+
+		for (StateUpdater<T> e : states.values())
+			result.put(e.name, e.state);
+
+		return result.build();
+	}
+
+	public static <T extends Enum<T>> StateTracker<T> create(T initialState) {
+		return new StateTracker<T>(initialState);
+	}
+}
