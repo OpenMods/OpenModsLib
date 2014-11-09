@@ -3,10 +3,10 @@ package openmods;
 import java.util.Arrays;
 
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 
-import cpw.mods.fml.common.DummyModContainer;
-import cpw.mods.fml.common.LoadController;
-import cpw.mods.fml.common.ModMetadata;
+import cpw.mods.fml.common.*;
+import cpw.mods.fml.common.event.FMLConstructionEvent;
 
 public class OpenModsCore extends DummyModContainer {
 
@@ -23,7 +23,23 @@ public class OpenModsCore extends DummyModContainer {
 
 	@Override
 	public boolean registerBus(EventBus bus, LoadController controller) {
+		bus.register(this);
 		return true;
 	}
 
+	@Subscribe
+	public void modConstruction(FMLConstructionEvent evt) {
+		FMLCommonHandler.instance().registerCrashCallable(new ICrashCallable() {
+
+			@Override
+			public String call() throws Exception {
+				return OpenModsClassTransformer.instance().listStates();
+			}
+
+			@Override
+			public String getLabel() {
+				return "OpenModsLib crash transformers";
+			}
+		});
+	}
 }

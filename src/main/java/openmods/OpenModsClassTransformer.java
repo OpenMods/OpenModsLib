@@ -21,7 +21,10 @@ import openmods.world.MapGenStructureVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
+import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
 public class OpenModsClassTransformer implements IClassTransformer {
@@ -187,5 +190,9 @@ public class OpenModsClassTransformer implements IClassTransformer {
 			Log.severe(t, "Failed to apply including transformer on %s(%s)", name, transformedName);
 			throw Throwables.propagate(t);
 		}
+	}
+
+	public String listStates() {
+		return Joiner.on(',').join(Iterables.transform(states.states(), Functions.toStringFunction()));
 	}
 }

@@ -1,11 +1,12 @@
 package openmods.utils;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import openmods.Log;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 public class StateTracker<T extends Enum<T>> {
@@ -57,13 +58,8 @@ public class StateTracker<T extends Enum<T>> {
 		return state;
 	}
 
-	public Map<String, T> states() {
-		ImmutableMap.Builder<String, T> result = ImmutableMap.builder();
-
-		for (StateUpdater<T> e : states.values())
-			result.put(e.name, e.state);
-
-		return result.build();
+	public Collection<StateUpdater<T>> states() {
+		return Collections.unmodifiableCollection(states.values());
 	}
 
 	public static <T extends Enum<T>> StateTracker<T> create(T initialState) {
