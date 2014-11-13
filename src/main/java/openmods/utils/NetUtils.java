@@ -12,6 +12,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.management.PlayerManager;
 import net.minecraft.util.IntHashMap;
 import net.minecraft.world.WorldServer;
+import openmods.Log;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
@@ -66,15 +67,13 @@ public class NetUtils {
 		return getPlayersWatchingChunk(world, blockX >> 4, blockZ >> 4);
 	}
 
-	public static final ChannelFutureListener THROWING_LISTENER = new ChannelFutureListener() {
+	public static final ChannelFutureListener LOGGING_LISTENER = new ChannelFutureListener() {
 
 		@Override
 		public void operationComplete(ChannelFuture future) throws Exception {
 			if (!future.isSuccess()) {
 				Throwable cause = future.cause();
-				Throwables.propagateIfInstanceOf(cause, Exception.class);
-				Throwables.propagateIfInstanceOf(cause, Error.class);
-				throw Throwables.propagate(cause);
+				Log.severe(cause, "Crash in pipeline handler");
 			}
 		}
 	};

@@ -26,7 +26,7 @@ public abstract class Dispatcher<M> {
 		} else throw new IllegalArgumentException("Invalid target class: " + target);
 
 		if (arg != null) channel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(arg);
-		channel.writeAndFlush(msg).addListener(NetUtils.THROWING_LISTENER);
+		channel.writeAndFlush(msg).addListener(NetUtils.LOGGING_LISTENER);
 	}
 
 	public void sendToPlayer(M msg, EntityPlayerMP player) {

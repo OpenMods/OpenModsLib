@@ -29,25 +29,36 @@ public class ExtendedOutboundHandler extends ChannelOutboundHandlerAdapter {
 
 		final Channel channel = ctx.channel();
 
-		IPacketTargetSelector target = channel.attr(MESSAGETARGET).get();
+		final IPacketTargetSelector target = channel.attr(MESSAGETARGET).get();
 		if (target == null) {
 			ctx.write(msg);
 			return;
 		}
 
-		Side channelSide = channel.attr(NetworkRegistry.CHANNEL_SOURCE).get();
+		final FMLProxyPacket pkt = (FMLProxyPacket)msg;
+
+		final Side channelSide = channel.attr(NetworkRegistry.CHANNEL_SOURCE).get();
 
 		Preconditions.checkState(target.isAllowedOnSide(channelSide), "Packet not allowed on side");
 
+		final String channelName = channel.attr(NetworkRegistry.FML_CHANNEL).get();
+
 		Object arg = channel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).get();
 
-		Collection<NetworkDispatcher> dispatchers = Lists.newArrayList();
-		target.listDispatchers(arg, dispatchers);
+		try {
+			Collection<NetworkDispatcher> dispatchers = Lists.newArrayList();
+			target.listDispatchers(arg, dispatchers);
 
-		FMLProxyPacket pkt = (FMLProxyPacket)msg;
+			for (NetworkDispatcher dispatcher : dispatchers)
+				dispatcher.sendProxy(pkt);
 
-		for (NetworkDispatcher dispatcher : dispatchers)
-			dispatcher.sendProxy(pkt);
+		} catch (Throwable t) {
+
+			throw new IllegalStateException(String.format(
+					"Failed to select and send message (selector %s, arg: %s, channel: %s, side: %s)",
+					target, arg, channelName, channelSide), t);
+		}
+
 	}
 
 	public static void install(Map<Side, FMLEmbeddedChannel> channels) {

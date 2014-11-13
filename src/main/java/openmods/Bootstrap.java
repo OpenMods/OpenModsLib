@@ -7,8 +7,6 @@ import openmods.config.simple.ConfigProcessor;
 
 /**
  * Methods from core plugin, extracted to prevent accidental early load
- * @author boq
- *
  */
 public class Bootstrap {
 

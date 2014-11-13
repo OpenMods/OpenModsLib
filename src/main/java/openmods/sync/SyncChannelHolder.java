@@ -36,7 +36,7 @@ public class SyncChannelHolder {
 		FMLProxyPacket packet = new FMLProxyPacket(payload, CHANNEL_NAME);
 		FMLEmbeddedChannel channel = channels.get(Side.SERVER);
 		ExtendedOutboundHandler.selectTargets(channel, new SelectMultiplePlayers(), players);
-		channel.writeAndFlush(packet).addListener(NetUtils.THROWING_LISTENER);
+		channel.writeAndFlush(packet).addListener(NetUtils.LOGGING_LISTENER);
 	}
 
 	public static void ensureLoaded() {}

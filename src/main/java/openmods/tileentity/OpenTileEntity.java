@@ -131,7 +131,6 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return isUsedForClientInventoryRendering;
 	}
 
-
 	/** Called when an event is received */
 	public void onEvent(TileEntityMessageEventPacket event) {}
 
