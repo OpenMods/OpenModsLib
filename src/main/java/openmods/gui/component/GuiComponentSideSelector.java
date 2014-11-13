@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IListenerBase;
@@ -27,6 +28,8 @@ import org.lwjgl.opengl.GL11;
 
 public class GuiComponentSideSelector extends BaseComponent implements IValueReceiver<Set<ForgeDirection>> {
 
+	private static final double SQRT_3 = Math.sqrt(3);
+
 	public static interface ISideSelectedListener extends IListenerBase {
 		public void onSideToggled(ForgeDirection side, boolean currentState);
 	}
@@ -35,13 +38,13 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 	private final TrackballWrapper trackball = new TrackballWrapper(1, 40);
 
-	public double scale;
+	private final int diameter;
+	private final double scale;
 	private ForgeDirection lastSideHovered;
 	private final Set<ForgeDirection> selectedSides = EnumSet.noneOf(ForgeDirection.class);
 	private boolean highlightSelectedSides = true;
-	private int ticksSinceLastMouseEvent;
 
-	private boolean isInitialized;
+	private boolean isInInitialPosition;
 
 	private ISideSelectedListener sideSelectedListener;
 
@@ -52,6 +55,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	public GuiComponentSideSelector(int x, int y, double scale, Block block, int meta, TileEntity te, boolean highlightSelectedSides) {
 		super(x, y);
 		this.scale = scale;
+		this.diameter = MathHelper.ceiling_double_int(scale * SQRT_3);
 		this.block = block;
 		this.meta = meta;
 		this.te = te;
@@ -60,18 +64,19 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		ticksSinceLastMouseEvent++;
-		if (isInitialized == false || Mouse.isButtonDown(2)) {
+		if (isInInitialPosition == false || Mouse.isButtonDown(2)) {
 			trackball.setTransform(MathUtils.createEntityRotateMatrix(minecraft.renderViewEntity));
-			isInitialized = true;
+			isInInitialPosition = true;
 		}
+
+		final int width = getWidth();
+		final int height = getWidth();
+		// assumption: block is rendered in (0,0,0) - (1,1,1) coordinates
 		GL11.glPushMatrix();
 		Tessellator tessellator = Tessellator.instance;
-		GL11.glTranslated(offsetX + x + (scale / 2), offsetY + y + (scale / 2), scale);
+		GL11.glTranslatef(offsetX + x + width / 2, offsetY + y + height / 2, diameter);
 		GL11.glScaled(scale, -scale, scale);
-		// TODO: replace with proper width,height
-		// TODO: Get Mikee to check that I did this right -- NeverCast
-		trackball.update(mouseX - getWidth(), -(mouseY - getHeight()));
+		trackball.update(mouseX - width, -(mouseY - height));
 		if (te != null) TileEntityRendererDispatcher.instance.renderTileEntityAt(te, -0.5, -0.5, -0.5, 0.0F);
 		if (block != null) drawBlock(minecraft.renderEngine, tessellator);
 
@@ -178,27 +183,25 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	@Override
 	public void mouseUp(int mouseX, int mouseY, int button) {
 		super.mouseDown(mouseX, mouseY, button);
-		if (button == 0 && ticksSinceLastMouseEvent < 10 && lastSideHovered != null && lastSideHovered != ForgeDirection.UNKNOWN) {
+		if (button == 0 && lastSideHovered != null && lastSideHovered != ForgeDirection.UNKNOWN) {
 			toggleSide(lastSideHovered);
-			ticksSinceLastMouseEvent = 0;
 		}
 	}
 
 	@Override
 	public void mouseDown(int mouseX, int mouseY, int button) {
 		super.mouseDown(mouseX, mouseY, button);
-		ticksSinceLastMouseEvent = 0;
 		lastSideHovered = null;
 	}
 
 	@Override
 	public int getWidth() {
-		return 50;
+		return diameter;
 	}
 
 	@Override
 	public int getHeight() {
-		return 50;
+		return diameter;
 	}
 
 	@Override

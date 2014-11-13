@@ -29,7 +29,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 	protected abstract GuiComponentTab createTab(E slot);
 
 	protected GuiComponentSideSelector createSideSelector(E slot, Block block, int meta, T te) {
-		return new GuiComponentSideSelector(30, 30, 40.0, block, meta, te, true);
+		return new GuiComponentSideSelector(15, 15, 40.0, block, meta, te, true);
 	}
 
 	protected GuiComponentCheckbox createCheckbox(E slot) {
