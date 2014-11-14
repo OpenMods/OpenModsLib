@@ -12,7 +12,7 @@ public class FramebufferHooks {
 	static boolean STENCIL_BUFFER_INJECTED;
 
 	public static void createRenderbufferStorage(int target, int format, int width, int height) {
-		if (FramebufferConstants.DEPTH_STENCIL_FORMAT != -1) {
+		if (FramebufferConstants.isStencilBufferEnabled()) {
 			OpenGlHelper.func_153186_a(target, FramebufferConstants.DEPTH_STENCIL_FORMAT, width, height);
 			int error = GL11.glGetError();
 			if (error == GL11.GL_NO_ERROR) {

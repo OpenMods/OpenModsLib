@@ -6,11 +6,12 @@ import openmods.Log;
 import org.lwjgl.opengl.*;
 
 public class FramebufferConstants {
+	private static final int FEATURE_UNAVAILABLE = -1;
 	public static int GL_STENCIL_ATTACHMENT;
 	public static int GL_FRAMEBUFFER_UNSUPPORTED;
 	public static int GL_FRAMEBUFFER_UNDEFINED;
 
-	public static int DEPTH_STENCIL_FORMAT = -1;
+	public static int DEPTH_STENCIL_FORMAT = FEATURE_UNAVAILABLE;
 
 	public static void init() {
 		ContextCapabilities capabilities = GLContext.getCapabilities();
@@ -28,11 +29,15 @@ public class FramebufferConstants {
 		} else if (capabilities.GL_EXT_framebuffer_object) {
 			GL_STENCIL_ATTACHMENT = EXTFramebufferObject.GL_STENCIL_ATTACHMENT_EXT;
 			GL_FRAMEBUFFER_UNSUPPORTED = EXTFramebufferObject.GL_FRAMEBUFFER_UNSUPPORTED_EXT;
-			GL_FRAMEBUFFER_UNDEFINED = -1; // missing
-			DEPTH_STENCIL_FORMAT = capabilities.GL_EXT_packed_depth_stencil? EXTPackedDepthStencil.GL_DEPTH24_STENCIL8_EXT : -1;
+			GL_FRAMEBUFFER_UNDEFINED = FEATURE_UNAVAILABLE; // missing
+			DEPTH_STENCIL_FORMAT = capabilities.GL_EXT_packed_depth_stencil? EXTPackedDepthStencil.GL_DEPTH24_STENCIL8_EXT : FEATURE_UNAVAILABLE;
 		} else {
-			throw new IllegalArgumentException("Unable to determine capabilities");
+			Log.warn("No stencil buffer capabilities available");
 		}
+	}
+	
+	public static boolean isStencilBufferEnabled() {
+		return DEPTH_STENCIL_FORMAT != FEATURE_UNAVAILABLE;
 	}
 
 	private static boolean logError(String name) {
