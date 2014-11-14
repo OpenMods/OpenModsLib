@@ -60,7 +60,7 @@ public class ColorUtils {
 			final int index = ordinal();
 			this.vanillaDyeId = index;
 			this.vanillaBlockId = ~index & 15;
-			this.bitmask = 1 << index;
+			this.bitmask = 1 << vanillaBlockId;
 		}
 
 		private static final ColorMeta[] COLORS = ColorMeta.values();
