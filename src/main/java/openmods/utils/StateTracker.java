@@ -25,7 +25,7 @@ public class StateTracker<T extends Enum<T>> {
 		}
 
 		public void update(T state) {
-			Log.info("State of %s updated from %s to %s", name, this.state, state);
+			Log.trace("State of %s updated from %s to %s", name, this.state, state);
 			this.state = state;
 		}
 
