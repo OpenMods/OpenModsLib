@@ -3,7 +3,7 @@ package openmods.utils;
 /**
  * Provides constants for the types of block notifications possible in
  * World.setBlock()
- * 
+ *
  * @author: bspkrs
  */
 

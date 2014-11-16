@@ -38,7 +38,7 @@ public class EnchantmentUtils {
 	/**
 	 * Be warned, minecraft doesn't update experienceTotal properly, so we have
 	 * to do this.
-	 * 
+	 *
 	 * @param player
 	 * @return
 	 */

@@ -47,7 +47,7 @@ public class RenderUtils {
 	 * Please! For the love of sanity. Do not store this instance ANYWHERE!
 	 * If you set it to a TE or Entity, Please remove it after you're done!
 	 * THANK YOU!
-	 * 
+	 *
 	 * @return Returns a world for rendering with
 	 */
 	public static World getRenderWorld() {

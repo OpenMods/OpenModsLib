@@ -14,11 +14,11 @@ import com.google.common.collect.Ordering;
  * compares it against the locally provided version string. It
  * uses NaturalOrderComparator.java to determine if the remote version is newer
  * than our local version.
- * 
+ *
  * This is a non-nagging implementation. An example implementation of the source
  * version of this version checker can be found at:
  * https://github.com/bspkrs/bspkrsCore/tree/master/testmod/bspkrs/testmod
- * 
+ *
  * @author bspkrs
  */
 

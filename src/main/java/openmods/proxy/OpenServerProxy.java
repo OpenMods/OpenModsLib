@@ -16,7 +16,7 @@ public class OpenServerProxy implements IOpenModsProxy {
 
 	/**
 	 * Checks if this game is SinglePlayer
-	 * 
+	 *
 	 * @return true if this is single player
 	 */
 	public boolean isSinglePlayer() {

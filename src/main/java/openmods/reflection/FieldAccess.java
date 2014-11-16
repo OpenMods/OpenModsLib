@@ -2,7 +2,6 @@ package openmods.reflection;
 
 import java.lang.reflect.Field;
 
-
 public class FieldAccess<T> {
 
 	public static class FieldAccessException extends RuntimeException {

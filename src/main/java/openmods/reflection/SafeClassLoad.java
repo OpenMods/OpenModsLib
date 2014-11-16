@@ -9,7 +9,7 @@ public class SafeClassLoad {
 	public SafeClassLoad(String clsName) {
 		this.clsName = clsName;
 	}
-	
+
 	public static SafeClassLoad create(String clsName) {
 		return new SafeClassLoad(clsName);
 	}

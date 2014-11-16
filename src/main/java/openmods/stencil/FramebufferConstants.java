@@ -35,7 +35,7 @@ public class FramebufferConstants {
 			Log.warn("No stencil buffer capabilities available");
 		}
 	}
-	
+
 	public static boolean isStencilBufferEnabled() {
 		return DEPTH_STENCIL_FORMAT != FEATURE_UNAVAILABLE;
 	}

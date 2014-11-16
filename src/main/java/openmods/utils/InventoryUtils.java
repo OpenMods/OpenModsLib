@@ -22,11 +22,11 @@ public class InventoryUtils {
 	/***
 	 * Try to merge the supplied stack into the supplied slot in the target
 	 * inventory
-	 * 
+	 *
 	 * @param targetInventory
 	 *            Although it doesn't return anything, it'll REDUCE the stack
 	 *            size of the stack that you pass in
-	 * 
+	 *
 	 * @param slot
 	 * @param stack
 	 */
@@ -123,7 +123,7 @@ public class InventoryUtils {
 	 * you insert into, pass -1 for intoSlot. If you're passing false for
 	 * doMove, it'll create a dummy inventory and its calculations on that
 	 * instead
-	 * 
+	 *
 	 * @param fromInventory
 	 *            the inventory the item is coming from
 	 * @param fromSlot
@@ -236,7 +236,7 @@ public class InventoryUtils {
 	/***
 	 * Get the indexes of all slots containing a stack of the supplied item
 	 * type.
-	 * 
+	 *
 	 * @param inventory
 	 * @param stack
 	 * @return Returns a set of the slot indexes
@@ -253,7 +253,7 @@ public class InventoryUtils {
 
 	/***
 	 * Get the first slot containing an item type matching the supplied type.
-	 * 
+	 *
 	 * @param inventory
 	 * @param stack
 	 * @return Returns -1 if none found
@@ -269,7 +269,7 @@ public class InventoryUtils {
 
 	/***
 	 * Consume ONE of the supplied item types
-	 * 
+	 *
 	 * @param inventory
 	 * @param stack
 	 * @return Returns whether or not it was able to
@@ -289,7 +289,7 @@ public class InventoryUtils {
 
 	/**
 	 * Get the first slot index in an inventory with an item
-	 * 
+	 *
 	 * @param invent
 	 * @return The slot index, or -1 if the inventory is empty
 	 */
@@ -303,7 +303,7 @@ public class InventoryUtils {
 
 	/***
 	 * Removes an item stack from the inventory and returns a copy of it
-	 * 
+	 *
 	 * @param invent
 	 * @return A copy of the stack it removed
 	 */
@@ -351,7 +351,7 @@ public class InventoryUtils {
 	/**
 	 * Tests to see if an item stack can be inserted in to an inventory Does not
 	 * perform the insertion, only tests the possibility
-	 * 
+	 *
 	 * @param inventory
 	 *            The inventory to insert the stack into
 	 * @param item

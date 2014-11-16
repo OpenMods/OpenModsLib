@@ -22,7 +22,7 @@ public class PacketChunker {
 
 	/***
 	 * Split a byte array into one or more chunks with headers
-	 * 
+	 *
 	 * @param data
 	 * @return the list of chunks
 	 */
@@ -66,7 +66,7 @@ public class PacketChunker {
 	 * Get the bytes from the packet. If the total packet is not yet complete
 	 * (and we're waiting for more to complete the sequence), we return null.
 	 * Otherwise we return the full byte array
-	 * 
+	 *
 	 * @param payload
 	 *            one of the chunks
 	 * @return the full byte array or null if not complete
