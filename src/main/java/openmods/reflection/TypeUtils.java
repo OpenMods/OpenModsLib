@@ -28,4 +28,10 @@ public class TypeUtils {
 			Preconditions.checkArgument(cls.isInstance(o), "%s is not instance of %s", o, cls);
 	}
 
+	public static boolean compareTypes(Class<?> left, Class<?> right) {
+		if (left.isPrimitive()) left = PRIMITIVE_TYPES_MAP.get(left);
+		if (right.isPrimitive()) right = PRIMITIVE_TYPES_MAP.get(right);
+		return left.equals(right);
+	}
+
 }
