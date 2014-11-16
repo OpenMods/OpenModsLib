@@ -12,8 +12,8 @@ import openmods.Log;
 import openmods.network.rpc.IRpcTarget;
 import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.SyncRpcTarget;
+import openmods.reflection.TypeUtils;
 import openmods.sync.*;
-import openmods.utils.TypeUtils;
 
 public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMapProvider {
 

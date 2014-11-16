@@ -16,8 +16,8 @@ import openmods.network.rpc.IRpcTarget;
 import openmods.network.rpc.IRpcTargetProvider;
 import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
+import openmods.reflection.TypeUtils;
 import openmods.utils.Coord;
-import openmods.utils.TypeUtils;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 

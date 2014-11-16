@@ -1,5 +1,6 @@
 package openmods.utils;
 
+import openmods.reflection.FieldAccess;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;

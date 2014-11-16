@@ -5,7 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
-import openmods.utils.InstanceFieldAccess;
+import openmods.reflection.InstanceFieldAccess;
 import openmods.utils.io.IStreamSerializable;
 import openmods.utils.io.TypeRW;
 

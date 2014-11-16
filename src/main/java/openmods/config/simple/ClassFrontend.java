@@ -7,7 +7,7 @@ import java.util.Map;
 
 import openmods.Log;
 import openmods.config.simple.ConfigProcessor.UpdateListener;
-import openmods.utils.FieldAccess;
+import openmods.reflection.FieldAccess;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;

@@ -1,4 +1,4 @@
-package openmods.utils;
+package openmods.reflection;
 
 import static com.google.common.base.Preconditions.checkArgument;
 

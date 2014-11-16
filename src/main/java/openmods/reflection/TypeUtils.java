@@ -1,4 +1,4 @@
-package openmods.utils;
+package openmods.reflection;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;

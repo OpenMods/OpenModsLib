@@ -1,6 +1,7 @@
-package openmods.utils;
+package openmods.reflection;
 
 import java.lang.reflect.Field;
+
 
 import com.google.common.base.Throwables;
 

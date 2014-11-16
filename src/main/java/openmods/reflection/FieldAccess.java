@@ -1,6 +1,7 @@
-package openmods.utils;
+package openmods.reflection;
 
 import java.lang.reflect.Field;
+
 
 public class FieldAccess<T> {
 

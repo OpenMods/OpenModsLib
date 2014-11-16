@@ -1,4 +1,4 @@
-package openmods.utils;
+package openmods.reflection;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
