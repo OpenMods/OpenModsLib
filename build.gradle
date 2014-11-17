@@ -4,12 +4,6 @@
  */
 
 //================================================
-// Variables
-ext.mod_version = '0.6'
-ext.mc_ver = '1.7.10'
-ext.forge_ver = '10.13.2.1230'
-
-//================================================
 // Pre-execute
 
 buildscript {
@@ -103,11 +97,11 @@ ext.gitManifest = manifest {
 // Setup Forge plugin
 minecraft {
     version = mc_ver + "-" + forge_ver
-    assetDir = "eclipse/assets"
+    runDir = "eclipse/assets"
     
     replaceIn "openmods/OpenMods.java"
     replaceIn "openmods/OpenModsCore.java"
-    replace '@VERSION@', mod_version
+    replace '$LIB-VERSION$', mod_version
 }
 
 processResources {
