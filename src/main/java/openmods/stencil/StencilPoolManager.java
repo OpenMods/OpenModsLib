@@ -13,6 +13,10 @@ public class StencilPoolManager {
 		public StencilBitAllocation acquire();
 
 		public void release(StencilBitAllocation bit);
+
+		public int getSize();
+
+		public String getType();
 	}
 
 	private static final StencilPoolImpl DUMMY = new StencilPoolImpl() {
@@ -27,6 +31,16 @@ public class StencilPoolManager {
 			throw new IllegalStateException();
 		}
 
+		@Override
+		public int getSize() {
+			return 0;
+		}
+
+		@Override
+		public String getType() {
+			return "disabled";
+		}
+
 	};
 
 	private static final StencilPoolImpl FORGE = new StencilPoolImpl() {
@@ -39,6 +53,16 @@ public class StencilPoolManager {
 		@Override
 		public void release(StencilBitAllocation allocation) {
 			MinecraftForgeClient.releaseStencilBit(allocation.bit);
+		}
+
+		@Override
+		public int getSize() {
+			return MinecraftForgeClient.getStencilBits();
+		}
+
+		@Override
+		public String getType() {
+			return getForgeStencilFlag()? "forge (forced)" : "forge";
 		}
 	};
 
@@ -66,12 +90,26 @@ public class StencilPoolManager {
 
 			return null;
 		}
+
+		@Override
+		public int getSize() {
+			return 8;
+		}
+
+		@Override
+		public String getType() {
+			return "internal";
+		}
 	};
 
 	public static StencilPoolImpl pool() {
 		if (MinecraftForgeClient.getStencilBits() > 0) return FORGE;
 		if (FramebufferHooks.STENCIL_BUFFER_INJECTED) return INTERNAL;
 		return DUMMY;
+	}
+
+	private static boolean getForgeStencilFlag() {
+		return Boolean.parseBoolean(System.getProperty("forge.forceDisplayStencil", "false"));
 	}
 
 }

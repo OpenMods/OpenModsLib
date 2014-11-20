@@ -16,9 +16,13 @@ import openmods.Log;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
+import openmods.stencil.FramebufferConstants;
+import openmods.stencil.StencilPoolManager;
+import openmods.stencil.StencilPoolManager.StencilPoolImpl;
 import openmods.utils.render.RenderUtils;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.ICrashCallable;
 import cpw.mods.fml.common.network.IGuiHandler;
 
 public class OpenClientProxy implements IOpenModsProxy {
@@ -70,6 +74,19 @@ public class OpenClientProxy implements IOpenModsProxy {
 	public void preInit() {
 		ClientCommandHandler.instance.registerCommand(new CommandConfig("om_config_c", false));
 		RenderUtils.registerFogUpdater();
+
+		FMLCommonHandler.instance().registerCrashCallable(new ICrashCallable() {
+			@Override
+			public String call() throws Exception {
+				final StencilPoolImpl pool = StencilPoolManager.pool();
+				return String.format("Function set: %s, pool: %s, bits: %s", FramebufferConstants.getMethodSet(), pool.getType(), pool.getSize());
+			}
+
+			@Override
+			public String getLabel() {
+				return "Stencil buffer state";
+			}
+		});
 	}
 
 	@Override
