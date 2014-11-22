@@ -87,6 +87,10 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		this.renderMode = renderMode;
 	}
 
+	public ForgeDirection getRotation(int metadata) {
+		return blockRotationMode.fromValue(metadata & blockRotationMode.mask);
+	}
+
 	@SideOnly(Side.CLIENT)
 	public ForgeDirection getInventoryRenderRotation() {
 		return inventoryRenderRotation;
@@ -141,11 +145,11 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void breakBlock(World world, int x, int y, int z, Block par5, int par6) {
+	public void breakBlock(World world, int x, int y, int z, Block block, int meta) {
 		final TileEntity te = world.getTileEntity(x, y, z);
 		if (te instanceof IBreakAwareTile) ((IBreakAwareTile)te).onBlockBroken();
 		world.removeTileEntity(x, y, z);
-		super.breakBlock(world, x, y, z, par5, par6);
+		super.breakBlock(world, x, y, z, block, meta);
 	}
 
 	private void getTileEntityDrops(TileEntity te, List<ItemStack> result, int fortune) {

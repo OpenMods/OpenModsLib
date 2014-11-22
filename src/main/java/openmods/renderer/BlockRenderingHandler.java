@@ -10,7 +10,20 @@ import com.google.common.collect.Maps;
 
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
-public abstract class BlockRenderingHandlerBase implements ISimpleBlockRenderingHandler {
+public class BlockRenderingHandler implements ISimpleBlockRenderingHandler {
+
+	private final boolean itemsIn3d;
+
+	private final int renderId;
+
+	public BlockRenderingHandler(int renderId) {
+		this(renderId, true);
+	}
+
+	public BlockRenderingHandler(int renderId, boolean itemsIn3d) {
+		this.renderId = renderId;
+		this.itemsIn3d = itemsIn3d;
+	}
 
 	protected static final IBlockRenderer<Block> DEFAULT_RENDERER = new DefaultBlockRenderer();
 	protected final Map<Block, IBlockRenderer<Block>> blockRenderers = Maps.newIdentityHashMap();
@@ -38,6 +51,11 @@ public abstract class BlockRenderingHandlerBase implements ISimpleBlockRendering
 
 	@Override
 	public boolean shouldRender3DInInventory(int modelId) {
-		return true;
+		return itemsIn3d;
+	}
+
+	@Override
+	public int getRenderId() {
+		return renderId;
 	}
 }

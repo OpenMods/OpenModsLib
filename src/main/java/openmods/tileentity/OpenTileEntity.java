@@ -8,7 +8,6 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.api.IInventoryCallback;
-import openmods.block.BlockRotationMode;
 import openmods.block.OpenBlock;
 import openmods.events.network.TileEntityMessageEventPacket;
 import openmods.inventory.GenericInventory;
@@ -41,10 +40,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		final OpenBlock openBlock = (OpenBlock)block;
 
 		if (isUsedForClientInventoryRendering) return openBlock.getInventoryRenderRotation();
-		final BlockRotationMode rotationMode = openBlock.getRotationMode();
-
-		int metadata = getBlockMetadata() & rotationMode.mask;
-		return rotationMode.fromValue(metadata);
+		return openBlock.getRotation(getBlockMetadata());
 	}
 
 	@SideOnly(Side.CLIENT)
