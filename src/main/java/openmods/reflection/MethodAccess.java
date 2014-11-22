@@ -127,11 +127,32 @@ public class MethodAccess {
 
 		@Override
 		public R call(Object target, P1 p1, P2 p2, P3 p3, P4 p4) {
-			return super.call(target, p1, p2, p3);
+			return super.call(target, p1, p2, p3, p4);
 		}
 	}
 
 	public static <R, P1, P2, P3, P4> Function4<R, P1, P2, P3, P4> create(Class<? extends R> returnCls, Class<?> target, Class<? extends P1> p1, Class<? extends P2> p2, Class<? extends P3> p3, Class<? extends P4> p4, String... names) {
 		return new Function4Impl<R, P1, P2, P3, P4>(returnCls, ReflectionHelper.getMethod(target, names, p1, p2, p3, p4));
+	}
+
+	// R(P1, P2, P3, P4, P5)
+
+	public interface Function5<R, P1, P2, P3, P4, P5> {
+		public R call(Object target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5);
+	}
+
+	private static class Function5Impl<R, P1, P2, P3, P4, P5> extends FunctionWrap<R> implements Function5<R, P1, P2, P3, P4, P5> {
+		public Function5Impl(Class<? extends R> returnCls, Method method) {
+			super(returnCls, method);
+		}
+
+		@Override
+		public R call(Object target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) {
+			return super.call(target, p1, p2, p3, p4, p5);
+		}
+	}
+
+	public static <R, P1, P2, P3, P4, P5> Function5<R, P1, P2, P3, P4, P5> create(Class<? extends R> returnCls, Class<?> target, Class<? extends P1> p1, Class<? extends P2> p2, Class<? extends P3> p3, Class<? extends P4> p4, Class<? extends P5> p5, String... names) {
+		return new Function5Impl<R, P1, P2, P3, P4, P5>(returnCls, ReflectionHelper.getMethod(target, names, p1, p2, p3, p4, p5));
 	}
 }
