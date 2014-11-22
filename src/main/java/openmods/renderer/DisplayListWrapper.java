@@ -8,7 +8,7 @@ public abstract class DisplayListWrapper {
 
 	@Override
 	protected void finalize() {
-		if (displayList != null) GL11.glDeleteLists(displayList, 1);
+		reset();
 	}
 
 	public boolean isCompiled() {
@@ -27,4 +27,11 @@ public abstract class DisplayListWrapper {
 	}
 
 	public abstract void compile();
+
+	public void reset() {
+		if (displayList != null) {
+			GL11.glDeleteLists(displayList, 1);
+			displayList = null;
+		}
+	}
 }

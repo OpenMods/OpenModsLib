@@ -17,7 +17,7 @@ public abstract class BlockRenderingHandlerBase implements ISimpleBlockRendering
 
 	@SuppressWarnings("unchecked")
 	public <B extends Block> void addRenderer(B block, IBlockRenderer<B> renderer) {
-		blockRenderers.put(block, (IBlockRenderer<Block>)renderer);
+		if (block != null) blockRenderers.put(block, (IBlockRenderer<Block>)renderer);
 	}
 
 	protected IBlockRenderer<Block> getRenderer(Block block) {
