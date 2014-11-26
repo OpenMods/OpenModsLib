@@ -9,3 +9,8 @@ openmodslib.command.cancelled=Config change cancelled!
 openmodslib.command.unknown_error=Unknown error during config property change: %s
 openmodslib.command.invalid_command=Invalid command '%s'
 openmodslib.command.invalid_type=Can't convert value %s to %s
+openmodslib.command.invalid_class_name=Invalid class name %s
+openmodslib.command.unknown_error_details=Unknown error. Please check logs for more details.
+openmodslib.command.class_source=Class '%s' loaded from '%s'
+openmodslib.command.api_class=API information: name='%s', ownerMod='%s', version='%s'
+openmodslib.command.class_provider=Class provided by file %s (mods: %s)

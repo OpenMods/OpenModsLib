@@ -13,9 +13,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.DimensionManager;
 import openmods.Log;
+import openmods.OpenMods;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
+import openmods.source.CommandSource;
 import openmods.stencil.FramebufferConstants;
 import openmods.stencil.StencilPoolManager;
 import openmods.stencil.StencilPoolManager.StencilPoolImpl;
@@ -73,6 +75,8 @@ public class OpenClientProxy implements IOpenModsProxy {
 	@Override
 	public void preInit() {
 		ClientCommandHandler.instance.registerCommand(new CommandConfig("om_config_c", false));
+		ClientCommandHandler.instance.registerCommand(new CommandSource("om_source_c", false, OpenMods.instance.getCollector()));
+
 		RenderUtils.registerFogUpdater();
 
 		FMLCommonHandler.instance().registerCrashCallable(new ICrashCallable() {

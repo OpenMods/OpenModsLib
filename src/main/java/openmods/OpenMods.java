@@ -19,6 +19,8 @@ import openmods.network.rpc.targets.EntityRpcTarget;
 import openmods.network.rpc.targets.SyncRpcTarget;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.proxy.IOpenModsProxy;
+import openmods.source.ClassSourceCollector;
+import openmods.source.CommandSource;
 import openmods.sync.SyncChannelHolder;
 import openmods.utils.bitmap.IRpcDirectionBitMap;
 import openmods.utils.bitmap.IRpcIntBitMap;
@@ -36,6 +38,12 @@ public class OpenMods {
 
 	@SidedProxy(clientSide = "openmods.proxy.OpenClientProxy", serverSide = "openmods.proxy.OpenServerProxy")
 	public static IOpenModsProxy proxy;
+
+	private ClassSourceCollector collector;
+
+	public ClassSourceCollector getCollector() {
+		return collector;
+	}
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent evt) {
@@ -65,6 +73,8 @@ public class OpenMods {
 
 		FMLCommonHandler.instance().bus().register(DelayedActionTickHandler.INSTANCE);
 
+		collector = new ClassSourceCollector(evt.getAsmData());
+
 		proxy.preInit();
 	}
 
@@ -89,5 +99,6 @@ public class OpenMods {
 	@EventHandler
 	public void severStart(FMLServerStartingEvent evt) {
 		evt.registerServerCommand(new CommandConfig("om_config_s", true));
+		evt.registerServerCommand(new CommandSource("om_source_s", true, collector));
 	}
 }
