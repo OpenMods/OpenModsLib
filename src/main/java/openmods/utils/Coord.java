@@ -1,6 +1,8 @@
 package openmods.utils;
 
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.ChunkPosition;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -8,12 +10,6 @@ public class Coord implements Cloneable {
 	public final int x;
 	public final int y;
 	public final int z;
-
-	public Coord(ForgeDirection direction) {
-		x = direction.offsetX;
-		y = direction.offsetY;
-		z = direction.offsetZ;
-	}
 
 	public Coord(int x, int y, int z) {
 		this.x = x;
@@ -27,16 +23,24 @@ public class Coord implements Cloneable {
 		this.z = MathHelper.floor_double(z);
 	}
 
+	public Coord(ForgeDirection direction) {
+		this(direction.offsetX, direction.offsetY, direction.offsetZ);
+	}
+
 	public Coord(int[] coords) {
-		this.x = coords[0];
-		this.y = coords[1];
-		this.z = coords[2];
+		this(coords[0], coords[1], coords[2]);
 	}
 
 	public Coord(ChunkPosition pos) {
-		this.x = pos.chunkPosX;
-		this.y = pos.chunkPosY;
-		this.z = pos.chunkPosZ;
+		this(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ);
+	}
+
+	public Coord(ChunkCoordinates pos) {
+		this(pos.posX, pos.posY, pos.posZ);
+	}
+
+	public Coord(Vec3 vec) {
+		this(vec.xCoord, vec.yCoord, vec.zCoord);
 	}
 
 	public Coord offset(ForgeDirection direction) {
@@ -71,6 +75,14 @@ public class Coord implements Cloneable {
 
 	public ChunkPosition asChunkPosition() {
 		return new ChunkPosition(x, y, z);
+	}
+
+	public ChunkCoordinates asChunkCoordinate() {
+		return new ChunkCoordinates(x, y, z);
+	}
+
+	public Vec3 asVector() {
+		return Vec3.createVectorHelper(x, y, z);
 	}
 
 	public Coord add(Coord other) {
