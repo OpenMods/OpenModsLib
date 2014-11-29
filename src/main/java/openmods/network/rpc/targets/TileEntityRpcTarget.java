@@ -7,10 +7,8 @@ import java.io.IOException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import net.minecraftforge.common.DimensionManager;
 import openmods.network.rpc.IRpcTarget;
-
-import com.google.common.base.Preconditions;
+import openmods.utils.WorldUtils;
 
 public class TileEntityRpcTarget implements IRpcTarget {
 
@@ -42,8 +40,7 @@ public class TileEntityRpcTarget implements IRpcTarget {
 		int y = input.readInt();
 		int z = input.readInt();
 
-		World world = DimensionManager.getWorld(worldId);
-		Preconditions.checkNotNull(world, "Can't find dimension id %s", worldId);
+		World world = WorldUtils.getWorld(worldId);
 		te = world.getTileEntity(x, y, z);
 	}
 

@@ -17,6 +17,8 @@ import cpw.mods.fml.relauncher.Side;
 
 public class SelectChunkWatchers implements IPacketTargetSelector {
 
+	public static final IPacketTargetSelector INSTANCE = new SelectChunkWatchers();
+
 	@Override
 	public boolean isAllowedOnSide(Side side) {
 		return side == Side.SERVER;

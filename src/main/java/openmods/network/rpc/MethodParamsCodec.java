@@ -70,6 +70,12 @@ public class MethodParamsCodec {
 	}
 
 	public void writeArgs(DataOutput output, Object... args) {
+		if (args == null) {
+			Preconditions.checkArgument(0 == params.length,
+					"Argument list length mismatch, expected %d, got 0", params.length);
+			return;
+		}
+
 		Preconditions.checkArgument(args.length == params.length,
 				"Argument list length mismatch, expected %d, got %d", params.length, args.length);
 		for (int i = 0; i < args.length; i++) {
@@ -125,6 +131,8 @@ public class MethodParamsCodec {
 	}
 
 	public Object[] readArgs(DataInput input) {
+		if (params.length == 0) return null;
+
 		Object[] result = new Object[params.length];
 		for (int i = 0; i < params.length; i++) {
 			MethodParam param = params[i];

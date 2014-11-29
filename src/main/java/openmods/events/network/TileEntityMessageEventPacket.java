@@ -10,10 +10,9 @@ import net.minecraft.world.World;
 import openmods.network.DimCoord;
 import openmods.network.event.NetworkEvent;
 import openmods.network.event.NetworkEventManager;
-import openmods.tileentity.OpenTileEntity;
 import openmods.utils.WorldUtils;
 
-public class TileEntityMessageEventPacket extends NetworkEvent {
+public abstract class TileEntityMessageEventPacket extends NetworkEvent {
 	public int dimension;
 	public int xCoord;
 	public int yCoord;
@@ -21,7 +20,7 @@ public class TileEntityMessageEventPacket extends NetworkEvent {
 
 	public TileEntityMessageEventPacket() {}
 
-	public TileEntityMessageEventPacket(OpenTileEntity tile) {
+	public TileEntityMessageEventPacket(TileEntity tile) {
 		dimension = tile.getWorldObj().provider.dimensionId;
 		xCoord = tile.xCoord;
 		yCoord = tile.yCoord;
@@ -69,15 +68,13 @@ public class TileEntityMessageEventPacket extends NetworkEvent {
 		info.add(String.format("%d,%d,%d", xCoord, yCoord, zCoord));
 	}
 
-	public OpenTileEntity getTileEntity() {
+	public TileEntity getTileEntity() {
 		World world = WorldUtils.getWorld(dimension);
-
-		TileEntity te = world.getTileEntity(xCoord, yCoord, zCoord);
-		return (te instanceof OpenTileEntity)? (OpenTileEntity)te : null;
+		return world.getTileEntity(xCoord, yCoord, zCoord);
 	}
 
 	public void sendToWatchers() {
-		NetworkEventManager.INSTANCE.dispatcher().sendToBlockWatchers(this, getDimCoords());
+		NetworkEventManager.INSTANCE.dispatcher().senders.block.sendPacket(this, getDimCoords());
 	}
 
 	public DimCoord getDimCoords() {

@@ -9,12 +9,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.api.IInventoryCallback;
 import openmods.block.OpenBlock;
-import openmods.events.network.TileEntityMessageEventPacket;
 import openmods.inventory.GenericInventory;
-import openmods.network.rpc.IRpcTarget;
-import openmods.network.rpc.IRpcTargetProvider;
-import openmods.network.rpc.RpcCallDispatcher;
+import openmods.network.DimCoord;
+import openmods.network.rpc.*;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
+import openmods.network.senders.IPacketSender;
 import openmods.reflection.TypeUtils;
 import openmods.utils.Coord;
 import cpw.mods.fml.relauncher.Side;
@@ -32,6 +31,10 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 
 	public Coord getPosition() {
 		return new Coord(xCoord, yCoord, zCoord);
+	}
+
+	public DimCoord getDimCoords() {
+		return new DimCoord(worldObj.provider.dimensionId, xCoord, yCoord, zCoord);
 	}
 
 	public ForgeDirection getRotation() {
@@ -127,17 +130,20 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return isUsedForClientInventoryRendering;
 	}
 
-	/** Called when an event is received */
-	public void onEvent(TileEntityMessageEventPacket event) {}
-
 	@Override
 	public IRpcTarget createRpcTarget() {
 		return new TileEntityRpcTarget(this);
 	}
 
-	public <T> T createRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
+	public <T> T createClientRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		TypeUtils.isInstance(this, mainIntf, extraIntf);
-		return RpcCallDispatcher.INSTANCE.createProxy(createRpcTarget(), mainIntf, extraIntf);
+		return RpcCallDispatcher.INSTANCE.createClientProxy(createRpcTarget(), mainIntf, extraIntf);
+	}
+
+	public <T> T createServerRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
+		TypeUtils.isInstance(this, mainIntf, extraIntf);
+		final IPacketSender<RpcCall> sender = RpcCallDispatcher.INSTANCE.senders.block.bind(getDimCoords());
+		return RpcCallDispatcher.INSTANCE.createProxy(createRpcTarget(), sender, mainIntf, extraIntf);
 	}
 
 	public void markUpdated() {

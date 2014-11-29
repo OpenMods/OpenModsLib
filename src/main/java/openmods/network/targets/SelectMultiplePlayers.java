@@ -10,6 +10,8 @@ import cpw.mods.fml.relauncher.Side;
 
 public class SelectMultiplePlayers implements IPacketTargetSelector {
 
+	public static final IPacketTargetSelector INSTANCE = new SelectMultiplePlayers();
+
 	@Override
 	public boolean isAllowedOnSide(Side side) {
 		return side == Side.SERVER;

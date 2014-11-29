@@ -35,7 +35,7 @@ public class SyncChannelHolder {
 	public void sendPayloadToPlayers(ByteBuf payload, Collection<EntityPlayerMP> players) {
 		FMLProxyPacket packet = new FMLProxyPacket(payload, CHANNEL_NAME);
 		FMLEmbeddedChannel channel = channels.get(Side.SERVER);
-		ExtendedOutboundHandler.selectTargets(channel, new SelectMultiplePlayers(), players);
+		ExtendedOutboundHandler.selectTargets(channel, SelectMultiplePlayers.INSTANCE, players);
 		channel.writeAndFlush(packet).addListener(NetUtils.LOGGING_LISTENER);
 	}
 

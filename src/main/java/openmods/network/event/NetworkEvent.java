@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -35,14 +34,14 @@ public abstract class NetworkEvent extends Event {
 	}
 
 	public void sendToAll() {
-		NetworkEventManager.INSTANCE.dispatcher().sendToAll(this);
+		NetworkEventManager.INSTANCE.dispatcher().senders.global.sendPacket(this);
 	}
 
 	public void sendToServer() {
-		NetworkEventManager.INSTANCE.dispatcher().sendToServer(this);
+		NetworkEventManager.INSTANCE.dispatcher().senders.client.sendPacket(this);
 	}
 
-	public void sendToPlayer(EntityPlayerMP player) {
-		NetworkEventManager.INSTANCE.dispatcher().sendToPlayer(this, player);
+	public void sendToPlayer(EntityPlayer player) {
+		NetworkEventManager.INSTANCE.dispatcher().senders.player.sendPacket(this, player);
 	}
 }

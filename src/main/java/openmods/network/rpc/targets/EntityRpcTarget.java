@@ -7,10 +7,8 @@ import java.io.IOException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
-import net.minecraftforge.common.DimensionManager;
 import openmods.network.rpc.IRpcTarget;
-
-import com.google.common.base.Preconditions;
+import openmods.utils.WorldUtils;
 
 public class EntityRpcTarget implements IRpcTarget {
 
@@ -38,8 +36,7 @@ public class EntityRpcTarget implements IRpcTarget {
 		int worldId = input.readInt();
 		int entityId = input.readInt();
 
-		World world = DimensionManager.getWorld(worldId);
-		Preconditions.checkNotNull(world, "Can't find dimension id %s", worldId);
+		World world = WorldUtils.getWorld(worldId);
 		entity = world.getEntityByID(entityId);
 	}
 

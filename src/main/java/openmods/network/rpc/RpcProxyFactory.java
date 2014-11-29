@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import openmods.network.senders.IPacketSender;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.base.Preconditions;
@@ -20,7 +22,7 @@ public class RpcProxyFactory {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T createClientProxy(ClassLoader loader, final IRpcTarget wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+	public <T> T createProxy(ClassLoader loader, final IPacketSender<RpcCall> sender, final IRpcTarget wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		Class<?> allInterfaces[] = ArrayUtils.add(extraIntf, mainIntf);
 
 		for (Class<?> intf : allInterfaces)
@@ -30,11 +32,15 @@ public class RpcProxyFactory {
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				RpcCall call = new RpcCall(wrapper, method, args);
-				dispatcher.sendToServer(call);
+				sender.sendPacket(call);
 				return null;
 			}
 		});
 
 		return (T)proxy;
+	}
+
+	public <T> T createClientProxy(ClassLoader loader, final IRpcTarget wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+		return createProxy(loader, dispatcher.senders.client, wrapper, mainIntf, extraIntf);
 	}
 }

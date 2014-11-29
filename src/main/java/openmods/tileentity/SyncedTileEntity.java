@@ -97,7 +97,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	public <T> T createRpcProxy(ISyncableObject object, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		TypeUtils.isInstance(object, mainIntf, extraIntf);
 		IRpcTarget target = new SyncRpcTarget.SyncTileEntityRpcTarget(this, object);
-		return RpcCallDispatcher.INSTANCE.createProxy(target, mainIntf, extraIntf);
+		return RpcCallDispatcher.INSTANCE.createClientProxy(target, mainIntf, extraIntf);
 	}
 
 }

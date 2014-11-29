@@ -3,6 +3,8 @@ package openmods.network.rpc;
 import java.util.Map;
 
 import openmods.network.Dispatcher;
+import openmods.network.ExtendedOutboundHandler;
+import openmods.network.senders.IPacketSender;
 
 import com.google.common.base.Preconditions;
 
@@ -18,6 +20,8 @@ public class RpcCallDispatcher extends Dispatcher<RpcCall> {
 
 	public static final String CHANNEL_NAME = "OpenMods|RPC";
 
+	public final Senders senders;
+
 	private final MethodIdRegistry methodRegistry = new MethodIdRegistry();
 
 	private final TargetWrapperRegistry targetRegistry = new TargetWrapperRegistry();
@@ -30,6 +34,9 @@ public class RpcCallDispatcher extends Dispatcher<RpcCall> {
 
 	private RpcCallDispatcher() {
 		this.channels = NetworkRegistry.INSTANCE.newChannel(CHANNEL_NAME, new RpcCallCodec(targetRegistry, methodRegistry), new RpcCallInboundHandler());
+		ExtendedOutboundHandler.install(this.channels);
+
+		this.senders = new Senders();
 	}
 
 	@Override
@@ -47,7 +54,11 @@ public class RpcCallDispatcher extends Dispatcher<RpcCall> {
 		setup = null;
 	}
 
-	public <T> T createProxy(IRpcTarget wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+	public <T> T createClientProxy(IRpcTarget wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		return proxyFactory.createClientProxy(getClass().getClassLoader(), wrapper, mainIntf, extraIntf);
+	}
+
+	public <T> T createProxy(IRpcTarget wrapper, IPacketSender<RpcCall> sender, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+		return proxyFactory.createProxy(getClass().getClassLoader(), sender, wrapper, mainIntf, extraIntf);
 	}
 }

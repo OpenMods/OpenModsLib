@@ -16,6 +16,8 @@ import cpw.mods.fml.relauncher.Side;
 
 public class SelectEntityWatchers implements IPacketTargetSelector {
 
+	public static final IPacketTargetSelector INSTANCE = new SelectEntityWatchers();
+
 	@Override
 	public boolean isAllowedOnSide(Side side) {
 		return side == Side.SERVER;

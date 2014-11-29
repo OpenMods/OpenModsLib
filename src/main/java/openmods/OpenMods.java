@@ -7,8 +7,6 @@ import net.minecraftforge.common.config.Configuration;
 import openmods.config.properties.CommandConfig;
 import openmods.config.properties.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
-import openmods.events.network.TileEntityEventHandler;
-import openmods.events.network.TileEntityMessageEventPacket;
 import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
@@ -49,9 +47,6 @@ public class OpenMods {
 	public void preInit(FMLPreInitializationEvent evt) {
 		SyncChannelHolder.ensureLoaded();
 
-		NetworkEventManager.INSTANCE.startRegistration()
-				.register(TileEntityMessageEventPacket.class);
-
 		RpcCallDispatcher.INSTANCE.startRegistration()
 				.registerInterface(IRpcDirectionBitMap.class)
 				.registerInterface(IRpcIntBitMap.class)
@@ -64,8 +59,6 @@ public class OpenMods {
 		Configuration config = new Configuration(configFile);
 		ConfigProcessing.processAnnotations(configFile, "OpenMods", config, LibConfig.class);
 		if (config.hasChanged()) config.save();
-
-		MinecraftForge.EVENT_BUS.register(new TileEntityEventHandler());
 
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);
 

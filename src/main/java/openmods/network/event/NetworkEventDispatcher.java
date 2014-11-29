@@ -14,9 +14,13 @@ public class NetworkEventDispatcher extends Dispatcher<NetworkEvent> {
 
 	private final Map<Side, FMLEmbeddedChannel> channels;
 
+	public final Senders senders;
+
 	public NetworkEventDispatcher(NetworkEventRegistry registry) {
 		this.channels = NetworkRegistry.INSTANCE.newChannel(CHANNEL_NAME, new NetworkEventCodec(registry), new NetworkEventInboundHandler());
 		ExtendedOutboundHandler.install(this.channels);
+
+		this.senders = new Senders();
 	}
 
 	@Override

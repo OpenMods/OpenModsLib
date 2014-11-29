@@ -50,10 +50,10 @@ public class WorldUtils {
 			result = OpenMods.proxy.getServerWorld(dimensionId);
 		} else {
 			result = OpenMods.proxy.getClientWorld();
-			Preconditions.checkArgument(result.provider.dimensionId == dimensionId, "Invalid dimension id");
+			Preconditions.checkArgument(result.provider.dimensionId == dimensionId, "Invalid client dimension id %s", dimensionId);
 		}
 
-		Preconditions.checkNotNull(result, "Invalid world dimension %d", dimensionId);
+		Preconditions.checkNotNull(result, "Invalid world dimension %s", dimensionId);
 		return result;
 	}
 
