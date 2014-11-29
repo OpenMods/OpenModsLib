@@ -12,65 +12,44 @@ import openmods.network.event.NetworkEvent;
 import openmods.network.event.NetworkEventManager;
 import openmods.utils.WorldUtils;
 
-public abstract class TileEntityMessageEventPacket extends NetworkEvent {
+public abstract class BlockEventPacket extends NetworkEvent {
 	public int dimension;
 	public int xCoord;
 	public int yCoord;
 	public int zCoord;
 
-	public TileEntityMessageEventPacket() {}
+	public BlockEventPacket() {}
 
-	public TileEntityMessageEventPacket(TileEntity tile) {
-		dimension = tile.getWorldObj().provider.dimensionId;
-		xCoord = tile.xCoord;
-		yCoord = tile.yCoord;
-		zCoord = tile.zCoord;
+	public BlockEventPacket(int dimension, int xCoord, int yCoord, int zCoord) {
+		this.dimension = dimension;
+		this.xCoord = xCoord;
+		this.yCoord = yCoord;
+		this.zCoord = zCoord;
+	}
+
+	public BlockEventPacket(TileEntity tile) {
+		this(tile.getWorldObj().provider.dimensionId, tile.xCoord, tile.yCoord, tile.zCoord);
 	}
 
 	@Override
-	protected final void readFromStream(DataInput input) throws IOException {
+	protected void readFromStream(DataInput input) throws IOException {
 		dimension = input.readInt();
 		xCoord = input.readInt();
 		yCoord = input.readInt();
 		zCoord = input.readInt();
-		readPayload(input);
-	}
-
-	protected void readPayload(DataInput input) {
-		/**
-		 * An empty block should be documented!
-		 * Am I doing this right?
-		 */
 	}
 
 	@Override
-	protected final void writeToStream(DataOutput output) throws IOException {
+	protected void writeToStream(DataOutput output) throws IOException {
 		output.writeInt(dimension);
 		output.writeInt(xCoord);
 		output.writeInt(yCoord);
 		output.writeInt(zCoord);
-		writePayload(output);
-	}
-
-	protected void writePayload(DataOutput output) {
-		/**
-		 * An empty block should be documented!
-		 * Am I doing this right?
-		 */
-
-		/**
-		 * LOL NOPE
-		 */
 	}
 
 	@Override
 	protected void appendLogInfo(List<String> info) {
-		info.add(String.format("%d,%d,%d", xCoord, yCoord, zCoord));
-	}
-
-	public TileEntity getTileEntity() {
-		World world = WorldUtils.getWorld(dimension);
-		return world.getTileEntity(xCoord, yCoord, zCoord);
+		info.add(String.format("%d -> %d,%d,%d", dimension, xCoord, yCoord, zCoord));
 	}
 
 	public void sendToWatchers() {
@@ -79,5 +58,9 @@ public abstract class TileEntityMessageEventPacket extends NetworkEvent {
 
 	public DimCoord getDimCoords() {
 		return new DimCoord(dimension, xCoord, yCoord, zCoord);
+	}
+
+	public World getWorld() {
+		return WorldUtils.getWorld(dimension);
 	}
 }
