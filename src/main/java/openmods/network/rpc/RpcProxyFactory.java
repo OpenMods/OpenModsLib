@@ -14,11 +14,8 @@ public class RpcProxyFactory {
 
 	private final MethodIdRegistry registry;
 
-	private final RpcCallDispatcher dispatcher;
-
-	RpcProxyFactory(MethodIdRegistry registry, RpcCallDispatcher dispatcher) {
+	RpcProxyFactory(MethodIdRegistry registry) {
 		this.registry = registry;
-		this.dispatcher = dispatcher;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -38,9 +35,5 @@ public class RpcProxyFactory {
 		});
 
 		return (T)proxy;
-	}
-
-	public <T> T createClientProxy(ClassLoader loader, final IRpcTarget wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
-		return createProxy(loader, dispatcher.senders.client, wrapper, mainIntf, extraIntf);
 	}
 }

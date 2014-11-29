@@ -28,7 +28,7 @@ public class RpcCallDispatcher extends Dispatcher<RpcCall> {
 
 	private RpcSetup setup = new RpcSetup();
 
-	private RpcProxyFactory proxyFactory = new RpcProxyFactory(methodRegistry, this);
+	private RpcProxyFactory proxyFactory = new RpcProxyFactory(methodRegistry);
 
 	private final Map<Side, FMLEmbeddedChannel> channels;
 
@@ -52,10 +52,6 @@ public class RpcCallDispatcher extends Dispatcher<RpcCall> {
 	public void finishRegistration() {
 		setup.finish(methodRegistry, targetRegistry);
 		setup = null;
-	}
-
-	public <T> T createClientProxy(IRpcTarget wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
-		return proxyFactory.createClientProxy(getClass().getClassLoader(), wrapper, mainIntf, extraIntf);
 	}
 
 	public <T> T createProxy(IRpcTarget wrapper, IPacketSender<RpcCall> sender, Class<? extends T> mainIntf, Class<?>... extraIntf) {
