@@ -47,6 +47,8 @@ public class OpenMods {
 	public void preInit(FMLPreInitializationEvent evt) {
 		SyncChannelHolder.ensureLoaded();
 
+		NetworkEventManager.INSTANCE.startRegistration();
+
 		RpcCallDispatcher.INSTANCE.startRegistration()
 				.registerInterface(IRpcDirectionBitMap.class)
 				.registerInterface(IRpcIntBitMap.class)
