@@ -3,6 +3,7 @@ package openmods.network.targets;
 import java.util.Collection;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import openmods.Log;
 import openmods.network.IPacketTargetSelector;
 import openmods.utils.NetUtils;
 import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
@@ -24,7 +25,8 @@ public class SelectMultiplePlayers implements IPacketTargetSelector {
 			Collection<EntityPlayerMP> players = (Collection<EntityPlayerMP>)arg;
 			for (EntityPlayerMP player : players) {
 				NetworkDispatcher dispatcher = NetUtils.getPlayerDispatcher(player);
-				result.add(dispatcher);
+				if (dispatcher != null) result.add(dispatcher);
+				else Log.info("Trying to send message to disconnected player %s", player);
 			}
 		} catch (ClassCastException e) {
 			throw new IllegalArgumentException("Argument must be collection of EntityPlayerMP");
