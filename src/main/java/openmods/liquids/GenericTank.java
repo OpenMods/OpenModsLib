@@ -8,7 +8,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.*;
 import openmods.Log;
 import openmods.OpenMods;
-import openmods.integration.modules.BuildCraftPipes;
 import openmods.utils.BlockUtils;
 import openmods.utils.Coord;
 import openmods.utils.DirUtils;
@@ -97,7 +96,7 @@ public class GenericTank extends FluidTank {
 		final ForgeDirection fillSide = side.getOpposite();
 
 		if (otherTank instanceof IFluidHandler) return ((IFluidHandler)otherTank).fill(fillSide, toFill, true);
-		else return BuildCraftPipes.access().tryAcceptIntoPipe(otherTank, toFill, fillSide);
+		else return 0;
 	}
 
 	public void distributeToSides(int amountPerTick, World world, Coord coord, Set<ForgeDirection> sides) {

@@ -15,7 +15,7 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import openmods.Log;
-import openmods.utils.InventoryUtils;
+import openmods.inventory.InventoryUtils;
 import openmods.utils.MathUtils;
 
 import com.google.common.base.Preconditions;
@@ -60,7 +60,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 					blockExists)) {
 				setSneaking(true);
 
-				return InventoryUtils.returnItem(inventory.getCurrentItem());
+				return InventoryUtils.copyItem(inventory.getCurrentItem());
 			}
 			hitVector.yCoord++;
 			setSneaking(true);
@@ -88,7 +88,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 				deltaX, deltaY, deltaZ,
 				blockExists);
 
-		return InventoryUtils.returnItem(inventory.getCurrentItem());
+		return InventoryUtils.copyItem(inventory.getCurrentItem());
 	}
 
 	public void dropItemAt(ItemStack itemStack, int x, int y, int z, ForgeDirection direction) {

@@ -8,7 +8,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
-import openmods.utils.InventoryUtils;
+import openmods.inventory.InventoryUtils;
 
 public abstract class ContainerBase<T> extends Container {
 
