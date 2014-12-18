@@ -93,13 +93,17 @@ public class OpenModsFakePlayer extends FakePlayer {
 
 	public void dropItemAt(ItemStack itemStack, int x, int y, int z, ForgeDirection direction) {
 		setPosition(x + 0.5F, y - 1.5, z + 0.5F);
-		Preconditions.checkArgument(direction == ForgeDirection.DOWN, "Other directions than down is not implemented");
+		Preconditions.checkArgument(direction == ForgeDirection.DOWN, "Other directions than down are not implemented");
 		setRotation(0, 90);
 
 		EntityItem entityItem = dropPlayerItemWithRandomChoice(itemStack, false);
-		entityItem.motionX = 0;
-		entityItem.motionY = 0;
-		entityItem.motionZ = 0;
+		if (entityItem != null) {
+			entityItem.motionX = 0;
+			entityItem.motionY = 0;
+			entityItem.motionZ = 0;
+		} else {
+			Log.info("Item %s drop from player %s aborted by event", itemStack, this);
+		}
 	}
 
 	private boolean rightClick(ItemStack itemStack, int x, int y, int z, ForgeDirection side, float deltaX, float deltaY, float deltaZ, boolean blockExists) {
