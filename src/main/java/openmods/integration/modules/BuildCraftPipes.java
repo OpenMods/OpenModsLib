@@ -5,6 +5,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.integration.IntegrationModule;
+import openmods.inventory.legacy.CustomSinks;
+import openmods.inventory.legacy.CustomSinks.ICustomSink;
+import openmods.inventory.legacy.CustomSinks.ICustomSinkProvider;
 import buildcraft.api.transport.IPipeTile;
 
 public class BuildCraftPipes extends IntegrationModule {
@@ -41,8 +44,7 @@ public class BuildCraftPipes extends IntegrationModule {
 
 		@Override
 		public boolean isPipe(TileEntity tile) {
-			return false;
-			// return tile instanceof IPipeTile;
+			return tile instanceof IPipeTile;
 		}
 	}
 
@@ -55,6 +57,21 @@ public class BuildCraftPipes extends IntegrationModule {
 	@Override
 	public void load() {
 		access = new Live();
+
+		CustomSinks.registerCustomSink(new ICustomSinkProvider() {
+
+			@Override
+			public CustomSinks.ICustomSink create(final TileEntity te) {
+				if (!access.isPipe(te)) return null;
+
+				return new ICustomSink() {
+					@Override
+					public int accept(ItemStack stack, boolean doInsert, ForgeDirection direction) {
+						return access.tryAcceptIntoPipe(te, stack, doInsert, direction);
+					}
+				};
+			}
+		});
 	}
 
 	@Override
