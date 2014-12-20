@@ -15,6 +15,7 @@ import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class GuiComponentCraftingGrid extends GuiComponentSprite {
@@ -23,6 +24,7 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 
 	public GuiComponentCraftingGrid(int x, int y, ItemStack[] items, IIcon icon, ResourceLocation texture) {
 		super(x, y, icon, texture);
+		Preconditions.checkNotNull(items, "No items in grid");
 		this.items = items;
 	}
 

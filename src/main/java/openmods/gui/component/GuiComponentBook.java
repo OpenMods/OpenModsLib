@@ -2,16 +2,11 @@ package openmods.gui.component;
 
 import java.util.List;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
-import openmods.gui.component.page.StandardRecipePage;
 import openmods.gui.listener.IMouseDownListener;
 import openmods.utils.render.FakeIcon;
 
@@ -21,8 +16,6 @@ public class GuiComponentBook extends BaseComposite {
 
 	private static final ResourceLocation PAGETURN = new ResourceLocation("openmodslib", "pageturn");
 
-	private GuiComponentSprite imgLeftBackground;
-	private GuiComponentSprite imgRightBackground;
 	private GuiComponentSpriteButton imgPrev;
 	private GuiComponentSpriteButton imgNext;
 	private GuiComponentLabel pageNumberLeft;
@@ -44,9 +37,8 @@ public class GuiComponentBook extends BaseComposite {
 	public GuiComponentBook() {
 		super(0, 0);
 
-		imgLeftBackground = new GuiComponentSprite(0, 0, iconPageLeft, texture);
-		imgRightBackground = new GuiComponentSprite(0, 0, iconPageRight, texture);
-
+		GuiComponentSprite imgLeftBackground = new GuiComponentSprite(0, 0, iconPageLeft, texture);
+		GuiComponentSprite imgRightBackground = new GuiComponentSprite(0, 0, iconPageRight, texture);
 		imgRightBackground.setX(iconPageRight.getIconWidth());
 
 		imgPrev = new GuiComponentSpriteButton(24, 158, iconPrev, iconPrevHover, texture);
@@ -98,30 +90,6 @@ public class GuiComponentBook extends BaseComposite {
 		addComponent(page);
 		page.setEnabled(false);
 		pages.add(page);
-	}
-
-	public boolean addStandardRecipePage(String modId, String name, Object item) {
-		ItemStack stack = null;
-		String type = "";
-		if (item instanceof ItemStack) {
-			stack = (ItemStack)item;
-			type = (stack.getItem() instanceof ItemBlock)? "tile" : "item";
-		}
-		if (item instanceof Item) {
-			stack = new ItemStack((Item)item);
-			type = "item";
-		} else if (item instanceof Block) {
-			stack = new ItemStack((Block)item);
-			type = "tile";
-		}
-		if (stack != null) {
-			String fullName = String.format("%s.%s.%s.name", type, modId, name);
-			String description = String.format("%s.%s.%s.description", type, modId, name);
-			String video = String.format("%s.%s.%s.video", type, modId, name);
-			addPage(new StandardRecipePage(fullName, description, video, stack));
-			return true;
-		}
-		return false;
 	}
 
 	public void enablePages() {

@@ -54,6 +54,7 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 		rotationY += 0.6f;
 		GL11.glRotatef(20, 1, 0, 0);
 		GL11.glRotatef(rotationY, 0, 1, 0);
+		GL11.glColor3f(1, 1, 1);
 		renderItem(stack);
 		GL11.glDisable(GL11.GL_DEPTH_TEST);
 		GL11.glPopMatrix();
