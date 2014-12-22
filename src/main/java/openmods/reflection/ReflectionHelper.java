@@ -186,7 +186,8 @@ public class ReflectionHelper {
 			Method result = getDeclaredMethod(klazz, name, types);
 			if (result != null) return result;
 		}
-		return null;
+
+		throw new MethodNotFound(klazz, methodNames, types);
 	}
 
 	public static Set<Class<?>> getAllInterfaces(Class<?> clazz) {
