@@ -145,8 +145,6 @@ public class IncludingClassVisitor extends ClassVisitor {
 		}
 	}
 
-	public static final String EXTENDABLE_MARKER = "openmods/include/IExtendable";
-
 	public static final Type INCLUDE_INTERFACE = Type.getObjectType("openmods/include/IncludeInterface");
 
 	public static final Type INCLUDE_OVERRIDE = Type.getObjectType("openmods/include/IncludeOverride");
@@ -164,12 +162,6 @@ public class IncludingClassVisitor extends ClassVisitor {
 
 	public IncludingClassVisitor(ClassVisitor cv) {
 		super(Opcodes.ASM4, cv);
-	}
-
-	private static boolean findMarker(String[] interfaces) {
-		for (String intf : interfaces)
-			if (EXTENDABLE_MARKER.equals(intf)) return true;
-		return false;
 	}
 
 	@Override
@@ -213,7 +205,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 
 	@Override
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-		if (Modifier.isInterface(access) || Modifier.isInterface(access) || !findMarker(interfaces)) throw new StopTransforming();
+		if (Modifier.isInterface(access)) throw new StopTransforming();
 
 		this.clsName = name;
 		this.access = access;

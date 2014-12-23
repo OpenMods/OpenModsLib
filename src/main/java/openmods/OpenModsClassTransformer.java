@@ -1,6 +1,8 @@
 package openmods;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 import openmods.api.IResultListener;
@@ -24,16 +26,31 @@ import org.objectweb.asm.ClassWriter;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
+
+import cpw.mods.fml.common.discovery.ASMDataTable;
+import cpw.mods.fml.common.discovery.ASMDataTable.ASMData;
 
 public class OpenModsClassTransformer implements IClassTransformer {
 
 	private static OpenModsClassTransformer INSTANCE;
 
+	private static final List<String> IGNORED_PREFIXES = ImmutableList.of(
+			"cpw.mods.fml.",
+			"net.minecraftforge.",
+			"io.netty.",
+			"gnu.trove.",
+			"com.google.",
+			"com.mojang.",
+			"joptsimple.",
+			"tv.twitch."
+			);
+
 	private final Map<String, TransformProvider> vanillaPatches = Maps.newHashMap();
 
 	private final StateTracker<TransformerState> states = StateTracker.create(TransformerState.DISABLED);
+
+	private Set<String> includedClasses;
 
 	private abstract class ConfigOption implements UpdateListener {
 
@@ -175,6 +192,27 @@ public class OpenModsClassTransformer implements IClassTransformer {
 		}
 	};
 
+	public void injectAsmData(ASMDataTable table) {
+		ImmutableSet.Builder<String> includedClasses = ImmutableSet.builder();
+
+		for (ASMData data : table.getAll("openmods.include.IncludeInterface"))
+			includedClasses.add(data.getClassName());
+
+		for (ASMData data : table.getAll("openmods.include.IncludeOverride"))
+			includedClasses.add(data.getClassName());
+
+		this.includedClasses = includedClasses.build();
+	}
+
+	private boolean shouldTryIncluding(String clsName) {
+		if (includedClasses != null) return includedClasses.contains(clsName);
+
+		for (String prefix : IGNORED_PREFIXES)
+			if (clsName.startsWith(prefix)) return false;
+
+		return true;
+	}
+
 	@Override
 	public byte[] transform(final String name, String transformedName, byte[] bytes) {
 		if (bytes == null) return bytes;
@@ -184,6 +222,12 @@ public class OpenModsClassTransformer implements IClassTransformer {
 			return (provider != null)? VisitorHelper.apply(bytes, name, provider) : bytes;
 		}
 
+		if (shouldTryIncluding(transformedName)) return applyIncludes(name, transformedName, bytes);
+
+		return bytes;
+	}
+
+	protected byte[] applyIncludes(final String name, String transformedName, byte[] bytes) {
 		try {
 			return VisitorHelper.apply(bytes, name, INCLUDING_CV);
 		} catch (Throwable t) {

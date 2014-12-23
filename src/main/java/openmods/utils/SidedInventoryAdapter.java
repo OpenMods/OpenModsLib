@@ -29,7 +29,7 @@ public class SidedInventoryAdapter implements ISidedInventory {
 			this.canExtract = canExtract;
 		}
 
-		private boolean canAccessFromSite(ForgeDirection side) {
+		private boolean canAccessFromSide(ForgeDirection side) {
 			return sideFlags.get(side);
 		}
 	}
@@ -103,7 +103,7 @@ public class SidedInventoryAdapter implements ISidedInventory {
 		ForgeDirection dir = ForgeDirection.getOrientation(side);
 		Set<Integer> result = Sets.newHashSet();
 		for (Entry<Integer, SlotInfo> entry : slots.entrySet()) {
-			if (entry.getValue().canAccessFromSite(dir)) result.add(entry.getKey());
+			if (entry.getValue().canAccessFromSide(dir)) result.add(entry.getKey());
 		}
 
 		int tmp[] = new int[result.size()];
@@ -118,7 +118,7 @@ public class SidedInventoryAdapter implements ISidedInventory {
 		ForgeDirection dir = ForgeDirection.getOrientation(side);
 		SlotInfo slot = slots.get(slotIndex);
 		if (slot == null) return false;
-		return slot.canInsert && slot.canAccessFromSite(dir) && inventory.isItemValidForSlot(slotIndex, itemstack);
+		return slot.canInsert && slot.canAccessFromSide(dir) && inventory.isItemValidForSlot(slotIndex, itemstack);
 	}
 
 	@Override
@@ -126,7 +126,7 @@ public class SidedInventoryAdapter implements ISidedInventory {
 		ForgeDirection dir = ForgeDirection.getOrientation(side);
 		SlotInfo slot = slots.get(slotIndex);
 		if (slot == null) return false;
-		return slot.canExtract && slot.canAccessFromSite(dir);
+		return slot.canExtract && slot.canAccessFromSide(dir);
 	}
 
 	@Override
