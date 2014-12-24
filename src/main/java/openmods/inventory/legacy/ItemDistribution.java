@@ -33,20 +33,20 @@ public class ItemDistribution {
 		return false;
 	}
 
-	public static void insertItemIntoInventory(IInventory inventory, ItemStack stack) {
-		insertItemIntoInventory(inventory, stack, ForgeDirection.UNKNOWN, -1);
+	public static boolean insertItemIntoInventory(IInventory inventory, ItemStack stack) {
+		return insertItemIntoInventory(inventory, stack, ForgeDirection.UNKNOWN, -1);
 	}
 
-	public static void insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot) {
-		insertItemIntoInventory(inventory, stack, side, intoSlot, true);
+	public static boolean insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot) {
+		return insertItemIntoInventory(inventory, stack, side, intoSlot, true);
 	}
 
-	public static void insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot, boolean doMove) {
-		insertItemIntoInventory(inventory, stack, side, intoSlot, doMove, true);
+	public static boolean insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot, boolean doMove) {
+		return insertItemIntoInventory(inventory, stack, side, intoSlot, doMove, true);
 	}
 
-	public static void insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot, boolean doMove, boolean canStack) {
-		if (stack == null) return;
+	public static boolean insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot, boolean doMove, boolean canStack) {
+		if (stack == null) return false;
 
 		final int sideId = side.ordinal();
 		IInventory targetInventory = inventory;
@@ -76,16 +76,19 @@ public class ItemDistribution {
 
 		if (intoSlot > -1) attemptSlots.retainAll(ImmutableSet.of(intoSlot));
 
-		if (attemptSlots.isEmpty()) return;
+		if (attemptSlots.isEmpty()) return false;
 
+		boolean result = false;
 		for (Integer slot : attemptSlots) {
 			if (stack.stackSize <= 0) break;
 			if (isSidedInventory && !((ISidedInventory)inventory).canInsertItem(slot, stack, sideId)) continue;
-			tryInsertStack(targetInventory, slot, stack, canStack);
+			result |= tryInsertStack(targetInventory, slot, stack, canStack);
 		}
+
+		return result;
 	}
 
-	public static int moveItemInto(IInventory fromInventory, int fromSlot, CustomSinks.ICustomSink sink, int intoSlot, int maxAmount, ForgeDirection direction, boolean doMove) {
+	public static int moveItemInto(IInventory fromInventory, int fromSlot, CustomSinks.ICustomSink sink, int maxAmount, ForgeDirection direction, boolean doMove) {
 		fromInventory = InventoryUtils.getInventory(fromInventory);
 
 		ItemStack sourceStack = fromInventory.getStackInSlot(fromSlot);
@@ -100,6 +103,19 @@ public class ItemDistribution {
 		final int inserted = sink.accept(clonedSourceStack, doMove, direction);
 		if (doMove) InventoryUtils.removeFromSlot(fromInventory, fromSlot, inserted);
 		return inserted;
+	}
+
+	public static boolean insertItemInto(ItemStack stack, CustomSinks.ICustomSink sink, ForgeDirection intoSide, boolean doMove) {
+		ItemStack clonedSourceStack = stack.copy();
+
+		final int inserted = sink.accept(clonedSourceStack, doMove, intoSide);
+
+		if (inserted > 0) {
+			stack.stackSize -= inserted;
+			return true;
+		}
+
+		return false;
 	}
 
 	public static int moveItemInto(IInventory fromInventory, int fromSlot, IInventory target, int intoSlot, int maxAmount, ForgeDirection direction, boolean doMove) {
@@ -165,10 +181,26 @@ public class ItemDistribution {
 			return moved;
 		} else {
 			CustomSinks.ICustomSink adapter = CustomSinks.createSink(te);
-			if (adapter != null) return moveItemInto(fromInventory, fromSlot, adapter, -1, maxAmount, intoSide, doMove);
+			if (adapter != null) return moveItemInto(fromInventory, fromSlot, adapter, maxAmount, intoSide, doMove);
 		}
 
 		return 0;
+	}
+
+	public static boolean insertItemInto(ItemStack stack, TileEntity te, ForgeDirection intoSide, boolean doMove) {
+		if (te == null) return false;
+
+		if (te instanceof IInventory) {
+			final IInventory toInventory = (IInventory)te;
+			boolean changed = insertItemIntoInventory(toInventory, stack, intoSide, -1, doMove);
+			if (changed) toInventory.markDirty(); // we are losing info here, so must commit
+			return changed;
+		} else {
+			CustomSinks.ICustomSink adapter = CustomSinks.createSink(te);
+			if (adapter != null) return insertItemInto(stack, adapter, intoSide, doMove);
+		}
+
+		return false;
 	}
 
 	public static int moveItemsFromOneOfSides(TileEntity te, IInventory inv, int maxAmount, int intoSlot, Iterable<ForgeDirection> sides, boolean randomize) {
@@ -302,25 +334,32 @@ public class ItemDistribution {
 	 * @param slot
 	 * @param stack
 	 */
-	public static void tryInsertStack(IInventory targetInventory, int slot, ItemStack stack, boolean canMerge) {
+	public static boolean tryInsertStack(IInventory targetInventory, int slot, ItemStack stack, boolean canMerge) {
 		if (targetInventory.isItemValidForSlot(slot, stack)) {
 			ItemStack targetStack = targetInventory.getStackInSlot(slot);
 			if (targetStack == null) {
-				targetInventory.setInventorySlotContents(slot, stack.copy());
-				stack.stackSize = 0;
+				int limit = targetInventory.getInventoryStackLimit();
+				if (limit < stack.stackSize) {
+					targetInventory.setInventorySlotContents(slot, stack.splitStack(limit));
+				} else {
+					targetInventory.setInventorySlotContents(slot, stack.copy());
+					stack.stackSize = 0;
+				}
+				return true;
 			} else if (canMerge) {
 				if (targetInventory.isItemValidForSlot(slot, stack) &&
 						InventoryUtils.areMergeCandidates(stack, targetStack)) {
-					int space = targetStack.getMaxStackSize()
-							- targetStack.stackSize;
+					int space = targetStack.getMaxStackSize() - targetStack.stackSize;
 					int mergeAmount = Math.min(space, stack.stackSize);
 					ItemStack copy = targetStack.copy();
 					copy.stackSize += mergeAmount;
 					targetInventory.setInventorySlotContents(slot, copy);
 					stack.stackSize -= mergeAmount;
+					return true;
 				}
 			}
 		}
+		return false;
 	}
 
 }
