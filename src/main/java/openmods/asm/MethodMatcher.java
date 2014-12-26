@@ -26,4 +26,10 @@ public class MethodMatcher {
 		String mapped = FMLDeobfuscatingRemapper.INSTANCE.mapMethodName(clsName, methodName, methodDesc);
 		return mapped.equals(srgName);
 	}
+
+	@Override
+	public String toString() {
+		return String.format("Matcher: %s.[%s,%s] %s", clsName, srgName, mcpName, description);
+	}
+
 }

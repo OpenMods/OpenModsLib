@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -18,6 +19,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 import openmods.Log;
 import openmods.api.*;
 import openmods.config.game.IRegisterableBlock;
+import openmods.context.ContextManager;
+import openmods.context.VariableKey;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.BlockNotifyFlags;
 import openmods.utils.BlockUtils;
@@ -29,6 +32,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public static final int OPEN_MODS_TE_GUI = -1;
+
+	private static final VariableKey<ArrayList<ItemStack>> DROP_OVERRIDE = VariableKey.create();
 
 	public enum BlockPlacementMode {
 		ENTITY_ANGLE,
@@ -52,6 +57,8 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	protected BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
 	protected ForgeDirection inventoryRenderRotation = ForgeDirection.WEST;
 	protected RenderMode renderMode = RenderMode.BLOCK_ONLY;
+
+	private boolean teDropsOverride = false;
 
 	public IIcon[] textures = new IIcon[6];
 
@@ -85,6 +92,10 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	protected void setRenderMode(RenderMode renderMode) {
 		this.renderMode = renderMode;
+	}
+
+	public void setTileEntityDropOverride(boolean override) {
+		this.teDropsOverride = override;
 	}
 
 	public ForgeDirection getRotation(int metadata) {
@@ -144,51 +155,53 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		this.blockIcon = registry.registerIcon(String.format("%s:%s", modId, blockName));
 	}
 
+	private static List<ItemStack> getTileBreakDrops(TileEntity te) {
+		List<ItemStack> breakDrops = Lists.newArrayList();
+		BlockUtils.getTileInventoryDrops(te, breakDrops);
+		if (te instanceof ICustomBreakDrops) ((ICustomBreakDrops)te).addDrops(breakDrops);
+		return breakDrops;
+	}
+
 	@Override
 	public void breakBlock(World world, int x, int y, int z, Block block, int meta) {
 		final TileEntity te = world.getTileEntity(x, y, z);
-		if (te instanceof IBreakAwareTile) ((IBreakAwareTile)te).onBlockBroken();
-		world.removeTileEntity(x, y, z);
+		if (te != null) {
+			if (te instanceof IBreakAwareTile) ((IBreakAwareTile)te).onBlockBroken();
+
+			for (ItemStack stack : getTileBreakDrops(te))
+				BlockUtils.dropItemStackInWorld(world, x, y, z, stack);
+
+			world.removeTileEntity(x, y, z);
+		}
 		super.breakBlock(world, x, y, z, block, meta);
 	}
 
-	private void getTileEntityDrops(TileEntity te, List<ItemStack> result, int fortune) {
-		if (te != null) {
-			BlockUtils.getTileInventoryDrops(te, result);
-			if (te instanceof ISpecialDrops) ((ISpecialDrops)te).addDrops(result, fortune);
-			getCustomTileEntityDrops(te, result, fortune);
+	protected ArrayList<ItemStack> getDropsWithTileEntity(World world, EntityPlayer player, int x, int y, int z) {
+		TileEntity te = world.getTileEntity(x, y, z);
+
+		if (te instanceof ICustomHarvestDrops) {
+			ICustomHarvestDrops dropper = (ICustomHarvestDrops)te;
+
+			ArrayList<ItemStack> drops;
+			if (!dropper.suppressNormalHarvestDrops()) {
+				final int metadata = world.getBlockMetadata(x, y, z);
+				int fortune = EnchantmentHelper.getFortuneModifier(player);
+				drops = super.getDrops(world, x, y, z, metadata, fortune);
+			} else {
+				drops = Lists.newArrayList();
+			}
+
+			dropper.addHarvestDrops(player, drops);
+			return drops;
 		}
-	}
-
-	protected void getCustomTileEntityDrops(TileEntity te, List<ItemStack> result, int fortune) {}
-
-	protected boolean hasNormalDrops() {
-		return true;
-	}
-
-	protected boolean hasTileEntityDrops() {
-		return true;
+		return null;
 	}
 
 	@Override
 	public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
-		// This is last place we have TE, before it's removed,
-		// When removed by player, it will be already unavailable in
-		// getBlockDropped
-		// TODO: evaluate, if new behaviour can be used
-		if (willHarvest && hasTileEntityDrops() && !player.capabilities.isCreativeMode) {
-			final TileEntity te = world.getTileEntity(x, y, z);
-
-			boolean result = super.removedByPlayer(world, player, x, y, z, willHarvest);
-
-			if (result) {
-				List<ItemStack> teDrops = Lists.newArrayList();
-				getTileEntityDrops(te, teDrops, 0);
-				for (ItemStack drop : teDrops)
-					dropBlockAsItem(world, x, y, z, drop);
-			}
-
-			return result;
+		if (teDropsOverride && willHarvest) {
+			ArrayList<ItemStack> drops = getDropsWithTileEntity(world, player, x, y, z);
+			if (drops != null) ContextManager.set(DROP_OVERRIDE, drops);
 		}
 
 		return super.removedByPlayer(world, player, x, y, z, willHarvest);
@@ -196,14 +209,17 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
-		ArrayList<ItemStack> result = Lists.newArrayList();
-		if (hasNormalDrops()) result.addAll(super.getDrops(world, x, y, z, metadata, fortune));
-		if (hasTileEntityDrops()) {
-			final TileEntity te = world.getTileEntity(x, y, z);
-			getTileEntityDrops(te, result, fortune);
-		}
+		ArrayList<ItemStack> result = ContextManager.remove(DROP_OVERRIDE);
 
-		return result;
+		// Case A - drops stored earlier (by this.removedByPlayer) and TE is already dead
+		if (result != null) return result;
+
+		// Case B - drops removed in other way (explosion) but TE may be still alive
+		result = getDropsWithTileEntity(world, null, x, y, z);
+		if (result != null) return result;
+
+		// Case C - TE is dead, just drop vanilla stuff
+		return super.getDrops(world, x, y, z, metadata, fortune);
 	}
 
 	@Override
@@ -318,8 +334,15 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 * This is called if your ItemBlock extends ItemOpenBlock
 	 */
 	public void afterBlockPlaced(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, ForgeDirection blockDir, float hitX, float hitY, float hitZ, int itemMeta) {
-		setRotationMeta(world, x, y, z, blockDir);
+		int blockMeta = blockRotationMode.toValue(blockDir);
+
+		// silently set meta, since we want to notify TE before neighbors
+		world.setBlockMetadataWithNotify(x, y, z, blockMeta, BlockNotifyFlags.NONE);
+
 		notifyTileEntity(world, player, stack, x, y, z, side, hitX, hitY, hitZ);
+
+		world.markBlockForUpdate(x, y, z);
+		if (!world.isRemote) world.notifyBlockChange(x, y, z, this);
 	}
 
 	protected void notifyTileEntity(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, float hitX, float hitY, float hitZ) {

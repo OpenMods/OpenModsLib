@@ -1,16 +1,14 @@
 package openmods;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 import openmods.api.IResultListener;
-import openmods.asm.TransformerState;
-import openmods.asm.VisitorHelper;
+import openmods.asm.*;
 import openmods.asm.VisitorHelper.TransformProvider;
 import openmods.config.simple.ConfigProcessor;
 import openmods.config.simple.ConfigProcessor.UpdateListener;
+import openmods.context.ContextClassTransformer;
 import openmods.include.IncludingClassVisitor;
 import openmods.movement.MovementPatcher;
 import openmods.renderer.PlayerRendererHookVisitor;
@@ -45,6 +43,18 @@ public class OpenModsClassTransformer implements IClassTransformer {
 			"joptsimple.",
 			"tv.twitch."
 			);
+
+	private static final Multimap<String, MethodMatcher> wrapMatchers = ArrayListMultimap.create();
+
+	private static void addWrapTarget(String clsName, String methodMcpName, String methodSrgName, String methodDesc) {
+		MappedType cls = MappedType.of(clsName);
+		MethodMatcher matcher = new MethodMatcher(cls, methodDesc, methodMcpName, methodSrgName);
+		wrapMatchers.put(clsName, matcher);
+	}
+
+	static {
+		addWrapTarget("net.minecraft.server.management.ItemInWorldManager", "tryHarvestBlock", "func_73084_b", "(III)Z");
+	}
 
 	private final Map<String, TransformProvider> vanillaPatches = Maps.newHashMap();
 
@@ -217,6 +227,8 @@ public class OpenModsClassTransformer implements IClassTransformer {
 	public byte[] transform(final String name, String transformedName, byte[] bytes) {
 		if (bytes == null) return bytes;
 
+		bytes = tryApplyContextWrapper(name, transformedName, bytes);
+
 		if (transformedName.startsWith("net.minecraft.")) {
 			TransformProvider provider = vanillaPatches.get(transformedName);
 			return (provider != null)? VisitorHelper.apply(bytes, name, provider) : bytes;
@@ -225,6 +237,19 @@ public class OpenModsClassTransformer implements IClassTransformer {
 		if (shouldTryIncluding(transformedName)) return applyIncludes(name, transformedName, bytes);
 
 		return bytes;
+	}
+
+	protected byte[] tryApplyContextWrapper(final String name, String transformedName, byte[] bytes) {
+		final Collection<MethodMatcher> matchers = wrapMatchers.get(transformedName);
+		if (matchers.isEmpty()) return bytes;
+
+		Log.info("Adding context wrappers to %s(%s)", name, transformedName);
+		return VisitorHelper.apply(bytes, name, new TransformProvider(0) {
+			@Override
+			public ClassVisitor createVisitor(String name, ClassVisitor cv) {
+				return new ContextClassTransformer(cv, matchers);
+			}
+		});
 	}
 
 	protected byte[] applyIncludes(final String name, String transformedName, byte[] bytes) {
