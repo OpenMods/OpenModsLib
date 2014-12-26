@@ -58,8 +58,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	protected ForgeDirection inventoryRenderRotation = ForgeDirection.WEST;
 	protected RenderMode renderMode = RenderMode.BLOCK_ONLY;
 
-	private boolean teDropsOverride = false;
-
 	public IIcon[] textures = new IIcon[6];
 
 	protected OpenBlock(Material material) {
@@ -94,10 +92,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		this.renderMode = renderMode;
 	}
 
-	public void setTileEntityDropOverride(boolean override) {
-		this.teDropsOverride = override;
-	}
-
 	public ForgeDirection getRotation(int metadata) {
 		return blockRotationMode.fromValue(metadata & blockRotationMode.mask);
 	}
@@ -105,6 +99,14 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	@SideOnly(Side.CLIENT)
 	public ForgeDirection getInventoryRenderRotation() {
 		return inventoryRenderRotation;
+	}
+
+	public boolean shouldDropFromTeAfterBreak() {
+		return true;
+	}
+
+	public boolean shouldOverrideHarvestWithTeLogic() {
+		return false;
 	}
 
 	public void setBoundsBasedOnRotation(ForgeDirection direction) {}
@@ -164,14 +166,16 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public void breakBlock(World world, int x, int y, int z, Block block, int meta) {
-		final TileEntity te = world.getTileEntity(x, y, z);
-		if (te != null) {
-			if (te instanceof IBreakAwareTile) ((IBreakAwareTile)te).onBlockBroken();
+		if (shouldDropFromTeAfterBreak()) {
+			final TileEntity te = world.getTileEntity(x, y, z);
+			if (te != null) {
+				if (te instanceof IBreakAwareTile) ((IBreakAwareTile)te).onBlockBroken();
 
-			for (ItemStack stack : getTileBreakDrops(te))
-				BlockUtils.dropItemStackInWorld(world, x, y, z, stack);
+				for (ItemStack stack : getTileBreakDrops(te))
+					BlockUtils.dropItemStackInWorld(world, x, y, z, stack);
 
-			world.removeTileEntity(x, y, z);
+				world.removeTileEntity(x, y, z);
+			}
 		}
 		super.breakBlock(world, x, y, z, block, meta);
 	}
@@ -199,7 +203,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
-		if (teDropsOverride && willHarvest) {
+		if (willHarvest && shouldOverrideHarvestWithTeLogic()) {
 			ArrayList<ItemStack> drops = getDropsWithTileEntity(world, player, x, y, z);
 			if (drops != null) ContextManager.set(DROP_OVERRIDE, drops);
 		}
