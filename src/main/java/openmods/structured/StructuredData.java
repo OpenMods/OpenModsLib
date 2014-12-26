@@ -33,7 +33,6 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 
 		containers.remove(containerId);
 
-		version++;
 		return removedElements;
 	}
 
@@ -47,8 +46,11 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 			container.onElementAdded(element, elementId);
 		}
 		containers.put(containerId, container);
-		version++;
 		return firstElementId;
 	}
 
+	protected void updateVersion(Iterable<Command> commands) {
+		for (Command c : commands)
+			version += c.versionChange();
+	}
 }

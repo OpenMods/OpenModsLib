@@ -46,9 +46,9 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 			commands.add(update);
 		}
 
-		version += modifiedElements.size();
-
 		if (addCheck) commands.add(createConsistencyCheck());
+
+		updateVersion(commands);
 		clearUpdates();
 	}
 
@@ -63,6 +63,8 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		SetVersion msg = new SetVersion();
 		msg.version = version;
 		commands.add(msg);
+
+		updateVersion(commands);
 		clearUpdates();
 	}
 
@@ -106,10 +108,11 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 	}
 
 	public synchronized void removeAll() {
-		clearUpdates();
-		Collection<Integer> toRemove = containers.keySet();
-		deletedContainers.addAll(toRemove);
-		version += toRemove.size();
+		deletedContainers.addAll(containers.keySet());
+		deletedContainers.removeAll(newContainers);
+
+		newContainers.clear();
+		modifiedElements.clear();
 
 		elements.clear();
 		containers.clear();

@@ -75,6 +75,8 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 				version += msg.idList.size();
 			}
 		}
+
+		updateVersion(commands);
 	}
 
 	private SortedSet<Integer> addReplaceContainer(int type, int containerId, int start) {

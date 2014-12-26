@@ -131,6 +131,11 @@ public abstract class Command {
 			ByteUtils.writeVLI(output, containerCount);
 			ByteUtils.writeVLI(output, maxContainerId);
 		}
+
+		@Override
+		public String dumpContents() {
+			return "[version=" + version + ", elementCount=" + elementCount + ", maxElementId=" + maxElementId + ", containerCount=" + containerCount + ", maxContainerId=" + maxContainerId + "]";
+		}
 	}
 
 	public static class SetVersion extends Command {
@@ -150,6 +155,11 @@ public abstract class Command {
 		@Override
 		protected void writeDataToStream(DataOutput output) throws IOException {
 			output.writeByte(version);
+		}
+
+		@Override
+		public String dumpContents() {
+			return Byte.toString(version);
 		}
 	}
 
@@ -192,6 +202,11 @@ public abstract class Command {
 			this.type = type;
 			this.start = start;
 		}
+
+		@Override
+		public String toString() {
+			return "[id=" + id + ", type=" + type + ", start=" + start + "]";
+		}
 	}
 
 	public static class Delete extends Command {
@@ -211,6 +226,16 @@ public abstract class Command {
 		protected void writeDataToStream(DataOutput output) {
 			CollectionUtils.writeSortedIdList(output, idList);
 		}
+
+		@Override
+		public String dumpContents() {
+			return String.valueOf(idList);
+		}
+
+		@Override
+		public int versionChange() {
+			return idList.size();
+		}
 	}
 
 	public abstract static class PayloadCommand extends Command {
@@ -227,6 +252,11 @@ public abstract class Command {
 		protected void writeDataToStream(DataOutput output) throws IOException {
 			ByteUtils.writeVLI(output, payload.length);
 			output.write(payload);
+		}
+
+		@Override
+		public String dumpContents() {
+			return (payload == null? "<null>" : Integer.toString(payload.length));
 		}
 	}
 
@@ -279,6 +309,17 @@ public abstract class Command {
 
 			super.writeDataToStream(output);
 		}
+
+		@Override
+		public String dumpContents() {
+			return String.format("%s -> %s", containers,
+					(payload == null? "<null>" : Integer.toString(payload.length)));
+		}
+
+		@Override
+		public int versionChange() {
+			return containers.size();
+		}
 	}
 
 	public abstract static class Update extends PayloadCommand {
@@ -302,6 +343,17 @@ public abstract class Command {
 		protected void writeDataToStream(DataOutput output) throws IOException {
 			CollectionUtils.writeSortedIdList(output, idList);
 			super.writeDataToStream(output);
+		}
+
+		@Override
+		public String dumpContents() {
+			return String.format("%s -> %s", idList,
+					(payload == null? "<null>" : Integer.toString(payload.length)));
+		}
+
+		@Override
+		public int versionChange() {
+			return idList.size();
 		}
 	}
 
@@ -347,5 +399,18 @@ public abstract class Command {
 
 	protected boolean isEnd() {
 		return false;
+	}
+
+	public int versionChange() {
+		return 0;
+	}
+
+	public String dumpContents() {
+		return "";
+	}
+
+	@Override
+	public String toString() {
+		return type() + ": " + dumpContents();
 	}
 }
