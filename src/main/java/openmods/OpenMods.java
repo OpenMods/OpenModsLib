@@ -29,10 +29,12 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.event.*;
 
-@Mod(modid = "OpenMods", name = "OpenMods", version = "$LIB-VERSION$", dependencies = "required-after:OpenModsCore")
+@Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = "$LIB-VERSION$", dependencies = "required-after:OpenModsCore")
 public class OpenMods {
 
-	@Instance(value = "OpenMods")
+	public static final String MODID = "OpenMods";
+
+	@Instance(MODID)
 	public static OpenMods instance;
 
 	@SidedProxy(clientSide = "openmods.proxy.OpenClientProxy", serverSide = "openmods.proxy.OpenServerProxy")
@@ -60,7 +62,7 @@ public class OpenMods {
 
 		final File configFile = evt.getSuggestedConfigurationFile();
 		Configuration config = new Configuration(configFile);
-		ConfigProcessing.processAnnotations(configFile, "OpenMods", config, LibConfig.class);
+		ConfigProcessing.processAnnotations(configFile, MODID, config, LibConfig.class);
 		if (config.hasChanged()) config.save();
 
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);
