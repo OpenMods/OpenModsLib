@@ -1,0 +1,16 @@
+openmodslib.command.no_enough_args=Недостаточно аргументов
+openmodslib.command.unknown_modid=Неизвестный id модификации
+openmodslib.command.unknown_value=Неизвестное значение конфигурации
+openmodslib.command.saved=Конфигурация сохранена в %s
+openmodslib.command.not_multiple=Это свойство не принимает множественные значения
+openmodslib.command.online_change=Свойство конфигурации сохранено. Используется новое значение. 
+openmodslib.command.offline_change=Свойство конфигурации сохранено. Новое значение применится после рестарта
+openmodslib.command.cancelled=Изменение конфигурации отменено!
+openmodslib.command.unknown_error=Неизвестная ошибка во время изменения свойства конфигурации: %s
+openmodslib.command.invalid_command=Неизвестная команда '%s'
+openmodslib.command.invalid_type=Нельзя изменить значение с %s на %s
+openmodslib.command.invalid_class_name=Неверное название класса %s
+openmodslib.command.unknown_error_details=Неизвестная ошибка. Пожалуйста проверьте журнал для подробной информации.
+openmodslib.command.class_source=Класс '%s' загружен из '%s'
+openmodslib.command.api_class=Информация об API: name='%s', ownerMod='%s', version='%s'
+openmodslib.command.class_provider=Класс предоставленный файлом %s (моды: %s)
