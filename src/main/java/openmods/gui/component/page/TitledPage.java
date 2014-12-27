@@ -21,5 +21,4 @@ public class TitledPage extends PageBase {
 		lblContent.setAdditionalLineHeight(2);
 		addComponent(lblContent);
 	}
-
 }
