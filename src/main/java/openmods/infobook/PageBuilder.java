@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
+import openmods.Log;
 import openmods.gui.component.BaseComponent;
 import openmods.gui.component.GuiComponentBook;
 import openmods.gui.component.page.StandardRecipePage;
@@ -53,7 +54,17 @@ public class PageBuilder {
 			final T obj = registry.getObject(id);
 			if (obj == null) continue;
 
-			final BookDocumentation doc = obj.getClass().getAnnotation(BookDocumentation.class);
+			final BookDocumentation doc;
+
+			final Class<?> cls = obj.getClass();
+			try {
+				// other mods can derp here
+				doc = cls.getAnnotation(BookDocumentation.class);
+			} catch (Throwable t) {
+				Log.warn(t, "Failed to get annotation from %s", cls);
+				continue;
+			}
+
 			if (doc == null) continue;
 
 			Iterator<String> components = splitter.split(id).iterator();
