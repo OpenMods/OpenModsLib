@@ -62,7 +62,7 @@ public class ContextClassTransformer extends ClassVisitor {
 	}
 
 	public ContextClassTransformer(ClassVisitor cv, Collection<MethodMatcher> matchers) {
-		super(Opcodes.ASM5, cv);
+		super(Opcodes.ASM4, cv);
 		this.methods = ImmutableList.copyOf(matchers);
 	}
 
