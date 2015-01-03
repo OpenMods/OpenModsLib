@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -106,7 +107,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public boolean shouldOverrideHarvestWithTeLogic() {
-		return false;
+		return teClass != null && ICustomHarvestDrops.class.isAssignableFrom(teClass);
 	}
 
 	public void setBoundsBasedOnRotation(ForgeDirection direction) {}
@@ -155,6 +156,20 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	@Override
 	public void registerBlockIcons(IIconRegister registry) {
 		this.blockIcon = registry.registerIcon(String.format("%s:%s", modId, blockName));
+	}
+
+	protected boolean suppressPickBlock() {
+		return false;
+	}
+
+	@Override
+	public ItemStack getPickBlock(MovingObjectPosition target, World world, int x, int y, int z) {
+		if (teClass != null && ICustomPickItem.class.isAssignableFrom(teClass)) {
+			TileEntity te = world.getTileEntity(x, y, z);
+			if (te instanceof ICustomPickItem) return ((ICustomPickItem)te).getPickBlock();
+		}
+
+		return suppressPickBlock()? null : super.getPickBlock(target, world, x, y, z);
 	}
 
 	private static List<ItemStack> getTileBreakDrops(TileEntity te) {

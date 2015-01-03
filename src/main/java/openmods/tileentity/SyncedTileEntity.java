@@ -16,10 +16,13 @@ import openmods.network.rpc.targets.SyncRpcTarget;
 import openmods.network.senders.IPacketSender;
 import openmods.reflection.TypeUtils;
 import openmods.sync.*;
+import openmods.sync.drops.DropTagSerializer;
 
 public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMapProvider {
 
 	protected SyncMapTile<SyncedTileEntity> syncMap;
+
+	private DropTagSerializer tagSerializer;
 
 	public SyncedTileEntity() {
 		syncMap = new SyncMapTile<SyncedTileEntity>(this);
@@ -32,6 +35,11 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 				markUpdated();
 			}
 		});
+	}
+
+	protected DropTagSerializer getDropSerializer() {
+		if (tagSerializer == null) tagSerializer = new DropTagSerializer();
+		return tagSerializer;
 	}
 
 	protected ISyncListener createRenderUpdateListener() {
