@@ -169,4 +169,8 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	protected GenericInventory registerInventoryCallback(GenericInventory inventory) {
 		return inventory.addCallback(createInventoryCallback());
 	}
+
+	public boolean isValid(EntityPlayer player) {
+		return (worldObj.getTileEntity(xCoord, yCoord, zCoord) == this) && (player.getDistanceSq(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5) <= 64.0D);
+	}
 }
