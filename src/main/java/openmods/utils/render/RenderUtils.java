@@ -222,6 +222,38 @@ public class RenderUtils {
 		GL11.glPopMatrix();
 	}
 
+	public static void renderCube(Tessellator tes, double x1, double y1, double z1, double x2, double y2, double z2) {
+		tes.addVertex(x1, y1, z1);
+		tes.addVertex(x1, y2, z1);
+		tes.addVertex(x2, y2, z1);
+		tes.addVertex(x2, y1, z1);
+
+		tes.addVertex(x1, y1, z2);
+		tes.addVertex(x2, y1, z2);
+		tes.addVertex(x2, y2, z2);
+		tes.addVertex(x1, y2, z2);
+
+		tes.addVertex(x1, y1, z1);
+		tes.addVertex(x1, y1, z2);
+		tes.addVertex(x1, y2, z2);
+		tes.addVertex(x1, y2, z1);
+
+		tes.addVertex(x2, y1, z1);
+		tes.addVertex(x2, y2, z1);
+		tes.addVertex(x2, y2, z2);
+		tes.addVertex(x2, y1, z2);
+
+		tes.addVertex(x1, y1, z1);
+		tes.addVertex(x2, y1, z1);
+		tes.addVertex(x2, y1, z2);
+		tes.addVertex(x1, y1, z2);
+
+		tes.addVertex(x1, y2, z1);
+		tes.addVertex(x1, y2, z2);
+		tes.addVertex(x2, y2, z2);
+		tes.addVertex(x2, y2, z1);
+	}
+
 	public static void disableLightmap() {
 		OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
 		GL11.glDisable(GL11.GL_TEXTURE_2D);

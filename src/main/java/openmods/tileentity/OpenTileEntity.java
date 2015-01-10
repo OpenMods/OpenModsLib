@@ -89,13 +89,16 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		isActive = false;
 	}
 
-	public TileEntity getTileInDirection(ForgeDirection direction) {
-		int x = xCoord + direction.offsetX;
-		int y = yCoord + direction.offsetY;
-		int z = zCoord + direction.offsetZ;
+	private TileEntity getTileEntity(int x, int y, int z) {
+		return (worldObj != null && worldObj.blockExists(x, y, z))? worldObj.getTileEntity(x, y, z) : null;
+	}
 
-		if (worldObj != null && worldObj.blockExists(x, y, z)) { return worldObj.getTileEntity(x, y, z); }
-		return null;
+	public TileEntity getTileInDirection(ForgeDirection direction) {
+		return getNeighbour(direction.offsetX, direction.offsetY, direction.offsetZ);
+	}
+
+	public TileEntity getNeighbour(int dx, int dy, int dz) {
+		return getTileEntity(xCoord + dx, yCoord + dy, zCoord + dz);
 	}
 
 	@Override
