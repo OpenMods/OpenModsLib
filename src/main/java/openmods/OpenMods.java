@@ -10,6 +10,7 @@ import openmods.entity.DelayedEntityLoadManager;
 import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
+import openmods.liquids.BucketFillHandler;
 import openmods.network.IdSyncManager;
 import openmods.network.event.NetworkEventManager;
 import openmods.network.rpc.RpcCallDispatcher;
@@ -70,6 +71,8 @@ public class OpenMods {
 		MinecraftForge.EVENT_BUS.register(FakePlayerPool.instance);
 
 		MinecraftForge.EVENT_BUS.register(DropCapture.instance);
+
+		MinecraftForge.EVENT_BUS.register(BucketFillHandler.instance);
 
 		FMLCommonHandler.instance().bus().register(DelayedActionTickHandler.INSTANCE);
 
