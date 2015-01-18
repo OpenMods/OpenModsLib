@@ -18,10 +18,9 @@ public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implemen
 		return new SyncableEnum<E>(initialValue);
 	}
 
-	@SuppressWarnings("unchecked")
 	public SyncableEnum(E value) {
 		this.value = value;
-		this.values = (E[])value.getClass().getEnumConstants();
+		this.values = value.getDeclaringClass().getEnumConstants();
 	}
 
 	@Override
