@@ -150,6 +150,12 @@ task deobfJar(type: Jar) {
     }
 }
 
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'src'
+    from sourceSets.main.java
+}
+
 artifacts {
     archives deobfJar
+    archives sourcesJar
 }
