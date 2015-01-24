@@ -10,3 +10,9 @@
 /build/
 /run/
 /logs/
+/bin/
+
+# Eclipse
+.classpath
+.project
+.settings/
