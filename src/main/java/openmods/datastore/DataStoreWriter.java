@@ -4,14 +4,14 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import openmods.utils.ByteUtils;
-import openmods.utils.io.IStreamWriteable;
+import openmods.utils.io.IStreamWriter;
 
 public class DataStoreWriter<K, V> {
 	private final DataStore<K, V> data;
-	private final IStreamWriteable<K> keyWriter;
-	private final IStreamWriteable<V> valueWriter;
+	private final IStreamWriter<K> keyWriter;
+	private final IStreamWriter<V> valueWriter;
 
-	DataStoreWriter(DataStore<K, V> data, IStreamWriteable<K> keyWriter, IStreamWriteable<V> valueWriter) {
+	DataStoreWriter(DataStore<K, V> data, IStreamWriter<K> keyWriter, IStreamWriter<V> valueWriter) {
 		this.data = data;
 		this.keyWriter = keyWriter;
 		this.valueWriter = valueWriter;

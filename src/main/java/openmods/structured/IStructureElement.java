@@ -1,11 +1,5 @@
 package openmods.structured;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import openmods.serializable.IStreamSerializable;
 
-public interface IStructureElement {
-	public void writeToStream(DataOutput output) throws IOException;
-
-	public void readFromStream(DataInput input) throws IOException;
-}
+public interface IStructureElement extends IStreamSerializable {}

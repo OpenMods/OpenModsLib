@@ -5,16 +5,16 @@ import java.io.IOException;
 import java.util.Map;
 
 import openmods.utils.ByteUtils;
-import openmods.utils.io.IStreamReadable;
+import openmods.utils.io.IStreamReader;
 
 import com.google.common.collect.Maps;
 
 public class DataStoreReader<K, V> {
-	private final IStreamReadable<K> keyReader;
-	private final IStreamReadable<V> valueReader;
+	private final IStreamReader<K> keyReader;
+	private final IStreamReader<V> valueReader;
 	private final DataStoreWrapper<K, V> wrapper;
 
-	DataStoreReader(DataStoreWrapper<K, V> wrapper, IStreamReadable<K> keyReader, IStreamReadable<V> valueReader) {
+	DataStoreReader(DataStoreWrapper<K, V> wrapper, IStreamReader<K> keyReader, IStreamReader<V> valueReader) {
 		this.keyReader = keyReader;
 		this.valueReader = valueReader;
 		this.wrapper = wrapper;

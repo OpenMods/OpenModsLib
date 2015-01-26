@@ -42,7 +42,7 @@ public class SyncableInt extends SyncableObjectBase implements ISyncableValuePro
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream) throws IOException {
 		stream.writeInt(value);
 	}
 

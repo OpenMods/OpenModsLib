@@ -20,7 +20,7 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 		}
 
 		@Override
-		public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+		public void writeToStream(DataOutputStream stream) throws IOException {
 			stream.writeByte(value);
 		}
 
@@ -42,7 +42,7 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 		}
 
 		@Override
-		public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+		public void writeToStream(DataOutputStream stream) throws IOException {
 			stream.writeShort(value);
 		}
 
@@ -64,7 +64,7 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 		}
 
 		@Override
-		public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+		public void writeToStream(DataOutputStream stream) throws IOException {
 			stream.writeInt(value);
 		}
 

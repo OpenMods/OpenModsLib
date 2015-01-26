@@ -16,7 +16,7 @@ import openmods.utils.bitmap.IRpcDirectionBitMap;
 
 import com.google.common.collect.Iterators;
 
-public class SyncableDirs extends SyncableObjectBase implements IRpcDirectionBitMap, IBitMap<ForgeDirection>, ISyncableValueProvider<Set<ForgeDirection>> {
+public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBitMap, IBitMap<ForgeDirection>, ISyncableValueProvider<Set<ForgeDirection>> {
 
 	private Set<ForgeDirection> dirs = EnumSet.noneOf(ForgeDirection.class);
 
@@ -35,7 +35,7 @@ public class SyncableDirs extends SyncableObjectBase implements IRpcDirectionBit
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream) throws IOException {
 		stream.writeByte(write());
 	}
 

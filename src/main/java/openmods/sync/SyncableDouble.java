@@ -38,7 +38,7 @@ public class SyncableDouble extends SyncableObjectBase implements ISyncableValue
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream) throws IOException {
 		stream.writeDouble(value);
 	}
 

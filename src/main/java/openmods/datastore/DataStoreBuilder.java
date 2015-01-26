@@ -16,11 +16,11 @@ public class DataStoreBuilder<K, V> {
 	private final Class<? extends K> keyClass;
 	private final Class<? extends V> valueClass;
 
-	private IStreamWriteable<K> keyWriter;
-	private IStreamWriteable<V> valueWriter;
+	private IStreamWriter<K> keyWriter;
+	private IStreamWriter<V> valueWriter;
 
-	private IStreamReadable<K> keyReader;
-	private IStreamReadable<V> valueReader;
+	private IStreamReader<K> keyReader;
+	private IStreamReader<V> valueReader;
 
 	private List<IDataVisitor<K, V>> visitors = Lists.newArrayList();
 
@@ -100,28 +100,28 @@ public class DataStoreBuilder<K, V> {
 		setDefaultValueReaderWriter();
 	}
 
-	public void setKeyWriter(IStreamWriteable<K> keyWriter) {
+	public void setKeyWriter(IStreamWriter<K> keyWriter) {
 		this.keyWriter = keyWriter;
 	}
 
-	public void setValueWriter(IStreamWriteable<V> valueWriter) {
+	public void setValueWriter(IStreamWriter<V> valueWriter) {
 		this.valueWriter = valueWriter;
 	}
 
-	public void setKeyReaderWriter(IStreamSerializable<K> rw) {
+	public void setKeyReaderWriter(IStreamSerializer<K> rw) {
 		this.keyReader = rw;
 		this.keyWriter = rw;
 	}
 
-	public void setKeyReader(IStreamReadable<K> keyReader) {
+	public void setKeyReader(IStreamReader<K> keyReader) {
 		this.keyReader = keyReader;
 	}
 
-	public void setValueReader(IStreamReadable<V> valueReader) {
+	public void setValueReader(IStreamReader<V> valueReader) {
 		this.valueReader = valueReader;
 	}
 
-	public void setValueReaderWriter(IStreamSerializable<V> rw) {
+	public void setValueReaderWriter(IStreamSerializer<V> rw) {
 		this.valueReader = rw;
 		this.valueWriter = rw;
 	}

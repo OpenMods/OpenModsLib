@@ -30,7 +30,7 @@ public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implemen
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) {
+	public void writeToStream(DataOutputStream stream) {
 		ByteUtils.writeVLI(stream, value.ordinal());
 	}
 

@@ -24,7 +24,7 @@ public class SyncableBlock extends SyncableObjectBase implements ISyncableValueP
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) {
+	public void writeToStream(DataOutputStream stream) {
 		int blockId = Block.getIdFromBlock(block);
 		if (blockId < 0) blockId = 0;
 		ByteUtils.writeVLI(stream, blockId);

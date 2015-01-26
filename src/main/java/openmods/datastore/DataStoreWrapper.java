@@ -3,8 +3,8 @@ package openmods.datastore;
 import java.util.Map;
 import java.util.Set;
 
-import openmods.utils.io.IStreamReadable;
-import openmods.utils.io.IStreamWriteable;
+import openmods.utils.io.IStreamReader;
+import openmods.utils.io.IStreamWriter;
 
 import com.google.common.collect.Sets;
 
@@ -16,13 +16,13 @@ public class DataStoreWrapper<K, V> {
 
 	private final Set<IDataVisitor<K, V>> visitors = Sets.newIdentityHashSet();
 
-	private final IStreamWriteable<K> keyWriter;
-	private final IStreamWriteable<V> valueWriter;
+	private final IStreamWriter<K> keyWriter;
+	private final IStreamWriter<V> valueWriter;
 
-	private final IStreamReadable<K> keyReader;
-	private final IStreamReadable<V> valueReader;
+	private final IStreamReader<K> keyReader;
+	private final IStreamReader<V> valueReader;
 
-	DataStoreWrapper(Map<K, V> localData, IStreamWriteable<K> keyWriter, IStreamWriteable<V> valueWriter, IStreamReadable<K> keyReader, IStreamReadable<V> valueReader) {
+	DataStoreWrapper(Map<K, V> localData, IStreamWriter<K> keyWriter, IStreamWriter<V> valueWriter, IStreamReader<K> keyReader, IStreamReader<V> valueReader) {
 		this.localData = new DataStore<K, V>(localData);
 		this.keyWriter = keyWriter;
 		this.valueWriter = valueWriter;

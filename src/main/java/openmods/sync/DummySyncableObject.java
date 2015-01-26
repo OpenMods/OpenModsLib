@@ -16,7 +16,7 @@ public class DummySyncableObject extends SyncableObjectBase {
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) {
+	public void writeToStream(DataOutputStream stream) {
 		Log.warn("Trying to write dummy syncable object");
 	}
 

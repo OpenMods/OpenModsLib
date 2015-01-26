@@ -40,7 +40,7 @@ public class SyncableByte extends SyncableObjectBase implements ISyncableValuePr
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream) throws IOException {
 		stream.writeByte(value);
 	}
 

@@ -11,7 +11,7 @@ import openmods.utils.ByteUtils;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
-public abstract class TypeRW<T> implements INBTSerializable<T>, IStreamSerializable<T>, IStringSerializable<T> {
+public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<T>, IStringSerializer<T> {
 
 	public static final TypeRW<Integer> INTEGER = new TypeRW<Integer>() {
 
@@ -343,7 +343,7 @@ public abstract class TypeRW<T> implements INBTSerializable<T>, IStreamSerializa
 		}
 	};
 
-	public static final IStreamSerializable<Integer> VLI_SERIALIZABLE = new IStreamSerializable<Integer>() {
+	public static final IStreamSerializer<Integer> VLI_SERIALIZABLE = new IStreamSerializer<Integer>() {
 
 		@Override
 		public void writeToStream(Integer o, DataOutput output) {

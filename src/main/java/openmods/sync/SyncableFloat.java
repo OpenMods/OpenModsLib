@@ -43,7 +43,7 @@ public class SyncableFloat extends SyncableObjectBase implements ISyncableValueP
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream) throws IOException {
 		stream.writeFloat(value);
 	}
 

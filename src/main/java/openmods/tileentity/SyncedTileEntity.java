@@ -7,7 +7,6 @@ import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
-import net.minecraftforge.common.util.ForgeDirection;
 import openmods.Log;
 import openmods.network.rpc.IRpcTarget;
 import openmods.network.rpc.RpcCall;
@@ -84,12 +83,6 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 			Log.severe(e, "Error during description packet creation");
 			return null;
 		}
-	}
-
-	public ForgeDirection getSecondaryRotation() {
-		ISyncableObject rot = syncMap.get("_rotation2");
-		if (rot != null) { return ((SyncableDirection)rot).getValue(); }
-		return null;
 	}
 
 	@Override

@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
-import openmods.utils.io.IStreamReadable;
-import openmods.utils.io.IStreamWriteable;
+import openmods.utils.io.IStreamReader;
+import openmods.utils.io.IStreamWriter;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -87,7 +87,7 @@ public class CollectionUtils {
 		}
 	}
 
-	public static <D> void readSortedIdMap(DataInput input, Map<Integer, D> output, IStreamReadable<D> reader) {
+	public static <D> void readSortedIdMap(DataInput input, Map<Integer, D> output, IStreamReader<D> reader) {
 		int elemCount = ByteUtils.readVLI(input);
 
 		int currentId = 0;
@@ -102,7 +102,7 @@ public class CollectionUtils {
 		}
 	}
 
-	public static <D> void writeSortedIdMap(DataOutput output, SortedMap<Integer, D> input, IStreamWriteable<D> writer) {
+	public static <D> void writeSortedIdMap(DataOutput output, SortedMap<Integer, D> input, IStreamWriter<D> writer) {
 		ByteUtils.writeVLI(output, input.size());
 
 		int currentId = 0;

@@ -48,7 +48,7 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream) throws IOException {
 		if (fluid != null) {
 			stream.writeBoolean(true);
 			ByteUtils.writeVLI(stream, fluid.fluidID);

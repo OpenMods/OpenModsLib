@@ -38,7 +38,7 @@ public class SyncableByteArray extends SyncableObjectBase implements ISyncableVa
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData)
+	public void writeToStream(DataOutputStream stream)
 			throws IOException {
 		if (value == null) {
 			stream.writeInt(0);

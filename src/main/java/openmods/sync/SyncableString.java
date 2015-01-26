@@ -38,7 +38,7 @@ public class SyncableString extends SyncableObjectBase implements ISyncableValue
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData)
+	public void writeToStream(DataOutputStream stream)
 			throws IOException {
 		stream.writeUTF(value);
 	}

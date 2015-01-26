@@ -19,7 +19,7 @@ public class SyncableUUID extends SyncableObjectBase {
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream) throws IOException {
 		stream.writeLong(uuid.getMostSignificantBits());
 		stream.writeLong(uuid.getLeastSignificantBits());
 	}

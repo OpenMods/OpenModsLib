@@ -42,7 +42,7 @@ public class SyncableShort extends SyncableObjectBase implements ISyncableValueP
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream, boolean fullData) throws IOException {
+	public void writeToStream(DataOutputStream stream) throws IOException {
 		stream.writeShort(value);
 	}
 

@@ -10,7 +10,7 @@ import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.common.config.Property.Type;
 import openmods.Log;
-import openmods.utils.io.IStringSerializable;
+import openmods.utils.io.IStringSerializer;
 import openmods.utils.io.StringConversionException;
 import openmods.utils.io.TypeRW;
 
@@ -35,7 +35,7 @@ public abstract class ConfigPropertyMeta {
 	private final Object defaultValue;
 	private final String[] defaultText;
 
-	protected final IStringSerializable<?> converter;
+	protected final IStringSerializer<?> converter;
 	protected final Property wrappedProperty;
 	public static final Map<Class<?>, Property.Type> CONFIG_TYPES = ImmutableMap.<Class<?>, Property.Type> builder()
 			.put(Integer.class, Property.Type.INTEGER)

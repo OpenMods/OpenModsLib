@@ -174,7 +174,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 		for (int i = 0; i < index; i++) {
 			final ISyncableObject object = objects[i];
 			if (object != null && (fullPacket || object.isDirty())) {
-				object.writeToStream(dos, fullPacket);
+				object.writeToStream(dos);
 			}
 		}
 	}
