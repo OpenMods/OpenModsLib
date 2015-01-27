@@ -7,6 +7,8 @@ import net.minecraftforge.common.config.Configuration;
 import openmods.config.properties.CommandConfig;
 import openmods.config.properties.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
+import openmods.events.network.FakeSlotEventPacket;
+import openmods.events.network.FakeSlotServer;
 import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
@@ -51,7 +53,8 @@ public class OpenMods {
 	public void preInit(FMLPreInitializationEvent evt) {
 		SyncChannelHolder.ensureLoaded();
 
-		NetworkEventManager.INSTANCE.startRegistration();
+		NetworkEventManager.INSTANCE.startRegistration()
+				.register(FakeSlotEventPacket.class);
 
 		RpcCallDispatcher.INSTANCE.startRegistration()
 				.registerInterface(IRpcDirectionBitMap.class)
@@ -73,6 +76,8 @@ public class OpenMods {
 		MinecraftForge.EVENT_BUS.register(DropCapture.instance);
 
 		MinecraftForge.EVENT_BUS.register(BucketFillHandler.instance);
+
+		MinecraftForge.EVENT_BUS.register(FakeSlotServer.instance);
 
 		FMLCommonHandler.instance().bus().register(DelayedActionTickHandler.INSTANCE);
 
