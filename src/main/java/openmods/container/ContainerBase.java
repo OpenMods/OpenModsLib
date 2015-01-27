@@ -99,11 +99,14 @@ public abstract class ContainerBase<T> extends Container {
 			while (stackToMerge.stackSize > 0 && ((!reverse && slotId < stop) || (reverse && slotId >= start))) {
 
 				Slot slot = slots.get(slotId);
-				ItemStack stackInSlot = slot.getStack();
 
-				if (InventoryUtils.tryMergeStacks(stackToMerge, stackInSlot)) {
-					slot.onSlotChanged();
-					inventoryChanged = true;
+				if (canTransferItemsIn(slot)) {
+					ItemStack stackInSlot = slot.getStack();
+
+					if (InventoryUtils.tryMergeStacks(stackToMerge, stackInSlot)) {
+						slot.onSlotChanged();
+						inventoryChanged = true;
+					}
 				}
 
 				slotId += delta;
@@ -117,7 +120,7 @@ public abstract class ContainerBase<T> extends Container {
 				Slot slot = slots.get(slotId);
 				ItemStack stackInSlot = slot.getStack();
 
-				if (stackInSlot == null && slot.isItemValid(stackToMerge)) {
+				if (stackInSlot == null && canTransferItemsIn(slot) && slot.isItemValid(stackToMerge)) {
 					slot.putStack(stackToMerge.copy());
 					slot.onSlotChanged();
 					stackToMerge.stackSize = 0;
@@ -134,7 +137,8 @@ public abstract class ContainerBase<T> extends Container {
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotId) {
 		Slot slot = (Slot)inventorySlots.get(slotId);
-		if (slot != null && slot.getHasStack()) {
+
+		if (slot != null && canTransferItemOut(slot) && slot.getHasStack()) {
 			ItemStack itemToTransfer = slot.getStack();
 			ItemStack copy = itemToTransfer.copy();
 			if (slotId < inventorySize) {
@@ -147,6 +151,16 @@ public abstract class ContainerBase<T> extends Container {
 			if (itemToTransfer.stackSize != copy.stackSize) return copy;
 		}
 		return null;
+	}
+
+	protected boolean canTransferItemOut(Slot slot) {
+		if (slot instanceof ICustomSlot) return ((ICustomSlot)slot).canTransferItemsOut();
+		return true;
+	}
+
+	protected boolean canTransferItemsIn(Slot slot) {
+		if (slot instanceof ICustomSlot) return ((ICustomSlot)slot).canTransferItemsIn();
+		return true;
 	}
 
 	public int getInventorySize() {
@@ -175,6 +189,23 @@ public abstract class ContainerBase<T> extends Container {
 	public boolean enchantItem(EntityPlayer player, int buttonId) {
 		onButtonClicked(player, buttonId);
 		return false;
+	}
+
+	@Override
+	public ItemStack slotClick(int slotId, int key, int modifier, EntityPlayer player) {
+		if (slotId >= 0 && slotId < inventorySlots.size()) {
+			Slot slot = getSlot(slotId);
+			if (slot instanceof ICustomSlot) return ((ICustomSlot)slot).onClick(player, key, modifier);
+		}
+
+		return super.slotClick(slotId, key, modifier, player);
+	}
+
+	@Override
+	public boolean canDragIntoSlot(Slot slot) {
+		if (slot instanceof ICustomSlot) return ((ICustomSlot)slot).canDrag();
+
+		return super.canDragIntoSlot(slot);
 	}
 
 }
