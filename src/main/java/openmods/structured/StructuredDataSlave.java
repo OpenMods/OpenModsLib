@@ -72,7 +72,6 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 			} else if (c instanceof Update) {
 				final Update msg = (Update)c;
 				readPayload(msg.idList, msg.payload);
-				version += msg.idList.size();
 			}
 		}
 

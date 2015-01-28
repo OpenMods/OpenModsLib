@@ -129,6 +129,10 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		return !(newContainers.isEmpty() && deletedContainers.isEmpty() && modifiedElements.isEmpty());
 	}
 
+	public synchronized void markElementModified(IStructureElement element) {
+		markElementModified(element.getId());
+	}
+
 	public synchronized void markElementModified(int id) {
 		Preconditions.checkArgument(elements.containsKey(id), "No element with id %s", id);
 		modifiedElements.add(id);

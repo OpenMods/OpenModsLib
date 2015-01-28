@@ -13,7 +13,7 @@ import com.google.common.base.Preconditions;
 
 public class ElementField extends InstanceFieldAccess<Object> implements IStructureElement {
 
-	public int elementId;
+	private int elementId;
 	public final IStreamSerializer<Object> serializer;
 
 	@SuppressWarnings("unchecked")
@@ -35,5 +35,15 @@ public class ElementField extends InstanceFieldAccess<Object> implements IStruct
 	public void readFromStream(DataInput input) throws IOException {
 		Object value = serializer.readFromStream(input);
 		set(value);
+	}
+
+	@Override
+	public int getId() {
+		return elementId;
+	}
+
+	@Override
+	public void setId(int id) {
+		this.elementId = id;
 	}
 }

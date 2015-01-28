@@ -43,6 +43,7 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 			int elementId = firstElementId++;
 			elements.put(elementId, element);
 			containerToElement.put(containerId, elementId);
+			element.setId(elementId);
 			container.onElementAdded(element, elementId);
 		}
 		containers.put(containerId, container);
