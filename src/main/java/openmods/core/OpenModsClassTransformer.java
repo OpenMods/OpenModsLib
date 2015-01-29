@@ -1,8 +1,9 @@
-package openmods;
+package openmods.core;
 
 import java.util.*;
 
 import net.minecraft.launchwrapper.IClassTransformer;
+import openmods.Log;
 import openmods.api.IResultListener;
 import openmods.asm.*;
 import openmods.asm.VisitorHelper.TransformProvider;

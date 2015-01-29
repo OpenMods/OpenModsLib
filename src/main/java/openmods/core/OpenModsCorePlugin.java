@@ -1,4 +1,4 @@
-package openmods;
+package openmods.core;
 
 import java.util.Map;
 
@@ -8,17 +8,17 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
 
 //must be lower than all dependent ones
 @SortingIndex(16)
-@TransformerExclusions({ "openmods.asm", "openmods.include" })
+@TransformerExclusions({ "openmods.asm.", "openmods.include.", "openmods.core.", "openmods.Log" })
 public class OpenModsCorePlugin implements IFMLLoadingPlugin {
 
 	@Override
 	public String[] getASMTransformerClass() {
-		return new String[] { "openmods.OpenModsClassTransformer" };
+		return new String[] { "openmods.core.OpenModsClassTransformer" };
 	}
 
 	@Override
 	public String getModContainerClass() {
-		return "openmods.OpenModsCore";
+		return "openmods.core.OpenModsCore";
 	}
 
 	@Override

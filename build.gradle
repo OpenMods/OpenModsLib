@@ -107,7 +107,7 @@ minecraft {
     runDir = "eclipse/assets"
     
     replaceIn "openmods/OpenMods.java"
-    replaceIn "openmods/OpenModsCore.java"
+    replaceIn "openmods/core/OpenModsCore.java"
     replace '$LIB-VERSION$', mod_version
 }
 
@@ -131,7 +131,7 @@ processResources {
 
 // Generate FML Coremod manifest
 ext.fmlManifest = manifest {
-    attributes("FMLCorePlugin": "openmods.OpenModsCorePlugin", "FMLCorePluginContainsFMLMod": "true")
+    attributes("FMLCorePlugin": "openmods.core.OpenModsCorePlugin", "FMLCorePluginContainsFMLMod": "true")
 }
 
 // Merge Jenkins and Git manifests to form final manifest in final release jar

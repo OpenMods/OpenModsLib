@@ -1,4 +1,4 @@
-package openmods;
+package openmods.core;
 
 import java.util.Arrays;
 
