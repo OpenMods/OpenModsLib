@@ -134,7 +134,7 @@ public class ItemDistribution {
 	 *            the inventory the item is coming from
 	 * @param fromSlot
 	 *            the slot the item is coming from
-	 * @param target
+	 * @param toInventory
 	 *            the inventory you want the item to be put into. can be BC pipe
 	 *            or IInventory
 	 * @param intoSlot
@@ -260,12 +260,6 @@ public class ItemDistribution {
 		return 0;
 	}
 
-	/***
-	 * Removes an item stack from the inventory and returns a copy of it
-	 *
-	 * @param invent
-	 * @return A copy of the stack it removed
-	 */
 	public static ItemStack removeFromFirstNonEmptySlot(IInventory invent) {
 		int nextFilledSlot = InventoryUtils.getFirstNonEmptySlot(invent);
 		if (nextFilledSlot > -1) {
