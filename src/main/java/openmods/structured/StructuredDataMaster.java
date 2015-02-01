@@ -22,6 +22,9 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 	private Set<Integer> modifiedElements = Sets.newTreeSet();
 	private byte checkCount;
 
+	private int elementCounter;
+	private int containerCounter;
+
 	public synchronized void appendUpdateCommands(List<Command> commands) {
 		boolean addCheck = (checkCount++) % 10 == 0;
 

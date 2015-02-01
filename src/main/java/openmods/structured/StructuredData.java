@@ -11,9 +11,6 @@ import com.google.common.collect.TreeMultimap;
 public abstract class StructuredData<C extends IStructureContainer<E>, E extends IStructureElement> {
 	protected byte version;
 
-	protected int elementCounter;
-	protected int containerCounter;
-
 	protected final SortedMap<Integer, E> elements = Maps.newTreeMap();
 	protected final SortedMap<Integer, C> containers = Maps.newTreeMap();
 	protected final TreeMultimap<Integer, Integer> containerToElement = TreeMultimap.create();
