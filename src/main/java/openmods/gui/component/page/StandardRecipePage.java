@@ -13,32 +13,27 @@ public class StandardRecipePage extends PageBase {
 	public static IIcon iconCraftingGrid = FakeIcon.createSheetIcon(0, 180, 56, 56);
 	public static IIcon iconArrow = FakeIcon.createSheetIcon(60, 198, 48, 15);
 
-	private GuiComponentCraftingGrid craftingGrid;
-	private GuiComponentSprite arrow;
-	private GuiComponentLabel lblDescription;
-	private GuiComponentLabel lblTitle;
-	private GuiComponentItemStackSpinner outputSpinner;
-
 	public StandardRecipePage(String title, String description, ItemStack resultingItem) {
-		String translatedTitle = StatCollector.translateToLocal(title);
-		String translatedDescription = StatCollector.translateToLocal(description).replaceAll("\\\\n", "\n");
+		addComponent(new GuiComponentSprite(90, 50, iconArrow, BOOK_TEXTURE));
+		addComponent(new GuiComponentItemStackSpinner(150, 40, resultingItem));
 
-		lblTitle = new GuiComponentLabel((getWidth() - Minecraft.getMinecraft().fontRenderer.getStringWidth(translatedTitle)) / 2, 12, translatedTitle);
-		lblDescription = new GuiComponentLabel(27, 95, 340, 51, translatedDescription);
-		arrow = new GuiComponentSprite(90, 50, iconArrow, BOOK_TEXTURE);
-		craftingGrid = new GuiComponentCraftingGrid(25, 30, RecipeUtils.getFirstRecipeForItem(resultingItem), iconCraftingGrid, BOOK_TEXTURE);
+		{
+			final ItemStack[] recipe = RecipeUtils.getFirstRecipeForItem(resultingItem);
+			if (recipe != null) addComponent(new GuiComponentCraftingGrid(25, 30, recipe, iconCraftingGrid, BOOK_TEXTURE));
+		}
 
-		lblDescription.setScale(0.5f);
-		lblDescription.setAdditionalLineHeight(4);
+		{
+			String translatedTitle = StatCollector.translateToLocal(title);
+			addComponent(new GuiComponentLabel((getWidth() - Minecraft.getMinecraft().fontRenderer.getStringWidth(translatedTitle)) / 2, 12, translatedTitle));
+		}
 
-		outputSpinner = new GuiComponentItemStackSpinner(150, 40, resultingItem);
-
-		addComponent(lblDescription);
-		addComponent(lblTitle);
-		addComponent(arrow);
-		addComponent(outputSpinner);
-		addComponent(craftingGrid);
-
+		{
+			String translatedDescription = StatCollector.translateToLocal(description).replaceAll("\\\\n", "\n");
+			GuiComponentLabel lblDescription = new GuiComponentLabel(27, 95, 340, 51, translatedDescription);
+			lblDescription.setScale(0.5f);
+			lblDescription.setAdditionalLineHeight(4);
+			addComponent(lblDescription);
+		}
 	}
 
 	public StandardRecipePage(String title, String description, String videoLink, ItemStack resultingItem) {
