@@ -21,7 +21,7 @@ public class ElementField extends InstanceFieldAccess<Object> implements IStruct
 		super(parent, field);
 
 		Class<?> fieldType = field.getType();
-		serializer = (IStreamSerializer<Object>)TypeRW.TYPES.get(fieldType);
+		serializer = (IStreamSerializer<Object>)TypeRW.STREAM_SERIALIZERS.get(fieldType);
 		Preconditions.checkNotNull(serializer, "Invalid field type");
 	}
 

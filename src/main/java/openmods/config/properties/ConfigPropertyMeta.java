@@ -78,7 +78,7 @@ public abstract class ConfigPropertyMeta {
 		type = ConfigPropertyMeta.CONFIG_TYPES.get(fieldType);
 		Preconditions.checkNotNull(type, "Config field %s has no property type mapping", name);
 
-		converter = TypeRW.TYPES.get(fieldType);
+		converter = TypeRW.STRING_SERIALIZERS.get(fieldType);
 		Preconditions.checkNotNull(converter, "Config field %s has no known conversion from string", name);
 
 		wrappedProperty = getProperty(config, type, defaultValue);

@@ -42,7 +42,7 @@ public class MethodParamsCodec {
 				// NO-OP, enums are always valid, unless...
 				// TODO: size validation? is that even possible?
 			} else {
-				IStreamReader<?> reader = TypeRW.TYPES.get(type);
+				IStreamReader<?> reader = TypeRW.STREAM_SERIALIZERS.get(type);
 				Preconditions.checkNotNull(reader, "Failed to find reader for type %s", type);
 			}
 		}
@@ -125,7 +125,7 @@ public class MethodParamsCodec {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static void writeSingleValue(DataOutput output, final Class<?> type, Object value) throws IOException {
-		IStreamWriter writer = TypeRW.TYPES.get(type);
+		IStreamWriter writer = TypeRW.STREAM_SERIALIZERS.get(type);
 		Preconditions.checkNotNull(writer, "Failed to find writer for type %s", type);
 		writer.writeToStream(value, output);
 	}
@@ -183,7 +183,7 @@ public class MethodParamsCodec {
 	}
 
 	private static Object readSingleValue(DataInput input, Class<?> type) throws IOException {
-		IStreamReader<?> reader = TypeRW.TYPES.get(type);
+		IStreamReader<?> reader = TypeRW.STREAM_SERIALIZERS.get(type);
 		Preconditions.checkNotNull(reader, "Failed to find reader for type %s", type);
 		return reader.readFromStream(input);
 	}

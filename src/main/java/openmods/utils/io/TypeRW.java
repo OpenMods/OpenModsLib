@@ -356,7 +356,20 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 	};
 
-	public static final Map<Class<?>, TypeRW<?>> TYPES = ImmutableMap.<Class<?>, TypeRW<?>> builder()
+	public static final IStreamSerializer<Character> CHAR = new IStreamSerializer<Character>() {
+
+		@Override
+		public void writeToStream(Character o, DataOutput output) throws IOException {
+			output.writeChar(o);
+		}
+
+		@Override
+		public Character readFromStream(DataInput input) throws IOException {
+			return input.readChar();
+		}
+	};
+
+	public static final Map<Class<?>, TypeRW<?>> UNIVERSAL_SERIALIZERS = ImmutableMap.<Class<?>, TypeRW<?>> builder()
 			.put(Integer.class, INTEGER)
 			.put(int.class, INTEGER)
 			.put(Boolean.class, BOOL)
@@ -372,5 +385,19 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 			.put(Short.class, SHORT)
 			.put(short.class, SHORT)
 			.put(String.class, STRING)
+			.build();
+
+	public static final Map<Class<?>, IStreamSerializer<?>> STREAM_SERIALIZERS = ImmutableMap.<Class<?>, IStreamSerializer<?>> builder()
+			.putAll(UNIVERSAL_SERIALIZERS)
+			.put(Character.class, CHAR)
+			.put(char.class, CHAR)
+			.build();
+
+	public static final Map<Class<?>, INBTSerializer<?>> NBT_SERIALIZERS = ImmutableMap.<Class<?>, INBTSerializer<?>> builder()
+			.putAll(UNIVERSAL_SERIALIZERS)
+			.build();
+
+	public static final Map<Class<?>, IStringSerializer<?>> STRING_SERIALIZERS = ImmutableMap.<Class<?>, IStringSerializer<?>> builder()
+			.putAll(UNIVERSAL_SERIALIZERS)
 			.build();
 }

@@ -63,7 +63,7 @@ public class DataStoreBuilder<K, V> {
 
 	private <T> TypeRW<T> getDefaultReaderWriter(Class<? extends T> cls) {
 		@SuppressWarnings("unchecked")
-		TypeRW<T> rw = (TypeRW<T>)TypeRW.TYPES.get(cls);
+		TypeRW<T> rw = (TypeRW<T>)TypeRW.UNIVERSAL_SERIALIZERS.get(cls);
 
 		Preconditions.checkNotNull(rw, "Can't find default reader/writer for class %s, id: %s", cls, key.id);
 		return rw;
