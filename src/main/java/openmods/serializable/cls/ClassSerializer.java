@@ -5,12 +5,15 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
 
 import openmods.serializable.IObjectSerializer;
 import openmods.utils.CachedFactory;
 import openmods.utils.FieldsSelector;
 
-public class ClassSerializer<T> extends CachedFactory<Class<? extends T>, FieldsSerializer<T>> implements IObjectSerializer<T> {
+import com.google.common.collect.Lists;
+
+public class ClassSerializer<T> extends CachedFactory<Class<? extends T>, IObjectSerializer<T>> implements IObjectSerializer<T> {
 	private final FieldsSelector SELECTOR = new FieldsSelector() {
 		@Override
 		protected boolean shouldInclude(Field field) {
@@ -23,14 +26,23 @@ public class ClassSerializer<T> extends CachedFactory<Class<? extends T>, Fields
 		}
 	};
 
+	public static <T> IObjectSerializer<T> createFieldsSerializer(Iterable<Field> fields) {
+		List<IObjectSerializer<T>> result = Lists.newArrayList();
+
+		for (Field f : fields)
+			result.add(new SerializableField<T>(f));
+
+		return new ComposedSerializer<T>(result);
+	}
+
 	@Override
-	protected FieldsSerializer<T> create(Class<? extends T> key) {
+	protected IObjectSerializer<T> create(Class<? extends T> key) {
 		final Collection<Field> fields = SELECTOR.getFields(key);
-		return FieldsSerializer.createFromFields(fields);
+		return createFieldsSerializer(fields);
 	}
 
 	@SuppressWarnings("unchecked")
-	private FieldsSerializer<T> getSerializer(T object) {
+	public IObjectSerializer<T> getSerializer(T object) {
 		return getOrCreate((Class<? extends T>)object.getClass());
 	}
 

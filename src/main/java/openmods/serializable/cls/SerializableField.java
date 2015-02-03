@@ -18,8 +18,8 @@ public class SerializableField<T> extends FieldAccess<Object> implements IObject
 
 	public SerializableField(Field field, IStreamSerializer<Object> serializer) {
 		super(field);
-		this.serializer = serializer;
 		Preconditions.checkNotNull(serializer, "Empty serializer");
+		this.serializer = serializer;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -27,7 +27,7 @@ public class SerializableField<T> extends FieldAccess<Object> implements IObject
 		super(field);
 
 		Class<?> fieldType = field.getType();
-		serializer = (IStreamSerializer<Object>)TypeRW.STREAM_SERIALIZERS.get(fieldType);
+		this.serializer = (IStreamSerializer<Object>)TypeRW.STREAM_SERIALIZERS.get(fieldType);
 		Preconditions.checkNotNull(serializer, "Invalid field type");
 	}
 
