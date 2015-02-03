@@ -19,5 +19,9 @@ public abstract class CachedFactory<K, V> {
 		return value;
 	}
 
+	public V remove(K key) {
+		return cache.remove(key);
+	}
+
 	protected abstract V create(K key);
 }
