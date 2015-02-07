@@ -42,11 +42,15 @@ public abstract class BaseComposite extends BaseComponent {
 
 		if (!areChildrenActive()) return;
 
+		final int ownX = offsetX + this.x;
+		final int ownY = offsetY + this.y;
+		final int relMouseX = mouseX - this.x;
+		final int relMouseY = mouseY - this.y;
+
 		for (BaseComponent component : components)
 			if (isComponentEnabled(component)) {
-				component.render(minecraft,
-						offsetX + this.x, offsetY + this.y,
-						mouseX - this.x, mouseY - this.y);
+
+				component.render(minecraft, ownX, ownY, relMouseX, relMouseY);
 			}
 
 		renderComponentForeground(minecraft, offsetX, offsetY, mouseX, mouseY);
@@ -60,11 +64,14 @@ public abstract class BaseComposite extends BaseComponent {
 
 		if (!areChildrenActive()) return;
 
+		final int ownX = offsetX + this.x;
+		final int ownY = offsetY + this.y;
+		final int relMouseX = mouseX - this.x;
+		final int relMouseY = mouseY - this.y;
+
 		for (BaseComponent component : components)
 			if (isComponentEnabled(component)) {
-				component.renderOverlay(minecraft,
-						offsetX + this.x, offsetY + this.y,
-						mouseX - this.x, mouseY - this.y);
+				component.renderOverlay(minecraft, ownX, ownY, relMouseX, relMouseY);
 			}
 
 	}

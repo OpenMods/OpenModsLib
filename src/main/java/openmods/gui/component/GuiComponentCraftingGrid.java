@@ -5,8 +5,6 @@ import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
@@ -19,7 +17,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class GuiComponentCraftingGrid extends GuiComponentSprite {
-	protected static RenderItem itemRenderer = new RenderItem();
+
 	private ItemStack[] items;
 
 	public GuiComponentCraftingGrid(int x, int y, ItemStack[] items, IIcon icon, ResourceLocation texture) {
@@ -82,20 +80,4 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		return stack.getRarity().rarityColor;
 	}
 
-	private void drawItemStack(ItemStack stack, int x, int y, String overlayText)
-	{
-		GL11.glTranslatef(0.0F, 0.0F, 32.0F);
-		this.zLevel = 200.0F;
-		itemRenderer.zLevel = 200.0F;
-		RenderHelper.enableGUIStandardItemLighting();
-		GL11.glColor3f(1f, 1f, 1f);
-		GL11.glEnable(GL11.GL_NORMALIZE);
-		FontRenderer font = null;
-		if (stack != null) font = stack.getItem().getFontRenderer(stack);
-		if (font == null) font = Minecraft.getMinecraft().fontRenderer;
-		itemRenderer.renderItemAndEffectIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), stack, x, y);
-		itemRenderer.renderItemOverlayIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), stack, x, y, overlayText);
-		this.zLevel = 0.0F;
-		itemRenderer.zLevel = 0.0F;
-	}
 }

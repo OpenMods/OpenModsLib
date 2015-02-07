@@ -16,9 +16,11 @@ public class TitledPage extends PageBase {
 
 		addComponent(new GuiComponentLabel(x, 12, translatedTitle));
 
-		final GuiComponentLabel lblContent = new GuiComponentLabel(27, 40, 300, 300, translatedContent);
+		final GuiComponentLabel lblContent = new GuiComponentLabel(0, 35, getWidth() - 20, 300, translatedContent);
 		lblContent.setScale(0.5f);
 		lblContent.setAdditionalLineHeight(2);
+
+		lblContent.setX((getWidth() - lblContent.getWidth()) / 2);
 		addComponent(lblContent);
 	}
 }

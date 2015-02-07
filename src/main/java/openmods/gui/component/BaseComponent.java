@@ -5,6 +5,9 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import openmods.gui.listener.*;
 import openmods.utils.TextureUtils;
@@ -13,6 +16,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
 public abstract class BaseComponent extends Gui {
+	protected static final RenderItem ITEM_RENDERER = new RenderItem();
 
 	private static final int CRAZY_1 = 0x505000FF;
 	private static final int CRAZY_2 = (CRAZY_1 & 0xFEFEFE) >> 1 | CRAZY_1 & -0xFF000000;
@@ -148,5 +152,20 @@ public abstract class BaseComponent extends Gui {
 		this.zLevel = 0.0F;
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+	}
+
+	public void drawItemStack(ItemStack stack, int x, int y, String overlayText) {
+		this.zLevel = 200.0F;
+		ITEM_RENDERER.zLevel = 200.0F;
+		RenderHelper.enableGUIStandardItemLighting();
+		GL11.glColor3f(1f, 1f, 1f);
+		GL11.glEnable(GL11.GL_NORMALIZE);
+		FontRenderer font = null;
+		if (stack != null) font = stack.getItem().getFontRenderer(stack);
+		if (font == null) font = Minecraft.getMinecraft().fontRenderer;
+		ITEM_RENDERER.renderItemAndEffectIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), stack, x, y);
+		ITEM_RENDERER.renderItemOverlayIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), stack, x, y, overlayText);
+		this.zLevel = 0.0F;
+		ITEM_RENDERER.zLevel = 0.0F;
 	}
 }

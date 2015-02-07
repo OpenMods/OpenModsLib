@@ -37,21 +37,23 @@ public abstract class PageBase extends BaseComposite {
 	public static final ResourceLocation BOOK_TEXTURE = new ResourceLocation("openmodslib:textures/gui/book.png");
 
 	public PageBase() {
-		super(0, 0);
+		super(0, 15); // x is set on page turn
 	}
 
 	@Override
 	public int getWidth() {
-		return 220;
+		return 180;
 	}
 
 	@Override
 	public int getHeight() {
-		return 200;
+		return 140;
 	}
 
 	@Override
-	protected void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
+	protected void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+		// drawGradientRect(x + offsetX, y + offsetY, x + offsetX + getWidth(), y + offsetY + getHeight(), 0xFF000000,0xFF000000);
+	}
 
 	public interface IConfirmListener {
 		public void onConfirm();
@@ -119,4 +121,5 @@ public abstract class PageBase extends BaseComposite {
 
 		return this;
 	}
+
 }

@@ -95,7 +95,19 @@ public class GuiComponentBook extends BaseComposite {
 	public void enablePages() {
 		int i = 0;
 		for (BaseComponent page : pages) {
-			page.setEnabled(i == index || i == index + 1);
+			final boolean isLeft = i == index;
+			final boolean isRight = i == index + 1;
+
+			if (isLeft) {
+				page.setEnabled(true);
+				page.setX(20);
+
+			} else if (isRight) {
+				page.setEnabled(true);
+				page.setX(10 + iconPageRight.getIconWidth());
+			} else {
+				page.setEnabled(false);
+			}
 			i++;
 		}
 
@@ -109,9 +121,7 @@ public class GuiComponentBook extends BaseComposite {
 
 	@Override
 	public void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (index + 1 < pages.size()) {
-			pages.get(index + 1).setX(iconPageRight.getIconWidth());
-		}
+
 	}
 
 	public void changePage(int newPage) {

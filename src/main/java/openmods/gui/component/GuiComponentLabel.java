@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.ScaledResolution;
 import openmods.api.IValueReceiver;
 
 import org.lwjgl.opengl.GL11;
@@ -19,7 +18,6 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 	private List<String> formattedText;
 	private int maxHeight;
 	private int maxWidth;
-	private float additionalScale = 1.0f;
 	private int additionalLineHeight = 0;
 	private List<String> tooltip;
 
@@ -49,16 +47,13 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 
 	@Override
 	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		Minecraft mc = Minecraft.getMinecraft();
 		final FontRenderer fontRenderer = minecraft.fontRenderer;
 
-		ScaledResolution sr = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-		additionalScale = sr.getScaleFactor() % 2 == 1 && scale < 1f? 0.667f : 1f;
 		if (getMaxHeight() < fontRenderer.FONT_HEIGHT) return;
 		if (getMaxWidth() < fontRenderer.getCharWidth('m')) return;
 		GL11.glPushMatrix();
 		GL11.glTranslated(offsetX + x, offsetY + y, 1);
-		GL11.glScalef(scale * additionalScale, scale * additionalScale, scale * additionalScale);
+		GL11.glScalef(scale, scale, 1);
 		int offset = 0;
 		int lineCount = 0;
 		for (String s : getFormattedText(fontRenderer)) {
@@ -72,7 +67,7 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 
 	@Override
 	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (tooltip != null && !tooltip.isEmpty()) {
+		if (tooltip != null && !tooltip.isEmpty() && isMouseOver(mouseX, mouseY)) {
 			drawHoveringText(tooltip, offsetX + mouseX, offsetY + mouseY, minecraft.fontRenderer);
 		}
 	}
@@ -97,10 +92,11 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 			int width = fr.getStringWidth(s);
 			if (width > maxWidth) maxWidth = width;
 		}
-		return maxWidth;
+		return (int)(maxWidth * scale);
 	}
 
 	public GuiComponentLabel setScale(float scale) {
+		this.formattedText = null;
 		this.scale = scale;
 		return this;
 	}
@@ -132,11 +128,11 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 	}
 
 	public int getMaxLines() {
-		return (int)Math.floor(getMaxHeight() / (scale / additionalScale) / getFontHeight());
+		return (int)Math.floor(getMaxHeight() / (scale) / getFontHeight());
 	}
 
 	public int getMaxWidth() {
-		return (int)(this.maxWidth / additionalScale);
+		return (int)(this.maxWidth / scale);
 	}
 
 	@Override
