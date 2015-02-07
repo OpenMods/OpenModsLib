@@ -45,14 +45,14 @@ public class GuiComponentBook extends BaseComposite {
 		imgPrev.setListener(new IMouseDownListener() {
 			@Override
 			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
-				if (index > 0) changePage(index - 2);
+				prevPage();
 			}
 		});
 		imgNext = new GuiComponentSpriteButton(380, 158, iconNext, iconNextHover, texture);
 		imgNext.setListener(new IMouseDownListener() {
 			@Override
 			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
-				if (index < pages.size() - 2) changePage(index + 2);
+				nextPage();
 			}
 		});
 
@@ -144,5 +144,21 @@ public class GuiComponentBook extends BaseComposite {
 				changePage(index);
 			}
 		};
+	}
+
+	public void prevPage() {
+		if (index > 0) changePage(index - 2);
+	}
+
+	public void nextPage() {
+		if (index < pages.size() - 2) changePage(index + 2);
+	}
+
+	public void firstPage() {
+		changePage(0);
+	}
+
+	public void lastPage() {
+		changePage(getNumberOfPages() - 1);
 	}
 }
