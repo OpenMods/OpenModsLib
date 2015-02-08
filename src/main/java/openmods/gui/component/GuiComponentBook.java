@@ -120,9 +120,7 @@ public class GuiComponentBook extends BaseComposite {
 	}
 
 	@Override
-	public void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-
-	}
+	public void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	public void changePage(int newPage) {
 		newPage &= ~1;

@@ -51,9 +51,7 @@ public abstract class PageBase extends BaseComposite {
 	}
 
 	@Override
-	protected void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		// drawGradientRect(x + offsetX, y + offsetY, x + offsetX + getWidth(), y + offsetY + getHeight(), 0xFF000000,0xFF000000);
-	}
+	protected void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	public interface IConfirmListener {
 		public void onConfirm();
