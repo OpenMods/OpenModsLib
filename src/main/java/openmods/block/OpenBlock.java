@@ -17,7 +17,6 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import openmods.Log;
 import openmods.api.*;
 import openmods.config.game.IRegisterableBlock;
 import openmods.context.ContextManager;
@@ -123,10 +122,13 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public TileEntity createTileEntity(World world, int metadata) {
 		final TileEntity te = createTileEntity();
 
-		te.blockType = this;
-		if (te instanceof OpenTileEntity) {
-			((OpenTileEntity)te).setup();
+		if (te != null) {
+			te.blockType = this;
+			if (te instanceof OpenTileEntity) {
+				((OpenTileEntity)te).setup();
+			}
 		}
+
 		return te;
 	}
 
@@ -138,14 +140,12 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	protected TileEntity createTileEntity() {
+		if (teClass == null) return null;
 		try {
-			if (teClass != null) return teClass.getConstructor(new Class[0]).newInstance();
-		} catch (NoSuchMethodException nsm) {
-			Log.warn(nsm, "Notice: Cannot create TE automatically due to constructor requirements");
+			return teClass.newInstance();
 		} catch (Exception ex) {
-			Log.warn(ex, "Notice: Error creating tile entity");
+			throw new RuntimeException("Failed to create TE with class " + teClass, ex);
 		}
-		return null;
 	}
 
 	public Class<? extends TileEntity> getTileClass() {
