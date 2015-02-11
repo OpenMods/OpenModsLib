@@ -36,6 +36,7 @@ public class FakeSlot extends Slot implements ICustomSlot {
 		}
 
 		inventory.setInventorySlotContents(slotNumber, place);
+		onSlotChanged();
 		return place;
 	}
 
