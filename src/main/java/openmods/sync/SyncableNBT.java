@@ -1,11 +1,12 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+import openmods.utils.ByteUtils;
+
+import org.apache.commons.compress.utils.BoundedInputStream;
 
 /***
  * Note: you must manually .markDirty() right now
@@ -33,8 +34,9 @@ public class SyncableNBT extends SyncableObjectBase implements ISyncableValuePro
 
 	@Override
 	public void readFromStream(DataInputStream stream) throws IOException {
-		if (stream.readBoolean()) {
-			tag = CompressedStreamTools.readCompressed(stream);
+		int length = ByteUtils.readVLI(stream);
+		if (length > 0) {
+			tag = CompressedStreamTools.readCompressed(new BoundedInputStream(stream, length));
 		} else {
 			tag = null;
 		}
@@ -43,11 +45,15 @@ public class SyncableNBT extends SyncableObjectBase implements ISyncableValuePro
 
 	@Override
 	public void writeToStream(DataOutputStream stream) throws IOException {
-		if (tag == null) {
-			stream.writeBoolean(false);
+		if (tag != null) {
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			CompressedStreamTools.writeCompressed(tag, buffer);
+
+			byte[] bytes = buffer.toByteArray();
+			ByteUtils.writeVLI(stream, bytes.length);
+			stream.write(bytes);
 		} else {
-			stream.writeBoolean(true);
-			CompressedStreamTools.writeCompressed(tag, stream);
+			stream.writeByte(0);
 		}
 	}
 
