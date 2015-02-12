@@ -38,6 +38,17 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 		public void render(Gui gui, Slot slot) {}
 	};
 
+	public static ISlotBackgroundRenderer coloredSlot(final int color) {
+		return new ISlotBackgroundRenderer() {
+			@Override
+			public void render(Gui gui, Slot slot) {
+				GL11.glColor3ub((byte)(color >> 16), (byte)(color >> 8), (byte)(color >> 0));
+				gui.drawTexturedModalRect(slot.xDisplayPosition - 1, slot.yDisplayPosition - 1, 0, 20, 18, 18);
+				GL11.glColor3f(1, 1, 1);
+			}
+		};
+	}
+
 	private final Map<Integer, ISlotBackgroundRenderer> slotRenderers = Maps.newHashMap();
 
 	private final Container container;
