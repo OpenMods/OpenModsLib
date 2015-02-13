@@ -11,15 +11,33 @@ import org.apache.commons.compress.utils.BoundedInputStream;
 
 public class SyncableItemStack extends SyncableObjectBase {
 
+	private static final String TAG_TAG = "tag";
+	private static final String TAG_DAMAGE = "Damage";
+	private static final String TAG_COUNT = "Count";
+	private static final String TAG_ID = "id";
 	private ItemStack stack;
 
 	@Override
 	public void readFromStream(DataInputStream stream) throws IOException {
 		int length = ByteUtils.readVLI(stream);
 		if (length > 0) {
-			// GZIP stream reads more than needed -> needs bounding if we want to reuse stream
-			NBTTagCompound serialized = CompressedStreamTools.readCompressed(new BoundedInputStream(stream, length));
-			this.stack = ItemStack.loadItemStackFromNBT(serialized);
+			int itemId = stream.readInt();
+			byte size = stream.readByte();
+			short damage = stream.readShort();
+
+			NBTTagCompound deserialized = new NBTTagCompound();
+			deserialized.setInteger(TAG_ID, itemId);
+			deserialized.setByte(TAG_COUNT, size);
+			deserialized.setShort(TAG_DAMAGE, damage);
+
+			length--;
+			if (length > 0) {
+				// GZIP stream reads more than needed -> needs bounding if we want to reuse stream
+				NBTTagCompound tag = CompressedStreamTools.readCompressed(new BoundedInputStream(stream, length));
+				deserialized.setTag(TAG_TAG, tag);
+			}
+
+			this.stack = ItemStack.loadItemStackFromNBT(deserialized);
 		} else {
 			this.stack = null;
 		}
@@ -30,13 +48,27 @@ public class SyncableItemStack extends SyncableObjectBase {
 		if (stack != null) {
 			NBTTagCompound serialized = new NBTTagCompound();
 			stack.writeToNBT(serialized);
+			int id = serialized.getInteger(TAG_ID);
+			byte size = serialized.getByte(TAG_COUNT);
+			short damage = serialized.getShort(TAG_DAMAGE);
 
-			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-			CompressedStreamTools.writeCompressed(serialized, buffer);
+			int payloadSize = 1;
+			byte[] tagBytes = null;
+			if (serialized.hasKey(TAG_TAG)) {
+				NBTTagCompound tag = serialized.getCompoundTag(TAG_TAG);
+				ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+				CompressedStreamTools.writeCompressed(tag, buffer);
 
-			byte[] bytes = buffer.toByteArray();
-			ByteUtils.writeVLI(stream, bytes.length);
-			stream.write(bytes);
+				tagBytes = buffer.toByteArray();
+				payloadSize += tagBytes.length;
+			}
+
+			ByteUtils.writeVLI(stream, payloadSize);
+			stream.writeInt(id);
+			stream.writeByte(size);
+			stream.writeShort(damage);
+
+			if (tagBytes != null) stream.write(tagBytes);
 		} else {
 			stream.writeByte(0);
 		}
