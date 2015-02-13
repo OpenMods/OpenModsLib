@@ -56,6 +56,6 @@ public enum Diagonal {
 	public Diagonal rotateCCW() {
 		return CCW.get(this);
 	}
-	
+
 	public static final Diagonal[] VALUES = values();
 }
