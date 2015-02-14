@@ -63,7 +63,7 @@ public class OpenMods {
 
 		final File configFile = evt.getSuggestedConfigurationFile();
 		Configuration config = new Configuration(configFile);
-		ConfigProcessing.processAnnotations(configFile, MODID, config, LibConfig.class);
+		ConfigProcessing.processAnnotations(MODID, config, LibConfig.class);
 		if (config.hasChanged()) config.save();
 
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);

@@ -18,14 +18,12 @@ public class ConfigProcessing {
 	public static class ModConfig {
 		private final Configuration config;
 		public final Class<?> configClass;
-		public final File configFile;
 		public final String modId;
 
 		private Table<String, String, ConfigPropertyMeta> properties = HashBasedTable.create();
 
-		private ModConfig(String modId, File configFile, Configuration config, Class<?> configClass) {
+		private ModConfig(String modId, Configuration config, Class<?> configClass) {
 			this.modId = modId;
-			this.configFile = configFile;
 			this.config = config;
 			this.configClass = configClass;
 		}
@@ -38,6 +36,10 @@ public class ConfigProcessing {
 			}
 		}
 
+		public File getConfigFile() {
+			return config.getConfigFile();
+		}
+		
 		public void save() {
 			if (config.hasChanged()) config.save();
 		}
@@ -65,9 +67,9 @@ public class ConfigProcessing {
 		return configs.get(modId.toLowerCase());
 	}
 
-	public static void processAnnotations(File configFile, String modId, Configuration config, Class<?> klazz) {
+	public static void processAnnotations(String modId, Configuration config, Class<?> klazz) {
 		Preconditions.checkState(!configs.containsKey(modId), "Trying to configure mod '%s' twice", modId);
-		ModConfig configMeta = new ModConfig(modId, configFile, config, klazz);
+		ModConfig configMeta = new ModConfig(modId, config, klazz);
 		configs.put(modId.toLowerCase(), configMeta);
 
 		for (Field f : klazz.getFields())

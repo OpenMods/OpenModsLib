@@ -92,7 +92,7 @@ public class CommandConfig implements ICommand {
 
 		if (COMMAND_SAVE.equals(command)) {
 			config.save();
-			respond(sender, "openmodslib.command.saved", config.configFile.getAbsolutePath());
+			respond(sender, "openmodslib.command.saved", config.getConfigFile().getAbsolutePath());
 			return;
 		}
 
