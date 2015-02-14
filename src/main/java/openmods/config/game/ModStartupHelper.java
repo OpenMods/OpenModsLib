@@ -3,6 +3,8 @@ package openmods.config.game;
 import java.io.File;
 import java.util.Set;
 
+import net.minecraft.block.Block;
+import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
 import openmods.config.BlockInstances;
 import openmods.config.ItemInstances;
@@ -51,6 +53,10 @@ public class ModStartupHelper {
 
 		gameConfig.setFeatures(features);
 
+		setupBlockFactory(gameConfig.getBlockFactory());
+
+		setupItemFactory(gameConfig.getItemFactory());
+
 		for (Class<? extends BlockInstances> blockHolder : blockHolders)
 			gameConfig.registerBlocks(blockHolder);
 
@@ -63,6 +69,10 @@ public class ModStartupHelper {
 	public void handleRenames(FMLMissingMappingsEvent event) {
 		gameConfig.handleRemaps(event.get());
 	}
+
+	protected void setupItemFactory(FactoryRegistry<Item> itemFactory) {}
+
+	protected void setupBlockFactory(FactoryRegistry<Block> blockFactory) {}
 
 	protected void populateConfig(Configuration config) {}
 
