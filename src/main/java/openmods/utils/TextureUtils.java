@@ -53,7 +53,7 @@ public final class TextureUtils {
 	}
 
 	public static int getRandomNumber() {
-		return 4; // chosen by fair dice roll
-		          // guranteed to be random
+		return 4; // chosen by fair dice roll.
+		          // guranteed to be random.
 	}
 }
