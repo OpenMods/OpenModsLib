@@ -39,7 +39,7 @@ public class ConfigProcessing {
 		public File getConfigFile() {
 			return config.getConfigFile();
 		}
-		
+
 		public void save() {
 			if (config.hasChanged()) config.save();
 		}

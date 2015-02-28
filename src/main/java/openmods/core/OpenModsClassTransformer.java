@@ -11,6 +11,7 @@ import openmods.config.simple.ConfigProcessor;
 import openmods.config.simple.ConfigProcessor.UpdateListener;
 import openmods.context.ContextClassTransformer;
 import openmods.include.IncludingClassVisitor;
+import openmods.injector.InjectedClassesManager;
 import openmods.movement.MovementPatcher;
 import openmods.renderer.PlayerRendererHookVisitor;
 import openmods.stencil.CapabilitiesHookInjector;
@@ -225,8 +226,8 @@ public class OpenModsClassTransformer implements IClassTransformer {
 	}
 
 	@Override
-	public byte[] transform(final String name, String transformedName, byte[] bytes) {
-		if (bytes == null) return bytes;
+	public byte[] transform(String name, String transformedName, byte[] bytes) {
+		if (bytes == null) { return InjectedClassesManager.instance.tryGetBytecode(name); }
 
 		bytes = tryApplyContextWrapper(name, transformedName, bytes);
 

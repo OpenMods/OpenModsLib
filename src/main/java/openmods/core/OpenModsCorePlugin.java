@@ -8,7 +8,7 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
 
 //must be lower than all dependent ones
 @SortingIndex(16)
-@TransformerExclusions({ "openmods.asm.", "openmods.include.", "openmods.core.", "openmods.Log" })
+@TransformerExclusions({ "openmods.asm.", "openmods.include.", "openmods.core.", "openmods.injector.", "openmods.Log" })
 public class OpenModsCorePlugin implements IFMLLoadingPlugin {
 
 	@Override
