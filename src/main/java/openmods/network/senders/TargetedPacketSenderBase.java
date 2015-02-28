@@ -1,10 +1,13 @@
 package openmods.network.senders;
 
 import io.netty.channel.Channel;
+
+import java.util.Collection;
+
 import openmods.utils.NetUtils;
 import cpw.mods.fml.common.network.FMLOutboundHandler;
 
-public class TargetedPacketSenderBase<M, T> implements ITargetedPacketSender<M, T> {
+public class TargetedPacketSenderBase<T> implements ITargetedPacketSender<T> {
 
 	private final Channel channel;
 
@@ -19,17 +22,32 @@ public class TargetedPacketSenderBase<M, T> implements ITargetedPacketSender<M, 
 	}
 
 	@Override
-	public void sendPacket(M msg, T target) {
+	public void sendMessage(Object msg, T target) {
 		configureChannel(channel, target);
 		channel.writeAndFlush(msg).addListener(NetUtils.LOGGING_LISTENER);
 	}
 
 	@Override
-	public IPacketSender<M> bind(final T target) {
-		return new IPacketSender<M>() {
+	public void sendMessages(Collection<Object> msgs, T target) {
+		configureChannel(channel, target);
+
+		for (Object msg : msgs)
+			channel.write(msg).addListener(NetUtils.LOGGING_LISTENER);
+
+		channel.flush();
+	}
+
+	@Override
+	public IPacketSender bind(final T target) {
+		return new IPacketSender() {
 			@Override
-			public void sendPacket(M msg) {
-				TargetedPacketSenderBase.this.sendPacket(msg, target);
+			public void sendMessage(Object msg) {
+				TargetedPacketSenderBase.this.sendMessage(msg, target);
+			}
+
+			@Override
+			public void sendMessages(Collection<Object> msg) {
+				TargetedPacketSenderBase.this.sendMessages(msg, target);
 			}
 		};
 	}

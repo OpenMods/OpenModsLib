@@ -14,7 +14,7 @@ import cpw.mods.fml.common.network.FMLEmbeddedChannel;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;
 
-public class RpcCallDispatcher extends Dispatcher<RpcCall> {
+public class RpcCallDispatcher extends Dispatcher {
 
 	public static final RpcCallDispatcher INSTANCE = new RpcCallDispatcher();
 
@@ -54,7 +54,7 @@ public class RpcCallDispatcher extends Dispatcher<RpcCall> {
 		setup = null;
 	}
 
-	public <T> T createProxy(IRpcTarget wrapper, IPacketSender<RpcCall> sender, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+	public <T> T createProxy(IRpcTarget wrapper, IPacketSender sender, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		return proxyFactory.createProxy(getClass().getClassLoader(), sender, wrapper, mainIntf, extraIntf);
 	}
 }

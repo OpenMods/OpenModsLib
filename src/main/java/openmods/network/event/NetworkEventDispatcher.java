@@ -8,7 +8,7 @@ import cpw.mods.fml.common.network.FMLEmbeddedChannel;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;
 
-public class NetworkEventDispatcher extends Dispatcher<NetworkEvent> {
+public class NetworkEventDispatcher extends Dispatcher {
 
 	public static final String CHANNEL_NAME = "OpenMods|E";
 

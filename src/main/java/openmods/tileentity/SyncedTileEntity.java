@@ -9,7 +9,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
 import openmods.Log;
 import openmods.network.rpc.IRpcTarget;
-import openmods.network.rpc.RpcCall;
 import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.SyncRpcTarget;
 import openmods.network.senders.IPacketSender;
@@ -100,7 +99,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	public <T> T createRpcProxy(ISyncableObject object, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		TypeUtils.isInstance(object, mainIntf, extraIntf);
 		IRpcTarget target = new SyncRpcTarget.SyncTileEntityRpcTarget(this, object);
-		final IPacketSender<RpcCall> sender = RpcCallDispatcher.INSTANCE.senders.client;
+		final IPacketSender sender = RpcCallDispatcher.INSTANCE.senders.client;
 		return RpcCallDispatcher.INSTANCE.createProxy(target, sender, mainIntf, extraIntf);
 	}
 }

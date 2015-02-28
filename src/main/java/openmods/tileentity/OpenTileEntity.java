@@ -11,7 +11,9 @@ import openmods.api.IInventoryCallback;
 import openmods.block.OpenBlock;
 import openmods.inventory.GenericInventory;
 import openmods.network.DimCoord;
-import openmods.network.rpc.*;
+import openmods.network.rpc.IRpcTarget;
+import openmods.network.rpc.IRpcTargetProvider;
+import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.network.senders.IPacketSender;
 import openmods.reflection.TypeUtils;
@@ -138,18 +140,18 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return new TileEntityRpcTarget(this);
 	}
 
-	public <T> T createProxy(final IPacketSender<RpcCall> sender, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+	public <T> T createProxy(final IPacketSender sender, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		TypeUtils.isInstance(this, mainIntf, extraIntf);
 		return RpcCallDispatcher.INSTANCE.createProxy(createRpcTarget(), sender, mainIntf, extraIntf);
 	}
 
 	public <T> T createClientRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
-		final IPacketSender<RpcCall> sender = RpcCallDispatcher.INSTANCE.senders.client;
+		final IPacketSender sender = RpcCallDispatcher.INSTANCE.senders.client;
 		return createProxy(sender, mainIntf, extraIntf);
 	}
 
 	public <T> T createServerRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
-		final IPacketSender<RpcCall> sender = RpcCallDispatcher.INSTANCE.senders.block.bind(getDimCoords());
+		final IPacketSender sender = RpcCallDispatcher.INSTANCE.senders.block.bind(getDimCoords());
 		return createProxy(sender, mainIntf, extraIntf);
 	}
 

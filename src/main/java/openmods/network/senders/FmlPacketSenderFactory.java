@@ -8,8 +8,8 @@ import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
 
 public class FmlPacketSenderFactory {
 
-	public static <M> ITargetedPacketSender<M, EntityPlayer> createPlayerSender(Channel channel) {
-		return new FmlTargetedPacketSender<M, EntityPlayer>(channel, OutboundTarget.PLAYER) {
+	public static ITargetedPacketSender<EntityPlayer> createPlayerSender(Channel channel) {
+		return new FmlTargetedPacketSender<EntityPlayer>(channel, OutboundTarget.PLAYER) {
 			@Override
 			protected void configureChannel(Channel channel, EntityPlayer player) {
 				super.configureChannel(channel, player);
@@ -18,8 +18,8 @@ public class FmlPacketSenderFactory {
 		};
 	}
 
-	public static <M> ITargetedPacketSender<M, Integer> createDimensionSender(Channel channel) {
-		return new FmlTargetedPacketSender<M, Integer>(channel, OutboundTarget.DIMENSION) {
+	public static ITargetedPacketSender<Integer> createDimensionSender(Channel channel) {
+		return new FmlTargetedPacketSender<Integer>(channel, OutboundTarget.DIMENSION) {
 			@Override
 			protected void configureChannel(Channel channel, Integer dimensionId) {
 				super.configureChannel(channel, dimensionId);
@@ -28,8 +28,8 @@ public class FmlPacketSenderFactory {
 		};
 	}
 
-	public static <M> ITargetedPacketSender<M, TargetPoint> createPointSender(Channel channel) {
-		return new FmlTargetedPacketSender<M, TargetPoint>(channel, OutboundTarget.ALLAROUNDPOINT) {
+	public static ITargetedPacketSender<TargetPoint> createPointSender(Channel channel) {
+		return new FmlTargetedPacketSender<TargetPoint>(channel, OutboundTarget.ALLAROUNDPOINT) {
 			@Override
 			protected void configureChannel(Channel channel, TargetPoint point) {
 				super.configureChannel(channel, point);
@@ -38,16 +38,11 @@ public class FmlPacketSenderFactory {
 		};
 	}
 
-	public static <M> IPacketSender<M> createGlobalSender(Channel channel) {
-		return new FmlPacketSender<M>(channel, OutboundTarget.ALL);
+	public static IPacketSender createSender(Channel channel, OutboundTarget target) {
+		return new FmlPacketSender(channel, target);
 	}
 
-	public static <M> IPacketSender<M> createClientSender(Channel channel) {
-		return new FmlPacketSender<M>(channel, OutboundTarget.TOSERVER);
-	}
-
-	private static class FmlPacketSender<M> extends PacketSenderBase<M> {
-
+	private static class FmlPacketSender extends PacketSenderBase {
 		private final OutboundTarget target;
 
 		public FmlPacketSender(Channel channel, OutboundTarget target) {
@@ -61,7 +56,7 @@ public class FmlPacketSenderFactory {
 		}
 	}
 
-	private static class FmlTargetedPacketSender<M, T> extends TargetedPacketSenderBase<M, T> {
+	private static class FmlTargetedPacketSender<T> extends TargetedPacketSenderBase<T> {
 
 		private final OutboundTarget selector;
 

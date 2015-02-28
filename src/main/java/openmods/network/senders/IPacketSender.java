@@ -1,5 +1,9 @@
 package openmods.network.senders;
 
-public interface IPacketSender<M> {
-	public void sendPacket(M msg);
+import java.util.Collection;
+
+public interface IPacketSender {
+	public void sendMessage(Object msg);
+
+	public void sendMessages(Collection<Object> msg);
 }
