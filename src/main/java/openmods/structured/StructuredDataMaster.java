@@ -49,9 +49,10 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 			commands.add(update);
 		}
 
+		updateVersion(commands);
+
 		if (addCheck) commands.add(createConsistencyCheck());
 
-		updateVersion(commands);
 		clearUpdates();
 	}
 
