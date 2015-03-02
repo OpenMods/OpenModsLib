@@ -28,6 +28,8 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 
 	protected abstract void onConsistencyCheckFail();
 
+	protected void onElementUpdated(E element) {}
+
 	public void interpretCommandList(List<Command> commands) {
 		for (Command c : commands) {
 			if (c.isEnd()) break;
@@ -78,6 +80,12 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 		updateVersion(commands);
 	}
 
+	protected C findContainer(E element) {
+		C container = elementToContainer.get(element);
+		if (container == null) onConsistencyCheckFail();
+		return container;
+	}
+
 	private SortedSet<Integer> addReplaceContainer(int type, int containerId, int start) {
 		C container = factory.createContainer(containerId, type);
 		if (containerToElement.containsEntry(containerId, start)) {
@@ -93,9 +101,15 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 		try {
 			DataInput input = ByteStreams.newDataInput(payload);
 			for (Integer id : ids) {
-				IStructureElement element = elements.get(id);
+				final E element = elements.get(id);
 				if (element == null) onConsistencyCheckFail();
-				else element.readFromStream(input);
+				else {
+					element.readFromStream(input);
+					onElementUpdated(element);
+
+					C owner = findContainer(element);
+					if (owner != null) owner.onElementUpdated(element);
+				}
 			}
 		} catch (IOException e) {
 			throw Throwables.propagate(e);

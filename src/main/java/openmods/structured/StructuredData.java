@@ -1,8 +1,6 @@
 package openmods.structured;
 
-import java.util.List;
-import java.util.SortedMap;
-import java.util.SortedSet;
+import java.util.*;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -14,19 +12,23 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 	protected final SortedMap<Integer, E> elements = Maps.newTreeMap();
 	protected final SortedMap<Integer, C> containers = Maps.newTreeMap();
 	protected final TreeMultimap<Integer, Integer> containerToElement = TreeMultimap.create();
+	protected final Map<E, C> elementToContainer = Maps.newIdentityHashMap();
 
 	public void reset() {
 		elements.clear();
 		containers.clear();
 		containerToElement.clear();
+		elementToContainer.clear();
 	}
 
 	protected SortedSet<Integer> removeContainer(int containerId) {
 		Preconditions.checkArgument(containerToElement.containsKey(containerId), "Container %s doesn't exists", containerId);
 		SortedSet<Integer> removedElements = containerToElement.removeAll(containerId);
 
-		for (Integer id : removedElements)
-			elements.remove(id);
+		for (Integer id : removedElements) {
+			E element = elements.remove(id);
+			elementToContainer.remove(element);
+		}
 
 		containers.remove(containerId);
 
@@ -41,7 +43,9 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 			elements.put(elementId, element);
 			containerToElement.put(containerId, elementId);
 			element.setId(elementId);
-			container.onElementAdded(element, elementId);
+
+			container.onElementAdded(element);
+			elementToContainer.put(element, container);
 		}
 		containers.put(containerId, container);
 		return firstElementId;

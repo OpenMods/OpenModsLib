@@ -117,9 +117,7 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		newContainers.clear();
 		modifiedElements.clear();
 
-		elements.clear();
-		containers.clear();
-		containerToElement.clear();
+		super.reset();
 	}
 
 	private synchronized void clearUpdates() {

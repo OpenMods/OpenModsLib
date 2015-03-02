@@ -2,10 +2,12 @@ package openmods.structured;
 
 import java.util.List;
 
-public interface IStructureContainer<I extends IStructureElement> {
+public interface IStructureContainer<E extends IStructureElement> {
 	public int getType();
 
-	public List<I> createElements();
+	public List<E> createElements();
 
-	public void onElementAdded(I element, int index);
+	public void onElementAdded(E element);
+
+	public void onElementUpdated(E element);
 }
