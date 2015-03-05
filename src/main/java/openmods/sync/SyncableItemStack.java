@@ -7,7 +7,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import openmods.utils.ByteUtils;
 
-import org.apache.commons.compress.utils.BoundedInputStream;
+import com.google.common.io.ByteStreams;
 
 public class SyncableItemStack extends SyncableObjectBase {
 
@@ -33,7 +33,7 @@ public class SyncableItemStack extends SyncableObjectBase {
 			length--;
 			if (length > 0) {
 				// GZIP stream reads more than needed -> needs bounding if we want to reuse stream
-				NBTTagCompound tag = CompressedStreamTools.readCompressed(new BoundedInputStream(stream, length));
+				NBTTagCompound tag = CompressedStreamTools.readCompressed(ByteStreams.limit(stream, length));
 				deserialized.setTag(TAG_TAG, tag);
 			}
 

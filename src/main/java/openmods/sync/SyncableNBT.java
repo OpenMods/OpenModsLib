@@ -6,7 +6,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import openmods.utils.ByteUtils;
 
-import org.apache.commons.compress.utils.BoundedInputStream;
+import com.google.common.io.ByteStreams;
 
 /***
  * Note: you must manually .markDirty() right now
@@ -36,7 +36,7 @@ public class SyncableNBT extends SyncableObjectBase implements ISyncableValuePro
 	public void readFromStream(DataInputStream stream) throws IOException {
 		int length = ByteUtils.readVLI(stream);
 		if (length > 0) {
-			tag = CompressedStreamTools.readCompressed(new BoundedInputStream(stream, length));
+			tag = CompressedStreamTools.readCompressed(ByteStreams.limit(stream, length));
 		} else {
 			tag = null;
 		}
