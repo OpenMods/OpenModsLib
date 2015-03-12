@@ -8,17 +8,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import openmods.Log;
 import openmods.config.properties.ConfigProcessing.ModConfig;
+import openmods.utils.SidedCommand;
 import openmods.utils.io.StringConversionException;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.collect.ImmutableSet;
 
-public class CommandConfig implements ICommand {
+public class CommandConfig extends SidedCommand {
 
 	private static final String COMMAND_REMOVE = "remove";
 	private static final String COMMAND_APPEND = "append";
@@ -40,21 +40,7 @@ public class CommandConfig implements ICommand {
 			COMMAND_DEFAULT);
 
 	public CommandConfig(String name, boolean restricted) {
-		this.name = name;
-		this.restricted = restricted;
-	}
-
-	private final String name;
-	private final boolean restricted;
-
-	@Override
-	public int compareTo(Object o) {
-		return name.compareTo(((ICommand)o).getCommandName());
-	}
-
-	@Override
-	public String getCommandName() {
-		return name;
+		super(name, restricted);
 	}
 
 	@Override
@@ -67,12 +53,6 @@ public class CommandConfig implements ICommand {
 				name + " append <modid> <category> <name> <value>... OR\n" +
 				name + " remove <modid> <category> <name> <value>... OR\n" +
 				name + " default <modid> <category> <name> <value>... OR\n";
-	}
-
-	@Override
-	@SuppressWarnings("rawtypes")
-	public List getCommandAliases() {
-		return null;
 	}
 
 	private static void printValue(ICommandSender sender, final ModConfig config, ConfigPropertyMeta property) {
@@ -165,12 +145,6 @@ public class CommandConfig implements ICommand {
 			Log.warn(e, "Error during command change");
 			throw error("openmodslib.command.unknown_error", e.getMessage());
 		}
-	}
-
-	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender sender) {
-		int level = restricted? 4 : 0;
-		return sender.canCommandSenderUseCommand(level, name);
 	}
 
 	@Override

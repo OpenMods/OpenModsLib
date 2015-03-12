@@ -7,50 +7,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.minecraft.command.*;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.ChatComponentTranslation;
 import openmods.Log;
 import openmods.source.ClassSourceCollector.ApiInfo;
 import openmods.source.ClassSourceCollector.ClassMeta;
+import openmods.utils.SidedCommand;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
-public class CommandSource implements ICommand {
+public class CommandSource extends SidedCommand {
 
 	private static final String COMMAND_CLASS = "class";
 
 	private final List<String> subcommands = ImmutableList.of(COMMAND_CLASS);
 
-	private final String name;
-	private final boolean restricted;
 	private final ClassSourceCollector classMeta;
 
 	public CommandSource(String name, boolean restricted, ClassSourceCollector classMeta) {
-		this.name = name;
-		this.restricted = restricted;
+		super(name, restricted);
 		this.classMeta = classMeta;
-	}
-
-	@Override
-	public int compareTo(Object o) {
-		return name.compareTo(((ICommand)o).getCommandName());
-	}
-
-	@Override
-	public String getCommandName() {
-		return name;
 	}
 
 	@Override
 	public String getCommandUsage(ICommandSender icommandsender) {
 		return name + " class <class name>";
-	}
-
-	@Override
-	@SuppressWarnings("rawtypes")
-	public List getCommandAliases() {
-		return null;
 	}
 
 	@Override
@@ -89,12 +73,6 @@ public class CommandSource implements ICommand {
 			Log.warn(t, "Failed to get information for class %s", clsName);
 			throw new CommandException("openmodslib.command.unknown_error_details");
 		}
-	}
-
-	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender sender) {
-		int level = restricted? 4 : 0;
-		return sender.canCommandSenderUseCommand(level, name);
 	}
 
 	@Override
