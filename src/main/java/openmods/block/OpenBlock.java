@@ -469,9 +469,10 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 * a texture we're referencing the side when 'unrotated'
 	 */
 	public ForgeDirection rotateSideByMetadata(int side, int metadata) {
-		ForgeDirection rotation = ForgeDirection.getOrientation(metadata);
+		final BlockRotationMode rotationMode = getRotationMode();
+		ForgeDirection rotation = rotationMode.fromValue(metadata);
 		ForgeDirection dir = ForgeDirection.getOrientation(side);
-		switch (getRotationMode()) {
+		switch (rotationMode) {
 			case FOUR_DIRECTIONS:
 			case NONE:
 				switch (rotation) {
