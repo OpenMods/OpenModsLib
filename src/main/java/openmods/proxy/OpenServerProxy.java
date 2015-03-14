@@ -12,19 +12,7 @@ import net.minecraftforge.common.DimensionManager;
 import openmods.gui.CommonGuiHandler;
 import cpw.mods.fml.common.network.IGuiHandler;
 
-public class OpenServerProxy implements IOpenModsProxy {
-
-	/**
-	 * Checks if this game is SinglePlayer
-	 *
-	 * @return true if this is single player
-	 */
-	public boolean isSinglePlayer() {
-		// Yeah I know it doesn't matter now but why not have it :P
-		MinecraftServer serverInstance = MinecraftServer.getServer();
-		if (serverInstance == null) return false;
-		return serverInstance.isSinglePlayer();
-	}
+public final class OpenServerProxy implements IOpenModsProxy {
 
 	@Override
 	public EntityPlayer getThePlayer() {

@@ -27,7 +27,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.ICrashCallable;
 import cpw.mods.fml.common.network.IGuiHandler;
 
-public class OpenClientProxy implements IOpenModsProxy {
+public final class OpenClientProxy implements IOpenModsProxy {
 
 	@Override
 	public EntityPlayer getThePlayer() {
