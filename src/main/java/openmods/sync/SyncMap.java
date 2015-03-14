@@ -25,6 +25,18 @@ import cpw.mods.fml.common.network.ByteBufUtils;
 
 public abstract class SyncMap<H extends ISyncMapProvider> {
 
+	public static class SyncFieldException extends RuntimeException {
+		private static final long serialVersionUID = -3154521464407191767L;
+
+		public SyncFieldException(Throwable cause, String name) {
+			super(String.format("Failed to sync field '%s'", name), cause);
+		}
+
+		public SyncFieldException(Throwable cause, int index) {
+			super(String.format("Failed to sync field #%d", index), cause);
+		}
+	}
+
 	private static final int MAX_OBJECT_NUM = Short.SIZE;
 
 	public enum HandlerType {
@@ -150,7 +162,11 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 			if ((mask & 1) != 0) {
 				final ISyncableObject object = objects[currentBit];
 				if (object != null) {
-					object.readFromStream(dis);
+					try {
+						object.readFromStream(dis);
+					} catch (Throwable t) {
+						throw new SyncFieldException(t, currentBit);
+					}
 					changes.add(object);
 				}
 			}
@@ -174,7 +190,11 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 		for (int i = 0; i < index; i++) {
 			final ISyncableObject object = objects[i];
 			if (object != null && (fullPacket || object.isDirty())) {
-				object.writeToStream(dos);
+				try {
+					object.writeToStream(dos);
+				} catch (Throwable t) {
+					throw new SyncFieldException(t, i);
+				}
 			}
 		}
 	}
@@ -274,10 +294,11 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 	public void writeToNBT(NBTTagCompound tag) {
 		for (Entry<String, ISyncableObject> entry : nameMap.entrySet()) {
 			final String name = entry.getKey();
+			final ISyncableObject obj = entry.getValue();
 			try {
-				entry.getValue().writeToNBT(tag, name);
-			} catch (Exception e) {
-				throw new RuntimeException(String.format("Failed to read value of field %s", name), e);
+				obj.writeToNBT(tag, name);
+			} catch (Throwable e) {
+				throw new SyncFieldException(e, name);
 			}
 		}
 	}
@@ -285,13 +306,13 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 	public void readFromNBT(NBTTagCompound tag) {
 		for (Entry<String, ISyncableObject> entry : nameMap.entrySet()) {
 			String name = entry.getKey();
+			final ISyncableObject obj = entry.getValue();
 			try {
-				final ISyncableObject obj = entry.getValue();
 				obj.readFromNBT(tag, name);
-				obj.markClean();
-			} catch (Exception e) {
-				throw new RuntimeException(String.format("Failed to read value of field %s", name), e);
+			} catch (Throwable e) {
+				throw new SyncFieldException(e, name);
 			}
+			obj.markClean();
 		}
 	}
 
