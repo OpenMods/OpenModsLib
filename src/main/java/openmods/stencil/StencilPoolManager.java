@@ -3,7 +3,7 @@ package openmods.stencil;
 import java.lang.reflect.Field;
 import java.util.BitSet;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.TreeSet;
 
 import net.minecraftforge.client.MinecraftForgeClient;
 import openmods.Log;
@@ -76,26 +76,26 @@ public class StencilPoolManager {
 	}
 
 	private static class InternalPool implements StencilPool {
-		private final Set<StencilBitAllocation> bits = Sets.newIdentityHashSet();
+		private final TreeSet<StencilBitAllocation> bits = Sets.newTreeSet();
 
 		private final boolean isForgeHacked;
 
 		public InternalPool(boolean isForgeHacked) {
 			this.isForgeHacked = isForgeHacked;
 
-			// reversed, so there is smaller chance we don't collide with hacked stencils
-			for (int i = 7; i >= 0; i--)
+			for (int i = 0; i < 8; i++)
 				bits.add(new StencilBitAllocation(i));
 		}
 
 		@Override
-		public void release(StencilBitAllocation allocation) {
+		public synchronized void release(StencilBitAllocation allocation) {
 			bits.add(allocation);
 		}
 
 		@Override
-		public StencilBitAllocation acquire() {
-			Iterator<StencilBitAllocation> it = bits.iterator();
+		public synchronized StencilBitAllocation acquire() {
+			// reversed, so there is smaller chance we don't collide with hacked stencils
+			Iterator<StencilBitAllocation> it = bits.descendingIterator();
 			if (it.hasNext()) {
 				StencilBitAllocation result = it.next();
 				it.remove();
