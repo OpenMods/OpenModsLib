@@ -1,25 +1,27 @@
 package openmods.stencil;
 
+import java.util.Set;
+
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import openmods.Log;
-
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.Util;
+import openmods.utils.render.OpenGLUtils;
 
 public class FramebufferHooks {
 
 	static boolean STENCIL_BUFFER_INJECTED;
 
 	public static void createRenderbufferStorage(int target, int format, int width, int height) {
+		OpenGLUtils.flushGlErrors("pre stencil hook");
+
 		if (FramebufferConstants.isStencilBufferEnabled()) {
 			OpenGlHelper.func_153186_a(target, FramebufferConstants.DEPTH_STENCIL_FORMAT, width, height);
-			int error = GL11.glGetError();
-			if (error == GL11.GL_NO_ERROR) {
+			Set<Integer> errors = OpenGLUtils.getGlErrors();
+			if (errors.isEmpty()) {
 				STENCIL_BUFFER_INJECTED = true;
 				return;
 			}
-			Log.warn("Your potato failed to allocate nice buffer. No stencils for you. Cause: %s", Util.translateGLErrorString(error));
+			Log.warn("Your potato failed to allocate nice buffer. No stencils for you. Cause: %s", OpenGLUtils.errorsToString(errors));
 		} else {
 			Log.warn("Packet depth+stencil buffer not supported");
 		}
