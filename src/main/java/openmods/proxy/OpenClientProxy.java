@@ -20,7 +20,7 @@ import openmods.movement.PlayerMovementManager;
 import openmods.source.CommandSource;
 import openmods.stencil.FramebufferConstants;
 import openmods.stencil.StencilPoolManager;
-import openmods.stencil.StencilPoolManager.StencilPoolImpl;
+import openmods.stencil.StencilPoolManager.StencilPool;
 import openmods.utils.render.RenderUtils;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -82,7 +82,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		FMLCommonHandler.instance().registerCrashCallable(new ICrashCallable() {
 			@Override
 			public String call() throws Exception {
-				final StencilPoolImpl pool = StencilPoolManager.pool();
+				final StencilPool pool = StencilPoolManager.pool();
 				return String.format("Function set: %s, pool: %s, bits: %s", FramebufferConstants.getMethodSet(), pool.getType(), pool.getSize());
 			}
 
