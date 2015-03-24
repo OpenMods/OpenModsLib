@@ -11,6 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.utils.bitmap.IReadableBitMap;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -45,6 +46,8 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	public void registerSlot(int slot, IReadableBitMap<ForgeDirection> sideFlags, boolean canInsert, boolean canExtract) {
+		final int sizeInventory = inventory.getSizeInventory();
+		Preconditions.checkArgument(slot >= 0 && slot < sizeInventory, "Tried to register invalid slot: %s (inventory size: %s)", slot, sizeInventory);
 		slots.put(slot, new SlotInfo(sideFlags, canInsert, canExtract));
 	}
 
