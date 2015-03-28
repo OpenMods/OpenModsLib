@@ -66,12 +66,14 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 
 	@Override
 	public void writeToNBT(NBTTagCompound tag, String name) {
-		this.writeToNBT(tag);
+		NBTTagCompound compound = new NBTTagCompound();
+                this.writeToNBT(compound);
+                tag.setTag(name, compound);
 	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound tag, String name) {
-		this.readFromNBT(tag);
+                this.readFromNBT(tag.getCompoundTag(name));
 	}
 
 	@Override
