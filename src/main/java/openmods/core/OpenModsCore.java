@@ -39,7 +39,7 @@ public class OpenModsCore extends DummyModContainer {
 
 			@Override
 			public String getLabel() {
-				return "OpenModsLib crash transformers";
+				return "OpenModsLib class transformers";
 			}
 		});
 	}
