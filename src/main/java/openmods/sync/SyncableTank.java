@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueProvider;
 import openmods.liquids.GenericTank;
@@ -66,12 +67,21 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 
 	@Override
 	public void writeToNBT(NBTTagCompound tag, String name) {
-		this.writeToNBT(tag);
+		final NBTTagCompound tankTag = new NBTTagCompound();
+		this.writeToNBT(tankTag);
+
+		tag.setTag(name, tankTag);
 	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound tag, String name) {
-		this.readFromNBT(tag);
+		if (tag.hasKey(name, Constants.NBT.TAG_COMPOUND)) {
+			final NBTTagCompound tankTag = tag.getCompoundTag(name);
+			this.readFromNBT(tankTag);
+		} else {
+			// For legacy worlds - tag was saved in wrong place due to bug
+			this.readFromNBT(tag);
+		}
 	}
 
 	@Override
