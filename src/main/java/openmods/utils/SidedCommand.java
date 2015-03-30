@@ -32,7 +32,6 @@ public abstract class SidedCommand implements ICommand {
 
 	@Override
 	public boolean canCommandSenderUseCommand(ICommandSender sender) {
-		int level = restricted? 4 : 0;
-		return sender.canCommandSenderUseCommand(level, name);
+		return restricted? sender.canCommandSenderUseCommand(4, name) : true;
 	}
 }
