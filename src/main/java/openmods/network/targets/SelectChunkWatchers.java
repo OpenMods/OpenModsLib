@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.Set;
 
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.DimensionManager;
 import openmods.network.DimCoord;
 import openmods.network.IPacketTargetSelector;
 import openmods.utils.NetUtils;
@@ -29,7 +29,7 @@ public class SelectChunkWatchers implements IPacketTargetSelector {
 		Preconditions.checkArgument(arg instanceof DimCoord, "Argument must be DimCoord");
 		DimCoord coord = (DimCoord)arg;
 
-		WorldServer server = MinecraftServer.getServer().worldServers[coord.dimension];
+		WorldServer server = DimensionManager.getWorld(coord.dimension);
 
 		Set<EntityPlayerMP> players = NetUtils.getPlayersWatchingBlock(server, coord.x, coord.z);
 
