@@ -6,7 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import openmods.Log;
+import openmods.utils.SneakyThrower;
+
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.Level;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -250,6 +254,21 @@ public class ReflectionHelper {
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
+	}
+
+	public static Class<?> getClass(String... classNames) {
+		for (String className : classNames) {
+			Preconditions.checkNotNull(className);
+			try {
+				return Class.forName(className);
+			} catch (ClassNotFoundException e) {
+				Log.log(Level.DEBUG, e, "Class %s not found", className);
+			} catch (Exception e) {
+				throw Throwables.propagate(e);
+			}
+		}
+		
+		throw SneakyThrower.sneakyThrow(new ClassNotFoundException(Arrays.toString(classNames)));
 	}
 
 }
