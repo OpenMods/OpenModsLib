@@ -16,7 +16,7 @@ public class ContextClassTransformer extends ClassVisitor {
 	private static class WrappingMethodVisitor extends MethodVisitor {
 
 		public WrappingMethodVisitor(MethodVisitor mv) {
-			super(Opcodes.ASM5, mv);
+			super(Opcodes.ASM4, mv);
 		}
 
 		@Override
