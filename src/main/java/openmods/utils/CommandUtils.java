@@ -18,7 +18,7 @@ public class CommandUtils {
 
 		List<String> result = Lists.newArrayList();
 		for (String s : proposals)
-			if (s.startsWith(prefix)) result.add(s);
+			if (s.toLowerCase().startsWith(prefix)) result.add(s);
 
 		return result;
 	}
