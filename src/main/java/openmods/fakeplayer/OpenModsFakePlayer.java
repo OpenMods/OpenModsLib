@@ -27,6 +27,8 @@ public class OpenModsFakePlayer extends FakePlayer {
 
 	OpenModsFakePlayer(WorldServer world, int id) {
 		super(world, createProfile(String.format("OpenModsFakePlayer-%03d", id)));
+		final GameProfile profile = getGameProfile();
+		Log.debug("Creating new fake player: name = %s, id = %s", profile.getName(), profile.getId());
 	}
 
 	private static GameProfile createProfile(String name) {
