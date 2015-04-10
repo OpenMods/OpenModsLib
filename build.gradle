@@ -108,6 +108,7 @@ minecraft {
 
     replaceIn "openmods/OpenMods.java"
     replaceIn "openmods/core/OpenModsCore.java"
+    replaceIn "openmods/core/OpenModsCorePlugin.java"
     replace '$LIB-VERSION$', mod_version
 }
 
