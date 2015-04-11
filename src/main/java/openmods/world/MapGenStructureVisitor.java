@@ -39,7 +39,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 			super.visitTypeInsn(opcode, type);
 			if (opcode == Opcodes.CHECKCAST && type.equals(structureStartCls.name())) {
 				checkcastFound = true;
-				Log.info("Found checkcast to '%s'", type);
+				Log.debug("Found checkcast to '%s'", type);
 			}
 		}
 
@@ -50,7 +50,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 			if (checkcastFound && opcode == Opcodes.ASTORE) {
 				localVarId = var;
 				checkcastFound = false;
-				Log.info("Found var: %d", localVarId);
+				Log.debug("Found var: %d", localVarId);
 			}
 		}
 
@@ -71,7 +71,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 			super.visitMethodInsn(opcode, owner, name, desc);
 			if (opcode == Opcodes.INVOKEVIRTUAL && owner.equals(structureStartCls.name()) && markerMethod.match(name, desc)) {
 				markerMethodFound = true;
-				Log.info("Found 'StructureStart.isSizeableStructure' (%s.%s) call", owner, name);
+				Log.debug("Found 'StructureStart.isSizeableStructure' (%s.%s) call", owner, name);
 			}
 		}
 
@@ -80,7 +80,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 			super.visitJumpInsn(opcode, label);
 
 			if (markerMethodFound && localVarId != null && opcode == Opcodes.IFEQ) {
-				Log.info("All conditions matched, inserting extra condition");
+				Log.debug("All conditions matched, inserting extra condition");
 				super.visitVarInsn(Opcodes.ALOAD, localVarId); // hopefully
 																// 'structurestart'
 				String getComponentsMethodName = VisitorHelper.useSrgNames()? "func_75073_b" : "getComponents";

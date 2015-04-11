@@ -267,7 +267,7 @@ public class ReflectionHelper {
 				throw Throwables.propagate(e);
 			}
 		}
-		
+
 		throw SneakyThrower.sneakyThrow(new ClassNotFoundException(Arrays.toString(classNames)));
 	}
 

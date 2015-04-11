@@ -245,7 +245,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 		final Collection<MethodMatcher> matchers = wrapMatchers.get(transformedName);
 		if (matchers.isEmpty()) return bytes;
 
-		Log.info("Adding context wrappers to %s(%s)", name, transformedName);
+		Log.debug("Adding context wrappers to %s(%s)", name, transformedName);
 		return VisitorHelper.apply(bytes, name, new TransformProvider(0) {
 			@Override
 			public ClassVisitor createVisitor(String name, ClassVisitor cv) {

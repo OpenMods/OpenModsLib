@@ -47,7 +47,7 @@ public class IdSyncManager extends DataStoreManager {
 		@Override
 		public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
 			if (evt instanceof NetworkHandshakeEstablished) {
-				Log.info("Sending id data for player: %s", OpenMods.proxy.getPlayerFromHandler(((NetworkHandshakeEstablished)evt).netHandler));
+				Log.debug("Sending id data for player: %s", OpenMods.proxy.getPlayerFromHandler(((NetworkHandshakeEstablished)evt).netHandler));
 				sendAllIds(ctx);
 			} else {
 				ctx.fireUserEventTriggered(evt);
@@ -110,7 +110,7 @@ public class IdSyncManager extends DataStoreManager {
 
 			String keyId = input.readUTF();
 
-			Log.info("Received data store for key %s, packet size = %d", keyId, buf.writerIndex());
+			Log.debug("Received data store for key %s, packet size = %d", keyId, buf.writerIndex());
 			DataStoreWrapper<?, ?> wrapper = getDataStoreMeta(keyId);
 			DataStoreReader<?, ?> reader = wrapper.createReader();
 			reader.read(input);
@@ -121,7 +121,7 @@ public class IdSyncManager extends DataStoreManager {
 
 	@SubscribeEvent
 	public void onDisconnect(ClientDisconnectionFromServerEvent evt) {
-		Log.info("Disconnected, restoring local data");
+		Log.debug("Disconnected, restoring local data");
 		activateLocalData();
 	}
 

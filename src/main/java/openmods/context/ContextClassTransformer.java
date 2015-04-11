@@ -71,7 +71,7 @@ public class ContextClassTransformer extends ClassVisitor {
 		final MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 
 		if (shouldWrap(name, desc)) {
-			Log.info("Adding context wrapper to %s %s", name, desc);
+			Log.debug("Adding context wrapper to %s %s", name, desc);
 			return new WrappingMethodVisitor(mv);
 		}
 
