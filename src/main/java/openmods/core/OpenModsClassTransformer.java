@@ -148,7 +148,6 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				vanillaPatches.put("net.minecraft.client.renderer.entity.RenderPlayer", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
 					@Override
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.info("Trying to patch RenderPlayer (class: %s)", name);
 						state.update(TransformerState.ACTIVATED);
 						return new PlayerRendererHookVisitor(name, cv, createResultListener(state));
 					}

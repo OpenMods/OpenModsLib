@@ -28,7 +28,7 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 				throw Throwables.propagate(t);
 			}
 
-			Log.info("Injecting hook %s.%s into EntityPlayerRender.rotateCorpse", PlayerRendererHookVisitor.class, postMethod);
+			Log.debug("Injecting hook %s.%s into EntityPlayerRender.rotateCorpse", PlayerRendererHookVisitor.class, postMethod);
 		}
 
 		@Override
@@ -55,7 +55,6 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 
 	public PlayerRendererHookVisitor(String rendererTypeCls, ClassVisitor cv, IResultListener listener) {
 		super(Opcodes.ASM4, cv);
-
 		this.listener = listener;
 
 		Type injectedMethodType = Type.getMethodType(Type.VOID_TYPE, MappedType.of(AbstractClientPlayer.class).type(), Type.FLOAT_TYPE, Type.FLOAT_TYPE, Type.FLOAT_TYPE);
