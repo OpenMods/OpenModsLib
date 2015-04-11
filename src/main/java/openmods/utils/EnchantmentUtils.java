@@ -15,10 +15,6 @@ import net.minecraftforge.common.ForgeHooks;
 
 public class EnchantmentUtils {
 
-	public static final int XP_PER_BOTTLE = 8;
-	public static final int RATIO = 20;
-	public static final int LIQUID_PER_XP_BOTTLE = XP_PER_BOTTLE * RATIO;
-
 	public static int calcEnchantability(ItemStack itemStack, int power, boolean max) {
 		Item item = itemStack.getItem();
 		int k = item.getItemEnchantability();
@@ -131,18 +127,6 @@ public class EnchantmentUtils {
 			}
 		}
 		return power;
-	}
-
-	public static int liquidToXPRatio(int liquid) {
-		return liquid / RATIO;
-	}
-
-	public static int XPToLiquidRatio(int xp) {
-		return xp * RATIO;
-	}
-
-	public static int getLiquidForLevel(int level) {
-		return XPToLiquidRatio(getExperienceForLevel(level));
 	}
 
 	public static void addAllBooks(Enchantment enchantment, List<ItemStack> items) {
