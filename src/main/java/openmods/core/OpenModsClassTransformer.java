@@ -112,7 +112,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				vanillaPatches.put("net.minecraft.client.entity.EntityPlayerSP", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
 					@Override
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.info("Trying to apply movement callback (class: %s)", name);
+						Log.debug("Trying to apply movement callback (class: %s)", name);
 						state.update(TransformerState.ACTIVATED);
 						return new MovementPatcher(name, cv, createResultListener(state));
 					}
@@ -130,7 +130,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				vanillaPatches.put("net.minecraft.world.gen.structure.MapGenStructure", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
 					@Override
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.info("Trying to patch MapGenStructure (class: %s)", name);
+						Log.debug("Trying to patch MapGenStructure (class: %s)", name);
 						state.update(TransformerState.ACTIVATED);
 						return new MapGenStructureVisitor(name, cv, createResultListener(state));
 					}
@@ -148,6 +148,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				vanillaPatches.put("net.minecraft.client.renderer.entity.RenderPlayer", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
 					@Override
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
+						Log.debug("Trying to apply player render hook (class: %s)", name);
 						state.update(TransformerState.ACTIVATED);
 						return new PlayerRendererHookVisitor(name, cv, createResultListener(state));
 					}
@@ -165,7 +166,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				vanillaPatches.put("net.minecraft.client.shader.Framebuffer", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
 					@Override
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.info("Trying to patch Framebuffer (class: %s)", name);
+						Log.debug("Trying to patch Framebuffer (class: %s)", name);
 						state.update(TransformerState.ACTIVATED);
 						return new FramebufferInjector(name, cv, createResultListener(state));
 					}
@@ -183,7 +184,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				vanillaPatches.put("net.minecraft.client.renderer.OpenGlHelper", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
 					@Override
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.info("Trying to patch OpenGlHelper (class: %s)", name);
+						Log.debug("Trying to patch OpenGlHelper (class: %s)", name);
 						state.update(TransformerState.ACTIVATED);
 						return new CapabilitiesHookInjector(name, cv, createResultListener(state));
 					}

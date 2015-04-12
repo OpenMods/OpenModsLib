@@ -29,7 +29,7 @@ public class CapabilitiesHookInjector extends ClassVisitor {
 		@Override
 		public void visitInsn(int opcode) {
 			if (opcode == Opcodes.RETURN) {
-				Log.info("Injecting call into OpenGLHelper.init()");
+				Log.debug("Injecting call into OpenGLHelper.init()");
 				super.visitMethodInsn(Opcodes.INVOKESTATIC, hookType.getInternalName(), hookMethod.getName(), hookMethod.getDescriptor());
 				listener.onSuccess();
 			}

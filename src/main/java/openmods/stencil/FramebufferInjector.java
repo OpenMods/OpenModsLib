@@ -42,7 +42,7 @@ public class FramebufferInjector extends ClassVisitor {
 			super.visitLdcInsn(cst);
 
 			if ((cst instanceof Number) && ((Number)cst).intValue() == 0x81A6 /* == 33190 == GL14.GL_DEPTH_COMPONENT24 */) {
-				Log.info("Found GL constant, replacing method");
+				Log.debug("Found GL constant, replacing method");
 				constantFound = true;
 			}
 		}
@@ -50,7 +50,7 @@ public class FramebufferInjector extends ClassVisitor {
 		@Override
 		public void visitMethodInsn(int opcode, String owner, String name, String desc) {
 			if (constantFound && opcode == Opcodes.INVOKESTATIC && createRenderbufferMatcher.match(name, desc)) {
-				Log.info("Injecting allocate and attach methods");
+				Log.debug("Injecting allocate and attach methods");
 				super.visitMethodInsn(Opcodes.INVOKESTATIC, hookType.getInternalName(), "createRenderbufferStorage", desc);
 				super.visitVarInsn(Opcodes.ALOAD, 0);
 

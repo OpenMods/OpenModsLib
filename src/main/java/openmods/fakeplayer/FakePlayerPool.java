@@ -42,7 +42,7 @@ public class FakePlayerPool {
 
 			if (player == null) {
 				int id = playerCount.incrementAndGet();
-				if (id > LibConfig.fakePlayerThreshold) Log.warn("Number of fake players in use has reached %d. Something may leak them", id);
+				if (id > LibConfig.fakePlayerThreshold) Log.warn("Maximum number of fake players in use %d reached. Something may leak them!", id);
 				player = new OpenModsFakePlayer(world, id);
 			}
 

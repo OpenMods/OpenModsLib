@@ -70,7 +70,7 @@ public class ConfigProcessor {
 	public void process(File config) {
 		boolean modified = false;
 
-		Log.info("Parsing config file '%s'", config);
+		Log.debug("Parsing config file '%s'", config);
 		Map<String, EntryMeta> values = readFile(config);
 		if (values == null) values = Maps.newHashMap();
 

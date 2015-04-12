@@ -63,7 +63,7 @@ public class MovementPatcher extends ClassVisitor {
 				// movement handler still on stack
 				visitVarInsn(Opcodes.ALOAD, 0); // load this
 				visitMethodInsn(Opcodes.INVOKESTATIC, MANAGER_CLASS, callbackMethod.getName(), callbackMethod.getDescriptor());
-				Log.info("Callback inserted. Using new movement handler.");
+				Log.debug("Callback inserted. Using new movement handler.");
 				listener.onSuccess();
 				PlayerMovementManager.callbackInjected = true;
 			}
