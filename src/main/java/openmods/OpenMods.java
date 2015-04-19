@@ -7,6 +7,7 @@ import net.minecraftforge.common.config.Configuration;
 import openmods.config.properties.CommandConfig;
 import openmods.config.properties.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
+import openmods.entity.EntityBlock;
 import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
@@ -29,11 +30,14 @@ import cpw.mods.fml.common.*;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.event.*;
+import cpw.mods.fml.common.registry.EntityRegistry;
 
 @Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = "$LIB-VERSION$", dependencies = "required-after:OpenModsCore")
 public class OpenMods {
 
 	public static final String MODID = "OpenMods";
+
+	private static final int ENTITY_BLOCK_ID = 804;
 
 	@Instance(MODID)
 	public static OpenMods instance;
@@ -77,6 +81,8 @@ public class OpenMods {
 		FMLCommonHandler.instance().bus().register(DelayedActionTickHandler.INSTANCE);
 
 		collector = new ClassSourceCollector(evt.getAsmData());
+
+		EntityRegistry.registerModEntity(EntityBlock.class, "Block", ENTITY_BLOCK_ID, instance, 64, 1, true);
 
 		proxy.preInit();
 	}
