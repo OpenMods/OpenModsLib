@@ -1,16 +1,18 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueProvider;
 import openmods.liquids.GenericTank;
 import openmods.utils.ByteUtils;
+
+import com.google.common.io.ByteStreams;
 
 public class SyncableTank extends GenericTank implements ISyncableObject, IValueProvider<FluidStack> {
 
@@ -39,10 +41,17 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 	public void readFromStream(DataInputStream stream) throws IOException {
 		if (stream.readBoolean()) {
 			int fluidId = ByteUtils.readVLI(stream);
+			Fluid fluid = FluidRegistry.getFluid(fluidId);
+
 			int fluidAmount = stream.readInt();
-			NBTTagCompound tag = null;
-			if (stream.readBoolean()) tag = CompressedStreamTools.readCompressed(stream);
-			this.fluid = new FluidStack(fluidId, fluidAmount, tag);
+
+			this.fluid = new FluidStack(fluid, fluidAmount);
+
+			final int tagSize = ByteUtils.readVLI(stream);
+			if (tagSize > 0) {
+				this.fluid.tag = CompressedStreamTools.readCompressed(ByteStreams.limit(stream, tagSize));
+			}
+
 		} else {
 			this.fluid = null;
 		}
@@ -52,13 +61,19 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 	public void writeToStream(DataOutputStream stream) throws IOException {
 		if (fluid != null) {
 			stream.writeBoolean(true);
+			// .fluidID does not compile in Forge >= 1350, but class tranformer fixes it
+			// NOTE: reloading this class in debugger will bypass transformer and cause crash
 			ByteUtils.writeVLI(stream, fluid.fluidID);
 			stream.writeInt(fluid.amount);
 			if (fluid.tag != null) {
-				stream.writeBoolean(true);
-				CompressedStreamTools.writeCompressed(fluid.tag, stream);
+				ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+				CompressedStreamTools.writeCompressed(fluid.tag, buffer);
+
+				byte[] bytes = buffer.toByteArray();
+				ByteUtils.writeVLI(stream, bytes.length);
+				stream.write(bytes);
 			} else {
-				stream.writeBoolean(false);
+				stream.writeByte(0);
 			}
 		} else {
 			stream.writeBoolean(false);
