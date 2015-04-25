@@ -1,0 +1,16 @@
+openmodslib.command.no_enough_args=No hay suficientes argumentos
+openmodslib.command.unknown_modid=El ID del mod es desconocido
+openmodslib.command.unknown_value=Valor en la configuración desconocido
+openmodslib.command.saved=La configuración se ha guardado en %s
+openmodslib.command.not_multiple=Esta propiedad no acepta multiples valores
+openmodslib.command.online_change=Propiedad de la configuración guardada. Usando nuevos valores.
+openmodslib.command.offline_change=Propiedad de la configuración cambiada. Los nuevos valores serán aplicados después de reiniciar.
+openmodslib.command.cancelled=Cambios cancelados!
+openmodslib.command.unknown_error=Error desconocido al intentar cambiar: %s
+openmodslib.command.invalid_command= Comando no valido '%s'
+openmodslib.command.invalid_type=No se puede convertir el valor %s a %s
+openmodslib.command.invalid_class_name=Nombre de la clase inválido %s
+openmodslib.command.unknown_error_details=Error desconocido. Por favor compruebe los registros para más detalles.
+openmodslib.command.class_source=Clases '%s' cargados desde '%s'
+openmodslib.command.api_class=API información: nombre='%s', Creador='%s', Versión='%s'
+openmodslib.command.class_provider=Clase proporcionada por el archivo %s (mods: %s)
