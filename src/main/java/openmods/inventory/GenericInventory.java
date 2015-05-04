@@ -11,6 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import openmods.api.IInventoryCallback;
+import openmods.utils.ItemUtils;
 
 public class GenericInventory implements IInventory {
 
@@ -125,7 +126,7 @@ public class GenericInventory implements IInventory {
 			NBTTagCompound stacktag = nbttaglist.getCompoundTagAt(i);
 			int j = stacktag.getByte("Slot");
 			if (j >= 0 && j < inventoryContents.length) {
-				inventoryContents[j] = ItemStack.loadItemStackFromNBT(stacktag);
+				inventoryContents[j] = ItemUtils.readStack(stacktag);
 			}
 		}
 	}
@@ -146,9 +147,8 @@ public class GenericInventory implements IInventory {
 		NBTTagList nbttaglist = new NBTTagList();
 		for (int i = 0; i < inventoryContents.length; i++) {
 			if (inventoryContents[i] != null) {
-				NBTTagCompound stacktag = new NBTTagCompound();
+				NBTTagCompound stacktag = ItemUtils.writeStack(inventoryContents[i]);
 				stacktag.setByte("Slot", (byte)i);
-				inventoryContents[i].writeToNBT(stacktag);
 				nbttaglist.appendTag(stacktag);
 			}
 		}

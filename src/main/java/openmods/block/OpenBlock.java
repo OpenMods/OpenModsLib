@@ -204,7 +204,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 			ArrayList<ItemStack> drops;
 			if (!dropper.suppressNormalHarvestDrops()) {
 				final int metadata = world.getBlockMetadata(x, y, z);
-				int fortune = player != null ? EnchantmentHelper.getFortuneModifier(player) : 0;
+				int fortune = player != null? EnchantmentHelper.getFortuneModifier(player) : 0;
 				drops = super.getDrops(world, x, y, z, metadata, fortune);
 			} else {
 				drops = Lists.newArrayList();
