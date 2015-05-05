@@ -42,6 +42,8 @@ public class ColorUtils {
 		public final int bitmask;
 		public final String oreName;
 		public final String name;
+		public final RGB rgbWrap;
+		public final CYMK cymkWrap;
 
 		public ItemStack createStack(Block block, int amount) {
 			return new ItemStack(block, amount, vanillaBlockId);
@@ -61,6 +63,9 @@ public class ColorUtils {
 			this.vanillaDyeId = index;
 			this.vanillaBlockId = ~index & 15;
 			this.bitmask = 1 << vanillaBlockId;
+
+			this.rgbWrap = new RGB(rgb);
+			this.cymkWrap = rgbWrap.toCYMK();
 		}
 
 		private static final ColorMeta[] COLORS = ColorMeta.values();
@@ -122,6 +127,21 @@ public class ColorUtils {
 		int low = Integer.numberOfTrailingZeros(color);
 		Preconditions.checkArgument(high == 31 - low && low <= 16, "Invalid color value: %sb", Integer.toBinaryString(color));
 		return low;
+	}
+
+	public static ColorMeta findNearestColor(RGB target, int tolernace) {
+		ColorMeta result = null;
+		int distSq = Integer.MAX_VALUE;
+
+		for (ColorMeta meta : ColorMeta.COLORS) {
+			final int currentDistSq = meta.rgbWrap.distanceSq(target);
+			if (currentDistSq < distSq) {
+				result = meta;
+				distSq = currentDistSq;
+			}
+		}
+
+		return (distSq < 3 * tolernace * tolernace)? result : null;
 	}
 
 	public static class RGB {
@@ -200,6 +220,13 @@ public class ColorUtils {
 				yellow = (yellow - K) / (1f - K);
 			}
 			return new CYMK(cyan, yellow, magenta, K);
+		}
+
+		public int distanceSq(RGB other) {
+			final int dR = this.r - other.r;
+			final int dG = this.g - other.g;
+			final int dB = this.b - other.b;
+			return (dR * dR) + (dG * dG) + (dB * dB);
 		}
 	}
 
