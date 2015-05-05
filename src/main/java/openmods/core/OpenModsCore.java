@@ -2,6 +2,8 @@ package openmods.core;
 
 import java.util.Arrays;
 
+import openmods.injector.InjectorSanityChecker;
+
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 
@@ -42,5 +44,7 @@ public class OpenModsCore extends DummyModContainer {
 				return "OpenModsLib class transformers";
 			}
 		});
+
+		FMLCommonHandler.instance().registerCrashCallable(new InjectorSanityChecker());
 	}
 }
