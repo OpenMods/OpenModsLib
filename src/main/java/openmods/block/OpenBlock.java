@@ -25,6 +25,7 @@ import openmods.tileentity.OpenTileEntity;
 import openmods.utils.BlockNotifyFlags;
 import openmods.utils.BlockUtils;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import cpw.mods.fml.relauncher.Side;
@@ -134,6 +135,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	public TileEntity createTileEntityForRender() {
 		final TileEntity te = createTileEntity();
+		Preconditions.checkNotNull(te, "Trying to get rendering TE for '%s', but it's not configured", this);
 		te.blockType = this;
 		te.blockMetadata = 0;
 		return te;
