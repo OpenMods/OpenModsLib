@@ -14,3 +14,20 @@ openmodslib.command.unknown_error_details=Unknown error. Please check logs for m
 openmodslib.command.class_source=Class '%s' loaded from '%s'
 openmodslib.command.api_class=API information: name='%s', ownerMod='%s', version='%s'
 openmodslib.command.class_provider=Class provided by file %s (mods: %s)
+
+openmodslib.color.black=Black
+openmodslib.color.red=Red
+openmodslib.color.green=Green
+openmodslib.color.brown=Brown
+openmodslib.color.blue=Blue
+openmodslib.color.purple=Purple
+openmodslib.color.cyan=Cyan
+openmodslib.color.lightGray=Light Gray
+openmodslib.color.gray=Gray
+openmodslib.color.pink=Pink
+openmodslib.color.lime=Lime
+openmodslib.color.yellow=Yellow
+openmodslib.color.lightBlue=Light Blue
+openmodslib.color.magenta=Magenta
+openmodslib.color.orange=Orange
+openmodslib.color.white=White

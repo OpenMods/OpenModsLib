@@ -42,6 +42,7 @@ public class ColorUtils {
 		public final int bitmask;
 		public final String oreName;
 		public final String name;
+		public final String unlocalizedName;
 		public final RGB rgbWrap;
 		public final CYMK cymkWrap;
 
@@ -57,6 +58,7 @@ public class ColorUtils {
 			this.oreName = "dye" + WordUtils.capitalize(name);
 			this.oreId = OreDictionary.getOreID(oreName);
 			this.name = name.toLowerCase();
+			this.unlocalizedName = "openmodslib.color." + name;
 			this.rgb = rgb;
 
 			final int index = ordinal();

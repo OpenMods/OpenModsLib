@@ -110,6 +110,32 @@ public abstract class BaseComponent extends Gui {
 		if (mouseDragListener != null) mouseDragListener.componentMouseDrag(this, mouseX, mouseY, button, time);
 	}
 
+	private void drawFancyBox(int width, final int left, final int top, int height) {
+		drawGradientRect(left - 3, top - 4, left + width + 3, top - 3, CRAZY_3, CRAZY_3);
+		drawGradientRect(left - 3, top + height + 3, left + width + 3, top + height + 4, CRAZY_3, CRAZY_3);
+		drawGradientRect(left - 3, top - 3, left + width + 3, top + height + 3, CRAZY_3, CRAZY_3);
+		drawGradientRect(left - 4, top - 3, left - 3, top + height + 3, CRAZY_3, CRAZY_3);
+		drawGradientRect(left + width + 3, top - 3, left + width + 4, top + height + 3, CRAZY_3, CRAZY_3);
+
+		drawGradientRect(left - 3, top - 3 + 1, left - 3 + 1, top + height + 3 - 1, CRAZY_1, CRAZY_2);
+		drawGradientRect(left + width + 2, top - 3 + 1, left + width + 3, top + height + 3 - 1, CRAZY_1, CRAZY_2);
+		drawGradientRect(left - 3, top - 3, left + width + 3, top - 3 + 1, CRAZY_1, CRAZY_1);
+		drawGradientRect(left - 3, top + height + 2, left + width + 3, top + height + 3, CRAZY_2, CRAZY_2);
+	}
+
+	protected void drawHoveringText(String line, int x, int y, FontRenderer font) {
+		GL11.glDisable(GL12.GL_RESCALE_NORMAL);
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+
+		this.zLevel = 350.0F;
+		final int width = font.getStringWidth(line);
+		drawFancyBox(width, x + 12, y - 12, 8);
+		font.drawStringWithShadow(line, x + 12, y - 12, -1);
+		this.zLevel = 0.0F;
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
+		GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+	}
+
 	protected void drawHoveringText(List<String> lines, int x, int y, FontRenderer font) {
 		final int lineCount = lines.size();
 		if (lineCount == 0) return;
@@ -131,16 +157,7 @@ public abstract class BaseComponent extends Gui {
 
 		this.zLevel = 350.0F;
 
-		drawGradientRect(left - 3, top - 4, left + width + 3, top - 3, CRAZY_3, CRAZY_3);
-		drawGradientRect(left - 3, top + height + 3, left + width + 3, top + height + 4, CRAZY_3, CRAZY_3);
-		drawGradientRect(left - 3, top - 3, left + width + 3, top + height + 3, CRAZY_3, CRAZY_3);
-		drawGradientRect(left - 4, top - 3, left - 3, top + height + 3, CRAZY_3, CRAZY_3);
-		drawGradientRect(left + width + 3, top - 3, left + width + 4, top + height + 3, CRAZY_3, CRAZY_3);
-
-		drawGradientRect(left - 3, top - 3 + 1, left - 3 + 1, top + height + 3 - 1, CRAZY_1, CRAZY_2);
-		drawGradientRect(left + width + 2, top - 3 + 1, left + width + 3, top + height + 3 - 1, CRAZY_1, CRAZY_2);
-		drawGradientRect(left - 3, top - 3, left + width + 3, top - 3 + 1, CRAZY_1, CRAZY_1);
-		drawGradientRect(left - 3, top + height + 2, left + width + 3, top + height + 3, CRAZY_2, CRAZY_2);
+		drawFancyBox(width, left, top, height);
 
 		for (int i = 0; i < lineCount; ++i) {
 			String line = lines.get(i);
