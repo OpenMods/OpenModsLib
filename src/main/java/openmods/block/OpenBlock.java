@@ -7,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -349,6 +350,14 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return blockRotationMode.isValid(blockDirection);
 	}
 
+	@Override
+	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase placer, ItemStack stack) {
+		super.onBlockPlacedBy(world, x, y, z, placer, stack);
+
+		TileEntity te = world.getTileEntity(x, y, z);
+		if (te instanceof IPlacerAwareTile) ((IPlacerAwareTile)te).onBlockPlacedBy(placer, stack);
+	}
+
 	/***
 	 * An extended block placement function which includes ALL the details
 	 * you'll ever need.
@@ -360,13 +369,13 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		// silently set meta, since we want to notify TE before neighbors
 		world.setBlockMetadataWithNotify(x, y, z, blockMeta, BlockNotifyFlags.NONE);
 
-		notifyTileEntity(world, player, stack, x, y, z, side, hitX, hitY, hitZ);
+		notifyTileEntity(world, player, stack, x, y, z, side, blockDir, hitX, hitY, hitZ);
 
 		world.markBlockForUpdate(x, y, z);
 		if (!world.isRemote) world.notifyBlockChange(x, y, z, this);
 	}
 
-	protected void notifyTileEntity(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, float hitX, float hitY, float hitZ) {
+	protected void notifyTileEntity(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, ForgeDirection blockDir, float hitX, float hitY, float hitZ) {
 		TileEntity te = world.getTileEntity(x, y, z);
 		if (te instanceof IPlaceAwareTile) ((IPlaceAwareTile)te).onBlockPlacedBy(player, side, stack, hitX, hitY, hitZ);
 	}

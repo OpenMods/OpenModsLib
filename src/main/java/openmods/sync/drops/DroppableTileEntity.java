@@ -2,15 +2,15 @@ package openmods.sync.drops;
 
 import java.util.List;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.util.ForgeDirection;
 import openmods.api.ICustomHarvestDrops;
 import openmods.api.ICustomPickItem;
-import openmods.api.IPlaceAwareTile;
+import openmods.api.IPlacerAwareTile;
 import openmods.tileentity.SyncedTileEntity;
 
-public abstract class DroppableTileEntity extends SyncedTileEntity implements IPlaceAwareTile, ICustomHarvestDrops, ICustomPickItem {
+public abstract class DroppableTileEntity extends SyncedTileEntity implements IPlacerAwareTile, ICustomHarvestDrops, ICustomPickItem {
 
 	public DroppableTileEntity() {
 		getDropSerializer().addFields(this);
@@ -40,7 +40,7 @@ public abstract class DroppableTileEntity extends SyncedTileEntity implements IP
 	}
 
 	@Override
-	public void onBlockPlacedBy(EntityPlayer player, ForgeDirection side, ItemStack stack, float hitX, float hitY, float hitZ) {
+	public void onBlockPlacedBy(EntityLivingBase placer, ItemStack stack) {
 		getDropSerializer().read(stack, true);
 	}
 
