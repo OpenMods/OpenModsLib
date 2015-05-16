@@ -2,9 +2,8 @@ package openmods.serializable.cls;
 
 import java.lang.annotation.*;
 
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Serialize {
+public @interface SerializableClass {
 
-	public int rank() default 0;
 }

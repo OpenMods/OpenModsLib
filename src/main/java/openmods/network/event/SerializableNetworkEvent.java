@@ -8,16 +8,14 @@ import openmods.serializable.cls.ClassSerializer;
 
 public class SerializableNetworkEvent extends NetworkEvent {
 
-	private static final ClassSerializer<SerializableNetworkEvent> SERIALIZER = new ClassSerializer<SerializableNetworkEvent>();
-
 	@Override
 	protected void readFromStream(DataInput input) throws IOException {
-		SERIALIZER.readFromStream(this, input);
+		ClassSerializer.instance.readFromStream(this, input);
 	}
 
 	@Override
 	protected void writeToStream(DataOutput output) throws IOException {
-		SERIALIZER.writeToStream(this, output);
+		ClassSerializer.instance.writeToStream(this, output);
 	}
 
 }

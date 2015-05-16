@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 
 import openmods.reflection.InstanceFieldAccess;
+import openmods.serializable.SerializerRegistry;
 import openmods.utils.io.IStreamSerializer;
-import openmods.utils.io.TypeRW;
 
 import com.google.common.base.Preconditions;
 
@@ -16,12 +16,11 @@ public class ElementField extends InstanceFieldAccess<Object> implements IStruct
 	private int elementId;
 	public final IStreamSerializer<Object> serializer;
 
-	@SuppressWarnings("unchecked")
 	public ElementField(Object parent, Field field) {
 		super(parent, field);
 
 		Class<?> fieldType = field.getType();
-		serializer = (IStreamSerializer<Object>)TypeRW.STREAM_SERIALIZERS.get(fieldType);
+		this.serializer = SerializerRegistry.instance.findSerializer(fieldType);
 		Preconditions.checkNotNull(serializer, "Invalid field type");
 	}
 

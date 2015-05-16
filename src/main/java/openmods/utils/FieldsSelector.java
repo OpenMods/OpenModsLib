@@ -1,54 +1,57 @@
 package openmods.utils;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public abstract class FieldsSelector {
 
-	private static final Comparator<Field> FIELD_NAME_COMPARATOR = new Comparator<Field>() {
+	public static class FieldEntry implements Comparable<FieldEntry> {
+		public final Field field;
+		public final int rank;
+
+		public FieldEntry(Field field, int rank) {
+			this.field = field;
+			this.rank = rank;
+		}
+
 		@Override
-		public int compare(Field o1, Field o2) {
-			// No need to worry about nulls
-			return o1.getName().compareTo(o2.getName());
+		public int compareTo(FieldEntry o) {
+			int result = Integer.compare(this.rank, o.rank);
+			if (result != 0) return result;
+
+			return this.field.getName().compareTo(o.field.getName());
+		}
+	}
+
+	private final CachedFactory<Class<?>, Collection<Field>> cache = new CachedFactory<Class<?>, Collection<Field>>() {
+		@Override
+		protected Collection<Field> create(Class<?> key) {
+			return scanForFields(key);
 		}
 	};
 
-	private final Map<Class<?>, Collection<Field>> syncedFields = Maps.newIdentityHashMap();
-
-	protected abstract boolean shouldInclude(Field field);
-
-	protected abstract Field[] listFields(Class<?> cls);
+	protected abstract List<FieldEntry> listFields(Class<?> cls);
 
 	private Collection<Field> scanForFields(Class<?> cls) {
-		Set<Field> fields = Sets.newTreeSet(FIELD_NAME_COMPARATOR);
-		for (Field field : listFields(cls)) {
-			if (shouldInclude(field)) {
-				fields.add(field);
-				field.setAccessible(true);
-			}
+		final List<FieldEntry> entries = listFields(cls);
+		Collections.sort(entries);
+
+		ImmutableList.Builder<Field> result = ImmutableList.builder();
+		for (FieldEntry entry : entries) {
+			final Field field = entry.field;
+			result.add(field);
+			field.setAccessible(true);
 		}
-		return ImmutableList.copyOf(fields);
+		return result.build();
 	}
 
 	public Collection<Field> getFields(Class<?> cls) {
-
-		Collection<Field> result;
-		synchronized (syncedFields) {
-			result = syncedFields.get(cls);
+		synchronized (cache) {
+			return cache.getOrCreate(cls);
 		}
-
-		if (result == null) {
-			result = scanForFields(cls);
-
-			synchronized (syncedFields) {
-				syncedFields.put(cls, result);
-			}
-		}
-
-		return result;
 	}
 }

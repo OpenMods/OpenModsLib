@@ -7,8 +7,8 @@ import java.lang.reflect.Field;
 
 import openmods.reflection.FieldAccess;
 import openmods.serializable.IObjectSerializer;
+import openmods.serializable.SerializerRegistry;
 import openmods.utils.io.IStreamSerializer;
-import openmods.utils.io.TypeRW;
 
 import com.google.common.base.Preconditions;
 
@@ -22,13 +22,12 @@ public class SerializableField<T> extends FieldAccess<Object> implements IObject
 		this.serializer = serializer;
 	}
 
-	@SuppressWarnings("unchecked")
 	public SerializableField(Field field) {
 		super(field);
 
-		Class<?> fieldType = field.getType();
-		this.serializer = (IStreamSerializer<Object>)TypeRW.STREAM_SERIALIZERS.get(fieldType);
-		Preconditions.checkNotNull(serializer, "Invalid field type");
+		final Class<?> fieldType = field.getType();
+		this.serializer = SerializerRegistry.instance.findSerializer(fieldType);
+		Preconditions.checkNotNull(serializer, "Invalid field %s type", field);
 	}
 
 	@Override

@@ -6,16 +6,14 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.util.Map;
 
+import openmods.serializable.SerializerRegistry;
 import openmods.utils.AnnotationMap;
 import openmods.utils.ByteUtils;
+import openmods.utils.CachedFactory;
 import openmods.utils.io.IStreamReader;
-import openmods.utils.io.IStreamWriter;
-import openmods.utils.io.TypeRW;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 public class MethodParamsCodec {
 
@@ -38,11 +36,8 @@ public class MethodParamsCodec {
 			Preconditions.checkState(!cls.isPrimitive() || !isNullable, "Primitive types can't be nullable");
 
 			if (type.isArray()) validate(type.getComponentType());
-			else if (type.isEnum()) {
-				// NO-OP, enums are always valid, unless...
-				// TODO: size validation? is that even possible?
-			} else {
-				IStreamReader<?> reader = TypeRW.STREAM_SERIALIZERS.get(type);
+			else {
+				IStreamReader<?> reader = SerializerRegistry.instance.findSerializer(cls);
 				Preconditions.checkNotNull(reader, "Failed to find reader for type %s", type);
 			}
 		}
@@ -57,7 +52,7 @@ public class MethodParamsCodec {
 
 	private final MethodParam[] params;
 
-	public MethodParamsCodec(Method method) {
+	MethodParamsCodec(Method method) {
 		this.method = method;
 
 		Annotation[][] annotations = method.getParameterAnnotations();
@@ -101,16 +96,9 @@ public class MethodParamsCodec {
 
 		if (type.isArray()) {
 			writeArray(output, argIndex, type, isNullable, value);
-		} else if (type.isEnum()) {
-			writeEnum(output, value);
 		} else {
-			writeSingleValue(output, type, value);
+			SerializerRegistry.instance.writeToStream(output, value);
 		}
-	}
-
-	private static void writeEnum(DataOutput output, Object value) {
-		int ord = ((Enum<?>)value).ordinal();
-		ByteUtils.writeVLI(output, ord);
 	}
 
 	private static void writeArray(DataOutput output, int argIndex, Class<?> type, boolean isNullable, Object value) throws IOException {
@@ -121,13 +109,6 @@ public class MethodParamsCodec {
 			Object elem = Array.get(value, i);
 			writeArg(output, argIndex, component, isNullable, elem);
 		}
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static void writeSingleValue(DataOutput output, final Class<?> type, Object value) throws IOException {
-		IStreamWriter writer = TypeRW.STREAM_SERIALIZERS.get(type);
-		Preconditions.checkNotNull(writer, "Failed to find writer for type %s", type);
-		writer.writeToStream(value, output);
 	}
 
 	public Object[] readArgs(DataInput input) {
@@ -154,10 +135,8 @@ public class MethodParamsCodec {
 
 		if (type.isArray()) {
 			return readArray(input, type, isNullable);
-		} else if (type.isEnum()) {
-			return readEnum(input, type);
 		} else {
-			return readSingleValue(input, type);
+			return SerializerRegistry.instance.createFromStream(input, type);
 		}
 	}
 
@@ -172,22 +151,6 @@ public class MethodParamsCodec {
 		return result;
 	}
 
-	private static Object readEnum(DataInput input, Class<?> type) {
-		int ord = ByteUtils.readVLI(input);
-		Object[] values = type.getEnumConstants();
-		try {
-			return values[ord];
-		} catch (ArrayIndexOutOfBoundsException e) {
-			throw new ArrayIndexOutOfBoundsException(String.format("Failed to get enum with ordinal %d from class %s", ord, type));
-		}
-	}
-
-	private static Object readSingleValue(DataInput input, Class<?> type) throws IOException {
-		IStreamReader<?> reader = TypeRW.STREAM_SERIALIZERS.get(type);
-		Preconditions.checkNotNull(reader, "Failed to find reader for type %s", type);
-		return reader.readFromStream(input);
-	}
-
 	public void validate() {
 		for (int i = 0; i < params.length; i++) {
 			try {
@@ -198,16 +161,14 @@ public class MethodParamsCodec {
 		}
 	}
 
-	private static final Map<Method, MethodParamsCodec> CACHE = Maps.newHashMap();
+	private static final CachedFactory<Method, MethodParamsCodec> INSTANCES = new CachedFactory<Method, MethodParamsCodec>() {
+		@Override
+		protected MethodParamsCodec create(Method key) {
+			return new MethodParamsCodec(key);
+		}
+	};
 
 	public static synchronized MethodParamsCodec create(Method method) {
-		MethodParamsCodec result = CACHE.get(method);
-
-		if (result == null) {
-			result = new MethodParamsCodec(method);
-			CACHE.put(method, result);
-		}
-
-		return result;
+		return INSTANCES.getOrCreate(method);
 	}
 }

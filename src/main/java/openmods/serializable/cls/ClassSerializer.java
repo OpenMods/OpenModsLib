@@ -13,16 +13,29 @@ import openmods.utils.FieldsSelector;
 
 import com.google.common.collect.Lists;
 
-public class ClassSerializer<T> extends CachedFactory<Class<? extends T>, IObjectSerializer<T>> implements IObjectSerializer<T> {
-	private final FieldsSelector SELECTOR = new FieldsSelector() {
-		@Override
-		protected boolean shouldInclude(Field field) {
-			return field.isAnnotationPresent(Serialize.class);
-		}
+public class ClassSerializer {
+	public static final ClassSerializer instance = new ClassSerializer();
+
+	private final CachedFactory<Class<?>, IObjectSerializer<?>> cache = new CachedFactory<Class<?>, IObjectSerializer<?>>() {
 
 		@Override
-		protected Field[] listFields(Class<?> cls) {
-			return cls.getFields();
+		protected IObjectSerializer<?> create(Class<?> key) {
+			final Collection<Field> fields = SELECTOR.getFields(key);
+			return createFieldsSerializer(fields);
+		}
+	};
+
+	private final FieldsSelector SELECTOR = new FieldsSelector() {
+
+		@Override
+		protected List<FieldEntry> listFields(Class<?> cls) {
+			List<FieldEntry> result = Lists.newArrayList();
+			for (Field f : cls.getFields()) {
+				Serialize ann = f.getAnnotation(Serialize.class);
+				if (ann != null) result.add(new FieldEntry(f, ann.rank()));
+			}
+
+			return result;
 		}
 	};
 
@@ -35,24 +48,16 @@ public class ClassSerializer<T> extends CachedFactory<Class<? extends T>, IObjec
 		return new ComposedSerializer<T>(result);
 	}
 
-	@Override
-	protected IObjectSerializer<T> create(Class<? extends T> key) {
-		final Collection<Field> fields = SELECTOR.getFields(key);
-		return createFieldsSerializer(fields);
-	}
-
 	@SuppressWarnings("unchecked")
-	public IObjectSerializer<T> getSerializer(T object) {
-		return getOrCreate((Class<? extends T>)object.getClass());
+	public <T> IObjectSerializer<T> getSerializer(T object) {
+		return (IObjectSerializer<T>)cache.getOrCreate(object.getClass());
 	}
 
-	@Override
-	public void readFromStream(T object, DataInput input) throws IOException {
+	public void readFromStream(Object object, DataInput input) throws IOException {
 		getSerializer(object).readFromStream(object, input);
 	}
 
-	@Override
-	public void writeToStream(T object, DataOutput output) throws IOException {
+	public void writeToStream(Object object, DataOutput output) throws IOException {
 		getSerializer(object).writeToStream(object, output);
 	}
 

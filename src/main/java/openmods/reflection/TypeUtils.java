@@ -1,8 +1,11 @@
 package openmods.reflection;
 
+import java.lang.reflect.TypeVariable;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.reflect.TypeToken;
 
 public class TypeUtils {
 
@@ -32,6 +35,19 @@ public class TypeUtils {
 		if (left.isPrimitive()) left = PRIMITIVE_TYPES_MAP.get(left);
 		if (right.isPrimitive()) right = PRIMITIVE_TYPES_MAP.get(right);
 		return left.equals(right);
+	}
+
+	public static TypeToken<?> getTypeParameter(Class<?> intfClass, Class<?> instanceClass, int index) {
+		final TypeVariable<?>[] typeParameters = intfClass.getTypeParameters();
+		Preconditions.checkElementIndex(index, typeParameters.length, intfClass + " type parameter index");
+		TypeVariable<?> arg = typeParameters[index];
+		TypeToken<?> type = TypeToken.of(instanceClass);
+		Preconditions.checkArgument(type.getRawType() != Object.class, "Type %s is no fully parametrized", instanceClass);
+		return type.resolveType(arg);
+	}
+
+	public static TypeToken<?> getTypeParameter(Class<?> intfClass, Class<?> instanceClass) {
+		return getTypeParameter(intfClass, instanceClass, 0);
 	}
 
 }
