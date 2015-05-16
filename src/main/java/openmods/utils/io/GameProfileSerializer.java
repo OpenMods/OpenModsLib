@@ -34,13 +34,20 @@ public class GameProfileSerializer implements IStreamSerializer<GameProfile> {
 		for (Property p : properties.values()) {
 			output.writeUTF(p.getName());
 			output.writeUTF(p.getValue());
-			output.writeUTF(p.getSignature());
+
+			final String signature = p.getSignature();
+			if (signature != null) {
+				output.writeBoolean(true);
+				output.writeUTF(signature);
+			} else {
+				output.writeBoolean(false);
+			}
 		}
 	}
 
 	public static GameProfile read(DataInput input) throws IOException {
 		final String uuidStr = input.readUTF();
-		UUID uuid = UUID.fromString(uuidStr);
+		UUID uuid = Strings.isNullOrEmpty(uuidStr)? null : UUID.fromString(uuidStr);
 		final String name = input.readUTF();
 		GameProfile result = new GameProfile(uuid, name);
 		int propertyCount = ByteUtils.readVLI(input);
@@ -49,8 +56,13 @@ public class GameProfileSerializer implements IStreamSerializer<GameProfile> {
 		for (int i = 0; i < propertyCount; ++i) {
 			String key = input.readUTF();
 			String value = input.readUTF();
-			String signature = input.readUTF();
-			properties.put(key, new Property(key, value, signature));
+			if (input.readBoolean()) {
+				String signature = input.readUTF();
+				properties.put(key, new Property(key, value, signature));
+			} else {
+				properties.put(key, new Property(key, value));
+			}
+
 		}
 
 		return result;
