@@ -56,10 +56,11 @@ public class GuiComponentBook extends BaseComposite {
 			}
 		});
 
+		float scalePageNumber = Float.parseFloat(StatCollector.translateToLocal("openmodslib.locale.scale.pageNumber"));
 		pageNumberLeft = new GuiComponentLabel(85, 163, 100, 10, "XXX");
-		pageNumberLeft.setScale(0.5f);
+		pageNumberLeft.setScale(scalePageNumber);
 		pageNumberRight = new GuiComponentLabel(295, 163, 100, 10, "XXX");
-		pageNumberRight.setScale(0.5f);
+		pageNumberRight.setScale(scalePageNumber);
 
 		addComponent(imgLeftBackground);
 		addComponent(imgRightBackground);
