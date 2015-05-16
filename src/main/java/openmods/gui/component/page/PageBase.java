@@ -61,8 +61,7 @@ public abstract class PageBase extends BaseComposite {
 		EmptyComposite result = new EmptyComposite(x, y, 50, 8);
 
 		GuiComponentLabel label = new GuiComponentLabel(15, 2, StatCollector.translateToLocal(text));
-		float scaleContent = Float.parseFloat(StatCollector.translateToLocal("openmodslib.locale.scale.content"));
-		label.setScale(scaleContent);
+		label.setScale(BookScaleConfig.getPageContentScale());
 		result.addComponent(label);
 
 		GuiComponentSprite image = new GuiComponentSprite(0, 0, icon, BOOK_TEXTURE);

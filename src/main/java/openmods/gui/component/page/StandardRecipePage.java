@@ -23,20 +23,17 @@ public class StandardRecipePage extends PageBase {
 
 		{
 			String translatedTitle = StatCollector.translateToLocal(title);
-			float scaleTitle = Float.parseFloat(StatCollector.translateToLocal("openmodslib.locale.scale.title"));
 			final GuiComponentLabel titleLabel = new GuiComponentLabel(0, 2, translatedTitle);
 			titleLabel.setX((getWidth() - titleLabel.getWidth()) / 2);
-			titleLabel.setScale(scaleTitle);
+			titleLabel.setScale(BookScaleConfig.getPageTitleScale());
 			addComponent(titleLabel);
 		}
 
 		{
 			String translatedDescription = StatCollector.translateToLocal(description).replaceAll("\\\\n", "\n");
-			float scaleContent = Float.parseFloat(StatCollector.translateToLocal("openmodslib.locale.scale.content"));
-			int lineSpace = Integer.parseInt(StatCollector.translateToLocal("openmodslib.locale.lineSpace.recipePage"));
 			GuiComponentLabel lblDescription = new GuiComponentLabel(10, 80, getWidth() - 5, 200, translatedDescription);
-			lblDescription.setScale(scaleContent);
-			lblDescription.setAdditionalLineHeight(lineSpace);
+			lblDescription.setScale(BookScaleConfig.getPageContentScale());
+			lblDescription.setAdditionalLineHeight(BookScaleConfig.getRecipePageSeparator());
 			addComponent(lblDescription);
 		}
 	}

@@ -7,6 +7,7 @@ import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
+import openmods.gui.component.page.BookScaleConfig;
 import openmods.gui.listener.IMouseDownListener;
 import openmods.utils.render.FakeIcon;
 
@@ -56,7 +57,7 @@ public class GuiComponentBook extends BaseComposite {
 			}
 		});
 
-		float scalePageNumber = Float.parseFloat(StatCollector.translateToLocal("openmodslib.locale.scale.pageNumber"));
+		final float scalePageNumber = BookScaleConfig.getPageNumberScale();
 		pageNumberLeft = new GuiComponentLabel(85, 163, 100, 10, "XXX");
 		pageNumberLeft.setScale(scalePageNumber);
 		pageNumberRight = new GuiComponentLabel(295, 163, 100, 10, "XXX");

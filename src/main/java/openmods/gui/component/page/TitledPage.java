@@ -11,18 +11,14 @@ public class TitledPage extends PageBase {
 	public TitledPage(String title, String content) {
 		String translatedTitle = StatCollector.translateToLocal(title);
 		String translatedContent = StringEscapeUtils.unescapeJava(StatCollector.translateToLocal(content));
-		float scaleTitle = Float.parseFloat(StatCollector.translateToLocal("openmodslib.locale.scale.title"));
-		float scaleContent = Float.parseFloat(StatCollector.translateToLocal("openmodslib.locale.scale.content"));
-		int lineSpace = Integer.parseInt(StatCollector.translateToLocal("openmodslib.locale.lineSpace.titledPage"));
-
 		int x = (getWidth() - Minecraft.getMinecraft().fontRenderer.getStringWidth(translatedTitle)) / 2;
-		
-		addComponent(new GuiComponentLabel(x, 12, translatedTitle).setScale(scaleTitle));
+
+		addComponent(new GuiComponentLabel(x, 12, translatedTitle).setScale(BookScaleConfig.getPageTitleScale()));
 
 		final GuiComponentLabel lblContent = new GuiComponentLabel(0, 35, getWidth() - 20, 300, translatedContent);
-		
-		lblContent.setScale(scaleContent);
-		lblContent.setAdditionalLineHeight(lineSpace);
+
+		lblContent.setScale(BookScaleConfig.getPageContentScale());
+		lblContent.setAdditionalLineHeight(BookScaleConfig.getTitlePageSeparator());
 
 		lblContent.setX((getWidth() - lblContent.getWidth()) / 2);
 		addComponent(lblContent);

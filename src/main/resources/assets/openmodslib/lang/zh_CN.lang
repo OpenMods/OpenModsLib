@@ -32,9 +32,10 @@ openmodslib.color.magenta=品红色
 openmodslib.color.orange=橙色
 openmodslib.color.white=白色
 
-openmodslib.locale.scale.pageNumber=1.0
-openmodslib.locale.scale.section=2.0
-openmodslib.locale.scale.title=1.0
-openmodslib.locale.scale.content=1.0
-openmodslib.locale.lineSpace.titledPage=0
-openmodslib.locale.lineSpace.recipePage=0
+openmodslib.locale.book.scale.pageNumber=1.0
+openmodslib.locale.book.scale.sectionTitle=2.0
+openmodslib.locale.book.scale.pageTitle=1.0
+openmodslib.locale.book.scale.pageContent=1.0
+
+openmodslib.locale.book.lineSpace.titledPage=0
+openmodslib.locale.book.lineSpace.recipePage=0
