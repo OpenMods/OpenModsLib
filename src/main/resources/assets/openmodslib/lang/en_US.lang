@@ -31,3 +31,10 @@ openmodslib.color.lightBlue=Light Blue
 openmodslib.color.magenta=Magenta
 openmodslib.color.orange=Orange
 openmodslib.color.white=White
+
+openmodslib.locale.scale.pageNumber=0.5
+openmodslib.locale.scale.section=2.0
+openmodslib.locale.scale.title=1.0
+openmodslib.locale.scale.content=0.5
+openmodslib.locale.lineSpace.titledPage=2
+openmodslib.locale.lineSpace.recipePage=4
