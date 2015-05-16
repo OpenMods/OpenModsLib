@@ -115,14 +115,25 @@ public class ApiProviderBase<A> {
 		}
 	}
 
+	private static boolean shouldIncludeSuper(ApiSingleton meta) {
+		return meta == null || meta.includeSuper();
+	}
+
+	private static boolean shouldIncludeSuper(ApiImplementation meta) {
+		return meta == null || meta.includeSuper();
+	}
+
+	private static boolean isCacheable(ApiImplementation meta) {
+		return meta == null || meta.cacheable();
+	}
+
 	public <T extends A> void registerClass(Class<? extends T> cls) {
 		Preconditions.checkArgument(!Modifier.isAbstract(cls.getModifiers()));
 
 		ApiImplementation meta = cls.getAnnotation(ApiImplementation.class);
-		Preconditions.checkNotNull(meta);
 
-		IApiInstanceProvider<T> provider = meta.cacheable()? new SingleInstanceProvider<T>(cls) : new NewInstanceProvider<T>(cls);
-		registerInterfaces(cls, provider, meta.includeSuper());
+		IApiInstanceProvider<T> provider = isCacheable(meta)? new SingleInstanceProvider<T>(cls) : new NewInstanceProvider<T>(cls);
+		registerInterfaces(cls, provider, shouldIncludeSuper(meta));
 	}
 
 	public <T extends A> void registerInstance(T obj) {
@@ -130,10 +141,9 @@ public class ApiProviderBase<A> {
 		final Class<? extends T> cls = (Class<? extends T>)obj.getClass();
 
 		ApiSingleton meta = cls.getAnnotation(ApiSingleton.class);
-		Preconditions.checkNotNull(meta);
 
 		IApiInstanceProvider<T> provider = new SingletonProvider<T>(obj);
-		registerInterfaces(cls, provider, meta.includeSuper());
+		registerInterfaces(cls, provider, shouldIncludeSuper(meta));
 	}
 
 	@SuppressWarnings("unchecked")
