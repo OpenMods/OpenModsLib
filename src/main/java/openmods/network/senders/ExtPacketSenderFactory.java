@@ -10,7 +10,7 @@ import openmods.network.targets.SelectEntityWatchers;
 
 public class ExtPacketSenderFactory {
 
-	public static <M> ITargetedPacketSender<DimCoord> createBlockSender(Channel channel) {
+	public static ITargetedPacketSender<DimCoord> createBlockSender(Channel channel) {
 		return new ExtTargetedPacketSender<DimCoord>(channel, SelectChunkWatchers.INSTANCE) {
 			@Override
 			protected void configureChannel(Channel channel, DimCoord target) {
@@ -20,7 +20,7 @@ public class ExtPacketSenderFactory {
 		};
 	}
 
-	public static <M> ITargetedPacketSender<Entity> createEntitySender(Channel channel) {
+	public static ITargetedPacketSender<Entity> createEntitySender(Channel channel) {
 		return new ExtTargetedPacketSender<Entity>(channel, SelectEntityWatchers.INSTANCE) {
 			@Override
 			protected void configureChannel(Channel channel, Entity target) {

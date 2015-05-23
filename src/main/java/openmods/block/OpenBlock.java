@@ -166,6 +166,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public ItemStack getPickBlock(MovingObjectPosition target, World world, int x, int y, int z) {
 		if (teClass != null && ICustomPickItem.class.isAssignableFrom(teClass)) {
 			TileEntity te = world.getTileEntity(x, y, z);
