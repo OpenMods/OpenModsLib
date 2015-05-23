@@ -198,21 +198,47 @@ public class SerializableTest {
 
 	@Test
 	public void testArrayPrimitive() throws IOException {
+		testIntArray(new int[] {});
 		testIntArray(new int[] { 1, 2, 3 });
+		testIntArray(new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 	}
 
 	@Test
-	public void testArray() throws IOException {
+	public void testArrayNullable() throws IOException {
+		testArray(new String[] {});
 		testArray(new String[] { "aa", "", "ccc" });
+		testArray(new String[] { null });
+		testArray(new String[] { "aa", null, "ccc" });
+		testArray(new String[] { "a", "b", "c", "d", "e", "f", "g", "h" });
 	}
 
 	@Test
-	public void testMultidimensionalArray() throws IOException {
+	public void testMultidimensionalArrayNullable() throws IOException {
+		testArray(new String[][] {});
+		testArray(new String[][] { null });
+		testArray(new String[][] { {} });
+		testArray(new String[][] { { null } });
 		testArray(new String[][] { { "a", "b" }, {}, { "c" } });
+		testArray(new String[][] { { "a", "b" }, null, { "c" } });
+		testArray(new String[][] { { "a", null }, {}, { "c" } });
 	}
 
 	@Test
 	public void testMultidimensionalArrayPrimitive() throws IOException {
+		testArray(new int[][] {});
+		testArray(new int[][] { null });
+		testArray(new int[][] { {} });
+		testArray(new int[][] { { 1, 2 }, null, { 3 } });
 		testArray(new int[][] { { 1, 2 }, {}, { 3 } });
+	}
+
+	@Test
+	public void testMultidimensionalArrayEnum() throws IOException {
+		testArray(new SingleClassEnum[][] {});
+		testArray(new SingleClassEnum[][] { null });
+		testArray(new SingleClassEnum[][] { {} });
+		testArray(new SingleClassEnum[][] { { null } });
+		testArray(new SingleClassEnum[][] { { SingleClassEnum.A, SingleClassEnum.B }, null, { SingleClassEnum.C } });
+		testArray(new SingleClassEnum[][] { { SingleClassEnum.A, SingleClassEnum.B }, {}, { SingleClassEnum.C } });
 	}
 }
