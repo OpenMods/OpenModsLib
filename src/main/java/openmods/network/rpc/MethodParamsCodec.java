@@ -4,12 +4,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 
 import openmods.serializable.SerializerRegistry;
 import openmods.utils.AnnotationMap;
-import openmods.utils.ByteUtils;
 import openmods.utils.CachedFactory;
 import openmods.utils.io.IStreamReader;
 
@@ -94,21 +92,7 @@ public class MethodParamsCodec {
 			Preconditions.checkNotNull(value, "Only @NullableArg arguments can be null");
 		}
 
-		if (type.isArray()) {
-			writeArray(output, argIndex, type, isNullable, value);
-		} else {
-			SerializerRegistry.instance.writeToStream(output, value);
-		}
-	}
-
-	private static void writeArray(DataOutput output, int argIndex, Class<?> type, boolean isNullable, Object value) throws IOException {
-		final int length = Array.getLength(value);
-		final Class<?> component = type.getComponentType();
-		ByteUtils.writeVLI(output, length);
-		for (int i = 0; i < length; i++) {
-			Object elem = Array.get(value, i);
-			writeArg(output, argIndex, component, isNullable, elem);
-		}
+		SerializerRegistry.instance.writeToStream(output, value);
 	}
 
 	public Object[] readArgs(DataInput input) {
@@ -133,22 +117,7 @@ public class MethodParamsCodec {
 			if (!hasValue) return null;
 		}
 
-		if (type.isArray()) {
-			return readArray(input, type, isNullable);
-		} else {
-			return SerializerRegistry.instance.createFromStream(input, type);
-		}
-	}
-
-	private static Object readArray(DataInput input, Class<?> type, boolean isNullable) throws IOException {
-		Class<?> component = type.getComponentType();
-		int length = ByteUtils.readVLI(input);
-		Object result = Array.newInstance(component, length);
-		for (int i = 0; i < length; i++) {
-			Object value = readArg(input, component, isNullable);
-			Array.set(result, i, value);
-		}
-		return result;
+		return SerializerRegistry.instance.createFromStream(input, type);
 	}
 
 	public void validate() {

@@ -8,6 +8,7 @@ import java.util.Map;
 
 import openmods.reflection.ConstructorAccess;
 import openmods.reflection.TypeUtils;
+import openmods.serializable.providers.ArraySerializerProvider;
 import openmods.serializable.providers.EnumSerializerProvider;
 import openmods.utils.io.*;
 
@@ -25,6 +26,7 @@ public class SerializerRegistry {
 
 	{
 		providers.add(new EnumSerializerProvider());
+		providers.add(new ArraySerializerProvider());
 	}
 
 	@SuppressWarnings("unchecked")

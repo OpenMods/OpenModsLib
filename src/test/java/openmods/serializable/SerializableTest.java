@@ -3,6 +3,7 @@ package openmods.serializable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 
 import openmods.utils.io.IStreamSerializer;
 
@@ -19,19 +20,38 @@ public class SerializableTest {
 
 	private final SerializerRegistry registry = new SerializerRegistry();
 
-	public <T> T testValue(T v) throws IOException {
+	public <T> T serializeDeserialize(Class<? extends T> cls, T value) throws IOException {
 		ByteArrayDataOutput output = ByteStreams.newDataOutput();
-
-		registry.writeToStream(output, v);
+		registry.writeToStream(output, value);
 
 		ByteArrayDataInput input = ByteStreams.newDataInput(output.toByteArray());
+		return registry.createFromStream(input, cls);
+	}
 
+	public <T> T testValue(T v) throws IOException {
 		@SuppressWarnings("unchecked")
 		final Class<? extends T> cls = (Class<? extends T>)v.getClass();
 
-		T result = registry.createFromStream(input, cls);
+		T result = serializeDeserialize(cls, v);
 		Assert.assertTrue(cls.isInstance(result));
 		Assert.assertEquals(result, v);
+		return result;
+	}
+
+	public <T> T[] testArray(T[] v) throws IOException {
+		@SuppressWarnings("unchecked")
+		final Class<? extends T[]> cls = (Class<? extends T[]>)v.getClass();
+
+		T[] result = serializeDeserialize(cls, v);
+		Assert.assertTrue(cls.isInstance(result));
+		Assert.assertTrue(Arrays.deepEquals(v, result));
+		return result;
+	}
+
+	public int[] testIntArray(int[] v) throws IOException {
+		int[] result = serializeDeserialize(int[].class, v);
+		Assert.assertTrue(int[].class.isInstance(result));
+		Assert.assertArrayEquals(v, result);
 		return result;
 	}
 
@@ -174,5 +194,25 @@ public class SerializableTest {
 		testValue(MultipleClassEnum.A);
 		testValue(MultipleClassEnum.B);
 		testValue(MultipleClassEnum.C);
+	}
+
+	@Test
+	public void testArrayPrimitive() throws IOException {
+		testIntArray(new int[] { 1, 2, 3 });
+	}
+
+	@Test
+	public void testArray() throws IOException {
+		testArray(new String[] { "aa", "", "ccc" });
+	}
+
+	@Test
+	public void testMultidimensionalArray() throws IOException {
+		testArray(new String[][] { { "a", "b" }, {}, { "c" } });
+	}
+
+	@Test
+	public void testMultidimensionalArrayPrimitive() throws IOException {
+		testArray(new int[][] { { 1, 2 }, {}, { 3 } });
 	}
 }
