@@ -29,8 +29,7 @@ public class BucketFillHandler {
 	}
 
 	private boolean shouldFill(Object target) {
-		if (!(target instanceof IFluidHandler)) return false;
-		return whitelist.contains(target.getClass());
+		return (target instanceof IFluidHandler) && whitelist.contains(target.getClass());
 	}
 
 	private static ItemStack fillTank(IFluidHandler handler, ForgeDirection dir, ItemStack container) {
@@ -58,6 +57,8 @@ public class BucketFillHandler {
 
 	@SubscribeEvent
 	public void onBucketFill(FillBucketEvent evt) {
+		if (evt.getResult() != Result.DEFAULT) return;
+
 		final MovingObjectPosition target = evt.target;
 		if (target.typeOfHit != MovingObjectType.BLOCK) return;
 
