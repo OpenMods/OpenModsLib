@@ -15,6 +15,10 @@ import openmods.utils.ItemUtils;
 
 public class GenericInventory implements IInventory {
 
+	public static final String TAG_SLOT = "Slot";
+	public static final String TAG_ITEMS = "Items";
+	public static final String TAG_SIZE = "size";
+
 	protected List<IInventoryCallback> callbacks;
 	protected String inventoryTitle;
 	protected int slotsCount;
@@ -117,14 +121,14 @@ public class GenericInventory implements IInventory {
 	}
 
 	public void readFromNBT(NBTTagCompound tag) {
-		if (tag.hasKey("size")) {
-			this.slotsCount = tag.getInteger("size");
+		if (tag.hasKey(TAG_SIZE)) {
+			this.slotsCount = tag.getInteger(TAG_SIZE);
 		}
-		NBTTagList nbttaglist = tag.getTagList("Items", 10);
+		NBTTagList nbttaglist = tag.getTagList(TAG_ITEMS, 10);
 		inventoryContents = new ItemStack[slotsCount];
 		for (int i = 0; i < nbttaglist.tagCount(); i++) {
 			NBTTagCompound stacktag = nbttaglist.getCompoundTagAt(i);
-			int j = stacktag.getByte("Slot");
+			int j = stacktag.getByte(TAG_SLOT);
 			if (j >= 0 && j < inventoryContents.length) {
 				inventoryContents[j] = ItemUtils.readStack(stacktag);
 			}
@@ -143,16 +147,16 @@ public class GenericInventory implements IInventory {
 	}
 
 	public void writeToNBT(NBTTagCompound tag) {
-		tag.setInteger("size", getSizeInventory());
+		tag.setInteger(TAG_SIZE, getSizeInventory());
 		NBTTagList nbttaglist = new NBTTagList();
 		for (int i = 0; i < inventoryContents.length; i++) {
 			if (inventoryContents[i] != null) {
 				NBTTagCompound stacktag = ItemUtils.writeStack(inventoryContents[i]);
-				stacktag.setByte("Slot", (byte)i);
+				stacktag.setByte(TAG_SLOT, (byte)i);
 				nbttaglist.appendTag(stacktag);
 			}
 		}
-		tag.setTag("Items", nbttaglist);
+		tag.setTag(TAG_ITEMS, nbttaglist);
 	}
 
 	/**
