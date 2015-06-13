@@ -1,8 +1,7 @@
 package openmods.reflection;
 
 import java.lang.reflect.TypeVariable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
@@ -17,12 +16,28 @@ public class TypeUtils {
 
 	public static final TypeVariable<?> MAP_VALUE_PARAM;
 
+	public static final TypeVariable<?> SET_VALUE_PARAM;
+
+	public static final TypeVariable<?> COLLECTION_VALUE_PARAM;
+
+	public static final TypeToken<?> MAP_TOKEN = TypeToken.of(Map.class);
+
+	public static final TypeToken<?> SET_TOKEN = TypeToken.of(Set.class);
+
+	public static final TypeToken<?> COLLECTION_TOKEN = TypeToken.of(Collection.class);
+
+	public static final TypeToken<?> LIST_TOKEN = TypeToken.of(List.class);
+
 	static {
 		TypeVariable<?>[] vars = Map.class.getTypeParameters();
 		MAP_KEY_PARAM = vars[0];
 		MAP_VALUE_PARAM = vars[1];
 
 		LIST_VALUE_PARAM = List.class.getTypeParameters()[0];
+
+		SET_VALUE_PARAM = Set.class.getTypeParameters()[0];
+
+		COLLECTION_VALUE_PARAM = Collection.class.getTypeParameters()[0];
 	}
 
 	public static final BiMap<Class<?>, Class<?>> PRIMITIVE_TYPES_MAP = ImmutableBiMap.<Class<?>, Class<?>> builder()
