@@ -11,6 +11,8 @@ import openmods.serializable.SerializerRegistry;
 import openmods.utils.AnnotationMap;
 import openmods.utils.CachedFactory;
 import openmods.utils.io.IStreamReader;
+import openmods.utils.io.IStreamSerializer;
+import openmods.utils.io.IStreamWriter;
 
 import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
@@ -22,10 +24,15 @@ public class MethodParamsCodec {
 
 		public final boolean isNullable;
 
+		public final IStreamSerializer<Object> serializer;
+
 		public MethodParam(Type type, Annotation[] annotations) {
 			this.type = type;
 			AnnotationMap annotationsMap = new AnnotationMap(annotations);
-			isNullable = annotationsMap.hasAnnotation(NullableArg.class);
+			this.isNullable = annotationsMap.hasAnnotation(NullableArg.class);
+
+			this.serializer = SerializerRegistry.instance.findSerializer(type);
+			Preconditions.checkNotNull(this.serializer, "Failed to find serializer for type %s", type);
 		}
 
 		public void validate() {
@@ -34,12 +41,7 @@ public class MethodParamsCodec {
 
 		private void validate(TypeToken<?> type) {
 			Preconditions.checkState(!type.isPrimitive() || !isNullable, "Primitive types can't be nullable");
-
 			if (type.isArray()) validate(type.getComponentType());
-			else {
-				IStreamReader<?> reader = SerializerRegistry.instance.findSerializer(type.getType());
-				Preconditions.checkNotNull(reader, "Failed to find reader for type %s", type);
-			}
 		}
 
 		@Override
@@ -58,10 +60,9 @@ public class MethodParamsCodec {
 		Annotation[][] annotations = method.getParameterAnnotations();
 		Class<?>[] types = method.getParameterTypes();
 
-		params = new MethodParam[types.length];
-		for (int i = 0; i < params.length; i++) {
-			params[i] = new MethodParam(types[i], annotations[i]);
-		}
+		this.params = new MethodParam[types.length];
+		for (int i = 0; i < params.length; i++)
+			this.params[i] = new MethodParam(types[i], annotations[i]);
 	}
 
 	public void writeArgs(DataOutput output, Object... args) {
@@ -76,14 +77,14 @@ public class MethodParamsCodec {
 		for (int i = 0; i < args.length; i++) {
 			MethodParam param = params[i];
 			try {
-				writeArg(output, i, param.type, param.isNullable, args[i]);
+				writeArg(output, i, param.serializer, param.isNullable, args[i]);
 			} catch (Exception e) {
 				throw new RuntimeException(String.format("Failed to write argument %d from method %s", i, method), e);
 			}
 		}
 	}
 
-	private static void writeArg(DataOutput output, int argIndex, Type type, boolean isNullable, Object value) throws IOException {
+	private static void writeArg(DataOutput output, int argIndex, IStreamWriter<Object> writer, boolean isNullable, Object value) throws IOException {
 		if (isNullable) {
 			if (value == null) {
 				output.writeBoolean(false);
@@ -94,7 +95,7 @@ public class MethodParamsCodec {
 			Preconditions.checkNotNull(value, "Only @NullableArg arguments can be null");
 		}
 
-		SerializerRegistry.instance.writeToStream(output, type, value);
+		writer.writeToStream(value, output);
 	}
 
 	public Object[] readArgs(DataInput input) {
@@ -104,7 +105,7 @@ public class MethodParamsCodec {
 		for (int i = 0; i < params.length; i++) {
 			MethodParam param = params[i];
 			try {
-				result[i] = readArg(input, param.type, param.isNullable);
+				result[i] = readArg(input, param.serializer, param.isNullable);
 			} catch (Exception e) {
 				throw new RuntimeException(String.format("Failed to read argument %d from method %s", i, method), e);
 			}
@@ -113,13 +114,13 @@ public class MethodParamsCodec {
 		return result;
 	}
 
-	private static Object readArg(DataInput input, Type type, boolean isNullable) throws IOException {
+	private static Object readArg(DataInput input, IStreamReader<Object> reader, boolean isNullable) throws IOException {
 		if (isNullable) {
 			boolean hasValue = input.readBoolean();
 			if (!hasValue) return null;
 		}
 
-		return SerializerRegistry.instance.createFromStream(input, type);
+		return reader.readFromStream(input);
 	}
 
 	public void validate() {
