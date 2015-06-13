@@ -8,17 +8,16 @@ import java.lang.reflect.Array;
 import openmods.serializable.ISerializerProvider;
 import openmods.serializable.SerializerRegistry;
 import openmods.utils.ByteUtils;
-import openmods.utils.io.*;
+import openmods.utils.io.IStreamSerializer;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
+import com.google.common.reflect.TypeToken;
 
 public class ArraySerializerProvider implements ISerializerProvider {
 
 	@Override
 	public IStreamSerializer<?> getSerializer(Class<?> cls) {
 		if (cls.isArray()) {
-			final Class<?> componentCls = cls.getComponentType();
+			final TypeToken<?> componentCls = TypeToken.of(cls).getComponentType();
 			return componentCls.isPrimitive()
 					? createPrimitiveSerializer(componentCls)
 					: createNullableSerializer(componentCls);
@@ -27,8 +26,9 @@ public class ArraySerializerProvider implements ISerializerProvider {
 		return null;
 	}
 
-	private static IStreamSerializer<?> createPrimitiveSerializer(final Class<?> componentCls) {
-		final IStreamSerializer<Object> componentSerializer = SerializerRegistry.instance.findSerializer(componentCls);
+	private static IStreamSerializer<?> createPrimitiveSerializer(final TypeToken<?> componentType) {
+		final IStreamSerializer<Object> componentSerializer = SerializerRegistry.instance.findSerializer(componentType.getType());
+		final Class<?> componentCls = componentType.getRawType();
 		return new IStreamSerializer<Object>() {
 			@Override
 			public Object readFromStream(DataInput input) throws IOException {
@@ -56,54 +56,29 @@ public class ArraySerializerProvider implements ISerializerProvider {
 		};
 	}
 
-	private static IStreamSerializer<?> createNullableSerializer(final Class<?> componentCls) {
-		final IStreamSerializer<Object> componentSerializer = SerializerRegistry.instance.findSerializer(componentCls);
-		return new IStreamSerializer<Object>() {
+	private static IStreamSerializer<?> createNullableSerializer(final TypeToken<?> componentType) {
+		return new NullableCollectionSerializer<Object>(componentType) {
+
 			@Override
-			public Object readFromStream(DataInput input) throws IOException {
-				final int length = ByteUtils.readVLI(input);
-
-				Object result = Array.newInstance(componentCls, length);
-
-				if (length > 0) {
-					final int nullBitsSize = StreamUtils.bitsToBytes(length);
-					final byte[] nullBits = StreamUtils.readBytes(input, nullBitsSize);
-					final InputBitStream nullBitStream = InputBitStream.create(nullBits);
-
-					for (int i = 0; i < length; i++) {
-						if (nullBitStream.readBit()) {
-							final Object value = componentSerializer.readFromStream(input);
-							Array.set(result, i, value);
-						}
-					}
-				}
-
-				return result;
+			protected Object createCollection(TypeToken<?> componentCls, int length) {
+				return Array.newInstance(componentCls.getRawType(), length);
 			}
 
 			@Override
-			public void writeToStream(Object o, DataOutput output) throws IOException {
-				final int length = Array.getLength(o);
-				ByteUtils.writeVLI(output, length);
-
-				if (length > 0) {
-					final ByteArrayDataOutput nullBits = ByteStreams.newDataOutput();
-					final OutputBitStream nullBitsStream = OutputBitStream.create(nullBits);
-
-					for (int i = 0; i < length; i++) {
-						Object value = Array.get(o, i);
-						nullBitsStream.writeBit(value != null);
-					}
-
-					nullBitsStream.flush();
-					output.write(nullBits.toByteArray());
-
-					for (int i = 0; i < length; i++) {
-						Object value = Array.get(o, i);
-						if (value != null) componentSerializer.writeToStream(value, output);
-					}
-				}
+			protected int getLength(Object collection) {
+				return Array.getLength(collection);
 			}
+
+			@Override
+			protected Object getElement(Object collection, int index) {
+				return Array.get(collection, index);
+			}
+
+			@Override
+			protected void setElement(Object collection, int index, Object value) {
+				Array.set(collection, index, value);
+			}
+
 		};
 	}
 }

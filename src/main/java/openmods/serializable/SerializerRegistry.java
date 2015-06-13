@@ -3,13 +3,13 @@ package openmods.serializable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
 import openmods.reflection.ConstructorAccess;
 import openmods.reflection.TypeUtils;
-import openmods.serializable.providers.ArraySerializerProvider;
-import openmods.serializable.providers.EnumSerializerProvider;
+import openmods.serializable.providers.*;
 import openmods.utils.io.*;
 
 import com.google.common.base.Preconditions;
@@ -24,9 +24,15 @@ public class SerializerRegistry {
 
 	private final List<ISerializerProvider> providers = Lists.newArrayList();
 
+	private final List<IGenericSerializerProvider> genericProviders = Lists.newArrayList();
+
 	{
 		providers.add(new EnumSerializerProvider());
 		providers.add(new ArraySerializerProvider());
+
+		genericProviders.add(new ListSerializerProvider());
+		genericProviders.add(new SetSerializerProvider());
+		genericProviders.add(new MapSerializerProvider());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -74,36 +80,67 @@ public class SerializerRegistry {
 		providers.add(provider);
 	}
 
+	private IStreamSerializer<?> findClassSerializer(Class<?> cls, IStreamSerializer<?> serializer) {
+		for (ISerializerProvider provider : providers) {
+			serializer = provider.getSerializer(cls);
+			if (serializer != null) {
+				serializers.put(cls, serializer);
+				return serializer;
+			}
+		}
+
+		return null;
+	}
+
 	@SuppressWarnings("unchecked")
 	public <T> IStreamSerializer<T> findSerializer(Class<? extends T> cls) {
 		IStreamSerializer<?> serializer = serializers.get(cls);
 
-		if (serializer == null) {
-			for (ISerializerProvider provider : providers) {
-				serializer = provider.getSerializer(cls);
-				if (serializer != null) {
-					serializers.put(cls, serializer);
-					break;
-				}
-			}
-		}
+		if (serializer == null) serializer = findClassSerializer(cls, serializer);
 
 		return (IStreamSerializer<T>)serializer;
 	}
 
-	public <T> T createFromStream(DataInput input, Class<? extends T> cls) throws IOException {
-		IStreamReader<T> reader = findSerializer(cls);
-		Preconditions.checkNotNull(reader, "Can't find reader for class %s", cls);
-		return reader.readFromStream(input);
+	public IStreamSerializer<Object> findSerializer(Type type) {
+		if (type instanceof Class) return findSerializer((Class<?>)type);
+		return findGenericSerializer(type);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> void writeToStream(DataOutput output, T target) throws IOException {
+	protected IStreamSerializer<Object> findGenericSerializer(Type type) {
+		for (IGenericSerializerProvider provider : genericProviders) {
+			IStreamSerializer<?> serializer = provider.getSerializer(type);
+			if (serializer != null) return (IStreamSerializer<Object>)serializer;
+		}
+
+		return null;
+	}
+
+	public <T> T createFromStream(DataInput input, Class<? extends T> cls) throws IOException {
+		IStreamReader<T> reader = findSerializer(cls);
+		Preconditions.checkNotNull(reader, "Can't find reader for %s", cls);
+		return reader.readFromStream(input);
+	}
+
+	public Object createFromStream(DataInput input, Type type) throws IOException {
+		IStreamReader<?> reader = findSerializer(type);
+		Preconditions.checkNotNull(reader, "Can't find reader for %s", type);
+		return reader.readFromStream(input);
+	}
+
+	public <T> void writeToStream(DataOutput output, Class<? extends T> cls, T target) throws IOException {
 		Preconditions.checkNotNull(target);
 
-		final Class<? extends T> cls = (Class<? extends T>)target.getClass();
 		IStreamWriter<T> writer = findSerializer(cls);
-		Preconditions.checkNotNull(writer, "Can't find writer for class %s", cls);
+		Preconditions.checkNotNull(writer, "Can't find writer for %s", cls);
+		writer.writeToStream(target, output);
+	}
+
+	public void writeToStream(DataOutput output, Type type, Object target) throws IOException {
+		Preconditions.checkNotNull(target);
+
+		IStreamWriter<Object> writer = findSerializer(type);
+		Preconditions.checkNotNull(writer, "Can't find writer for %s", type);
 		writer.writeToStream(target, output);
 	}
 }

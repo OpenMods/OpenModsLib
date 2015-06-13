@@ -4,6 +4,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 
 import openmods.reflection.FieldAccess;
 import openmods.serializable.IObjectSerializer;
@@ -25,7 +26,7 @@ public class SerializableField<T> extends FieldAccess<Object> implements IObject
 	public SerializableField(Field field) {
 		super(field);
 
-		final Class<?> fieldType = field.getType();
+		final Type fieldType = field.getGenericType();
 		this.serializer = SerializerRegistry.instance.findSerializer(fieldType);
 		Preconditions.checkNotNull(serializer, "Invalid field %s type", field);
 	}

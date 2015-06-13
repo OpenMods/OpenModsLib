@@ -4,6 +4,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 
 import openmods.reflection.InstanceFieldAccess;
 import openmods.serializable.SerializerRegistry;
@@ -19,7 +20,7 @@ public class ElementField extends InstanceFieldAccess<Object> implements IStruct
 	public ElementField(Object parent, Field field) {
 		super(parent, field);
 
-		Class<?> fieldType = field.getType();
+		Type fieldType = field.getGenericType();
 		this.serializer = SerializerRegistry.instance.findSerializer(fieldType);
 		Preconditions.checkNotNull(serializer, "Invalid field type");
 	}

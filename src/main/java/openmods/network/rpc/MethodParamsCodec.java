@@ -5,6 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 import openmods.serializable.SerializerRegistry;
 import openmods.utils.AnnotationMap;
@@ -12,30 +13,31 @@ import openmods.utils.CachedFactory;
 import openmods.utils.io.IStreamReader;
 
 import com.google.common.base.Preconditions;
+import com.google.common.reflect.TypeToken;
 
 public class MethodParamsCodec {
 
 	private static class MethodParam {
-		public final Class<?> type;
+		public final Type type;
 
 		public final boolean isNullable;
 
-		public MethodParam(Class<?> type, Annotation[] annotations) {
+		public MethodParam(Type type, Annotation[] annotations) {
 			this.type = type;
 			AnnotationMap annotationsMap = new AnnotationMap(annotations);
 			isNullable = annotationsMap.hasAnnotation(NullableArg.class);
 		}
 
 		public void validate() {
-			validate(type);
+			validate(TypeToken.of(type));
 		}
 
-		private void validate(Class<?> cls) {
-			Preconditions.checkState(!cls.isPrimitive() || !isNullable, "Primitive types can't be nullable");
+		private void validate(TypeToken<?> type) {
+			Preconditions.checkState(!type.isPrimitive() || !isNullable, "Primitive types can't be nullable");
 
 			if (type.isArray()) validate(type.getComponentType());
 			else {
-				IStreamReader<?> reader = SerializerRegistry.instance.findSerializer(cls);
+				IStreamReader<?> reader = SerializerRegistry.instance.findSerializer(type.getType());
 				Preconditions.checkNotNull(reader, "Failed to find reader for type %s", type);
 			}
 		}
@@ -81,7 +83,7 @@ public class MethodParamsCodec {
 		}
 	}
 
-	private static void writeArg(DataOutput output, int argIndex, Class<?> type, boolean isNullable, Object value) throws IOException {
+	private static void writeArg(DataOutput output, int argIndex, Type type, boolean isNullable, Object value) throws IOException {
 		if (isNullable) {
 			if (value == null) {
 				output.writeBoolean(false);
@@ -92,7 +94,7 @@ public class MethodParamsCodec {
 			Preconditions.checkNotNull(value, "Only @NullableArg arguments can be null");
 		}
 
-		SerializerRegistry.instance.writeToStream(output, value);
+		SerializerRegistry.instance.writeToStream(output, type, value);
 	}
 
 	public Object[] readArgs(DataInput input) {
@@ -111,7 +113,7 @@ public class MethodParamsCodec {
 		return result;
 	}
 
-	private static Object readArg(DataInput input, Class<?> type, boolean isNullable) throws IOException {
+	private static Object readArg(DataInput input, Type type, boolean isNullable) throws IOException {
 		if (isNullable) {
 			boolean hasValue = input.readBoolean();
 			if (!hasValue) return null;
