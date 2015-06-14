@@ -20,8 +20,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.api.*;
 import openmods.config.game.IRegisterableBlock;
-import openmods.context.ContextManager;
-import openmods.context.VariableKey;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.BlockNotifyFlags;
 import openmods.utils.BlockUtils;
@@ -34,8 +32,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public static final int OPEN_MODS_TE_GUI = -1;
-
-	private static final VariableKey<ArrayList<ItemStack>> DROP_OVERRIDE = VariableKey.create();
 
 	public enum BlockPlacementMode {
 		ENTITY_ANGLE,
@@ -223,8 +219,8 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	@Override
 	public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
 		if (willHarvest && shouldOverrideHarvestWithTeLogic()) {
-			ArrayList<ItemStack> drops = getDropsWithTileEntity(world, player, x, y, z);
-			if (drops != null) ContextManager.set(DROP_OVERRIDE, drops);
+			List<ItemStack> drops = getDropsWithTileEntity(world, player, x, y, z);
+			if (drops != null) BlockDropsStore.instance.storeDrops(world, x, y, z, drops);
 		}
 
 		return super.removedByPlayer(world, player, x, y, z, willHarvest);
@@ -232,7 +228,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
-		ArrayList<ItemStack> result = ContextManager.remove(DROP_OVERRIDE);
+		ArrayList<ItemStack> result = BlockDropsStore.instance.harvestDrops(world, x, y, z);
 
 		// Case A - drops stored earlier (by this.removedByPlayer) and TE is already dead
 		if (result != null) return result;

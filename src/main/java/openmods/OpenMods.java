@@ -4,6 +4,7 @@ import java.io.File;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import openmods.block.BlockDropsStore;
 import openmods.config.properties.CommandConfig;
 import openmods.config.properties.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
@@ -78,7 +79,11 @@ public class OpenMods {
 
 		MinecraftForge.EVENT_BUS.register(BucketFillHandler.instance);
 
+		MinecraftForge.EVENT_BUS.register(BlockDropsStore.instance.createForgeListener());
+
 		FMLCommonHandler.instance().bus().register(DelayedActionTickHandler.INSTANCE);
+
+		FMLCommonHandler.instance().bus().register(BlockDropsStore.instance.createFmlListener());
 
 		collector = new ClassSourceCollector(evt.getAsmData());
 
