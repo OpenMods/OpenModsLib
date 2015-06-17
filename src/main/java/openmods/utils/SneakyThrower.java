@@ -20,4 +20,7 @@ public class SneakyThrower {
 		return null;
 	}
 
+	@SuppressWarnings("unused")
+	public static <T extends Throwable> void sneakyThrows(Class<? extends T> cls) throws T {}
+
 }
