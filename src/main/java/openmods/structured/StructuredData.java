@@ -7,12 +7,14 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.TreeMultimap;
 
 public abstract class StructuredData<C extends IStructureContainer<E>, E extends IStructureElement> {
-	protected byte version;
-
 	protected final SortedMap<Integer, E> elements = Maps.newTreeMap();
 	protected final SortedMap<Integer, C> containers = Maps.newTreeMap();
 	protected final TreeMultimap<Integer, Integer> containerToElement = TreeMultimap.create();
 	protected final Map<E, C> elementToContainer = Maps.newIdentityHashMap();
+
+	public boolean isEmpty() {
+		return elements.isEmpty() && containers.isEmpty();
+	}
 
 	public void reset() {
 		elements.clear();
@@ -49,10 +51,5 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 		}
 		containers.put(containerId, container);
 		return firstElementId;
-	}
-
-	protected void updateVersion(Iterable<Command> commands) {
-		for (Command c : commands)
-			version += c.versionChange();
 	}
 }

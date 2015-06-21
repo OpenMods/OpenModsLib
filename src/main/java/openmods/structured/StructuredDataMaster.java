@@ -7,7 +7,6 @@ import openmods.structured.Command.ConsistencyCheck;
 import openmods.structured.Command.ContainerInfo;
 import openmods.structured.Command.Create;
 import openmods.structured.Command.Delete;
-import openmods.structured.Command.SetVersion;
 import openmods.structured.Command.UpdateSingle;
 
 import com.google.common.base.Preconditions;
@@ -25,7 +24,33 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 	private int elementCounter;
 	private int containerCounter;
 
+	private boolean fullUpdateNeeded;
+
 	public synchronized void appendUpdateCommands(List<Command> commands) {
+		if (fullUpdateNeeded) {
+			createFullCommands(commands);
+			fullUpdateNeeded = false;
+		} else {
+			createUpdateCommands(commands);
+		}
+
+		clearUpdates();
+	}
+
+	public synchronized void appendFullCommands(List<Command> commands) {
+		createFullCommands(commands);
+	}
+
+	private void createFullCommands(List<Command> commands) {
+		commands.add(Command.RESET_INST);
+
+		if (!containers.isEmpty()) {
+			appendContainersCreate(commands, containers.keySet());
+			commands.add(createConsistencyCheck());
+		}
+	}
+
+	private void createUpdateCommands(List<Command> commands) {
 		boolean addCheck = (checkCount++) % 10 == 0;
 
 		if (!deletedContainers.isEmpty()) {
@@ -49,27 +74,7 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 			commands.add(update);
 		}
 
-		updateVersion(commands);
-
 		if (addCheck) commands.add(createConsistencyCheck());
-
-		clearUpdates();
-	}
-
-	public synchronized void appendFullCommands(List<Command> commands) {
-		commands.add(Command.RESET_INST);
-
-		if (!containers.isEmpty()) {
-			appendContainersCreate(commands, containers.keySet());
-			commands.add(createConsistencyCheck());
-		}
-
-		SetVersion msg = new SetVersion();
-		msg.version = version;
-		commands.add(msg);
-
-		updateVersion(commands);
-		clearUpdates();
 	}
 
 	private synchronized Set<Integer> appendContainersCreate(List<Command> commands, final Set<Integer> containersToSend) {
@@ -90,35 +95,36 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 
 	private synchronized ConsistencyCheck createConsistencyCheck() {
 		ConsistencyCheck check = new ConsistencyCheck();
-		check.version = version;
 
 		SortedSet<Integer> containers = containerToElement.keySet();
 		if (!containers.isEmpty()) {
 			check.containerCount = containers.size();
+			check.minContainerId = containers.first();
 			check.maxContainerId = containers.last();
 		}
 
 		if (!elements.isEmpty()) {
 			check.elementCount = elements.size();
+			check.minElementId = elements.firstKey();
 			check.maxElementId = elements.lastKey();
 		}
 		return check;
+	}
+
+	public void removeAll() {
+		if (!isEmpty()) {
+			fullUpdateNeeded = true;
+			reset();
+		}
 	}
 
 	@Override
 	public synchronized void reset() {
 		super.reset();
 		clearUpdates();
-	}
-
-	public synchronized void removeAll() {
-		deletedContainers.addAll(containers.keySet());
-		deletedContainers.removeAll(newContainers);
-
-		newContainers.clear();
-		modifiedElements.clear();
-
-		super.reset();
+		checkCount = 0;
+		elementCounter = 0;
+		containerCounter = 0;
 	}
 
 	private synchronized void clearUpdates() {
@@ -128,7 +134,7 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 	}
 
 	public boolean hasUpdates() {
-		return !(newContainers.isEmpty() && deletedContainers.isEmpty() && modifiedElements.isEmpty());
+		return fullUpdateNeeded || !(newContainers.isEmpty() && deletedContainers.isEmpty() && modifiedElements.isEmpty());
 	}
 
 	public synchronized void markElementModified(IStructureElement element) {

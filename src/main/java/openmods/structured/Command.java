@@ -77,12 +77,6 @@ public abstract class Command {
 				return new UpdateBulk();
 			}
 		},
-		SET_VERSION {
-			@Override
-			public SetVersion create() {
-				return new SetVersion();
-			}
-		},
 		CONSISTENCY_CHECK {
 			@Override
 			public ConsistencyCheck create() {
@@ -102,11 +96,12 @@ public abstract class Command {
 	}
 
 	public static class ConsistencyCheck extends Command {
-		public byte version;
 		public int elementCount;
+		public int minElementId;
 		public int maxElementId;
 
 		public int containerCount;
+		public int minContainerId;
 		public int maxContainerId;
 
 		@Override
@@ -115,52 +110,30 @@ public abstract class Command {
 		}
 
 		@Override
-		protected void readDataFromStream(DataInput input) throws IOException {
-			version = input.readByte();
+		protected void readDataFromStream(DataInput input) {
 			elementCount = ByteUtils.readVLI(input);
+			minElementId = ByteUtils.readVLI(input);
 			maxElementId = ByteUtils.readVLI(input);
 			containerCount = ByteUtils.readVLI(input);
+			minContainerId = ByteUtils.readVLI(input);
 			maxContainerId = ByteUtils.readVLI(input);
 		}
 
 		@Override
-		protected void writeDataToStream(DataOutput output) throws IOException {
-			output.writeByte(version);
+		protected void writeDataToStream(DataOutput output) {
 			ByteUtils.writeVLI(output, elementCount);
+			ByteUtils.writeVLI(output, minElementId);
 			ByteUtils.writeVLI(output, maxElementId);
 			ByteUtils.writeVLI(output, containerCount);
+			ByteUtils.writeVLI(output, minContainerId);
 			ByteUtils.writeVLI(output, maxContainerId);
 		}
 
 		@Override
 		public String dumpContents() {
-			return "[version=" + version + ", elementCount=" + elementCount + ", maxElementId=" + maxElementId + ", containerCount=" + containerCount + ", maxContainerId=" + maxContainerId + "]";
-		}
-	}
-
-	public static class SetVersion extends Command {
-
-		public byte version;
-
-		@Override
-		public Type type() {
-			return Type.SET_VERSION;
+			return "[elementCount=" + elementCount + ", minElementId=" + minElementId + ", maxElementId=" + maxElementId + ", containerCount=" + containerCount + ", minContainerId=" + minContainerId + ", maxContainerId=" + maxContainerId + "]";
 		}
 
-		@Override
-		protected void readDataFromStream(DataInput input) throws IOException {
-			version = input.readByte();
-		}
-
-		@Override
-		protected void writeDataToStream(DataOutput output) throws IOException {
-			output.writeByte(version);
-		}
-
-		@Override
-		public String dumpContents() {
-			return Byte.toString(version);
-		}
 	}
 
 	public abstract static class EmptyCommand extends Command {
