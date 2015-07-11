@@ -8,6 +8,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.*;
 
+import openmods.serializable.cls.SerializableClass;
+import openmods.serializable.cls.Serialize;
 import openmods.utils.io.IStreamSerializer;
 
 import org.junit.Assert;
@@ -26,12 +28,18 @@ public class SerializableTest {
 
 	private final SerializerRegistry registry = new SerializerRegistry();
 
+	private static void assertFullyRead(ByteArrayDataInput input) {
+		Assert.assertEquals(0, input.skipBytes(256));
+	}
+
 	public <T> T serializeDeserialize(Class<? extends T> cls, T value) throws IOException {
 		ByteArrayDataOutput output = ByteStreams.newDataOutput();
 		registry.writeToStream(output, cls, value);
 
 		ByteArrayDataInput input = ByteStreams.newDataInput(output.toByteArray());
-		return registry.createFromStream(input, cls);
+		final T result = registry.createFromStream(input, cls);
+		assertFullyRead(input);
+		return result;
 	}
 
 	public Object genericSerializeDeserialize(Type type, Object value) throws IOException {
@@ -39,7 +47,9 @@ public class SerializableTest {
 		registry.writeToStream(output, type, value);
 
 		ByteArrayDataInput input = ByteStreams.newDataInput(output.toByteArray());
-		return registry.createFromStream(input, type);
+		final Object result = registry.createFromStream(input, type);
+		assertFullyRead(input);
+		return result;
 	}
 
 	public <T> T testValue(T v) throws IOException {
@@ -471,4 +481,66 @@ public class SerializableTest {
 		testGenericFields(new TestGenericMixed());
 	}
 
+	private static final int DUMMY_INT = 45;
+
+	@SerializableClass
+	public static class SimpleSerializableClass {
+		@Serialize
+		public int intField = 4;
+
+		@Serialize(nullable = false)
+		public String nonNullField = "hello";
+
+		@Serialize
+		public String nullField = "dummy";
+
+		public int ignoredField = DUMMY_INT;
+	}
+
+	@Test
+	public void testSerializableClass() throws IOException {
+		SimpleSerializableClass target = new SimpleSerializableClass();
+		target.ignoredField = DUMMY_INT + 444;
+		target.intField = 6;
+		target.nonNullField = "gsgfd";
+		target.nullField = null;
+
+		SimpleSerializableClass result = serializeDeserialize(SimpleSerializableClass.class, target);
+		Assert.assertEquals(DUMMY_INT, result.ignoredField);
+		Assert.assertEquals(target.intField, result.intField);
+		Assert.assertNull(result.nullField);
+		Assert.assertEquals(target.nonNullField, result.nonNullField);
+	}
+
+	@SerializableClass
+	public static class NestedSerializableClass {
+		@Serialize
+		public int intField = 9;
+
+		@Serialize
+		public SimpleSerializableClass nonNullField = new SimpleSerializableClass();
+
+		@Serialize
+		public SimpleSerializableClass nullField = new SimpleSerializableClass();
+	}
+
+	@Test
+	public void testNestedSerializableClass() throws IOException {
+		NestedSerializableClass target = new NestedSerializableClass();
+		target.intField = 534;
+		target.nonNullField.ignoredField = DUMMY_INT + 444;
+		target.nonNullField.intField = 6;
+		target.nonNullField.nonNullField = "gsgfdf";
+		target.nonNullField.nullField = null;
+		target.nullField = null;
+
+		NestedSerializableClass result = serializeDeserialize(NestedSerializableClass.class, target);
+		Assert.assertEquals(DUMMY_INT, result.nonNullField.ignoredField);
+		Assert.assertEquals(target.nonNullField.intField, result.nonNullField.intField);
+		Assert.assertNull(result.nonNullField.nullField);
+		Assert.assertEquals(target.nonNullField.nonNullField, result.nonNullField.nonNullField);
+
+		Assert.assertEquals(target.intField, result.intField);
+		Assert.assertNull(result.nullField);
+	}
 }

@@ -29,6 +29,7 @@ public class SerializerRegistry {
 	{
 		providers.add(new EnumSerializerProvider());
 		providers.add(new ArraySerializerProvider());
+		providers.add(new ClassSerializerProvider());
 
 		genericProviders.add(new ListSerializerProvider());
 		genericProviders.add(new SetSerializerProvider());

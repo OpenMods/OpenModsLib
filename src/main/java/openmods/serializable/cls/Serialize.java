@@ -7,4 +7,6 @@ import java.lang.annotation.*;
 public @interface Serialize {
 
 	public int rank() default 0;
+
+	public boolean nullable() default true;
 }

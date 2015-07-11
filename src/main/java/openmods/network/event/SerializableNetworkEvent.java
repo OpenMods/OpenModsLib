@@ -4,18 +4,18 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import openmods.serializable.cls.ClassSerializer;
+import openmods.serializable.cls.ClassSerializersProvider;
 
 public class SerializableNetworkEvent extends NetworkEvent {
 
 	@Override
 	protected void readFromStream(DataInput input) throws IOException {
-		ClassSerializer.instance.readFromStream(this, input);
+		ClassSerializersProvider.instance.readFromStream(this, input);
 	}
 
 	@Override
 	protected void writeToStream(DataOutput output) throws IOException {
-		ClassSerializer.instance.writeToStream(this, output);
+		ClassSerializersProvider.instance.writeToStream(this, output);
 	}
 
 }
