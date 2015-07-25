@@ -4,11 +4,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
 
 import openmods.reflection.FieldAccess;
+import openmods.reflection.TypeUtils;
 import openmods.serializable.IObjectSerializer;
 import openmods.serializable.SerializerRegistry;
 import openmods.utils.io.*;
@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import com.google.common.reflect.TypeToken;
 
 public class ClassSerializerBuilder<T> {
 
@@ -26,13 +27,13 @@ public class ClassSerializerBuilder<T> {
 		private final IStreamSerializer<Object> serializer;
 		private final boolean isNullable;
 
-		public SerializableField(Field field, boolean isNullable) {
+		public SerializableField(Class<?> ownerCls, Field field, boolean isNullable) {
 			super(field);
 
 			this.isNullable = isNullable;
 
-			final Type fieldType = field.getGenericType();
-			this.serializer = SerializerRegistry.instance.findSerializer(fieldType);
+			final TypeToken<?> fieldType = TypeUtils.resolveFieldType(ownerCls, field);
+			this.serializer = SerializerRegistry.instance.findSerializer(fieldType.getType());
 			Preconditions.checkNotNull(serializer, "Invalid field %s type", field);
 		}
 	}
@@ -133,7 +134,7 @@ public class ClassSerializerBuilder<T> {
 
 		if (isNullable) nullableCount++;
 
-		fields.add(new SerializableField(field, isNullable));
+		fields.add(new SerializableField(ownerClass, field, isNullable));
 	}
 
 	public IObjectSerializer<T> create() {

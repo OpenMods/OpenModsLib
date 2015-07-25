@@ -1,5 +1,7 @@
 package openmods.reflection;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.*;
 
@@ -81,4 +83,9 @@ public class TypeUtils {
 		return getTypeParameter(intfClass, instanceClass, 0);
 	}
 
+	public static TypeToken<?> resolveFieldType(Class<?> cls, Field field) {
+		Type fieldType = field.getGenericType();
+		TypeToken<?> parentType = TypeToken.of(cls);
+		return parentType.resolveType(fieldType);
+	}
 }

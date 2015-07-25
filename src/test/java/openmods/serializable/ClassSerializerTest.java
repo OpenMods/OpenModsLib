@@ -158,4 +158,43 @@ public class ClassSerializerTest {
 		Assert.assertEquals(source.field3, target.field2);
 		Assert.assertEquals(source.field4, target.field0);
 	}
+
+	public static class GenericBase1<A, B> {
+		@Serialize
+		public A fieldA;
+
+		@Serialize
+		public B fieldB;
+	}
+
+	public static class GenericBase2<A, B, C, D> extends GenericBase1<C, D> {
+		@Serialize
+		public A fieldC;
+
+		@Serialize
+		public B fieldD;
+	}
+
+	public static class GenericDerrived extends GenericBase2<Integer, String, Boolean, Float> {
+
+	}
+
+	@Test
+	public void testClassWithGenericBase() {
+		IObjectSerializer<GenericDerrived> serializer = ClassSerializersProvider.instance.getSerializer(GenericDerrived.class);
+
+		GenericDerrived source = new GenericDerrived();
+		source.fieldA = false;
+		source.fieldB = 3.5f;
+		source.fieldC = 34;
+		source.fieldD = "Hello";
+
+		GenericDerrived target = new GenericDerrived();
+		source.fieldA = true;
+		source.fieldB = 99.2f;
+		source.fieldC = 545;
+		source.fieldD = "Bye";
+
+		testSerializer(serializer, source, target);
+	}
 }
