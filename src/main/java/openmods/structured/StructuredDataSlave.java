@@ -2,8 +2,7 @@ package openmods.structured;
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.util.List;
-import java.util.SortedSet;
+import java.util.*;
 
 import openmods.structured.Command.ConsistencyCheck;
 import openmods.structured.Command.ContainerInfo;
@@ -13,6 +12,8 @@ import openmods.structured.Command.Reset;
 import openmods.structured.Command.Update;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
@@ -40,7 +41,11 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 
 	protected void onElementUpdated(E element) {}
 
+	protected void onUpdate() {}
+
 	public void interpretCommandList(List<Command> commands) {
+		Multimap<Integer, Integer> updatedContainers = HashMultimap.create();
+
 		for (Command c : commands) {
 			try {
 				if (c.isEnd()) break;
@@ -69,31 +74,47 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 
 					SortedSet<Integer> elements = Sets.newTreeSet();
 
-					for (ContainerInfo pair : msg.containers) {
-						SortedSet<Integer> newElementsId = addReplaceContainer(pair.type, pair.id, pair.start);
+					for (ContainerInfo info : msg.containers) {
+						SortedSet<Integer> newElementsId = addReplaceContainer(info.type, info.id, info.start);
 						elements.addAll(newElementsId);
+						updatedContainers.putAll(info.id, newElementsId);
 					}
 
 					readPayload(elements, msg.payload);
+
 				} else if (c instanceof Delete) {
 					final Delete msg = (Delete)c;
 					for (int i : msg.idList)
 						removeContainer(i);
+
 				} else if (c instanceof Update) {
 					final Update msg = (Update)c;
 					readPayload(msg.idList, msg.payload);
+
+					for (Integer elementId : msg.idList) {
+						Integer containerId = elementToContainer.get(elementId);
+						if (containerId == null) throw new ConsistencyCheckFailed("Orphaned element %d", elementId);
+						updatedContainers.put(containerId, elementId);
+					}
 				}
 			} catch (ConsistencyCheckFailed e) {
 				onConsistencyCheckFail();
 				break;
 			}
 		}
-	}
 
-	protected C findContainer(E element) {
-		C container = elementToContainer.get(element);
-		if (container == null) throw new ConsistencyCheckFailed("Orphaned element %d", element.getId());
-		return container;
+		if (!updatedContainers.isEmpty()) onUpdate();
+
+		for (Map.Entry<Integer, Collection<Integer>> e : updatedContainers.asMap().entrySet()) {
+			final C container = containers.get(e.getKey());
+			container.onUpdate();
+
+			for (Integer elementId : e.getValue()) {
+				final E element = elements.get(elementId);
+				onElementUpdated(element);
+				container.onElementUpdated(element);
+			}
+		}
 	}
 
 	private SortedSet<Integer> addReplaceContainer(int type, int containerId, int start) {
@@ -109,13 +130,7 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 			for (Integer id : ids) {
 				final E element = elements.get(id);
 				if (element == null) throw new ConsistencyCheckFailed("Element %d not found", id);
-				else {
-					element.readFromStream(input);
-					onElementUpdated(element);
-
-					C owner = findContainer(element);
-					if (owner != null) owner.onElementUpdated(element);
-				}
+				element.readFromStream(input);
 			}
 		} catch (IOException e) {
 			throw Throwables.propagate(e);

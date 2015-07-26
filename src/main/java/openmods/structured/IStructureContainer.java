@@ -9,5 +9,7 @@ public interface IStructureContainer<E extends IStructureElement> {
 
 	public void onElementAdded(E element);
 
+	public void onUpdate();
+
 	public void onElementUpdated(E element);
 }
