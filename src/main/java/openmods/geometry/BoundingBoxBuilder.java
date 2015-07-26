@@ -18,7 +18,7 @@ public class BoundingBoxBuilder {
 	}
 
 	public static BoundingBoxBuilder create() {
-		return new BoundingBoxBuilder(Float.MAX_VALUE, Float.MIN_VALUE, Float.MAX_VALUE, Float.MIN_VALUE);
+		return new BoundingBoxBuilder(Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY);
 	}
 
 	public static BoundingBoxBuilder create(int x, int y) {

@@ -73,6 +73,6 @@ public class Box2d {
 
 	@Override
 	public String toString() {
-		return "[" + top + "," + left + "->" + right + "," + bottom + "]";
+		return "[" + top + "," + left + "->" + bottom + "," + right + "]";
 	}
 }
