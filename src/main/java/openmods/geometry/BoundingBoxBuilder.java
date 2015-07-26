@@ -2,15 +2,15 @@ package openmods.geometry;
 
 public class BoundingBoxBuilder {
 
-	private int top;
+	private float top;
 
-	private int bottom;
+	private float bottom;
 
-	private int left;
+	private float left;
 
-	private int right;
+	private float right;
 
-	private BoundingBoxBuilder(int left, int right, int top, int bottom) {
+	private BoundingBoxBuilder(float left, float right, float top, float bottom) {
 		this.top = top;
 		this.bottom = bottom;
 		this.left = left;
@@ -18,14 +18,14 @@ public class BoundingBoxBuilder {
 	}
 
 	public static BoundingBoxBuilder create() {
-		return new BoundingBoxBuilder(Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE);
+		return new BoundingBoxBuilder(Float.MAX_VALUE, Float.MIN_VALUE, Float.MAX_VALUE, Float.MIN_VALUE);
 	}
 
 	public static BoundingBoxBuilder create(int x, int y) {
 		return new BoundingBoxBuilder(x, x, y, y);
 	}
 
-	public BoundingBoxBuilder addPoint(int x, int y) {
+	public BoundingBoxBuilder addPoint(float x, float y) {
 		if (x < left) left = x;
 		if (x > right) right = x;
 		if (y < top) top = y;
