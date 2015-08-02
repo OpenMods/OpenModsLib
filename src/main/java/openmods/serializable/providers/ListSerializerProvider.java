@@ -1,12 +1,12 @@
 package openmods.serializable.providers;
 
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.List;
 
 import openmods.reflection.TypeUtils;
 import openmods.serializable.IGenericSerializerProvider;
 import openmods.utils.io.IStreamSerializer;
-import scala.actors.threadpool.Arrays;
 
 import com.google.common.reflect.TypeToken;
 
@@ -22,7 +22,6 @@ public class ListSerializerProvider implements IGenericSerializerProvider {
 			return new NullableCollectionSerializer<List<Object>>(componentType) {
 
 				@Override
-				@SuppressWarnings("unchecked")
 				protected List<Object> createCollection(TypeToken<?> componentCls, int length) {
 					return Arrays.asList(new Object[length]);
 				}
