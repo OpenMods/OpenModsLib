@@ -1,6 +1,7 @@
 /*
  * OpenModsLib build file.
  * @author Arkan <arkan@emberwalker.cc>
+ * @lastmodified NeverCast <j.nevercast@gmail.com>
  */
 
 //================================================
@@ -55,8 +56,19 @@ dependencies {
 
 // Grab system env
 ext.env = System.getenv()
-
 version = mc_ver + "-" + mod_version
+
+// We can't be sure that the current directory is the project dir
+// This provides a switch for `git`
+// Path gives us the sub-project hierarchy, example :OpenBlocks
+// ProjectDescriptor gives us the system path.
+def projectDir = project(path).projectDir
+// git-dir is the .git directory
+def gitDir = "--git-dir \"" + projectDir + "/.git\""
+// work tree is the place we checkout to.
+def workTree = "--work-tree \"" + projectDir + "\""
+// Saves the excessive concatenation later
+def gitCmd = "git " + gitDir + " " + workTree + " "
 
 ext.in_jenkins = false
 // Get Jenkins metadata
@@ -71,13 +83,14 @@ ext.jenkinsManifest = manifest {
 
 def branch = null
 def hash = null
-def proc1 = "git rev-parse --short HEAD".execute()
+def proc1 = (gitCmd + "rev-parse --short HEAD").execute()
 proc1.in.eachLine { line -> hash = line }
 proc1.err.eachLine { line -> println line }
 proc1.waitFor()
 
+
 if (!in_jenkins) {
-    def proc2 = "git rev-parse --abbrev-ref HEAD".execute()
+    def proc2 = (gitCmd + "rev-parse --abbrev-ref HEAD").execute()
     proc2.in.eachLine { line -> branch = line }
     proc2.err.eachLine { line -> println line }
     proc2.waitFor()
@@ -116,7 +129,7 @@ minecraft {
 }
 
 processResources {
-    inputs.property "version", rootProject.mod_version
+    inputs.property "version", mod_version
 
     // Process mcmod.info
     from(sourceSets.main.resources.srcDirs) {
