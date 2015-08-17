@@ -51,24 +51,33 @@ dependencies {
     testCompile "org.mockito:mockito-core:1.10.19"
 }
 
+def String git(String... arguments) {
+    def out = new ByteArrayOutputStream()
+    exec {
+        executable = 'git'
+        args = arguments.toList()
+        standardOutput = out
+    }
+    out.toString().trim()
+}
+
+def String gitHash() {
+    git 'rev-parse', '--short', 'HEAD'
+}
+
+def String gitBranch() {
+    git 'rev-parse', '--abbrev-ref', 'HEAD'
+}
+
+// Environment
+ext.env = System.getenv()
+
 //================================================
 // Jar data
 
-// Grab system env
-ext.env = System.getenv()
-version = mc_ver + "-" + mod_version
 
-// We can't be sure that the current directory is the project dir
-// This provides a switch for `git`
-// Path gives us the sub-project hierarchy, example :OpenBlocks
-// ProjectDescriptor gives us the system path.
-def projectDir = project(path).projectDir
-// git-dir is the .git directory
-def gitDir = "--git-dir \"" + projectDir + "/.git\""
-// work tree is the place we checkout to.
-def workTree = "--work-tree \"" + projectDir + "\""
-// Saves the excessive concatenation later
-def gitCmd = "git " + gitDir + " " + workTree + " "
+// Grab system env
+version = mc_ver + "-" + mod_version
 
 ext.in_jenkins = false
 // Get Jenkins metadata
@@ -81,22 +90,8 @@ ext.jenkinsManifest = manifest {
     }
 }
 
-def branch = null
-def hash = null
-def proc1 = (gitCmd + "rev-parse --short HEAD").execute()
-proc1.in.eachLine { line -> hash = line }
-proc1.err.eachLine { line -> println line }
-proc1.waitFor()
-
-
-if (!in_jenkins) {
-    def proc2 = (gitCmd + "rev-parse --abbrev-ref HEAD").execute()
-    proc2.in.eachLine { line -> branch = line }
-    proc2.err.eachLine { line -> println line }
-    proc2.waitFor()
-} else { // In Jenkins
-    branch = env.GIT_BRANCH.minus("origin/")
-}
+def branch = in_jenkins ? env.GIT_BRANCH.minus("origin/") : gitBranch()
+def hash = gitHash()
 
 // If not on master, add branch to jar name
 if (branch != null && !branch.equals("master")) {
@@ -109,6 +104,8 @@ if (branch != null && !branch.equals("master")) {
 if (env.BUILD_NUMBER != null) {
     version += "-snapshot-" + env.BUILD_NUMBER
 }
+
+
 
 // Get Git metadata (if in Jenkins)
 ext.gitManifest = manifest {
