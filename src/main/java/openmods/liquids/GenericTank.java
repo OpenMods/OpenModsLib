@@ -151,8 +151,9 @@ public class GenericTank extends FluidTank {
 				final FluidTankInfo[] infos = handler.getTankInfo(drainSide);
 
 				if (infos == null) {
-					Log.debug("Tank %s @ (%d,%d,%d) returned null tank info. Nasty.",
+				/*	Log.debug("Tank %s @ (%d,%d,%d) returned null tank info. Nasty.",
 							otherTank.getClass(), otherTank.xCoord, otherTank.yCoord, otherTank.zCoord);
+				*/// For the moment, mute this output until MinecraftForge#2085 concludes.
 					continue;
 				}
 
