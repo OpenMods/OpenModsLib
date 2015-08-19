@@ -78,7 +78,7 @@ public class DefaultBlockRenderer implements IBlockRenderer<Block> {
 		if (openBlock == null || openBlock.shouldRenderBlock()) {
 			if (openBlock != null) {
 				int metadata = world.getBlockMetadata(x, y, z);
-				ForgeDirection rotation = ForgeDirection.getOrientation(metadata);
+				ForgeDirection rotation = openBlock.getRotation(metadata);
 				RenderUtils.rotateFacesOnRenderer((OpenBlock)block, rotation, renderer);
 			}
 			renderer.renderStandardBlock(block, x, y, z);
