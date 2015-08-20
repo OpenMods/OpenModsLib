@@ -27,9 +27,9 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 		Preconditions.checkArgument(containerToElement.containsKey(containerId), "Container %s doesn't exists", containerId);
 		SortedSet<Integer> removedElements = containerToElement.removeAll(containerId);
 
-		for (Integer id : removedElements) {
-			E element = elements.remove(id);
-			elementToContainer.remove(element);
+		for (Integer elementId : removedElements) {
+			elements.remove(elementId);
+			elementToContainer.remove(elementId);
 		}
 
 		containers.remove(containerId);
