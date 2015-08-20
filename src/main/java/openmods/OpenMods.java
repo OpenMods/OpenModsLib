@@ -5,6 +5,7 @@ import java.io.File;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import openmods.block.BlockDropsStore;
+import openmods.config.ConfigStorage;
 import openmods.config.properties.CommandConfig;
 import openmods.config.properties.ConfigProcessing;
 import openmods.entity.DelayedEntityLoadManager;
@@ -33,7 +34,7 @@ import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.event.*;
 import cpw.mods.fml.common.registry.EntityRegistry;
 
-@Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = "$LIB-VERSION$", dependencies = "required-after:OpenModsCore")
+@Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = "$LIB-VERSION$", dependencies = "required-after:OpenModsCore", guiFactory = "openmods.GuiFactory")
 public class OpenMods {
 
 	public static final String MODID = "OpenMods";
@@ -84,6 +85,8 @@ public class OpenMods {
 		FMLCommonHandler.instance().bus().register(DelayedActionTickHandler.INSTANCE);
 
 		FMLCommonHandler.instance().bus().register(BlockDropsStore.instance.createFmlListener());
+
+		FMLCommonHandler.instance().bus().register(ConfigStorage.instance);
 
 		collector = new ClassSourceCollector(evt.getAsmData());
 

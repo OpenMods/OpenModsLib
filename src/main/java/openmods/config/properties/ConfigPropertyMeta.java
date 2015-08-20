@@ -35,6 +35,9 @@ public abstract class ConfigPropertyMeta {
 	private final Object defaultValue;
 	private final String[] defaultText;
 
+	// shadowed, since properties can change independently
+	protected String[] propertyText;
+
 	protected final IStringSerializer<?> converter;
 	protected final Property wrappedProperty;
 	public static final Map<Class<?>, Property.Type> CONFIG_TYPES = ImmutableMap.<Class<?>, Property.Type> builder()
@@ -93,7 +96,7 @@ public abstract class ConfigPropertyMeta {
 
 		Preconditions.checkState(type == actualType, "Invalid config property type '%s', expected '%s'", actualType, type);
 
-		String[] currentValue = getPropertyValue();
+		String[] currentValue = getActualPropertyValue();
 		try {
 			Object converted = convertValue(currentValue);
 			setFieldValue(converted);
@@ -122,7 +125,11 @@ public abstract class ConfigPropertyMeta {
 
 	protected abstract Property getProperty(Configuration configFile, Type expectedType, Object defaultValue);
 
-	public abstract String[] getPropertyValue();
+	public String[] getPropertyValue() {
+		return propertyText;
+	}
+
+	public abstract String[] getActualPropertyValue();
 
 	protected abstract void setPropertyValue(String... values);
 
@@ -146,6 +153,8 @@ public abstract class ConfigPropertyMeta {
 
 		setPropertyValue(evt.proposedValues);
 
+		this.propertyText = evt.proposedValues;
+
 		return onLine? Result.ONLINE : Result.OFFLINE;
 	}
 
@@ -153,10 +162,16 @@ public abstract class ConfigPropertyMeta {
 		return defaultText.clone();
 	}
 
+	public Property getProperty() {
+		return wrappedProperty;
+	}
+
 	private static class SingleValue extends ConfigPropertyMeta {
 
 		protected SingleValue(Configuration config, Field field, ConfigProperty annotation) {
 			super(config, field, annotation);
+
+			this.propertyText = new String[] { wrappedProperty.getString() };
 		}
 
 		@Override
@@ -178,7 +193,7 @@ public abstract class ConfigPropertyMeta {
 		}
 
 		@Override
-		public String[] getPropertyValue() {
+		public String[] getActualPropertyValue() {
 			return new String[] { wrappedProperty.getString() };
 		}
 
@@ -195,7 +210,7 @@ public abstract class ConfigPropertyMeta {
 
 		@Override
 		public String valueDescription() {
-			return wrappedProperty.getString();
+			return propertyText[0];
 		}
 
 		@Override
@@ -208,6 +223,7 @@ public abstract class ConfigPropertyMeta {
 
 		protected MultipleValues(Configuration config, Field field, ConfigProperty annotation) {
 			super(config, field, annotation);
+			this.propertyText = wrappedProperty.getStringList();
 		}
 
 		@Override
@@ -234,7 +250,7 @@ public abstract class ConfigPropertyMeta {
 		}
 
 		@Override
-		public String[] getPropertyValue() {
+		public String[] getActualPropertyValue() {
 			return wrappedProperty.getStringList();
 		}
 
@@ -250,7 +266,7 @@ public abstract class ConfigPropertyMeta {
 
 		@Override
 		public String valueDescription() {
-			return Arrays.toString(wrappedProperty.getStringList());
+			return Arrays.toString(propertyText);
 		}
 
 		@Override
@@ -271,5 +287,4 @@ public abstract class ConfigPropertyMeta {
 		Class<?> fieldType = field.getType();
 		return fieldType.isArray()? new MultipleValues(config, field, annotation) : new SingleValue(config, field, annotation);
 	}
-
 }

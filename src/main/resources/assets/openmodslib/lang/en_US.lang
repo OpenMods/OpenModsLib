@@ -40,3 +40,9 @@ openmodslib.locale.book.scale.pageContent=0.5
 
 openmodslib.locale.book.lineSpace.titledPage=2
 openmodslib.locale.book.lineSpace.recipePage=4
+
+openmodslib.config.features=Enable/disable features
+openmodslib.config.features.blocks=Enable/disable blocks
+openmodslib.config.features.items=Enable/disable items
+openmodslib.config.config=Mod specific configuration
+openmodslib.config.update_warning=§c§lNote:§r to change configuration in runtime, use §l/om_config_s§r or §l/om_config_m§r commands
