@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Ints;
 
 public abstract class FieldsSelector {
 
@@ -20,7 +21,7 @@ public abstract class FieldsSelector {
 
 		@Override
 		public int compareTo(FieldEntry o) {
-			int result = Integer.compare(this.rank, o.rank);
+			int result = Ints.compare(this.rank, o.rank);
 			if (result != 0) return result;
 
 			return this.field.getName().compareTo(o.field.getName());
