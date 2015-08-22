@@ -1,33 +1,32 @@
 package openmods.structured;
 
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
+import gnu.trove.impl.Constants;
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.lang.reflect.Field;
 
 public abstract class FieldContainer implements IStructureContainer<IStructureElement> {
 
-	private final Map<Field, ElementField> fields = Maps.newHashMap();
+	private static final int NULL = -1;
+
+	private final TObjectIntMap<Field> fields = new TObjectIntHashMap<Field>(Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, NULL);
 
 	@Override
-	public List<IStructureElement> createElements() {
-		List<IStructureElement> result = Lists.newArrayList();
+	public void createElements(IElementAddCallback<IStructureElement> callback) {
 		for (Field field : getClass().getFields()) {
 			field.setAccessible(true);
 			if (!field.isAnnotationPresent(StructureField.class)) continue;
 
 			final ElementField fieldWrapper = new ElementField(this, field);
-			result.add(fieldWrapper);
-			fields.put(field, fieldWrapper);
+			final int fieldId = callback.addElement(fieldWrapper);
+			fields.put(field, fieldId);
 		}
-
-		return result;
 	}
 
-	public IStructureElement getElementForField(Field field) {
-		return fields.get(field);
+	public Integer getElementIdForField(Field field) {
+		final int id = fields.get(field);
+		return id != NULL? id : null;
 	}
 
 }

@@ -3,7 +3,13 @@ package openmods.structured;
 import gnu.trove.impl.Constants;
 import gnu.trove.map.hash.TIntIntHashMap;
 
-import java.util.*;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
+
+import openmods.structured.IStructureContainer.IElementAddCallback;
+
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -66,21 +72,28 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 		return removedElements;
 	}
 
-	protected int addContainer(int containerId, C container, int firstElementId) {
-		final List<E> newElements = container.createElements();
-		Preconditions.checkArgument(!newElements.isEmpty(), "New container %s has no elements", container);
+	protected int addContainer(final int containerId, final C container, int firstElementId) {
+		final MutableInt nextElementId = new MutableInt(firstElementId);
 
-		for (E element : newElements) {
-			int elementId = firstElementId++;
-			elements.put(elementId, element);
-			containerToElement.put(containerId, elementId);
-			elementToContainer.put(elementId, containerId);
+		container.createElements(new IElementAddCallback<E>() {
+			@Override
+			public int addElement(E element) {
+				final int elementId = nextElementId.intValue();
+				nextElementId.increment();
 
-			observer.onElementAdded(containerId, container, elementId, element);
-		}
+				elements.put(elementId, element);
+				containerToElement.put(containerId, elementId);
+				elementToContainer.put(elementId, containerId);
+
+				observer.onElementAdded(containerId, container, elementId, element);
+
+				return elementId;
+			}
+		});
+
 		containers.put(containerId, container);
 		observer.onContainerAdded(containerId, container);
 
-		return firstElementId;
+		return nextElementId.intValue();
 	}
 }

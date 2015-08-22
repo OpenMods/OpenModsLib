@@ -80,8 +80,8 @@ public class StructuredTest {
 		}
 
 		@Override
-		public List<TestElement> createElements() {
-			return Lists.<TestElement> newArrayList(element);
+		public void createElements(IElementAddCallback<TestElement> callback) {
+			callback.addElement(element);
 		}
 	}
 
@@ -96,8 +96,8 @@ public class StructuredTest {
 		}
 
 		@Override
-		public List<TestElement> createElements() {
-			return Lists.<TestElement> newArrayList(element);
+		public void createElements(IElementAddCallback<TestElement> callback) {
+			callback.addElement(element);
 		}
 	}
 
@@ -116,8 +116,9 @@ public class StructuredTest {
 		}
 
 		@Override
-		public List<TestElement> createElements() {
-			return Lists.<TestElement> newArrayList(stringElement, intElement);
+		public void createElements(IElementAddCallback<TestElement> callback) {
+			callback.addElement(stringElement);
+			callback.addElement(intElement);
 		}
 
 		@Override

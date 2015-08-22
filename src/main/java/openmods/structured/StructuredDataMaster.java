@@ -163,7 +163,7 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 
 	public synchronized int addContainer(C container) {
 		int containerId = nextContainerId++;
-		nextElementId = addContainer(containerId, container, nextElementId++);
+		nextElementId = addContainer(containerId, container, nextElementId);
 		newContainers.add(containerId);
 		observer.onStructureUpdate();
 		return containerId;
