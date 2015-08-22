@@ -18,13 +18,13 @@ import com.google.common.io.ByteStreams;
 public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IStructureElement> extends StructuredData<C, E> {
 	public static final int CONSISTENCY_CHECK_PERIOD = 10;
 
-	private Set<Integer> newContainers = Sets.newTreeSet();
-	private Set<Integer> deletedContainers = Sets.newTreeSet();
-	private Set<Integer> modifiedElements = Sets.newTreeSet();
+	private final Set<Integer> newContainers = Sets.newTreeSet();
+	private final Set<Integer> deletedContainers = Sets.newTreeSet();
+	private final Set<Integer> modifiedElements = Sets.newTreeSet();
 	private byte checkCount;
 
-	private int elementCounter;
-	private int containerCounter;
+	private int nextElementId;
+	private int nextContainerId;
 
 	private boolean fullUpdateNeeded;
 
@@ -122,20 +122,18 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		return check;
 	}
 
-	public void removeAll() {
-		if (!isEmpty()) {
-			fullUpdateNeeded = true;
-			reset();
-		}
-	}
-
 	@Override
-	public synchronized void reset() {
-		super.reset();
+	public void removeAll() {
+		super.removeAll();
+		observer.onStructureUpdate();
+
+		fullUpdateNeeded = true;
+
 		clearUpdates();
+
 		checkCount = 0;
-		elementCounter = 0;
-		containerCounter = 0;
+		nextElementId = 0;
+		nextContainerId = 0;
 	}
 
 	private synchronized void clearUpdates() {
@@ -153,16 +151,19 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		Preconditions.checkArgument(element != null, "No element with id %s", elementId);
 		modifiedElements.add(elementId);
 
-		final Integer containerId = elementToContainer.get(elementId);
+		final int containerId = elementToContainer.get(elementId);
+		Preconditions.checkState(containerId != NULL, "Inconsistent state for element %s", elementId);
 		final C container = containers.get(containerId);
+		Preconditions.checkState(container != null, "Inconsistent state for element %s, container %s", elementId, containerId);
+
 		observer.onContainerUpdated(containerId, container);
 		observer.onElementUpdated(containerId, container, elementId, element);
 		observer.onDataUpdate();
 	}
 
 	public synchronized int addContainer(C container) {
-		int containerId = containerCounter++;
-		elementCounter = addContainer(containerId, container, elementCounter++);
+		int containerId = nextContainerId++;
+		nextElementId = addContainer(containerId, container, nextElementId++);
 		newContainers.add(containerId);
 		observer.onStructureUpdate();
 		return containerId;

@@ -77,7 +77,7 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 							msg.minElementId != minElementId ||
 							msg.maxElementId != maxElementId) throw new ConsistencyCheckFailed("Validation packet not matched");
 				} else if (c instanceof Reset) {
-					reset();
+					removeAll();
 					isStructureUpdated = true;
 				} else if (c instanceof Create) {
 					final Create msg = (Create)c;
@@ -108,8 +108,8 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 					readElementPayload(msg.idList, msg.elementPayload);
 
 					for (Integer elementId : msg.idList) {
-						Integer containerId = elementToContainer.get(elementId);
-						if (containerId == null) throw new ConsistencyCheckFailed("Orphaned element %d", elementId);
+						int containerId = elementToContainer.get(elementId);
+						if (containerId == NULL) throw new ConsistencyCheckFailed("Orphaned element %d", elementId);
 						updatedContainers.put(containerId, elementId);
 					}
 				}

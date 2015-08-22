@@ -1,5 +1,8 @@
 package openmods.structured;
 
+import gnu.trove.impl.Constants;
+import gnu.trove.map.hash.TIntIntHashMap;
+
 import java.util.*;
 
 import com.google.common.base.Preconditions;
@@ -7,10 +10,12 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.TreeMultimap;
 
 public abstract class StructuredData<C extends IStructureContainer<E>, E extends IStructureElement> {
+	protected static final int NULL = -1;
+
 	protected final SortedMap<Integer, E> elements = Maps.newTreeMap();
 	protected final SortedMap<Integer, C> containers = Maps.newTreeMap();
 	protected final TreeMultimap<Integer, Integer> containerToElement = TreeMultimap.create();
-	protected final Map<Integer, Integer> elementToContainer = Maps.newHashMap();
+	protected final TIntIntHashMap elementToContainer = new TIntIntHashMap(Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, NULL, NULL);
 
 	public boolean isEmpty() {
 		return elements.isEmpty() && containers.isEmpty();
@@ -26,7 +31,19 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 		this(new StructureObserver<C, E>());
 	}
 
-	public void reset() {
+	public void removeAll() {
+		for (Map.Entry<Integer, C> c : containers.entrySet()) {
+			final int containerId = c.getKey();
+			final C container = c.getValue();
+			observer.onContainerRemoved(containerId, container);
+
+			for (Integer elementId : containerToElement.get(containerId)) {
+				E element = elements.get(elementId);
+				Preconditions.checkNotNull(element);
+				observer.onElementRemoved(containerId, container, elementId, element);
+			}
+		}
+
 		elements.clear();
 		containers.clear();
 		containerToElement.clear();
