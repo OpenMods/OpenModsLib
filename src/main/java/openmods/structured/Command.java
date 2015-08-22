@@ -46,7 +46,7 @@ public abstract class Command {
 
 	}
 
-	private enum Type { // DO NOT REORDER
+	public enum Type { // DO NOT REORDER
 		RESET {
 			@Override
 			public Reset create() {
@@ -67,13 +67,13 @@ public abstract class Command {
 		},
 		UPDATE_SINGLE {
 			@Override
-			public PayloadCommand create() {
+			public UpdateSingle create() {
 				return new UpdateSingle();
 			}
 		},
 		UPDATE_BULK {
 			@Override
-			public PayloadCommand create() {
+			public UpdateBulk create() {
 				return new UpdateBulk();
 			}
 		},
@@ -204,37 +204,13 @@ public abstract class Command {
 		public String dumpContents() {
 			return String.valueOf(idList);
 		}
-
-		@Override
-		public int versionChange() {
-			return idList.size();
-		}
 	}
 
-	public abstract static class PayloadCommand extends Command {
-		byte[] payload;
-
-		@Override
-		protected void readDataFromStream(DataInput input) throws IOException {
-			int payloadSize = ByteUtils.readVLI(input);
-			payload = new byte[payloadSize];
-			input.readFully(payload);
-		}
-
-		@Override
-		protected void writeDataToStream(DataOutput output) throws IOException {
-			ByteUtils.writeVLI(output, payload.length);
-			output.write(payload);
-		}
-
-		@Override
-		public String dumpContents() {
-			return (payload == null? "<null>" : Integer.toString(payload.length));
-		}
-	}
-
-	public static class Create extends PayloadCommand {
+	public static class Create extends Command {
 		public final List<ContainerInfo> containers = Lists.newArrayList();
+
+		byte[] containerPayload;
+		byte[] elementPayload;
 
 		@Override
 		public Type type() {
@@ -256,7 +232,8 @@ public abstract class Command {
 				containers.add(new ContainerInfo(currentContainerId, type, currentElementId));
 			}
 
-			super.readDataFromStream(input);
+			containerPayload = readChunk(input);
+			elementPayload = readChunk(input);
 		}
 
 		@Override
@@ -280,23 +257,30 @@ public abstract class Command {
 				prevElementId = info.start;
 			}
 
-			super.writeDataToStream(output);
+			writeChunk(output, containerPayload);
+			writeChunk(output, elementPayload);
 		}
 
 		@Override
 		public String dumpContents() {
 			return String.format("%s -> %s", containers,
-					(payload == null? "<null>" : Integer.toString(payload.length)));
-		}
-
-		@Override
-		public int versionChange() {
-			return containers.size();
+					(elementPayload == null? "<null>" : Integer.toString(elementPayload.length)));
 		}
 	}
 
-	public abstract static class Update extends PayloadCommand {
+	public abstract static class Update extends Command {
 		public final SortedSet<Integer> idList = Sets.newTreeSet();
+		byte[] elementPayload;
+
+		@Override
+		protected void readDataFromStream(DataInput input) throws IOException {
+			elementPayload = readChunk(input);
+		}
+
+		@Override
+		protected void writeDataToStream(DataOutput output) throws IOException {
+			writeChunk(output, elementPayload);
+		}
 	}
 
 	public static class UpdateSingle extends Update {
@@ -321,12 +305,7 @@ public abstract class Command {
 		@Override
 		public String dumpContents() {
 			return String.format("%s -> %s", idList,
-					(payload == null? "<null>" : Integer.toString(payload.length)));
-		}
-
-		@Override
-		public int versionChange() {
-			return idList.size();
+					(elementPayload == null? "<null>" : Integer.toString(elementPayload.length)));
 		}
 	}
 
@@ -370,12 +349,20 @@ public abstract class Command {
 		writeDataToStream(output);
 	}
 
-	protected boolean isEnd() {
-		return false;
+	protected static byte[] readChunk(DataInput input) throws IOException {
+		int size = ByteUtils.readVLI(input);
+		byte[] chunk = new byte[size];
+		input.readFully(chunk);
+		return chunk;
 	}
 
-	public int versionChange() {
-		return 0;
+	protected static void writeChunk(DataOutput output, byte[] chunk) throws IOException {
+		ByteUtils.writeVLI(output, chunk.length);
+		output.write(chunk);
+	}
+
+	protected boolean isEnd() {
+		return false;
 	}
 
 	public String dumpContents() {

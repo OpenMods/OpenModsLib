@@ -15,6 +15,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 
 public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E extends IStructureElement> extends StructuredData<C, E> {
@@ -28,6 +29,10 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 
 		public ConsistencyCheckFailed(String format, Object... args) {
 			super(String.format(format, args));
+		}
+
+		public ConsistencyCheckFailed(Throwable cause, String format, Object... args) {
+			super(String.format(format, args), cause);
 		}
 	}
 
@@ -72,15 +77,21 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 				} else if (c instanceof Create) {
 					final Create msg = (Create)c;
 
+					SortedSet<Integer> containers = Sets.newTreeSet();
 					SortedSet<Integer> elements = Sets.newTreeSet();
 
+					final ByteArrayDataInput input = ByteStreams.newDataInput(msg.containerPayload);
+
 					for (ContainerInfo info : msg.containers) {
-						SortedSet<Integer> newElementsId = addReplaceContainer(info.type, info.id, info.start);
+						SortedSet<Integer> newElementsId = createAndAddContainer(input, info.type, info.id, info.start);
 						elements.addAll(newElementsId);
 						updatedContainers.putAll(info.id, newElementsId);
+						containers.add(info.id);
 					}
 
-					readPayload(elements, msg.payload);
+					if (input.skipBytes(1) != 0) throw new ConsistencyCheckFailed("Container payload not fully consumed");
+
+					readElementPayload(elements, msg.elementPayload);
 
 				} else if (c instanceof Delete) {
 					final Delete msg = (Delete)c;
@@ -89,7 +100,7 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 
 				} else if (c instanceof Update) {
 					final Update msg = (Update)c;
-					readPayload(msg.idList, msg.payload);
+					readElementPayload(msg.idList, msg.elementPayload);
 
 					for (Integer elementId : msg.idList) {
 						Integer containerId = elementToContainer.get(elementId);
@@ -117,14 +128,20 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 		}
 	}
 
-	private SortedSet<Integer> addReplaceContainer(int type, int containerId, int start) {
-		C container = factory.createContainer(containerId, type);
+	private SortedSet<Integer> createAndAddContainer(ByteArrayDataInput input, int type, int containerId, int start) {
+		C container = factory.createContainer(type);
+		try {
+			if (container instanceof ICustomCreateData) ((ICustomCreateData)container).readCustomDataFromStream(input);
+		} catch (IOException e) {
+			throw new ConsistencyCheckFailed(e, "Failed to read element %d, type %d", containerId, type);
+		}
+		container.setId(containerId);
 		if (containerToElement.containsEntry(containerId, start)) throw new ConsistencyCheckFailed("Container %d already exists", containerId);
 		addContainer(containerId, container, start);
 		return containerToElement.get(containerId);
 	}
 
-	private void readPayload(SortedSet<Integer> ids, byte[] payload) {
+	private void readElementPayload(SortedSet<Integer> ids, byte[] payload) {
 		try {
 			DataInput input = ByteStreams.newDataInput(payload);
 			for (Integer id : ids) {
@@ -132,6 +149,8 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 				if (element == null) throw new ConsistencyCheckFailed("Element %d not found", id);
 				element.readFromStream(input);
 			}
+
+			if (input.skipBytes(1) != 0) throw new ConsistencyCheckFailed("Element payload not fully consumed");
 		} catch (IOException e) {
 			throw Throwables.propagate(e);
 		}

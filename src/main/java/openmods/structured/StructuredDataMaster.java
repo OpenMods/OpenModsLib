@@ -16,6 +16,8 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
 public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IStructureElement> extends StructuredData<C, E> {
+	public static final int CONSISTENCY_CHECK_PERIOD = 10;
+
 	private Set<Integer> newContainers = Sets.newTreeSet();
 	private Set<Integer> deletedContainers = Sets.newTreeSet();
 	private Set<Integer> modifiedElements = Sets.newTreeSet();
@@ -51,7 +53,7 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 	}
 
 	private void createUpdateCommands(List<Command> commands) {
-		boolean addCheck = (checkCount++) % 10 == 0;
+		boolean addCheck = (checkCount++) % CONSISTENCY_CHECK_PERIOD == 0;
 
 		if (!deletedContainers.isEmpty()) {
 			addCheck = true;
@@ -70,7 +72,7 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		if (!modifiedElements.isEmpty()) {
 			Command.UpdateSingle update = new UpdateSingle();
 			update.idList.addAll(modifiedElements);
-			update.payload = createPayload(modifiedElements);
+			update.elementPayload = createElementPayload(modifiedElements);
 			commands.add(update);
 		}
 
@@ -88,7 +90,8 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 			create.containers.add(new ContainerInfo(containerId, container.getType(), firstContainerElement));
 		}
 
-		create.payload = createPayload(newElements);
+		create.containerPayload = createContainerPayload(containersToSend);
+		create.elementPayload = createElementPayload(newElements);
 		commands.add(create);
 		return newElements;
 	}
@@ -137,7 +140,7 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		return fullUpdateNeeded || !(newContainers.isEmpty() && deletedContainers.isEmpty() && modifiedElements.isEmpty());
 	}
 
-	public synchronized void markElementModified(IStructureElement element) {
+	public synchronized void markElementModified(E element) {
 		markElementModified(element.getId());
 	}
 
@@ -150,7 +153,12 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		int containerId = containerCounter++;
 		elementCounter = addContainer(containerId, container, elementCounter++);
 		newContainers.add(containerId);
+		container.setId(containerId);
 		return containerId;
+	}
+
+	public SortedSet<Integer> removeContainer(C container) {
+		return removeContainer(container.getId());
 	}
 
 	@Override
@@ -163,11 +171,26 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		return removedElements;
 	}
 
-	private byte[] createPayload(Collection<Integer> ids) {
+	private byte[] createContainerPayload(Set<Integer> containerIds) {
+		try {
+			ByteArrayDataOutput output = ByteStreams.newDataOutput();
+
+			for (Integer id : containerIds) {
+				final C c = containers.get(id);
+				if (c instanceof ICustomCreateData) ((ICustomCreateData)c).writeCustomDataFromStream(output);
+			}
+
+			return output.toByteArray();
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
+		}
+	}
+
+	private byte[] createElementPayload(Collection<Integer> ids) {
 		try {
 			ByteArrayDataOutput output = ByteStreams.newDataOutput();
 			for (Integer id : ids) {
-				IStructureElement element = elements.get(id);
+				E element = elements.get(id);
 				element.writeToStream(output);
 			}
 
