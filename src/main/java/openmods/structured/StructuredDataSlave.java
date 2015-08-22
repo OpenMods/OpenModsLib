@@ -38,19 +38,23 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 
 	public final IStructureContainerFactory<C> factory;
 
+	protected StructuredDataSlave(IStructureContainerFactory<C> factory, IStructureObserver<C, E> observer) {
+		super(observer);
+		this.factory = factory;
+	}
+
 	protected StructuredDataSlave(IStructureContainerFactory<C> factory) {
+		super();
 		this.factory = factory;
 	}
 
 	protected abstract void onConsistencyCheckFail();
 
-	protected void onElementUpdated(E element) {}
-
-	protected void onUpdate() {}
-
 	public void interpretCommandList(List<Command> commands) {
 		Multimap<Integer, Integer> updatedContainers = HashMultimap.create();
 
+		boolean isStructureUpdated = false;
+		observer.onUpdateStarted();
 		for (Command c : commands) {
 			try {
 				if (c.isEnd()) break;
@@ -74,6 +78,7 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 							msg.maxElementId != maxElementId) throw new ConsistencyCheckFailed("Validation packet not matched");
 				} else if (c instanceof Reset) {
 					reset();
+					isStructureUpdated = true;
 				} else if (c instanceof Create) {
 					final Create msg = (Create)c;
 
@@ -92,12 +97,12 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 					if (input.skipBytes(1) != 0) throw new ConsistencyCheckFailed("Container payload not fully consumed");
 
 					readElementPayload(elements, msg.elementPayload);
-
+					isStructureUpdated = true;
 				} else if (c instanceof Delete) {
 					final Delete msg = (Delete)c;
 					for (int i : msg.idList)
 						removeContainer(i);
-
+					isStructureUpdated = true;
 				} else if (c instanceof Update) {
 					final Update msg = (Update)c;
 					readElementPayload(msg.idList, msg.elementPayload);
@@ -114,18 +119,22 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 			}
 		}
 
-		if (!updatedContainers.isEmpty()) onUpdate();
+		if (isStructureUpdated) observer.onStructureUpdate();
 
 		for (Map.Entry<Integer, Collection<Integer>> e : updatedContainers.asMap().entrySet()) {
-			final C container = containers.get(e.getKey());
-			container.onUpdate();
+			final Integer containerId = e.getKey();
+			final C container = containers.get(containerId);
+			observer.onContainerUpdated(containerId, container);
 
 			for (Integer elementId : e.getValue()) {
 				final E element = elements.get(elementId);
-				onElementUpdated(element);
-				container.onElementUpdated(element);
+				observer.onElementUpdated(containerId, container, elementId, element);
 			}
 		}
+
+		if (!updatedContainers.isEmpty()) observer.onDataUpdate();
+
+		observer.onUpdateFinished();
 	}
 
 	private SortedSet<Integer> createAndAddContainer(ByteArrayDataInput input, int type, int containerId, int start) {
@@ -135,7 +144,7 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 		} catch (IOException e) {
 			throw new ConsistencyCheckFailed(e, "Failed to read element %d, type %d", containerId, type);
 		}
-		container.setId(containerId);
+
 		if (containerToElement.containsEntry(containerId, start)) throw new ConsistencyCheckFailed("Container %d already exists", containerId);
 		addContainer(containerId, container, start);
 		return containerToElement.get(containerId);

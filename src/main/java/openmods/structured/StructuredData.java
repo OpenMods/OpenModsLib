@@ -16,6 +16,16 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 		return elements.isEmpty() && containers.isEmpty();
 	}
 
+	protected final IStructureObserver<C, E> observer;
+
+	public StructuredData(IStructureObserver<C, E> observer) {
+		this.observer = observer;
+	}
+
+	public StructuredData() {
+		this(new StructureObserver<C, E>());
+	}
+
 	public void reset() {
 		elements.clear();
 		containers.clear();
@@ -27,12 +37,14 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 		Preconditions.checkArgument(containerToElement.containsKey(containerId), "Container %s doesn't exists", containerId);
 		SortedSet<Integer> removedElements = containerToElement.removeAll(containerId);
 
-		for (Integer elementId : removedElements) {
-			elements.remove(elementId);
-			elementToContainer.remove(elementId);
-		}
+		final C container = containers.remove(containerId);
+		observer.onContainerRemoved(containerId, container);
 
-		containers.remove(containerId);
+		for (Integer elementId : removedElements) {
+			final E element = elements.remove(elementId);
+			elementToContainer.remove(elementId);
+			observer.onElementRemoved(containerId, container, elementId, element);
+		}
 
 		return removedElements;
 	}
@@ -40,16 +52,18 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 	protected int addContainer(int containerId, C container, int firstElementId) {
 		final List<E> newElements = container.createElements();
 		Preconditions.checkArgument(!newElements.isEmpty(), "New container %s has no elements", container);
+
 		for (E element : newElements) {
 			int elementId = firstElementId++;
 			elements.put(elementId, element);
 			containerToElement.put(containerId, elementId);
 			elementToContainer.put(elementId, containerId);
-			element.setId(elementId);
 
-			container.onElementAdded(element);
+			observer.onElementAdded(containerId, container, elementId, element);
 		}
 		containers.put(containerId, container);
+		observer.onContainerAdded(containerId, container);
+
 		return firstElementId;
 	}
 }

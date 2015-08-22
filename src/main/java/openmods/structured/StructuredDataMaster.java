@@ -28,6 +28,14 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 
 	private boolean fullUpdateNeeded;
 
+	public StructuredDataMaster() {
+		super();
+	}
+
+	public StructuredDataMaster(IStructureObserver<C, E> observer) {
+		super(observer);
+	}
+
 	public synchronized void appendUpdateCommands(List<Command> commands) {
 		if (fullUpdateNeeded) {
 			createFullCommands(commands);
@@ -140,25 +148,24 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		return fullUpdateNeeded || !(newContainers.isEmpty() && deletedContainers.isEmpty() && modifiedElements.isEmpty());
 	}
 
-	public synchronized void markElementModified(E element) {
-		markElementModified(element.getId());
-	}
+	public synchronized void markElementModified(int elementId) {
+		final E element = elements.get(elementId);
+		Preconditions.checkArgument(element != null, "No element with id %s", elementId);
+		modifiedElements.add(elementId);
 
-	public synchronized void markElementModified(int id) {
-		Preconditions.checkArgument(elements.containsKey(id), "No element with id %s", id);
-		modifiedElements.add(id);
+		final Integer containerId = elementToContainer.get(elementId);
+		final C container = containers.get(containerId);
+		observer.onContainerUpdated(containerId, container);
+		observer.onElementUpdated(containerId, container, elementId, element);
+		observer.onDataUpdate();
 	}
 
 	public synchronized int addContainer(C container) {
 		int containerId = containerCounter++;
 		elementCounter = addContainer(containerId, container, elementCounter++);
 		newContainers.add(containerId);
-		container.setId(containerId);
+		observer.onStructureUpdate();
 		return containerId;
-	}
-
-	public SortedSet<Integer> removeContainer(C container) {
-		return removeContainer(container.getId());
 	}
 
 	@Override
@@ -168,6 +175,7 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		if (!isNewContainer) deletedContainers.add(containerId);
 
 		modifiedElements.removeAll(removedElements);
+		observer.onStructureUpdate();
 		return removedElements;
 	}
 

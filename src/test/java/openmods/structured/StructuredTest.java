@@ -1,5 +1,11 @@
 package openmods.structured;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -10,23 +16,26 @@ import openmods.structured.Command.Type;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.InOrder;
 
 import com.google.common.collect.Lists;
 
 public class StructuredTest {
 
-	public abstract static class TestElement implements IStructureElement {
+	public static class IdHolder {
 		public int id;
 
-		@Override
 		public int getId() {
 			return id;
 		}
 
-		@Override
 		public void setId(int id) {
 			this.id = id;
 		}
+	}
+
+	public abstract static class TestElement implements IStructureElement {
+
 	}
 
 	public static class IntTestElement extends TestElement {
@@ -57,28 +66,7 @@ public class StructuredTest {
 		}
 	}
 
-	public abstract static class TestContainer implements IStructureContainer<TestElement> {
-		public int id;
-
-		@Override
-		public int getId() {
-			return id;
-		}
-
-		@Override
-		public void setId(int id) {
-			this.id = id;
-		}
-
-		@Override
-		public void onElementAdded(TestElement element) {}
-
-		@Override
-		public void onUpdate() {}
-
-		@Override
-		public void onElementUpdated(TestElement element) {}
-	}
+	public abstract static class TestContainer implements IStructureContainer<TestElement> {}
 
 	public static class IntTestContainer extends TestContainer {
 
@@ -143,7 +131,16 @@ public class StructuredTest {
 		}
 	}
 
-	public static class TestMaster extends StructuredDataMaster<TestContainer, TestElement> {}
+	public static class TestMaster extends StructuredDataMaster<TestContainer, TestElement> {
+		public TestMaster(IStructureObserver<TestContainer, TestElement> observer) {
+			super(observer);
+		}
+
+		public TestMaster() {
+			super();
+		}
+
+	}
 
 	public static class TestFactory implements IStructureContainerFactory<TestContainer> {
 
@@ -163,7 +160,11 @@ public class StructuredTest {
 	}
 
 	public static class TestSlave extends StructuredDataSlave<TestContainer, TestElement> {
-		protected TestSlave() {
+		public TestSlave(IStructureObserver<TestContainer, TestElement> observer) {
+			super(new TestFactory(), observer);
+		}
+
+		public TestSlave() {
 			super(new TestFactory());
 		}
 
@@ -179,6 +180,20 @@ public class StructuredTest {
 		public Map<Integer, TestElement> getElements() {
 			return elements;
 		}
+	}
+
+	private static StringTestContainer createStringContainer(final TestMaster master, String value) {
+		final StringTestContainer stringContainer = new StringTestContainer();
+		stringContainer.element.value = value;
+		master.addContainer(stringContainer);
+		return stringContainer;
+	}
+
+	private static IntTestContainer createIntContainer(final TestMaster master, int value) {
+		final IntTestContainer intContainer = new IntTestContainer();
+		intContainer.element.value = value;
+		master.addContainer(intContainer);
+		return intContainer;
 	}
 
 	private static void checkStringContainer(final Map<Integer, TestContainer> containers, int index, String value) {
@@ -224,21 +239,58 @@ public class StructuredTest {
 	}
 
 	@Test
-	public void umbrellaTest() {
-		final TestMaster master = new TestMaster();
-		final TestSlave slave = new TestSlave();
+	public void testCreate() {
+		final IStructureObserver<TestContainer, TestElement> masterMock = createObserverMock();
+		final TestMaster master = new TestMaster(masterMock);
 
-		final IntTestContainer intContainer = new IntTestContainer();
-		intContainer.element.value = 5;
-		master.addContainer(intContainer);
+		final IStructureObserver<TestContainer, TestElement> slaveMock = createObserverMock();
+		final TestSlave slave = new TestSlave(slaveMock);
 
-		final StringTestContainer stringContainer = new StringTestContainer();
-		stringContainer.element.value = "world";
-		master.addContainer(stringContainer);
+		final IntTestContainer intContainer = createIntContainer(master, 5);
+		final StringTestContainer stringContainer = createStringContainer(master, "world");
+
+		{
+			InOrder inOrder = inOrder(masterMock);
+
+			inOrder.verify(masterMock).onElementAdded(0, intContainer, 0, intContainer.element);
+			inOrder.verify(masterMock).onContainerAdded(0, intContainer);
+			inOrder.verify(masterMock).onStructureUpdate();
+
+			inOrder.verify(masterMock).onElementAdded(1, stringContainer, 1, stringContainer.element);
+			inOrder.verify(masterMock).onContainerAdded(1, stringContainer);
+			inOrder.verify(masterMock).onStructureUpdate();
+
+			inOrder.verifyNoMoreInteractions();
+		}
 
 		Assert.assertTrue(slave.isEmpty());
 
 		performUpdate(master, slave, Command.Type.CREATE, Command.Type.CONSISTENCY_CHECK);
+
+		{
+			InOrder inOrder = inOrder(slaveMock);
+			inOrder.verify(slaveMock).onUpdateStarted();
+			inOrder.verify(slaveMock).onElementAdded(eq(0), any(IntTestContainer.class), eq(0), any(IntTestElement.class));
+			inOrder.verify(slaveMock).onContainerAdded(eq(0), any(IntTestContainer.class));
+
+			inOrder.verify(slaveMock).onElementAdded(eq(1), any(StringTestContainer.class), eq(1), any(StringTestElement.class));
+			inOrder.verify(slaveMock).onContainerAdded(eq(1), any(StringTestContainer.class));
+
+			inOrder.verify(slaveMock).onStructureUpdate();
+
+			inOrder.verify(slaveMock).onContainerUpdated(eq(0), any(IntTestContainer.class));
+			inOrder.verify(slaveMock).onElementUpdated(eq(0), any(IntTestContainer.class), eq(0), any(IntTestElement.class));
+
+			inOrder.verify(slaveMock).onContainerUpdated(eq(1), any(StringTestContainer.class));
+			inOrder.verify(slaveMock).onElementUpdated(eq(1), any(StringTestContainer.class), eq(1), any(StringTestElement.class));
+
+			inOrder.verify(slaveMock).onDataUpdate();
+
+			inOrder.verify(slaveMock).onUpdateFinished();
+
+			inOrder.verifyNoMoreInteractions();
+		}
+
 		Assert.assertFalse(slave.isEmpty());
 
 		{
@@ -254,12 +306,45 @@ public class StructuredTest {
 			checkIntElement(elements, 0, 5);
 			checkStringElement(elements, 1, "world");
 		}
+	}
+
+	@Test
+	public void testUpdate() {
+		final IStructureObserver<TestContainer, TestElement> masterMock = createObserverMock();
+		final TestMaster master = new TestMaster(masterMock);
+
+		final IStructureObserver<TestContainer, TestElement> slaveMock = createObserverMock();
+		final TestSlave slave = new TestSlave(slaveMock);
+
+		final IntTestContainer intContainer = createIntContainer(master, 5);
+		createStringContainer(master, "world");
+
+		performUpdate(master, slave, Command.Type.CREATE, Command.Type.CONSISTENCY_CHECK);
+
+		reset((Object)masterMock, (Object)slaveMock);
 
 		intContainer.element.value = 42;
-		master.markElementModified(intContainer.element);
+		master.markElementModified(0);
+
+		{
+			InOrder inOrder = inOrder(masterMock);
+			inOrder.verify(masterMock).onContainerUpdated(0, intContainer);
+			inOrder.verify(masterMock).onElementUpdated(0, intContainer, 0, intContainer.element);
+			inOrder.verify(masterMock).onDataUpdate();
+			inOrder.verifyNoMoreInteractions();
+		}
 
 		performUpdate(master, slave, Command.Type.UPDATE_SINGLE);
 
+		{
+			InOrder inOrder = inOrder(slaveMock);
+			inOrder.verify(slaveMock).onUpdateStarted();
+			inOrder.verify(slaveMock).onContainerUpdated(eq(0), any(IntTestContainer.class));
+			inOrder.verify(slaveMock).onElementUpdated(eq(0), any(IntTestContainer.class), eq(0), any(IntTestElement.class));
+			inOrder.verify(slaveMock).onDataUpdate();
+			inOrder.verify(slaveMock).onUpdateFinished();
+			inOrder.verifyNoMoreInteractions();
+		}
 		{
 			final Map<Integer, TestContainer> containers = slave.getContainers();
 			Assert.assertEquals(2, containers.size());
@@ -273,9 +358,51 @@ public class StructuredTest {
 			checkIntElement(elements, 0, 42);
 			checkStringElement(elements, 1, "world");
 		}
+	}
 
-		master.removeContainer(intContainer);
+	@Test
+	public void testRemove() {
+		final IStructureObserver<TestContainer, TestElement> masterMock = createObserverMock();
+		final TestMaster master = new TestMaster(masterMock);
+
+		final IStructureObserver<TestContainer, TestElement> slaveMock = createObserverMock();
+		final TestSlave slave = new TestSlave(slaveMock);
+
+		final IntTestContainer intContainer = createIntContainer(master, 5);
+		createStringContainer(master, "world");
+
+		performUpdate(master, slave, Command.Type.CREATE, Command.Type.CONSISTENCY_CHECK);
+
+		intContainer.element.value = 42;
+		master.markElementModified(0);
+
+		performUpdate(master, slave, Command.Type.UPDATE_SINGLE);
+
+		reset((Object)masterMock, (Object)slaveMock);
+
+		master.removeContainer(0);
+
+		{
+			InOrder inOrder = inOrder(masterMock);
+			inOrder.verify(masterMock).onContainerRemoved(0, intContainer);
+			inOrder.verify(masterMock).onElementRemoved(0, intContainer, 0, intContainer.element);
+			inOrder.verify(masterMock).onStructureUpdate();
+
+			inOrder.verifyNoMoreInteractions();
+		}
+
 		performUpdate(master, slave, Command.Type.DELETE);
+
+		{
+			InOrder inOrder = inOrder(slaveMock);
+			inOrder.verify(slaveMock).onUpdateStarted();
+			inOrder.verify(slaveMock).onContainerRemoved(eq(0), any(IntTestContainer.class));
+			inOrder.verify(slaveMock).onElementRemoved(eq(0), any(IntTestContainer.class), eq(0), any(IntTestElement.class));
+			inOrder.verify(slaveMock).onStructureUpdate();
+			inOrder.verify(slaveMock).onUpdateFinished();
+
+			inOrder.verifyNoMoreInteractions();
+		}
 
 		{
 			final Map<Integer, TestContainer> containers = slave.getContainers();
@@ -290,17 +417,20 @@ public class StructuredTest {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	protected IStructureObserver<TestContainer, TestElement> createObserverMock() {
+		return mock(IStructureObserver.class);
+	}
+
 	@Test
 	public void testUpdateAfterCreate() {
 		final TestMaster master = new TestMaster();
 		final TestSlave slave = new TestSlave();
 
-		final IntTestContainer intContainer = new IntTestContainer();
-		intContainer.element.value = 5;
-		master.addContainer(intContainer);
+		final IntTestContainer intContainer = createIntContainer(master, 4);
 
 		intContainer.element.value = 9;
-		master.markElementModified(intContainer.element);
+		master.markElementModified(0);
 
 		performUpdate(master, slave, Command.Type.CREATE, Command.Type.CONSISTENCY_CHECK);
 
@@ -312,12 +442,10 @@ public class StructuredTest {
 		final TestMaster master = new TestMaster();
 		final TestSlave slave = new TestSlave();
 
-		final IntTestContainer intContainer = new IntTestContainer();
-		intContainer.element.value = 5;
-		master.addContainer(intContainer);
+		createIntContainer(master, 6);
 
-		master.markElementModified(intContainer.element);
-		master.removeContainer(intContainer);
+		master.markElementModified(0);
+		master.removeContainer(0);
 
 		performUpdate(master, slave, Command.Type.CONSISTENCY_CHECK);
 	}
@@ -327,11 +455,9 @@ public class StructuredTest {
 		final TestMaster master = new TestMaster();
 		final TestSlave slave = new TestSlave();
 
-		final IntTestContainer intContainer = new IntTestContainer();
-		intContainer.element.value = 5;
-		master.addContainer(intContainer);
+		createIntContainer(master, 7);
 
-		master.removeContainer(intContainer);
+		master.removeContainer(0);
 
 		performUpdate(master, slave, Command.Type.CONSISTENCY_CHECK);
 	}
@@ -343,11 +469,7 @@ public class StructuredTest {
 
 		int containerCount = 0;
 
-		{
-			final IntTestContainer intContainer = new IntTestContainer();
-			intContainer.element.value = containerCount + 5;
-			master.addContainer(intContainer);
-		}
+		createIntContainer(master, containerCount + 5);
 
 		performUpdate(master, slave, Command.Type.CREATE, Command.Type.CONSISTENCY_CHECK);
 		checkIntContainer(slave.getContainers(), 0, containerCount + 5);
@@ -355,11 +477,7 @@ public class StructuredTest {
 		containerCount++;
 
 		while (containerCount < StructuredDataMaster.CONSISTENCY_CHECK_PERIOD - 2) {
-			{
-				final IntTestContainer newContainer = new IntTestContainer();
-				newContainer.element.value = containerCount + 5;
-				master.addContainer(newContainer);
-			}
+			createIntContainer(master, containerCount + 5);
 
 			performUpdate(master, slave, Command.Type.CREATE);
 			containerCount++;
@@ -376,11 +494,7 @@ public class StructuredTest {
 
 		}
 
-		{
-			final IntTestContainer lastContainer = new IntTestContainer();
-			lastContainer.element.value = containerCount + 5;
-			master.addContainer(lastContainer);
-		}
+		createIntContainer(master, containerCount + 5);
 
 		performUpdate(master, slave, Command.Type.CREATE, Command.Type.CONSISTENCY_CHECK);
 		containerCount++;
@@ -402,14 +516,8 @@ public class StructuredTest {
 		final TestSlave slave = new TestSlave();
 
 		int containerCount = 0;
-		int lastElement;
 
-		{
-			final IntTestContainer intContainer = new IntTestContainer();
-			intContainer.element.value = containerCount + 5;
-			master.addContainer(intContainer);
-			lastElement = intContainer.id;
-		}
+		createIntContainer(master, containerCount + 5);
 
 		performUpdate(master, slave, Command.Type.CREATE, Command.Type.CONSISTENCY_CHECK);
 		checkIntContainer(slave.getContainers(), 0, containerCount + 5);
@@ -417,17 +525,11 @@ public class StructuredTest {
 		containerCount++;
 
 		while (containerCount < StructuredDataMaster.CONSISTENCY_CHECK_PERIOD - 2) {
-			master.removeContainer(lastElement);
+			createIntContainer(master, containerCount + 5);
 
-			{
-				final IntTestContainer newContainer = new IntTestContainer();
-				newContainer.element.value = containerCount + 5;
-				master.addContainer(newContainer);
-				lastElement = newContainer.id;
-			}
+			master.removeContainer(containerCount - 1);
 
 			performUpdate(master, slave, Command.Type.DELETE, Command.Type.CREATE);
-			containerCount++;
 
 			{
 				final Map<Integer, TestContainer> containers = slave.getContainers();
@@ -436,23 +538,19 @@ public class StructuredTest {
 				final Map<Integer, TestElement> elements = slave.getElements();
 				Assert.assertEquals(1, elements.size());
 
-				checkIntContainer(containers, lastElement, lastElement + 5);
-				checkIntElement(elements, lastElement, lastElement + 5);
+				checkIntContainer(containers, containerCount, containerCount + 5);
+				checkIntElement(elements, containerCount, containerCount + 5);
 			}
 
+			containerCount++;
+
 		}
 
-		master.removeContainer(lastElement);
+		createIntContainer(master, containerCount + 5);
 
-		{
-			final IntTestContainer lastContainer = new IntTestContainer();
-			lastContainer.element.value = containerCount + 5;
-			master.addContainer(lastContainer);
-			lastElement = lastContainer.id;
-		}
+		master.removeContainer(containerCount - 1);
 
 		performUpdate(master, slave, Command.Type.DELETE, Command.Type.CREATE, Command.Type.CONSISTENCY_CHECK);
-		containerCount++;
 
 		{
 			final Map<Integer, TestContainer> containers = slave.getContainers();
@@ -461,8 +559,8 @@ public class StructuredTest {
 			final Map<Integer, TestElement> elements = slave.getElements();
 			Assert.assertEquals(1, elements.size());
 
-			checkIntContainer(containers, lastElement, lastElement + 5);
-			checkIntElement(elements, lastElement, lastElement + 5);
+			checkIntContainer(containers, containerCount, containerCount + 5);
+			checkIntElement(elements, containerCount, containerCount + 5);
 		}
 	}
 
