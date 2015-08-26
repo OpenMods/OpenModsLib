@@ -3,6 +3,7 @@ package openmods.core;
 import java.util.Map;
 
 import net.minecraft.launchwrapper.Launch;
+import openmods.Log;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin.SortingIndex;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions;
@@ -15,6 +16,7 @@ public class OpenModsCorePlugin implements IFMLLoadingPlugin {
 	public static final String CORE_MARKER = "OpenModsCoreLoaded";
 
 	public OpenModsCorePlugin() {
+		Log.debug("<OpenModsLib %s>\\o", "$LIB-VERSION$");
 		Launch.blackboard.put(CORE_MARKER, "$LIB-VERSION$");
 	}
 
