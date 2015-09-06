@@ -12,7 +12,6 @@ import org.objectweb.asm.commons.Method;
 
 import com.google.common.base.Throwables;
 
-@SuppressWarnings("deprecation")
 public class PlayerRendererHookVisitor extends ClassVisitor {
 
 	private class InjectorMethodVisitor extends MethodVisitor {
@@ -20,7 +19,7 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 		private final Method postMethod;
 
 		public InjectorMethodVisitor(MethodVisitor mv) {
-			super(Opcodes.ASM4, mv);
+			super(Opcodes.ASM5, mv);
 
 			try {
 				postMethod = Method.getMethod(PlayerRendererHookVisitor.class.getMethod("post", AbstractClientPlayer.class, float.class));
@@ -37,7 +36,7 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 				final Type hookCls = Type.getType(PlayerRendererHookVisitor.class);
 				visitVarInsn(Opcodes.ALOAD, 1);
 				visitVarInsn(Opcodes.FLOAD, 4);
-				visitMethodInsn(Opcodes.INVOKESTATIC, hookCls.getInternalName(), postMethod.getName(), postMethod.getDescriptor());
+				visitMethodInsn(Opcodes.INVOKESTATIC, hookCls.getInternalName(), postMethod.getName(), postMethod.getDescriptor(), false);
 				listener.onSuccess();
 			}
 
@@ -54,7 +53,7 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 	private final MethodMatcher modifiedMethod;
 
 	public PlayerRendererHookVisitor(String rendererTypeCls, ClassVisitor cv, IResultListener listener) {
-		super(Opcodes.ASM4, cv);
+		super(Opcodes.ASM5, cv);
 		this.listener = listener;
 
 		Type injectedMethodType = Type.getMethodType(Type.VOID_TYPE, MappedType.of(AbstractClientPlayer.class).type(), Type.FLOAT_TYPE, Type.FLOAT_TYPE, Type.FLOAT_TYPE);

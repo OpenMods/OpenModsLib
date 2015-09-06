@@ -8,7 +8,6 @@ import openmods.asm.VisitorHelper;
 
 import org.objectweb.asm.*;
 
-@SuppressWarnings("deprecation")
 public class MapGenStructureVisitor extends ClassVisitor {
 
 	private final MethodMatcher modifiedMethod;
@@ -18,7 +17,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 
 	private class FixerMethodVisitor extends MethodVisitor {
 		public FixerMethodVisitor(MethodVisitor mv) {
-			super(Opcodes.ASM4, mv);
+			super(Opcodes.ASM5, mv);
 		}
 
 		private boolean checkcastFound;
@@ -67,8 +66,8 @@ public class MapGenStructureVisitor extends ClassVisitor {
 		 */
 
 		@Override
-		public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-			super.visitMethodInsn(opcode, owner, name, desc);
+		public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean intf) {
+			super.visitMethodInsn(opcode, owner, name, desc, intf);
 			if (opcode == Opcodes.INVOKEVIRTUAL && owner.equals(structureStartCls.name()) && markerMethod.match(name, desc)) {
 				markerMethodFound = true;
 				Log.debug("Found 'StructureStart.isSizeableStructure' (%s.%s) call", owner, name);
@@ -84,8 +83,8 @@ public class MapGenStructureVisitor extends ClassVisitor {
 				super.visitVarInsn(Opcodes.ALOAD, localVarId); // hopefully
 																// 'structurestart'
 				String getComponentsMethodName = VisitorHelper.useSrgNames()? "func_75073_b" : "getComponents";
-				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, structureStartCls.name(), getComponentsMethodName, "()Ljava/util/LinkedList;");
-				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/LinkedList", "isEmpty", "()Z");
+				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, structureStartCls.name(), getComponentsMethodName, "()Ljava/util/LinkedList;", false);
+				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/LinkedList", "isEmpty", "()Z", false);
 				super.visitJumpInsn(Opcodes.IFNE, label);
 				listener.onSuccess();
 				markerMethodFound = false;
@@ -94,7 +93,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 	}
 
 	public MapGenStructureVisitor(String obfClassName, ClassVisitor cv, IResultListener listener) {
-		super(Opcodes.ASM4, cv);
+		super(Opcodes.ASM5, cv);
 
 		this.listener = listener;
 

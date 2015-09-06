@@ -6,7 +6,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.*;
-import openmods.Log;
 import openmods.OpenMods;
 import openmods.utils.BlockUtils;
 import openmods.utils.Coord;
@@ -151,9 +150,10 @@ public class GenericTank extends FluidTank {
 				final FluidTankInfo[] infos = handler.getTankInfo(drainSide);
 
 				if (infos == null) {
-				/*	Log.debug("Tank %s @ (%d,%d,%d) returned null tank info. Nasty.",
-							otherTank.getClass(), otherTank.xCoord, otherTank.yCoord, otherTank.zCoord);
-				*/// For the moment, mute this output until MinecraftForge#2085 concludes.
+					/*
+					 * Log.debug("Tank %s @ (%d,%d,%d) returned null tank info. Nasty.",
+					 * otherTank.getClass(), otherTank.xCoord, otherTank.yCoord, otherTank.zCoord);
+					 */// For the moment, mute this output until MinecraftForge#2085 concludes.
 					continue;
 				}
 

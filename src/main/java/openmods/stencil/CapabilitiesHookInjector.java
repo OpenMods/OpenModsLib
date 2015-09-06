@@ -9,7 +9,6 @@ import org.objectweb.asm.commons.Method;
 
 import com.google.common.base.Throwables;
 
-@SuppressWarnings("deprecation")
 public class CapabilitiesHookInjector extends ClassVisitor {
 
 	private final Type hookType;
@@ -23,14 +22,14 @@ public class CapabilitiesHookInjector extends ClassVisitor {
 	private class MethodInjector extends MethodVisitor {
 
 		public MethodInjector(MethodVisitor mv) {
-			super(Opcodes.ASM4, mv);
+			super(Opcodes.ASM5, mv);
 		}
 
 		@Override
 		public void visitInsn(int opcode) {
 			if (opcode == Opcodes.RETURN) {
 				Log.debug("Injecting call into OpenGLHelper.init()");
-				super.visitMethodInsn(Opcodes.INVOKESTATIC, hookType.getInternalName(), hookMethod.getName(), hookMethod.getDescriptor());
+				super.visitMethodInsn(Opcodes.INVOKESTATIC, hookType.getInternalName(), hookMethod.getName(), hookMethod.getDescriptor(), false);
 				listener.onSuccess();
 			}
 
@@ -45,7 +44,7 @@ public class CapabilitiesHookInjector extends ClassVisitor {
 	}
 
 	public CapabilitiesHookInjector(String rawCls, ClassVisitor cv, IResultListener listener) {
-		super(Opcodes.ASM4, cv);
+		super(Opcodes.ASM5, cv);
 
 		this.listener = listener;
 

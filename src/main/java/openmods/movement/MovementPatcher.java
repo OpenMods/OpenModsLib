@@ -10,7 +10,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.Method;
 
-@SuppressWarnings("deprecation")
 public class MovementPatcher extends ClassVisitor {
 
 	private static final String MANAGER_CLASS = Type.getInternalName(PlayerMovementManager.class);
@@ -21,7 +20,7 @@ public class MovementPatcher extends ClassVisitor {
 	private final IResultListener listener;
 
 	public MovementPatcher(String obfClassName, ClassVisitor cv, IResultListener listener) {
-		super(Opcodes.ASM4, cv);
+		super(Opcodes.ASM5, cv);
 		this.listener = listener;
 
 		MappedType movementInput = MappedType.of("net/minecraft/util/MovementInput");
@@ -41,11 +40,11 @@ public class MovementPatcher extends ClassVisitor {
 
 	private class CallInjector extends MethodVisitor {
 		public CallInjector(MethodVisitor mv) {
-			super(Opcodes.ASM4, mv);
+			super(Opcodes.ASM5, mv);
 		}
 
 		@Override
-		public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+		public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean intf) {
 			boolean patch = opcode == Opcodes.INVOKEVIRTUAL && calledMethodMatcher.match(name, desc);
 			if (patch) {
 				if (PlayerMovementManager.callbackInjected) {
@@ -57,12 +56,12 @@ public class MovementPatcher extends ClassVisitor {
 				visitInsn(Opcodes.DUP); // duplicate movement handler
 			}
 
-			super.visitMethodInsn(opcode, owner, name, desc);
+			super.visitMethodInsn(opcode, owner, name, desc, intf);
 
 			if (patch) {
 				// movement handler still on stack
 				visitVarInsn(Opcodes.ALOAD, 0); // load this
-				visitMethodInsn(Opcodes.INVOKESTATIC, MANAGER_CLASS, callbackMethod.getName(), callbackMethod.getDescriptor());
+				visitMethodInsn(Opcodes.INVOKESTATIC, MANAGER_CLASS, callbackMethod.getName(), callbackMethod.getDescriptor(), false);
 				Log.debug("Callback inserted. Using new movement handler.");
 				listener.onSuccess();
 				PlayerMovementManager.callbackInjected = true;

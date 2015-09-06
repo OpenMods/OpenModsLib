@@ -61,9 +61,7 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 	public void writeToStream(DataOutputStream stream) throws IOException {
 		if (fluid != null) {
 			stream.writeBoolean(true);
-			// .fluidID does not compile in Forge >= 1350, but class tranformer fixes it
-			// NOTE: reloading this class in debugger will bypass transformer and cause crash
-			ByteUtils.writeVLI(stream, fluid.fluidID);
+			ByteUtils.writeVLI(stream, fluid.getFluidID());
 			stream.writeInt(fluid.amount);
 			if (fluid.tag != null) {
 				ByteArrayOutputStream buffer = new ByteArrayOutputStream();

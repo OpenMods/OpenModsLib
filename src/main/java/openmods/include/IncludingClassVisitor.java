@@ -15,7 +15,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-@SuppressWarnings("deprecation")
 public class IncludingClassVisitor extends ClassVisitor {
 
 	private class AnnotatedFieldFinder extends FieldVisitor implements IIncludedMethodBuilder {
@@ -23,7 +22,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 		public final Type fieldType;
 
 		public AnnotatedFieldFinder(String fieldName, Type fieldType, FieldVisitor fv) {
-			super(Opcodes.ASM4, fv);
+			super(Opcodes.ASM5, fv);
 			this.fieldName = fieldName;
 			this.fieldType = fieldType;
 		}
@@ -56,7 +55,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 		private final Method method;
 
 		public AnnotatedMethodFinder(Method method, MethodVisitor mv) {
-			super(Opcodes.ASM4, mv);
+			super(Opcodes.ASM5, mv);
 			this.method = method;
 		}
 
@@ -79,7 +78,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 			return new MethodAdder(wrappedInterface) {
 				@Override
 				public void visitInterfaceAccess(MethodVisitor target) {
-					target.visitMethodInsn(Opcodes.INVOKEVIRTUAL, clsName, method.getName(), method.getDescriptor());
+					target.visitMethodInsn(Opcodes.INVOKEVIRTUAL, clsName, method.getName(), method.getDescriptor(), false);
 				}
 			};
 		}
@@ -96,7 +95,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 		private final IIncludedMethodBuilder builder;
 
 		public IncludeAnnotationVisitor(AnnotationVisitor av, IIncludedMethodBuilder builder) {
-			super(Opcodes.ASM4, av);
+			super(Opcodes.ASM5, av);
 			this.builder = builder;
 		}
 
@@ -137,7 +136,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 			for (int i = 0; i < args.length; i++)
 				mv.visitVarInsn(args[i].getOpcode(Opcodes.ILOAD), i + 1);
 
-			mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, intf.getInternalName(), method.getName(), method.getDescriptor());
+			mv.visitMethodInsn(Opcodes.INVOKEINTERFACE, intf.getInternalName(), method.getName(), method.getDescriptor(), true);
 			Type returnType = method.getReturnType();
 			mv.visitInsn(returnType.getOpcode(Opcodes.IRETURN));
 			mv.visitMaxs(args.length + 1, args.length + 1);
@@ -161,7 +160,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 	private final Set<String> interfaces = Sets.newHashSet();
 
 	public IncludingClassVisitor(ClassVisitor cv) {
-		super(Opcodes.ASM4, cv);
+		super(Opcodes.ASM5, cv);
 	}
 
 	@Override

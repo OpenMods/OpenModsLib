@@ -7,7 +7,6 @@ import openmods.asm.MethodMatcher;
 
 import org.objectweb.asm.*;
 
-@SuppressWarnings("deprecation")
 public class FramebufferInjector extends ClassVisitor {
 
 	private static final MappedType openGlHelper = MappedType.of("net/minecraft/client/renderer/OpenGlHelper");
@@ -33,7 +32,7 @@ public class FramebufferInjector extends ClassVisitor {
 		private boolean constantFound;
 
 		public CreateFramebufferInjector(MethodVisitor mv) {
-			super(Opcodes.ASM4, mv);
+			super(Opcodes.ASM5, mv);
 			this.ownerType = Type.getObjectType(className);
 		}
 
@@ -48,17 +47,17 @@ public class FramebufferInjector extends ClassVisitor {
 		}
 
 		@Override
-		public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+		public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean intf) {
 			if (constantFound && opcode == Opcodes.INVOKESTATIC && createRenderbufferMatcher.match(name, desc)) {
 				Log.debug("Injecting allocate and attach methods");
-				super.visitMethodInsn(Opcodes.INVOKESTATIC, hookType.getInternalName(), "createRenderbufferStorage", desc);
+				super.visitMethodInsn(Opcodes.INVOKESTATIC, hookType.getInternalName(), "createRenderbufferStorage", desc, false);
 				super.visitVarInsn(Opcodes.ALOAD, 0);
 
 				Type methodType = Type.getMethodType(Type.VOID_TYPE, ownerType);
-				super.visitMethodInsn(Opcodes.INVOKESTATIC, hookType.getInternalName(), "attachRenderbuffer", methodType.getDescriptor());
+				super.visitMethodInsn(Opcodes.INVOKESTATIC, hookType.getInternalName(), "attachRenderbuffer", methodType.getDescriptor(), false);
 				listener.onSuccess();
 			} else {
-				super.visitMethodInsn(opcode, owner, name, desc);
+				super.visitMethodInsn(opcode, owner, name, desc, intf);
 			}
 
 			constantFound = false;
@@ -72,7 +71,7 @@ public class FramebufferInjector extends ClassVisitor {
 	}
 
 	public FramebufferInjector(String rawCls, ClassVisitor cv, IResultListener listener) {
-		super(Opcodes.ASM4, cv);
+		super(Opcodes.ASM5, cv);
 
 		this.listener = listener;
 
