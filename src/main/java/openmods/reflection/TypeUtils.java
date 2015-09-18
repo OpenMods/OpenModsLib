@@ -5,22 +5,13 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.*;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.reflect.TypeToken;
 
 public class TypeUtils {
-
-	public static final TypeVariable<?> LIST_VALUE_PARAM;
-
-	public static final TypeVariable<?> MAP_KEY_PARAM;
-
-	public static final TypeVariable<?> MAP_VALUE_PARAM;
-
-	public static final TypeVariable<?> SET_VALUE_PARAM;
-
-	public static final TypeVariable<?> COLLECTION_VALUE_PARAM;
 
 	public static final TypeToken<?> MAP_TOKEN = TypeToken.of(Map.class);
 
@@ -30,16 +21,44 @@ public class TypeUtils {
 
 	public static final TypeToken<?> LIST_TOKEN = TypeToken.of(List.class);
 
+	public static final TypeToken<?> FUNCTION_TOKEN = TypeToken.of(Function.class);
+
+	public static final TypeVariable<?> LIST_VALUE_PARAM;
+
+	static {
+		LIST_VALUE_PARAM = List.class.getTypeParameters()[0];
+	}
+
+	public static final TypeVariable<?> MAP_KEY_PARAM;
+
+	public static final TypeVariable<?> MAP_VALUE_PARAM;
+
 	static {
 		TypeVariable<?>[] vars = Map.class.getTypeParameters();
 		MAP_KEY_PARAM = vars[0];
 		MAP_VALUE_PARAM = vars[1];
+	}
 
-		LIST_VALUE_PARAM = List.class.getTypeParameters()[0];
+	public static final TypeVariable<?> SET_VALUE_PARAM;
 
+	static {
 		SET_VALUE_PARAM = Set.class.getTypeParameters()[0];
+	}
 
+	public static final TypeVariable<?> COLLECTION_VALUE_PARAM;
+
+	static {
 		COLLECTION_VALUE_PARAM = Collection.class.getTypeParameters()[0];
+	}
+
+	public static final TypeVariable<?> FUNCTION_A_PARAM;
+
+	public static final TypeVariable<?> FUNCTION_B_PARAM;
+
+	static {
+		TypeVariable<?>[] vars = Function.class.getTypeParameters();
+		FUNCTION_A_PARAM = vars[0];
+		FUNCTION_B_PARAM = vars[1];
 	}
 
 	public static final BiMap<Class<?>, Class<?>> PRIMITIVE_TYPES_MAP = ImmutableBiMap.<Class<?>, Class<?>> builder()

@@ -2,15 +2,16 @@ package openmods.liquids;
 
 import java.util.*;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.*;
 import openmods.OpenMods;
-import openmods.utils.BlockUtils;
-import openmods.utils.Coord;
-import openmods.utils.DirUtils;
+import openmods.utils.*;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 public class GenericTank extends FluidTank {
@@ -29,6 +30,13 @@ public class GenericTank extends FluidTank {
 			return true;
 		}
 	};
+	private static final Function<Fluid, FluidStack> FLUID_CONVERTER = new Function<Fluid, FluidStack>() {
+		@Override
+		@Nullable
+		public FluidStack apply(@Nullable Fluid input) {
+			return new FluidStack(input, 0);
+		}
+	};
 
 	private static IFluidFilter filter(final FluidStack... acceptableFluids) {
 		if (acceptableFluids.length == 0) return NO_RESTRICTIONS;
@@ -44,9 +52,19 @@ public class GenericTank extends FluidTank {
 		};
 	}
 
+	public GenericTank(int capacity) {
+		super(capacity);
+		this.filter = NO_RESTRICTIONS;
+	}
+
 	public GenericTank(int capacity, FluidStack... acceptableFluids) {
 		super(capacity);
 		this.filter = filter(acceptableFluids);
+	}
+
+	public GenericTank(int capacity, Fluid... acceptableFluids) {
+		super(capacity);
+		this.filter = filter(CollectionUtils.transform(acceptableFluids, FLUID_CONVERTER));
 	}
 
 	private static boolean isNeighbourTank(World world, Coord coord, ForgeDirection dir) {

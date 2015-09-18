@@ -3,14 +3,18 @@ package openmods.utils;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.Map.Entry;
 
+import openmods.reflection.TypeUtils;
 import openmods.utils.io.IStreamReader;
 import openmods.utils.io.IStreamWriter;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.reflect.TypeToken;
 
 public class CollectionUtils {
 
@@ -117,5 +121,19 @@ public class CollectionUtils {
 		} catch (IOException e) {
 			Throwables.propagate(e);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <A, B> B[] transform(A[] input, Function<A, B> transformer) {
+		final TypeToken<?> token = TypeToken.of(transformer.getClass());
+		final TypeToken<?> typeB = token.resolveType(TypeUtils.FUNCTION_B_PARAM);
+		final Object result = Array.newInstance(typeB.getRawType(), input.length);
+
+		for (int i = 0; i < input.length; i++) {
+			final B o = transformer.apply(input[i]);
+			Array.set(result, i, o);
+		}
+
+		return (B[])result;
 	}
 }
