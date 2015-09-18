@@ -2,9 +2,7 @@ package openmods.config.properties;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 import net.minecraftforge.common.config.Configuration;
 
@@ -32,7 +30,7 @@ public class ConfigProcessing {
 			ConfigPropertyMeta meta = ConfigPropertyMeta.createMetaForField(config, field);
 			if (meta != null) {
 				meta.updateValueFromConfig(false);
-				properties.put(meta.category.toLowerCase(), meta.name.toLowerCase(), meta);
+				properties.put(meta.category.toLowerCase(Locale.ENGLISH), meta.name.toLowerCase(Locale.ENGLISH), meta);
 			}
 		}
 
@@ -49,11 +47,11 @@ public class ConfigProcessing {
 		}
 
 		public Collection<String> getValues(String category) {
-			return Collections.unmodifiableCollection(properties.row(category.toLowerCase()).keySet());
+			return Collections.unmodifiableCollection(properties.row(category.toLowerCase(Locale.ENGLISH)).keySet());
 		}
 
 		public ConfigPropertyMeta getValue(String category, String name) {
-			return properties.get(category.toLowerCase(), name.toLowerCase());
+			return properties.get(category.toLowerCase(Locale.ENGLISH), name.toLowerCase(Locale.ENGLISH));
 		}
 	}
 
@@ -64,13 +62,13 @@ public class ConfigProcessing {
 	}
 
 	public static ModConfig getConfig(String modId) {
-		return configs.get(modId.toLowerCase());
+		return configs.get(modId.toLowerCase(Locale.ENGLISH));
 	}
 
 	public static void processAnnotations(String modId, Configuration config, Class<?> klazz) {
 		Preconditions.checkState(!configs.containsKey(modId), "Trying to configure mod '%s' twice", modId);
 		ModConfig configMeta = new ModConfig(modId, config, klazz);
-		configs.put(modId.toLowerCase(), configMeta);
+		configs.put(modId.toLowerCase(Locale.ENGLISH), configMeta);
 
 		for (Field f : klazz.getFields())
 			configMeta.tryProcessConfig(f);

@@ -2,6 +2,7 @@ package openmods.utils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import net.minecraft.command.*;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -14,11 +15,11 @@ import com.google.common.collect.Lists;
 public class CommandUtils {
 
 	public static List<String> filterPrefixes(String prefix, Collection<String> proposals) {
-		prefix = prefix.toLowerCase();
+		prefix = prefix.toLowerCase(Locale.ENGLISH);
 
 		List<String> result = Lists.newArrayList();
 		for (String s : proposals)
-			if (s.toLowerCase().startsWith(prefix)) result.add(s);
+			if (s.toLowerCase(Locale.ENGLISH).startsWith(prefix)) result.add(s);
 
 		return result;
 	}

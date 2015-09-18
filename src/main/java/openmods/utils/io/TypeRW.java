@@ -261,9 +261,8 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public Boolean readFromString(String s) {
-			s = s.toLowerCase();
-			if (s.equals("true")) return Boolean.TRUE;
-			else if (s.equals("false")) return Boolean.FALSE;
+			if (s.equalsIgnoreCase("true")) return Boolean.TRUE;
+			else if (s.equalsIgnoreCase("false")) return Boolean.FALSE;
 
 			throw new StringConversionException("bool", s);
 		}

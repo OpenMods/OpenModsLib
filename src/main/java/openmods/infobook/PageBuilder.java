@@ -82,11 +82,11 @@ public class PageBuilder {
 				final ItemStack stack = provider.createStack(itemModId, itemName, obj);
 				if (stack == null) continue;
 				final String customName = doc.customName();
-				addPage(Strings.isNullOrEmpty(customName)? itemName : customName, itemModId.toLowerCase(), type, stack);
+				addPage(Strings.isNullOrEmpty(customName)? itemName : customName, itemModId.toLowerCase(Locale.ENGLISH), type, stack);
 			} else {
 				ICustomBookEntryProvider customProvider = PROVIDERS.getOrCreate(customProviderCls);
 				for (ICustomBookEntryProvider.Entry e : customProvider.getBookEntries())
-					addPage(e.name, itemModId.toLowerCase(), type, e.stack);
+					addPage(e.name, itemModId.toLowerCase(Locale.ENGLISH), type, e.stack);
 			}
 		}
 	}

@@ -1,8 +1,6 @@
 package openmods.utils;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -57,7 +55,7 @@ public class ColorUtils {
 		private ColorMeta(String name, int rgb) {
 			this.oreName = "dye" + WordUtils.capitalize(name);
 			this.oreId = OreDictionary.getOreID(oreName);
-			this.name = name.toLowerCase();
+			this.name = name.toLowerCase(Locale.ENGLISH);
 			this.unlocalizedName = "openmodslib.color." + name;
 			this.rgb = rgb;
 
@@ -105,7 +103,7 @@ public class ColorUtils {
 	}
 
 	public static ColorMeta nameToColor(String name) {
-		return COLORS_BY_NAME.get(name.toLowerCase());
+		return COLORS_BY_NAME.get(name.toLowerCase(Locale.ENGLISH));
 	}
 
 	public static ColorMeta bitmaskToColor(int bitmask) {
