@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ByteStreamsTest {
+public class BitStreamsTest {
 
 	public static final byte b00001010 = (byte)0x0A;
 	public static final byte b00000000 = (byte)0x00;

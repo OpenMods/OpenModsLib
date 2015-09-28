@@ -6,6 +6,7 @@ import java.util.Set;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.shapes.IShapeable;
+import openmods.utils.Coord;
 import openmods.utils.MathUtils;
 
 public class GeometryUtils {
@@ -176,22 +177,29 @@ public class GeometryUtils {
 	}
 
 	public static void line3D(Vec3 start, Vec3 end, IShapeable shapeable) {
+		line3D((int)start.xCoord, (int)start.yCoord, (int)start.zCoord, (int)end.xCoord, (int)end.yCoord, (int)end.zCoord, shapeable);
+	}
 
-		int dx = (int)(end.xCoord - start.xCoord);
-		int dy = (int)(end.yCoord - start.yCoord);
-		int dz = (int)(end.zCoord - start.zCoord);
+	public static void line3D(Coord start, Coord end, IShapeable shapeable) {
+		line3D(start.x, start.y, start.z, end.x, end.y, end.z, shapeable);
+	}
 
-		int ax = Math.abs(dx) << 1;
-		int ay = Math.abs(dy) << 1;
-		int az = Math.abs(dz) << 1;
+	public static void line3D(final int startX, final int startY, final int startZ, final int endX, final int endY, final int endZ, IShapeable shapeable) {
+		final int dx = endX - startX;
+		final int dy = endY - startY;
+		final int dz = endZ - startZ;
 
-		int signx = (int)Math.signum(dx);
-		int signy = (int)Math.signum(dy);
-		int signz = (int)Math.signum(dz);
+		final int ax = Math.abs(dx) << 1;
+		final int ay = Math.abs(dy) << 1;
+		final int az = Math.abs(dz) << 1;
 
-		int x = (int)start.xCoord;
-		int y = (int)start.yCoord;
-		int z = (int)start.zCoord;
+		final int signx = Integer.signum(dx);
+		final int signy = Integer.signum(dy);
+		final int signz = Integer.signum(dz);
+
+		int x = startX;
+		int y = startY;
+		int z = startZ;
 
 		int deltax, deltay, deltaz;
 		if (ax >= Math.max(ay, az)) {
@@ -199,7 +207,7 @@ public class GeometryUtils {
 			deltaz = az - (ax >> 1);
 			while (true) {
 				shapeable.setBlock(x, y, z);
-				if (x == (int)end.xCoord) { return; }
+				if (x == endX) return;
 
 				if (deltay >= 0) {
 					y += signy;
@@ -220,7 +228,7 @@ public class GeometryUtils {
 			deltaz = az - (ay >> 1);
 			while (true) {
 				shapeable.setBlock(x, y, z);
-				if (y == (int)end.yCoord) { return; }
+				if (y == endY) return;
 
 				if (deltax >= 0) {
 					x += signx;
@@ -241,7 +249,7 @@ public class GeometryUtils {
 			deltay = ay - (az >> 1);
 			while (true) {
 				shapeable.setBlock(x, y, z);
-				if (z == (int)end.zCoord) { return; }
+				if (z == endZ) return;
 
 				if (deltax >= 0) {
 					x += signx;

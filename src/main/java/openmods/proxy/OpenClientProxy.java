@@ -12,8 +12,10 @@ import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.MinecraftForge;
 import openmods.Log;
 import openmods.OpenMods;
+import openmods.block.BlockSelectionHandler;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
@@ -78,6 +80,8 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		ClientCommandHandler.instance.registerCommand(new CommandSource("om_source_c", false, OpenMods.instance.getCollector()));
 
 		RenderUtils.registerFogUpdater();
+
+		MinecraftForge.EVENT_BUS.register(new BlockSelectionHandler());
 
 		FMLCommonHandler.instance().registerCrashCallable(new ICrashCallable() {
 			@Override

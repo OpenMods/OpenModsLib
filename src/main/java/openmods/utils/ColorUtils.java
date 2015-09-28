@@ -23,12 +23,12 @@ public class ColorUtils {
 		BLUE("blue", 0x253192),
 		PURPLE("purple", 0x7B2FBE),
 		CYAN("cyan", 0x287697),
-		LIGHT_GRAY("lightGray", 0xABABAB),
+		LIGHT_GRAY("lightGray", "silver", 0xABABAB),
 		GRAY("gray", 0x434343),
 		PINK("pink", 0xD88198),
 		LIME("lime", 0x41CD34),
 		YELLOW("yellow", 0xDECF2A),
-		LIGHT_BLUE("lightBlue", 0x6689D3),
+		LIGHT_BLUE("lightBlue", "light_blue", 0x6689D3),
 		MAGENTA("magenta", 0xC354CD),
 		ORANGE("orange", 0xEB8844),
 		WHITE("white", 0xF0F0F0);
@@ -41,6 +41,7 @@ public class ColorUtils {
 		public final String oreName;
 		public final String name;
 		public final String unlocalizedName;
+		public final String textureName;
 		public final RGB rgbWrap;
 		public final CYMK cymkWrap;
 
@@ -53,8 +54,13 @@ public class ColorUtils {
 		}
 
 		private ColorMeta(String name, int rgb) {
+			this(name, name, rgb);
+		}
+
+		private ColorMeta(String name, String textureName, int rgb) {
 			this.oreName = "dye" + WordUtils.capitalize(name);
 			this.oreId = OreDictionary.getOreID(oreName);
+			this.textureName = textureName;
 			this.name = name.toLowerCase(Locale.ENGLISH);
 			this.unlocalizedName = "openmodslib.color." + name;
 			this.rgb = rgb;

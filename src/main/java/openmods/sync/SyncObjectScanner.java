@@ -15,8 +15,13 @@ public class SyncObjectScanner extends FieldsSelector {
 	@Override
 	protected List<FieldEntry> listFields(Class<?> cls) {
 		List<FieldEntry> result = Lists.newArrayList();
-		for (Field f : cls.getDeclaredFields())
-			if (ISyncableObject.class.isAssignableFrom(f.getType())) result.add(new FieldEntry(f, 0));
+
+		while (cls != Object.class) {
+			for (Field f : cls.getDeclaredFields())
+				if (ISyncableObject.class.isAssignableFrom(f.getType())) result.add(new FieldEntry(f, 0));
+
+			cls = cls.getSuperclass();
+		}
 
 		return result;
 	}

@@ -25,6 +25,8 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class RenderUtils {
 
+	private static final EnumSet<ForgeDirection> ALL_SIDES = EnumSet.allOf(ForgeDirection.class);
+
 	public static class FogColorUpdater {
 		@SubscribeEvent(priority = EventPriority.LOWEST)
 		public void onFogColor(EntityViewRenderEvent.FogColors evt) {
@@ -160,14 +162,26 @@ public class RenderUtils {
 	}
 
 	public static void renderInventoryBlock(RenderBlocks renderer, Block block, ForgeDirection rotation, int colorMultiplier) {
-		renderInventoryBlock(renderer, block, rotation, colorMultiplier, EnumSet.allOf(ForgeDirection.class));
+		renderInventoryBlock(renderer, block, rotation, colorMultiplier, ALL_SIDES);
 	}
 
 	public static void renderInventoryBlock(RenderBlocks renderer, Block block, ForgeDirection rotation, int colorMultiplier, Set<ForgeDirection> enabledSides) {
-		Tessellator tessellator = Tessellator.instance;
 		block.setBlockBoundsForItemRender();
 		renderer.setRenderBoundsFromBlock(block);
 
+		renderInventoryBlockNoBounds(renderer, block, rotation, colorMultiplier, enabledSides);
+	}
+
+	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, ForgeDirection rotation) {
+		renderInventoryBlockNoBounds(renderer, block, rotation, -1);
+	}
+
+	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, ForgeDirection rotation, int colorMultiplier) {
+		renderInventoryBlockNoBounds(renderer, block, rotation, colorMultiplier, ALL_SIDES);
+	}
+
+	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, ForgeDirection rotation, int colorMultiplier, Set<ForgeDirection> enabledSides) {
+		Tessellator tessellator = Tessellator.instance;
 		float r;
 		float g;
 		float b;

@@ -337,10 +337,16 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <U> U getTileEntity(IBlockAccess world, int x, int y, int z, Class<U> T) {
-		TileEntity te = world.getTileEntity(x, y, z);
-		if (te != null && T.isAssignableFrom(te.getClass())) { return (U)te; }
-		return null;
+	public static <U> U getTileEntity(IBlockAccess world, int x, int y, int z, Class<U> cls) {
+		final TileEntity te = world.getTileEntity(x, y, z);
+		return (cls.isInstance(te))? (U)te : null;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <U extends TileEntity> U getTileEntity(IBlockAccess world, int x, int y, int z) {
+		Preconditions.checkNotNull(teClass, "This block has no tile entity");
+		final TileEntity te = world.getTileEntity(x, y, z);
+		return (teClass.isInstance(te))? (U)te : null;
 	}
 
 	public boolean canPlaceBlock(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection sideDir, ForgeDirection blockDirection, float hitX, float hitY, float hitZ, int newMeta) {

@@ -26,16 +26,17 @@ public class BlockRenderingHandler implements ISimpleBlockRenderingHandler {
 	}
 
 	protected static final IBlockRenderer<Block> DEFAULT_RENDERER = new DefaultBlockRenderer();
-	protected final Map<Block, IBlockRenderer<Block>> blockRenderers = Maps.newIdentityHashMap();
 
-	@SuppressWarnings("unchecked")
-	public <B extends Block> void addRenderer(B block, IBlockRenderer<B> renderer) {
-		if (block != null) blockRenderers.put(block, (IBlockRenderer<Block>)renderer);
+	protected final Map<Block, IBlockRenderer<?>> blockRenderers = Maps.newIdentityHashMap();
+
+	public <B extends Block> void addRenderer(B block, IBlockRenderer<? super B> renderer) {
+		if (block != null) blockRenderers.put(block, renderer);
 	}
 
-	protected IBlockRenderer<Block> getRenderer(Block block) {
-		IBlockRenderer<Block> renderer = blockRenderers.get(block);
-		return renderer != null? renderer : DEFAULT_RENDERER;
+	@SuppressWarnings("unchecked")
+	protected <B extends Block> IBlockRenderer<B> getRenderer(B block) {
+		IBlockRenderer<?> renderer = blockRenderers.get(block);
+		return (IBlockRenderer<B>)(renderer != null? renderer : DEFAULT_RENDERER);
 	}
 
 	@Override
