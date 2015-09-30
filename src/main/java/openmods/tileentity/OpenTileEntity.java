@@ -23,9 +23,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenTileEntity extends TileEntity implements IRpcTargetProvider {
 
-	private boolean initialized = false;
-	private boolean isActive = false;
-
 	private boolean isUsedForClientInventoryRendering = false;
 
 	/** Place for TE specific setup. Called once upon creation */
@@ -58,37 +55,8 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		this.blockMetadata = metadata;
 	}
 
-	@Override
-	public void updateEntity() {
-		isActive = true;
-		if (!initialized) {
-			initialize();
-			initialized = true;
-		}
-	}
-
-	/**
-	 * This is called once the TE has been added to the world
-	 */
-	protected void initialize() {
-		/* only called if you call super.updateEntity() on your updateEntity() */
-	}
-
-	public boolean isLoaded() {
-		return initialized;
-	}
-
 	public boolean isAddedToWorld() {
 		return worldObj != null;
-	}
-
-	protected boolean isActive() {
-		return isActive;
-	}
-
-	@Override
-	public void onChunkUnload() {
-		isActive = false;
 	}
 
 	private TileEntity getTileEntity(int x, int y, int z) {
@@ -114,8 +82,8 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 						+ direction.offsetY, zCoord + direction.offsetZ);
 	}
 
-	public void sendBlockEvent(int key, int value) {
-		worldObj.addBlockEvent(xCoord, yCoord, zCoord, worldObj.getBlock(xCoord, yCoord, zCoord), key, value);
+	public void sendBlockEvent(int event, int param) {
+		worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), event, param);
 	}
 
 	@Override

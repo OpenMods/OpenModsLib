@@ -1,7 +1,6 @@
 package openmods.block;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -9,6 +8,7 @@ import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -20,6 +20,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.api.*;
 import openmods.config.game.IRegisterableBlock;
+import openmods.inventory.IInventoryProvider;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.BlockNotifyFlags;
 import openmods.utils.BlockUtils;
@@ -32,6 +33,30 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public static final int OPEN_MODS_TE_GUI = -1;
+	private static final int EVENT_ADDED = -1;
+
+	private enum TileEntityCapability {
+		ICON_PROVIDER(IIconProvider.class),
+		GUI_PROVIDER(IHasGui.class),
+		ACTIVATE_LISTENER(IActivateAwareTile.class),
+		SURFACE_ATTACHEMENT(ISurfaceAttachment.class),
+		BREAK_LISTENER(IBreakAwareTile.class),
+		PLACER_LISTENER(IPlacerAwareTile.class),
+		PLACE_LISTENER(IPlaceAwareTile.class),
+		ADD_LISTENER(IAddAwareTile.class),
+		CUSTOM_PICK_ITEM(ICustomPickItem.class),
+		CUSTOM_BREAK_DROPS(ICustomBreakDrops.class),
+		CUSTOM_HARVEST_DROPS(ICustomHarvestDrops.class),
+		INVENTORY(IInventory.class),
+		INVENTORY_PROVIDER(IInventoryProvider.class),
+		NEIGBOUR_LISTENER(INeighbourAwareTile.class);
+
+		public final Class<?> intf;
+
+		private TileEntityCapability(Class<?> intf) {
+			this.intf = intf;
+		}
+	}
 
 	public enum BlockPlacementMode {
 		ENTITY_ANGLE,
@@ -44,6 +69,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		BOTH
 	}
 
+	private final Set<TileEntityCapability> teCapabilities = EnumSet.noneOf(TileEntityCapability.class);
 	private String blockName;
 	private String modId;
 
@@ -57,6 +83,21 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	protected RenderMode renderMode = RenderMode.BLOCK_ONLY;
 
 	public IIcon[] textures = new IIcon[6];
+
+	public boolean hasCapability(TileEntityCapability capability) {
+		return teCapabilities.contains(capability);
+	}
+
+	public boolean hasCapabilities(TileEntityCapability capability1, TileEntityCapability capability2) {
+		return hasCapability(capability1) || hasCapability(capability2);
+	}
+
+	public boolean hasCapabilities(TileEntityCapability... capabilities) {
+		for (TileEntityCapability capability : capabilities)
+			if (teCapabilities.contains(capability)) return true;
+
+		return false;
+	}
 
 	protected OpenBlock(Material material) {
 		super(material);
@@ -104,7 +145,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public boolean shouldOverrideHarvestWithTeLogic() {
-		return teClass != null && ICustomHarvestDrops.class.isAssignableFrom(teClass);
+		return hasCapability(TileEntityCapability.CUSTOM_HARVEST_DROPS);
 	}
 
 	public void setBoundsBasedOnRotation(ForgeDirection direction) {}
@@ -164,7 +205,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	@Override
 	@SuppressWarnings("deprecation")
 	public ItemStack getPickBlock(MovingObjectPosition target, World world, int x, int y, int z) {
-		if (teClass != null && ICustomPickItem.class.isAssignableFrom(teClass)) {
+		if (hasCapability(TileEntityCapability.CUSTOM_PICK_ITEM)) {
 			TileEntity te = world.getTileEntity(x, y, z);
 			if (te instanceof ICustomPickItem) return ((ICustomPickItem)te).getPickBlock();
 		}
@@ -196,23 +237,26 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	protected ArrayList<ItemStack> getDropsWithTileEntity(World world, EntityPlayer player, int x, int y, int z) {
-		TileEntity te = world.getTileEntity(x, y, z);
+		if (hasCapability(TileEntityCapability.CUSTOM_HARVEST_DROPS)) {
+			final TileEntity te = world.getTileEntity(x, y, z);
 
-		if (te instanceof ICustomHarvestDrops) {
-			ICustomHarvestDrops dropper = (ICustomHarvestDrops)te;
+			if (te instanceof ICustomHarvestDrops) {
+				final ICustomHarvestDrops dropper = (ICustomHarvestDrops)te;
 
-			ArrayList<ItemStack> drops;
-			if (!dropper.suppressNormalHarvestDrops()) {
-				final int metadata = world.getBlockMetadata(x, y, z);
-				int fortune = player != null? EnchantmentHelper.getFortuneModifier(player) : 0;
-				drops = super.getDrops(world, x, y, z, metadata, fortune);
-			} else {
-				drops = Lists.newArrayList();
+				final ArrayList<ItemStack> drops;
+				if (!dropper.suppressNormalHarvestDrops()) {
+					final int metadata = world.getBlockMetadata(x, y, z);
+					int fortune = player != null? EnchantmentHelper.getFortuneModifier(player) : 0;
+					drops = super.getDrops(world, x, y, z, metadata, fortune);
+				} else {
+					drops = Lists.newArrayList();
+				}
+
+				dropper.addHarvestDrops(player, drops);
+				return drops;
 			}
-
-			dropper.addHarvestDrops(player, drops);
-			return drops;
 		}
+
 		return null;
 	}
 
@@ -249,6 +293,9 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		if (tileEntity != null) {
 			this.teClass = tileEntity;
 			isBlockContainer = true;
+
+			for (TileEntityCapability capability : TileEntityCapability.values())
+				if (capability.intf.isAssignableFrom(teClass)) teCapabilities.add(capability);
 		}
 	}
 
@@ -273,27 +320,41 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public void onNeighborBlockChange(World world, int x, int y, int z, Block neighbour) {
-		TileEntity te = world.getTileEntity(x, y, z);
-		if (te instanceof INeighbourAwareTile) ((INeighbourAwareTile)te).onNeighbourChanged(neighbour);
+		if (hasCapabilities(TileEntityCapability.NEIGBOUR_LISTENER, TileEntityCapability.SURFACE_ATTACHEMENT)) {
+			final TileEntity te = world.getTileEntity(x, y, z);
+			if (te instanceof INeighbourAwareTile) ((INeighbourAwareTile)te).onNeighbourChanged(neighbour);
 
-		if (te instanceof ISurfaceAttachment) {
-			ForgeDirection direction = ((ISurfaceAttachment)te).getSurfaceDirection();
-			if (!isNeighborBlockSolid(world, x, y, z, direction)) {
-				world.func_147480_a(x, y, z, true);
+			if (te instanceof ISurfaceAttachment) {
+				ForgeDirection direction = ((ISurfaceAttachment)te).getSurfaceDirection();
+				if (!isNeighborBlockSolid(world, x, y, z, direction)) {
+					world.func_147480_a(x, y, z, true);
+				}
 			}
 		}
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
-		TileEntity te = world.getTileEntity(x, y, z);
+	public void onBlockAdded(World world, int x, int y, int z) {
+		super.onBlockAdded(world, x, y, z);
 
-		if (te instanceof IHasGui && ((IHasGui)te).canOpenGui(player) && !player.isSneaking()) {
-			if (!world.isRemote) openGui(player, world, x, y, z);
-			return true;
+		if (hasCapability(TileEntityCapability.ADD_LISTENER)) {
+			world.addBlockEvent(x, y, z, this, EVENT_ADDED, 0);
+		}
+	}
+
+	@Override
+	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
+		if (hasCapabilities(TileEntityCapability.GUI_PROVIDER, TileEntityCapability.ACTIVATE_LISTENER)) {
+			final TileEntity te = world.getTileEntity(x, y, z);
+
+			if (te instanceof IHasGui && ((IHasGui)te).canOpenGui(player) && !player.isSneaking()) {
+				if (!world.isRemote) openGui(player, world, x, y, z);
+				return true;
+			}
+
+			if (te instanceof IActivateAwareTile) return ((IActivateAwareTile)te).onBlockActivated(player, side, hitX, hitY, hitZ);
 		}
 
-		if (te instanceof IActivateAwareTile) return ((IActivateAwareTile)te).onBlockActivated(player, side, hitX, hitY, hitZ);
 		return false;
 	}
 
@@ -304,15 +365,30 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public boolean onBlockEventReceived(World world, int x, int y, int z, int eventId, int eventParam) {
-		super.onBlockEventReceived(world, x, y, z, eventId, eventParam);
-		TileEntity te = getTileEntity(world, x, y, z, TileEntity.class);
-		if (te != null) { return te.receiveClientEvent(eventId, eventParam); }
-		return false;
+		if (eventId < 0 && !world.isRemote) {
+			switch (eventId) {
+				case EVENT_ADDED: {
+					if (hasCapability(TileEntityCapability.ADD_LISTENER)) {
+						final IAddAwareTile te = getTileEntity(world, x, y, z, IAddAwareTile.class);
+						if (te != null) te.onAdded();
+					}
+				}
+					break;
+			}
+
+			return false;
+		}
+		if (isBlockContainer) {
+			super.onBlockEventReceived(world, x, y, z, eventId, eventParam);
+			TileEntity te = world.getTileEntity(x, y, z);
+			return te != null? te.receiveClientEvent(eventId, eventParam) : false;
+		} else {
+			return super.onBlockEventReceived(world, x, y, z, eventId, eventParam);
+		}
 	}
 
 	protected void setupDimensionsFromCenter(float x, float y, float z, float width, float height, float depth) {
-		setupDimensions(x - width, y, z - depth, x + width, y + height, z
-				+ depth);
+		setupDimensions(x - width, y, z - depth, x + width, y + height, z + depth);
 	}
 
 	protected void setupDimensions(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
@@ -337,7 +413,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <U> U getTileEntity(IBlockAccess world, int x, int y, int z, Class<U> cls) {
+	public static <U> U getTileEntity(IBlockAccess world, int x, int y, int z, Class<? extends U> cls) {
 		final TileEntity te = world.getTileEntity(x, y, z);
 		return (cls.isInstance(te))? (U)te : null;
 	}
@@ -357,8 +433,10 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase placer, ItemStack stack) {
 		super.onBlockPlacedBy(world, x, y, z, placer, stack);
 
-		TileEntity te = world.getTileEntity(x, y, z);
-		if (te instanceof IPlacerAwareTile) ((IPlacerAwareTile)te).onBlockPlacedBy(placer, stack);
+		if (hasCapability(TileEntityCapability.PLACER_LISTENER)) {
+			final TileEntity te = world.getTileEntity(x, y, z);
+			if (te instanceof IPlacerAwareTile) ((IPlacerAwareTile)te).onBlockPlacedBy(placer, stack);
+		}
 	}
 
 	/***
@@ -379,8 +457,10 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	protected void notifyTileEntity(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, ForgeDirection blockDir, float hitX, float hitY, float hitZ) {
-		TileEntity te = world.getTileEntity(x, y, z);
-		if (te instanceof IPlaceAwareTile) ((IPlaceAwareTile)te).onBlockPlacedBy(player, side, stack, hitX, hitY, hitZ);
+		if (hasCapability(TileEntityCapability.PLACE_LISTENER)) {
+			final TileEntity te = world.getTileEntity(x, y, z);
+			if (te instanceof IPlaceAwareTile) ((IPlaceAwareTile)te).onBlockPlacedBy(player, side, stack, hitX, hitY, hitZ);
+		}
 	}
 
 	protected void setRotationMeta(World world, int x, int y, int z, ForgeDirection blockDir) {
@@ -456,11 +536,13 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {
-		ForgeDirection direction = rotateSideByMetadata(side, world.getBlockMetadata(x, y, z));
-		IIconProvider provider = getTileEntity(world, x, y, z, IIconProvider.class);
-		IIcon teIcon = null;
-		if (provider != null) teIcon = provider.getIcon(direction);
-		return teIcon != null? teIcon : getUnrotatedTexture(direction, world, x, y, z);
+		final ForgeDirection direction = rotateSideByMetadata(side, world.getBlockMetadata(x, y, z));
+		IIcon iconOverride = null;
+		if (hasCapability(TileEntityCapability.ICON_PROVIDER)) {
+			IIconProvider provider = getTileEntity(world, x, y, z, IIconProvider.class);
+			if (provider != null) iconOverride = provider.getIcon(direction);
+		}
+		return iconOverride != null? iconOverride : getUnrotatedTexture(direction, world, x, y, z);
 	}
 
 	/***
