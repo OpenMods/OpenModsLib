@@ -110,6 +110,12 @@ public abstract class BaseComponent extends Gui {
 		if (mouseDragListener != null) mouseDragListener.componentMouseDrag(this, mouseX, mouseY, button, time);
 	}
 
+	public boolean isTicking() {
+		return false;
+	}
+
+	public void tick() {}
+
 	private void drawFancyBox(int width, final int left, final int top, int height) {
 		drawGradientRect(left - 3, top - 4, left + width + 3, top - 3, CRAZY_3, CRAZY_3);
 		drawGradientRect(left - 3, top + height + 3, left + width + 3, top + height + 4, CRAZY_3, CRAZY_3);
@@ -184,5 +190,6 @@ public abstract class BaseComponent extends Gui {
 		ITEM_RENDERER.renderItemOverlayIntoGUI(font, Minecraft.getMinecraft().getTextureManager(), stack, x, y, overlayText);
 		this.zLevel = 0.0F;
 		ITEM_RENDERER.zLevel = 0.0F;
+		RenderHelper.disableStandardItemLighting();
 	}
 }

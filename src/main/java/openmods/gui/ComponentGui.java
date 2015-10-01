@@ -22,6 +22,13 @@ public abstract class ComponentGui extends GuiContainer {
 	protected abstract BaseComposite createRoot();
 
 	@Override
+	public void updateScreen() {
+		super.updateScreen();
+
+		if (root.isTicking()) root.tick();
+	}
+
+	@Override
 	protected void mouseClicked(int x, int y, int button) {
 		super.mouseClicked(x, y, button);
 		if (root.isMouseOver(x - this.guiLeft, y - this.guiTop)) root.mouseDown(x - this.guiLeft, y - this.guiTop, button);

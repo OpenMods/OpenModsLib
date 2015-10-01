@@ -1,6 +1,7 @@
 package openmods.gui.component.page;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 import openmods.gui.component.*;
@@ -17,8 +18,11 @@ public class StandardRecipePage extends PageBase {
 		addComponent(new GuiComponentItemStackSpinner(140, 30, resultingItem));
 
 		{
-			final ItemStack[] recipe = RecipeUtils.getFirstRecipeForItem(resultingItem);
-			if (recipe != null) addComponent(new GuiComponentCraftingGrid(10, 20, recipe, iconCraftingGrid, BOOK_TEXTURE));
+			final IRecipe recipe = RecipeUtils.getFirstRecipeForItemStack(resultingItem);
+			if (recipe != null) {
+				ItemStack[][] input = RecipeUtils.getFullRecipeInput(recipe);
+				if (input != null) addComponent(new GuiComponentCraftingGrid(10, 20, input, iconCraftingGrid, BOOK_TEXTURE));
+			}
 		}
 
 		{

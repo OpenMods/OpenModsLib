@@ -123,15 +123,32 @@ public class CollectionUtils {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <A, B> B[] transform(A[] input, Function<A, B> transformer) {
+	private static <A, B> Object allocateArray(Function<A, B> transformer, final int length) {
 		final TypeToken<?> token = TypeToken.of(transformer.getClass());
 		final TypeToken<?> typeB = token.resolveType(TypeUtils.FUNCTION_B_PARAM);
-		final Object result = Array.newInstance(typeB.getRawType(), input.length);
+		return Array.newInstance(typeB.getRawType(), length);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <A, B> B[] transform(A[] input, Function<A, B> transformer) {
+		final Object result = allocateArray(transformer, input.length);
 
 		for (int i = 0; i < input.length; i++) {
 			final B o = transformer.apply(input[i]);
 			Array.set(result, i, o);
+		}
+
+		return (B[])result;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <A, B> B[] transform(Collection<A> input, Function<A, B> transformer) {
+		final Object result = allocateArray(transformer, input.size());
+
+		int i = 0;
+		for (A a : input) {
+			final B o = transformer.apply(a);
+			Array.set(result, i++, o);
 		}
 
 		return (B[])result;

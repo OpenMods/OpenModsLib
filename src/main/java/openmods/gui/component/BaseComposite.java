@@ -11,6 +11,8 @@ public abstract class BaseComposite extends BaseComponent {
 
 	protected final List<BaseComponent> components = Lists.newArrayList();
 
+	protected final List<BaseComponent> tickingComponents = Lists.newArrayList();
+
 	public BaseComposite(int x, int y) {
 		super(x, y);
 	}
@@ -21,6 +23,7 @@ public abstract class BaseComposite extends BaseComponent {
 
 	public BaseComposite addComponent(BaseComponent component) {
 		components.add(component);
+		if (component.isTicking()) tickingComponents.add(component);
 		return this;
 	}
 
@@ -126,6 +129,19 @@ public abstract class BaseComposite extends BaseComponent {
 
 		for (BaseComponent component : selectComponentsCapturingMouse(mouseX, mouseY))
 			component.mouseDrag(mouseX - component.x, mouseY - component.y, button, time);
+	}
+
+	@Override
+	public boolean isTicking() {
+		return !tickingComponents.isEmpty();
+	}
+
+	@Override
+	public void tick() {
+		super.tick();
+
+		for (BaseComponent component : tickingComponents)
+			component.tick();
 	}
 
 }

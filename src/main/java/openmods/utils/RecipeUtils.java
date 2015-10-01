@@ -1,39 +1,87 @@
 package openmods.utils;
 
-import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.*;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
-import openmods.Log;
+import openmods.reflection.FieldAccess;
+
+import com.google.common.base.Function;
 
 public class RecipeUtils {
 
+	public static class InputBuilder {
+		private static final ItemStack[] EMPTY_SLOT = new ItemStack[0];
+
+		private static final Function<ItemStack, ItemStack> COPY_TRANSFORM = new Function<ItemStack, ItemStack>() {
+			@Override
+			@Nullable
+			public ItemStack apply(@Nullable ItemStack input) {
+				return input != null? input.copy() : null;
+			}
+		};
+
+		private final ItemStack[][] slots;
+
+		public InputBuilder(int size) {
+			slots = new ItemStack[size][];
+		}
+
+		public void add(int slot, ItemStack stack) {
+			slots[slot] = stack == null? EMPTY_SLOT : new ItemStack[] { stack.copy() };
+		}
+
+		public void add(int slot, ItemStack[] stacks) {
+			slots[slot] = CollectionUtils.transform(stacks, COPY_TRANSFORM);
+		}
+
+		public void add(int slot, Collection<ItemStack> stacks) {
+			slots[slot] = CollectionUtils.transform(stacks, COPY_TRANSFORM);
+		}
+
+		public ItemStack[][] build() {
+			for (int i = 0; i < slots.length; i++)
+				if (slots[i] == null) slots[i] = EMPTY_SLOT;
+
+			return slots;
+		}
+	}
+
 	private static final ItemStack[] EMPTY_ITEM_STACK_ARRAY = new ItemStack[0];
 
-	private static Field shapedOreRecipeWidth;
+	private static FieldAccess<Integer> shapedOreRecipeWidth = FieldAccess.create(ShapedOreRecipe.class, "width");
+
+	private static FieldAccess<Integer> shapedOreRecipeHeight = FieldAccess.create(ShapedOreRecipe.class, "height");
 
 	@SuppressWarnings("unchecked")
 	public static List<IRecipe> getVanillaRecipes() {
 		return CraftingManager.getInstance().getRecipeList();
 	}
 
-	public static ItemStack[] getFirstRecipeForItem(ItemStack resultingItem) {
+	public static IRecipe getFirstRecipeForItemStack(ItemStack resultingItem) {
 
 		for (IRecipe recipe : getVanillaRecipes()) {
 			if (recipe == null) continue;
 
 			ItemStack result = recipe.getRecipeOutput();
-			if (result == null || !result.isItemEqual(resultingItem)) continue;
-
-			Object[] input = getRecipeInput(recipe);
-			if (input != null) return convertToStacks(input);
+			if (result != null && result.isItemEqual(resultingItem)) return recipe;
 
 		}
 		return null;
+	}
+
+	public static ItemStack[] getFirstRecipeForItem(ItemStack resultingItem) {
+		final IRecipe recipe = getFirstRecipeForItemStack(resultingItem);
+		if (recipe == null) return null;
+
+		Object[] input = getRecipeInput(recipe);
+		return input != null? convertToStacks(input) : null;
 	}
 
 	public static ItemStack[] convertToStacks(Object[] input) {
@@ -71,13 +119,7 @@ public class RecipeUtils {
 	}
 
 	private static Object[] getShapedOreRecipe(ShapedOreRecipe recipe) {
-		final int width;
-		try {
-			width = getRecipeWidth(recipe);
-		} catch (Exception e) {
-			Log.severe(e, "Failed to get input information from %s", recipe);
-			return null;
-		}
+		final int width = shapedOreRecipeWidth.get(recipe);
 
 		Object[] input = recipe.getInput();
 		int inputIndex = 0;
@@ -96,13 +138,80 @@ public class RecipeUtils {
 		return grid;
 	}
 
-	private static int getRecipeWidth(ShapedOreRecipe recipe) throws Exception {
-		if (shapedOreRecipeWidth == null) {
-			shapedOreRecipeWidth = ShapedOreRecipe.class.getDeclaredField("width");
-			shapedOreRecipeWidth.setAccessible(true);
+	@SuppressWarnings("unchecked")
+	private static void add(InputBuilder builder, int slot, Object value) {
+		if (value instanceof ItemStack) builder.add(slot, (ItemStack)value);
+		else if (value instanceof Collection) builder.add(slot, (Collection<ItemStack>)value);
+	}
+
+	public static ItemStack[][] getFullRecipeInput(IRecipe recipe) {
+		if (recipe instanceof ShapelessOreRecipe) return getFullRecipeInput(((ShapelessOreRecipe)recipe));
+		else if (recipe instanceof ShapedOreRecipe) return getFullRecipeInput((ShapedOreRecipe)recipe);
+		else if (recipe instanceof ShapedRecipes) return getFullRecipeInput((ShapedRecipes)recipe);
+		else if (recipe instanceof ShapelessRecipes) return getFullRecipeInput((ShapelessRecipes)recipe);
+		return null;
+	}
+
+	public static ItemStack[][] getFullRecipeInput(ShapelessOreRecipe recipe) {
+		final List<Object> inputs = recipe.getInput();
+
+		final int size = inputs.size();
+		InputBuilder builder = new InputBuilder(size);
+
+		for (int i = 0; i < size; i++) {
+			final Object input = inputs.get(i);
+			add(builder, i, input);
 		}
-		int width = shapedOreRecipeWidth.getInt(recipe);
-		return width;
+
+		return builder.build();
+	}
+
+	public static ItemStack[][] getFullRecipeInput(ShapedOreRecipe recipe) {
+		final InputBuilder builder = new InputBuilder(9);
+		final int width = shapedOreRecipeWidth.get(recipe);
+		final int height = shapedOreRecipeHeight.get(recipe);
+
+		final Object[] input = recipe.getInput();
+		int inputIndex = 0;
+
+		for (int row = 0; row < height; row++) {
+			for (int column = 0; column < width; column++) {
+				final int outputIndex = row * 3 + column;
+				add(builder, outputIndex, input[inputIndex]);
+				inputIndex++;
+
+			}
+		}
+
+		return builder.build();
+	}
+
+	public static ItemStack[][] getFullRecipeInput(ShapedRecipes recipe) {
+		final InputBuilder builder = new InputBuilder(9);
+
+		final ItemStack[] input = recipe.recipeItems;
+		int inputIndex = 0;
+
+		for (int row = 0; row < recipe.recipeHeight; row++) {
+			for (int column = 0; column < recipe.recipeWidth; column++) {
+				final int outputIndex = row * 3 + column;
+				builder.add(outputIndex, input[inputIndex]);
+				inputIndex++;
+			}
+		}
+
+		return builder.build();
+	}
+
+	public static ItemStack[][] getFullRecipeInput(ShapelessRecipes recipe) {
+		final InputBuilder builder = new InputBuilder(9);
+		@SuppressWarnings("unchecked")
+		final List<ItemStack> input = recipe.recipeItems;
+
+		for (int i = 0; i < recipe.getRecipeSize(); i++)
+			builder.add(i, input.get(i));
+
+		return builder.build();
 	}
 
 }

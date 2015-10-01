@@ -2,6 +2,9 @@ package openmods.gui.component;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
+
+import javax.annotation.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -9,51 +12,121 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
+import openmods.utils.CollectionUtils;
 
 import org.lwjgl.opengl.GL11;
 
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class GuiComponentCraftingGrid extends GuiComponentSprite {
 
-	private ItemStack[] items;
+	private static final int UPDATE_DELAY = 20;
 
-	public GuiComponentCraftingGrid(int x, int y, ItemStack[] items, IIcon icon, ResourceLocation texture) {
+	private static final Random rnd = new Random();
+
+	private static final Function<ItemStack, ItemStack[]> EXPAND_TRANSFORM = new Function<ItemStack, ItemStack[]>() {
+		@Override
+		@Nullable
+		public ItemStack[] apply(@Nullable ItemStack input) {
+			return input != null? new ItemStack[] { input.copy() } : null;
+		}
+	};
+
+	private final ItemStack[][] items;
+
+	private final ItemStack[] selectedItems;
+
+	private int changeCountdown = UPDATE_DELAY;
+
+	public GuiComponentCraftingGrid(int x, int y, ItemStack[] items, IIcon background, ResourceLocation backgroundTexture) {
+		this(x, y, CollectionUtils.transform(items, EXPAND_TRANSFORM), background, backgroundTexture);
+	}
+
+	public GuiComponentCraftingGrid(int x, int y, ItemStack[][] items, IIcon icon, ResourceLocation texture) {
 		super(x, y, icon, texture);
 		Preconditions.checkNotNull(items, "No items in grid");
 		this.items = items;
+		this.selectedItems = new ItemStack[items.length];
+
+		selectItems();
 	}
 
 	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
+	public boolean isTicking() {
+		return true;
+	}
 
-		int relativeMouseX = mouseX + offsetX - x;
-		int relativeMouseY = mouseY + offsetY - y;
-		int gridOffsetX = 1;
-		int gridOffsetY = 1;
-		int itemBoxSize = 19;
+	@Override
+	public void tick() {
+		if (changeCountdown-- <= 0) {
+			selectItems();
+			changeCountdown = UPDATE_DELAY;
+		}
+	}
 
-		ItemStack tooltip = null;
+	@Override
+	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
+
+		final int gridOffsetX = 1;
+		final int gridOffsetY = 1;
+		final int itemBoxSize = 19;
 
 		for (int i = 0; i < items.length; i++) {
-			ItemStack input = items[i];
+			ItemStack input = selectedItems[i];
 			if (input != null) {
 				int row = (i % 3);
 				int column = i / 3;
 				int itemX = offsetX + gridOffsetX + (row * itemBoxSize);
 				int itemY = offsetY + gridOffsetY + (column * itemBoxSize);
 				drawItemStack(input, x + itemX, y + itemY, "");
-				if (relativeMouseX > itemX - 2 && relativeMouseX < itemX - 2 + itemBoxSize &&
-						relativeMouseY > itemY - 2 && relativeMouseY < itemY - 2 + itemBoxSize) {
-					tooltip = input;
-				}
 			}
 		}
-		if (tooltip != null) {
-			drawItemStackTooltip(tooltip, relativeMouseX + 25, relativeMouseY + 30);
+	}
+
+	private void selectItems() {
+		for (int i = 0; i < items.length; i++) {
+			ItemStack[] slotItems = items[i];
+			if (slotItems.length == 0) selectedItems[i] = null;
+			else {
+				final int choice = rnd.nextInt(slotItems.length);
+				selectedItems[i] = slotItems[choice];
+			}
+		}
+	}
+
+	@Override
+	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
+
+		final int relativeMouseX = mouseX + offsetX - x;
+		final int relativeMouseY = mouseY + offsetY - y;
+
+		final int gridOffsetX = 1;
+		final int gridOffsetY = 1;
+		final int itemBoxSize = 19;
+
+		if (isMouseOver(mouseX, mouseY)) {
+			ItemStack tooltip = null;
+			// so lazy
+			for (int i = 0; i < selectedItems.length; i++) {
+				int row = (i % 3);
+				int column = i / 3;
+				int itemX = offsetX + gridOffsetX + (row * itemBoxSize);
+				int itemY = offsetY + gridOffsetY + (column * itemBoxSize);
+				if (relativeMouseX > itemX - 2 && relativeMouseX < itemX - 2 + itemBoxSize &&
+						relativeMouseY > itemY - 2 && relativeMouseY < itemY - 2 + itemBoxSize) {
+					tooltip = selectedItems[i];
+					break;
+				}
+			}
+
+			if (tooltip != null) {
+				drawItemStackTooltip(tooltip, relativeMouseX + 25, relativeMouseY + 30);
+			}
 		}
 	}
 
