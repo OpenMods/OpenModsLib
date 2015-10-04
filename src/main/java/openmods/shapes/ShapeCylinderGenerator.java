@@ -1,47 +1,37 @@
 package openmods.shapes;
 
-import openmods.utils.MathUtils;
+import java.util.Set;
+
+import openmods.utils.render.GeometryUtils;
+import openmods.utils.render.GeometryUtils.Quadrant;
 
 public class ShapeCylinderGenerator implements IShapeGenerator {
 
+	private final Set<Quadrant> quadrants;
+
+	public ShapeCylinderGenerator() {
+		this(Quadrant.ALL);
+	}
+
+	public ShapeCylinderGenerator(Set<Quadrant> quadrants) {
+		this.quadrants = quadrants;
+	}
+
 	@Override
 	public void generateShape(int radiusX, int height, int radiusZ, IShapeable shapeable) {
-		if (height == 0) { return; }
+		generateShape(-radiusX, -height, -radiusZ, +radiusX, +height, +radiusZ, shapeable);
 
-		final double invRadiusX = 1.0 / (radiusX + 0.5);
-		final double invRadiusZ = 1.0 / (radiusZ + 0.5);
+	}
 
-		double nextXn = 0;
-		forX: for (int x = 0; x <= radiusX; ++x) {
-			final double xn = nextXn;
-			nextXn = (x + 1) * invRadiusX;
-			double nextZn = 0;
-			forZ: for (int z = 0; z <= radiusZ; ++z) {
-				final double zn = nextZn;
-				nextZn = (z + 1) * invRadiusZ;
-
-				double distanceSq = MathUtils.lengthSq(xn, zn);
-				if (distanceSq > 1) {
-					if (z == 0) {
-						break forX;
-					}
-					break forZ;
-				}
-
-				if (MathUtils.lengthSq(nextXn, zn) <= 1
-						&& MathUtils.lengthSq(xn, nextZn) <= 1) {
-					continue;
-				}
-
-				for (int y = -height; y <= height; ++y) {
+	@Override
+	public void generateShape(int minX, final int minY, int minZ, int maxX, final int maxY, int maxZ, final IShapeable shapeable) {
+		GeometryUtils.makeEllipse(minX, minZ, maxX, maxZ, 0, new IShapeable() {
+			@Override
+			public void setBlock(int x, int ignore, int z) {
+				for (int y = minY; y <= maxY; y++)
 					shapeable.setBlock(x, y, z);
-					shapeable.setBlock(-x, y, z);
-					shapeable.setBlock(x, y, -z);
-					shapeable.setBlock(-x, y, -z);
-				}
 			}
-		}
-
+		}, quadrants);
 	}
 
 }

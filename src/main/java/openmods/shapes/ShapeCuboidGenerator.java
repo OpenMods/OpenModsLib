@@ -1,56 +1,97 @@
 package openmods.shapes;
 
-import net.minecraftforge.common.util.ForgeDirection;
 import openmods.utils.render.GeometryUtils;
+import openmods.utils.render.GeometryUtils.Axis;
 
 public class ShapeCuboidGenerator implements IShapeGenerator {
 
+	public enum Elements {
+		CORNERS(true, false, false),
+		EDGES(true, true, false),
+		WALLS(true, true, true);
+
+		private final boolean corners;
+
+		private final boolean edges;
+
+		private final boolean walls;
+
+		private Elements(boolean corners, boolean edges, boolean walls) {
+			this.corners = corners;
+			this.edges = edges;
+			this.walls = walls;
+		}
+	}
+
+	private final boolean corners;
+
+	private final boolean edges;
+
+	private final boolean walls;
+
+	public ShapeCuboidGenerator(boolean corners, boolean edges, boolean walls) {
+		this.corners = corners;
+		this.edges = edges;
+		this.walls = walls;
+	}
+
+	public ShapeCuboidGenerator(Elements elements) {
+		this(elements.corners, elements.edges, elements.walls);
+	}
+
+	public ShapeCuboidGenerator() {
+		this(Elements.WALLS);
+	}
+
 	@Override
 	public void generateShape(int xSize, int ySize, int zSize, IShapeable shapeable) {
-
-		/*
-		 * The up direction is up when doing a side plane, and the origin is of
-		 * course bottom left However this is not the case when doing the top
-		 * and bottom, as their up direction is depth
-		 */
-
-		/*
-		 * Optimization: The front and back planes are full sized, left and
-		 * right are 2 blocks smaller so that they don't overlap the front and
-		 * back planes. Top and bottom planes are 2 blocks smaller in both
-		 * directions so they don't overlap any sides. This works for most cases
-		 * unless two directions are the same because of rounding in small
-		 * numbers.
-		 *
-		 * But this should be fairly optimal without adding anything inefficient
-		 * to complicate matters. - NeverCast
-		 */
-
-		/* Used for shrinking some planes to prevent iterating the same block */
-		/*
-		 * Basically, the size is size * 2 - 2 unless that's less than 1 and
-		 * size is > 0
-		 */
-		int xSizeAdj = xSize == 1? 1 : xSize * 2 - 2;
-		int zSizeAdj = zSize == 1? 1 : zSize * 2 - 2;
-		// front (north)
-		GeometryUtils.makePlane(-xSize, -ySize, -zSize, xSize * 2, ySize * 2, ForgeDirection.EAST, ForgeDirection.UP, shapeable);
-		// back ( south )
-		GeometryUtils.makePlane(xSize, -ySize, zSize, xSize * 2, ySize * 2, ForgeDirection.WEST, ForgeDirection.UP, shapeable);
-		// left ( west )
-		GeometryUtils.makePlane(-xSize, -ySize, zSize - 1, zSizeAdj, ySize * 2, ForgeDirection.NORTH, ForgeDirection.UP, shapeable);
-		// right ( east )
-		GeometryUtils.makePlane(xSize, -ySize, -zSize + 1, zSizeAdj, ySize * 2, ForgeDirection.SOUTH, ForgeDirection.UP, shapeable);
-		// top ( up )
-		GeometryUtils.makePlane(-xSize + 1, ySize, -zSize + 1, xSizeAdj, zSizeAdj, ForgeDirection.EAST, ForgeDirection.SOUTH, shapeable);
-		// bottom ( down )
-		// Notice the 'Normal' of this plane is up, not down. If you were
-		// wondering why it's the same as the top plane
-		// Normally if you were rendering a cube in GL you would have to flip it
-		// so the normal would be away from the center
-		// But that doesn't matter in this case.
-		GeometryUtils.makePlane(-xSize + 1, -ySize, -zSize + 1, xSizeAdj, zSizeAdj, ForgeDirection.EAST, ForgeDirection.SOUTH, shapeable);
+		generateShape(-xSize, -ySize, -zSize, +xSize, +ySize, +zSize, shapeable);
 
 	}
 
+	@Override
+	public void generateShape(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, IShapeable shapeable) {
+		final int dx = maxX - minX - 2;
+		final int dy = maxY - minY - 2;
+		final int dz = maxZ - minZ - 2;
+
+		if (corners) {
+			shapeable.setBlock(maxX, maxY, maxZ);
+			shapeable.setBlock(maxX, maxY, minZ);
+			shapeable.setBlock(maxX, minY, maxZ);
+			shapeable.setBlock(maxX, minY, minZ);
+			shapeable.setBlock(minX, maxY, maxZ);
+			shapeable.setBlock(minX, maxY, minZ);
+			shapeable.setBlock(minX, minY, maxZ);
+			shapeable.setBlock(minX, minY, minZ);
+		}
+
+		if (edges) {
+			GeometryUtils.makeLine(minX, minY + 1, minZ, Axis.Y, dy, shapeable);
+			GeometryUtils.makeLine(minX, minY + 1, maxZ, Axis.Y, dy, shapeable);
+			GeometryUtils.makeLine(maxX, minY + 1, maxZ, Axis.Y, dy, shapeable);
+			GeometryUtils.makeLine(maxX, minY + 1, minZ, Axis.Y, dy, shapeable);
+
+			GeometryUtils.makeLine(minX + 1, minY, minZ, Axis.X, dx, shapeable);
+			GeometryUtils.makeLine(minX + 1, minY, maxZ, Axis.X, dx, shapeable);
+			GeometryUtils.makeLine(minX + 1, maxY, maxZ, Axis.X, dx, shapeable);
+			GeometryUtils.makeLine(minX + 1, maxY, minZ, Axis.X, dx, shapeable);
+
+			GeometryUtils.makeLine(minX, minY, minZ + 1, Axis.Z, dz, shapeable);
+			GeometryUtils.makeLine(minX, maxY, minZ + 1, Axis.Z, dz, shapeable);
+			GeometryUtils.makeLine(maxX, maxY, minZ + 1, Axis.Z, dz, shapeable);
+			GeometryUtils.makeLine(maxX, minY, minZ + 1, Axis.Z, dz, shapeable);
+		}
+
+		if (walls) {
+			GeometryUtils.makePlane(minX + 1, minY + 1, minZ, dx, dy, Axis.X, Axis.Y, shapeable);
+			GeometryUtils.makePlane(minX + 1, minY + 1, maxZ, dx, dy, Axis.X, Axis.Y, shapeable);
+
+			GeometryUtils.makePlane(minX + 1, minY, minZ + 1, dx, dz, Axis.X, Axis.Z, shapeable);
+			GeometryUtils.makePlane(minX + 1, maxY, minZ + 1, dx, dz, Axis.X, Axis.Z, shapeable);
+
+			GeometryUtils.makePlane(minX, minY + 1, minZ + 1, dy, dz, Axis.Y, Axis.Z, shapeable);
+			GeometryUtils.makePlane(maxX, minY + 1, minZ + 1, dy, dz, Axis.Y, Axis.Z, shapeable);
+		}
+	}
 }

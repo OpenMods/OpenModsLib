@@ -1,6 +1,7 @@
 package openmods.utils.render;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import net.minecraft.util.Vec3;
@@ -9,7 +10,29 @@ import openmods.shapes.IShapeable;
 import openmods.utils.Coord;
 import openmods.utils.MathUtils;
 
+import com.google.common.collect.ImmutableList;
+
 public class GeometryUtils {
+
+	public enum Axis {
+		X(1, 0, 0, ForgeDirection.EAST, ForgeDirection.WEST),
+		Y(0, 1, 0, ForgeDirection.UP, ForgeDirection.DOWN),
+		Z(0, 0, 1, ForgeDirection.SOUTH, ForgeDirection.NORTH);
+		public final int dx;
+		public final int dy;
+		public final int dz;
+
+		public final ForgeDirection positive;
+		public final ForgeDirection negative;
+
+		private Axis(int dx, int dy, int dz, ForgeDirection positive, ForgeDirection negative) {
+			this.dx = dx;
+			this.dy = dy;
+			this.dz = dz;
+			this.positive = positive;
+			this.negative = negative;
+		}
+	}
 
 	public enum Octant {
 		TopSouthWest(-1, 1, 1, "Top South West"),
@@ -25,7 +48,7 @@ public class GeometryUtils {
 		public static final EnumSet<Octant> TOP = EnumSet.of(Octant.TopSouthEast, Octant.TopSouthWest, Octant.TopNorthEast, Octant.TopNorthWest);
 		public static final EnumSet<Octant> BOTTOM = EnumSet.of(Octant.BottomSouthEast, Octant.BottomSouthWest, Octant.BottomNorthEast, Octant.BottomNorthWest);
 
-		private final int x, y, z;
+		public final int x, y, z;
 		private final String name;
 
 		public int getXOffset() {
@@ -52,24 +75,32 @@ public class GeometryUtils {
 		}
 	}
 
+	public enum Quadrant {
+		TopSouthWest(-1, 1),
+		TopNorthEast(1, -1),
+		TopNorthWest(1, 1),
+		TopSouthEast(-1, -1);
+
+		public static final EnumSet<Quadrant> ALL = EnumSet.allOf(Quadrant.class);
+
+		public final int x;
+		public final int z;
+
+		private Quadrant(int x, int z) {
+			this.x = x;
+			this.z = z;
+		}
+	}
+
+	public static void makeLine(int startX, int startY, int startZ, Axis axis, int length, IShapeable shapeable) {
+		makeLine(startX, startY, startZ, axis.positive, length, shapeable);
+	}
+
 	/**
 	 * Makes a link of blocks in a shape
-	 *
-	 * @param startX
-	 *            X position of origin
-	 * @param startY
-	 *            Y position of origin
-	 * @param startZ
-	 *            Z position of origin
-	 * @param direction
-	 *            Direction to apply the line
-	 * @param length
-	 *            Length of the line
-	 * @param shapeable
-	 *            Shapeable object to set the blocks
 	 */
 	public static void makeLine(int startX, int startY, int startZ, ForgeDirection direction, int length, IShapeable shapeable) {
-		if (length == 0) return;
+		if (length < 0) return;
 		for (int offset = 0; offset <= length; offset++)
 			/* Create a line in the direction of direction, length in size */
 			shapeable.setBlock(startX + (offset * direction.offsetX), startY
@@ -77,28 +108,15 @@ public class GeometryUtils {
 					+ (offset * direction.offsetZ));
 	}
 
+	public static void makePlane(int startX, int startY, int startZ, int width, int height, Axis right, Axis up, IShapeable shapeable) {
+		makePlane(startX, startY, startZ, width, height, right.positive, up.positive, shapeable);
+	}
+
 	/**
 	 * Makes a flat plane along two directions
-	 *
-	 * @param startX
-	 *            X position of origin
-	 * @param startY
-	 *            Y position of origin
-	 * @param startZ
-	 *            Z position of origin
-	 * @param width
-	 *            Width of the plane
-	 * @param height
-	 *            Height of the plane
-	 * @param right
-	 *            The right(width) direction of the plane
-	 * @param up
-	 *            The up(height) direction of the plane
-	 * @param shapeable
-	 *            The shape to apply the blocks to
 	 */
 	public static void makePlane(int startX, int startY, int startZ, int width, int height, ForgeDirection right, ForgeDirection up, IShapeable shapeable) {
-		if (width == 0 || height == 0) return;
+		if (width < 0 || height < 0) return;
 		int lineOffsetX, lineOffsetY, lineOffsetZ;
 		// We offset each line by up, and then apply it right
 		for (int h = 0; h <= height; h++) {
@@ -109,26 +127,30 @@ public class GeometryUtils {
 		}
 	}
 
+	@Deprecated
 	public static void makeSphere(int radiusX, int radiusY, int radiusZ, IShapeable shapeable, EnumSet<Octant> octants) {
+		makeEllipsoid(radiusX, radiusY, radiusZ, shapeable, octants);
+	}
+
+	public static void makeEllipsoid(int radiusX, int radiusY, int radiusZ, IShapeable shapeable, Set<Octant> octants) {
+		final List<Octant> octantsList = ImmutableList.copyOf(octants);
 
 		final double invRadiusX = 1.0 / (radiusX + 0.5);
 		final double invRadiusY = 1.0 / (radiusY + 0.5);
 		final double invRadiusZ = 1.0 / (radiusZ + 0.5);
 
-		final Set<Octant> octantSet = octants;
-
 		double nextXn = 0;
 		forX: for (int x = 0; x <= radiusX; ++x) {
 			final double xn = nextXn;
-			nextXn = (x + 1) * invRadiusX;
+			nextXn += invRadiusX;
 			double nextYn = 0;
 			forY: for (int y = 0; y <= radiusY; ++y) {
 				final double yn = nextYn;
-				nextYn = (y + 1) * invRadiusY;
+				nextYn += invRadiusY;
 				double nextZn = 0;
 				forZ: for (int z = 0; z <= radiusZ; ++z) {
 					final double zn = nextZn;
-					nextZn = (z + 1) * invRadiusZ;
+					nextZn += invRadiusZ;
 
 					double distanceSq = MathUtils.lengthSq(xn, yn, zn);
 					if (distanceSq > 1) {
@@ -147,24 +169,184 @@ public class GeometryUtils {
 						continue;
 					}
 
-					for (Octant octant : octantSet) {
-						shapeable.setBlock(x * octant.getXOffset(), y
-								* octant.getYOffset(), z * octant.getZOffset());
-					}
+					for (Octant octant : octantsList)
+						shapeable.setBlock(x * octant.x, y * octant.y, z * octant.z);
 				}
 			}
 		}
 	}
 
-	public static void line2D(int y, int x0, int z0, int x1, int z1, IShapeable shapeable) {
-		int dx = Math.abs(x1 - x0), sx = x0 < x1? 1 : -1;
-		int dy = -Math.abs(z1 - z0), sy = z0 < z1? 1 : -1;
-		int err = dx + dy, e2;
+	// Cutting middle of shape = terrible hack. No idea if it works in any case
+	// Anyone now better algorithm for ellipsoids with non-integer axis?
+	public static void makeEllipsoid(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, IShapeable shapeable, Set<Octant> octants) {
+		{
+			final int centerX = (minX + maxX) / 2;
+			final int centerY = (minY + maxY) / 2;
+			final int centerZ = (minZ + maxZ) / 2;
 
-		for (;;) {
+			final IShapeable prevShapeable = shapeable;
+			shapeable = new IShapeable() {
+				@Override
+				public void setBlock(int x, int y, int z) {
+					prevShapeable.setBlock(centerX + x, centerY + y, centerZ + z);
+				}
+			};
+		}
+
+		int radiusX;
+		int radiusY;
+		int radiusZ;
+
+		{
+			final double realRadiusX = (maxX - minX) / 2.0;
+			radiusX = (int)realRadiusX;
+
+			if (realRadiusX != radiusX) {
+				radiusX++;
+				shapeable = skipMiddleX(shapeable);
+			}
+		}
+
+		{
+			final double realRadiusY = (maxY - minY) / 2.0;
+			radiusY = (int)realRadiusY;
+			if (realRadiusY != radiusY) {
+				radiusY++;
+				shapeable = skipMiddleY(shapeable);
+			}
+		}
+
+		{
+			final double realRadiusZ = (maxZ - minZ) / 2.0;
+			radiusZ = (int)realRadiusZ;
+			if (realRadiusZ != radiusZ) {
+				radiusZ++;
+				shapeable = skipMiddleZ(shapeable);
+			}
+		}
+
+		makeEllipsoid(radiusX, radiusY, radiusZ, shapeable, octants);
+	}
+
+	public static void makeEllipse(int radiusX, int radiusZ, int y, IShapeable shapeable, Set<Quadrant> quadrants) {
+		final double invRadiusX = 1.0 / (radiusX + 0.5);
+		final double invRadiusZ = 1.0 / (radiusZ + 0.5);
+
+		final List<Quadrant> quadrantsList = ImmutableList.copyOf(quadrants);
+
+		double nextXn = 0;
+		forX: for (int x = 0; x <= radiusX; ++x) {
+			final double xn = nextXn;
+			nextXn += invRadiusX;
+			double nextZn = 0;
+			forZ: for (int z = 0; z <= radiusZ; ++z) {
+				final double zn = nextZn;
+				nextZn += invRadiusZ;
+
+				double distanceSq = MathUtils.lengthSq(xn, zn);
+				if (distanceSq > 1) {
+					if (z == 0) {
+						break forX;
+					}
+					break forZ;
+				}
+
+				if (MathUtils.lengthSq(nextXn, zn) <= 1 && MathUtils.lengthSq(xn, nextZn) <= 1) {
+					continue;
+				}
+
+				for (Quadrant quadrant : quadrantsList)
+					shapeable.setBlock(x * quadrant.x, y, z * quadrant.z);
+			}
+		}
+	}
+
+	public static void makeEllipse(int minX, int minZ, int maxX, int maxZ, int y, IShapeable shapeable, Set<Quadrant> quadrants) {
+		{
+			final int centerX = (minX + maxX) / 2;
+			final int centerZ = (minZ + maxZ) / 2;
+
+			final IShapeable prevShapeable = shapeable;
+			shapeable = new IShapeable() {
+				@Override
+				public void setBlock(int x, int y, int z) {
+					prevShapeable.setBlock(centerX + x, y, centerZ + z);
+				}
+			};
+		}
+
+		int radiusX;
+		int radiusZ;
+
+		{
+			final double realRadiusX = (maxX - minX) / 2.0;
+			radiusX = (int)realRadiusX;
+
+			if (realRadiusX != radiusX) {
+				radiusX++;
+				shapeable = skipMiddleX(shapeable);
+			}
+		}
+
+		{
+			final double realRadiusZ = (maxZ - minZ) / 2.0;
+			radiusZ = (int)realRadiusZ;
+			if (realRadiusZ != radiusZ) {
+				radiusZ++;
+				shapeable = skipMiddleZ(shapeable);
+			}
+		}
+
+		makeEllipse(radiusX, radiusZ, y, shapeable, quadrants);
+	}
+
+	private static IShapeable skipMiddleX(final IShapeable shapeable) {
+		return new IShapeable() {
+			@Override
+			public void setBlock(int x, int y, int z) {
+				if (x != 0) {
+					if (x < 0) shapeable.setBlock(x + 1, y, z);
+					else shapeable.setBlock(x, y, z);
+				}
+			}
+		};
+	}
+
+	private static IShapeable skipMiddleY(final IShapeable shapeable) {
+		return new IShapeable() {
+			@Override
+			public void setBlock(int x, int y, int z) {
+				if (y != 0) {
+					if (y < 0) shapeable.setBlock(x, y + 1, z);
+					else shapeable.setBlock(x, y, z);
+				}
+			}
+		};
+	}
+
+	private static IShapeable skipMiddleZ(final IShapeable shapeable) {
+		return new IShapeable() {
+			@Override
+			public void setBlock(int x, int y, int z) {
+				if (z != 0) {
+					if (z < 0) shapeable.setBlock(x, y, z + 1);
+					else shapeable.setBlock(x, y, z);
+				}
+			}
+		};
+	}
+
+	public static void line2D(int y, int x0, int z0, int x1, int z1, IShapeable shapeable) {
+		final int dx = Math.abs(x1 - x0);
+		final int sx = x0 < x1? 1 : -1;
+		final int dy = -Math.abs(z1 - z0);
+		final int sy = z0 < z1? 1 : -1;
+		int err = dx + dy;
+
+		while (true) {
 			shapeable.setBlock(x0, y, z0);
 			if (x0 == x1 && z0 == z1) break;
-			e2 = 2 * err;
+			final int e2 = 2 * err;
 			if (e2 >= dy) {
 				err += dy;
 				x0 += sx;
