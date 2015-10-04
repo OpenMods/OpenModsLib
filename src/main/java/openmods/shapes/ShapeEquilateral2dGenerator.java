@@ -39,46 +39,48 @@ public class ShapeEquilateral2dGenerator implements IShapeGenerator {
 	private enum Symmetry {
 		TwoFold(Math.PI) {
 			@Override
-			public Point[] generate(Point[] initial) {
-				final Point[] result = new Point[initial.length * 2];
-				int i = 0;
-				for (Point element : initial)
-					result[i++] = element;
+			public IShapeable createMirroredShapeable(final IShapeable shapeable) {
+				return new IShapeable() {
+					@Override
+					public void setBlock(int x, int y, int z) {
+						if (z >= 0) {
+							shapeable.setBlock(x, y, z);
+							shapeable.setBlock(x, y, -z);
+						}
+					}
+				};
+			}
 
-				for (int j = initial.length - 1; j >= 0; j--) {
-					final Point point = initial[j];
-					result[i++] = new Point(point.x, -point.y);
-				}
-
-				return result;
+			@Override
+			public Point mirrorLastPoint(Point point) {
+				return new Point(point.x, -point.y);
 			}
 		},
 		FourFold(Math.PI / 2) {
 			@Override
-			public Point[] generate(Point[] initial) {
-				final Point[] result = new Point[initial.length * 4];
-				int i = 0;
-				for (Point point : initial)
-					result[i++] = point;
+			public IShapeable createMirroredShapeable(final IShapeable shapeable) {
+				return new IShapeable() {
+					@Override
+					public void setBlock(int x, int y, int z) {
+						if (x >= 0 && z >= 0) {
+							shapeable.setBlock(x, y, -z);
+							shapeable.setBlock(-x, y, -z);
+							shapeable.setBlock(-x, y, z);
+							shapeable.setBlock(x, y, z);
+						}
+					}
+				};
+			}
 
-				for (int j = initial.length - 1; j >= 0; j--) {
-					final Point point = initial[j];
-					result[i++] = new Point(-point.x, point.y);
-				}
-
-				for (Point point : initial)
-					result[i++] = new Point(-point.x, -point.y);
-
-				for (int j = initial.length - 1; j >= 0; j--) {
-					final Point point = initial[j];
-					result[i++] = new Point(point.x, -point.y);
-				}
-
-				return result;
+			@Override
+			public Point mirrorLastPoint(Point point) {
+				return new Point(-point.x, point.y);
 			}
 		};
 
-		public abstract Point[] generate(Point[] initial);
+		public abstract IShapeable createMirroredShapeable(IShapeable shapeable);
+
+		public abstract Point mirrorLastPoint(Point point);
 
 		public final double angleLimit;
 
@@ -137,17 +139,17 @@ public class ShapeEquilateral2dGenerator implements IShapeGenerator {
 			}
 		});
 
-		final Point[] duplicatedPoints = symmetry.generate(points);
+		final IShapeable mirroredShapeable = symmetry.createMirroredShapeable(columnShapeable);
 
-		final Point initialPoint = duplicatedPoints[0];
-		Point prevPoint = initialPoint;
+		Point prevPoint = points[0];
 
-		for (int i = 1; i < duplicatedPoints.length; i++) {
-			final Point point = duplicatedPoints[i];
-			GeometryUtils.line2D(0, prevPoint.x, prevPoint.y, point.x, point.y, columnShapeable);
+		for (int i = 1; i < points.length; i++) {
+			final Point point = points[i];
+			GeometryUtils.line2D(0, prevPoint.x, prevPoint.y, point.x, point.y, mirroredShapeable);
 			prevPoint = point;
 		}
 
-		GeometryUtils.line2D(0, prevPoint.x, prevPoint.y, initialPoint.x, initialPoint.y, columnShapeable);
+		final Point lastPoint = symmetry.mirrorLastPoint(prevPoint);
+		GeometryUtils.line2D(0, prevPoint.x, prevPoint.y, lastPoint.x, lastPoint.y, mirroredShapeable);
 	}
 }
