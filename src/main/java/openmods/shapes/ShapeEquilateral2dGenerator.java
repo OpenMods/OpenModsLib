@@ -8,7 +8,7 @@ import openmods.utils.render.GeometryUtils;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
-public class ShapeEquilateral2dGenerator implements IShapeGenerator {
+public class ShapeEquilateral2dGenerator extends DefaultShapeGenerator {
 
 	private static class Trig {
 		final double sin;
@@ -44,7 +44,7 @@ public class ShapeEquilateral2dGenerator implements IShapeGenerator {
 					@Override
 					public void setBlock(int x, int y, int z) {
 						if (z >= 0) {
-							shapeable.setBlock(x, y, z);
+							shapeable.setBlock(x, y, +z);
 							shapeable.setBlock(x, y, -z);
 						}
 					}
@@ -63,10 +63,10 @@ public class ShapeEquilateral2dGenerator implements IShapeGenerator {
 					@Override
 					public void setBlock(int x, int y, int z) {
 						if (x >= 0 && z >= 0) {
-							shapeable.setBlock(x, y, -z);
+							shapeable.setBlock(+x, y, -z);
 							shapeable.setBlock(-x, y, -z);
-							shapeable.setBlock(-x, y, z);
-							shapeable.setBlock(x, y, z);
+							shapeable.setBlock(-x, y, +z);
+							shapeable.setBlock(+x, y, +z);
 						}
 					}
 				};
@@ -75,6 +75,32 @@ public class ShapeEquilateral2dGenerator implements IShapeGenerator {
 			@Override
 			public Point mirrorLastPoint(Point point) {
 				return new Point(-point.x, point.y);
+			}
+		},
+		EightFold(Math.PI / 4) {
+			@Override
+			public IShapeable createMirroredShapeable(final IShapeable shapeable) {
+				return new IShapeable() {
+					@Override
+					public void setBlock(int x, int y, int z) {
+						if (x >= z) {
+							shapeable.setBlock(+x, y, -z);
+							shapeable.setBlock(-x, y, -z);
+							shapeable.setBlock(-x, y, +z);
+							shapeable.setBlock(+x, y, +z);
+
+							shapeable.setBlock(+z, y, -x);
+							shapeable.setBlock(-z, y, -x);
+							shapeable.setBlock(-z, y, +x);
+							shapeable.setBlock(+z, y, +x);
+						}
+					}
+				};
+			}
+
+			@Override
+			public Point mirrorLastPoint(Point point) {
+				return new Point(point.y, point.x);
 			}
 		};
 
@@ -87,7 +113,12 @@ public class ShapeEquilateral2dGenerator implements IShapeGenerator {
 		private Symmetry(double angleLimit) {
 			this.angleLimit = angleLimit;
 		}
+	}
 
+	private static Symmetry findSymmetry(int sides) {
+		if (sides % 4 == 0) return Symmetry.EightFold;
+		if (sides % 2 == 0) return Symmetry.FourFold;
+		return Symmetry.TwoFold;
 	}
 
 	private final Symmetry symmetry;
@@ -95,8 +126,7 @@ public class ShapeEquilateral2dGenerator implements IShapeGenerator {
 	private final Trig[] angles;
 
 	public ShapeEquilateral2dGenerator(int sides) {
-
-		this.symmetry = sides % 2 == 0? Symmetry.FourFold : Symmetry.TwoFold;
+		this.symmetry = findSymmetry(sides);
 
 		final List<Trig> angles = Lists.newArrayList();
 		for (int i = 0; i < sides; i++) {
@@ -107,11 +137,6 @@ public class ShapeEquilateral2dGenerator implements IShapeGenerator {
 
 		this.angles = angles.toArray(new Trig[angles.size()]);
 
-	}
-
-	@Override
-	public void generateShape(int xSize, int ySize, int zSize, IShapeable shapeable) {
-		generateShape(-xSize, -ySize, -zSize, +xSize, +ySize, +zSize, shapeable);
 	}
 
 	@Override

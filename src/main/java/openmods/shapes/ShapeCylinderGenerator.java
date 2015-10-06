@@ -5,7 +5,7 @@ import java.util.Set;
 import openmods.utils.render.GeometryUtils;
 import openmods.utils.render.GeometryUtils.Quadrant;
 
-public class ShapeCylinderGenerator implements IShapeGenerator {
+public class ShapeCylinderGenerator extends DefaultShapeGenerator {
 
 	private final Set<Quadrant> quadrants;
 
@@ -15,12 +15,6 @@ public class ShapeCylinderGenerator implements IShapeGenerator {
 
 	public ShapeCylinderGenerator(Set<Quadrant> quadrants) {
 		this.quadrants = quadrants;
-	}
-
-	@Override
-	public void generateShape(int radiusX, int height, int radiusZ, IShapeable shapeable) {
-		generateShape(-radiusX, -height, -radiusZ, +radiusX, +height, +radiusZ, shapeable);
-
 	}
 
 	@Override

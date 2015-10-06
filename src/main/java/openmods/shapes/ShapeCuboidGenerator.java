@@ -3,7 +3,7 @@ package openmods.shapes;
 import openmods.utils.render.GeometryUtils;
 import openmods.utils.render.GeometryUtils.Axis;
 
-public class ShapeCuboidGenerator implements IShapeGenerator {
+public class ShapeCuboidGenerator extends DefaultShapeGenerator {
 
 	public enum Elements {
 		CORNERS(true, false, false),
@@ -41,12 +41,6 @@ public class ShapeCuboidGenerator implements IShapeGenerator {
 
 	public ShapeCuboidGenerator() {
 		this(Elements.WALLS);
-	}
-
-	@Override
-	public void generateShape(int xSize, int ySize, int zSize, IShapeable shapeable) {
-		generateShape(-xSize, -ySize, -zSize, +xSize, +ySize, +zSize, shapeable);
-
 	}
 
 	@Override
