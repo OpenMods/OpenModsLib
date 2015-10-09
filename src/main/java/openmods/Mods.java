@@ -26,6 +26,7 @@ public class Mods {
 	public static final String EXTRABIOMESXL = "ExtrabiomesXL";
 	public static final String EXTRATREES = "ExtraTrees";
 	public static final String EXTRAUTILITIES = "ExtraUtilities";
+	public static final String FLANSMOD = "FlansMod";
 	public static final String FLOATINGRUINS = "FloatingRuins";
 	public static final String FORESTRY = "Forestry";
 	public static final String GRAVITYGUN = "GraviGun";
@@ -33,10 +34,11 @@ public class Mods {
 	public static final String IC2 = "IC2";
 	public static final String INGAMEINFO = "IngameInfo";
 	public static final String MAGICBEES = "MagicBees";
-	public static final String MPS = "powersuits";
 	public static final String MFR = "MineFactoryReloaded";
+	public static final String MPS = "powersuits";
 	public static final String MULTIPART = "McMultipart";
 	public static final String MYSTCRAFT = "Mystcraft";
+	public static final String NOTENOUGHITEMS = "NotEnoughItems";
 	public static final String OPENBLOCKS = "OpenBlocks";
 	public static final String OPENCOMPUTERS = "OpenComputers";
 	public static final String OPENPERIPHERAL = "OpenPeripheral";
@@ -48,13 +50,12 @@ public class Mods {
 	public static final String STARTINGINVENTORY = "StartingInventory";
 	public static final String STATUSEFFECTHUD = "StatusEffectHUD";
 	public static final String STEVESCARTS = "StevesCarts";
-	public static final String TINKERSCONSTRUCT = "TConstruct";
-	public static final String TINKERSMECHWORKS = "TMechworks";
 	public static final String THAUMCRAFT = "Thaumcraft";
 	public static final String THERMALEXPANSION = "ThermalExpansion";
+	public static final String TINKERSCONSTRUCT = "TConstruct";
+	public static final String TINKERSMECHWORKS = "TMechworks";
 	public static final String TRANSLOCATOR = "Translocator";
 	public static final String TREECAPITATOR = "TreeCapitator";
 	public static final String WIRELESSREDSTONECBE = "WR-CBE|Core";
 	public static final String WORLDSTATECHECKPOINTS = "WorldStateCheckpoints";
-	public static final String FLANSMOD = "FlansMod";
 }
