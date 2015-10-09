@@ -14,7 +14,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
-import openmods.block.BlockRotationMode;
 import openmods.block.OpenBlock;
 import openmods.utils.ColorUtils.RGB;
 
@@ -83,68 +82,9 @@ public class RenderUtils {
 				interpolateValue(e.posZ, e.prevPosZ, partialTickTime));
 	}
 
+	@Deprecated
 	public static void rotateFacesOnRenderer(OpenBlock block, ForgeDirection rotation, RenderBlocks renderer) {
-		BlockRotationMode mode = block.getRotationMode();
-		switch (mode) {
-			case SIX_DIRECTIONS:
-				switch (rotation) {
-					case DOWN:
-						renderer.uvRotateSouth = 3;
-						renderer.uvRotateNorth = 3;
-						renderer.uvRotateEast = 3;
-						renderer.uvRotateWest = 3;
-						break;
-					case EAST:
-						renderer.uvRotateTop = 1;
-						renderer.uvRotateBottom = 2;
-						renderer.uvRotateWest = 1;
-						renderer.uvRotateEast = 2;
-						break;
-					case NORTH:
-						renderer.uvRotateNorth = 2;
-						renderer.uvRotateSouth = 1;
-						break;
-					case SOUTH:
-						renderer.uvRotateTop = 3;
-						renderer.uvRotateBottom = 3;
-						renderer.uvRotateNorth = 1;
-						renderer.uvRotateSouth = 2;
-						break;
-					case UNKNOWN:
-						break;
-					case UP:
-						break;
-					case WEST:
-						renderer.uvRotateTop = 2;
-						renderer.uvRotateBottom = 1;
-						renderer.uvRotateWest = 2;
-						renderer.uvRotateEast = 1;
-						break;
-					default:
-						break;
-
-				}
-				break;
-			case FOUR_DIRECTIONS:
-				switch (rotation) {
-					case EAST:
-						renderer.uvRotateTop = 1;
-						break;
-					case WEST:
-						renderer.uvRotateTop = 2;
-						break;
-					case SOUTH:
-						renderer.uvRotateTop = 3;
-						break;
-					default:
-						break;
-				}
-				break;
-			default:
-				break;
-
-		}
-
+		block.getRotationMode().setupBlockRenderer(renderer, rotation);
 	}
 
 	public static void resetFacesOnRenderer(RenderBlocks renderer) {

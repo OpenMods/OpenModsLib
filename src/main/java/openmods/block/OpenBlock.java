@@ -470,28 +470,9 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	public ForgeDirection calculateSide(EntityPlayer player, ForgeDirection side) {
 		if (blockPlacementMode == BlockPlacementMode.SURFACE) {
-			return side.getOpposite();
+			return blockRotationMode.getPlacementDirectionFromSurface(side);
 		} else {
-			switch (getRotationMode()) {
-				case TWO_DIRECTIONS: {
-					ForgeDirection normalDir = BlockUtils.get2dOrientation(player);
-					switch (normalDir) {
-						case EAST:
-						case WEST:
-							return ForgeDirection.WEST;
-						case NORTH:
-						case SOUTH:
-						default:
-							return ForgeDirection.NORTH;
-					}
-				}
-				case FOUR_DIRECTIONS:
-					return BlockUtils.get2dOrientation(player);
-				case SIX_DIRECTIONS:
-					return BlockUtils.get3dOrientation(player);
-				default:
-					return ForgeDirection.UNKNOWN;
-			}
+			return blockRotationMode.getPlacementDirectionFromEntity(player);
 		}
 	}
 
@@ -559,57 +540,20 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return getUnrotatedTexture(newRotation);
 	}
 
-	/***
-	 * I'm sure there's a better way of doing this, but the idea is that we
-	 * rotate the block based on the metadata (rotation), so when we try to get
-	 * a texture we're referencing the side when 'unrotated'
-	 */
 	public ForgeDirection rotateSideByMetadata(int side, int metadata) {
-		final BlockRotationMode rotationMode = getRotationMode();
-		ForgeDirection rotation = rotationMode.fromValue(metadata);
-		ForgeDirection dir = ForgeDirection.getOrientation(side);
-		switch (rotationMode) {
-			case FOUR_DIRECTIONS:
-			case NONE:
-				switch (rotation) {
-					case EAST:
-						dir = dir.getRotation(ForgeDirection.DOWN);
-						break;
-					case SOUTH:
-						dir = dir.getRotation(ForgeDirection.UP);
-						dir = dir.getRotation(ForgeDirection.UP);
-						break;
-					case WEST:
-						dir = dir.getRotation(ForgeDirection.UP);
-						break;
-					default:
-						break;
-				}
-				return dir;
-			default:
-				switch (rotation) {
-					case DOWN:
-						dir = dir.getRotation(ForgeDirection.SOUTH);
-						dir = dir.getRotation(ForgeDirection.SOUTH);
-						break;
-					case EAST:
-						dir = dir.getRotation(ForgeDirection.NORTH);
-						break;
-					case NORTH:
-						dir = dir.getRotation(ForgeDirection.WEST);
-						break;
-					case SOUTH:
-						dir = dir.getRotation(ForgeDirection.EAST);
-						break;
-					case WEST:
-						dir = dir.getRotation(ForgeDirection.SOUTH);
-						break;
-					default:
-						break;
+		final ForgeDirection dir = ForgeDirection.getOrientation(side);
+		return rotateSideByMetadata(dir, metadata);
+	}
 
-				}
-		}
-		return dir;
+	public ForgeDirection rotateSideByMetadata(ForgeDirection side, int metadata) {
+		final BlockRotationMode rotationMode = getRotationMode();
+		final ForgeDirection rotation = rotationMode.fromValue(metadata);
+		return rotationMode.mapWorldToBlockSide(rotation, side);
+	}
+
+	public ForgeDirection rotateSideByDirection(ForgeDirection direction, ForgeDirection side) {
+		final BlockRotationMode rotationMode = getRotationMode();
+		return rotationMode.mapWorldToBlockSide(direction, side);
 	}
 
 	public void setDefaultTexture(IIcon icon) {

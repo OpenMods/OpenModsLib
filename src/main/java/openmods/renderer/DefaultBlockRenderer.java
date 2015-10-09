@@ -60,7 +60,7 @@ public class DefaultBlockRenderer implements IBlockRenderer<Block> {
 				if (openBlock != null) {
 					rotation = openBlock.getInventoryRenderRotation();
 					openBlock.setBoundsBasedOnRotation(rotation);
-					RenderUtils.rotateFacesOnRenderer(openBlock, rotation, renderer);
+					openBlock.getRotationMode().setupBlockRenderer(renderer, rotation);
 				} else rotation = ForgeDirection.EAST;
 
 				RenderUtils.renderInventoryBlock(renderer, block, rotation);
@@ -79,7 +79,7 @@ public class DefaultBlockRenderer implements IBlockRenderer<Block> {
 			if (openBlock != null) {
 				int metadata = world.getBlockMetadata(x, y, z);
 				ForgeDirection rotation = openBlock.getRotation(metadata);
-				RenderUtils.rotateFacesOnRenderer((OpenBlock)block, rotation, renderer);
+				openBlock.getRotationMode().setupBlockRenderer(renderer, rotation);
 			}
 			renderer.renderStandardBlock(block, x, y, z);
 			RenderUtils.resetFacesOnRenderer(renderer);
