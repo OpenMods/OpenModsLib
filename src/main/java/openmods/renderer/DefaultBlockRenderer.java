@@ -1,7 +1,5 @@
 package openmods.renderer;
 
-import java.util.Map;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
@@ -10,43 +8,38 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.Log;
 import openmods.block.OpenBlock;
+import openmods.renderer.rotations.IRendererSetup;
 import openmods.tileentity.OpenTileEntity;
+import openmods.utils.CachedFactory;
 import openmods.utils.render.RenderUtils;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import com.google.common.collect.Maps;
-
 public class DefaultBlockRenderer implements IBlockRenderer<Block> {
 
-	private final Map<Block, TileEntity> inventoryTileEntities = Maps.newIdentityHashMap();
-
-	public TileEntity getTileEntityForBlock(OpenBlock block) {
-		TileEntity te = inventoryTileEntities.get(block);
-		if (te == null) {
-			te = block.createTileEntityForRender();
-			inventoryTileEntities.put(block, te);
+	private final CachedFactory<OpenBlock, TileEntity> inventoryTileEntities = new CachedFactory<OpenBlock, TileEntity>() {
+		@Override
+		protected TileEntity create(OpenBlock key) {
+			return key.createTileEntityForRender();
 		}
-		return te;
-	}
+	};
 
 	@Override
 	public void renderInventoryBlock(Block block, int metadata, int modelID, RenderBlocks renderer) {
-		OpenBlock openBlock = (block instanceof OpenBlock)? (OpenBlock)block : null;
-		final TileEntity te;
-		if (openBlock != null && openBlock.shouldRenderTesrInInventory()) {
-			te = getTileEntityForBlock(openBlock);
-		} else {
-			te = null;
+		if (!(block instanceof OpenBlock)) {
+			RenderUtils.renderInventoryBlock(renderer, block, ForgeDirection.EAST);
+			return;
 		}
 
-		if (te instanceof OpenTileEntity) ((OpenTileEntity)te).prepareForInventoryRender(block, metadata);
+		final OpenBlock openBlock = (OpenBlock)block;
 
 		try {
 			GL11.glEnable(GL12.GL_RESCALE_NORMAL);
 			GL11.glRotatef(-90.0F, 0.0F, 1.0F, 0.0F);
-			if (te != null) {
+			if (openBlock.shouldRenderTesrInInventory()) {
+				TileEntity te = inventoryTileEntities.getOrCreate(openBlock);
+				if (te instanceof OpenTileEntity) ((OpenTileEntity)te).prepareForInventoryRender(block, metadata);
 				GL11.glPushAttrib(GL11.GL_TEXTURE_BIT);
 				GL11.glPushMatrix();
 				GL11.glTranslated(-0.5, -0.5, -0.5);
@@ -55,16 +48,15 @@ public class DefaultBlockRenderer implements IBlockRenderer<Block> {
 				GL11.glPopAttrib();
 			}
 
-			if (openBlock == null || openBlock.shouldRenderBlock()) {
-				ForgeDirection rotation;
-				if (openBlock != null) {
-					rotation = openBlock.getInventoryRenderRotation();
-					openBlock.setBoundsBasedOnRotation(rotation);
-					openBlock.getRotationMode().setupBlockRenderer(renderer, rotation);
-				} else rotation = ForgeDirection.EAST;
+			if (openBlock.shouldRenderBlock()) {
+				final ForgeDirection rotation = openBlock.getInventoryRenderRotation();
 
-				RenderUtils.renderInventoryBlock(renderer, block, rotation);
-				RenderUtils.resetFacesOnRenderer(renderer);
+				openBlock.setBoundsBasedOnRotation(rotation);
+
+				final IRendererSetup setup = openBlock.getRotationMode().rendererSetup;
+				final RenderBlocks localRenderer = setup.enter(rotation, renderer);
+				RenderUtils.renderInventoryBlock(localRenderer, block, rotation);
+				setup.exit(localRenderer);
 			}
 		} catch (Exception e) {
 			Log.severe(e, "Error during block '%s' rendering", block.getUnlocalizedName());
@@ -73,18 +65,21 @@ public class DefaultBlockRenderer implements IBlockRenderer<Block> {
 
 	@Override
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
-		OpenBlock openBlock = (block instanceof OpenBlock)? (OpenBlock)block : null;
+		if (!(block instanceof OpenBlock)) return renderer.renderStandardBlock(block, x, y, z);
 
-		if (openBlock == null || openBlock.shouldRenderBlock()) {
-			if (openBlock != null) {
-				int metadata = world.getBlockMetadata(x, y, z);
-				ForgeDirection rotation = openBlock.getRotation(metadata);
-				openBlock.getRotationMode().setupBlockRenderer(renderer, rotation);
-			}
-			renderer.renderStandardBlock(block, x, y, z);
-			RenderUtils.resetFacesOnRenderer(renderer);
+		final OpenBlock openBlock = (OpenBlock)block;
+
+		if (openBlock.shouldRenderBlock()) {
+			final int metadata = world.getBlockMetadata(x, y, z);
+			final IRendererSetup setup = openBlock.getRotationMode().rendererSetup;
+
+			final ForgeDirection rotation = openBlock.getRotation(metadata);
+			final RenderBlocks localRenderer = setup.enter(rotation, renderer);
+			boolean wasRendered = localRenderer.renderStandardBlock(openBlock, x, y, z);
+			setup.exit(localRenderer);
+			return wasRendered;
 		}
-		return true;
+		return false;
 	}
 
 }

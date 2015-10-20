@@ -84,7 +84,7 @@ public class RenderUtils {
 
 	@Deprecated
 	public static void rotateFacesOnRenderer(OpenBlock block, ForgeDirection rotation, RenderBlocks renderer) {
-		block.getRotationMode().setupBlockRenderer(renderer, rotation);
+		// no longer valid
 	}
 
 	public static void resetFacesOnRenderer(RenderBlocks renderer) {

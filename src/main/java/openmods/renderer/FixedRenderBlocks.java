@@ -6,6 +6,9 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 
+/**
+ * Vanilla block renderer flips u and v coordinates for certains values (1,2) of uvRotateEast and uvRotateSouth
+ */
 public class FixedRenderBlocks extends RenderBlocks {
 
 	@Override

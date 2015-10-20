@@ -2,21 +2,22 @@ package openmods.block;
 
 import java.util.Set;
 
-import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.common.util.ForgeDirection;
+import openmods.geometry.BlockTextureTransform;
+import openmods.geometry.Orientation;
+import openmods.renderer.rotations.AxisYRotation;
+import openmods.renderer.rotations.IRendererSetup;
+import openmods.renderer.rotations.TopRotation;
 import openmods.utils.BlockUtils;
 
 import com.google.common.collect.ImmutableSet;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public enum BlockRotationMode {
 	/**
 	 * No rotations - always oriented by world directions
 	 */
-	NONE(RotationAxis.NO_AXIS, 0) {
+	NONE(RotationAxis.NO_AXIS, IRendererSetup.NULL, 0) {
 		@Override
 		public boolean isValid(ForgeDirection dir) {
 			return true;
@@ -53,15 +54,21 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		@SideOnly(Side.CLIENT)
-		public void setupBlockRenderer(RenderBlocks renderer, ForgeDirection rotation) {}
+		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
+			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
+		}
+
+		@Override
+		public Orientation getBlockOrientation(ForgeDirection direction) {
+			return Orientation.ET;
+		}
 	},
 	/**
 	 * Two orientations - either N-S or W-E. Top side remains unchanged.
 	 * Placement side will become local north or south.
 	 * Tool rotation will either rotate around Y (if clicked T or B) or set to clicked side (otherwise).
 	 */
-	TWO_DIRECTIONS(RotationAxis.THREE_AXIS, 1, ForgeDirection.WEST, ForgeDirection.NORTH) {
+	TWO_DIRECTIONS(RotationAxis.THREE_AXIS, AxisYRotation.instance, 1, ForgeDirection.WEST, ForgeDirection.NORTH) {
 		@Override
 		public ForgeDirection fromValue(int value) {
 			return ((value & 1) == 0)? ForgeDirection.WEST : ForgeDirection.NORTH;
@@ -145,27 +152,30 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		@SideOnly(Side.CLIENT)
-		public void setupBlockRenderer(RenderBlocks renderer, ForgeDirection rotation) {
-			switch (rotation) {
+		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
+			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
+		}
+
+		@Override
+		public Orientation getBlockOrientation(ForgeDirection localNorth) {
+			switch (localNorth) {
+				case NORTH:
+				case SOUTH:
+				default:
+					return Orientation.TS;
 				case EAST:
 				case WEST:
-					renderer.uvRotateTop = 2;
-					break;
-				case SOUTH:
-					renderer.uvRotateTop = 3;
-					break;
-				default:
-					break;
+					return Orientation.TE;
 			}
 		}
+
 	},
 	/**
 	 * Three orientations: N-S, W-E, T-B.
 	 * Placement side will become local top or bottom.
 	 * Tool rotation will set top direction to clicked side.
 	 */
-	THREE_DIRECTIONS(RotationAxis.THREE_AXIS, 2, ForgeDirection.WEST, ForgeDirection.NORTH, ForgeDirection.UP) {
+	THREE_DIRECTIONS(RotationAxis.THREE_AXIS, TopRotation.instance, 2, ForgeDirection.WEST, ForgeDirection.NORTH, ForgeDirection.UP) {
 		@Override
 		public ForgeDirection fromValue(int value) {
 			switch (value & 3) {
@@ -249,7 +259,7 @@ public enum BlockRotationMode {
 					return side.getRotation(ForgeDirection.WEST);
 				case EAST:
 				case WEST:
-					return side.getRotation(ForgeDirection.NORTH);
+					return side.getRotation(ForgeDirection.SOUTH);
 				case UP:
 				case DOWN:
 				default:
@@ -258,36 +268,32 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		@SideOnly(Side.CLIENT)
-		public void setupBlockRenderer(RenderBlocks renderer, ForgeDirection rotation) {
-			switch (rotation) {
-				case WEST:
-				case EAST:
-					renderer.uvRotateTop = 1;
-					renderer.uvRotateBottom = 2;
-					renderer.uvRotateWest = 1;
-					renderer.uvRotateEast = 2;
-					break;
+		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
+			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
+		}
+
+		@Override
+		public Orientation getBlockOrientation(ForgeDirection localTop) {
+			switch (localTop) {
 				case NORTH:
 				case SOUTH:
-					renderer.uvRotateNorth = 2;
-					renderer.uvRotateSouth = 1;
-					break;
+					return Orientation.NT;
+				case EAST:
+				case WEST:
+					return Orientation.WS;
 				case UP:
 				case DOWN:
 				default:
-					break;
-
+					return Orientation.TS;
 			}
 		}
-
 	},
 	/**
 	 * Rotate around Y in for directions: N,S,W,E.
 	 * Placement side will become local north.
 	 * Tool rotation will either rotate around Y (if clicked T or B) or set to clicked side (otherwise).
 	 */
-	FOUR_DIRECTIONS(RotationAxis.THREE_AXIS, 2, ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.EAST, ForgeDirection.WEST) {
+	FOUR_DIRECTIONS(RotationAxis.THREE_AXIS, AxisYRotation.instance, 2, ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.EAST, ForgeDirection.WEST) {
 		@Override
 		public ForgeDirection fromValue(int value) {
 			switch (value & 3) {
@@ -370,20 +376,22 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		@SideOnly(Side.CLIENT)
-		public void setupBlockRenderer(RenderBlocks renderer, ForgeDirection rotation) {
-			switch (rotation) {
-				case EAST:
-					renderer.uvRotateTop = 1;
-					break;
-				case WEST:
-					renderer.uvRotateTop = 2;
-					break;
-				case SOUTH:
-					renderer.uvRotateTop = 3;
-					break;
+		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
+			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
+		}
+
+		@Override
+		public Orientation getBlockOrientation(ForgeDirection localNorth) {
+			switch (localNorth) {
+				case NORTH:
 				default:
-					break;
+					return Orientation.TS;
+				case EAST:
+					return Orientation.TW;
+				case SOUTH:
+					return Orientation.TN;
+				case WEST:
+					return Orientation.TE;
 			}
 		}
 	},
@@ -392,7 +400,7 @@ public enum BlockRotationMode {
 	 * Placement side will become local top.
 	 * Tool rotation will set top to clicked side.
 	 */
-	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, 3, ForgeDirection.VALID_DIRECTIONS) {
+	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, TopRotation.instance, 3, ForgeDirection.VALID_DIRECTIONS) {
 		@Override
 		public ForgeDirection fromValue(int value) {
 			return ForgeDirection.getOrientation(value & 7);
@@ -419,8 +427,8 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public ForgeDirection mapWorldToBlockSide(ForgeDirection localNorth, ForgeDirection side) {
-			switch (localNorth) {
+		public ForgeDirection mapWorldToBlockSide(ForgeDirection localTop, ForgeDirection side) {
+			switch (localTop) {
 				case DOWN:
 					return side.getRotation(ForgeDirection.SOUTH).getRotation(ForgeDirection.SOUTH);
 				case EAST:
@@ -438,54 +446,43 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		@SideOnly(Side.CLIENT)
-		public void setupBlockRenderer(RenderBlocks renderer, ForgeDirection rotation) {
-			switch (rotation) {
-				case DOWN:
-					renderer.uvRotateSouth = 3;
-					renderer.uvRotateNorth = 3;
-					renderer.uvRotateEast = 3;
-					renderer.uvRotateWest = 3;
-					break;
-				case EAST:
-					renderer.uvRotateTop = 1;
-					renderer.uvRotateBottom = 2;
-					renderer.uvRotateWest = 1;
-					renderer.uvRotateEast = 2;
-					break;
-				case NORTH:
-					renderer.uvRotateNorth = 2;
-					renderer.uvRotateSouth = 1;
-					break;
-				case SOUTH:
-					renderer.uvRotateTop = 3;
-					renderer.uvRotateBottom = 3;
-					renderer.uvRotateNorth = 1;
-					renderer.uvRotateSouth = 2;
-					break;
-				case UP:
-					break;
-				case WEST:
-					renderer.uvRotateTop = 2;
-					renderer.uvRotateBottom = 1;
-					renderer.uvRotateWest = 2;
-					renderer.uvRotateEast = 1;
-					break;
-				default:
-					break;
+		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
+			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
+		}
 
+		@Override
+		public Orientation getBlockOrientation(ForgeDirection localTop) {
+			switch (localTop) {
+				case DOWN:
+					return Orientation.BS;
+				case EAST:
+					return Orientation.ES;
+				case NORTH:
+					return Orientation.NT;
+				case SOUTH:
+					return Orientation.SB;
+				case WEST:
+					return Orientation.WS;
+				case UP:
+				default:
+					return Orientation.TS;
 			}
 		}
 	};
 
-	private BlockRotationMode(ForgeDirection[] rotations, int bitCount, ForgeDirection... allowedDirections) {
+	private BlockRotationMode(ForgeDirection[] rotations, IRendererSetup rendererSetup, int bitCount, ForgeDirection... allowedDirections) {
 		this.rotations = rotations;
+		this.rendererSetup = rendererSetup;
 		this.allowedDirections = ImmutableSet.copyOf(allowedDirections);
 		this.bitCount = bitCount;
 		this.mask = (1 << bitCount) - 1;
+
+		textureTransform = setupTextureTransform(BlockTextureTransform.builder()).build();
 	}
 
 	public final ForgeDirection[] rotations;
+
+	public final IRendererSetup rendererSetup;
 
 	private final Set<ForgeDirection> allowedDirections;
 
@@ -493,9 +490,13 @@ public enum BlockRotationMode {
 
 	public final int mask;
 
+	public final BlockTextureTransform textureTransform;
+
 	public boolean isValid(ForgeDirection dir) {
 		return allowedDirections.contains(dir);
 	}
+
+	protected abstract BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder);
 
 	public abstract ForgeDirection fromValue(int value);
 
@@ -509,6 +510,5 @@ public enum BlockRotationMode {
 
 	public abstract ForgeDirection mapWorldToBlockSide(ForgeDirection rotation, ForgeDirection side);
 
-	@SideOnly(Side.CLIENT)
-	public abstract void setupBlockRenderer(RenderBlocks renderer, ForgeDirection rotation);
+	public abstract Orientation getBlockOrientation(ForgeDirection direction);
 }

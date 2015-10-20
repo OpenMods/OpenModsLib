@@ -16,16 +16,21 @@ public class BlockRenderingHandler implements ISimpleBlockRenderingHandler {
 
 	private final int renderId;
 
+	private final IBlockRenderer<Block> defaultRenderer;
+
 	public BlockRenderingHandler(int renderId) {
 		this(renderId, true);
 	}
 
 	public BlockRenderingHandler(int renderId, boolean itemsIn3d) {
-		this.renderId = renderId;
-		this.itemsIn3d = itemsIn3d;
+		this(renderId, itemsIn3d, new DefaultBlockRenderer());
 	}
 
-	protected static final IBlockRenderer<Block> DEFAULT_RENDERER = new DefaultBlockRenderer();
+	public BlockRenderingHandler(int renderId, boolean itemsIn3d, IBlockRenderer<Block> defaultRenderer) {
+		this.renderId = renderId;
+		this.itemsIn3d = itemsIn3d;
+		this.defaultRenderer = defaultRenderer;
+	}
 
 	protected final Map<Block, IBlockRenderer<?>> blockRenderers = Maps.newIdentityHashMap();
 
@@ -36,7 +41,7 @@ public class BlockRenderingHandler implements ISimpleBlockRenderingHandler {
 	@SuppressWarnings("unchecked")
 	protected <B extends Block> IBlockRenderer<B> getRenderer(B block) {
 		IBlockRenderer<?> renderer = blockRenderers.get(block);
-		return (IBlockRenderer<B>)(renderer != null? renderer : DEFAULT_RENDERER);
+		return (IBlockRenderer<B>)(renderer != null? renderer : defaultRenderer);
 	}
 
 	@Override

@@ -12,14 +12,14 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.*;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.api.*;
 import openmods.config.game.IRegisterableBlock;
+import openmods.geometry.BlockSpaceTransform;
+import openmods.geometry.Orientation;
 import openmods.inventory.IInventoryProvider;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.BlockNotifyFlags;
@@ -494,6 +494,11 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		textures[direction.ordinal()] = icon;
 	}
 
+	public void setTextures(IIcon icon, ForgeDirection... directions) {
+		for (ForgeDirection direction : directions)
+			textures[direction.ordinal()] = icon;
+	}
+
 	protected IIcon getUnrotatedTexture(ForgeDirection direction) {
 		if (direction != ForgeDirection.UNKNOWN) {
 			final int directionId = direction.ordinal();
@@ -554,6 +559,22 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public ForgeDirection rotateSideByDirection(ForgeDirection direction, ForgeDirection side) {
 		final BlockRotationMode rotationMode = getRotationMode();
 		return rotationMode.mapWorldToBlockSide(direction, side);
+	}
+
+	public Vec3 rotateVectorByMetadata(Vec3 vec, int metadata) {
+		return rotateVectorByMetadata(vec.xCoord, vec.yCoord, vec.zCoord, metadata);
+	}
+
+	public Vec3 rotateVectorByMetadata(double x, double y, double z, int metadata) {
+		final BlockRotationMode rotationMode = getRotationMode();
+		final ForgeDirection rotation = rotationMode.fromValue(metadata);
+		return rotateVectorByDirection(rotation, x, y, z);
+	}
+
+	public Vec3 rotateVectorByDirection(ForgeDirection rotation, double x, double y, double z) {
+		final BlockRotationMode rotationMode = getRotationMode();
+		final Orientation orientation = rotationMode.getBlockOrientation(rotation);
+		return BlockSpaceTransform.instance.mapWorldToBlock(orientation, x, y, z);
 	}
 
 	public void setDefaultTexture(IIcon icon) {

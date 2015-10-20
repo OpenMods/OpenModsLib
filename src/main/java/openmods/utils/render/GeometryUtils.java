@@ -176,8 +176,6 @@ public class GeometryUtils {
 		}
 	}
 
-	// Cutting middle of shape = terrible hack. No idea if it works in any case
-	// Anyone now better algorithm for ellipsoids with non-integer axis?
 	public static void makeEllipsoid(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, IShapeable shapeable, Set<Octant> octants) {
 		{
 			final int centerX = (minX + maxX) / 2;
@@ -193,34 +191,38 @@ public class GeometryUtils {
 			};
 		}
 
-		int radiusX;
-		int radiusY;
-		int radiusZ;
+		final int radiusX;
+		final int radiusY;
+		final int radiusZ;
 
+		// Cutting middle of shape == terrible hack. No idea if it works in any case
+		// Anyone now better algorithm for ellipsoids with non-integer axis?
 		{
-			final double realRadiusX = (maxX - minX) / 2.0;
-			radiusX = (int)realRadiusX;
-
-			if (realRadiusX != radiusX) {
-				radiusX++;
+			final int diffX = maxX - minX;
+			if ((diffX & 1) == 0) {
+				radiusX = diffX / 2;
+			} else {
+				radiusX = diffX / 2 + 1;
 				shapeable = skipMiddleX(shapeable);
 			}
 		}
 
 		{
-			final double realRadiusY = (maxY - minY) / 2.0;
-			radiusY = (int)realRadiusY;
-			if (realRadiusY != radiusY) {
-				radiusY++;
+			final int diffY = maxY - minY;
+			if ((diffY & 1) == 0) {
+				radiusY = diffY / 2;
+			} else {
+				radiusY = diffY / 2 + 1;
 				shapeable = skipMiddleY(shapeable);
 			}
 		}
 
 		{
-			final double realRadiusZ = (maxZ - minZ) / 2.0;
-			radiusZ = (int)realRadiusZ;
-			if (realRadiusZ != radiusZ) {
-				radiusZ++;
+			final int diffZ = maxZ - minZ;
+			if ((diffZ & 1) == 0) {
+				radiusZ = diffZ / 2;
+			} else {
+				radiusZ = diffZ / 2 + 1;
 				shapeable = skipMiddleZ(shapeable);
 			}
 		}
@@ -275,24 +277,25 @@ public class GeometryUtils {
 			};
 		}
 
-		int radiusX;
-		int radiusZ;
+		final int radiusX;
+		final int radiusZ;
 
 		{
-			final double realRadiusX = (maxX - minX) / 2.0;
-			radiusX = (int)realRadiusX;
-
-			if (realRadiusX != radiusX) {
-				radiusX++;
+			final int diffX = maxX - minX;
+			if ((diffX & 1) == 0) {
+				radiusX = diffX / 2;
+			} else {
+				radiusX = diffX / 2 + 1;
 				shapeable = skipMiddleX(shapeable);
 			}
 		}
 
 		{
-			final double realRadiusZ = (maxZ - minZ) / 2.0;
-			radiusZ = (int)realRadiusZ;
-			if (realRadiusZ != radiusZ) {
-				radiusZ++;
+			final int diffY = maxZ - minZ;
+			if ((diffY & 1) == 0) {
+				radiusZ = diffY / 2;
+			} else {
+				radiusZ = diffY / 2 + 1;
 				shapeable = skipMiddleZ(shapeable);
 			}
 		}
