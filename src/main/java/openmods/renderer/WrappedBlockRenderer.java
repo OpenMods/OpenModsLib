@@ -31,22 +31,4 @@ public abstract class WrappedBlockRenderer<T extends Block> implements IBlockRen
 	}
 
 	protected abstract RenderBlocks createWrapper(RenderBlocks renderer);
-
-	public static <T extends Block> IBlockRenderer<T> fixedRenderer(IBlockRenderer<T> renderer) {
-		return new WrappedBlockRenderer<T>(renderer) {
-			@Override
-			protected RenderBlocks createWrapper(RenderBlocks renderer) {
-				return new FixedRenderBlocks();
-			}
-		};
-	}
-
-	public static <T extends Block> IBlockRenderer<T> tweakedRenderer(IBlockRenderer<T> renderer) {
-		return new WrappedBlockRenderer<T>(renderer) {
-			@Override
-			protected RenderBlocks createWrapper(RenderBlocks renderer) {
-				return new TweakedRenderBlocks();
-			}
-		};
-	}
 }

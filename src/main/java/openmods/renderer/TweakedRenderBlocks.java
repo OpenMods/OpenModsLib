@@ -1,6 +1,7 @@
 package openmods.renderer;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.IIcon;
 
@@ -112,5 +113,14 @@ public class TweakedRenderBlocks extends FixedRenderBlocks {
 			tessellator.addVertexWithUV(d12, d13, d14, d7, d9);
 			tessellator.addVertexWithUV(d12, d13, d15, d4, d6);
 		}
+	}
+
+	public static <T extends Block> IBlockRenderer<T> wrap(IBlockRenderer<T> blockRenderer) {
+		return new WrappedBlockRenderer<T>(blockRenderer) {
+			@Override
+			protected RenderBlocks createWrapper(RenderBlocks renderer) {
+				return new TweakedRenderBlocks();
+			}
+		};
 	}
 }

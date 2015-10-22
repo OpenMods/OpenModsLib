@@ -208,4 +208,13 @@ public class FixedRenderBlocks extends RenderBlocks {
 	public void setAllFaces(int rot) {
 		uvRotateTop = uvRotateBottom = uvRotateNorth = uvRotateSouth = uvRotateEast = uvRotateWest = rot;
 	}
+
+	public static <T extends Block> IBlockRenderer<T> wrap(IBlockRenderer<T> renderer) {
+		return new WrappedBlockRenderer<T>(renderer) {
+			@Override
+			protected RenderBlocks createWrapper(RenderBlocks renderer) {
+				return new FixedRenderBlocks();
+			}
+		};
+	}
 }
