@@ -49,18 +49,13 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public ForgeDirection mapWorldToBlockSide(ForgeDirection localNorth, ForgeDirection side) {
-			return side;
-		}
-
-		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
 		}
 
 		@Override
 		public Orientation getBlockOrientation(ForgeDirection direction) {
-			return Orientation.ET;
+			return Orientation.XP_YP;
 		}
 	},
 	/**
@@ -139,19 +134,6 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public ForgeDirection mapWorldToBlockSide(ForgeDirection localNorth, ForgeDirection side) {
-			switch (localNorth) {
-				case NORTH:
-				case SOUTH:
-				default:
-					return side;
-				case EAST:
-				case WEST:
-					return side.getRotation(ForgeDirection.UP);
-			}
-		}
-
-		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
 		}
@@ -162,10 +144,10 @@ public enum BlockRotationMode {
 				case NORTH:
 				case SOUTH:
 				default:
-					return Orientation.TS;
+					return Orientation.XP_YP;
 				case EAST:
 				case WEST:
-					return Orientation.TE;
+					return Orientation.ZN_YP;
 			}
 		}
 
@@ -252,22 +234,6 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public ForgeDirection mapWorldToBlockSide(ForgeDirection localTop, ForgeDirection side) {
-			switch (localTop) {
-				case NORTH:
-				case SOUTH:
-					return side.getRotation(ForgeDirection.WEST);
-				case EAST:
-				case WEST:
-					return side.getRotation(ForgeDirection.SOUTH);
-				case UP:
-				case DOWN:
-				default:
-					return side;
-			}
-		}
-
-		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
 		}
@@ -277,14 +243,14 @@ public enum BlockRotationMode {
 			switch (localTop) {
 				case NORTH:
 				case SOUTH:
-					return Orientation.NT;
+					return Orientation.XP_ZN;
 				case EAST:
 				case WEST:
-					return Orientation.WS;
+					return Orientation.YP_XN;
 				case UP:
 				case DOWN:
 				default:
-					return Orientation.TS;
+					return Orientation.XP_YP;
 			}
 		}
 	},
@@ -361,21 +327,6 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public ForgeDirection mapWorldToBlockSide(ForgeDirection localNorth, ForgeDirection side) {
-			switch (localNorth) {
-				case NORTH:
-				default:
-					return side;
-				case EAST:
-					return side.getRotation(ForgeDirection.DOWN);
-				case SOUTH:
-					return side.getRotation(ForgeDirection.UP).getRotation(ForgeDirection.UP);
-				case WEST:
-					return side.getRotation(ForgeDirection.UP);
-			}
-		}
-
-		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
 		}
@@ -385,13 +336,13 @@ public enum BlockRotationMode {
 			switch (localNorth) {
 				case NORTH:
 				default:
-					return Orientation.TS;
+					return Orientation.XP_YP;
 				case EAST:
-					return Orientation.TW;
+					return Orientation.ZP_YP;
 				case SOUTH:
-					return Orientation.TN;
+					return Orientation.XN_YP;
 				case WEST:
-					return Orientation.TE;
+					return Orientation.ZN_YP;
 			}
 		}
 	},
@@ -427,25 +378,6 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public ForgeDirection mapWorldToBlockSide(ForgeDirection localTop, ForgeDirection side) {
-			switch (localTop) {
-				case DOWN:
-					return side.getRotation(ForgeDirection.SOUTH).getRotation(ForgeDirection.SOUTH);
-				case EAST:
-					return side.getRotation(ForgeDirection.NORTH);
-				case NORTH:
-					return side.getRotation(ForgeDirection.WEST);
-				case SOUTH:
-					return side.getRotation(ForgeDirection.EAST);
-				case WEST:
-					return side.getRotation(ForgeDirection.SOUTH);
-				case UP:
-				default:
-					return side;
-			}
-		}
-
-		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
 		}
@@ -454,26 +386,26 @@ public enum BlockRotationMode {
 		public Orientation getBlockOrientation(ForgeDirection localTop) {
 			switch (localTop) {
 				case DOWN:
-					return Orientation.BS;
+					return Orientation.XN_YN;
 				case EAST:
-					return Orientation.ES;
+					return Orientation.YN_XP;
 				case NORTH:
-					return Orientation.NT;
+					return Orientation.XP_ZN;
 				case SOUTH:
-					return Orientation.SB;
+					return Orientation.XP_ZP;
 				case WEST:
-					return Orientation.WS;
+					return Orientation.YP_XN;
 				case UP:
 				default:
-					return Orientation.TS;
+					return Orientation.XP_YP;
 			}
 		}
 	};
 
-	private BlockRotationMode(ForgeDirection[] rotations, IRendererSetup rendererSetup, int bitCount, ForgeDirection... allowedDirections) {
+	private BlockRotationMode(ForgeDirection[] rotations, IRendererSetup rendererSetup, int bitCount, ForgeDirection... validDirections) {
 		this.rotations = rotations;
 		this.rendererSetup = rendererSetup;
-		this.allowedDirections = ImmutableSet.copyOf(allowedDirections);
+		this.validDirections = ImmutableSet.copyOf(validDirections);
 		this.bitCount = bitCount;
 		this.mask = (1 << bitCount) - 1;
 
@@ -484,7 +416,7 @@ public enum BlockRotationMode {
 
 	public final IRendererSetup rendererSetup;
 
-	private final Set<ForgeDirection> allowedDirections;
+	public final Set<ForgeDirection> validDirections;
 
 	public final int bitCount;
 
@@ -493,7 +425,7 @@ public enum BlockRotationMode {
 	public final BlockTextureTransform textureTransform;
 
 	public boolean isValid(ForgeDirection dir) {
-		return allowedDirections.contains(dir);
+		return validDirections.contains(dir);
 	}
 
 	protected abstract BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder);
@@ -508,7 +440,9 @@ public enum BlockRotationMode {
 
 	public abstract ForgeDirection calculateRotation(ForgeDirection direction, ForgeDirection axis);
 
-	public abstract ForgeDirection mapWorldToBlockSide(ForgeDirection rotation, ForgeDirection side);
-
 	public abstract Orientation getBlockOrientation(ForgeDirection direction);
+
+	public ForgeDirection mapWorldToBlockSide(ForgeDirection rotation, ForgeDirection side) {
+		return getBlockOrientation(rotation).globalToLocalDirection(side);
+	}
 }

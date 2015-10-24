@@ -132,7 +132,13 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public ForgeDirection getRotation(int metadata) {
-		return blockRotationMode.fromValue(metadata & blockRotationMode.mask);
+		final BlockRotationMode rotationMode = getRotationMode();
+		return rotationMode.fromValue(metadata & rotationMode.mask);
+	}
+
+	public Orientation getOrientation(int metadata) {
+		final ForgeDirection rotation = getRotation(metadata);
+		return getRotationMode().getBlockOrientation(rotation);
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -426,7 +432,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public boolean canPlaceBlock(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection sideDir, ForgeDirection blockDirection, float hitX, float hitY, float hitZ, int newMeta) {
-		return blockRotationMode.isValid(blockDirection);
+		return getRotationMode().isValid(blockDirection);
 	}
 
 	@Override
@@ -445,7 +451,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 * This is called if your ItemBlock extends ItemOpenBlock
 	 */
 	public void afterBlockPlaced(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, ForgeDirection blockDir, float hitX, float hitY, float hitZ, int itemMeta) {
-		int blockMeta = blockRotationMode.toValue(blockDir);
+		int blockMeta = getRotationMode().toValue(blockDir);
 
 		// silently set meta, since we want to notify TE before neighbors
 		world.setBlockMetadataWithNotify(x, y, z, blockMeta, BlockNotifyFlags.NONE);
@@ -464,15 +470,15 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	protected void setRotationMeta(World world, int x, int y, int z, ForgeDirection blockDir) {
-		int blockMeta = blockRotationMode.toValue(blockDir);
+		int blockMeta = getRotationMode().toValue(blockDir);
 		world.setBlockMetadataWithNotify(x, y, z, blockMeta, BlockNotifyFlags.ALL);
 	}
 
 	public ForgeDirection calculateSide(EntityPlayer player, ForgeDirection side) {
 		if (blockPlacementMode == BlockPlacementMode.SURFACE) {
-			return blockRotationMode.getPlacementDirectionFromSurface(side);
+			return getRotationMode().getPlacementDirectionFromSurface(side);
 		} else {
-			return blockRotationMode.getPlacementDirectionFromEntity(player);
+			return getRotationMode().getPlacementDirectionFromEntity(player);
 		}
 	}
 
@@ -601,12 +607,12 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public boolean rotateBlock(World worldObj, int x, int y, int z, ForgeDirection axis) {
-		return canRotateWithTool() && RotationHelper.rotate(blockRotationMode, worldObj, x, y, z, axis);
+		return canRotateWithTool() && RotationHelper.rotate(getRotationMode(), worldObj, x, y, z, axis);
 	}
 
 	@Override
 	public ForgeDirection[] getValidRotations(World worldObj, int x, int y, int z) {
 		if (!canRotateWithTool()) return RotationAxis.NO_AXIS;
-		return blockRotationMode.rotations;
+		return getRotationMode().rotations;
 	}
 }

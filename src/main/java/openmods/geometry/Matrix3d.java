@@ -2,6 +2,8 @@ package openmods.geometry;
 
 import net.minecraft.util.Vec3;
 
+import com.google.common.base.Objects;
+
 public class Matrix3d {
 
 	public double m00;
@@ -290,4 +292,27 @@ public class Matrix3d {
 		m.m22 = 0.0;
 		return m;
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(m00, m01, m02, m10, m11, m12, m20, m21, m22);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Matrix3d) {
+			final Matrix3d o = (Matrix3d)obj;
+			return m00 == o.m00 &&
+					m01 == o.m01 &&
+					m02 == o.m02 &&
+					m10 == o.m10 &&
+					m11 == o.m11 &&
+					m12 == o.m12 &&
+					m20 == o.m20 &&
+					m21 == o.m21 &&
+					m22 == o.m22;
+		}
+		return false;
+	}
+
 }

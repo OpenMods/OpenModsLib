@@ -23,17 +23,17 @@ public abstract class BlockSpaceTransform {
 	private static Matrix3d createTranformMatrix(Orientation o) {
 		// basis change matrix - local east (X), up (Y), south (Z) are new basis vectors
 		final Matrix3d mat = new Matrix3d();
-		mat.m00 = o.x.offsetX;
-		mat.m01 = o.x.offsetY;
-		mat.m02 = o.x.offsetZ;
+		mat.m00 = o.x.x;
+		mat.m01 = o.x.y;
+		mat.m02 = o.x.z;
 
-		mat.m10 = o.y.offsetX;
-		mat.m11 = o.y.offsetY;
-		mat.m12 = o.y.offsetZ;
+		mat.m10 = o.y.x;
+		mat.m11 = o.y.y;
+		mat.m12 = o.y.z;
 
-		mat.m20 = o.z.offsetX;
-		mat.m21 = o.z.offsetY;
-		mat.m22 = o.z.offsetZ;
+		mat.m20 = o.z.x;
+		mat.m21 = o.z.y;
+		mat.m22 = o.z.z;
 		return mat;
 	}
 

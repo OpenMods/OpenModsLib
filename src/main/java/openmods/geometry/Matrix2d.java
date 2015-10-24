@@ -1,5 +1,7 @@
 package openmods.geometry;
 
+import com.google.common.base.Objects;
+
 public class Matrix2d {
 
 	public double m00;
@@ -237,4 +239,22 @@ public class Matrix2d {
 	public double determinant() {
 		return m00 * m11 - m01 * m10;
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(m00, m01, m10, m11);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Matrix2d) {
+			final Matrix2d o = (Matrix2d)obj;
+			return m00 == o.m00 &&
+					m01 == o.m01 &&
+					m10 == o.m10 &&
+					m11 == o.m11;
+		}
+		return false;
+	}
+
 }

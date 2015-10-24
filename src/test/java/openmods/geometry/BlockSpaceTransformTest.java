@@ -36,9 +36,9 @@ public class BlockSpaceTransformTest {
 		final double blockZ = offsetCoord(z);
 
 		// bit of linear algebra. Orientation.[x,y,z] are basis vectors for reoriented space
-		final double worldX = offsetCoord(orientation.x.offsetX * x + orientation.y.offsetX * y + orientation.z.offsetX * z);
-		final double worldY = offsetCoord(orientation.x.offsetY * x + orientation.y.offsetY * y + orientation.z.offsetY * z);
-		final double worldZ = offsetCoord(orientation.x.offsetZ * x + orientation.y.offsetZ * y + orientation.z.offsetZ * z);
+		final double worldX = offsetCoord(orientation.transformX(x, y, z));
+		final double worldY = offsetCoord(orientation.transformY(x, y, z));
+		final double worldZ = offsetCoord(orientation.transformZ(x, y, z));
 
 		testCoordinates(orientation, worldX, worldY, worldZ, blockX, blockY, blockZ);
 	}
@@ -61,109 +61,109 @@ public class BlockSpaceTransformTest {
 
 	@Test
 	public void testBottomSouth() {
-		testCoordinates(Orientation.BS, 0, 0, 0, 1, 1, 0);
-		testCoordinates(Orientation.BS, 0, 0, 1, 1, 1, 1);
-		testCoordinates(Orientation.BS, 0, 1, 0, 1, 0, 0);
-		testCoordinates(Orientation.BS, 0, 1, 1, 1, 0, 1);
-		testCoordinates(Orientation.BS, 1, 0, 0, 0, 1, 0);
-		testCoordinates(Orientation.BS, 1, 0, 1, 0, 1, 1);
-		testCoordinates(Orientation.BS, 1, 1, 0, 0, 0, 0);
-		testCoordinates(Orientation.BS, 1, 1, 1, 0, 0, 1);
+		testCoordinates(Orientation.XN_YN, 0, 0, 0, 1, 1, 0);
+		testCoordinates(Orientation.XN_YN, 0, 0, 1, 1, 1, 1);
+		testCoordinates(Orientation.XN_YN, 0, 1, 0, 1, 0, 0);
+		testCoordinates(Orientation.XN_YN, 0, 1, 1, 1, 0, 1);
+		testCoordinates(Orientation.XN_YN, 1, 0, 0, 0, 1, 0);
+		testCoordinates(Orientation.XN_YN, 1, 0, 1, 0, 1, 1);
+		testCoordinates(Orientation.XN_YN, 1, 1, 0, 0, 0, 0);
+		testCoordinates(Orientation.XN_YN, 1, 1, 1, 0, 0, 1);
 	}
 
 	@Test
 	public void testTopSouth() {
-		testCoordinates(Orientation.TS, 0, 0, 0, 0, 0, 0);
-		testCoordinates(Orientation.TS, 0, 0, 1, 0, 0, 1);
-		testCoordinates(Orientation.TS, 0, 1, 0, 0, 1, 0);
-		testCoordinates(Orientation.TS, 0, 1, 1, 0, 1, 1);
-		testCoordinates(Orientation.TS, 1, 0, 0, 1, 0, 0);
-		testCoordinates(Orientation.TS, 1, 0, 1, 1, 0, 1);
-		testCoordinates(Orientation.TS, 1, 1, 0, 1, 1, 0);
-		testCoordinates(Orientation.TS, 1, 1, 1, 1, 1, 1);
+		testCoordinates(Orientation.XP_YP, 0, 0, 0, 0, 0, 0);
+		testCoordinates(Orientation.XP_YP, 0, 0, 1, 0, 0, 1);
+		testCoordinates(Orientation.XP_YP, 0, 1, 0, 0, 1, 0);
+		testCoordinates(Orientation.XP_YP, 0, 1, 1, 0, 1, 1);
+		testCoordinates(Orientation.XP_YP, 1, 0, 0, 1, 0, 0);
+		testCoordinates(Orientation.XP_YP, 1, 0, 1, 1, 0, 1);
+		testCoordinates(Orientation.XP_YP, 1, 1, 0, 1, 1, 0);
+		testCoordinates(Orientation.XP_YP, 1, 1, 1, 1, 1, 1);
 	}
 
 	@Test
 	public void testNorthTop() {
-		testCoordinates(Orientation.NT, 0, 0, 0, 0, 1, 0);
-		testCoordinates(Orientation.NT, 0, 0, 1, 0, 0, 0);
-		testCoordinates(Orientation.NT, 0, 1, 0, 0, 1, 1);
-		testCoordinates(Orientation.NT, 0, 1, 1, 0, 0, 1);
-		testCoordinates(Orientation.NT, 1, 0, 0, 1, 1, 0);
-		testCoordinates(Orientation.NT, 1, 0, 1, 1, 0, 0);
-		testCoordinates(Orientation.NT, 1, 1, 0, 1, 1, 1);
-		testCoordinates(Orientation.NT, 1, 1, 1, 1, 0, 1);
+		testCoordinates(Orientation.XP_ZN, 0, 0, 0, 0, 1, 0);
+		testCoordinates(Orientation.XP_ZN, 0, 0, 1, 0, 0, 0);
+		testCoordinates(Orientation.XP_ZN, 0, 1, 0, 0, 1, 1);
+		testCoordinates(Orientation.XP_ZN, 0, 1, 1, 0, 0, 1);
+		testCoordinates(Orientation.XP_ZN, 1, 0, 0, 1, 1, 0);
+		testCoordinates(Orientation.XP_ZN, 1, 0, 1, 1, 0, 0);
+		testCoordinates(Orientation.XP_ZN, 1, 1, 0, 1, 1, 1);
+		testCoordinates(Orientation.XP_ZN, 1, 1, 1, 1, 0, 1);
 	}
 
 	@Test
 	public void testSouthTop() {
-		testCoordinates(Orientation.SB, 0, 0, 0, 0, 0, 1);
-		testCoordinates(Orientation.SB, 0, 0, 1, 0, 1, 1);
-		testCoordinates(Orientation.SB, 0, 1, 0, 0, 0, 0);
-		testCoordinates(Orientation.SB, 0, 1, 1, 0, 1, 0);
-		testCoordinates(Orientation.SB, 1, 0, 0, 1, 0, 1);
-		testCoordinates(Orientation.SB, 1, 0, 1, 1, 1, 1);
-		testCoordinates(Orientation.SB, 1, 1, 0, 1, 0, 0);
-		testCoordinates(Orientation.SB, 1, 1, 1, 1, 1, 0);
+		testCoordinates(Orientation.XP_ZP, 0, 0, 0, 0, 0, 1);
+		testCoordinates(Orientation.XP_ZP, 0, 0, 1, 0, 1, 1);
+		testCoordinates(Orientation.XP_ZP, 0, 1, 0, 0, 0, 0);
+		testCoordinates(Orientation.XP_ZP, 0, 1, 1, 0, 1, 0);
+		testCoordinates(Orientation.XP_ZP, 1, 0, 0, 1, 0, 1);
+		testCoordinates(Orientation.XP_ZP, 1, 0, 1, 1, 1, 1);
+		testCoordinates(Orientation.XP_ZP, 1, 1, 0, 1, 0, 0);
+		testCoordinates(Orientation.XP_ZP, 1, 1, 1, 1, 1, 0);
 	}
 
 	@Test
 	public void testWestSouth() {
-		testCoordinates(Orientation.WS, 0, 0, 0, 0, 1, 0);
-		testCoordinates(Orientation.WS, 0, 0, 1, 0, 1, 1);
-		testCoordinates(Orientation.WS, 0, 1, 0, 1, 1, 0);
-		testCoordinates(Orientation.WS, 0, 1, 1, 1, 1, 1);
-		testCoordinates(Orientation.WS, 1, 0, 0, 0, 0, 0);
-		testCoordinates(Orientation.WS, 1, 0, 1, 0, 0, 1);
-		testCoordinates(Orientation.WS, 1, 1, 0, 1, 0, 0);
-		testCoordinates(Orientation.WS, 1, 1, 1, 1, 0, 1);
+		testCoordinates(Orientation.YP_XN, 0, 0, 0, 0, 1, 0);
+		testCoordinates(Orientation.YP_XN, 0, 0, 1, 0, 1, 1);
+		testCoordinates(Orientation.YP_XN, 0, 1, 0, 1, 1, 0);
+		testCoordinates(Orientation.YP_XN, 0, 1, 1, 1, 1, 1);
+		testCoordinates(Orientation.YP_XN, 1, 0, 0, 0, 0, 0);
+		testCoordinates(Orientation.YP_XN, 1, 0, 1, 0, 0, 1);
+		testCoordinates(Orientation.YP_XN, 1, 1, 0, 1, 0, 0);
+		testCoordinates(Orientation.YP_XN, 1, 1, 1, 1, 0, 1);
 	}
 
 	@Test
 	public void testEastSouth() {
-		testCoordinates(Orientation.ES, 0, 0, 0, 1, 0, 0);
-		testCoordinates(Orientation.ES, 0, 0, 1, 1, 0, 1);
-		testCoordinates(Orientation.ES, 0, 1, 0, 0, 0, 0);
-		testCoordinates(Orientation.ES, 0, 1, 1, 0, 0, 1);
-		testCoordinates(Orientation.ES, 1, 0, 0, 1, 1, 0);
-		testCoordinates(Orientation.ES, 1, 0, 1, 1, 1, 1);
-		testCoordinates(Orientation.ES, 1, 1, 0, 0, 1, 0);
-		testCoordinates(Orientation.ES, 1, 1, 1, 0, 1, 1);
+		testCoordinates(Orientation.YN_XP, 0, 0, 0, 1, 0, 0);
+		testCoordinates(Orientation.YN_XP, 0, 0, 1, 1, 0, 1);
+		testCoordinates(Orientation.YN_XP, 0, 1, 0, 0, 0, 0);
+		testCoordinates(Orientation.YN_XP, 0, 1, 1, 0, 0, 1);
+		testCoordinates(Orientation.YN_XP, 1, 0, 0, 1, 1, 0);
+		testCoordinates(Orientation.YN_XP, 1, 0, 1, 1, 1, 1);
+		testCoordinates(Orientation.YN_XP, 1, 1, 0, 0, 1, 0);
+		testCoordinates(Orientation.YN_XP, 1, 1, 1, 0, 1, 1);
 	}
 
 	@Test
 	public void testTopNorth() {
-		testCoordinates(Orientation.TN, 0, 0, 0, 1, 0, 1);
-		testCoordinates(Orientation.TN, 0, 0, 1, 1, 0, 0);
-		testCoordinates(Orientation.TN, 0, 1, 0, 1, 1, 1);
-		testCoordinates(Orientation.TN, 0, 1, 1, 1, 1, 0);
-		testCoordinates(Orientation.TN, 1, 0, 0, 0, 0, 1);
-		testCoordinates(Orientation.TN, 1, 0, 1, 0, 0, 0);
-		testCoordinates(Orientation.TN, 1, 1, 0, 0, 1, 1);
-		testCoordinates(Orientation.TN, 1, 1, 1, 0, 1, 0);
+		testCoordinates(Orientation.XN_YP, 0, 0, 0, 1, 0, 1);
+		testCoordinates(Orientation.XN_YP, 0, 0, 1, 1, 0, 0);
+		testCoordinates(Orientation.XN_YP, 0, 1, 0, 1, 1, 1);
+		testCoordinates(Orientation.XN_YP, 0, 1, 1, 1, 1, 0);
+		testCoordinates(Orientation.XN_YP, 1, 0, 0, 0, 0, 1);
+		testCoordinates(Orientation.XN_YP, 1, 0, 1, 0, 0, 0);
+		testCoordinates(Orientation.XN_YP, 1, 1, 0, 0, 1, 1);
+		testCoordinates(Orientation.XN_YP, 1, 1, 1, 0, 1, 0);
 	}
 
 	@Test
 	public void testTopWest() {
-		testCoordinates(Orientation.TW, 0, 0, 0, 0, 0, 1);
-		testCoordinates(Orientation.TW, 0, 0, 1, 1, 0, 1);
-		testCoordinates(Orientation.TW, 0, 1, 0, 0, 1, 1);
-		testCoordinates(Orientation.TW, 0, 1, 1, 1, 1, 1);
-		testCoordinates(Orientation.TW, 1, 0, 0, 0, 0, 0);
-		testCoordinates(Orientation.TW, 1, 0, 1, 1, 0, 0);
-		testCoordinates(Orientation.TW, 1, 1, 0, 0, 1, 0);
-		testCoordinates(Orientation.TW, 1, 1, 1, 1, 1, 0);
+		testCoordinates(Orientation.ZP_YP, 0, 0, 0, 0, 0, 1);
+		testCoordinates(Orientation.ZP_YP, 0, 0, 1, 1, 0, 1);
+		testCoordinates(Orientation.ZP_YP, 0, 1, 0, 0, 1, 1);
+		testCoordinates(Orientation.ZP_YP, 0, 1, 1, 1, 1, 1);
+		testCoordinates(Orientation.ZP_YP, 1, 0, 0, 0, 0, 0);
+		testCoordinates(Orientation.ZP_YP, 1, 0, 1, 1, 0, 0);
+		testCoordinates(Orientation.ZP_YP, 1, 1, 0, 0, 1, 0);
+		testCoordinates(Orientation.ZP_YP, 1, 1, 1, 1, 1, 0);
 	}
 
 	@Test
 	public void testTopEast() {
-		testCoordinates(Orientation.TE, 0, 0, 0, 1, 0, 0);
-		testCoordinates(Orientation.TE, 0, 0, 1, 0, 0, 0);
-		testCoordinates(Orientation.TE, 0, 1, 0, 1, 1, 0);
-		testCoordinates(Orientation.TE, 0, 1, 1, 0, 1, 0);
-		testCoordinates(Orientation.TE, 1, 0, 0, 1, 0, 1);
-		testCoordinates(Orientation.TE, 1, 0, 1, 0, 0, 1);
-		testCoordinates(Orientation.TE, 1, 1, 0, 1, 1, 1);
-		testCoordinates(Orientation.TE, 1, 1, 1, 0, 1, 1);
+		testCoordinates(Orientation.ZN_YP, 0, 0, 0, 1, 0, 0);
+		testCoordinates(Orientation.ZN_YP, 0, 0, 1, 0, 0, 0);
+		testCoordinates(Orientation.ZN_YP, 0, 1, 0, 1, 1, 0);
+		testCoordinates(Orientation.ZN_YP, 0, 1, 1, 0, 1, 0);
+		testCoordinates(Orientation.ZN_YP, 1, 0, 0, 1, 0, 1);
+		testCoordinates(Orientation.ZN_YP, 1, 0, 1, 0, 0, 1);
+		testCoordinates(Orientation.ZN_YP, 1, 1, 0, 1, 1, 1);
+		testCoordinates(Orientation.ZN_YP, 1, 1, 1, 0, 1, 1);
 	}
 }
