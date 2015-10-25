@@ -37,24 +37,12 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return new DimCoord(worldObj.provider.dimensionId, xCoord, yCoord, zCoord);
 	}
 
-	public ForgeDirection getRotation() {
-		final Block block = getBlockType();
-		if (!(block instanceof OpenBlock)) return ForgeDirection.NORTH;
-		final OpenBlock openBlock = (OpenBlock)block;
-
-		if (isUsedForClientInventoryRendering) return openBlock.getInventoryRenderRotation();
-		return openBlock.getRotation(getBlockMetadata());
-	}
-
 	public Orientation getOrientation() {
 		final Block block = getBlockType();
 		if (!(block instanceof OpenBlock)) return Orientation.XP_YP;
 		final OpenBlock openBlock = (OpenBlock)block;
 
-		if (isUsedForClientInventoryRendering) {
-			final ForgeDirection inventoryRenderRotation = openBlock.getInventoryRenderRotation();
-			return openBlock.getRotationMode().getBlockOrientation(inventoryRenderRotation);
-		}
+		if (isUsedForClientInventoryRendering) return openBlock.getInventoryRenderOrientation();
 		return openBlock.getOrientation(getBlockMetadata());
 	}
 

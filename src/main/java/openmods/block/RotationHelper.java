@@ -2,13 +2,14 @@ package openmods.block;
 
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+import openmods.geometry.Orientation;
 import openmods.utils.BlockNotifyFlags;
 
 public class RotationHelper {
 
 	private final BlockRotationMode mode;
 	private final int originalMeta;
-	private ForgeDirection rotation;
+	private Orientation orientation;
 
 	private final World world;
 	private final int x;
@@ -32,24 +33,24 @@ public class RotationHelper {
 		this.originalMeta = (meta & ~mode.mask);
 		int dirPart = (meta & mode.mask);
 
-		this.rotation = mode.fromValue(dirPart);
+		this.orientation = mode.fromValue(dirPart);
 	}
 
 	public boolean rotate(ForgeDirection axis) {
-		ForgeDirection newRotation = mode.calculateRotation(rotation, axis);
-		if (newRotation != null) {
-			setBlockRotation(newRotation);
+		Orientation newOrientation = mode.calculateToolRotation(orientation, axis);
+		if (newOrientation != null) {
+			setBlockOrientation(newOrientation);
 			return true;
 		}
 
 		return false;
 	}
 
-	private void setBlockRotation(ForgeDirection dir) {
+	private void setBlockOrientation(Orientation dir) {
 		final int dirPart = mode.toValue(dir);
 		final int newMeta = originalMeta | dirPart;
 		world.setBlockMetadataWithNotify(x, y, z, newMeta, BlockNotifyFlags.ALL);
-		this.rotation = dir;
+		this.orientation = dir;
 	}
 
 }

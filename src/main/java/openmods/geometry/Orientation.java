@@ -39,42 +39,60 @@ public enum Orientation {
 
 	public static final Orientation[] VALUES = values();
 
-	private static final TIntObjectMap<Orientation> LOOKUP = new TIntObjectHashMap<Orientation>(VALUES.length);
+	private static final TIntObjectMap<Orientation> LOOKUP_XY = new TIntObjectHashMap<Orientation>(VALUES.length);
+	private static final TIntObjectMap<Orientation> LOOKUP_XZ = new TIntObjectHashMap<Orientation>(VALUES.length);
+	private static final TIntObjectMap<Orientation> LOOKUP_YZ = new TIntObjectHashMap<Orientation>(VALUES.length);
 
 	private static final Orientation[][] ROTATIONS = new Orientation[VALUES.length][HalfAxis.VALUES.length];
 
-	private static int lookupKey(HalfAxis x, HalfAxis y, HalfAxis z) {
-		return (x.ordinal() << 6) | (y.ordinal() << 3) | (z.ordinal() << 0);
+	private static int lookupKey(HalfAxis a, HalfAxis b) {
+		return (a.ordinal() << 3) | (b.ordinal() << 0);
+	}
+
+	private static void addToLookup(TIntObjectMap<Orientation> lookup, Orientation o, HalfAxis a, HalfAxis b) {
+		final int key = lookupKey(a, b);
+		final Orientation prev = lookup.put(key, o);
+		Preconditions.checkState(prev == null, "Key %s duplicate: %s->%s", key, prev, o);
 	}
 
 	static {
 		for (Orientation o : VALUES) {
-			final int key = lookupKey(o.x, o.y, o.z);
-			final Orientation prev = LOOKUP.put(key, o);
-			Preconditions.checkState(prev == null, "Key %s duplicate: %s->%s", key, prev, o);
+			addToLookup(LOOKUP_XY, o, o.x, o.y);
+			addToLookup(LOOKUP_YZ, o, o.y, o.z);
+			addToLookup(LOOKUP_XZ, o, o.x, o.z);
 		}
 
 		for (Orientation o : VALUES) {
 			final int i = o.ordinal();
-			ROTATIONS[i][HalfAxis.POS_X.ordinal()] = lookupNotNull(o.x, o.z.negate(), o.y);
-			ROTATIONS[i][HalfAxis.NEG_X.ordinal()] = lookupNotNull(o.x, o.z, o.y.negate());
+			ROTATIONS[i][HalfAxis.POS_X.ordinal()] = lookupXYNotNull(o.x, o.z.negate()/* , o.y */);
+			ROTATIONS[i][HalfAxis.NEG_X.ordinal()] = lookupXYNotNull(o.x, o.z/* , o.y.negate() */);
 
-			ROTATIONS[i][HalfAxis.POS_Y.ordinal()] = lookupNotNull(o.z, o.y, o.x.negate());
-			ROTATIONS[i][HalfAxis.NEG_Y.ordinal()] = lookupNotNull(o.z.negate(), o.y, o.x);
+			ROTATIONS[i][HalfAxis.POS_Y.ordinal()] = lookupXYNotNull(o.z, o.y/* , o.x.negate() */);
+			ROTATIONS[i][HalfAxis.NEG_Y.ordinal()] = lookupXYNotNull(o.z.negate(), o.y/* , o.x */);
 
-			ROTATIONS[i][HalfAxis.POS_Z.ordinal()] = lookupNotNull(o.y.negate(), o.x, o.z);
-			ROTATIONS[i][HalfAxis.NEG_Z.ordinal()] = lookupNotNull(o.y, o.x.negate(), o.z);
+			ROTATIONS[i][HalfAxis.POS_Z.ordinal()] = lookupXYNotNull(o.y.negate(), o.x/* , o.z */);
+			ROTATIONS[i][HalfAxis.NEG_Z.ordinal()] = lookupXYNotNull(o.y, o.x.negate()/* , o.z */);
 		}
 	}
 
-	public static Orientation lookup(HalfAxis x, HalfAxis y, HalfAxis z) {
-		final int key = lookupKey(x, y, z);
-		return LOOKUP.get(key);
+	public static Orientation lookupXY(HalfAxis x, HalfAxis y) {
+		final int key = lookupKey(x, y);
+		return LOOKUP_XY.get(key);
 	}
 
-	private static Orientation lookupNotNull(HalfAxis x, HalfAxis y, HalfAxis z) {
-		Orientation v = lookup(x, y, z);
-		if (v == null) throw new NullPointerException(x + ":" + y + ":" + z);
+	public static Orientation lookupXZ(HalfAxis x, HalfAxis z) {
+		final int key = lookupKey(x, z);
+		return LOOKUP_XZ.get(key);
+	}
+
+	public static Orientation lookupYZ(HalfAxis y, HalfAxis z) {
+		final int key = lookupKey(y, z);
+		return LOOKUP_YZ.get(key);
+	}
+
+	private static Orientation lookupXYNotNull(HalfAxis x, HalfAxis y) {
+		Orientation v = lookupXY(x, y);
+		if (v == null) throw new NullPointerException(x + ":" + y);
 		return v;
 	}
 
@@ -110,9 +128,9 @@ public enum Orientation {
 		this.y = y;
 		this.z = x.cross(y);
 
-		addDirectionMappings(ForgeDirection.EAST, x.toDirection());
-		addDirectionMappings(ForgeDirection.UP, y.toDirection());
-		addDirectionMappings(ForgeDirection.SOUTH, z.toDirection());
+		addDirectionMappings(ForgeDirection.EAST, x.dir);
+		addDirectionMappings(ForgeDirection.UP, y.dir);
+		addDirectionMappings(ForgeDirection.SOUTH, z.dir);
 		addDirectionMapping(ForgeDirection.UNKNOWN, ForgeDirection.UNKNOWN);
 	}
 
@@ -122,6 +140,30 @@ public enum Orientation {
 
 	public ForgeDirection globalToLocalDirection(ForgeDirection global) {
 		return globalToLocalDirections[global.ordinal()];
+	}
+
+	public ForgeDirection north() {
+		return localToGlobalDirection(ForgeDirection.NORTH);
+	}
+
+	public ForgeDirection south() {
+		return localToGlobalDirection(ForgeDirection.SOUTH);
+	}
+
+	public ForgeDirection east() {
+		return localToGlobalDirection(ForgeDirection.EAST);
+	}
+
+	public ForgeDirection west() {
+		return localToGlobalDirection(ForgeDirection.WEST);
+	}
+
+	public ForgeDirection up() {
+		return localToGlobalDirection(ForgeDirection.UP);
+	}
+
+	public ForgeDirection down() {
+		return localToGlobalDirection(ForgeDirection.DOWN);
 	}
 
 	public double transformX(double x, double y, double z) {

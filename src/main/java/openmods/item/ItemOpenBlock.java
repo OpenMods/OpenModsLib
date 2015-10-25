@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.block.OpenBlock;
+import openmods.geometry.Orientation;
 
 public class ItemOpenBlock extends ItemBlock {
 
@@ -55,15 +56,17 @@ public class ItemOpenBlock extends ItemBlock {
 
 		if (ownBlock instanceof OpenBlock) {
 			OpenBlock ob = (OpenBlock)ownBlock;
-			ForgeDirection blockDirection = ob.calculateSide(player, sideDir);
+			Orientation blockOrientation = ob.calculatePlacementSide(player, sideDir);
+
+			if (blockOrientation == null) return false;
 
 			int newMeta = calculateBlockMeta(world, ownBlock, x, y, z, side, hitX, hitY, hitZ, stack.getItemDamage());
 
-			if (!ob.canPlaceBlock(world, player, stack, x, y, z, sideDir, blockDirection, hitX, hitY, hitZ, newMeta)) return false;
+			if (!ob.canPlaceBlock(world, player, stack, x, y, z, sideDir, blockOrientation, hitX, hitY, hitZ, newMeta)) return false;
 
 			if (!placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, newMeta)) return false;
 
-			ob.afterBlockPlaced(world, player, stack, x, y, z, sideDir, blockDirection, hitX, hitY, hitZ, newMeta);
+			ob.afterBlockPlaced(world, player, stack, x, y, z, sideDir, blockOrientation, hitX, hitY, hitZ, newMeta);
 		} else {
 			int newMeta = calculateBlockMeta(world, ownBlock, x, y, z, side, hitX, hitY, hitZ, stack.getItemDamage());
 			if (!placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, newMeta)) return false;

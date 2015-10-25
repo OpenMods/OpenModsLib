@@ -97,30 +97,30 @@ public class RenderUtils {
 		renderer.flipTexture = false;
 	}
 
-	public static void renderInventoryBlock(RenderBlocks renderer, Block block, ForgeDirection rotation) {
-		renderInventoryBlock(renderer, block, rotation, -1);
+	public static void renderInventoryBlock(RenderBlocks renderer, Block block, int metadata) {
+		renderInventoryBlock(renderer, block, metadata, 0xFFFFFFFF);
 	}
 
-	public static void renderInventoryBlock(RenderBlocks renderer, Block block, ForgeDirection rotation, int colorMultiplier) {
-		renderInventoryBlock(renderer, block, rotation, colorMultiplier, ALL_SIDES);
+	public static void renderInventoryBlock(RenderBlocks renderer, Block block, int metadata, int colorMultiplier) {
+		renderInventoryBlock(renderer, block, metadata, colorMultiplier, ALL_SIDES);
 	}
 
-	public static void renderInventoryBlock(RenderBlocks renderer, Block block, ForgeDirection rotation, int colorMultiplier, Set<ForgeDirection> enabledSides) {
+	public static void renderInventoryBlock(RenderBlocks renderer, Block block, int metadata, int colorMultiplier, Set<ForgeDirection> enabledSides) {
 		block.setBlockBoundsForItemRender();
 		renderer.setRenderBoundsFromBlock(block);
 
-		renderInventoryBlockNoBounds(renderer, block, rotation, colorMultiplier, enabledSides);
+		renderInventoryBlockNoBounds(renderer, block, metadata, colorMultiplier, enabledSides);
 	}
 
-	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, ForgeDirection rotation) {
-		renderInventoryBlockNoBounds(renderer, block, rotation, -1);
+	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, int metadata) {
+		renderInventoryBlockNoBounds(renderer, block, metadata, 0xFFFFFFFF);
 	}
 
-	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, ForgeDirection rotation, int colorMultiplier) {
-		renderInventoryBlockNoBounds(renderer, block, rotation, colorMultiplier, ALL_SIDES);
+	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, int metadata, int colorMultiplier) {
+		renderInventoryBlockNoBounds(renderer, block, metadata, colorMultiplier, ALL_SIDES);
 	}
 
-	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, ForgeDirection rotation, int colorMultiplier, Set<ForgeDirection> enabledSides) {
+	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, int metadata, int colorMultiplier, Set<ForgeDirection> enabledSides) {
 		Tessellator tessellator = Tessellator.instance;
 		float r;
 		float g;
@@ -136,7 +136,6 @@ public class RenderUtils {
 		GL11.glPushMatrix();
 		GL11.glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
 		GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
-		int metadata = rotation.ordinal();
 		if (enabledSides.contains(ForgeDirection.DOWN)) {
 			tessellator.startDrawingQuads();
 			tessellator.setNormal(0.0F, -1.0F, 0.0F);

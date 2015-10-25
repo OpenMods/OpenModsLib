@@ -12,6 +12,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+import openmods.geometry.Orientation;
 import openmods.inventory.IInventoryProvider;
 
 public class BlockUtils {
@@ -51,6 +52,10 @@ public class BlockUtils {
 			default:
 				return 0f;
 		}
+	}
+
+	public static float getRotationFromOrientation(Orientation orientation) {
+		return getRotationFromDirection(orientation.south());
 	}
 
 	public static ForgeDirection get3dOrientation(EntityLivingBase entity) {

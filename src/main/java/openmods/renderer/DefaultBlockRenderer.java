@@ -5,9 +5,9 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.common.util.ForgeDirection;
 import openmods.Log;
 import openmods.block.OpenBlock;
+import openmods.geometry.Orientation;
 import openmods.renderer.rotations.IRendererSetup;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.CachedFactory;
@@ -28,7 +28,7 @@ public class DefaultBlockRenderer implements IBlockRenderer<Block> {
 	@Override
 	public void renderInventoryBlock(Block block, int metadata, int modelID, RenderBlocks renderer) {
 		if (!(block instanceof OpenBlock)) {
-			RenderUtils.renderInventoryBlock(renderer, block, ForgeDirection.EAST);
+			RenderUtils.renderInventoryBlock(renderer, block, 0);
 			return;
 		}
 
@@ -49,13 +49,15 @@ public class DefaultBlockRenderer implements IBlockRenderer<Block> {
 			}
 
 			if (openBlock.shouldRenderBlock()) {
-				final ForgeDirection rotation = openBlock.getInventoryRenderRotation();
+				final Orientation orientation = openBlock.getInventoryRenderOrientation();
+				openBlock.setBoundsBasedOnOrientation(orientation);
 
-				openBlock.setBoundsBasedOnRotation(rotation);
+				final int renderMetadata = openBlock.getInventoryRenderMetadata(metadata);
 
 				final IRendererSetup setup = openBlock.getRotationMode().rendererSetup;
-				final RenderBlocks localRenderer = setup.enter(rotation, renderer);
-				RenderUtils.renderInventoryBlock(localRenderer, block, rotation);
+				final RenderBlocks localRenderer = setup.enter(orientation, renderMetadata, renderer);
+
+				RenderUtils.renderInventoryBlock(localRenderer, block, renderMetadata);
 				setup.exit(localRenderer);
 			}
 		} catch (Exception e) {
@@ -73,8 +75,8 @@ public class DefaultBlockRenderer implements IBlockRenderer<Block> {
 			final int metadata = world.getBlockMetadata(x, y, z);
 			final IRendererSetup setup = openBlock.getRotationMode().rendererSetup;
 
-			final ForgeDirection rotation = openBlock.getRotation(metadata);
-			final RenderBlocks localRenderer = setup.enter(rotation, renderer);
+			final Orientation orientation = openBlock.getOrientation(metadata);
+			final RenderBlocks localRenderer = setup.enter(orientation, metadata, renderer);
 			boolean wasRendered = localRenderer.renderStandardBlock(openBlock, x, y, z);
 			setup.exit(localRenderer);
 			return wasRendered;

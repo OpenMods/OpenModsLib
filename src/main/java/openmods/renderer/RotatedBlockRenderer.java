@@ -2,8 +2,8 @@ package openmods.renderer;
 
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
-import net.minecraftforge.common.util.ForgeDirection;
 import openmods.block.OpenBlock;
+import openmods.geometry.Orientation;
 import openmods.renderer.rotations.IRendererSetup;
 
 public class RotatedBlockRenderer<T extends OpenBlock> implements IBlockRenderer<T> {
@@ -16,21 +16,22 @@ public class RotatedBlockRenderer<T extends OpenBlock> implements IBlockRenderer
 
 	@Override
 	public void renderInventoryBlock(T block, int metadata, int modelID, RenderBlocks renderer) {
-		final ForgeDirection rotation = block.getInventoryRenderRotation();
+		final Orientation orientation = block.getInventoryRenderOrientation();
+		final int renderMetadata = block.getInventoryRenderMetadata(metadata);
 
 		final IRendererSetup setup = block.getRotationMode().rendererSetup;
-		final RenderBlocks localRenderer = setup.enter(rotation, renderer);
-		wrapperRenderer.renderInventoryBlock(block, metadata, modelID, localRenderer);
+		final RenderBlocks localRenderer = setup.enter(orientation, renderMetadata, renderer);
+		wrapperRenderer.renderInventoryBlock(block, renderMetadata, modelID, localRenderer);
 		setup.exit(localRenderer);
 	}
 
 	@Override
 	public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, T block, int modelId, RenderBlocks renderer) {
 		final int metadata = world.getBlockMetadata(x, y, z);
-		final ForgeDirection rotation = block.getRotation(metadata);
+		final Orientation orientation = block.getOrientation(metadata);
 
 		final IRendererSetup setup = block.getRotationMode().rendererSetup;
-		final RenderBlocks localRenderer = setup.enter(rotation, renderer);
+		final RenderBlocks localRenderer = setup.enter(orientation, metadata, renderer);
 		boolean wasRendered = wrapperRenderer.renderWorldBlock(world, x, y, z, block, modelId, localRenderer);
 		setup.exit(localRenderer);
 		return wasRendered;

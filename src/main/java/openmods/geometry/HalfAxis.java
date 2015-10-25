@@ -3,21 +3,25 @@ package openmods.geometry;
 import net.minecraftforge.common.util.ForgeDirection;
 
 public enum HalfAxis {
-	NEG_X(-1, 0, 0),
-	NEG_Y(0, -1, 0),
-	NEG_Z(0, 0, -1),
-	POS_X(+1, 0, 0),
-	POS_Y(0, +1, 0),
-	POS_Z(0, 0, +1);
+	NEG_X(ForgeDirection.WEST),
+	NEG_Y(ForgeDirection.DOWN),
+	NEG_Z(ForgeDirection.NORTH),
+	POS_X(ForgeDirection.EAST),
+	POS_Y(ForgeDirection.UP),
+	POS_Z(ForgeDirection.SOUTH);
 
 	public final int x;
 	public final int y;
 	public final int z;
 
-	private HalfAxis(int x, int y, int z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+	public final ForgeDirection dir;
+
+	private HalfAxis(ForgeDirection dir) {
+		this.x = dir.offsetX;
+		this.y = dir.offsetY;
+		this.z = dir.offsetZ;
+
+		this.dir = dir;
 	}
 
 	public static final HalfAxis[] VALUES = values();
@@ -75,28 +79,5 @@ public enum HalfAxis {
 			default:
 				throw new IllegalArgumentException(dir.toString());
 		}
-	}
-
-	public static ForgeDirection toDirection(HalfAxis ha) {
-		switch (ha) {
-			case POS_X:
-				return ForgeDirection.EAST;
-			case NEG_X:
-				return ForgeDirection.WEST;
-			case NEG_Z:
-				return ForgeDirection.NORTH;
-			case POS_Z:
-				return ForgeDirection.SOUTH;
-			case NEG_Y:
-				return ForgeDirection.DOWN;
-			case POS_Y:
-				return ForgeDirection.UP;
-			default:
-				throw new IllegalArgumentException(ha.toString());
-		}
-	}
-
-	public ForgeDirection toDirection() {
-		return toDirection(this);
 	}
 }

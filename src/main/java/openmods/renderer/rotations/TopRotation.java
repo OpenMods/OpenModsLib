@@ -1,7 +1,7 @@
 package openmods.renderer.rotations;
 
 import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraftforge.common.util.ForgeDirection;
+import openmods.geometry.Orientation;
 import openmods.reflection.ClonerFactory;
 import openmods.reflection.ClonerFactory.ICloner;
 import openmods.renderer.TweakedRenderBlocks;
@@ -23,19 +23,19 @@ public class TopRotation implements IRendererSetup {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public RenderBlocks enter(ForgeDirection top, RenderBlocks renderer) {
+	public RenderBlocks enter(Orientation orientation, int metadata, RenderBlocks renderer) {
 		final RenderBlocks tweakedRenderer = new TweakedRenderBlocks();
 		CLONER.clone(renderer, tweakedRenderer);
 
-		switch (top) {
-			case DOWN:
+		switch (orientation) {
+			case XN_YN:
 				tweakedRenderer.uvRotateNorth = 3;
 				tweakedRenderer.uvRotateSouth = 3;
 
 				tweakedRenderer.uvRotateEast = 3;
 				tweakedRenderer.uvRotateWest = 3;
 				break;
-			case EAST:
+			case YN_XP:
 				tweakedRenderer.uvRotateTop = 1;
 				tweakedRenderer.uvRotateBottom = 2;
 
@@ -45,23 +45,23 @@ public class TopRotation implements IRendererSetup {
 				tweakedRenderer.uvRotateSouth = 1;
 				tweakedRenderer.uvRotateNorth = 2;
 				break;
-			case NORTH:
+			case XP_ZN:
 				tweakedRenderer.uvRotateNorth = 2;
 				tweakedRenderer.uvRotateSouth = 1;
 
 				tweakedRenderer.uvRotateEast = 3;
 				tweakedRenderer.uvRotateWest = 3;
 				break;
-			case SOUTH:
+			case XP_ZP:
 				tweakedRenderer.uvRotateTop = 3;
 				tweakedRenderer.uvRotateBottom = 3;
 
 				tweakedRenderer.uvRotateNorth = 1;
 				tweakedRenderer.uvRotateSouth = 2;
 				break;
-			case UP:
+			case XP_YP:
 				break;
-			case WEST:
+			case YP_XN:
 				tweakedRenderer.uvRotateTop = 2;
 				tweakedRenderer.uvRotateBottom = 1;
 

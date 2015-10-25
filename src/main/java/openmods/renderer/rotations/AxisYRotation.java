@@ -1,7 +1,7 @@
 package openmods.renderer.rotations;
 
 import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraftforge.common.util.ForgeDirection;
+import openmods.geometry.Orientation;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -17,20 +17,22 @@ public class AxisYRotation implements IRendererSetup {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public RenderBlocks enter(ForgeDirection north, RenderBlocks renderer) {
-		switch (north) {
-			case EAST:
+	public RenderBlocks enter(Orientation orientation, int metadata, RenderBlocks renderer) {
+		// TODO: verify
+		switch (orientation) {
+			case ZP_YP:
 				renderer.uvRotateTop = 1;
 				renderer.uvRotateBottom = 2;
 				break;
-			case WEST:
+			case ZN_YP:
 				renderer.uvRotateTop = 2;
 				renderer.uvRotateBottom = 1;
 				break;
-			case SOUTH:
+			case XN_YP:
 				renderer.uvRotateTop = 3;
 				renderer.uvRotateBottom = 3;
 				break;
+			case XP_YP:
 			default:
 				break;
 		}

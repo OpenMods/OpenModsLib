@@ -5,6 +5,7 @@ import java.util.Set;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.geometry.BlockTextureTransform;
+import openmods.geometry.HalfAxis;
 import openmods.geometry.Orientation;
 import openmods.renderer.rotations.AxisYRotation;
 import openmods.renderer.rotations.IRendererSetup;
@@ -19,32 +20,32 @@ public enum BlockRotationMode {
 	 */
 	NONE(RotationAxis.NO_AXIS, IRendererSetup.NULL, 0) {
 		@Override
-		public boolean isValid(ForgeDirection dir) {
+		public boolean isPlacementValid(Orientation dir) {
 			return true;
 		}
 
 		@Override
-		public ForgeDirection fromValue(int value) {
-			return ForgeDirection.UNKNOWN;
+		public Orientation fromValue(int value) {
+			return Orientation.XP_YP;
 		}
 
 		@Override
-		public int toValue(ForgeDirection dir) {
+		public int toValue(Orientation dir) {
 			return 0;
 		}
 
 		@Override
-		public ForgeDirection getPlacementDirectionFromSurface(ForgeDirection side) {
-			return ForgeDirection.UNKNOWN;
+		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+			return Orientation.XP_YP;
 		}
 
 		@Override
-		public ForgeDirection getPlacementDirectionFromEntity(EntityPlayer player) {
-			return ForgeDirection.UNKNOWN;
+		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
+			return Orientation.XP_YP;
 		}
 
 		@Override
-		public ForgeDirection calculateRotation(ForgeDirection direction, ForgeDirection axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
 			return null;
 		}
 
@@ -52,82 +53,65 @@ public enum BlockRotationMode {
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
 		}
-
-		@Override
-		public Orientation getBlockOrientation(ForgeDirection direction) {
-			return Orientation.XP_YP;
-		}
 	},
 	/**
 	 * Two orientations - either N-S or W-E. Top side remains unchanged.
 	 * Placement side will become local north or south.
 	 * Tool rotation will either rotate around Y (if clicked T or B) or set to clicked side (otherwise).
 	 */
-	TWO_DIRECTIONS(RotationAxis.THREE_AXIS, AxisYRotation.instance, 1, ForgeDirection.WEST, ForgeDirection.NORTH) {
+	TWO_DIRECTIONS(RotationAxis.THREE_AXIS, AxisYRotation.instance, 1, Orientation.XP_YP, Orientation.ZN_YP) {
 		@Override
-		public ForgeDirection fromValue(int value) {
-			return ((value & 1) == 0)? ForgeDirection.WEST : ForgeDirection.NORTH;
+		public Orientation fromValue(int value) {
+			return ((value & 1) == 0)? Orientation.ZN_YP : Orientation.XP_YP;
 		}
 
 		@Override
-		public int toValue(ForgeDirection dir) {
+		public int toValue(Orientation dir) {
 			switch (dir) {
-				case WEST:
-				case EAST:
-					return 0;
-				case NORTH:
-				case SOUTH:
-					return 1;
 				default:
-					throw new IllegalArgumentException(dir.name());
+				case ZN_YP:
+					return 0;
+				case XP_YP:
+					return 1;
 			}
 		}
 
-		private ForgeDirection narrowDirection(final ForgeDirection normalDir) {
+		private Orientation directionToOrientation(final ForgeDirection normalDir) {
 			switch (normalDir) {
 				case EAST:
 				case WEST:
-					return ForgeDirection.WEST;
+					return Orientation.ZN_YP;
 				case NORTH:
 				case SOUTH:
-					return ForgeDirection.NORTH;
+					return Orientation.XP_YP;
 				default:
-					return ForgeDirection.UNKNOWN;
+					return null;
 			}
 		}
 
 		@Override
-		public ForgeDirection getPlacementDirectionFromSurface(ForgeDirection side) {
-			return narrowDirection(side);
+		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+			return directionToOrientation(side);
 		}
 
 		@Override
-		public ForgeDirection getPlacementDirectionFromEntity(EntityPlayer player) {
+		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
 			final ForgeDirection playerOrientation = BlockUtils.get2dOrientation(player);
-			return narrowDirection(playerOrientation);
+			return directionToOrientation(playerOrientation);
 		}
 
 		@Override
-		public ForgeDirection calculateRotation(ForgeDirection direction, ForgeDirection axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
 			switch (axis) {
 				case UP:
-				case DOWN: {
-					switch (direction) {
-						case EAST:
-						case WEST:
-							return ForgeDirection.NORTH;
-						case NORTH:
-						case SOUTH:
-						default:
-							return ForgeDirection.WEST;
-					}
-				}
+					return currentOrientation.rotateAround(HalfAxis.POS_Y);
+				case DOWN:
+					return currentOrientation.rotateAround(HalfAxis.NEG_Y);
 				case NORTH:
 				case SOUTH:
-					return ForgeDirection.NORTH;
 				case EAST:
 				case WEST:
-					return ForgeDirection.WEST;
+					return directionToOrientation(axis);
 				default:
 					return null;
 			}
@@ -137,121 +121,74 @@ public enum BlockRotationMode {
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
 		}
-
-		@Override
-		public Orientation getBlockOrientation(ForgeDirection localNorth) {
-			switch (localNorth) {
-				case NORTH:
-				case SOUTH:
-				default:
-					return Orientation.XP_YP;
-				case EAST:
-				case WEST:
-					return Orientation.ZN_YP;
-			}
-		}
-
 	},
 	/**
 	 * Three orientations: N-S, W-E, T-B.
 	 * Placement side will become local top or bottom.
 	 * Tool rotation will set top direction to clicked side.
 	 */
-	THREE_DIRECTIONS(RotationAxis.THREE_AXIS, TopRotation.instance, 2, ForgeDirection.WEST, ForgeDirection.NORTH, ForgeDirection.UP) {
+	THREE_DIRECTIONS(RotationAxis.THREE_AXIS, TopRotation.instance, 2, Orientation.XP_ZN, Orientation.YP_XN, Orientation.XP_YP) {
 		@Override
-		public ForgeDirection fromValue(int value) {
+		public Orientation fromValue(int value) {
 			switch (value & 3) {
 				case 0:
-					return ForgeDirection.UP;
+				default:
+					return Orientation.XP_YP;
 				case 1:
-					return ForgeDirection.WEST;
+					return Orientation.YP_XN;
 				case 2:
-					return ForgeDirection.NORTH;
-				default:
-					return ForgeDirection.UNKNOWN;
-			}
-		}
-
-		@Override
-		public int toValue(ForgeDirection dir) {
-			switch (dir) {
-				case UP:
-				case DOWN:
-					return 0;
-				case WEST:
-				case EAST:
-					return 1;
-				case NORTH:
-				case SOUTH:
-					return 2;
-				default:
-					throw new IllegalArgumentException(dir.name());
-			}
-		}
-
-		private ForgeDirection narrowDirection(ForgeDirection dir) {
-			switch (dir) {
-				case EAST:
-				case WEST:
-					return ForgeDirection.WEST;
-				case NORTH:
-				case SOUTH:
-					return ForgeDirection.NORTH;
-				case UP:
-				case DOWN:
-					return ForgeDirection.UP;
-				default:
-					return ForgeDirection.UNKNOWN;
-			}
-		}
-
-		@Override
-		public ForgeDirection getPlacementDirectionFromSurface(ForgeDirection side) {
-			return narrowDirection(side);
-		}
-
-		@Override
-		public ForgeDirection getPlacementDirectionFromEntity(EntityPlayer player) {
-			final ForgeDirection normalDir = BlockUtils.get3dOrientation(player);
-			return narrowDirection(normalDir);
-		}
-
-		@Override
-		public ForgeDirection calculateRotation(ForgeDirection direction, ForgeDirection axis) {
-			switch (axis) {
-				case EAST:
-				case WEST:
-					return ForgeDirection.WEST;
-				case NORTH:
-				case SOUTH:
-					return ForgeDirection.NORTH;
-				case UP:
-				case DOWN:
-					return ForgeDirection.UP;
-				default:
-					return null;
-			}
-		}
-
-		@Override
-		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
-		}
-
-		@Override
-		public Orientation getBlockOrientation(ForgeDirection localTop) {
-			switch (localTop) {
-				case NORTH:
-				case SOUTH:
 					return Orientation.XP_ZN;
+
+			}
+		}
+
+		@Override
+		public int toValue(Orientation dir) {
+			switch (dir) {
+				case XP_YP:
+				default:
+					return 0;
+				case YP_XN:
+					return 1;
+				case XP_ZN:
+					return 2;
+			}
+		}
+
+		private Orientation directionToOrientation(ForgeDirection dir) {
+			switch (dir) {
 				case EAST:
 				case WEST:
 					return Orientation.YP_XN;
+				case NORTH:
+				case SOUTH:
+					return Orientation.XP_ZN;
 				case UP:
 				case DOWN:
 				default:
 					return Orientation.XP_YP;
 			}
+		}
+
+		@Override
+		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+			return directionToOrientation(side);
+		}
+
+		@Override
+		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
+			final ForgeDirection normalDir = BlockUtils.get3dOrientation(player);
+			return directionToOrientation(normalDir);
+		}
+
+		@Override
+		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
+			return directionToOrientation(axis);
+		}
+
+		@Override
+		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
+			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
 		}
 	},
 	/**
@@ -259,68 +196,76 @@ public enum BlockRotationMode {
 	 * Placement side will become local north.
 	 * Tool rotation will either rotate around Y (if clicked T or B) or set to clicked side (otherwise).
 	 */
-	FOUR_DIRECTIONS(RotationAxis.THREE_AXIS, AxisYRotation.instance, 2, ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.EAST, ForgeDirection.WEST) {
+	FOUR_DIRECTIONS(RotationAxis.THREE_AXIS, AxisYRotation.instance, 2, Orientation.XP_YP, Orientation.XN_YP, Orientation.ZP_YP, Orientation.ZN_YP) {
 		@Override
-		public ForgeDirection fromValue(int value) {
+		public Orientation fromValue(int value) {
 			switch (value & 3) {
 				case 0:
-					return ForgeDirection.NORTH;
-				case 1:
-					return ForgeDirection.WEST;
-				case 2:
-					return ForgeDirection.SOUTH;
-				case 3:
-					return ForgeDirection.EAST;
+					return Orientation.XN_YP;
 				default:
-					return ForgeDirection.UNKNOWN;
+				case 1:
+					return Orientation.ZP_YP;
+				case 2:
+					return Orientation.XP_YP;
+				case 3:
+					return Orientation.ZN_YP;
 			}
 		}
 
 		@Override
-		public int toValue(ForgeDirection dir) {
+		public int toValue(Orientation dir) {
 			switch (dir) {
-				case NORTH:
-					return 0;
-				case WEST:
-					return 1;
-				case SOUTH:
+				case XP_YP:
 					return 2;
-				case EAST:
+				case ZN_YP:
 					return 3;
+				case XN_YP:
+					return 0;
+				case ZP_YP:
+					return 1;
 				default:
 					throw new IllegalArgumentException(dir.name());
 			}
 		}
 
-		@Override
-		public ForgeDirection getPlacementDirectionFromSurface(ForgeDirection side) {
+		private Orientation directionToOrientation(ForgeDirection side) {
 			switch (side) {
 				case NORTH:
+					return Orientation.XP_YP;
 				case EAST:
+					return Orientation.ZP_YP;
 				case SOUTH:
+					return Orientation.XN_YP;
 				case WEST:
-					return side;
+					return Orientation.ZN_YP;
 				default:
-					return ForgeDirection.UNKNOWN;
+					return null;
 			}
 		}
 
 		@Override
-		public ForgeDirection getPlacementDirectionFromEntity(EntityPlayer player) {
-			return BlockUtils.get2dOrientation(player).getOpposite();
+		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+			return directionToOrientation(side);
 		}
 
 		@Override
-		public ForgeDirection calculateRotation(ForgeDirection direction, ForgeDirection axis) {
+		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
+			final ForgeDirection side = BlockUtils.get2dOrientation(player).getOpposite();
+			return directionToOrientation(side);
+		}
+
+		@Override
+		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
 			switch (axis) {
 				case UP:
+					return currentOrientation.rotateAround(HalfAxis.POS_Y);
 				case DOWN:
-					return direction.getRotation(axis);
+					return currentOrientation.rotateAround(HalfAxis.NEG_Y);
 				case NORTH:
 				case SOUTH:
 				case EAST:
 				case WEST:
-					return axis;
+					return directionToOrientation(axis);
 				default:
 					return null;
 			}
@@ -330,60 +275,52 @@ public enum BlockRotationMode {
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
 		}
-
-		@Override
-		public Orientation getBlockOrientation(ForgeDirection localNorth) {
-			switch (localNorth) {
-				case NORTH:
-				default:
-					return Orientation.XP_YP;
-				case EAST:
-					return Orientation.ZP_YP;
-				case SOUTH:
-					return Orientation.XN_YP;
-				case WEST:
-					return Orientation.ZN_YP;
-			}
-		}
 	},
 	/**
 	 * Rotations in every direction.
 	 * Placement side will become local top.
 	 * Tool rotation will set top to clicked side.
 	 */
-	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, TopRotation.instance, 3, ForgeDirection.VALID_DIRECTIONS) {
+	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, TopRotation.instance, 3, Orientation.XN_YN, Orientation.YN_XP, Orientation.XP_ZN, Orientation.XP_ZP, Orientation.YP_XN, Orientation.XP_YP) {
 		@Override
-		public ForgeDirection fromValue(int value) {
-			return ForgeDirection.getOrientation(value & 7);
+		public Orientation fromValue(int value) {
+			switch (value) {
+				default:
+				case 0:
+					return Orientation.XN_YN;
+				case 1:
+					return Orientation.XP_YP;
+				case 2:
+					return Orientation.XP_ZN;
+				case 3:
+					return Orientation.XP_ZP;
+				case 4:
+					return Orientation.YP_XN;
+				case 5:
+					return Orientation.YN_XP;
+			}
 		}
 
 		@Override
-		public int toValue(ForgeDirection dir) {
-			return dir.ordinal();
+		public int toValue(Orientation dir) {
+			switch (dir) {
+				case XN_YN:
+				default:
+					return 0;
+				case XP_YP:
+					return 1;
+				case XP_ZN:
+					return 2;
+				case XP_ZP:
+					return 3;
+				case YP_XN:
+					return 4;
+				case YN_XP:
+					return 5;
+			}
 		}
 
-		@Override
-		public ForgeDirection getPlacementDirectionFromSurface(ForgeDirection side) {
-			return side;
-		}
-
-		@Override
-		public ForgeDirection getPlacementDirectionFromEntity(EntityPlayer player) {
-			return BlockUtils.get3dOrientation(player).getOpposite();
-		}
-
-		@Override
-		public ForgeDirection calculateRotation(ForgeDirection direction, ForgeDirection axis) {
-			return axis;
-		}
-
-		@Override
-		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
-		}
-
-		@Override
-		public Orientation getBlockOrientation(ForgeDirection localTop) {
+		public Orientation directionToOrientation(ForgeDirection localTop) {
 			switch (localTop) {
 				case DOWN:
 					return Orientation.XN_YN;
@@ -400,23 +337,44 @@ public enum BlockRotationMode {
 					return Orientation.XP_YP;
 			}
 		}
+
+		@Override
+		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+			return directionToOrientation(side);
+		}
+
+		@Override
+		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
+			final ForgeDirection localTop = BlockUtils.get3dOrientation(player).getOpposite();
+			return directionToOrientation(localTop);
+		}
+
+		@Override
+		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
+			return directionToOrientation(axis);
+		}
+
+		@Override
+		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
+			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
+		}
 	};
 
-	private BlockRotationMode(ForgeDirection[] rotations, IRendererSetup rendererSetup, int bitCount, ForgeDirection... validDirections) {
-		this.rotations = rotations;
+	private BlockRotationMode(ForgeDirection[] rotations, IRendererSetup rendererSetup, int bitCount, Orientation... validOrientations) {
+		this.rotationAxes = rotations;
 		this.rendererSetup = rendererSetup;
-		this.validDirections = ImmutableSet.copyOf(validDirections);
+		this.validDirections = ImmutableSet.copyOf(validOrientations);
 		this.bitCount = bitCount;
 		this.mask = (1 << bitCount) - 1;
 
 		textureTransform = setupTextureTransform(BlockTextureTransform.builder()).build();
 	}
 
-	public final ForgeDirection[] rotations;
+	public final ForgeDirection[] rotationAxes;
 
 	public final IRendererSetup rendererSetup;
 
-	public final Set<ForgeDirection> validDirections;
+	public final Set<Orientation> validDirections;
 
 	public final int bitCount;
 
@@ -424,25 +382,19 @@ public enum BlockRotationMode {
 
 	public final BlockTextureTransform textureTransform;
 
-	public boolean isValid(ForgeDirection dir) {
+	protected abstract BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder);
+
+	public abstract Orientation fromValue(int value);
+
+	public abstract int toValue(Orientation dir);
+
+	public abstract Orientation getPlacementOrientationFromSurface(ForgeDirection side);
+
+	public abstract Orientation getPlacementOrientationFromEntity(EntityPlayer player);
+
+	public boolean isPlacementValid(Orientation dir) {
 		return validDirections.contains(dir);
 	}
 
-	protected abstract BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder);
-
-	public abstract ForgeDirection fromValue(int value);
-
-	public abstract int toValue(ForgeDirection dir);
-
-	public abstract ForgeDirection getPlacementDirectionFromSurface(ForgeDirection side);
-
-	public abstract ForgeDirection getPlacementDirectionFromEntity(EntityPlayer player);
-
-	public abstract ForgeDirection calculateRotation(ForgeDirection direction, ForgeDirection axis);
-
-	public abstract Orientation getBlockOrientation(ForgeDirection direction);
-
-	public ForgeDirection mapWorldToBlockSide(ForgeDirection rotation, ForgeDirection side) {
-		return getBlockOrientation(rotation).globalToLocalDirection(side);
-	}
+	public abstract Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis);
 }
