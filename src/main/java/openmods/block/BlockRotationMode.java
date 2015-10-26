@@ -200,15 +200,16 @@ public enum BlockRotationMode {
 		@Override
 		public Orientation fromValue(int value) {
 			switch (value & 3) {
-				case 0:
-					return Orientation.XN_YP;
 				default:
-				case 1:
-					return Orientation.ZP_YP;
-				case 2:
+				case 0:
 					return Orientation.XP_YP;
-				case 3:
+				case 1:
 					return Orientation.ZN_YP;
+				case 2:
+					return Orientation.XN_YP;
+				case 3:
+					return Orientation.ZP_YP;
+
 			}
 		}
 
@@ -216,13 +217,13 @@ public enum BlockRotationMode {
 		public int toValue(Orientation dir) {
 			switch (dir) {
 				case XP_YP:
-					return 2;
-				case ZN_YP:
-					return 3;
-				case XN_YP:
 					return 0;
-				case ZP_YP:
+				case ZN_YP:
 					return 1;
+				case XN_YP:
+					return 2;
+				case ZP_YP:
+					return 3;
 				default:
 					throw new IllegalArgumentException(dir.name());
 			}
