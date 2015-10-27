@@ -2,6 +2,7 @@ package openmods.block;
 
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+import openmods.Log;
 import openmods.geometry.Orientation;
 import openmods.utils.BlockNotifyFlags;
 
@@ -37,10 +38,14 @@ public class RotationHelper {
 	}
 
 	public boolean rotate(ForgeDirection axis) {
-		Orientation newOrientation = mode.calculateToolRotation(orientation, axis);
+		final Orientation newOrientation = mode.calculateToolRotation(orientation, axis);
 		if (newOrientation != null) {
-			setBlockOrientation(newOrientation);
-			return true;
+			if (mode.isPlacementValid(newOrientation)) {
+				setBlockOrientation(newOrientation);
+				return true;
+			} else {
+				Log.info("Invalid rotation: %s: %s->%s", axis, orientation, newOrientation);
+			}
 		}
 
 		return false;

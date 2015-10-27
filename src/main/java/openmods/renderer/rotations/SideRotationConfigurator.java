@@ -62,6 +62,7 @@ public class SideRotationConfigurator {
 				renderer.uvRotateTop = ROTATE_CCW;
 				renderer.uvRotateBottom = ROTATE_CW;
 				renderer.uvRotateNorth = ROTATE_CW;
+				renderer.uvRotateSouth = ROTATE_CCW;
 				renderer.uvRotateWest = ROTATE_CCW;
 				renderer.uvRotateEast = ROTATE_CW;
 				break;
