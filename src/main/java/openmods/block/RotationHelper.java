@@ -3,6 +3,7 @@ package openmods.block;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.Log;
+import openmods.geometry.HalfAxis;
 import openmods.geometry.Orientation;
 import openmods.utils.BlockNotifyFlags;
 
@@ -17,12 +18,7 @@ public class RotationHelper {
 	private final int y;
 	private final int z;
 
-	public static boolean rotate(BlockRotationMode mode, World world, int x, int y, int z, ForgeDirection axis) {
-		if (mode == BlockRotationMode.NONE) return false;
-		return new RotationHelper(mode, world, x, y, z).rotate(axis);
-	}
-
-	private RotationHelper(BlockRotationMode mode, World world, int x, int y, int z) {
+	public RotationHelper(BlockRotationMode mode, World world, int x, int y, int z) {
 		this.mode = mode;
 
 		this.world = world;
@@ -37,25 +33,49 @@ public class RotationHelper {
 		this.orientation = mode.fromValue(dirPart);
 	}
 
-	public boolean rotate(ForgeDirection axis) {
+	public boolean rotateWithTool(ForgeDirection axis) {
+		if (mode == BlockRotationMode.NONE) return false;
+
 		final Orientation newOrientation = mode.calculateToolRotation(orientation, axis);
 		if (newOrientation != null) {
 			if (mode.isPlacementValid(newOrientation)) {
-				setBlockOrientation(newOrientation);
-				return true;
+				return setOrientation(newOrientation);
 			} else {
-				Log.info("Invalid rotation: %s: %s->%s", axis, orientation, newOrientation);
+				Log.info("Invalid tool rotation: [%s] %s: (%d,%d,%d): %s->%s", mode, axis, x, y, z, orientation, newOrientation);
 			}
 		}
 
 		return false;
 	}
 
-	private void setBlockOrientation(Orientation dir) {
-		final int dirPart = mode.toValue(dir);
-		final int newMeta = originalMeta | dirPart;
-		world.setBlockMetadataWithNotify(x, y, z, newMeta, BlockNotifyFlags.ALL);
-		this.orientation = dir;
+	public boolean rotateAroundAxis(HalfAxis axis) {
+		if (mode == BlockRotationMode.NONE) return false;
+
+		final Orientation newOrientation = orientation.rotateAround(axis);
+		if (newOrientation != null) {
+			if (mode.isPlacementValid(newOrientation)) {
+				return setOrientation(newOrientation);
+			} else {
+				Log.info("Invalid rotation: [%s] %s: (%d,%d,%d): %s->%s", mode, axis, x, y, z, orientation, newOrientation);
+			}
+		}
+
+		return false;
+	}
+
+	public boolean setOrientation(Orientation newOrientation) {
+		if (newOrientation == orientation) return false;
+
+		if (mode.isPlacementValid(newOrientation)) {
+			final int dirPart = mode.toValue(newOrientation);
+			final int newMeta = originalMeta | dirPart;
+			world.setBlockMetadataWithNotify(x, y, z, newMeta, BlockNotifyFlags.ALL);
+			this.orientation = newOrientation;
+			return true;
+		} else {
+			Log.info("Invalid orientation change: [%s] (%d,%d,%d): %s->%s", mode, x, y, z, orientation, newOrientation);
+			return false;
+		}
 	}
 
 }

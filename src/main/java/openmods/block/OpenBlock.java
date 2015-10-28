@@ -603,12 +603,16 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public boolean canRotateWithTool() {
-		return true;
+		return getRotationMode() != BlockRotationMode.NONE;
+	}
+
+	public RotationHelper createRotationHelper(World world, int x, int y, int z) {
+		return new RotationHelper(getRotationMode(), world, x, y, z);
 	}
 
 	@Override
 	public boolean rotateBlock(World worldObj, int x, int y, int z, ForgeDirection axis) {
-		return canRotateWithTool() && RotationHelper.rotate(getRotationMode(), worldObj, x, y, z, axis);
+		return canRotateWithTool() && createRotationHelper(worldObj, x, y, z).rotateWithTool(axis);
 	}
 
 	@Override
