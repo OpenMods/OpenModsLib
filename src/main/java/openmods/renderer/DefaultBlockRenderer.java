@@ -54,7 +54,7 @@ public class DefaultBlockRenderer implements IBlockRenderer<Block> {
 
 				final int renderMetadata = openBlock.getInventoryRenderMetadata(metadata);
 
-				final IRendererSetup setup = openBlock.getRotationMode().rendererSetup;
+				final IRendererSetup setup = openBlock.getRotationMode().getRenderSetup();
 				final RenderBlocks localRenderer = setup.enter(orientation, renderMetadata, renderer);
 
 				RenderUtils.renderInventoryBlock(localRenderer, block, renderMetadata);
@@ -73,7 +73,7 @@ public class DefaultBlockRenderer implements IBlockRenderer<Block> {
 
 		if (openBlock.shouldRenderBlock()) {
 			final int metadata = world.getBlockMetadata(x, y, z);
-			final IRendererSetup setup = openBlock.getRotationMode().rendererSetup;
+			final IRendererSetup setup = openBlock.getRotationMode().getRenderSetup();
 
 			final Orientation orientation = openBlock.getOrientation(metadata);
 			final RenderBlocks localRenderer = setup.enter(orientation, metadata, renderer);

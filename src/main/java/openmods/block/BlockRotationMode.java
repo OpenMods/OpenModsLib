@@ -7,9 +7,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 import openmods.geometry.BlockTextureTransform;
 import openmods.geometry.HalfAxis;
 import openmods.geometry.Orientation;
-import openmods.renderer.rotations.AxisYRotation;
 import openmods.renderer.rotations.IRendererSetup;
-import openmods.renderer.rotations.TopRotation;
+import openmods.renderer.rotations.RendererSetupProxy;
 import openmods.utils.BlockUtils;
 
 import com.google.common.base.Preconditions;
@@ -19,7 +18,7 @@ public enum BlockRotationMode {
 	/**
 	 * No rotations - always oriented by world directions
 	 */
-	NONE(RotationAxis.NO_AXIS, IRendererSetup.NULL) {
+	NONE(RotationAxis.NO_AXIS) {
 		@Override
 		public boolean isPlacementValid(Orientation dir) {
 			return true;
@@ -54,13 +53,18 @@ public enum BlockRotationMode {
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
 		}
+
+		@Override
+		public IRendererSetup getRenderSetup() {
+			return RendererSetupProxy.NULL;
+		}
 	},
 	/**
 	 * Two orientations - either N-S or W-E. Top side remains unchanged.
 	 * Placement side will become local north or south.
 	 * Tool rotation will either rotate around Y (if clicked T or B) or set to clicked side (otherwise).
 	 */
-	TWO_DIRECTIONS(RotationAxis.THREE_AXIS, AxisYRotation.instance, Orientation.ZN_YP, Orientation.XP_YP) {
+	TWO_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.ZN_YP, Orientation.XP_YP) {
 		private Orientation directionToOrientation(final ForgeDirection normalDir) {
 			switch (normalDir) {
 				case EAST:
@@ -106,13 +110,18 @@ public enum BlockRotationMode {
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
 		}
+
+		@Override
+		public IRendererSetup getRenderSetup() {
+			return RendererSetupProxy.proxy.getVanillaRenderer();
+		}
 	},
 	/**
 	 * Three orientations: N-S, W-E, T-B.
 	 * Placement side will become local top or bottom.
 	 * Tool rotation will set top direction to clicked side.
 	 */
-	THREE_DIRECTIONS(RotationAxis.THREE_AXIS, TopRotation.instance, Orientation.XP_YP, Orientation.YP_XN, Orientation.XP_ZN) {
+	THREE_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YP, Orientation.YP_XN, Orientation.XP_ZN) {
 		private Orientation directionToOrientation(ForgeDirection dir) {
 			switch (dir) {
 				case EAST:
@@ -148,13 +157,18 @@ public enum BlockRotationMode {
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
 		}
+
+		@Override
+		public IRendererSetup getRenderSetup() {
+			return RendererSetupProxy.proxy.getTweakedRenderer();
+		}
 	},
 	/**
 	 * Rotate around Y in for directions: N,S,W,E.
 	 * Placement side will become local north.
 	 * Tool rotation will either rotate around Y (if clicked T or B) or set to clicked side (otherwise).
 	 */
-	FOUR_DIRECTIONS(RotationAxis.THREE_AXIS, AxisYRotation.instance, Orientation.XP_YP, Orientation.ZN_YP, Orientation.XN_YP, Orientation.ZP_YP) {
+	FOUR_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YP, Orientation.ZN_YP, Orientation.XN_YP, Orientation.ZP_YP) {
 		private Orientation directionToOrientation(ForgeDirection side) {
 			switch (side) {
 				case NORTH:
@@ -202,13 +216,18 @@ public enum BlockRotationMode {
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
 		}
+
+		@Override
+		public IRendererSetup getRenderSetup() {
+			return RendererSetupProxy.proxy.getVanillaRenderer();
+		}
 	},
 	/**
 	 * Rotations in every direction.
 	 * Placement side will become local top.
 	 * Tool rotation will set top to clicked side.
 	 */
-	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, TopRotation.instance, Orientation.XN_YN, Orientation.XP_YP, Orientation.XP_ZN, Orientation.XP_ZP, Orientation.YP_XN, Orientation.YN_XP) {
+	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XN_YN, Orientation.XP_YP, Orientation.XP_ZN, Orientation.XP_ZP, Orientation.YP_XN, Orientation.YN_XP) {
 		public Orientation directionToOrientation(ForgeDirection localTop) {
 			switch (localTop) {
 				case DOWN:
@@ -247,6 +266,11 @@ public enum BlockRotationMode {
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
 		}
+
+		@Override
+		public IRendererSetup getRenderSetup() {
+			return RendererSetupProxy.proxy.getTweakedRenderer();
+		}
 	},
 
 	/**
@@ -255,7 +279,7 @@ public enum BlockRotationMode {
 	 * Placement side will become local top or bottom.
 	 * Side can be rotated in four directions
 	 */
-	THREE_FOUR_DIRECTIONS(RotationAxis.THREE_AXIS, TopRotation.instance,
+	THREE_FOUR_DIRECTIONS(RotationAxis.THREE_AXIS,
 			Orientation.XP_YP, Orientation.XN_YP, Orientation.ZP_YP, Orientation.ZN_YP,
 			Orientation.YP_XN, Orientation.YN_XN, Orientation.ZP_XN, Orientation.ZN_XN,
 			Orientation.XP_ZN, Orientation.XN_ZN, Orientation.YP_ZN, Orientation.YN_ZN) {
@@ -304,13 +328,17 @@ public enum BlockRotationMode {
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
 		}
+
+		@Override
+		public IRendererSetup getRenderSetup() {
+			return RendererSetupProxy.proxy.getTweakedRenderer();
+		}
 	};
 
 	private static final int MAX_ORIENTATIONS = 16;
 
-	private BlockRotationMode(ForgeDirection[] rotations, IRendererSetup rendererSetup, Orientation... validOrientations) {
+	private BlockRotationMode(ForgeDirection[] rotations, Orientation... validOrientations) {
 		this.rotationAxes = rotations;
-		this.rendererSetup = rendererSetup;
 		this.validDirections = ImmutableSet.copyOf(validOrientations);
 
 		final int count = validOrientations.length;
@@ -350,8 +378,6 @@ public enum BlockRotationMode {
 
 	public final ForgeDirection[] rotationAxes;
 
-	public final IRendererSetup rendererSetup;
-
 	public final Set<Orientation> validDirections;
 
 	public final int bitCount;
@@ -361,6 +387,8 @@ public enum BlockRotationMode {
 	public final BlockTextureTransform textureTransform;
 
 	protected abstract BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder);
+
+	public abstract IRendererSetup getRenderSetup();
 
 	public Orientation fromValue(int value) {
 		try {

@@ -19,7 +19,7 @@ public class RotatedBlockRenderer<T extends OpenBlock> implements IBlockRenderer
 		final Orientation orientation = block.getInventoryRenderOrientation();
 		final int renderMetadata = block.getInventoryRenderMetadata(metadata);
 
-		final IRendererSetup setup = block.getRotationMode().rendererSetup;
+		final IRendererSetup setup = block.getRotationMode().getRenderSetup();
 		final RenderBlocks localRenderer = setup.enter(orientation, renderMetadata, renderer);
 		wrapperRenderer.renderInventoryBlock(block, renderMetadata, modelID, localRenderer);
 		setup.exit(localRenderer);
@@ -30,7 +30,7 @@ public class RotatedBlockRenderer<T extends OpenBlock> implements IBlockRenderer
 		final int metadata = world.getBlockMetadata(x, y, z);
 		final Orientation orientation = block.getOrientation(metadata);
 
-		final IRendererSetup setup = block.getRotationMode().rendererSetup;
+		final IRendererSetup setup = block.getRotationMode().getRenderSetup();
 		final RenderBlocks localRenderer = setup.enter(orientation, metadata, renderer);
 		boolean wasRendered = wrapperRenderer.renderWorldBlock(world, x, y, z, block, modelId, localRenderer);
 		setup.exit(localRenderer);
