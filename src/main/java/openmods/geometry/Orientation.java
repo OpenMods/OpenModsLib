@@ -190,4 +190,20 @@ public enum Orientation {
 		return this.x.z * x + this.y.z * y + this.z.z * z;
 	}
 
+	public Matrix3d createTransformMatrix() {
+		// basis change matrix - local east (X), up (Y), south (Z) are new basis vectors
+		final Matrix3d mat = new Matrix3d();
+		mat.m00 = x.x;
+		mat.m01 = x.y;
+		mat.m02 = x.z;
+
+		mat.m10 = y.x;
+		mat.m11 = y.y;
+		mat.m12 = y.z;
+
+		mat.m20 = z.x;
+		mat.m21 = z.y;
+		mat.m22 = z.z;
+		return mat;
+	}
 }

@@ -333,6 +333,93 @@ public enum BlockRotationMode {
 		public IRendererSetup getRenderSetup() {
 			return RendererSetupProxy.proxy.getTweakedRenderer();
 		}
+	},
+	/**
+	 * Yet another weird one.
+	 * Top side can rotate when oriented up or down.
+	 * When top points to cardinal direction, texture top should always align with horizont
+	 */
+	TWELVE_DIRECTIONS(RotationAxis.THREE_AXIS,
+			Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.NEG_Z), // first two TOP/BOTTOM orientation are here for easy migration from SIX_DIRECTIONS
+			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_Z),
+
+			Orientation.lookupYZ(HalfAxis.NEG_Z, HalfAxis.NEG_Y),
+			Orientation.lookupYZ(HalfAxis.POS_Z, HalfAxis.NEG_Y),
+			Orientation.lookupYZ(HalfAxis.NEG_X, HalfAxis.NEG_Y),
+			Orientation.lookupYZ(HalfAxis.POS_X, HalfAxis.NEG_Y),
+
+			Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.POS_Z),
+			Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.NEG_X),
+			Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.POS_X),
+
+			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.NEG_Z),
+			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_X),
+			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.NEG_X)) {
+
+		public Orientation directionToOrientation(ForgeDirection localTop) {
+			switch (localTop) {
+				case DOWN:
+					return Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.NEG_Z);
+				case EAST:
+					return Orientation.lookupYZ(HalfAxis.POS_X, HalfAxis.NEG_Y);
+				case NORTH:
+					return Orientation.lookupYZ(HalfAxis.NEG_Z, HalfAxis.NEG_Y);
+				case SOUTH:
+					return Orientation.lookupYZ(HalfAxis.POS_Z, HalfAxis.NEG_Y);
+				case WEST:
+					return Orientation.lookupYZ(HalfAxis.NEG_X, HalfAxis.NEG_Y);
+				case UP:
+				default:
+					return Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_Z);
+			}
+		}
+
+		@Override
+		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+			return directionToOrientation(side);
+		}
+
+		@Override
+		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
+			ForgeDirection playerDir = BlockUtils.get2dOrientation(player).getOpposite();
+			if (player.rotationPitch > 45.5F) {
+				return Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.fromDirection(playerDir));
+			} else if (player.rotationPitch < -45.5F) {
+				return Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.fromDirection(playerDir));
+			} else {
+				return Orientation.lookupYZ(HalfAxis.fromDirection(playerDir), HalfAxis.NEG_Y);
+			}
+		}
+
+		@Override
+		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
+			switch (axis) {
+				case NORTH:
+				case SOUTH:
+				case EAST:
+				case WEST:
+					return Orientation.lookupYZ(HalfAxis.fromDirection(axis), HalfAxis.NEG_Y);
+				case UP:
+					if (currentOrientation.y != HalfAxis.POS_Y) return Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_Z);
+					else return currentOrientation.rotateAround(HalfAxis.POS_Y);
+				case DOWN:
+					if (currentOrientation.y != HalfAxis.NEG_Y) return Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.NEG_Z);
+					else return currentOrientation.rotateAround(HalfAxis.POS_Y);
+				default:
+					return null;
+			}
+		}
+
+		@Override
+		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
+			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
+		}
+
+		@Override
+		public IRendererSetup getRenderSetup() {
+			return RendererSetupProxy.proxy.getTweakedRenderer();
+		}
+
 	};
 
 	private static final int MAX_ORIENTATIONS = 16;

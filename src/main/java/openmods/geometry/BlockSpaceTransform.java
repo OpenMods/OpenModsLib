@@ -20,23 +20,6 @@ public abstract class BlockSpaceTransform {
 		}
 	}
 
-	private static Matrix3d createTranformMatrix(Orientation o) {
-		// basis change matrix - local east (X), up (Y), south (Z) are new basis vectors
-		final Matrix3d mat = new Matrix3d();
-		mat.m00 = o.x.x;
-		mat.m01 = o.x.y;
-		mat.m02 = o.x.z;
-
-		mat.m10 = o.y.x;
-		mat.m11 = o.y.y;
-		mat.m12 = o.y.z;
-
-		mat.m20 = o.z.x;
-		mat.m21 = o.z.y;
-		mat.m22 = o.z.z;
-		return mat;
-	}
-
 	private static void createVarAccess(MethodVisitor mv, double value, int var) {
 		if (value == 1) {
 			mv.visitVarInsn(Opcodes.DLOAD, var);
@@ -105,8 +88,7 @@ public abstract class BlockSpaceTransform {
 			for (int i = 0; i < orientations.length; i++) {
 				mv.visitLabel(targets[i]);
 				final Orientation orientation = orientations[i];
-				final Matrix3d mat = createTranformMatrix(orientation);
-
+				final Matrix3d mat = orientation.createTransformMatrix();
 				if (invert) mat.invertInplace();
 
 				createGetLine(mv, mat.m00, mat.m10, mat.m20);
