@@ -84,7 +84,8 @@ public abstract class BlockSpaceTransform {
 		}
 
 		{
-			final String vecType = Type.getInternalName(Vec3.class);
+			final String createVectorDesc = Type.getMethodDescriptor(Type.getType(Vec3.class), Type.DOUBLE_TYPE, Type.DOUBLE_TYPE, Type.DOUBLE_TYPE);
+			final String selfType = Type.getInternalName(BlockSpaceTransform.class);
 			for (int i = 0; i < orientations.length; i++) {
 				mv.visitLabel(targets[i]);
 				final Orientation orientation = orientations[i];
@@ -95,7 +96,7 @@ public abstract class BlockSpaceTransform {
 				createGetLine(mv, mat.m01, mat.m11, mat.m21);
 				createGetLine(mv, mat.m02, mat.m12, mat.m22);
 
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, vecType, "createVectorHelper", Type.getMethodDescriptor(Type.getObjectType(vecType), Type.DOUBLE_TYPE, Type.DOUBLE_TYPE, Type.DOUBLE_TYPE), false);
+				mv.visitMethodInsn(Opcodes.INVOKESTATIC, selfType, "createVector", createVectorDesc, false);
 				mv.visitInsn(Opcodes.ARETURN);
 			}
 		}
@@ -160,6 +161,11 @@ public abstract class BlockSpaceTransform {
 	public abstract Vec3 mapWorldToBlock(Orientation orientation, double x, double y, double z);
 
 	public abstract Vec3 mapBlockToWorld(Orientation orientation, double x, double y, double z);
+
+	// wrapper over obfuscated method
+	protected static Vec3 createVector(double x, double y, double z) {
+		return Vec3.createVectorHelper(x, y, z);
+	}
 
 	public AxisAlignedBB mapWorldToBlock(Orientation orientation, AxisAlignedBB aabb) {
 		final Vec3 min = mapWorldToBlock(orientation, aabb.minX, aabb.minY, aabb.minZ);
