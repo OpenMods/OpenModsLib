@@ -30,11 +30,9 @@ public class ExprTokenizerFactory {
 
 	private static final Pattern QUOTED_NUMBER = Pattern.compile("^([0-9]+#[0-9A-Za-z'\"]+)");
 
-	private static final Pattern SYMBOL = Pattern.compile("^([_A-Za-z][_0-9A-Za-z]*)");
+	private static final Pattern SYMBOL = Pattern.compile("^([_A-Za-z$][_0-9A-Za-z$]*)");
 
 	private static final Pattern CONSTANT = Pattern.compile("^([_A-Z][_0-9A-Z]*)");
-
-	private static final Pattern IMMEDIATE_SYMBOL = Pattern.compile("^\\$([_0-9A-Za-z]+)");
 
 	private final Set<String> operators = Sets.newTreeSet(new Comparator<String>() {
 
@@ -66,11 +64,6 @@ public class ExprTokenizerFactory {
 				if (input.startsWith(")")) return rawToken(1, TokenType.RIGHT_BRACKET);
 				if (input.startsWith(",")) return rawToken(1, TokenType.SEPARATOR);
 
-				Token result;
-
-				result = tryPattern(IMMEDIATE_SYMBOL, TokenType.IMMEDIATE_SYMBOL);
-				if (result != null) return result;
-
 				final Matcher symbolMatcher = SYMBOL.matcher(input);
 
 				if (symbolMatcher.find()) {
@@ -94,6 +87,8 @@ public class ExprTokenizerFactory {
 					consumeInput(operator.length());
 					return new Token(TokenType.OPERATOR, operator);
 				}
+
+				Token result;
 
 				result = tryPattern(FLOAT_NUMBER_DOT, TokenType.FLOAT_NUMBER);
 				if (result != null) return result;

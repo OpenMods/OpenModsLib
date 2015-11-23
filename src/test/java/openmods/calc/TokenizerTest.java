@@ -8,7 +8,7 @@ import org.junit.Test;
 import com.google.common.collect.Iterables;
 
 public class TokenizerTest {
-	
+
 	private final ExprTokenizerFactory factory = new ExprTokenizerFactory();
 
 	private void verifyTokens(String input, Token... tokens) {
@@ -80,9 +80,9 @@ public class TokenizerTest {
 		verifyTokens("f00", symbol("f00"));
 		verifyTokens("hi_world", symbol("hi_world"));
 		verifyTokens("HelloWorld", symbol("HelloWorld"));
-		verifyTokens("$boom_2", imm("boom_2"));
-		verifyTokens("$1", imm("1"));
-		verifyTokens("$HELLO", imm("HELLO"));
+		verifyTokens("$boom_2", symbol("$boom_2"));
+		verifyTokens("$1", symbol("$1"));
+		verifyTokens("$HELLO", symbol("$HELLO"));
 		verifyTokens("_", constant("_")); // !?
 		verifyTokens("_C", constant("_C"));
 		verifyTokens("HELLO", constant("HELLO"));
@@ -114,7 +114,7 @@ public class TokenizerTest {
 				op("-"),
 				quoted("16#4324"),
 				op("-"),
-				imm("1"),
+				symbol("$1"),
 				op("+"),
 				f("3.4"));
 	}

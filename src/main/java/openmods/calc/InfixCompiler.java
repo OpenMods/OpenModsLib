@@ -34,10 +34,16 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		Token lastToken = null;
 
 		for (Token token : input) {
-			if (token.type.isValue) {
+			if (token.type.isValue()) {
 				final E value = valueParser.parseToken(token);
 				output.add(Constant.create(value));
+			} else if (token.type.isPossibleFunction()) {
+				operatorStack.push(new DelayedSymbol<E>(token.value));
 			} else {
+				if (lastToken != null && token.type != TokenType.LEFT_BRACKET && lastToken.type.isPossibleFunction()) {
+					final IExecutable<E> top = operatorStack.pop();
+					output.add(top);
+				}
 				switch (token.type) {
 					case LEFT_BRACKET:
 						operatorStack.push(BRACKET_MARKER);
@@ -60,7 +66,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 					}
 					case OPERATOR: {
 						final IOperator<E> op;
-						if (lastToken == null || lastToken.type.nextOpInfix) {
+						if (lastToken == null || lastToken.type.isNextOpInfix()) {
 							op = operators.getUnaryVariant(token.value);
 							Preconditions.checkArgument(op != null, "No unary version of operator: %s", token.value);
 						} else
@@ -83,11 +89,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 						operatorStack.push(op);
 						break;
 					}
-					case SYMBOL:
-						operatorStack.push(new DelayedSymbol<E>(token.value));
-						break;
 					case CONSTANT:
-					case IMMEDIATE_SYMBOL:
 						output.add(new DelayedSymbol<E>(token.value));
 						break;
 					default:

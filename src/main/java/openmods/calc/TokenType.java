@@ -1,32 +1,54 @@
 package openmods.calc;
 
+import java.util.EnumSet;
+import java.util.Set;
+
+enum TokenProperties {
+	VALUE,
+	SYMBOL,
+	NEXT_OP_INFIX,
+	POSSIBLE_FUNCTION
+}
+
 public enum TokenType {
-	FLOAT_NUMBER(true, false, false),
-	DEC_NUMBER(true, false, false),
-	HEX_NUMBER(true, false, false),
-	OCT_NUMBER(true, false, false),
-	BIN_NUMBER(true, false, false),
-	QUOTED_NUMBER(true, false, false),
+	FLOAT_NUMBER(TokenProperties.VALUE),
+	DEC_NUMBER(TokenProperties.VALUE),
+	HEX_NUMBER(TokenProperties.VALUE),
+	OCT_NUMBER(TokenProperties.VALUE),
+	BIN_NUMBER(TokenProperties.VALUE),
+	QUOTED_NUMBER(TokenProperties.VALUE),
 
-	SYMBOL(false, true, false),
-	IMMEDIATE_SYMBOL(false, true, false),
-	CONSTANT(false, true, false),
+	SYMBOL(TokenProperties.SYMBOL, TokenProperties.POSSIBLE_FUNCTION),
+	CONSTANT(TokenProperties.SYMBOL),
 
-	OPERATOR(false, false, true),
-	LEFT_BRACKET(false, false, true),
-	RIGHT_BRACKET(false, false, false),
-	SEPARATOR(false, false, true);
+	OPERATOR(TokenProperties.NEXT_OP_INFIX),
+	LEFT_BRACKET(TokenProperties.NEXT_OP_INFIX),
+	RIGHT_BRACKET(),
+	SEPARATOR(TokenProperties.NEXT_OP_INFIX);
 
-	public final boolean isValue;
-
-	public final boolean isSymbol;
-
-	public final boolean nextOpInfix;
-
-	private TokenType(boolean isValue, boolean isSymbol, boolean nextOpInfix) {
-		this.isValue = isValue;
-		this.isSymbol = isSymbol;
-		this.nextOpInfix = nextOpInfix;
+	public boolean isValue() {
+		return properties.contains(TokenProperties.VALUE);
 	}
 
+	public boolean isSymbol() {
+		return properties.contains(TokenProperties.SYMBOL);
+	}
+
+	public final boolean isNextOpInfix() {
+		return properties.contains(TokenProperties.NEXT_OP_INFIX);
+	}
+
+	public final boolean isPossibleFunction() {
+		return properties.contains(TokenProperties.POSSIBLE_FUNCTION);
+	}
+
+	private final Set<TokenProperties> properties;
+
+	private TokenType(TokenProperties property, TokenProperties... properties) {
+		this.properties = EnumSet.of(property, properties);
+	}
+
+	private TokenType() {
+		this.properties = EnumSet.noneOf(TokenProperties.class);
+	}
 }

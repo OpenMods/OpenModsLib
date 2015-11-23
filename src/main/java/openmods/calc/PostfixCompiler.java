@@ -32,9 +32,9 @@ public abstract class PostfixCompiler<E> implements ICompiler<E> {
 			return operator;
 		}
 
-		if (token.type.isSymbol) return DelayedSymbol.create(token.value);
+		if (token.type.isSymbol()) return DelayedSymbol.create(token.value);
 
-		if (token.type.isValue) {
+		if (token.type.isValue()) {
 			try {
 				final E value = valueParser.parseToken(token);
 				return Constant.create(value);
