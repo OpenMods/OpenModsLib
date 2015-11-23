@@ -1,8 +1,9 @@
 package openmods.calc;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 
-public class Constant<E> implements ISymbol<E> {
+public class Constant<E> implements IStackSymbol<E> {
 
 	private final E value;
 
@@ -34,4 +35,8 @@ public class Constant<E> implements ISymbol<E> {
 		return "Constant [value=" + value + "]";
 	}
 
+	@Override
+	public void checkArgumentCount(int argCount) {
+		Preconditions.checkArgument(argCount == 0, "Trying to call constant");
+	}
 }

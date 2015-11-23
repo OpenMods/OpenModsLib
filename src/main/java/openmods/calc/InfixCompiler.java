@@ -10,12 +10,18 @@ import com.google.common.collect.Lists;
 
 public class InfixCompiler<E> implements ICompiler<E> {
 
-	private final IExecutable<E> BRACKET_MARKER = new IExecutable<E>() {
+	private class BracketMarker implements IExecutable<E> {
+		private int argCount = 0;
+
+		public int incrementArgCount() {
+			return ++argCount;
+		}
+
 		@Override
 		public void execute(CalculatorContext<E> context) {
 			throw new UnsupportedOperationException();
 		}
-	};
+	}
 
 	private final IValueParser<E> valueParser;
 
@@ -38,25 +44,30 @@ public class InfixCompiler<E> implements ICompiler<E> {
 				final E value = valueParser.parseToken(token);
 				output.add(Constant.create(value));
 			} else if (token.type.isPossibleFunction()) {
-				operatorStack.push(new DelayedSymbol<E>(token.value));
+				operatorStack.push(new SymbolReference<E>(token.value));
 			} else {
 				if (lastToken != null && token.type != TokenType.LEFT_BRACKET && lastToken.type.isPossibleFunction()) {
 					final IExecutable<E> top = operatorStack.pop();
+					setArgCount(top, 0);
 					output.add(top);
 				}
 				switch (token.type) {
 					case LEFT_BRACKET:
-						operatorStack.push(BRACKET_MARKER);
+						operatorStack.push(new BracketMarker());
 						break;
 					case RIGHT_BRACKET: {
-						popUntilBracket(output, operatorStack);
+						Preconditions.checkNotNull(lastToken, "Right bracket on invalid postion");
+						final int argCount = lastToken.type != TokenType.LEFT_BRACKET? popUntilBracket(output, operatorStack) : 0;
 						operatorStack.pop(); // left bracket
 						if (!operatorStack.isEmpty()) {
 							final IExecutable<E> top = operatorStack.peek(0);
 							if (top instanceof ISymbol) {
+								setArgCount(top, argCount);
 								operatorStack.pop();
 								output.add(top);
 							}
+						} else {
+							Preconditions.checkState(argCount == 1, "Comma used in non-function brackets");
 						}
 						break;
 					}
@@ -90,7 +101,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 						break;
 					}
 					case CONSTANT:
-						output.add(new DelayedSymbol<E>(token.value));
+						output.add(new SymbolReference<E>(token.value, 0));
 						break;
 					default:
 						throw new InvalidTokenException(token);
@@ -102,18 +113,23 @@ public class InfixCompiler<E> implements ICompiler<E> {
 
 		while (!operatorStack.isEmpty()) {
 			final IExecutable<E> top = operatorStack.pop();
-			if (top == BRACKET_MARKER) throw new IllegalArgumentException("Unmatched brackets");
+			if (top instanceof InfixCompiler.BracketMarker) throw new IllegalArgumentException("Unmatched brackets");
+			setArgCount(top, 0);
 			output.add(top);
 		}
 
 		return new ExecutableList<E>(output);
 	}
 
-	private void popUntilBracket(List<IExecutable<E>> output, Stack<IExecutable<E>> operatorStack) {
+	protected void setArgCount(final IExecutable<E> symbol, final int argCount) {
+		if (symbol instanceof SymbolReference<?>) ((SymbolReference<?>)symbol).setArgumentCount(argCount);
+	}
+
+	private int popUntilBracket(List<IExecutable<E>> output, Stack<IExecutable<E>> operatorStack) {
 		try {
 			while (true) {
 				final IExecutable<E> op = operatorStack.peek(0);
-				if (op == BRACKET_MARKER) break;
+				if (op instanceof InfixCompiler.BracketMarker) return ((InfixCompiler<?>.BracketMarker)op).incrementArgCount();
 				operatorStack.pop();
 				output.add(op);
 			}

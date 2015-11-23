@@ -50,8 +50,8 @@ public class InfixCompilerTest {
 		return new Constant<String>(value);
 	}
 
-	public IExecutable<String> s(String value) {
-		return new DelayedSymbol<String>(value);
+	public IExecutable<String> s(String value, int args) {
+		return new SymbolReference<String>(value, args);
 	}
 
 	{
@@ -128,64 +128,76 @@ public class InfixCompilerTest {
 	@Test
 	public void testNullaryFunction() {
 		given(symbol("pi"), LEFT_BRACKET, RIGHT_BRACKET)
-				.expect(s("pi"));
+				.expect(s("pi", 0));
+
+		given(symbol("pi"), LEFT_BRACKET, RIGHT_BRACKET, OP_PLUS, symbol("e"), LEFT_BRACKET, RIGHT_BRACKET)
+				.expect(s("pi", 0), s("e", 0), PLUS);
 	}
 
 	@Test
 	public void testUnaryFunction() {
 		given(symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
-				.expect(c("2"), s("sin"));
+				.expect(c("2"), s("sin", 1));
+
+		given(symbol("sin"), LEFT_BRACKET, LEFT_BRACKET, dec("2"), RIGHT_BRACKET, RIGHT_BRACKET)
+				.expect(c("2"), s("sin", 1));
 
 		given(symbol("sin"), LEFT_BRACKET, dec("2"), OP_PLUS, dec("3"), RIGHT_BRACKET)
-				.expect(c("2"), c("3"), PLUS, s("sin"));
+				.expect(c("2"), c("3"), PLUS, s("sin", 1));
+
+		given(symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET, OP_PLUS, symbol("cos"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET)
+				.expect(c("2"), s("sin", 1), c("3"), s("cos", 1), PLUS);
 	}
 
 	@Test
 	public void testBinaryFunction() {
 		given(symbol("exp"), LEFT_BRACKET, dec("2"), COMMA, dec("3"), RIGHT_BRACKET)
-				.expect(c("2"), c("3"), s("exp"));
+				.expect(c("2"), c("3"), s("exp", 2));
 
 		given(symbol("exp"), LEFT_BRACKET, dec("2"), OP_PLUS, dec("3"), COMMA, dec("4"), OP_MINUS, dec("5"), RIGHT_BRACKET)
-				.expect(c("2"), c("3"), PLUS, c("4"), c("5"), MINUS, s("exp"));
+				.expect(c("2"), c("3"), PLUS, c("4"), c("5"), MINUS, s("exp", 2));
 	}
 
 	@Test
 	public void testFunctionSum() {
 		given(symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET, OP_PLUS, symbol("exp"), LEFT_BRACKET, dec("3"), COMMA, dec("4"), RIGHT_BRACKET)
-				.expect(c("2"), s("sin"), c("3"), c("4"), s("exp"), PLUS);
+				.expect(c("2"), s("sin", 1), c("3"), c("4"), s("exp", 2), PLUS);
 	}
 
 	@Test
 	public void testNestedFunctions() {
+		given(symbol("sin"), LEFT_BRACKET, symbol("cos"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, RIGHT_BRACKET)
+				.expect(c("3"), s("cos", 1), s("sin", 1));
+
 		given(symbol("exp"), LEFT_BRACKET, symbol("sin"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, COMMA, dec("4"), OP_PLUS, symbol("cos"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET, RIGHT_BRACKET)
-				.expect(c("3"), s("sin"), c("4"), c("2"), s("cos"), PLUS, s("exp"));
+				.expect(c("3"), s("sin", 1), c("4"), c("2"), s("cos", 1), PLUS, s("exp", 2));
 	}
 
 	@Test
 	public void testImmediateSymbols() {
 		given(symbol("a"))
-				.expect(s("a"));
+				.expect(s("a", 0));
 
 		given(symbol("a"), OP_PLUS, symbol("b"))
-				.expect(s("a"), s("b"), PLUS);
+				.expect(s("a", 0), s("b", 0), PLUS);
 
 		given(symbol("sin"), LEFT_BRACKET, symbol("a"), RIGHT_BRACKET)
-				.expect(s("a"), s("sin"));
+				.expect(s("a", 0), s("sin", 1));
 
 		given(symbol("min"), LEFT_BRACKET, symbol("a"), COMMA, symbol("$b"), RIGHT_BRACKET)
-				.expect(s("a"), s("$b"), s("min"));
+				.expect(s("a", 0), s("$b", 0), s("min", 2));
 	}
 
 	@Test
 	public void testConstSymbols() {
 		given(constant("a"))
-				.expect(s("a"));
+				.expect(s("a", 0));
 
 		given(constant("a"), OP_PLUS, constant("b"))
-				.expect(s("a"), s("b"), PLUS);
+				.expect(s("a", 0), s("b", 0), PLUS);
 
 		given(symbol("sin"), LEFT_BRACKET, constant("a"), RIGHT_BRACKET)
-				.expect(s("a"), s("sin"));
+				.expect(s("a", 0), s("sin", 1));
 	}
 
 	@Test
@@ -201,7 +213,7 @@ public class InfixCompilerTest {
 				.expect(c("2"), c("3"), MINUS);
 
 		given(OP_MINUS, symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
-				.expect(c("2"), s("sin"), UNARY_MINUS);
+				.expect(c("2"), s("sin", 1), UNARY_MINUS);
 	}
 
 }

@@ -1,3 +1,3 @@
 package openmods.calc;
 
-public interface IFunction<E> extends ISymbol<E> {}
+public interface IFunction<E> extends IStackSymbol<E> {}

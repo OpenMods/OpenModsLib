@@ -2,7 +2,7 @@ package openmods.calc;
 
 public abstract class BinaryOperator<E> extends Operator<E> {
 
-	public BinaryOperator(int precendence, openmods.calc.IOperator.Associativity associativity) {
+	public BinaryOperator(int precendence, Associativity associativity) {
 		super(precendence, associativity);
 	}
 
