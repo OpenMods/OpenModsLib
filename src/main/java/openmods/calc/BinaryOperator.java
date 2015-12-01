@@ -9,7 +9,7 @@ public abstract class BinaryOperator<E> extends Operator<E> {
 	}
 
 	public BinaryOperator(int precendence) {
-		super(precendence);
+		super(precendence, Associativity.LEFT);
 	}
 
 	protected abstract E execute(E left, E right);

@@ -27,8 +27,4 @@ public abstract class Operator<E> implements IExecutable<E> {
 		this.precedence = precedence;
 		this.associativity = associativity;
 	}
-
-	public Operator(int precendence) {
-		this(precendence, Associativity.LEFT);
-	}
 }

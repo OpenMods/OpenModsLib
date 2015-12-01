@@ -180,4 +180,18 @@ public class InfixCompilerTest {
 				.expect(c("2"), s("sin", 1), UNARY_MINUS);
 	}
 
+	@Test
+	public void testDoubleUnaryOperators() {
+		given(OP_MINUS, OP_MINUS, dec("2"))
+				.expect(c("2"), UNARY_MINUS, UNARY_MINUS);
+
+		given(OP_MINUS, OP_PLUS, dec("2"))
+				.expect(c("2"), UNARY_PLUS, UNARY_MINUS);
+
+		given(OP_MINUS, OP_NEG, dec("2"))
+				.expect(c("2"), UNARY_NEG, UNARY_MINUS);
+
+		given(OP_NEG, OP_MINUS, OP_PLUS, dec("2"))
+				.expect(c("2"), UNARY_PLUS, UNARY_MINUS, UNARY_NEG);
+	}
 }

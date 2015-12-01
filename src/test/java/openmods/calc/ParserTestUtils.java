@@ -46,15 +46,15 @@ public class ParserTestUtils {
 
 	public static final Token OP_PLUS = op("+");
 
-	public static final UnaryOperator<String> UNARY_PLUS = new DummyUnaryOperator<String>(4, "u+");
+	public static final UnaryOperator<String> UNARY_PLUS = new DummyUnaryOperator<String>(5, "u+");
 
 	public static final BinaryOperator<String> MINUS = new DummyBinaryOperator<String>(1, "-");
 
 	public static final Token OP_MINUS = op("-");
 
-	public static final UnaryOperator<String> UNARY_MINUS = new DummyUnaryOperator<String>(4, "u-");
+	public static final UnaryOperator<String> UNARY_MINUS = new DummyUnaryOperator<String>(5, "u-");
 
-	public static final UnaryOperator<String> UNARY_NEG = new DummyUnaryOperator<String>(4, "u!");
+	public static final UnaryOperator<String> UNARY_NEG = new DummyUnaryOperator<String>(5, "u!");
 
 	public static final Token OP_NEG = op("!");
 

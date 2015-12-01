@@ -9,7 +9,7 @@ public abstract class UnaryOperator<E> extends Operator<E> {
 	}
 
 	public UnaryOperator(int precendence) {
-		super(precendence);
+		super(precendence, Associativity.RIGHT);
 	}
 
 	protected abstract E execute(E value);
