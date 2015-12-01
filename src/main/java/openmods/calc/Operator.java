@@ -1,27 +1,34 @@
 package openmods.calc;
 
-public abstract class Operator<E> implements IOperator<E> {
+public abstract class Operator<E> implements IExecutable<E> {
 
-	private final int precendence;
+	public enum Associativity {
+		LEFT {
+			@Override
+			public <E> boolean compare(Operator<E> left, Operator<E> right) {
+				return left.precedence <= right.precedence;
+			}
+		},
+		RIGHT {
+			@Override
+			public <E> boolean compare(Operator<E> left, Operator<E> right) {
+				return left.precedence < right.precedence;
+			}
+		};
 
-	private final Associativity associativity;
+		public abstract <E> boolean compare(Operator<E> left, Operator<E> right);
+	}
 
-	public Operator(int precendence, Associativity associativity) {
-		this.precendence = precendence;
+	public final int precedence;
+
+	public final Associativity associativity;
+
+	public Operator(int precedence, Associativity associativity) {
+		this.precedence = precedence;
 		this.associativity = associativity;
 	}
 
 	public Operator(int precendence) {
 		this(precendence, Associativity.LEFT);
-	}
-
-	@Override
-	public int precedence() {
-		return precendence;
-	}
-
-	@Override
-	public Associativity getAssociativity() {
-		return associativity;
 	}
 }

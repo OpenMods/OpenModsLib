@@ -3,7 +3,7 @@ package openmods.calc;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
-public class Constant<E> implements IStackSymbol<E> {
+public class Constant<E> implements ISymbol<E> {
 
 	private final E value;
 
@@ -12,8 +12,8 @@ public class Constant<E> implements IStackSymbol<E> {
 	}
 
 	@Override
-	public void execute(CalculatorContext<E> context) {
-		context.stack.push(value);
+	public void execute(ICalculatorFrame<E> frame) {
+		frame.stack().push(value);
 	}
 
 	public static <E> Constant<E> create(E value) {
@@ -27,7 +27,7 @@ public class Constant<E> implements IStackSymbol<E> {
 
 	@Override
 	public int hashCode() {
-		return value.hashCode();
+		return Objects.hashCode(value);
 	}
 
 	@Override
@@ -37,6 +37,11 @@ public class Constant<E> implements IStackSymbol<E> {
 
 	@Override
 	public void checkArgumentCount(int argCount) {
-		Preconditions.checkArgument(argCount == 0, "Trying to call constant");
+		Preconditions.checkArgument(argCount == 0, "Trying to call constant with %s args", argCount);
+	}
+
+	@Override
+	public void checkResultCount(int resultCount) {
+		Preconditions.checkArgument(resultCount == 1, "Invalid result count: %s", resultCount);
 	}
 }

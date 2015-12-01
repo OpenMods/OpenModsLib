@@ -5,40 +5,47 @@ import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class OperatorDictionary<E> {
 
-	private final Map<String, IOperator<E>> operators = Maps.newHashMap();
+	private final Map<String, BinaryOperator<E>> binaryOperators = Maps.newHashMap();
 
-	private final Map<String, IOperator<E>> unaryVariants = Maps.newHashMap();
+	private final Map<String, UnaryOperator<E>> unaryOperators = Maps.newHashMap();
 
-	public void registerOperator(String id, IOperator<E> operator) {
-		final IExecutable<E> prev = operators.put(id, operator);
+	public void registerBinaryOperator(String id, BinaryOperator<E> operator) {
+		final IExecutable<E> prev = binaryOperators.put(id, operator);
 		Preconditions.checkState(prev == null, "Duplicate operator '%s': %s -> %s", prev, operator);
 	}
 
-	public void registerOperator(String binaryId, IOperator<E> binaryOp, String unaryId, IOperator<E> unaryOp) {
-		registerOperator(binaryId, binaryOp);
-		registerOperator(unaryId, unaryOp);
-
-		unaryVariants.put(binaryId, unaryOp);
+	public void registerUnaryOperator(String id, UnaryOperator<E> operator) {
+		final IExecutable<E> prev = unaryOperators.put(id, operator);
+		Preconditions.checkState(prev == null, "Duplicate operator '%s': %s -> %s", prev, operator);
 	}
 
-	public void registerOperator(String binaryId, IOperator<E> binaryOp, IOperator<E> unaryId) {
-		registerOperator(binaryId, binaryOp);
-		unaryVariants.put(binaryId, unaryId);
+	public void registerMixedOperator(String id, BinaryOperator<E> binaryOperator, UnaryOperator<E> unaryOperator) {
+		registerBinaryOperator(id, binaryOperator);
+		registerUnaryOperator(id, unaryOperator);
 	}
 
 	public Set<String> allOperators() {
-		return operators.keySet();
+		return Sets.union(binaryOperators.keySet(), unaryOperators.keySet());
 	}
 
-	public IOperator<E> get(String op) {
-		return operators.get(op);
+	public Operator<E> getBinaryOperator(String op) {
+		return binaryOperators.get(op);
 	}
 
-	public IOperator<E> getUnaryVariant(String value) {
-		return unaryVariants.get(value);
+	public Operator<E> getUnaryOperator(String value) {
+		return unaryOperators.get(value);
+	}
+
+	// binary first. For RPN purposes second operator must be defined ('-' -> 'neg')
+	public Operator<E> getAnyOperator(String value) {
+		final Operator<E> op = binaryOperators.get(value);
+		if (op != null) return op;
+
+		return unaryOperators.get(value);
 	}
 
 }

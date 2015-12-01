@@ -2,7 +2,7 @@ package openmods.calc;
 
 import java.math.BigInteger;
 
-public class BigIntValueParser implements IValueParser<BigInteger> {
+public class BigIntParser implements IValueParser<BigInteger> {
 
 	private static final IntegerParser<BigInteger> INT_PARSER = new IntegerParser<BigInteger>() {
 		@Override

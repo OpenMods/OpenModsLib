@@ -21,8 +21,8 @@ public class ExecutableList<E> implements IExecutable<E> {
 	}
 
 	@Override
-	public void execute(CalculatorContext<E> context) {
+	public void execute(ICalculatorFrame<E> frame) {
 		for (IExecutable<E> e : commands)
-			e.execute(context);
+			e.execute(frame);
 	}
 }

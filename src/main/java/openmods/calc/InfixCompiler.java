@@ -18,7 +18,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		}
 
 		@Override
-		public void execute(CalculatorContext<E> context) {
+		public void execute(ICalculatorFrame<E> frame) {
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -61,12 +61,13 @@ public class InfixCompiler<E> implements ICompiler<E> {
 						operatorStack.pop(); // left bracket
 						if (!operatorStack.isEmpty()) {
 							final IExecutable<E> top = operatorStack.peek(0);
-							if (top instanceof ISymbol) {
-								setArgCount(top, argCount);
+							if (top instanceof SymbolReference) {
+								((SymbolReference<?>)top).setStackParams(argCount, 1);
 								operatorStack.pop();
 								output.add(top);
 							}
 						} else {
+							Preconditions.checkState(argCount > 0, "Empty brackets after non-fuction");
 							Preconditions.checkState(argCount == 1, "Comma used in non-function brackets");
 						}
 						break;
@@ -76,22 +77,22 @@ public class InfixCompiler<E> implements ICompiler<E> {
 						break;
 					}
 					case OPERATOR: {
-						final IOperator<E> op;
+						final Operator<E> op;
 						if (lastToken == null || lastToken.type.isNextOpInfix()) {
-							op = operators.getUnaryVariant(token.value);
+							op = operators.getUnaryOperator(token.value);
 							Preconditions.checkArgument(op != null, "No unary version of operator: %s", token.value);
 						} else
 						{
-							op = operators.get(token.value);
+							op = operators.getBinaryOperator(token.value);
 							Preconditions.checkArgument(op != null, "Invalid operator: %s", token.value);
 						}
 
 						while (!operatorStack.isEmpty()) {
 							final IExecutable<E> top = operatorStack.peek(0);
-							if (!(top instanceof IOperator)) break;
+							if (!(top instanceof Operator)) break;
 
-							final IOperator<E> topOp = (IOperator<E>)top;
-							if (!topOp.getAssociativity().compare(op, topOp)) break;
+							final Operator<E> topOp = (Operator<E>)top;
+							if (!topOp.associativity.compare(op, topOp)) break;
 
 							operatorStack.pop();
 							output.add(top);
@@ -101,7 +102,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 						break;
 					}
 					case CONSTANT:
-						output.add(new SymbolReference<E>(token.value, 0));
+						output.add(new SymbolReference<E>(token.value, 0, 1));
 						break;
 					default:
 						throw new InvalidTokenException(token);
@@ -122,7 +123,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 	}
 
 	protected void setArgCount(final IExecutable<E> symbol, final int argCount) {
-		if (symbol instanceof SymbolReference<?>) ((SymbolReference<?>)symbol).setArgumentCount(argCount);
+		if (symbol instanceof SymbolReference<?>) ((SymbolReference<?>)symbol).setStackParams(argCount, 1);
 	}
 
 	private int popUntilBracket(List<IExecutable<E>> output, Stack<IExecutable<E>> operatorStack) {

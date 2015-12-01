@@ -2,14 +2,10 @@ package openmods.calc;
 
 import openmods.utils.Stack;
 
-public abstract class UnaryOperator<E> extends Operator<E> {
+public abstract class UnaryFunction<E> extends Function<E> {
 
-	public UnaryOperator(int precendence, Associativity associativity) {
-		super(precendence, associativity);
-	}
-
-	public UnaryOperator(int precendence) {
-		super(precendence);
+	public UnaryFunction() {
+		super(1, 1);
 	}
 
 	protected abstract E execute(E value);

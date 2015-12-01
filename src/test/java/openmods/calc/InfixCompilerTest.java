@@ -10,37 +10,62 @@ import org.junit.Test;
 
 public class InfixCompilerTest {
 
-	private static class DummyOperator<E> extends Operator<E> {
+	private static class DummyBinaryOperator<E> extends BinaryOperator<E> {
 		private final String id;
 
-		public DummyOperator(int precendence, String id) {
+		public DummyBinaryOperator(int precendence, String id) {
 			super(precendence);
 			this.id = id;
 		}
 
 		@Override
-		public void execute(CalculatorContext<E> context) {}
+		public String toString() {
+			return "Binary operator [" + id + "]";
+		}
+
+		@Override
+		protected E execute(E left, E right) {
+			return null;
+		}
+	}
+
+	private static class DummyUnaryOperator<E> extends UnaryOperator<E> {
+		private final String id;
+
+		public DummyUnaryOperator(int precendence, String id) {
+			super(precendence);
+			this.id = id;
+		}
 
 		@Override
 		public String toString() {
-			return "Operator [" + id + "]";
+			return "Unary operator [" + id + "]";
+		}
+
+		@Override
+		protected E execute(E value) {
+			return null;
 		}
 
 	}
 
-	private static final IOperator<String> PLUS = new DummyOperator<String>(1, "+");
+	private static final BinaryOperator<String> PLUS = new DummyBinaryOperator<String>(1, "+");
 
 	private static final Token OP_PLUS = op("+");
 
-	private static final IOperator<String> UNARY_PLUS = new DummyOperator<String>(4, "u+");
+	private static final UnaryOperator<String> UNARY_PLUS = new DummyUnaryOperator<String>(4, "u+");
 
-	private static final IOperator<String> MINUS = new DummyOperator<String>(1, "-");
+	private static final BinaryOperator<String> MINUS = new DummyBinaryOperator<String>(1, "-");
 
 	private static final Token OP_MINUS = op("-");
 
-	private static final IOperator<String> UNARY_MINUS = new DummyOperator<String>(4, "u-");
+	private static final UnaryOperator<String> UNARY_MINUS = new DummyUnaryOperator<String>(4, "u-");
 
-	private static final IOperator<String> MULTIPLY = new DummyOperator<String>(2, "*");
+	private static final UnaryOperator<String> UNARY_NEG = new DummyUnaryOperator<String>(4, "u!");
+
+	private static final Token OP_NEG = op("!");
+
+	private static final BinaryOperator<String> MULTIPLY = new DummyBinaryOperator<String>(2, "*");
 
 	private static final Token OP_MULTIPLY = op("*");
 
@@ -51,13 +76,14 @@ public class InfixCompilerTest {
 	}
 
 	public IExecutable<String> s(String value, int args) {
-		return new SymbolReference<String>(value, args);
+		return new SymbolReference<String>(value, args, 1);
 	}
 
 	{
-		operators.registerOperator("+", PLUS, UNARY_PLUS);
-		operators.registerOperator("-", MINUS, "neg", UNARY_MINUS);
-		operators.registerOperator("*", MULTIPLY);
+		operators.registerMixedOperator("+", PLUS, UNARY_PLUS);
+		operators.registerMixedOperator("-", MINUS, UNARY_MINUS);
+		operators.registerUnaryOperator("!", UNARY_NEG);
+		operators.registerBinaryOperator("*", MULTIPLY);
 	}
 
 	private final IValueParser<String> valueParser = new IValueParser<String>() {
@@ -201,7 +227,16 @@ public class InfixCompilerTest {
 	}
 
 	@Test
-	public void testUnary() {
+	public void testUnaryOperators() {
+		given(OP_MINUS, dec("2"))
+				.expect(c("2"), UNARY_MINUS);
+
+		given(OP_NEG, dec("3"))
+				.expect(c("3"), UNARY_NEG);
+
+		given(OP_MINUS, dec("2"))
+				.expect(c("2"), UNARY_MINUS);
+
 		given(dec("1"), OP_MINUS, OP_MINUS, dec("2"))
 				.expect(c("1"), c("2"), UNARY_MINUS, MINUS);
 		given(dec("1"), OP_MULTIPLY, OP_MINUS, dec("2"))

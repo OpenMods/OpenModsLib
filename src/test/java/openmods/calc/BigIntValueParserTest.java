@@ -7,7 +7,7 @@ import org.junit.Test;
 
 public class BigIntValueParserTest {
 
-	public final BigIntValueParser parser = new BigIntValueParser();
+	public final BigIntParser parser = new BigIntParser();
 
 	private BigInteger parse(TokenType type, String value) {
 		return parser.parseToken(new Token(type, value));

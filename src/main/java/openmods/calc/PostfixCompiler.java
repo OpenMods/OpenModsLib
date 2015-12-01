@@ -5,7 +5,7 @@ import java.util.List;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-public abstract class PostfixCompiler<E> implements ICompiler<E> {
+public class PostfixCompiler<E> implements ICompiler<E> {
 
 	private final IValueParser<E> valueParser;
 
@@ -27,7 +27,7 @@ public abstract class PostfixCompiler<E> implements ICompiler<E> {
 
 	private IExecutable<E> compileToken(Token token) {
 		if (token.type == TokenType.OPERATOR) {
-			final IExecutable<E> operator = operators.get(token.value);
+			final IExecutable<E> operator = operators.getAnyOperator(token.value);
 			Preconditions.checkState(operator != null, "Invalid operator: " + token);
 			return operator;
 		}

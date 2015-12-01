@@ -2,14 +2,10 @@ package openmods.calc;
 
 import openmods.utils.Stack;
 
-public abstract class BinaryOperator<E> extends Operator<E> {
+public abstract class BinaryFunction<E> extends Function<E> {
 
-	public BinaryOperator(int precendence, Associativity associativity) {
-		super(precendence, associativity);
-	}
-
-	public BinaryOperator(int precendence) {
-		super(precendence);
+	public BinaryFunction() {
+		super(2, 1);
 	}
 
 	protected abstract E execute(E left, E right);

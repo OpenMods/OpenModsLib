@@ -1,11 +1,12 @@
 package openmods.utils;
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-public class Stack<E> {
+public class Stack<E> implements Iterable<E> {
 
 	public static class StackUnderflowException extends RuntimeException {
 		private static final long serialVersionUID = 360455673552034663L;
@@ -53,5 +54,10 @@ public class Stack<E> {
 
 	public static <T> Stack<T> create() {
 		return new Stack<T>();
+	}
+
+	@Override
+	public Iterator<E> iterator() {
+		return data.iterator();
 	}
 }
