@@ -101,9 +101,6 @@ public class InfixCompiler<E> implements ICompiler<E> {
 						operatorStack.push(op);
 						break;
 					}
-					case CONSTANT:
-						output.add(new SymbolReference<E>(token.value, 0, 1));
-						break;
 					default:
 						throw new InvalidTokenException(token);
 				}

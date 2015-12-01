@@ -153,11 +153,26 @@ public class InfixCompilerTest {
 
 	@Test
 	public void testNullaryFunction() {
+		given(symbol("pi"))
+				.expect(s("pi", 0));
+
+		given(symbol("pi"), OP_PLUS, dec("2"))
+				.expect(s("pi", 0), c("2"), PLUS);
+
+		given(dec("2"), OP_PLUS, symbol("pi"))
+				.expect(c("2"), s("pi", 0), PLUS);
+
+		given(symbol("a"), OP_PLUS, symbol("b"))
+				.expect(s("a", 0), s("b", 0), PLUS);
+
 		given(symbol("pi"), LEFT_BRACKET, RIGHT_BRACKET)
 				.expect(s("pi", 0));
 
 		given(symbol("pi"), LEFT_BRACKET, RIGHT_BRACKET, OP_PLUS, symbol("e"), LEFT_BRACKET, RIGHT_BRACKET)
 				.expect(s("pi", 0), s("e", 0), PLUS);
+
+		given(symbol("sin"), LEFT_BRACKET, symbol("a"), RIGHT_BRACKET)
+				.expect(s("a", 0), s("sin", 1));
 	}
 
 	@Test
@@ -212,18 +227,6 @@ public class InfixCompilerTest {
 
 		given(symbol("min"), LEFT_BRACKET, symbol("a"), COMMA, symbol("$b"), RIGHT_BRACKET)
 				.expect(s("a", 0), s("$b", 0), s("min", 2));
-	}
-
-	@Test
-	public void testConstSymbols() {
-		given(constant("a"))
-				.expect(s("a", 0));
-
-		given(constant("a"), OP_PLUS, constant("b"))
-				.expect(s("a", 0), s("b", 0), PLUS);
-
-		given(symbol("sin"), LEFT_BRACKET, constant("a"), RIGHT_BRACKET)
-				.expect(s("a", 0), s("sin", 1));
 	}
 
 	@Test

@@ -19,7 +19,6 @@ public enum TokenType {
 	QUOTED_NUMBER(TokenProperties.VALUE),
 
 	SYMBOL(TokenProperties.SYMBOL, TokenProperties.POSSIBLE_FUNCTION),
-	CONSTANT(TokenProperties.SYMBOL),
 
 	OPERATOR(TokenProperties.NEXT_OP_INFIX),
 	LEFT_BRACKET(TokenProperties.NEXT_OP_INFIX),

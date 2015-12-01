@@ -83,10 +83,10 @@ public class TokenizerTest {
 		verifyTokens("$boom_2", symbol("$boom_2"));
 		verifyTokens("$1", symbol("$1"));
 		verifyTokens("$HELLO", symbol("$HELLO"));
-		verifyTokens("_", constant("_")); // !?
-		verifyTokens("_C", constant("_C"));
-		verifyTokens("HELLO", constant("HELLO"));
-		verifyTokens("PI_2", constant("PI_2"));
+		verifyTokens("_", symbol("_"));
+		verifyTokens("_C", symbol("_C"));
+		verifyTokens("HELLO", symbol("HELLO"));
+		verifyTokens("PI_2", symbol("PI_2"));
 	}
 
 	@Test

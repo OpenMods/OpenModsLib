@@ -34,10 +34,6 @@ public class TokenUtils {
 		return t(TokenType.SYMBOL, value);
 	}
 
-	public static Token constant(String value) {
-		return t(TokenType.CONSTANT, value);
-	}
-
 	public static Token op(String value) {
 		return t(TokenType.OPERATOR, value);
 	}

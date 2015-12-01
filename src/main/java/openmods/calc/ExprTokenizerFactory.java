@@ -32,8 +32,6 @@ public class ExprTokenizerFactory {
 
 	private static final Pattern SYMBOL = Pattern.compile("^([_A-Za-z$][_0-9A-Za-z$]*)");
 
-	private static final Pattern CONSTANT = Pattern.compile("^([_A-Z][_0-9A-Z]*)");
-
 	private final Set<String> operators = Sets.newTreeSet(new Comparator<String>() {
 
 		@Override
@@ -74,11 +72,8 @@ public class ExprTokenizerFactory {
 						consumeInput(operator.length());
 						return new Token(TokenType.OPERATOR, operator);
 					} else {
-
 						consumeInput(symbolMatcher.end());
-						return CONSTANT.matcher(symbol).matches()?
-								new Token(TokenType.CONSTANT, symbol) :
-								new Token(TokenType.SYMBOL, symbol);
+						return new Token(TokenType.SYMBOL, symbol);
 					}
 				}
 
