@@ -1,6 +1,6 @@
 package openmods.calc;
 
-import static openmods.calc.TokenUtils.*;
+import static openmods.calc.TokenTestUtils.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -87,6 +87,32 @@ public class TokenizerTest {
 		verifyTokens("_C", symbol("_C"));
 		verifyTokens("HELLO", symbol("HELLO"));
 		verifyTokens("PI_2", symbol("PI_2"));
+	}
+
+	@Test
+	public void testSymbolsWithArgs() {
+		verifyTokens("hello@2", symbol_args("hello@2"));
+		verifyTokens("hello@2,2", symbol_args("hello@2,2"));
+		verifyTokens("hello@,2", symbol_args("hello@,2"));
+		verifyTokens("hello@2,", symbol_args("hello@2,"));
+		verifyTokens("hello@,", symbol_args("hello@,")); // weird case, but kept for simplicity
+		verifyTokens("hello@12,345", symbol_args("hello@12,345"));
+		verifyTokens("$1@3", symbol_args("$1@3"));
+		verifyTokens("$ans@3,4", symbol_args("$ans@3,4"));
+
+		factory.addOperator("+");
+		verifyTokens("hello + hello@2", symbol("hello"), op("+"), symbol_args("hello@2"));
+		verifyTokens("hello@3 + hello@2", symbol_args("hello@3"), op("+"), symbol_args("hello@2"));
+		verifyTokens("$ans@3,4+6", symbol_args("$ans@3,4"), op("+"), dec("6"));
+	}
+
+	@Test
+	public void testArgsSymbol() {
+		factory.addOperator("@");
+		factory.addOperator("@@");
+		verifyTokens("hello@2", symbol_args("hello@2"));
+		verifyTokens("@2", op("@"), dec("2"));
+		verifyTokens("@@2", op("@@"), dec("2"));
 	}
 
 	@Test

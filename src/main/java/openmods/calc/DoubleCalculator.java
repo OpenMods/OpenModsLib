@@ -3,7 +3,7 @@ package openmods.calc;
 public class DoubleCalculator extends Calculator<Double> {
 
 	public DoubleCalculator() {
-		super(new DoubleParser(), Constant.create(0.0));
+		super(new DoubleParser(), 0.0);
 	}
 
 	@Override
@@ -71,8 +71,9 @@ public class DoubleCalculator extends Calculator<Double> {
 	@Override
 	protected void setupGlobals(TopFrame<Double> globals) {
 		globals.setSymbol("PI", Constant.create(Math.PI));
-
 		globals.setSymbol("E", Constant.create(Math.E));
+		globals.setSymbol("INF", Constant.create(Double.POSITIVE_INFINITY));
+		globals.setSymbol("MAX", Constant.create(Double.MIN_VALUE));
 
 		globals.setSymbol("abs", new UnaryFunction<Double>() {
 			@Override
@@ -180,17 +181,17 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
-		globals.setSymbol("min", new BinaryFunction<Double>() {
+		globals.setSymbol("min", new AccumulatorFunction() {
 			@Override
-			protected Double execute(Double left, Double right) {
-				return Math.min(left, right);
+			protected Double accumulate(Double result, Double value) {
+				return Math.min(result, value);
 			}
 		});
 
-		globals.setSymbol("max", new BinaryFunction<Double>() {
+		globals.setSymbol("max", new AccumulatorFunction() {
 			@Override
-			protected Double execute(Double left, Double right) {
-				return Math.max(left, right);
+			protected Double accumulate(Double result, Double value) {
+				return Math.max(result, value);
 			}
 		});
 

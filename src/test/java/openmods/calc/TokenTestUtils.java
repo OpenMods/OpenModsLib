@@ -1,6 +1,6 @@
 package openmods.calc;
 
-public class TokenUtils {
+public class TokenTestUtils {
 
 	public static Token t(TokenType type, String value) {
 		return new Token(type, value);
@@ -32,6 +32,10 @@ public class TokenUtils {
 
 	public static Token symbol(String value) {
 		return t(TokenType.SYMBOL, value);
+	}
+
+	public static Token symbol_args(String value) {
+		return t(TokenType.SYMBOL_WITH_ARGS, value);
 	}
 
 	public static Token op(String value) {

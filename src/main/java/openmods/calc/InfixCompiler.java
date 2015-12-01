@@ -42,8 +42,9 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		for (Token token : input) {
 			if (token.type.isValue()) {
 				final E value = valueParser.parseToken(token);
-				output.add(Constant.create(value));
+				output.add(Value.create(value));
 			} else if (token.type.isPossibleFunction()) {
+				Preconditions.checkArgument(token.type != TokenType.SYMBOL_WITH_ARGS, "Symbol '%s' can't be used in infix mode", token.value);
 				operatorStack.push(new SymbolReference<E>(token.value));
 			} else {
 				if (lastToken != null && token.type != TokenType.LEFT_BRACKET && lastToken.type.isPossibleFunction()) {
@@ -62,7 +63,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 						if (!operatorStack.isEmpty()) {
 							final IExecutable<E> top = operatorStack.peek(0);
 							if (top instanceof SymbolReference) {
-								((SymbolReference<?>)top).setStackParams(argCount, 1);
+								((SymbolReference<?>)top).setArgumentsCount(argCount).setReturnsCount(1);
 								operatorStack.pop();
 								output.add(top);
 							}
@@ -120,7 +121,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 	}
 
 	protected void setArgCount(final IExecutable<E> symbol, final int argCount) {
-		if (symbol instanceof SymbolReference<?>) ((SymbolReference<?>)symbol).setStackParams(argCount, 1);
+		if (symbol instanceof SymbolReference<?>) ((SymbolReference<?>)symbol).setArgumentsCount(argCount).setReturnsCount(1);
 	}
 
 	private int popUntilBracket(List<IExecutable<E>> output, Stack<IExecutable<E>> operatorStack) {

@@ -2,7 +2,7 @@ package openmods.calc;
 
 import openmods.utils.Stack;
 
-public abstract class BinaryFunction<E> extends Function<E> {
+public abstract class BinaryFunction<E> extends FixedSymbol<E> {
 
 	public BinaryFunction() {
 		super(2, 1);

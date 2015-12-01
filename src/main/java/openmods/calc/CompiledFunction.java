@@ -2,7 +2,7 @@ package openmods.calc;
 
 import openmods.utils.Stack;
 
-public class CompiledFunction<E> extends Function<E> {
+public class CompiledFunction<E> extends FixedSymbol<E> {
 
 	private final IExecutable<E> body;
 

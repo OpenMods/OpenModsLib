@@ -2,12 +2,11 @@ package openmods.calc;
 
 import com.google.common.base.Objects;
 
-public class Constant<E> extends FixedSymbol<E> {
+public class Value<E> implements IExecutable<E> {
 
 	private final E value;
 
-	public Constant(E value) {
-		super(0, 1);
+	public Value(E value) {
 		this.value = value;
 	}
 
@@ -16,13 +15,13 @@ public class Constant<E> extends FixedSymbol<E> {
 		frame.stack().push(value);
 	}
 
-	public static <E> Constant<E> create(E value) {
-		return new Constant<E>(value);
+	public static <E> Value<E> create(E value) {
+		return new Value<E>(value);
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		return (other instanceof Constant) && Objects.equal(((Constant<?>)other).value, this.value);
+		return (other instanceof Value) && Objects.equal(((Value<?>)other).value, this.value);
 	}
 
 	@Override
@@ -32,6 +31,6 @@ public class Constant<E> extends FixedSymbol<E> {
 
 	@Override
 	public String toString() {
-		return "Constant [value=" + value + "]";
+		return "Value [value=" + value + "]";
 	}
 }

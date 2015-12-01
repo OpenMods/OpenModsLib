@@ -2,7 +2,7 @@ package openmods.calc;
 
 import openmods.utils.Stack;
 
-public abstract class TernaryFunction<E> extends Function<E> {
+public abstract class TernaryFunction<E> extends FixedSymbol<E> {
 
 	public TernaryFunction() {
 		super(3, 1);

@@ -1,7 +1,7 @@
 package openmods.calc;
 
-public interface ISymbol<E> extends IExecutable<E> {
-	public void checkArgumentCount(int argCount);
+import com.google.common.base.Optional;
 
-	public void checkResultCount(int resultCount);
+public interface ISymbol<E> {
+	public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount);
 }

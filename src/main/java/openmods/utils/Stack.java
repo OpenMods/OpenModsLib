@@ -3,7 +3,6 @@ package openmods.utils;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class Stack<E> implements Iterable<E> {
@@ -27,7 +26,8 @@ public class Stack<E> implements Iterable<E> {
 	}
 
 	public E pop() {
-		Preconditions.checkState(!data.isEmpty());
+		if (data.isEmpty()) throw new StackUnderflowException();
+
 		try {
 			return data.remove(data.size() - 1);
 		} catch (IndexOutOfBoundsException e) {

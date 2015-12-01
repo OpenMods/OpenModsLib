@@ -1,28 +1,23 @@
 package openmods.calc;
 
+import java.util.Arrays;
+
 import openmods.calc.Calculator.ExprType;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 public class DoubleCalculatorTest {
 
 	private final DoubleCalculator sut = new DoubleCalculator();
 
 	public class Check {
-		private final TopFrame<Double> frame = new TopFrame<Double>();
-
 		private final IExecutable<Double> expr;
 
 		public Check(IExecutable<Double> expr) {
 			this.expr = expr;
-		}
-
-		public Check push(Double... args) {
-			for (Double arg : args)
-				frame.stack().push(arg);
-
-			return this;
 		}
 
 		public Check expectResult(double value) {
@@ -31,7 +26,12 @@ public class DoubleCalculatorTest {
 		}
 
 		public Check expectEmptyStack() {
-			Assert.assertTrue(frame.stack().isEmpty());
+			Assert.assertTrue(Lists.newArrayList(sut.getStack()).isEmpty());
+			return this;
+		}
+
+		public Check expectStack(Double... values) {
+			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(sut.getStack()));
 			return this;
 		}
 
@@ -67,11 +67,37 @@ public class DoubleCalculatorTest {
 	}
 
 	@Test
+	public void testPostfixDupWithReturnArgs() {
+		postfix("2 dup@,4").execute().expectStack(2.0, 2.0, 2.0, 2.0);
+	}
+
+	@Test
+	public void testPostfixDupWithArgs() {
+		postfix("1 2 3 4 dup@3,5").execute().expectStack(1.0, 2.0, 3.0, 4.0, 2.0, 3.0);
+	}
+
+	@Test
+	public void testPostfixPopWithArgs() {
+		postfix("1 2 3 4 pop@3").execute().expectStack(1.0);
+	}
+
+	@Test
+	public void testVariadicPostfixFunctions() {
+		postfix("max@0").expectResult(0).expectEmptyStack();
+		postfix("1 max@1").expectResult(1).expectEmptyStack();
+		postfix("1 2 max@2").expectResult(2).expectEmptyStack();
+		postfix("3 2 1 max@3").expectResult(3).expectEmptyStack();
+		postfix("2 4 INF 1 max@4").expectResult(Double.POSITIVE_INFINITY).expectEmptyStack();
+	}
+
+	@Test
 	public void testBasicInfix() {
 		infix("1 + 2").expectResult(3).expectEmptyStack();
 		infix("2 * 3").expectResult(6).expectEmptyStack();
 		infix("10 / 2").expectResult(5).expectEmptyStack();
 		infix("2 ^ 5").expectResult(32).expectEmptyStack();
+		infix("-PI").expectResult(-Math.PI).expectEmptyStack();
+		infix("2*E").expectResult(2 * Math.E).expectEmptyStack();
 	}
 
 	@Test
@@ -97,13 +123,22 @@ public class DoubleCalculatorTest {
 		infix("2-max(2,3)").expectResult(-1).expectEmptyStack();
 	}
 
-	@Test(expected = StackValidationException.class)
+	@Test
+	public void testVariadicInfixFunctions() {
+		infix("max()").expectResult(0).expectEmptyStack();
+		infix("max(1)").expectResult(1).expectEmptyStack();
+		infix("max(1,2)").expectResult(2).expectEmptyStack();
+		infix("max(3,2,1)").expectResult(3).expectEmptyStack();
+		infix("max(2,4,INF,1)").expectResult(Double.POSITIVE_INFINITY).expectEmptyStack();
+	}
+
+	@Test(expected = Exception.class)
 	public void testTooManyParameters() {
 		infix("sin(0, 1)").execute();
 	}
 
-	@Test(expected = StackValidationException.class)
+	@Test(expected = Exception.class)
 	public void testTooFewParameters() {
-		infix("min(0)").execute();
+		infix("atan2(0)").execute();
 	}
 }

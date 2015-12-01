@@ -5,7 +5,6 @@ import java.util.Set;
 
 enum TokenProperties {
 	VALUE,
-	SYMBOL,
 	NEXT_OP_INFIX,
 	POSSIBLE_FUNCTION
 }
@@ -18,7 +17,8 @@ public enum TokenType {
 	BIN_NUMBER(TokenProperties.VALUE),
 	QUOTED_NUMBER(TokenProperties.VALUE),
 
-	SYMBOL(TokenProperties.SYMBOL, TokenProperties.POSSIBLE_FUNCTION),
+	SYMBOL(TokenProperties.POSSIBLE_FUNCTION),
+	SYMBOL_WITH_ARGS(TokenProperties.POSSIBLE_FUNCTION),
 
 	OPERATOR(TokenProperties.NEXT_OP_INFIX),
 	LEFT_BRACKET(TokenProperties.NEXT_OP_INFIX),
@@ -27,10 +27,6 @@ public enum TokenType {
 
 	public boolean isValue() {
 		return properties.contains(TokenProperties.VALUE);
-	}
-
-	public boolean isSymbol() {
-		return properties.contains(TokenProperties.SYMBOL);
 	}
 
 	public final boolean isNextOpInfix() {

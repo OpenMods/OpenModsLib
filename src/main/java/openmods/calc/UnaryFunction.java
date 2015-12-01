@@ -2,7 +2,7 @@ package openmods.calc;
 
 import openmods.utils.Stack;
 
-public abstract class UnaryFunction<E> extends Function<E> {
+public abstract class UnaryFunction<E> extends FixedSymbol<E> {
 
 	public UnaryFunction() {
 		super(1, 1);

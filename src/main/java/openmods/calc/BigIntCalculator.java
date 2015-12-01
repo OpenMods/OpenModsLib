@@ -5,7 +5,7 @@ import java.math.BigInteger;
 public class BigIntCalculator extends Calculator<BigInteger> {
 
 	public BigIntCalculator() {
-		super(new BigIntParser(), Constant.create(BigInteger.ZERO));
+		super(new BigIntParser(), BigInteger.ZERO);
 	}
 
 	@Override
@@ -31,14 +31,14 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			}
 		});
 
-		operators.registerBinaryOperator("||", new BinaryOperator<BigInteger>(2) {
+		operators.registerBinaryOperator("|", new BinaryOperator<BigInteger>(2) {
 			@Override
 			protected BigInteger execute(BigInteger left, BigInteger right) {
 				return left.or(right);
 			}
 		});
 
-		operators.registerBinaryOperator("&&", new BinaryOperator<BigInteger>(2) {
+		operators.registerBinaryOperator("&", new BinaryOperator<BigInteger>(2) {
 			@Override
 			protected BigInteger execute(BigInteger left, BigInteger right) {
 				return left.and(right);
@@ -129,17 +129,17 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			}
 		});
 
-		globals.setSymbol("min", new BinaryFunction<BigInteger>() {
+		globals.setSymbol("min", new AccumulatorFunction() {
 			@Override
-			protected BigInteger execute(BigInteger left, BigInteger right) {
-				return left.min(right);
+			protected BigInteger accumulate(BigInteger result, BigInteger value) {
+				return result.min(value);
 			}
 		});
 
-		globals.setSymbol("max", new BinaryFunction<BigInteger>() {
+		globals.setSymbol("max", new AccumulatorFunction() {
 			@Override
-			protected BigInteger execute(BigInteger left, BigInteger right) {
-				return left.min(right);
+			protected BigInteger accumulate(BigInteger result, BigInteger value) {
+				return result.max(value);
 			}
 		});
 

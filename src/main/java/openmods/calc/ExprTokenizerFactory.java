@@ -32,6 +32,8 @@ public class ExprTokenizerFactory {
 
 	private static final Pattern SYMBOL = Pattern.compile("^([_A-Za-z$][_0-9A-Za-z$]*)");
 
+	private static final Pattern SYMBOL_ARGS = Pattern.compile("^(@[0-9]*,?[0-9]*)");
+
 	private final Set<String> operators = Sets.newTreeSet(new Comparator<String>() {
 
 		@Override
@@ -73,7 +75,16 @@ public class ExprTokenizerFactory {
 						return new Token(TokenType.OPERATOR, operator);
 					} else {
 						consumeInput(symbolMatcher.end());
-						return new Token(TokenType.SYMBOL, symbol);
+
+						final Matcher argMatcher = SYMBOL_ARGS.matcher(input);
+
+						if (argMatcher.find()) {
+							consumeInput(argMatcher.end());
+							final String symbolArgs = argMatcher.group(1);
+							return new Token(TokenType.SYMBOL_WITH_ARGS, symbol + symbolArgs);
+						} else {
+							return new Token(TokenType.SYMBOL, symbol);
+						}
 					}
 				}
 
