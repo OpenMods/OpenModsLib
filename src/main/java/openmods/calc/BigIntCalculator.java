@@ -12,14 +12,14 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 
 	@Override
 	protected void setupOperators(OperatorDictionary<BigInteger> operators) {
-		operators.registerUnaryOperator("~", new UnaryOperator<BigInteger>(MAX_PRIO) {
+		operators.registerUnaryOperator("~", new UnaryOperator<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger value) {
 				return value.not();
 			}
 		});
 
-		operators.registerUnaryOperator("neg", new UnaryOperator<BigInteger>(MAX_PRIO) {
+		operators.registerUnaryOperator("neg", new UnaryOperator<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger value) {
 				return value.negate();
@@ -52,7 +52,7 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			protected BigInteger execute(BigInteger left, BigInteger right) {
 				return left.add(right);
 			}
-		}, new UnaryOperator<BigInteger>(0) {
+		}, new UnaryOperator<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger value) {
 				return value;
@@ -64,7 +64,7 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			protected BigInteger execute(BigInteger left, BigInteger right) {
 				return left.subtract(right);
 			}
-		}, new UnaryOperator<BigInteger>(MAX_PRIO) {
+		}, new UnaryOperator<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger value) {
 				return value.negate();

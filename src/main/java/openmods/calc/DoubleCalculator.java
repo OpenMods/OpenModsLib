@@ -10,7 +10,7 @@ public class DoubleCalculator extends Calculator<Double> {
 
 	@Override
 	protected void setupOperators(OperatorDictionary<Double> operators) {
-		operators.registerUnaryOperator("neg", new UnaryOperator<Double>(MAX_PRIO) {
+		operators.registerUnaryOperator("neg", new UnaryOperator<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return -value;
@@ -22,7 +22,7 @@ public class DoubleCalculator extends Calculator<Double> {
 			protected Double execute(Double left, Double right) {
 				return left + right;
 			}
-		}, new UnaryOperator<Double>(MAX_PRIO) {
+		}, new UnaryOperator<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return +value;
@@ -34,7 +34,7 @@ public class DoubleCalculator extends Calculator<Double> {
 			protected Double execute(Double left, Double right) {
 				return left - right;
 			}
-		}, new UnaryOperator<Double>(MAX_PRIO) {
+		}, new UnaryOperator<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return -value;

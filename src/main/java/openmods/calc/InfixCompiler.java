@@ -93,7 +93,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 							if (!(top instanceof Operator)) break;
 
 							final Operator<E> topOp = (Operator<E>)top;
-							if (!topOp.associativity.compare(op, topOp)) break;
+							if (!op.isLessThan(topOp)) break;
 
 							operatorStack.pop();
 							output.add(top);
