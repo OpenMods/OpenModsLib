@@ -166,6 +166,34 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			}
 		});
 
+		globals.setSymbol("get", new BinaryFunction<BigInteger>() {
+			@Override
+			protected BigInteger execute(BigInteger first, BigInteger second) {
+				return first.testBit(second.intValue())? BigInteger.ONE : BigInteger.ZERO;
+			}
+		});
+
+		globals.setSymbol("set", new BinaryFunction<BigInteger>() {
+			@Override
+			protected BigInteger execute(BigInteger first, BigInteger second) {
+				return first.setBit(second.intValue());
+			}
+		});
+
+		globals.setSymbol("clear", new BinaryFunction<BigInteger>() {
+			@Override
+			protected BigInteger execute(BigInteger first, BigInteger second) {
+				return first.clearBit(second.intValue());
+			}
+		});
+
+		globals.setSymbol("flip", new BinaryFunction<BigInteger>() {
+			@Override
+			protected BigInteger execute(BigInteger first, BigInteger second) {
+				return first.flipBit(second.intValue());
+			}
+		});
+
 	}
 
 }

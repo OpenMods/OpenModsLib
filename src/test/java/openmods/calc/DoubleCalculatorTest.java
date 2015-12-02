@@ -1,57 +1,22 @@
 package openmods.calc;
 
-import java.util.Arrays;
-
+import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.Calculator.ExprType;
 
-import org.junit.Assert;
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
 
 public class DoubleCalculatorTest {
 
 	private final DoubleCalculator sut = new DoubleCalculator();
 
-	public static class Check<E> {
-		private final Calculator<E> sut;
-
-		private final IExecutable<E> expr;
-
-		public Check(Calculator<E> sut, IExecutable<E> expr) {
-			this.expr = expr;
-			this.sut = sut;
-		}
-
-		public Check<E> expectResult(E value) {
-			Assert.assertEquals(value, sut.executeAndPop(expr));
-			return this;
-		}
-
-		public Check<E> expectEmptyStack() {
-			Assert.assertTrue(Lists.newArrayList(sut.getStack()).isEmpty());
-			return this;
-		}
-
-		public Check<E> expectStack(E... values) {
-			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(sut.getStack()));
-			return this;
-		}
-
-		public Check<E> execute() {
-			sut.execute(expr);
-			return this;
-		}
-	}
-
-	public Check<Double> infix(String value) {
+	public CalcCheck<Double> infix(String value) {
 		final IExecutable<Double> expr = sut.compile(ExprType.INFIX, value);
-		return new Check<Double>(sut, expr);
+		return new CalcCheck<Double>(sut, expr);
 	}
 
-	public Check<Double> postfix(String value) {
+	public CalcCheck<Double> postfix(String value) {
 		final IExecutable<Double> expr = sut.compile(ExprType.POSTFIX, value);
-		return new Check<Double>(sut, expr);
+		return new CalcCheck<Double>(sut, expr);
 	}
 
 	@Test
@@ -114,6 +79,9 @@ public class DoubleCalculatorTest {
 		infix("1 + 2 * 3").expectResult(7.0).expectEmptyStack();
 		infix("1 + (2 * 3)").expectResult(7.0).expectEmptyStack();
 		infix("(1 + 2) * 3").expectResult(9.0).expectEmptyStack();
+		infix("-(1 + 2) * 3").expectResult(-9.0).expectEmptyStack();
+		infix("(1 + 2) * -3").expectResult(-9.0).expectEmptyStack();
+		infix("--3").expectResult(3.0).expectEmptyStack();
 
 		infix("2 * 2 ^ 2").expectResult(8.0).expectEmptyStack();
 		infix("2 * (2 ^ 2)").expectResult(8.0).expectEmptyStack();

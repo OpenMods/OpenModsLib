@@ -1,7 +1,6 @@
 package openmods.calc;
 
-import static openmods.calc.ParserTestUtils.*;
-import static openmods.calc.TokenTestUtils.*;
+import static openmods.calc.CalcTestUtils.*;
 
 import java.util.Arrays;
 import java.util.List;

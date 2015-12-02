@@ -1,6 +1,6 @@
 package openmods.calc;
 
-import static openmods.calc.TokenTestUtils.*;
+import static openmods.calc.CalcTestUtils.*;
 
 import org.junit.Assert;
 import org.junit.Test;

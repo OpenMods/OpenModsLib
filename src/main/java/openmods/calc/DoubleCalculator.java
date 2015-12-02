@@ -61,13 +61,6 @@ public class DoubleCalculator extends Calculator<Double> {
 				return Math.pow(left, right);
 			}
 		});
-
-		operators.registerBinaryOperator("e", new BinaryOperator<Double>(MAX_PRIO - 1) {
-			@Override
-			protected Double execute(Double left, Double right) {
-				return left * Math.pow(10, right);
-			}
-		});
 	}
 
 	@Override
@@ -81,6 +74,13 @@ public class DoubleCalculator extends Calculator<Double> {
 			@Override
 			protected Double execute(Double value) {
 				return Math.abs(value);
+			}
+		});
+
+		globals.setSymbol("sgn", new UnaryFunction<Double>() {
+			@Override
+			protected Double execute(Double value) {
+				return Math.signum(value);
 			}
 		});
 

@@ -1,8 +1,57 @@
 package openmods.calc;
 
-import static openmods.calc.TokenTestUtils.op;
+import java.util.Arrays;
 
-public class ParserTestUtils {
+import org.junit.Assert;
+
+import com.google.common.collect.Lists;
+
+public class CalcTestUtils {
+
+	public static Token t(TokenType type, String value) {
+		return new Token(type, value);
+	}
+
+	public static Token dec(String value) {
+		return t(TokenType.DEC_NUMBER, value);
+	}
+
+	public static Token f(String value) {
+		return t(TokenType.FLOAT_NUMBER, value);
+	}
+
+	public static Token oct(String value) {
+		return t(TokenType.OCT_NUMBER, value);
+	}
+
+	public static Token hex(String value) {
+		return t(TokenType.HEX_NUMBER, value);
+	}
+
+	public static Token bin(String value) {
+		return t(TokenType.BIN_NUMBER, value);
+	}
+
+	public static Token quoted(String value) {
+		return t(TokenType.QUOTED_NUMBER, value);
+	}
+
+	public static Token symbol(String value) {
+		return t(TokenType.SYMBOL, value);
+	}
+
+	public static Token symbol_args(String value) {
+		return t(TokenType.SYMBOL_WITH_ARGS, value);
+	}
+
+	public static Token op(String value) {
+		return t(TokenType.OPERATOR, value);
+	}
+
+	public static final Token COMMA = t(TokenType.SEPARATOR, ",");
+	public static final Token RIGHT_BRACKET = t(TokenType.RIGHT_BRACKET, ")");
+	public static final Token LEFT_BRACKET = t(TokenType.LEFT_BRACKET, "(");
+
 	public static class DummyBinaryOperator<E> extends BinaryOperator<E> {
 		private final String id;
 
@@ -83,4 +132,35 @@ public class ParserTestUtils {
 			return token.value;
 		}
 	};
+
+	public static class CalcCheck<E> {
+		private final Calculator<E> sut;
+
+		private final IExecutable<E> expr;
+
+		public CalcCheck(Calculator<E> sut, IExecutable<E> expr) {
+			this.expr = expr;
+			this.sut = sut;
+		}
+
+		public CalcCheck<E> expectResult(E value) {
+			Assert.assertEquals(value, sut.executeAndPop(expr));
+			return this;
+		}
+
+		public CalcCheck<E> expectEmptyStack() {
+			Assert.assertTrue(Lists.newArrayList(sut.getStack()).isEmpty());
+			return this;
+		}
+
+		public CalcCheck<E> expectStack(E... values) {
+			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(sut.getStack()));
+			return this;
+		}
+
+		public CalcCheck<E> execute() {
+			sut.execute(expr);
+			return this;
+		}
+	}
 }
