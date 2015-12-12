@@ -122,6 +122,8 @@ public abstract class Calculator<E> {
 		});
 	}
 
+	public abstract String toString(E value);
+
 	protected abstract void setupOperators(OperatorDictionary<E> operators);
 
 	protected abstract void setupGlobals(TopFrame<E> globals);

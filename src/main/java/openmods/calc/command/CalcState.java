@@ -18,6 +18,12 @@ public class CalcState {
 				return new DoubleCalculator();
 			}
 		},
+		FRACTION {
+			@Override
+			public Calculator<?> createCalculator() {
+				return new FractionCalculator();
+			}
+		},
 		BIGINT {
 			@Override
 			public Calculator<?> createCalculator() {
@@ -33,8 +39,6 @@ public class CalcState {
 	private Calculator<?> prev;
 
 	public Calculator.ExprType exprType = ExprType.INFIX;
-
-	public int base = 10;
 
 	private Stack<Calculator<?>> calculatorStack = Stack.create();
 

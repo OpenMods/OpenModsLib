@@ -264,7 +264,7 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 			if (s.equalsIgnoreCase("true")) return Boolean.TRUE;
 			else if (s.equalsIgnoreCase("false")) return Boolean.FALSE;
 
-			throw new StringConversionException("bool", s);
+			throw new StringConversionException("bool", s, "true", "false");
 		}
 	};
 
@@ -399,4 +399,9 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 	public static final Map<Class<?>, IStringSerializer<?>> STRING_SERIALIZERS = ImmutableMap.<Class<?>, IStringSerializer<?>> builder()
 			.putAll(UNIVERSAL_SERIALIZERS)
 			.build();
+
+	@SuppressWarnings("unchecked")
+	public static <T> IStringSerializer<T> getStringSerializer(Class<? extends T> cls) {
+		return (IStringSerializer<T>)STRING_SERIALIZERS.get(cls);
+	}
 }

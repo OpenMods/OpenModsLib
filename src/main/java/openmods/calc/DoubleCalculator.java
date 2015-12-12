@@ -197,6 +197,25 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
+		globals.setSymbol("rad", new UnaryFunction<Double>() {
+			@Override
+			protected Double execute(Double value) {
+				return Math.toRadians(value);
+			}
+		});
+
+		globals.setSymbol("deg", new UnaryFunction<Double>() {
+			@Override
+			protected Double execute(Double value) {
+				return Math.toDegrees(value);
+			}
+		});
+
+	}
+
+	@Override
+	public String toString(Double value) {
+		return value.toString();
 	}
 
 }

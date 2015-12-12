@@ -2,7 +2,12 @@ package openmods.calc;
 
 import java.math.BigInteger;
 
+import openmods.config.simpler.Configurable;
+
 public class BigIntCalculator extends Calculator<BigInteger> {
+
+	@Configurable
+	public int base = 10;
 
 	public BigIntCalculator() {
 		super(new BigIntParser(), BigInteger.ZERO);
@@ -194,6 +199,11 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			}
 		});
 
+	}
+
+	@Override
+	public String toString(BigInteger value) {
+		return value.toString(base);
 	}
 
 }
