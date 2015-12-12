@@ -8,16 +8,64 @@ import com.google.common.collect.Lists;
 
 public class CalcTestUtils {
 
+	public static class ValueParserHelper<E> {
+		public final IValueParser<E> parser;
+
+		public ValueParserHelper(IValueParser<E> parser) {
+			this.parser = parser;
+		}
+
+		private E parse(TokenType type, String value) {
+			return parser.parseToken(new Token(type, value));
+		}
+
+		public E bin(String value) {
+			return parse(TokenType.BIN_NUMBER, value);
+		}
+
+		public void testBin(E expected, String input) {
+			Assert.assertEquals(expected, bin(input));
+		}
+
+		public E oct(String value) {
+			return parse(TokenType.OCT_NUMBER, value);
+		}
+
+		public void testOct(E expected, String input) {
+			Assert.assertEquals(expected, oct(input));
+		}
+
+		public E dec(String value) {
+			return parse(TokenType.DEC_NUMBER, value);
+		}
+
+		public void testDec(E expected, String input) {
+			Assert.assertEquals(expected, dec(input));
+		}
+
+		public E hex(String value) {
+			return parse(TokenType.HEX_NUMBER, value);
+		}
+
+		public void testHex(E expected, String input) {
+			Assert.assertEquals(expected, hex(input));
+		}
+
+		public E quoted(String value) {
+			return parse(TokenType.QUOTED_NUMBER, value);
+		}
+
+		public void testQuoted(E expected, String input) {
+			Assert.assertEquals(expected, quoted(input));
+		}
+	}
+
 	public static Token t(TokenType type, String value) {
 		return new Token(type, value);
 	}
 
 	public static Token dec(String value) {
 		return t(TokenType.DEC_NUMBER, value);
-	}
-
-	public static Token f(String value) {
-		return t(TokenType.FLOAT_NUMBER, value);
 	}
 
 	public static Token oct(String value) {

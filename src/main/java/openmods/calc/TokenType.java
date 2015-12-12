@@ -10,7 +10,6 @@ enum TokenProperties {
 }
 
 public enum TokenType {
-	FLOAT_NUMBER(TokenProperties.VALUE),
 	DEC_NUMBER(TokenProperties.VALUE),
 	HEX_NUMBER(TokenProperties.VALUE),
 	OCT_NUMBER(TokenProperties.VALUE),

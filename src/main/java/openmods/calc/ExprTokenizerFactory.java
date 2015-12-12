@@ -12,23 +12,15 @@ import com.google.common.primitives.Ints;
 
 public class ExprTokenizerFactory {
 
-	private static final Token ZERO = new Token(TokenType.DEC_NUMBER, "0");
+	private static final Pattern DEC_NUMBER = Pattern.compile("^([0-9]+(?:\\.[0-9]+)?)");
 
-	private static final Pattern FLOAT_NUMBER_DOT = Pattern.compile("^(\\.[0-9]*(?:e[+-]?[0-9]+)?)");
+	private static final Pattern HEX_NUMBER = Pattern.compile("^0x([0-9A-Fa-f]+(?:\\.[0-9A-Fa-f]+)?)");
 
-	private static final Pattern FLOAT_NUMBER_FULL = Pattern.compile("^([0-9]+\\.[0-9]*(?:e[+-]?[0-9]+)?)");
+	private static final Pattern OCT_NUMBER = Pattern.compile("^0([0-7]+(?:\\.[0-7]+)?)");
 
-	private static final Pattern FLOAT_NUMBER_EXPONENT = Pattern.compile("^([0-9]+e[+-]?[0-9]+)");
+	private static final Pattern BIN_NUMBER = Pattern.compile("^0b([01]+(?:\\.[01]+)?)");
 
-	private static final Pattern INT_NUMBER = Pattern.compile("^([1-9][0-9]*\\.?[0-9]*)");
-
-	private static final Pattern HEX_NUMBER = Pattern.compile("^0x([0-9A-Fa-f]+\\.?[0-9A-Fa-f]*)");
-
-	private static final Pattern OCT_NUMBER = Pattern.compile("^0([0-7]+\\.?[0-7]*)");
-
-	private static final Pattern BIN_NUMBER = Pattern.compile("^0b([01]+\\.?[01]*)");
-
-	private static final Pattern QUOTED_NUMBER = Pattern.compile("^([0-9]+#[0-9A-Za-z'\"]+\\.?[0-9A-Za-z'\"]*)");
+	private static final Pattern QUOTED_NUMBER = Pattern.compile("^([0-9]+#[0-9A-Za-z'\"]+(?:\\.[0-9A-Za-z'\"]+)?)");
 
 	private static final Pattern SYMBOL = Pattern.compile("^([_A-Za-z$][_0-9A-Za-z$]*)");
 
@@ -96,19 +88,7 @@ public class ExprTokenizerFactory {
 
 				Token result;
 
-				result = tryPattern(FLOAT_NUMBER_DOT, TokenType.FLOAT_NUMBER);
-				if (result != null) return result;
-
-				result = tryPattern(FLOAT_NUMBER_FULL, TokenType.FLOAT_NUMBER);
-				if (result != null) return result;
-
-				result = tryPattern(FLOAT_NUMBER_EXPONENT, TokenType.FLOAT_NUMBER);
-				if (result != null) return result;
-
 				result = tryPattern(QUOTED_NUMBER, TokenType.QUOTED_NUMBER);
-				if (result != null) return result;
-
-				result = tryPattern(INT_NUMBER, TokenType.DEC_NUMBER);
 				if (result != null) return result;
 
 				result = tryPattern(HEX_NUMBER, TokenType.HEX_NUMBER);
@@ -120,10 +100,8 @@ public class ExprTokenizerFactory {
 				result = tryPattern(BIN_NUMBER, TokenType.BIN_NUMBER);
 				if (result != null) return result;
 
-				if (input.startsWith("0")) {
-					input = input.substring(1);
-					return ZERO;
-				}
+				result = tryPattern(DEC_NUMBER, TokenType.DEC_NUMBER);
+				if (result != null) return result;
 
 				throw new IllegalArgumentException("Unknown token type: '" + input + "'");
 

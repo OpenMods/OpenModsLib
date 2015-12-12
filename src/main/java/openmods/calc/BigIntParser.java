@@ -2,11 +2,13 @@ package openmods.calc;
 
 import java.math.BigInteger;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public class BigIntParser implements IValueParser<BigInteger> {
 
-	private static final IntegerParser<BigInteger> INT_PARSER = new IntegerParser<BigInteger>() {
+	private static final PositionalNotationParser<BigInteger> PARSER = new PositionalNotationParser<BigInteger>() {
 		@Override
-		public Accumulator<BigInteger> createAccumulator(int radix) {
+		public Accumulator<BigInteger> createIntegerAccumulator(int radix) {
 			final BigInteger bigRadix = BigInteger.valueOf(radix);
 			return new Accumulator<BigInteger>() {
 				private BigInteger value = BigInteger.ZERO;
@@ -22,12 +24,17 @@ public class BigIntParser implements IValueParser<BigInteger> {
 				}
 			};
 		}
+
+		@Override
+		public Accumulator<BigInteger> createFractionalAccumulator(int radix) {
+			throw new IllegalArgumentException("Fractional part not allowed");
+		}
 	};
 
 	@Override
 	public BigInteger parseToken(Token token) {
-		if (token.type == TokenType.FLOAT_NUMBER) throw new NumberFormatException("Floats are not supported in this mode");
-		return INT_PARSER.parseToken(token);
+		final Pair<BigInteger, BigInteger> result = PARSER.parseToken(token);
+		return result.getLeft();
 	}
 
 }

@@ -1,23 +1,45 @@
 package openmods.calc;
 
 import org.apache.commons.lang3.math.Fraction;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class FractionParser implements IValueParser<Fraction> {
 
-	private static final IntegerParser<Integer> INT_PARSER = new IntegerParser<Integer>() {
+	private static final PositionalNotationParser<Fraction> PARSER = new PositionalNotationParser<Fraction>() {
+
 		@Override
-		public Accumulator<Integer> createAccumulator(final int radix) {
-			return new Accumulator<Integer>() {
-				private int value = 0;
+		public Accumulator<Fraction> createIntegerAccumulator(final int radix) {
+			final Fraction fractionalRadix = Fraction.getFraction(radix, 1);
+			return new Accumulator<Fraction>() {
+				private Fraction value = Fraction.ZERO;
 
 				@Override
 				public void add(int digit) {
-					value = value * radix + digit;
+					value = value.multiplyBy(fractionalRadix).add(Fraction.getFraction(digit, 1));
 				}
 
 				@Override
-				public Integer get() {
+				public Fraction get() {
 					return value;
+				}
+			};
+		}
+
+		@Override
+		protected Accumulator<Fraction> createFractionalAccumulator(final int radix) {
+			return new Accumulator<Fraction>() {
+				private Fraction value = Fraction.ZERO;
+				private int weight = radix;
+
+				@Override
+				public void add(int digit) {
+					value = value.add(Fraction.getFraction(digit, weight));
+					weight *= radix;
+				}
+
+				@Override
+				public Fraction get() {
+					return value.reduce();
 				}
 			};
 		}
@@ -25,13 +47,11 @@ public class FractionParser implements IValueParser<Fraction> {
 
 	@Override
 	public Fraction parseToken(Token token) {
-		if (token.type == TokenType.FLOAT_NUMBER) {
-			final double value = Double.parseDouble(token.value);
-			return Fraction.getFraction(value);
-		} else {
-			final int value = INT_PARSER.parseToken(token);
-			return Fraction.getFraction(value, 1);
-		}
+		final Pair<Fraction, Fraction> result = PARSER.parseToken(token);
+		final Fraction left = result.getLeft();
+		final Fraction right = result.getRight();
+
+		return right != null? left.add(right) : left;
 	}
 
 }

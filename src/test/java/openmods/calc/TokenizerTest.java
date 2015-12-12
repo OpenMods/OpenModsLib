@@ -18,59 +18,67 @@ public class TokenizerTest {
 	}
 
 	@Test
-	public void testSingleZeros() {
-		verifyTokens("0", dec("0")); // special case
-		verifyTokens(".0", f(".0"));
-		verifyTokens(".0e0", f(".0e0"));
-		verifyTokens("0.", f("0."));
-		verifyTokens("0.e0", f("0.e0"));
-		verifyTokens("0.0e0", f("0.0e0"));
-		verifyTokens("0e0", f("0e0"));
-		verifyTokens("00.", f("00."));
-		verifyTokens("0.0", f("0.0"));
-		verifyTokens("00", oct("0"));
-		verifyTokens("0x0", hex("0"));
+	public void testBinary() {
 		verifyTokens("0b0", bin("0"));
+		verifyTokens("0b1", bin("1"));
+
+		verifyTokens("0b0.0", bin("0.0"));
+		verifyTokens("0b1.0", bin("1.0"));
+
+		verifyTokens("0b01", bin("01"));
+	}
+
+	@Test
+	public void testOctal() {
+		verifyTokens("00", oct("0"));
+		verifyTokens("01", oct("1"));
+
+		verifyTokens("00.0", oct("0.0"));
+		verifyTokens("01.0", oct("1.0"));
+
+		verifyTokens("0123", oct("123"));
+	}
+
+	@Test
+	public void testDecimal() {
+		verifyTokens("0", dec("0"));
+		verifyTokens("1", dec("1"));
+
+		verifyTokens("0.0", dec("0.0"));
+		verifyTokens("1.0", dec("1.0"));
+
+		verifyTokens("123", dec("123"));
+	}
+
+	@Test
+	public void testHexadecimal() {
+		verifyTokens("0x0", hex("0"));
+		verifyTokens("0x0.0", hex("0.0"));
+
+		verifyTokens("0x1", hex("1"));
+		verifyTokens("0x1.0", hex("1.0"));
+
+		verifyTokens("0x123", hex("123"));
+		verifyTokens("0xABC", hex("ABC"));
+
+		verifyTokens("0xDEAD", hex("DEAD"));
+		verifyTokens("0xf00d", hex("f00d"));
+	}
+
+	@Test
+	public void testQuoted() {
 		verifyTokens("0#0", quoted("0#0"));
 		verifyTokens("0#'0'", quoted("0#'0'"));
-	}
+		verifyTokens("0#0.0", quoted("0#0.0"));
 
-	@Test
-	public void testSingleOnes() {
-		verifyTokens("1", dec("1"));
-		verifyTokens("1e0", f("1e0"));
-		verifyTokens("1.", f("1."));
-		verifyTokens("1.e0", f("1.e0"));
-		verifyTokens(".1", f(".1"));
-		verifyTokens(".1e0", f(".1e0"));
-		verifyTokens("1.0", f("1.0"));
-		verifyTokens("1.0e0", f("1.0e0"));
-		verifyTokens("01", oct("1"));
-		verifyTokens("0x1", hex("1"));
-		verifyTokens("0b1", bin("1"));
 		verifyTokens("1#1", quoted("1#1"));
 		verifyTokens("1#'1'", quoted("1#'1'"));
-	}
+		verifyTokens("1#1.0", quoted("1#1.0"));
 
-	@Test
-	public void testTwoDigits() {
-		verifyTokens("12", dec("12"));
-		verifyTokens(".12", f(".12"));
-		verifyTokens(".12e2", f(".12e2"));
-		verifyTokens("12.12", f("12.12"));
-		verifyTokens("12.1e2", f("12.1e2"));
-		verifyTokens("012", oct("12"));
-		verifyTokens("0x12", hex("12"));
-		verifyTokens("0b10", bin("10"));
 		verifyTokens("12#34", quoted("12#34"));
 		verifyTokens("12#'3''4'", quoted("12#'3''4'"));
 		verifyTokens("12#'3\"4'", quoted("12#'3\"4'"));
-	}
 
-	@Test
-	public void testSpecialDigits() {
-		verifyTokens("0xDEAD", hex("DEAD"));
-		verifyTokens("0xf00d", hex("f00d"));
 		verifyTokens("432#12dZsd3", quoted("432#12dZsd3"));
 	}
 
@@ -142,7 +150,7 @@ public class TokenizerTest {
 				op("-"),
 				symbol("$1"),
 				op("+"),
-				f("3.4"));
+				dec("3.4"));
 	}
 
 	@Test

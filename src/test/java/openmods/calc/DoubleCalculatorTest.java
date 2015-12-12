@@ -22,6 +22,8 @@ public class DoubleCalculatorTest {
 	@Test
 	public void testBasicPostfix() {
 		postfix("1 2 +").expectResult(3.0).expectEmptyStack();
+		postfix("0.5 0.5 +").expectResult(1.0).expectEmptyStack();
+		postfix("0.25 0.25 +").expectResult(0.5).expectEmptyStack();
 		postfix("2 3 *").expectResult(6.0).expectEmptyStack();
 		postfix("10 2 /").expectResult(5.0).expectEmptyStack();
 		postfix("2 5 ^").expectResult(32.0).expectEmptyStack();
@@ -67,9 +69,11 @@ public class DoubleCalculatorTest {
 		infix("-PI").expectResult(-Math.PI).expectEmptyStack();
 		infix("2*E").expectResult(2 * Math.E).expectEmptyStack();
 		infix("2*-E").expectResult(2 * -Math.E).expectEmptyStack();
-		infix("-2*-3e3").expectResult(6e3).expectEmptyStack();
-		infix("2e2+3e3").expectResult(3200.0).expectEmptyStack();
-		infix("2e2*3e3").expectResult(6e5).expectEmptyStack();
+		infix("-2*-3*10^3").expectResult(6e3).expectEmptyStack();
+		infix("-2*-3*10^+3").expectResult(6e3).expectEmptyStack();
+		infix("-2*-3*10^-3").expectResult(6e-3).expectEmptyStack();
+		infix("2*10^2+3*10^3").expectResult(3200.0).expectEmptyStack();
+		infix("2*10^2*3*10^3").expectResult(6e5).expectEmptyStack();
 	}
 
 	@Test
