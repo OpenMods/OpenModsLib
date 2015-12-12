@@ -9,6 +9,11 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 	@Configurable
 	public int base = 10;
 
+	@Configurable
+	public boolean uniformBaseNotation = false;
+
+	private final BigIntPrinter printer = new BigIntPrinter();
+
 	public BigIntCalculator() {
 		super(new BigIntParser(), BigInteger.ZERO);
 	}
@@ -203,7 +208,8 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 
 	@Override
 	public String toString(BigInteger value) {
-		return value.toString(base);
+		if (base < Character.MIN_RADIX) return "invalid radix";
+		return decorateBase(!uniformBaseNotation, base, (base <= Character.MAX_RADIX)? value.toString(base) : printer.toString(value, base));
 	}
 
 }

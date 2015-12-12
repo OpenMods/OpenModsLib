@@ -1,8 +1,21 @@
 package openmods.calc;
 
+import openmods.config.simpler.Configurable;
+
 public class DoubleCalculator extends Calculator<Double> {
 
 	private static final int MAX_PRIO = 5;
+
+	@Configurable
+	public int base = 10;
+
+	@Configurable
+	public boolean allowStandardPrinter = false;
+
+	@Configurable
+	public boolean uniformBaseNotation = false;
+
+	private final DoublePrinter printer = new DoublePrinter(8);
 
 	public DoubleCalculator() {
 		super(new DoubleParser(), 0.0);
@@ -52,6 +65,13 @@ public class DoubleCalculator extends Calculator<Double> {
 			@Override
 			protected Double execute(Double left, Double right) {
 				return left / right;
+			}
+		});
+
+		operators.registerBinaryOperator("%", new BinaryOperator<Double>(MAX_PRIO - 3) {
+			@Override
+			protected Double execute(Double left, Double right) {
+				return left % right;
 			}
 		});
 
@@ -215,7 +235,14 @@ public class DoubleCalculator extends Calculator<Double> {
 
 	@Override
 	public String toString(Double value) {
-		return value.toString();
+		if (base == 10 && !allowStandardPrinter && !uniformBaseNotation) {
+			return value.toString();
+		} else {
+			if (value.isNaN()) return "NaN";
+			if (value.isInfinite()) return value > 0? "+Inf" : "-Inf";
+			final String result = printer.toString(value, base);
+			return decorateBase(!uniformBaseNotation, base, result);
+		}
 	}
 
 }

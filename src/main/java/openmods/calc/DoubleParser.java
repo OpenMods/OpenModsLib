@@ -24,7 +24,7 @@ public class DoubleParser implements IValueParser<Double> {
 		}
 
 		@Override
-		protected openmods.calc.PositionalNotationParser.Accumulator<Double> createFractionalAccumulator(int radix) {
+		protected Accumulator<Double> createFractionalAccumulator(int radix) {
 			final double inverseRadix = 1.0 / radix;
 			return new Accumulator<Double>() {
 				private double value = 0;
@@ -52,5 +52,4 @@ public class DoubleParser implements IValueParser<Double> {
 
 		return right != null? left + right : left;
 	}
-
 }

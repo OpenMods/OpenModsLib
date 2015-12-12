@@ -13,6 +13,9 @@ public class FractionCalculator extends Calculator<Fraction> {
 	@Configurable
 	public boolean properFractions;
 
+	@Configurable
+	public boolean expand;
+
 	public FractionCalculator() {
 		super(new FractionParser(), Fraction.ZERO);
 	}
@@ -145,6 +148,7 @@ public class FractionCalculator extends Calculator<Fraction> {
 
 	@Override
 	public String toString(Fraction value) {
+		if (expand) return Double.toString(value.doubleValue());
 		return properFractions? value.toProperString() : value.toString();
 	}
 }
