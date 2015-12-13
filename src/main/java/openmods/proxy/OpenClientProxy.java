@@ -13,9 +13,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
+import openmods.LibConfig;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.block.BlockSelectionHandler;
+import openmods.calc.command.*;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
@@ -78,6 +80,15 @@ public final class OpenClientProxy implements IOpenModsProxy {
 	public void preInit() {
 		ClientCommandHandler.instance.registerCommand(new CommandConfig("om_config_c", false));
 		ClientCommandHandler.instance.registerCommand(new CommandSource("om_source_c", false, OpenMods.instance.getCollector()));
+
+		if (LibConfig.enableCalculatorCommands) {
+			final CalcState state = new CalcState();
+			ClientCommandHandler.instance.registerCommand(new CommandCalcConfig(state));
+			ClientCommandHandler.instance.registerCommand(new CommandCalcEvaluate(state));
+			ClientCommandHandler.instance.registerCommand(new CommandCalcFunction(state));
+			ClientCommandHandler.instance.registerCommand(new CommandCalcLet(state));
+
+		}
 
 		RenderUtils.registerFogUpdater();
 

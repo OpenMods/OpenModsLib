@@ -1,6 +1,6 @@
 package openmods.utils;
 
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -14,7 +14,7 @@ import com.google.common.collect.Lists;
 
 public class CommandUtils {
 
-	public static List<String> filterPrefixes(String prefix, Collection<String> proposals) {
+	public static List<String> filterPrefixes(String prefix, Iterable<String> proposals) {
 		prefix = prefix.toLowerCase(Locale.ENGLISH);
 
 		List<String> result = Lists.newArrayList();
@@ -22,6 +22,10 @@ public class CommandUtils {
 			if (s.toLowerCase(Locale.ENGLISH).startsWith(prefix)) result.add(s);
 
 		return result;
+	}
+
+	public static List<String> filterPrefixes(String prefix, String... proposals) {
+		return filterPrefixes(prefix, Arrays.asList(proposals));
 	}
 
 	public static List<String> getPlayerNames() {

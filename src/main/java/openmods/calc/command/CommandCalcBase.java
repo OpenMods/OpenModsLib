@@ -7,14 +7,14 @@ import net.minecraft.command.ICommandSender;
 
 import com.google.common.base.Joiner;
 
-abstract class CommandBase implements ICommand {
+abstract class CommandCalcBase implements ICommand {
 	protected final Joiner spaceJoiner = Joiner.on(' ');
 
 	protected final CalcState state;
 
 	protected final String name;
 
-	public CommandBase(String name, CalcState state) {
+	public CommandCalcBase(String name, CalcState state) {
 		this.name = name;
 		this.state = state;
 	}

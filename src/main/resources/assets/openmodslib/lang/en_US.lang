@@ -14,7 +14,22 @@ openmodslib.command.unknown_error_details=Unknown error. Please check logs for m
 openmodslib.command.class_source=Class '%s' loaded from '%s'
 openmodslib.command.api_class=API information: name='%s', ownerMod='%s', version='%s'
 openmodslib.command.class_provider=Class provided by file %s (mods: %s)
+
 openmodslib.command.calc_set=Value %s set to %s
+openmodslib.command.calc_no_type=Please provide new calculator type
+openmodslib.command.calc_no_name=Please provide calculator name
+openmodslib.command.calc_invalid_name=Invalid calculator name
+openmodslib.command.calc_invalid_type=Invalid calculator type. Allowed types: %s
+openmodslib.command.calc_invalid_mode=Invalid calculator mode. Allowed modes: %s
+openmodslib.command.calc_no_key=Please provide name of property
+openmodslib.command.calc_no_value=Please provide new value of property
+openmodslib.command.calc_invalid_key=Invalid property name
+openmodslib.command.calc_cant_set=Failed to set property
+openmodslib.command.calc_function_defined=Defined function %s
+openmodslib.command.calc_error=Failed to execute: '%s'
+openmodslib.command.calc_stack_underflow=Calculator stack underflow
+openmodslib.command.calc_after_push=Pushed calculator, stack size: %s
+openmodslib.command.calc_after_pop=Popped calculator, stack size: %s
 
 openmodslib.color.black=Black
 openmodslib.color.red=Red

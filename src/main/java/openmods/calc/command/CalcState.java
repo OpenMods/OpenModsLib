@@ -1,15 +1,25 @@
 package openmods.calc.command;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import openmods.calc.*;
 import openmods.calc.Calculator.ExprType;
+import openmods.config.simpler.ConfigurableClassAdapter;
 import openmods.utils.Stack;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
 public class CalcState {
+
+	public static class NoSuchNameException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+
+		public NoSuchNameException(String message) {
+			super(message);
+		}
+	}
 
 	public enum CalculatorType {
 		DOUBLE {
@@ -48,6 +58,18 @@ public class CalcState {
 		return active;
 	}
 
+	public Set<String> getActiveProperties() {
+		return ConfigurableClassAdapter.getFor(active.getClass()).keys();
+	}
+
+	public String getActiveProperty(String key) {
+		return ConfigurableClassAdapter.getFor(active.getClass()).get(active, key);
+	}
+
+	public void setActiveProperty(String key, String value) {
+		ConfigurableClassAdapter.getFor(active.getClass()).set(active, key, value);
+	}
+
 	private void setActiveCalculator(final Calculator<?> newCalculator) {
 		prev = active;
 		active = newCalculator;
@@ -63,22 +85,27 @@ public class CalcState {
 		setActiveCalculator(type.createCalculator());
 	}
 
-	public void pushCalculator() {
+	public int pushCalculator() {
 		calculatorStack.push(active);
+		return calculatorStack.size();
 	}
 
-	public void popCalculator() {
-		if (calculatorStack.isEmpty()) throw new IllegalStateException("Stack underflow");
+	public int popCalculator() {
 		setActiveCalculator(calculatorStack.pop());
+		return calculatorStack.size();
 	}
 
 	public void nameCalculator(String name) {
 		calculatorMap.put(name, active);
 	}
 
+	public Set<String> getCalculatorsNames() {
+		return Collections.unmodifiableSet(calculatorMap.keySet());
+	}
+
 	public void loadCalculator(String name) {
 		final Calculator<?> newCalculator = calculatorMap.get(name);
-		Preconditions.checkState(newCalculator != null, "No calculator named %s", name);
+		if (newCalculator == null) throw new NoSuchNameException(name);
 		setActiveCalculator(newCalculator);
 	}
 
@@ -96,8 +123,13 @@ public class CalcState {
 		return calculator.executeAndPop(executable);
 	}
 
-	public Object compileExecuteAndPop(String expr) {
-		return compileExecuteAndPop(active, exprType, expr);
+	private static <E> String compileExecuteAndPrint(Calculator<E> calculator, Calculator.ExprType exprType, String expr) {
+		final E result = compileExecuteAndPop(calculator, exprType, expr);
+		return calculator.toString(result);
+	}
+
+	public String compileExecuteAndPrint(String expr) {
+		return compileExecuteAndPrint(active, exprType, expr);
 	}
 
 	private static <E> E compileAndSetGlobalSymbol(Calculator<E> calculator, Calculator.ExprType exprType, String id, String expr) {

@@ -12,4 +12,7 @@ public class LibConfig {
 	@ConfigProperty(category = "debug", name = "dropsDebug", comment = "Control printing of stacktraces in case of unharvested drops")
 	public static boolean dropsDebug;
 
+	@ConfigProperty(category = "feature", name = "calculatorCommands", comment = "Enables command line calculator")
+	public static boolean enableCalculatorCommands = true;
+
 }

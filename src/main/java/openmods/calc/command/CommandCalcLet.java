@@ -8,10 +8,10 @@ import net.minecraft.util.ChatComponentTranslation;
 
 import com.google.common.collect.Iterables;
 
-public class CommandSet extends CommandBase {
-	private static final String NAME = "let";
+public class CommandCalcLet extends CommandCalcBase {
+	private static final String NAME = "=let";
 
-	public CommandSet(CalcState state) {
+	public CommandCalcLet(CalcState state) {
 		super(NAME, state);
 	}
 

@@ -2,8 +2,11 @@ package openmods.calc;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import openmods.utils.Stack;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -146,6 +149,16 @@ public abstract class Calculator<E> {
 
 	public Iterable<E> getStack() {
 		return Iterables.unmodifiableIterable(topFrame.stack());
+	}
+
+	public Iterable<String> printStack() {
+		return Iterables.transform(topFrame.stack(), new Function<E, String>() {
+			@Override
+			@Nullable
+			public String apply(@Nullable E input) {
+				return Calculator.this.toString(input);
+			}
+		});
 	}
 
 	public void execute(IExecutable<E> executable) {

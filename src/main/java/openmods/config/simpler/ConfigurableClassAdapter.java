@@ -2,6 +2,7 @@ package openmods.config.simpler;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.Set;
 
 import openmods.reflection.FieldAccess;
 import openmods.utils.CachedFactory;
@@ -11,7 +12,15 @@ import openmods.utils.io.TypeRW;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
-public class ObjectAdapter<T> {
+public class ConfigurableClassAdapter<T> {
+
+	public static class NoSuchPropertyException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+
+		public NoSuchPropertyException(String message) {
+			super(message);
+		}
+	}
 
 	private static class FieldAdapter<T> {
 
@@ -39,7 +48,7 @@ public class ObjectAdapter<T> {
 
 	private final Map<String, FieldAdapter<?>> fields;
 
-	public ObjectAdapter(Class<? extends T> cls) {
+	public ConfigurableClassAdapter(Class<? extends T> cls) {
 		this.cls = cls;
 
 		ImmutableMap.Builder<String, FieldAdapter<?>> fields = ImmutableMap.builder();
@@ -63,13 +72,13 @@ public class ObjectAdapter<T> {
 		this.fields = fields.build();
 	}
 
-	public Iterable<String> keys() {
+	public Set<String> keys() {
 		return fields.keySet();
 	}
 
 	private FieldAdapter<?> findField(String key) {
 		final FieldAdapter<?> fieldAdapter = fields.get(key);
-		Preconditions.checkArgument(fieldAdapter != null, "Can't find key %s in class %s", key, cls);
+		if (fieldAdapter == null) throw new NoSuchPropertyException(String.format("Can't find key %s in class %s", key, cls));
 		return fieldAdapter;
 	}
 
@@ -81,15 +90,15 @@ public class ObjectAdapter<T> {
 		findField(key).set(instance, value);
 	}
 
-	private static final CachedFactory<Class<?>, ObjectAdapter<?>> CACHE = new CachedFactory<Class<?>, ObjectAdapter<?>>() {
+	private static final CachedFactory<Class<?>, ConfigurableClassAdapter<?>> CACHE = new CachedFactory<Class<?>, ConfigurableClassAdapter<?>>() {
 		@Override
-		protected ObjectAdapter<?> create(Class<?> key) {
-			return new ObjectAdapter<Object>(key);
+		protected ConfigurableClassAdapter<?> create(Class<?> key) {
+			return new ConfigurableClassAdapter<Object>(key);
 		}
 	};
 
 	@SuppressWarnings("unchecked")
-	public static <T> ObjectAdapter<T> getFor(Class<? extends T> cls) {
-		return (ObjectAdapter<T>)CACHE.getOrCreate(cls);
+	public static <T> ConfigurableClassAdapter<T> getFor(Class<? extends T> cls) {
+		return (ConfigurableClassAdapter<T>)CACHE.getOrCreate(cls);
 	}
 }

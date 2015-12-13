@@ -96,6 +96,8 @@ public class BigIntParserTest {
 		helper.testQuoted(BigInteger.valueOf(5), "5#10");
 		helper.testQuoted(BigInteger.valueOf(10), "10#10");
 		helper.testQuoted(BigInteger.valueOf(16), "16#10");
+
+		helper.testQuoted(BigInteger.valueOf(100), "100#10");
 	}
 
 	@Test

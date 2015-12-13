@@ -59,8 +59,8 @@ public abstract class PositionalNotationParser<E> {
 		if (radix < Character.MIN_RADIX) throw new NumberFormatException("Base must be larger than " + Character.MIN_RADIX);
 
 		String reminder = input;
-		// if (reverse) StringUtils.reverse(reminder);
 
+		final int digitRange = Math.min(Character.MAX_RADIX, radix);
 		while (!reminder.isEmpty()) {
 			final char ch = reminder.charAt(0);
 			reminder = reminder.substring(1);
@@ -75,7 +75,7 @@ public abstract class PositionalNotationParser<E> {
 				if (digit >= radix) throw invalidDigit(input, radix, digitStr);
 				reminder = reminder.substring(nextQuote + 1);
 			} else {
-				digit = Character.digit(ch, radix);
+				digit = Character.digit(ch, digitRange);
 				if (digit < 0) throw invalidDigit(input, radix, ch);
 			}
 
@@ -105,7 +105,7 @@ public abstract class PositionalNotationParser<E> {
 		final Accumulator<E> fractionalAccumulator = createFractionalAccumulator(radix);
 		final E fraction = parseQuotedPart(fractionalAccumulator, fractionalPart, radix);
 
-		Preconditions.checkState(!parts.hasNext(), "More than one comman in '%s'", value);
+		Preconditions.checkState(!parts.hasNext(), "More than one comma in '%s'", value);
 		return Pair.of(integer, fraction);
 	}
 
