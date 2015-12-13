@@ -89,7 +89,8 @@ public abstract class PositionalNotationParser<E> {
 		final int radixEnd = value.indexOf('#');
 		final String radixStr = value.substring(0, radixEnd);
 		if (radixStr.isEmpty()) throw new NumberFormatException("No radix given");
-		final int radix = Integer.parseUnsignedInt(radixStr);
+		final int radix = Integer.parseInt(radixStr);
+		if (radix < 2) throw new NumberFormatException("Invalid radix: " + radix);
 		final String numberStr = value.substring(radixEnd + 1).replace("\"", "''");
 
 		final Iterator<String> parts = dotSplitter.split(numberStr).iterator();
