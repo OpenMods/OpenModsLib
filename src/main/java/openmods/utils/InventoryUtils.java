@@ -1,8 +1,6 @@
 package openmods.utils;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import net.minecraft.block.Block;
 import net.minecraft.inventory.IInventory;
@@ -15,9 +13,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 public class InventoryUtils {
 
@@ -249,6 +245,25 @@ public class InventoryUtils {
 	protected static void canExtract(ISidedInventory inventory, int slot, ForgeDirection side, ItemStack stack) {
 		Preconditions.checkArgument(inventory.canExtractItem(slot, stack, side.ordinal()),
 				"Item cannot be extracted from slot %s on side %s", slot, side);
+	}
+
+	public static Iterable<ItemStack> asIterable(final IInventory inv) {
+		return new Iterable<ItemStack>() {
+			@Override
+			public Iterator<ItemStack> iterator() {
+				return new AbstractIterator<ItemStack>() {
+					final int size = inv.getSizeInventory();
+					int slot = 0;
+
+					@Override
+					protected ItemStack computeNext() {
+						if (slot >= size) return endOfData();
+						return inv.getStackInSlot(slot++);
+					}
+				};
+			}
+		};
+
 	}
 
 }
