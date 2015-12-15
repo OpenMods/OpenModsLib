@@ -47,12 +47,17 @@ public class BigIntCalculatorTest {
 	}
 
 	@Test
-	public void testPostfixDupWithReturnArgs() {
-		postfix("2 dup@,4").execute().expectStack(v(2), v(2), v(2), v(2));
+	public void testPostfixDupWithArgs() {
+		postfix("0 1 2 dup@2").execute().expectStack(v(0), v(1), v(2), v(1), v(2));
 	}
 
 	@Test
-	public void testPostfixDupWithArgs() {
+	public void testPostfixDupWithReturns() {
+		postfix("1 2 dup@,4").execute().expectStack(v(1), v(2), v(2), v(2), v(2));
+	}
+
+	@Test
+	public void testPostfixDupWithArgsAndReturns() {
 		postfix("1 2 3 4 dup@3,5").execute().expectStack(v(1), v(2), v(3), v(4), v(2), v(3));
 	}
 

@@ -27,7 +27,7 @@ public class CommandCalcLet extends CommandCalcBase {
 		final String name = args[0];
 		final String expr = spaceJoiner.join(Iterables.skip(Arrays.asList(args), 1));
 
-		final Object result = state.compileAndSetGlobalSymbol(name, expr);
+		final Object result = state.compileAndSetGlobalSymbol(sender, name, expr);
 		sender.addChatMessage(new ChatComponentTranslation("openmodslib.command.calc_set", name, String.valueOf(result)));
 	}
 }

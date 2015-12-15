@@ -37,12 +37,17 @@ public class DoubleCalculatorTest {
 	}
 
 	@Test
-	public void testPostfixDupWithReturnArgs() {
-		postfix("2 dup@,4").execute().expectStack(2.0, 2.0, 2.0, 2.0);
+	public void testPostfixDupWithArgs() {
+		postfix("0 1 2 dup@2").execute().expectStack(0.0, 1.0, 2.0, 1.0, 2.0);
 	}
 
 	@Test
-	public void testPostfixDupWithArgs() {
+	public void testPostfixDupWithReturns() {
+		postfix("1 2 dup@,4").execute().expectStack(1.0, 2.0, 2.0, 2.0, 2.0);
+	}
+
+	@Test
+	public void testPostfixDupWithArgsAndReturns() {
 		postfix("1 2 3 4 dup@3,5").execute().expectStack(1.0, 2.0, 3.0, 4.0, 2.0, 3.0);
 	}
 

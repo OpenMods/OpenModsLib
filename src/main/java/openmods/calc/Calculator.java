@@ -116,7 +116,7 @@ public abstract class Calculator<E> {
 
 				values = Lists.reverse(values);
 
-				final int out = returnsCount.or(2);
+				final int out = returnsCount.or(2 * in);
 				for (int i = 0; i < out; i++) {
 					final E value = values.get(i % in);
 					stack.push(value);
@@ -145,6 +145,10 @@ public abstract class Calculator<E> {
 
 	public void setGlobalSymbol(String id, ISymbol<E> value) {
 		topFrame.setSymbol(id, value);
+	}
+
+	public int stackSize() {
+		return topFrame.stack().size();
 	}
 
 	public Iterable<E> getStack() {

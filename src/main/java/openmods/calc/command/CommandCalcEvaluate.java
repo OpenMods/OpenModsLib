@@ -5,9 +5,11 @@ import java.util.List;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
 import openmods.calc.Calculator.ExprType;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 public class CommandCalcEvaluate extends CommandCalcBase {
@@ -32,17 +34,17 @@ public class CommandCalcEvaluate extends CommandCalcBase {
 		final String expr = spaceJoiner.join(args);
 		try {
 			if (state.exprType == ExprType.INFIX) {
-				final String result = state.compileExecuteAndPrint(expr);
+				final String result = state.compileExecuteAndPrint(sender, expr);
 				sender.addChatMessage(new ChatComponentText(result));
 			} else {
-				state.compileAndExecute(expr);
-				sender.addChatMessage(new ChatComponentText(spaceJoiner.join(state.getActiveCalculator().printStack())));
+				state.compileAndExecute(sender, expr);
+				sender.addChatMessage(new ChatComponentTranslation("openmodslib.command.calc_stack_size", state.getActiveCalculator().stackSize()));
 			}
 		} catch (Exception e) {
 			final List<String> causes = Lists.newArrayList();
 			Throwable current = e;
 			while (current != null) {
-				causes.add(current.getMessage());
+				causes.add(Strings.nullToEmpty(current.getMessage()));
 				current = current.getCause();
 			}
 			throw new CommandException("openmodslib.command.calc_error", Joiner.on("', caused by '").join(causes));

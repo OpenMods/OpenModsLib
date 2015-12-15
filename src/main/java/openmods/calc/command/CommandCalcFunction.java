@@ -42,7 +42,7 @@ public class CommandCalcFunction extends CommandCalcBase {
 		if (argCount < 0) throw new SyntaxErrorException();
 
 		final String expr = spaceJoiner.join(Iterables.skip(Arrays.asList(args), 2));
-		state.compileAndDefineGlobalFunction(name, argCount, expr);
+		state.compileAndDefineGlobalFunction(sender, name, argCount, expr);
 		sender.addChatMessage(new ChatComponentTranslation("openmodslib.command.calc_function_defined", name));
 	}
 }

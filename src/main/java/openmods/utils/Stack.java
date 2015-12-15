@@ -9,6 +9,10 @@ public class Stack<E> implements Iterable<E> {
 
 	public static class StackUnderflowException extends RuntimeException {
 		private static final long serialVersionUID = 360455673552034663L;
+
+		public StackUnderflowException() {
+			super("stack underflow");
+		}
 	}
 
 	private final List<E> data;

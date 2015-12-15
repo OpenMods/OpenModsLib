@@ -30,6 +30,7 @@ openmodslib.command.calc_error=Failed to execute: '%s'
 openmodslib.command.calc_stack_underflow=Calculator stack underflow
 openmodslib.command.calc_after_push=Pushed calculator, stack size: %s
 openmodslib.command.calc_after_pop=Popped calculator, stack size: %s
+openmodslib.command.calc_stack_size=Stack size: %s
 
 openmodslib.color.black=Black
 openmodslib.color.red=Red

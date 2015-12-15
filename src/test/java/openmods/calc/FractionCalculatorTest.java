@@ -45,12 +45,17 @@ public class FractionCalculatorTest {
 	}
 
 	@Test
-	public void testPostfixDupWithReturnArgs() {
-		postfix("2 dup@,4").execute().expectStack(f(2), f(2), f(2), f(2));
+	public void testPostfixDupWithArgs() {
+		postfix("0 1 2 dup@2").execute().expectStack(f(0), f(1), f(2), f(1), f(2));
 	}
 
 	@Test
-	public void testPostfixDupWithArgs() {
+	public void testPostfixDupWithReturns() {
+		postfix("1 2 dup@,4").execute().expectStack(f(1), f(2), f(2), f(2), f(2));
+	}
+
+	@Test
+	public void testPostfixDupWithArgsAndReturns() {
 		postfix("1 2 3 4 dup@3,5").execute().expectStack(f(1), f(2), f(3), f(4), f(2), f(3));
 	}
 

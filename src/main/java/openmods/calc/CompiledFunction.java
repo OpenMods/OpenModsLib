@@ -16,7 +16,7 @@ public class CompiledFunction<E> extends FixedSymbol<E> {
 		final LocalFrame<E> newFrame = new LocalFrame<E>(frame);
 		final Stack<E> argumentStack = frame.stack();
 
-		for (int i = 0; i < argCount; i++) {
+		for (int i = 1; i <= argCount; i++) {
 			E arg = argumentStack.pop();
 			newFrame.setLocalSymbol("$" + i, Constant.create(arg));
 		}
