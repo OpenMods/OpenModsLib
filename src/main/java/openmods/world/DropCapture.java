@@ -23,7 +23,7 @@ public class DropCapture {
 		}
 
 		private boolean check(EntityItem item) {
-			if (aabb.intersectsWith(item.boundingBox)) {
+			if (!item.isDead && aabb.intersectsWith(item.boundingBox)) {
 				drops.add(item);
 				return true;
 			}
