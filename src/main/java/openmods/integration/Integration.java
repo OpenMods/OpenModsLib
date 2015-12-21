@@ -27,9 +27,9 @@ public class Integration {
 			try {
 				if (module.canLoad()) {
 					module.load();
-					Log.info("Loaded integration module '%s'", module.name());
+					Log.debug("Loaded integration module '%s'", module.name());
 				} else {
-					Log.info("Condition no met for integration module '%s', not loading", module.name());
+					Log.debug("Condition no met for integration module '%s', not loading", module.name());
 				}
 			} catch (Throwable t) {
 				Log.warn(t, "Can't load integration module '%s'", module.name());
