@@ -132,12 +132,27 @@ public class GameConfigProvider {
 		return a + "_" + b;
 	}
 
+	private interface IdSetter {
+		public void setId(String id);
+	}
+
+	private void setPrefixedId(String id, String objectName, String joiner, IdSetter setter, String noneValue, String defaultValue) {
+		if (!id.equals(RegisterBlock.NONE)) {
+			if (id.equals(RegisterBlock.DEFAULT)) id = modPrefix + joiner + objectName;
+			else id = modPrefix + joiner + id;
+			setter.setId(id);
+		}
+	}
+
+	private void setItemPrefixedId(String id, String itemName, String joiner, IdSetter setter) {
+		setPrefixedId(id, itemName, joiner, setter, RegisterItem.NONE, RegisterItem.DEFAULT);
+	}
+
 	public void registerItems(Class<? extends ItemInstances> klazz) {
 		processAnnotations(klazz, Item.class, RegisterItem.class, itemFactory, new IAnnotationProcessor<Item, RegisterItem>() {
 			@Override
-			public void process(Item item, RegisterItem annotation) {
+			public void process(final Item item, RegisterItem annotation) {
 				final String name = annotation.name();
-				String unlocalizedName = annotation.unlocalizedName();
 
 				final String prefixedName = dotName(modPrefix, name);
 
@@ -148,11 +163,19 @@ public class GameConfigProvider {
 					GameRegistry.registerItem(item, prefixedName);
 				}
 
-				if (!unlocalizedName.equals(RegisterItem.NONE)) {
-					if (unlocalizedName.equals(RegisterItem.DEFAULT)) unlocalizedName = prefixedName;
-					else unlocalizedName = dotName(modPrefix, unlocalizedName);
-					item.setUnlocalizedName(unlocalizedName);
-				}
+				setItemPrefixedId(annotation.unlocalizedName(), name, ".", new IdSetter() {
+					@Override
+					public void setId(String unlocalizedName) {
+						item.setUnlocalizedName(unlocalizedName);
+					}
+				});
+
+				setItemPrefixedId(annotation.textureName(), name, ":", new IdSetter() {
+					@Override
+					public void setId(String textureName) {
+						item.setTextureName(textureName);
+					}
+				});
 			}
 
 			@Override
@@ -167,10 +190,14 @@ public class GameConfigProvider {
 		});
 	}
 
+	private void setBlockPrefixedId(String id, String blockName, String joiner, IdSetter setter) {
+		setPrefixedId(id, blockName, joiner, setter, RegisterBlock.NONE, RegisterBlock.DEFAULT);
+	}
+
 	public void registerBlocks(Class<? extends BlockInstances> klazz) {
 		processAnnotations(klazz, Block.class, RegisterBlock.class, blockFactory, new IAnnotationProcessor<Block, RegisterBlock>() {
 			@Override
-			public void process(Block block, RegisterBlock annotation) {
+			public void process(final Block block, RegisterBlock annotation) {
 				final String name = annotation.name();
 				final Class<? extends ItemBlock> itemBlockClass = annotation.itemBlock();
 				Class<? extends TileEntity> teClass = annotation.tileEntity();
@@ -185,12 +212,19 @@ public class GameConfigProvider {
 					GameRegistry.registerBlock(block, itemBlockClass, prefixedName);
 				}
 
-				String unlocalizedName = annotation.unlocalizedName();
-				if (!unlocalizedName.equals(RegisterBlock.NONE)) {
-					if (unlocalizedName.equals(RegisterBlock.DEFAULT)) unlocalizedName = dotName(modPrefix, name);
-					else unlocalizedName = dotName(modPrefix, unlocalizedName);
-					block.setBlockName(unlocalizedName);
-				}
+				setBlockPrefixedId(annotation.unlocalizedName(), name, ".", new IdSetter() {
+					@Override
+					public void setId(String unlocalizedName) {
+						block.setBlockName(unlocalizedName);
+					}
+				});
+
+				setBlockPrefixedId(annotation.textureName(), name, ":", new IdSetter() {
+					@Override
+					public void setId(String textureName) {
+						block.setBlockTextureName(textureName);
+					}
+				});
 
 				if (teClass != null) GameRegistry.registerTileEntity(teClass, prefixedName);
 

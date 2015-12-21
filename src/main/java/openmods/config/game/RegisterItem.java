@@ -12,6 +12,8 @@ public @interface RegisterItem {
 
 	public String unlocalizedName() default DEFAULT;
 
+	public String textureName() default DEFAULT;
+
 	public boolean isEnabled() default true;
 
 	public boolean isConfigurable() default true;

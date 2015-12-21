@@ -4,7 +4,6 @@ import java.util.*;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -70,8 +69,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	private final Set<TileEntityCapability> teCapabilities = EnumSet.noneOf(TileEntityCapability.class);
-	private String blockName;
-	private String modId;
 
 	/**
 	 * The tile entity class associated with this block
@@ -208,12 +205,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return teClass;
 	}
 
-	@SideOnly(Side.CLIENT)
-	@Override
-	public void registerBlockIcons(IIconRegister registry) {
-		this.blockIcon = registry.registerIcon(String.format("%s:%s", modId, blockName));
-	}
-
 	protected boolean suppressPickBlock() {
 		return false;
 	}
@@ -303,9 +294,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public void setupBlock(String modId, String blockName, Class<? extends TileEntity> tileEntity, Class<? extends ItemBlock> itemClass) {
-		this.blockName = blockName;
-		this.modId = modId;
-
 		if (tileEntity != null) {
 			this.teClass = tileEntity;
 			isBlockContainer = true;
