@@ -66,16 +66,57 @@ public class GameConfigProvider {
 
 	private final Map<String, Block> blockRemaps = Maps.newHashMap();
 
-	private final String modPrefix;
+	private static class IdDecorator {
+		private String modId;
+		private final String joiner;
+
+		public IdDecorator(String joiner) {
+			this.joiner = joiner;
+		}
+
+		public void setMod(String modId) {
+			this.modId = modId;
+		}
+
+		public String decorate(String id) {
+			return modId + joiner + id;
+		}
+	}
+
+	private final IdDecorator langDecorator = new IdDecorator(".");
+
+	private final IdDecorator textureDecorator = new IdDecorator(":");
+
+	private final IdDecorator teDecorator = new IdDecorator("_");
+
+	private final IdDecorator legacyItemDecorator = new IdDecorator(".");
+
+	private final IdDecorator legacyBlockDecorator = new IdDecorator("_");
 
 	private final String modId;
 
 	public GameConfigProvider(String modPrefix) {
-		this.modPrefix = modPrefix;
+		langDecorator.setMod(modPrefix);
+		textureDecorator.setMod(modPrefix);
+		teDecorator.setMod(modPrefix);
+		legacyBlockDecorator.setMod(modPrefix);
+		legacyItemDecorator.setMod(modPrefix);
 
 		ModContainer mod = Loader.instance().activeModContainer();
 		Preconditions.checkNotNull(mod, "This class can only be initialized in mod init");
 		this.modId = mod.getModId();
+	}
+
+	public void setLanguageModId(String modId) {
+		langDecorator.setMod(modId);
+	}
+
+	public void setTextureModId(String modId) {
+		textureDecorator.setMod(modId);
+	}
+
+	public void setTileEntityModId(String modId) {
+		teDecorator.setMod(modId);
 	}
 
 	public void setFeatures(AbstractFeatureManager features) {
@@ -124,28 +165,20 @@ public class GameConfigProvider {
 		}
 	}
 
-	private static String dotName(String a, String b) {
-		return a + "." + b;
-	}
-
-	private static String underscoreName(String a, String b) {
-		return a + "_" + b;
-	}
-
 	private interface IdSetter {
 		public void setId(String id);
 	}
 
-	private void setPrefixedId(String id, String objectName, String joiner, IdSetter setter, String noneValue, String defaultValue) {
+	private static void setPrefixedId(String id, String objectName, IdDecorator decorator, IdSetter setter, String noneValue, String defaultValue) {
 		if (!id.equals(RegisterBlock.NONE)) {
-			if (id.equals(RegisterBlock.DEFAULT)) id = modPrefix + joiner + objectName;
-			else id = modPrefix + joiner + id;
+			if (id.equals(RegisterBlock.DEFAULT)) id = decorator.decorate(objectName);
+			else id = decorator.decorate(id);
 			setter.setId(id);
 		}
 	}
 
-	private void setItemPrefixedId(String id, String itemName, String joiner, IdSetter setter) {
-		setPrefixedId(id, itemName, joiner, setter, RegisterItem.NONE, RegisterItem.DEFAULT);
+	private static void setItemPrefixedId(String id, String itemName, IdDecorator decorator, IdSetter setter) {
+		setPrefixedId(id, itemName, decorator, setter, RegisterItem.NONE, RegisterItem.DEFAULT);
 	}
 
 	public void registerItems(Class<? extends ItemInstances> klazz) {
@@ -154,23 +187,23 @@ public class GameConfigProvider {
 			public void process(final Item item, RegisterItem annotation) {
 				final String name = annotation.name();
 
-				final String prefixedName = dotName(modPrefix, name);
+				final String legacyName = legacyItemDecorator.decorate(name);
 
 				if (remapFromLegacy) {
 					GameRegistry.registerItem(item, name);
-					itemRemaps.put(modId + ":" + prefixedName, item);
+					itemRemaps.put(modId + ":" + legacyName, item);
 				} else {
-					GameRegistry.registerItem(item, prefixedName);
+					GameRegistry.registerItem(item, legacyName);
 				}
 
-				setItemPrefixedId(annotation.unlocalizedName(), name, ".", new IdSetter() {
+				setItemPrefixedId(annotation.unlocalizedName(), name, langDecorator, new IdSetter() {
 					@Override
 					public void setId(String unlocalizedName) {
 						item.setUnlocalizedName(unlocalizedName);
 					}
 				});
 
-				setItemPrefixedId(annotation.textureName(), name, ":", new IdSetter() {
+				setItemPrefixedId(annotation.textureName(), name, textureDecorator, new IdSetter() {
 					@Override
 					public void setId(String textureName) {
 						item.setTextureName(textureName);
@@ -190,8 +223,8 @@ public class GameConfigProvider {
 		});
 	}
 
-	private void setBlockPrefixedId(String id, String blockName, String joiner, IdSetter setter) {
-		setPrefixedId(id, blockName, joiner, setter, RegisterBlock.NONE, RegisterBlock.DEFAULT);
+	private static void setBlockPrefixedId(String id, String blockName, IdDecorator decorator, IdSetter setter) {
+		setPrefixedId(id, blockName, decorator, setter, RegisterBlock.NONE, RegisterBlock.DEFAULT);
 	}
 
 	public void registerBlocks(Class<? extends BlockInstances> klazz) {
@@ -203,35 +236,38 @@ public class GameConfigProvider {
 				Class<? extends TileEntity> teClass = annotation.tileEntity();
 				if (teClass == TileEntity.class) teClass = null;
 
-				final String prefixedName = underscoreName(modPrefix, name);
+				final String legacyName = legacyBlockDecorator.decorate(name);
 
 				if (remapFromLegacy) {
 					GameRegistry.registerBlock(block, itemBlockClass, name);
-					blockRemaps.put(modId + ":" + prefixedName, block);
+					blockRemaps.put(modId + ":" + legacyName, block);
 				} else {
-					GameRegistry.registerBlock(block, itemBlockClass, prefixedName);
+					GameRegistry.registerBlock(block, itemBlockClass, legacyName);
 				}
 
-				setBlockPrefixedId(annotation.unlocalizedName(), name, ".", new IdSetter() {
+				setBlockPrefixedId(annotation.unlocalizedName(), name, langDecorator, new IdSetter() {
 					@Override
 					public void setId(String unlocalizedName) {
 						block.setBlockName(unlocalizedName);
 					}
 				});
 
-				setBlockPrefixedId(annotation.textureName(), name, ":", new IdSetter() {
+				setBlockPrefixedId(annotation.textureName(), name, textureDecorator, new IdSetter() {
 					@Override
 					public void setId(String textureName) {
 						block.setBlockTextureName(textureName);
 					}
 				});
 
-				if (teClass != null) GameRegistry.registerTileEntity(teClass, prefixedName);
+				if (teClass != null) {
+					final String teName = teDecorator.decorate(name);
+					GameRegistry.registerTileEntity(teClass, teName);
+				}
 
-				if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(modPrefix, name, teClass, itemBlockClass);
+				if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(modId, name, teClass, itemBlockClass);
 
 				for (RegisterTileEntity te : annotation.tileEntities()) {
-					final String teName = underscoreName(modPrefix, te.name());
+					final String teName = teDecorator.decorate(te.name());
 					GameRegistry.registerTileEntity(te.cls(), teName);
 				}
 			}

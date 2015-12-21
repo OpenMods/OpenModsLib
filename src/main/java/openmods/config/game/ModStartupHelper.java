@@ -59,6 +59,8 @@ public class ModStartupHelper {
 
 		gameConfig.setFeatures(features);
 
+		setupIds(gameConfig);
+
 		setupBlockFactory(gameConfig.getBlockFactory());
 
 		setupItemFactory(gameConfig.getItemFactory());
@@ -83,6 +85,8 @@ public class ModStartupHelper {
 	protected void populateConfig(Configuration config) {}
 
 	protected void registerCustomFeatures(ConfigurableFeatureManager features) {}
+
+	protected void setupIds(GameConfigProvider gameConfig) {}
 
 	protected void setupProvider(GameConfigProvider gameConfig) {}
 }
