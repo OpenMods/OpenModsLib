@@ -45,6 +45,9 @@ public class ApiFactory {
 		Preconditions.checkState(field.isStatic(), "Failed to set API field on %s:%s - field must be static",
 				targetClassName, targetFieldName);
 
+		Preconditions.checkState(!field.isFinal(), "Failed to set API field on %s:%s - field must not be final",
+				targetClassName, targetFieldName);
+
 		Preconditions.checkState(interfaceMarker.isAssignableFrom(type), "Failed to set API field on %s:%s - invalid type, expected %s",
 				targetClassName, targetFieldName, interfaceMarker);
 
@@ -57,7 +60,13 @@ public class ApiFactory {
 			Log.info("Can't set API field %s:%s - no API for type %s",
 					targetClassName, targetFieldName, castedField.getType());
 		}
+	}
 
+	private <A> void fillTargetFields(final ApiProviderRegistry<A> registry, ASMDataTable table, Class<? extends Annotation> fieldMarker, Class<A> interfaceMarker) {
+		final Set<ASMData> targets = table.getAll(fieldMarker.getName());
+
+		for (ASMData data : targets)
+			fillTargetField(registry, data, interfaceMarker);
 	}
 
 	public interface ApiProviderSetup<A> {
@@ -69,12 +78,17 @@ public class ApiFactory {
 
 		final ApiProviderRegistry<A> registry = new ApiProviderRegistry<A>(interfaceMarker);
 		registrySetup.setup(registry);
+		registry.freeze();
 
-		final Set<ASMData> targets = table.getAll(fieldMarker.getName());
-
-		for (ASMData data : targets)
-			fillTargetField(registry, data, interfaceMarker);
+		fillTargetFields(registry, table, fieldMarker, interfaceMarker);
 
 		return registry;
+	}
+
+	public <A> void createApi(Class<? extends Annotation> fieldMarker, Class<A> interfaceMarker, ASMDataTable table, ApiProviderRegistry<A> registry) {
+		Preconditions.checkState(apis.add(fieldMarker), "Duplicate API registration on %s", fieldMarker);
+
+		Preconditions.checkState(registry.isFrozen(), "Registry must be frozen");
+		fillTargetFields(registry, table, fieldMarker, interfaceMarker);
 	}
 }

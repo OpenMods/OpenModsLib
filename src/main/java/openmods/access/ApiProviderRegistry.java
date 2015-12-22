@@ -13,8 +13,14 @@ public class ApiProviderRegistry<A> {
 	private final Class<? super A> markerType;
 	private final Map<Class<? extends A>, ApiInstanceProvider<?>> providers = Maps.newHashMap();
 
+	private boolean isFrozen;
+
 	private static boolean shouldIncludeSuper(ApiSingleton meta) {
 		return meta == null || meta.includeSuper();
+	}
+
+	public void freeze() {
+		this.isFrozen = true;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -58,7 +64,13 @@ public class ApiProviderRegistry<A> {
 		this.markerType = markerType;
 	}
 
+	public boolean isFrozen() {
+		return isFrozen;
+	}
+
 	public <T extends A> void registerClass(Class<? extends T> cls) {
+		Preconditions.checkState(!isFrozen, "This registry is already frozen");
+
 		Preconditions.checkArgument(!Modifier.isAbstract(cls.getModifiers()));
 
 		final ApiImplementation meta = cls.getAnnotation(ApiImplementation.class);
@@ -68,6 +80,8 @@ public class ApiProviderRegistry<A> {
 	}
 
 	public <T extends A> void registerInstance(T obj) {
+		Preconditions.checkState(!isFrozen, "This registry is already frozen");
+
 		@SuppressWarnings("unchecked")
 		final Class<? extends T> cls = (Class<? extends T>)obj.getClass();
 
