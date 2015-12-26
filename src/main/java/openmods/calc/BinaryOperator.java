@@ -7,18 +7,18 @@ public abstract class BinaryOperator<E> extends Operator<E> {
 	public enum Associativity {
 		LEFT {
 			@Override
-			protected <E> boolean isLessThan(int left, int right) {
+			protected boolean isLessThan(int left, int right) {
 				return left <= right;
 			}
 		},
 		RIGHT {
 			@Override
-			protected <E> boolean isLessThan(int left, int right) {
+			protected boolean isLessThan(int left, int right) {
 				return left < right;
 			}
 		};
 
-		protected abstract <E> boolean isLessThan(int left, int right);
+		protected abstract boolean isLessThan(int left, int right);
 	}
 
 	public final int precedence;
