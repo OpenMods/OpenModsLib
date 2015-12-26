@@ -11,6 +11,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.discovery.ASMDataTable;
 import cpw.mods.fml.common.discovery.ASMDataTable.ASMData;
 
@@ -56,6 +57,13 @@ public class ApiFactory {
 
 		if (api != null) {
 			castedField.set(null, api);
+			Log.trace("Injecting instance of %s from mod %s to field %s:%s from file %s",
+					type,
+					Loader.instance().activeModContainer().getModId(),
+					targetClassName,
+					targetFieldName,
+					data.getCandidate().getModContainer()
+					);
 		} else {
 			Log.info("Can't set API field %s:%s - no API for type %s",
 					targetClassName, targetFieldName, castedField.getType());
