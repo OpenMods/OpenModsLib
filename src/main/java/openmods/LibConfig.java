@@ -5,7 +5,7 @@ import openmods.config.properties.OnLineModifiable;
 
 public class LibConfig {
 	@OnLineModifiable
-	@ConfigProperty(category = "debug", name = "fakePlayerCountThreshold", comment = "Maximum fake player pool that can doesn't produce warning")
+	@ConfigProperty(category = "debug", name = "fakePlayerCountThreshold", comment = "Maximum fake player pool that doesn't produce warning")
 	public static int fakePlayerThreshold = 10;
 
 	@OnLineModifiable
@@ -14,5 +14,8 @@ public class LibConfig {
 
 	@ConfigProperty(category = "feature", name = "calculatorCommands", comment = "Enables command line calculator")
 	public static boolean enableCalculatorCommands = true;
+
+	@ConfigProperty(category = "debug", name = "tessellatorPoolLimit", comment = "Maximum allowed size of tessellator pool")
+	public static int tessellatorPoolLimit = 20;
 
 }
