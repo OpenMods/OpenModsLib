@@ -49,6 +49,7 @@ openmodslib.color.magenta=Magenta
 openmodslib.color.orange=Orange
 openmodslib.color.white=White
 
+openmodslib.gui.watch_video=Watch video
 
 openmodslib.locale.book.scale.pageNumber=0.5
 openmodslib.locale.book.scale.sectionTitle=2.0

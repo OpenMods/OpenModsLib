@@ -47,6 +47,10 @@ public class PageBuilder {
 
 	private List<ItemStackTocPage> tocPages;
 
+	protected String getMediaLink(String modId, String type, String id) {
+		return "https://videos.openmods.info/tutorial." + modId + "." + type + "." + id;
+	}
+
 	public <T> void addPages(String type, FMLControlledNamespacedRegistry<T> registry, StackProvider<T> provider) {
 		@SuppressWarnings("unchecked")
 		Set<String> ids = registry.getKeys();
@@ -82,11 +86,11 @@ public class PageBuilder {
 				final ItemStack stack = provider.createStack(itemModId, itemName, obj);
 				if (stack == null) continue;
 				final String customName = doc.customName();
-				addPage(Strings.isNullOrEmpty(customName)? itemName : customName, itemModId.toLowerCase(Locale.ENGLISH), type, stack);
+				addPage(Strings.isNullOrEmpty(customName)? itemName : customName, itemModId.toLowerCase(Locale.ENGLISH), type, doc.hasVideo(), stack);
 			} else {
 				ICustomBookEntryProvider customProvider = PROVIDERS.getOrCreate(customProviderCls);
 				for (ICustomBookEntryProvider.Entry e : customProvider.getBookEntries())
-					addPage(e.name, itemModId.toLowerCase(Locale.ENGLISH), type, e.stack);
+					addPage(e.name, itemModId.toLowerCase(Locale.ENGLISH), type, doc.hasVideo(), e.stack);
 			}
 		}
 	}
@@ -127,13 +131,20 @@ public class PageBuilder {
 		throw new IllegalStateException(String.format("Tried to add more TOC entries than allocated"));
 	}
 
-	private void addPage(String id, String modId, String type, ItemStack stack) {
+	private void addPage(String id, String modId, String type, boolean hasVideo, ItemStack stack) {
 		final String nameKey = getTranslationKey(id, modId, type, "name");
 		final String descriptionKey = getTranslationKey(id, modId, type, "description");
-		final String mediaKey = getTranslationKey(id, modId, type, "video");
 
 		final String translatedName = StatCollector.translateToLocal(nameKey);
-		final StandardRecipePage page = new StandardRecipePage(nameKey, descriptionKey, mediaKey, stack);
+
+		final StandardRecipePage page;
+		if (hasVideo) {
+			final String mediaKey = getMediaLink(modId, type, id);
+			page = new StandardRecipePage(nameKey, descriptionKey, mediaKey, stack);
+		} else {
+			page = new StandardRecipePage(nameKey, descriptionKey, stack);
+		}
+
 		pages.put(translatedName + ":" + id, new Entry(page, stack));
 	}
 

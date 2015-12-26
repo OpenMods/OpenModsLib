@@ -8,6 +8,8 @@ import openmods.gui.component.*;
 import openmods.utils.RecipeUtils;
 import openmods.utils.render.FakeIcon;
 
+import com.google.common.base.Strings;
+
 public class StandardRecipePage extends PageBase {
 
 	public static IIcon iconCraftingGrid = FakeIcon.createSheetIcon(0, 180, 56, 56);
@@ -44,10 +46,9 @@ public class StandardRecipePage extends PageBase {
 
 	public StandardRecipePage(String title, String description, String videoLink, ItemStack resultingItem) {
 		this(title, description, resultingItem);
-		String translatedLink = StatCollector.translateToLocal(videoLink);
 
-		if (videoLink != "" && !videoLink.equals(translatedLink)) {
-			addActionButton(10, 133, translatedLink, ActionIcon.YOUTUBE.icon, "openblocks.gui.watch_video");
+		if (!Strings.isNullOrEmpty(videoLink)) {
+			addActionButton(10, 133, videoLink, ActionIcon.YOUTUBE.icon, "openmodslib.gui.watch_video");
 		}
 	}
 

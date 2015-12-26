@@ -10,4 +10,6 @@ public @interface BookDocumentation {
 	public String customName() default "";
 
 	public Class<? extends ICustomBookEntryProvider> customProvider() default EMPTY.class;
+
+	public boolean hasVideo() default false;
 }
