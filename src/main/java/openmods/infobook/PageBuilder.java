@@ -7,6 +7,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StatCollector;
 import openmods.Log;
+import openmods.OpenMods;
 import openmods.gui.component.BaseComponent;
 import openmods.gui.component.GuiComponentBook;
 import openmods.gui.component.page.ItemStackTocPage;
@@ -48,7 +49,8 @@ public class PageBuilder {
 	private List<ItemStackTocPage> tocPages;
 
 	protected String getMediaLink(String modId, String type, String id) {
-		return "https://videos.openmods.info/tutorial." + modId + "." + type + "." + id;
+		final String lang = OpenMods.proxy.getLanguage().or("unknown");
+		return "https://videos.openmods.info/" + lang + "/tutorial." + modId + "." + type + "." + id;
 	}
 
 	public <T> void addPages(String type, FMLControlledNamespacedRegistry<T> registry, StackProvider<T> provider) {

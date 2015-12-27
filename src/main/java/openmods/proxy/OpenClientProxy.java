@@ -26,6 +26,9 @@ import openmods.stencil.FramebufferConstants;
 import openmods.stencil.StencilPoolManager;
 import openmods.stencil.StencilPoolManager.StencilPool;
 import openmods.utils.render.RenderUtils;
+
+import com.google.common.base.Optional;
+
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.ICrashCallable;
@@ -69,6 +72,11 @@ public final class OpenClientProxy implements IOpenModsProxy {
 	@Override
 	public String getLogFileName() {
 		return "ForgeModLoader-client-0.log";
+	}
+
+	@Override
+	public Optional<String> getLanguage() {
+		return Optional.fromNullable(Minecraft.getMinecraft().gameSettings.language);
 	}
 
 	@Override
