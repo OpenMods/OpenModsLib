@@ -171,13 +171,13 @@ public enum BlockRotationMode {
 	FOUR_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YP, Orientation.ZN_YP, Orientation.XN_YP, Orientation.ZP_YP) {
 		private Orientation directionToOrientation(ForgeDirection side) {
 			switch (side) {
-				case NORTH:
-					return Orientation.XP_YP;
-				case EAST:
-					return Orientation.ZP_YP;
 				case SOUTH:
-					return Orientation.XN_YP;
+					return Orientation.XP_YP;
 				case WEST:
+					return Orientation.ZP_YP;
+				case NORTH:
+					return Orientation.XN_YP;
+				case EAST:
 					return Orientation.ZN_YP;
 				default:
 					return null;

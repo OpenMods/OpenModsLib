@@ -55,7 +55,18 @@ public class BlockUtils {
 	}
 
 	public static float getRotationFromOrientation(Orientation orientation) {
-		return getRotationFromDirection(orientation.south());
+		switch (orientation.x) {
+			case POS_X:
+				return 0f;
+			case NEG_X:
+				return 180f;
+			case NEG_Z:
+				return 90f;
+			case POS_Z:
+				return -90f;
+			default:
+				return 0f;
+		}
 	}
 
 	public static ForgeDirection get3dOrientation(EntityLivingBase entity) {
