@@ -8,16 +8,17 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.*;
-import openmods.OpenMods;
-import openmods.utils.*;
+import openmods.utils.BlockUtils;
+import openmods.utils.CollectionUtils;
+import openmods.utils.Coord;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class GenericTank extends FluidTank {
 
 	private List<ForgeDirection> surroundingTanks = Lists.newArrayList();
-	private long lastUpdate = 0;
 	private final IFluidFilter filter;
 
 	public interface IFluidFilter {
@@ -72,11 +73,10 @@ public class GenericTank extends FluidTank {
 		return tile instanceof IFluidHandler;
 	}
 
-	private static Set<ForgeDirection> getSurroundingTanks(World world, Coord coord, Set<ForgeDirection> sides) {
-		EnumSet<ForgeDirection> result = EnumSet.noneOf(ForgeDirection.class);
-		if (sides == null) sides = DirUtils.VALID_DIRECTIONS;
+	private static Set<ForgeDirection> getSurroundingTanks(World world, Coord coord) {
+		final Set<ForgeDirection> result = EnumSet.noneOf(ForgeDirection.class);
 
-		for (ForgeDirection dir : sides)
+		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
 			if (isNeighbourTank(world, coord, dir)) result.add(dir);
 
 		return result;
@@ -100,12 +100,12 @@ public class GenericTank extends FluidTank {
 		return super.fill(resource, doFill);
 	}
 
-	private void periodicUpdateNeighbours(World world, Coord coord, Set<ForgeDirection> sides) {
-		long currentTime = OpenMods.proxy.getTicks(world);
-		if (currentTime - lastUpdate > 10) {
-			surroundingTanks = Lists.newArrayList(getSurroundingTanks(world, coord, sides));
-			lastUpdate = currentTime;
-		}
+	public void updateNeighbours(World world, Coord coord, Set<ForgeDirection> sides) {
+		this.surroundingTanks = Lists.newArrayList(Sets.difference(getSurroundingTanks(world, coord), sides));
+	}
+
+	public void updateNeighbours(World world, Coord coord) {
+		this.surroundingTanks = Lists.newArrayList(getSurroundingTanks(world, coord));
 	}
 
 	private static int tryFillNeighbour(FluidStack drainedFluid, ForgeDirection side, TileEntity otherTank) {
@@ -120,8 +120,6 @@ public class GenericTank extends FluidTank {
 		if (world == null) return;
 
 		if (getFluidAmount() <= 0) return;
-
-		periodicUpdateNeighbours(world, coord, sides);
 
 		if (surroundingTanks.isEmpty()) return;
 
@@ -154,46 +152,57 @@ public class GenericTank extends FluidTank {
 		int toDrain = Math.min(maxAmount, getSpace());
 		if (toDrain <= 0) return;
 
-		periodicUpdateNeighbours(world, coord, sides);
-
 		if (surroundingTanks.isEmpty()) return;
 
 		Collections.shuffle(surroundingTanks);
-		MAIN: for (ForgeDirection side : surroundingTanks) {
+		for (ForgeDirection side : surroundingTanks) {
 			if (toDrain <= 0) break;
-			TileEntity otherTank = BlockUtils.getTileInDirection(world, coord, side);
-			if (otherTank instanceof IFluidHandler) {
-				final ForgeDirection drainSide = side.getOpposite();
-				final IFluidHandler handler = (IFluidHandler)otherTank;
-				final FluidTankInfo[] infos = handler.getTankInfo(drainSide);
-
-				if (infos == null) {
-					/*
-					 * Log.debug("Tank %s @ (%d,%d,%d) returned null tank info. Nasty.",
-					 * otherTank.getClass(), otherTank.xCoord, otherTank.yCoord, otherTank.zCoord);
-					 */// For the moment, mute this output until MinecraftForge#2085 concludes.
-					continue;
-				}
-
-				for (FluidTankInfo info : infos) {
-					if (filter.canAcceptFluid(info.fluid)) {
-						FluidStack stack = info.fluid.copy();
-						stack.amount = toDrain;
-
-						FluidStack drained = handler.drain(drainSide, stack, true);
-
-						if (drained != null) {
-							fill(drained, true);
-							toDrain -= drained.amount;
-						}
-
-						if (toDrain <= 0) break MAIN;
-					}
-
-				}
-
+			if (sides == null || sides.contains(side)) {
+				toDrain -= fillInternal(world, coord, side, toDrain);
 			}
 		}
+	}
+
+	public int fillFromSide(World world, Coord coord, ForgeDirection side) {
+		int maxDrain = getSpace();
+		if (maxDrain <= 0) return 0;
+
+		return fillInternal(world, coord, side, maxDrain);
+	}
+
+	public int fillFromSide(int maxDrain, World world, Coord coord, ForgeDirection side) {
+		maxDrain = Math.max(maxDrain, getSpace());
+		if (maxDrain <= 0) return 0;
+
+		return fillInternal(world, coord, side, maxDrain);
+	}
+
+	private int fillInternal(World world, Coord coord, ForgeDirection side, int maxDrain) {
+		int drain = 0;
+		final TileEntity otherTank = BlockUtils.getTileInDirection(world, coord, side);
+
+		if (otherTank instanceof IFluidHandler) {
+			final ForgeDirection drainSide = side.getOpposite();
+			final IFluidHandler handler = (IFluidHandler)otherTank;
+			final FluidTankInfo[] infos = handler.getTankInfo(drainSide);
+
+			if (infos == null) return 0;
+
+			for (FluidTankInfo info : infos) {
+				if (filter.canAcceptFluid(info.fluid)) {
+					final FluidStack drained = handler.drain(drainSide, maxDrain, true);
+
+					if (drained != null) {
+						fill(drained, true);
+						drain += drained.amount;
+						maxDrain -= drained.amount;
+						if (maxDrain <= 0) break;
+					}
+				}
+			}
+		}
+
+		return drain;
 	}
 
 }
