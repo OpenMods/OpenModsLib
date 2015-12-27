@@ -329,11 +329,15 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 			if (te instanceof INeighbourAwareTile) ((INeighbourAwareTile)te).onNeighbourChanged(neighbour);
 
 			if (te instanceof ISurfaceAttachment) {
-				ForgeDirection direction = ((ISurfaceAttachment)te).getSurfaceDirection();
-				if (!isNeighborBlockSolid(world, x, y, z, direction)) {
-					world.func_147480_a(x, y, z, true);
-				}
+				final ForgeDirection direction = ((ISurfaceAttachment)te).getSurfaceDirection();
+				breakBlockIfSideNotSolid(world, x, y, z, direction);
 			}
+		}
+	}
+
+	protected void breakBlockIfSideNotSolid(World world, int x, int y, int z, ForgeDirection direction) {
+		if (!isNeighborBlockSolid(world, x, y, z, direction)) {
+			world.func_147480_a(x, y, z, true);
 		}
 	}
 
@@ -600,7 +604,17 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public boolean rotateBlock(World worldObj, int x, int y, int z, ForgeDirection axis) {
-		return canRotateWithTool() && createRotationHelper(worldObj, x, y, z).rotateWithTool(axis);
+		if (!canRotateWithTool()) return false;
+		if (!createRotationHelper(worldObj, x, y, z).rotateWithTool(axis)) return false;
+
+		if (teCapabilities.contains(TileEntityCapability.SURFACE_ATTACHEMENT)) {
+			final ISurfaceAttachment te = getTileEntity(worldObj, x, y, z, ISurfaceAttachment.class);
+			if (te == null) return false;
+
+			breakBlockIfSideNotSolid(worldObj, x, y, z, te.getSurfaceDirection());
+		}
+
+		return true;
 	}
 
 	@Override
