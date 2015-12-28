@@ -76,7 +76,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	private Class<? extends TileEntity> teClass = null;
 	protected BlockRotationMode blockRotationMode = BlockRotationMode.NONE;
 	protected BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
-	protected Orientation inventoryRenderOrientation = Orientation.XP_YP;
+	protected Orientation inventoryRenderOrientation;
 	protected RenderMode renderMode = RenderMode.BLOCK_ONLY;
 
 	public IIcon[] textures = new IIcon[6];
@@ -135,12 +135,14 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	@SideOnly(Side.CLIENT)
 	public Orientation getInventoryRenderOrientation() {
-		return inventoryRenderOrientation;
+		return inventoryRenderOrientation != null? inventoryRenderOrientation : getRotationMode().getInventoryRenderOrientation();
 	}
 
 	@SideOnly(Side.CLIENT)
 	public int getInventoryRenderMetadata(int itemMetadata) {
-		return getRotationMode().toValue(inventoryRenderOrientation);
+		final BlockRotationMode rotationMode = getRotationMode();
+		final Orientation renderOrientation = inventoryRenderOrientation != null? inventoryRenderOrientation : rotationMode.getInventoryRenderOrientation();
+		return rotationMode.toValue(renderOrientation);
 	}
 
 	public void setBlockBounds(AxisAlignedBB aabb) {

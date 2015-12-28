@@ -221,6 +221,11 @@ public enum BlockRotationMode {
 		public IRendererSetup getRenderSetup() {
 			return RendererSetupProxy.proxy.getVanillaRenderer();
 		}
+
+		@Override
+		public Orientation getInventoryRenderOrientation() {
+			return Orientation.XN_YP;
+		}
 	},
 	/**
 	 * Rotations in every direction.
@@ -270,6 +275,11 @@ public enum BlockRotationMode {
 		@Override
 		public IRendererSetup getRenderSetup() {
 			return RendererSetupProxy.proxy.getTweakedRenderer();
+		}
+
+		@Override
+		public Orientation getInventoryRenderOrientation() {
+			return Orientation.YN_XP;
 		}
 	},
 
@@ -333,11 +343,16 @@ public enum BlockRotationMode {
 		public IRendererSetup getRenderSetup() {
 			return RendererSetupProxy.proxy.getTweakedRenderer();
 		}
+
+		@Override
+		public Orientation getInventoryRenderOrientation() {
+			return Orientation.XN_YP;
+		}
 	},
 	/**
 	 * Yet another weird one.
 	 * Top side can rotate when oriented up or down.
-	 * When top points to cardinal direction, texture top should always align with horizont
+	 * When top points to cardinal direction, texture top should always align with horizon
 	 */
 	TWELVE_DIRECTIONS(RotationAxis.THREE_AXIS,
 			Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.NEG_Z), // first two TOP/BOTTOM orientation are here for easy migration from SIX_DIRECTIONS
@@ -502,4 +517,8 @@ public enum BlockRotationMode {
 	public abstract Orientation getPlacementOrientationFromEntity(EntityPlayer player);
 
 	public abstract Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis);
+
+	public Orientation getInventoryRenderOrientation() {
+		return Orientation.XP_YP;
+	}
 }
