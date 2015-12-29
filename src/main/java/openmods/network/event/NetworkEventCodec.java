@@ -107,10 +107,10 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 	}
 
 	private static FMLProxyPacket createPacket(int id, byte[] payload) {
-		ByteBuf buf = Unpooled.buffer(payload.length + 5);
-		ByteBufUtils.writeVarInt(buf, id, 5);
+		PacketBuffer buf = new PacketBuffer(Unpooled.buffer(payload.length + 5));
+		buf.writeVarIntToBuffer(id);
 		buf.writeBytes(payload);
-		FMLProxyPacket partialPacket = new FMLProxyPacket(new PacketBuffer(buf.copy()), NetworkEventDispatcher.CHANNEL_NAME);
+		FMLProxyPacket partialPacket = new FMLProxyPacket(buf, NetworkEventDispatcher.CHANNEL_NAME);
 		return partialPacket;
 	}
 
