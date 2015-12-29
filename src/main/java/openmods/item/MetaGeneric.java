@@ -2,7 +2,6 @@ package openmods.item;
 
 import java.util.List;
 
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -10,7 +9,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.util.IIcon;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 
 public class MetaGeneric implements IMetaItem {
@@ -29,7 +29,6 @@ public class MetaGeneric implements IMetaItem {
 
 	private final String mod;
 	private final String name;
-	private IIcon icon;
 	private Object[] recipes;
 	private boolean visibleInCreative = true;
 
@@ -45,11 +44,6 @@ public class MetaGeneric implements IMetaItem {
 	}
 
 	@Override
-	public IIcon getIcon() {
-		return icon;
-	}
-
-	@Override
 	public String getUnlocalizedName(ItemStack stack) {
 		return String.format("%s.%s", mod, name);
 	}
@@ -60,7 +54,7 @@ public class MetaGeneric implements IMetaItem {
 	}
 
 	@Override
-	public boolean onItemUse(ItemStack itemStack, EntityPlayer player, World world, int x, int y, int z, int side, float par8, float par9, float par10) {
+	public boolean onItemUse(ItemStack itemStack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ) {
 		return false;
 	}
 
@@ -70,25 +64,14 @@ public class MetaGeneric implements IMetaItem {
 	}
 
 	@Override
-	public void registerIcons(IIconRegister register) {
-		registerIcon(register, name);
-	}
-
-	protected void registerIcon(IIconRegister register, String name) {
-		icon = register.registerIcon(String.format("%s:%s", mod, name));
-	}
-
-	@Override
 	public void addRecipe() {
 		if (recipes == null) return;
 
-		final FurnaceRecipes furnaceRecipes = FurnaceRecipes.smelting();
-		@SuppressWarnings("unchecked")
 		final List<IRecipe> craftingRecipes = CraftingManager.getInstance().getRecipeList();
 		for (Object tmp : recipes) {
 			if (tmp instanceof SmeltingRecipe) {
 				SmeltingRecipe recipe = (SmeltingRecipe)tmp;
-				furnaceRecipes.func_151394_a(recipe.input, recipe.result, recipe.experience);
+				FurnaceRecipes.instance().addSmeltingRecipe(recipe.input, recipe.result, recipe.experience);
 			} else if (tmp instanceof IRecipe) {
 				craftingRecipes.add((IRecipe)tmp);
 			} else throw new IllegalArgumentException("Invalid recipe object: "
@@ -104,7 +87,7 @@ public class MetaGeneric implements IMetaItem {
 	}
 
 	@Override
-	public boolean hasEffect(int renderPass) {
+	public boolean hasEffect() {
 		return false;
 	}
 

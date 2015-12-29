@@ -4,20 +4,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class ItemGeneric extends Item {
 
@@ -40,20 +39,6 @@ public abstract class ItemGeneric extends Item {
 	}
 
 	@Override
-	public void registerIcons(IIconRegister register) {
-		for (IMetaItem item : metaitems.values()) {
-			item.registerIcons(register);
-		}
-	}
-
-	@Override
-	public IIcon getIconFromDamage(int i) {
-		IMetaItem meta = getMeta(i);
-		if (meta != null) { return meta.getIcon(); }
-		return null;
-	}
-
-	@Override
 	public String getUnlocalizedName(ItemStack stack) {
 		IMetaItem meta = getMeta(stack.getItemDamage());
 		if (meta != null) { return "item." + meta.getUnlocalizedName(stack); }
@@ -61,9 +46,9 @@ public abstract class ItemGeneric extends Item {
 	}
 
 	@Override
-	public boolean onItemUse(ItemStack itemStack, EntityPlayer player, World world, int x, int y, int z, int side, float par8, float par9, float par10) {
+	public boolean onItemUse(ItemStack itemStack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ) {
 		IMetaItem meta = getMeta(itemStack.getItemDamage());
-		if (meta != null) { return meta.onItemUse(itemStack, player, world, x, y, z, side, par8, par9, par10); }
+		if (meta != null) { return meta.onItemUse(itemStack, player, world, pos, side, hitX, hitY, hitZ); }
 		return true;
 	}
 
@@ -83,9 +68,9 @@ public abstract class ItemGeneric extends Item {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public boolean hasEffect(ItemStack itemStack, int pass) {
+	public boolean hasEffect(ItemStack itemStack) {
 		IMetaItem meta = getMeta(itemStack.getItemDamage());
-		return meta != null? meta.hasEffect(pass) : false;
+		return meta != null? meta.hasEffect() : false;
 	}
 
 	@Override
