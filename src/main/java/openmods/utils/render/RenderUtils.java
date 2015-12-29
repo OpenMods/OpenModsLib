@@ -1,9 +1,7 @@
 package openmods.utils.render;
 
 import java.util.EnumSet;
-import java.util.Set;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
@@ -14,7 +12,6 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import openmods.block.OpenBlock;
 import openmods.utils.ColorUtils.RGB;
 
 import org.lwjgl.opengl.GL11;
@@ -77,99 +74,6 @@ public class RenderUtils {
 				interpolateValue(e.posX, e.prevPosX, partialTickTime),
 				interpolateValue(e.posY, e.prevPosY, partialTickTime),
 				interpolateValue(e.posZ, e.prevPosZ, partialTickTime));
-	}
-
-	@Deprecated
-	public static void rotateFacesOnRenderer(OpenBlock block, ForgeDirection rotation, RenderBlocks renderer) {
-		// no longer valid
-	}
-
-	public static void resetFacesOnRenderer(RenderBlocks renderer) {
-		renderer.uvRotateBottom = 0;
-		renderer.uvRotateEast = 0;
-		renderer.uvRotateNorth = 0;
-		renderer.uvRotateSouth = 0;
-		renderer.uvRotateTop = 0;
-		renderer.uvRotateWest = 0;
-		renderer.flipTexture = false;
-	}
-
-	public static void renderInventoryBlock(RenderBlocks renderer, Block block, int metadata) {
-		renderInventoryBlock(renderer, block, metadata, 0xFFFFFFFF);
-	}
-
-	public static void renderInventoryBlock(RenderBlocks renderer, Block block, int metadata, int colorMultiplier) {
-		renderInventoryBlock(renderer, block, metadata, colorMultiplier, ALL_SIDES);
-	}
-
-	public static void renderInventoryBlock(RenderBlocks renderer, Block block, int metadata, int colorMultiplier, Set<ForgeDirection> enabledSides) {
-		block.setBlockBoundsForItemRender();
-		renderer.setRenderBoundsFromBlock(block);
-
-		renderInventoryBlockNoBounds(renderer, block, metadata, colorMultiplier, enabledSides);
-	}
-
-	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, int metadata) {
-		renderInventoryBlockNoBounds(renderer, block, metadata, 0xFFFFFFFF);
-	}
-
-	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, int metadata, int colorMultiplier) {
-		renderInventoryBlockNoBounds(renderer, block, metadata, colorMultiplier, ALL_SIDES);
-	}
-
-	public static void renderInventoryBlockNoBounds(RenderBlocks renderer, Block block, int metadata, int colorMultiplier, Set<ForgeDirection> enabledSides) {
-		Tessellator tessellator = Tessellator.instance;
-		float r;
-		float g;
-		float b;
-		if (colorMultiplier > -1)
-		{
-			r = (colorMultiplier >> 16 & 255) / 255.0F;
-			g = (colorMultiplier >> 8 & 255) / 255.0F;
-			b = (colorMultiplier & 255) / 255.0F;
-			GL11.glColor4f(r, g, b, 1.0F);
-		}
-		// Learn to matrix, please push and pop :D -- NC
-		GL11.glPushMatrix();
-		GL11.glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
-		GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
-		if (enabledSides.contains(ForgeDirection.DOWN)) {
-			tessellator.startDrawingQuads();
-			tessellator.setNormal(0.0F, -1.0F, 0.0F);
-			renderer.renderFaceYNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 0, metadata));
-			tessellator.draw();
-		}
-		if (enabledSides.contains(ForgeDirection.UP)) {
-			tessellator.startDrawingQuads();
-			tessellator.setNormal(0.0F, 1.0F, 0.0F);
-			renderer.renderFaceYPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 1, metadata));
-			tessellator.draw();
-		}
-		if (enabledSides.contains(ForgeDirection.SOUTH)) {
-			tessellator.startDrawingQuads();
-			tessellator.setNormal(0.0F, 0.0F, -1.0F);
-			renderer.renderFaceZNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 2, metadata));
-			tessellator.draw();
-		}
-		if (enabledSides.contains(ForgeDirection.NORTH)) {
-			tessellator.startDrawingQuads();
-			tessellator.setNormal(0.0F, 0.0F, 1.0F);
-			renderer.renderFaceZPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 3, metadata));
-			tessellator.draw();
-		}
-		if (enabledSides.contains(ForgeDirection.WEST)) {
-			tessellator.startDrawingQuads();
-			tessellator.setNormal(-1.0F, 0.0F, 0.0F);
-			renderer.renderFaceXNeg(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 4, metadata));
-			tessellator.draw();
-		}
-		if (enabledSides.contains(ForgeDirection.EAST)) {
-			tessellator.startDrawingQuads();
-			tessellator.setNormal(1.0F, 0.0F, 0.0F);
-			renderer.renderFaceXPos(block, 0.0D, 0.0D, 0.0D, renderer.getBlockIconFromSideAndMetadata(block, 5, metadata));
-			tessellator.draw();
-		}
-		GL11.glPopMatrix();
 	}
 
 	public static void renderCube(Tessellator tes, double x1, double y1, double z1, double x2, double y2, double z2) {
