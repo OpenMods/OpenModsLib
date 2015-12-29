@@ -18,8 +18,6 @@ import openmods.include.IncludingClassVisitor;
 import openmods.injector.InjectedClassesManager;
 import openmods.movement.MovementPatcher;
 import openmods.renderer.PlayerRendererHookVisitor;
-import openmods.stencil.CapabilitiesHookInjector;
-import openmods.stencil.FramebufferInjector;
 import openmods.utils.StateTracker;
 import openmods.utils.StateTracker.StateUpdater;
 import openmods.world.MapGenStructureVisitor;
@@ -148,42 +146,6 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				"Modified class: net.minecraft.client.renderer.entity.RenderPlayer",
 				"Known users: OpenBlocks hangglider",
 				"When disabled: code may fallback to less compatible mechanism (like replacing renderer)");
-
-		config.addEntry("activate_stencil_patches", 0, "true", new ConfigOption("stencil_patches") {
-			@Override
-			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.client.shader.Framebuffer", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
-					@Override
-					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.debug("Trying to patch Framebuffer (class: %s)", name);
-						state.update(TransformerState.ACTIVATED);
-						return new FramebufferInjector(name, cv, createResultListener(state));
-					}
-				});
-			}
-		},
-				"Purpose: to re-enable stencil buffer on FBO objects. This is was disabled due to problems on some configurations",
-				"Modified class: net.minecraft.client.shader.Framebuffer",
-				"Known users: OpenBlocks skyblocks",
-				"When disabled: no stencil buffer available unless unlocked with Forge flag. Mods may not use some graphic features");
-
-		config.addEntry("activate_gl_capabilities_hook", 0, "true", new ConfigOption("gl_capabilities_hook") {
-			@Override
-			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.client.renderer.OpenGlHelper", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
-					@Override
-					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.debug("Trying to patch OpenGlHelper (class: %s)", name);
-						state.update(TransformerState.ACTIVATED);
-						return new CapabilitiesHookInjector(name, cv, createResultListener(state));
-					}
-				});
-			}
-		},
-				"Purpose: hook to get check additional OpenGL capabilities (mostly stencil buffer related)",
-				"Modified class: net.minecraft.client.renderer.OpenGlHelper",
-				"Known users: OpenBlocks skyblocks",
-				"When disabled: no stencil buffer available unless unlocked with Forge flag. Mods may not use some graphic features");
 	}
 
 	private final static TransformProvider INCLUDING_CV = new TransformProvider(0) {
