@@ -1,11 +1,10 @@
 package openmods.network.event;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 
@@ -20,9 +19,9 @@ public abstract class NetworkEvent extends Event {
 
 	public EntityPlayer sender;
 
-	protected abstract void readFromStream(DataInput input) throws IOException;
+	protected abstract void readFromStream(PacketBuffer input) throws IOException;
 
-	protected abstract void writeToStream(DataOutput output) throws IOException;
+	protected abstract void writeToStream(PacketBuffer output) throws IOException;
 
 	protected void appendLogInfo(List<String> info) {}
 

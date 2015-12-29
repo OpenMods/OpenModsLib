@@ -1,18 +1,16 @@
 package openmods.network.rpc.targets;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import openmods.network.rpc.IRpcTarget;
 import openmods.network.rpc.IRpcTargetProvider;
 import openmods.sync.ISyncMapProvider;
 import openmods.sync.ISyncableObject;
 import openmods.sync.SyncMap;
-import openmods.utils.ByteUtils;
 
 public abstract class SyncRpcTarget implements IRpcTarget {
 
@@ -42,9 +40,9 @@ public abstract class SyncRpcTarget implements IRpcTarget {
 	}
 
 	@Override
-	public void writeToStream(DataOutput output) throws IOException {
+	public void writeToStream(PacketBuffer output) throws IOException {
 		syncProvider.writeToStream(output);
-		ByteUtils.writeVLI(output, objectId);
+		output.writeVarIntToBuffer(objectId);
 	}
 
 	private SyncMap<?> getSyncMap() {
@@ -53,11 +51,11 @@ public abstract class SyncRpcTarget implements IRpcTarget {
 	}
 
 	@Override
-	public void readFromStreamStream(EntityPlayer player, DataInput input) throws IOException {
+	public void readFromStreamStream(EntityPlayer player, PacketBuffer input) throws IOException {
 		syncProvider.readFromStreamStream(player, input);
 
 		SyncMap<?> map = getSyncMap();
-		objectId = ByteUtils.readVLI(input);
+		objectId = input.readVarIntFromBuffer();
 		object = map.get(objectId);
 	}
 

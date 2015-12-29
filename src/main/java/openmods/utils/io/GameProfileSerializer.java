@@ -1,11 +1,8 @@
 package openmods.utils.io;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.UUID;
 
-import openmods.utils.ByteUtils;
+import net.minecraft.network.PacketBuffer;
 
 import com.google.common.base.Strings;
 import com.mojang.authlib.GameProfile;
@@ -16,48 +13,48 @@ public class GameProfileSerializer implements IStreamSerializer<GameProfile> {
 	public static final IStreamSerializer<GameProfile> INSTANCE = new GameProfileSerializer();
 
 	@Override
-	public void writeToStream(GameProfile o, DataOutput output) throws IOException {
+	public void writeToStream(GameProfile o, PacketBuffer output) {
 		write(o, output);
 	}
 
 	@Override
-	public GameProfile readFromStream(DataInput input) throws IOException {
+	public GameProfile readFromStream(PacketBuffer input) {
 		return read(input);
 	}
 
-	public static void write(GameProfile o, DataOutput output) throws IOException {
+	public static void write(GameProfile o, PacketBuffer output) {
 		final UUID uuid = o.getId();
-		output.writeUTF(uuid == null? "" : uuid.toString());
-		output.writeUTF(Strings.nullToEmpty(o.getName()));
+		output.writeString(uuid == null? "" : uuid.toString());
+		output.writeString(Strings.nullToEmpty(o.getName()));
 		final PropertyMap properties = o.getProperties();
-		ByteUtils.writeVLI(output, properties.size());
+		output.writeVarIntToBuffer(properties.size());
 		for (Property p : properties.values()) {
-			output.writeUTF(p.getName());
-			output.writeUTF(p.getValue());
+			output.writeString(p.getName());
+			output.writeString(p.getValue());
 
 			final String signature = p.getSignature();
 			if (signature != null) {
 				output.writeBoolean(true);
-				output.writeUTF(signature);
+				output.writeString(signature);
 			} else {
 				output.writeBoolean(false);
 			}
 		}
 	}
 
-	public static GameProfile read(DataInput input) throws IOException {
-		final String uuidStr = input.readUTF();
+	public static GameProfile read(PacketBuffer input) {
+		final String uuidStr = input.readStringFromBuffer(0xFFFF);
 		UUID uuid = Strings.isNullOrEmpty(uuidStr)? null : UUID.fromString(uuidStr);
-		final String name = input.readUTF();
+		final String name = input.readStringFromBuffer(0xFFFF);
 		GameProfile result = new GameProfile(uuid, name);
-		int propertyCount = ByteUtils.readVLI(input);
+		int propertyCount = input.readVarIntFromBuffer();
 
 		final PropertyMap properties = result.getProperties();
 		for (int i = 0; i < propertyCount; ++i) {
-			String key = input.readUTF();
-			String value = input.readUTF();
+			String key = input.readStringFromBuffer(0xFFFF);
+			String value = input.readStringFromBuffer(0xFFFF);
 			if (input.readBoolean()) {
-				String signature = input.readUTF();
+				String signature = input.readStringFromBuffer(0xFFFF);
 				properties.put(key, new Property(key, value, signature));
 			} else {
 				properties.put(key, new Property(key, value));

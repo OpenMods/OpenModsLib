@@ -1,9 +1,9 @@
 package openmods.structured;
 
-import java.io.DataInput;
 import java.io.IOException;
 import java.util.*;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.structured.Command.ConsistencyCheck;
 import openmods.structured.Command.ContainerInfo;
 import openmods.structured.Command.Create;
@@ -15,8 +15,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteStreams;
 
 public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E extends IStructureElement> extends StructuredData<C, E> {
 
@@ -85,16 +83,14 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 					SortedSet<Integer> containers = Sets.newTreeSet();
 					SortedSet<Integer> elements = Sets.newTreeSet();
 
-					final ByteArrayDataInput input = ByteStreams.newDataInput(msg.containerPayload);
-
 					for (ContainerInfo info : msg.containers) {
-						SortedSet<Integer> newElementsId = createAndAddContainer(input, info.type, info.id, info.start);
+						SortedSet<Integer> newElementsId = createAndAddContainer(msg.containerPayload, info.type, info.id, info.start);
 						elements.addAll(newElementsId);
 						updatedContainers.putAll(info.id, newElementsId);
 						containers.add(info.id);
 					}
 
-					if (input.skipBytes(1) != 0) throw new ConsistencyCheckFailed("Container payload not fully consumed");
+					if (msg.containerPayload.readableBytes() != 0) throw new ConsistencyCheckFailed("Container payload not fully consumed");
 
 					readElementPayload(elements, msg.elementPayload);
 					isStructureUpdated = true;
@@ -137,7 +133,7 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 		observer.onUpdateFinished();
 	}
 
-	private SortedSet<Integer> createAndAddContainer(ByteArrayDataInput input, int type, int containerId, int start) {
+	private SortedSet<Integer> createAndAddContainer(PacketBuffer input, int type, int containerId, int start) {
 		C container = factory.createContainer(type);
 		try {
 			if (container instanceof ICustomCreateData) ((ICustomCreateData)container).readCustomDataFromStream(input);
@@ -150,16 +146,15 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 		return containerToElement.get(containerId);
 	}
 
-	private void readElementPayload(SortedSet<Integer> ids, byte[] payload) {
+	private void readElementPayload(SortedSet<Integer> ids, PacketBuffer input) {
 		try {
-			DataInput input = ByteStreams.newDataInput(payload);
 			for (Integer id : ids) {
 				final E element = elements.get(id);
 				if (element == null) throw new ConsistencyCheckFailed("Element %d not found", id);
 				element.readFromStream(input);
 			}
 
-			if (input.skipBytes(1) != 0) throw new ConsistencyCheckFailed("Element payload not fully consumed");
+			if (input.readableBytes() != 0) throw new ConsistencyCheckFailed("Element payload not fully consumed");
 		} catch (IOException e) {
 			throw Throwables.propagate(e);
 		}

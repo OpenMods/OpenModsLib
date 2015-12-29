@@ -1,14 +1,11 @@
 package openmods.network;
 
-import io.netty.buffer.*;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-import java.io.*;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.MinecraftForge;
@@ -24,8 +21,8 @@ import openmods.OpenMods;
 import openmods.datastore.*;
 
 import com.google.common.base.Preconditions;
-import com.google.common.io.Closer;
 
+// TODO compression!
 public class IdSyncManager extends DataStoreManager {
 
 	private static final String CHANNEL_NAME = "OpenMods|I";
@@ -35,13 +32,8 @@ public class IdSyncManager extends DataStoreManager {
 	private class InboundHandler extends SimpleChannelInboundHandler<FMLProxyPacket> {
 		@Override
 		protected void channelRead0(ChannelHandlerContext ctx, FMLProxyPacket msg) throws Exception {
-			ByteBuf buf = msg.payload();
-
-			try {
-				decodeIds(buf);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+			final PacketBuffer buf = new PacketBuffer(msg.payload());
+			decodeIds(buf);
 		}
 
 		@Override
@@ -56,25 +48,12 @@ public class IdSyncManager extends DataStoreManager {
 	}
 
 	private static FMLProxyPacket serializeToPacket(DataStoreKey<?, ?> key, DataStoreWriter<?, ?> writer) {
-		ByteBuf payload = Unpooled.buffer();
+		final PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
 
-		Closer closer = Closer.create();
+		payload.writeString(key.id);
+		writer.write(payload);
 
-		try {
-			try {
-				OutputStream raw = closer.register(new ByteBufOutputStream(payload));
-				OutputStream compressed = closer.register(new GZIPOutputStream(raw));
-				DataOutput output = new DataOutputStream(compressed);
-				output.writeUTF(key.id);
-				writer.write(output);
-			} finally {
-				closer.close();
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-
-		return new FMLProxyPacket(new PacketBuffer(payload.copy()), CHANNEL_NAME);
+		return new FMLProxyPacket(payload, CHANNEL_NAME);
 	}
 
 	private IdSyncManager() {
@@ -101,22 +80,13 @@ public class IdSyncManager extends DataStoreManager {
 		}
 	}
 
-	private void decodeIds(ByteBuf buf) throws IOException {
-		Closer closer = Closer.create();
-		try {
-			InputStream raw = closer.register(new ByteBufInputStream(buf));
-			InputStream compressed = closer.register(new GZIPInputStream(raw));
-			DataInput input = new DataInputStream(compressed);
+	private void decodeIds(PacketBuffer buf) {
+		final String keyId = buf.readStringFromBuffer(0xFFFF);
 
-			String keyId = input.readUTF();
-
-			Log.debug("Received data store for key %s, packet size = %d", keyId, buf.writerIndex());
-			DataStoreWrapper<?, ?> wrapper = getDataStoreMeta(keyId);
-			DataStoreReader<?, ?> reader = wrapper.createReader();
-			reader.read(input);
-		} finally {
-			closer.close();
-		}
+		Log.debug("Received data store for key %s, packet size = %d", keyId, buf.writerIndex());
+		DataStoreWrapper<?, ?> wrapper = getDataStoreMeta(keyId);
+		DataStoreReader<?, ?> reader = wrapper.createReader();
+		reader.read(buf);
 	}
 
 	@SubscribeEvent

@@ -1,10 +1,7 @@
 package openmods.serializable.providers;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-
+import net.minecraft.network.PacketBuffer;
 import openmods.serializable.ISerializerProvider;
-import openmods.utils.ByteUtils;
 import openmods.utils.io.IStreamSerializer;
 
 public class EnumSerializerProvider implements ISerializerProvider {
@@ -21,8 +18,8 @@ public class EnumSerializerProvider implements ISerializerProvider {
 
 		return new IStreamSerializer<Object>() {
 			@Override
-			public Object readFromStream(DataInput input) {
-				final int ord = ByteUtils.readVLI(input);
+			public Object readFromStream(PacketBuffer input) {
+				final int ord = input.readVarIntFromBuffer();
 
 				try {
 					return values[ord];
@@ -32,9 +29,9 @@ public class EnumSerializerProvider implements ISerializerProvider {
 			}
 
 			@Override
-			public void writeToStream(Object o, DataOutput output) {
+			public void writeToStream(Object o, PacketBuffer output) {
 				final int ord = ((Enum<?>)o).ordinal();
-				ByteUtils.writeVLI(output, ord);
+				output.writeVarIntToBuffer(ord);
 			}
 		};
 	}

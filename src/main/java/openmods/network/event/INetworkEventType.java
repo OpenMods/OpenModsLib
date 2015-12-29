@@ -6,6 +6,4 @@ public interface INetworkEventType {
 	public abstract EventDirection getDirection();
 
 	public boolean isCompressed();
-
-	public boolean isChunked();
 }

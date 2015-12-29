@@ -6,12 +6,10 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.structured.Command.Type;
 
 import org.junit.Assert;
@@ -42,12 +40,12 @@ public class StructuredTest {
 		public int value;
 
 		@Override
-		public void readFromStream(DataInput input) throws IOException {
+		public void readFromStream(PacketBuffer input) {
 			this.value = input.readInt();
 		}
 
 		@Override
-		public void writeToStream(DataOutput output) throws IOException {
+		public void writeToStream(PacketBuffer output) {
 			output.writeInt(value);
 		}
 	}
@@ -56,13 +54,13 @@ public class StructuredTest {
 		public String value;
 
 		@Override
-		public void readFromStream(DataInput input) throws IOException {
-			this.value = input.readUTF();
+		public void readFromStream(PacketBuffer input) {
+			this.value = input.readStringFromBuffer(0xFFFF);
 		}
 
 		@Override
-		public void writeToStream(DataOutput output) throws IOException {
-			output.writeUTF(value);
+		public void writeToStream(PacketBuffer output) {
+			output.writeString(value);
 		}
 	}
 
@@ -122,12 +120,12 @@ public class StructuredTest {
 		}
 
 		@Override
-		public void readCustomDataFromStream(DataInput input) throws IOException {
+		public void readCustomDataFromStream(PacketBuffer input) {
 			this.customValue = input.readLong();
 		}
 
 		@Override
-		public void writeCustomDataFromStream(DataOutput output) throws IOException {
+		public void writeCustomDataFromStream(PacketBuffer output) {
 			output.writeLong(customValue);
 		}
 	}

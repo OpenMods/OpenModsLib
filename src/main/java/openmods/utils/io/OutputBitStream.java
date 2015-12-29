@@ -1,5 +1,7 @@
 package openmods.utils.io;
 
+import io.netty.buffer.ByteBuf;
+
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -51,6 +53,15 @@ public abstract class OutputBitStream {
 			@Override
 			protected void writeByte(int b) throws IOException {
 				output.write(b);
+			}
+		};
+	}
+
+	public static OutputBitStream create(final ByteBuf output) {
+		return new OutputBitStream() {
+			@Override
+			protected void writeByte(int b) {
+				output.writeByte(b);
 			}
 		};
 	}

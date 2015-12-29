@@ -1,6 +1,10 @@
 package openmods.utils.io;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.EOFException;
+import java.io.IOException;
+
+import net.minecraft.network.PacketBuffer;
 
 public class StreamUtils {
 
@@ -12,10 +16,9 @@ public class StreamUtils {
 		return (bits + 7) / 8;
 	}
 
-	public static byte[] readBytes(InputStream stream, int count) throws IOException {
+	public static byte[] readBytes(PacketBuffer stream, int count) {
 		byte[] buffer = new byte[count];
-		int read = stream.read(buffer);
-		if (read != count) throw new EndOfStreamException();
+		stream.readBytes(buffer);
 		return buffer;
 	}
 

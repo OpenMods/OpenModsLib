@@ -1,8 +1,11 @@
 package openmods.structured;
 
+import io.netty.buffer.Unpooled;
+
 import java.io.IOException;
 import java.util.*;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.structured.Command.ConsistencyCheck;
 import openmods.structured.Command.ContainerInfo;
 import openmods.structured.Command.Create;
@@ -12,8 +15,6 @@ import openmods.structured.Command.UpdateSingle;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 
 public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IStructureElement> extends StructuredData<C, E> {
 	public static final int CONSISTENCY_CHECK_PERIOD = 10;
@@ -180,30 +181,30 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 		return removedElements;
 	}
 
-	private byte[] createContainerPayload(Set<Integer> containerIds) {
+	private PacketBuffer createContainerPayload(Set<Integer> containerIds) {
 		try {
-			ByteArrayDataOutput output = ByteStreams.newDataOutput();
+			PacketBuffer result = new PacketBuffer(Unpooled.buffer());
 
 			for (Integer id : containerIds) {
 				final C c = containers.get(id);
-				if (c instanceof ICustomCreateData) ((ICustomCreateData)c).writeCustomDataFromStream(output);
+				if (c instanceof ICustomCreateData) ((ICustomCreateData)c).writeCustomDataFromStream(result);
 			}
 
-			return output.toByteArray();
+			return result;
 		} catch (IOException e) {
 			throw Throwables.propagate(e);
 		}
 	}
 
-	private byte[] createElementPayload(Collection<Integer> ids) {
+	private PacketBuffer createElementPayload(Collection<Integer> ids) {
 		try {
-			ByteArrayDataOutput output = ByteStreams.newDataOutput();
+			PacketBuffer output = new PacketBuffer(Unpooled.buffer());
 			for (Integer id : ids) {
 				E element = elements.get(id);
 				element.writeToStream(output);
 			}
 
-			return output.toByteArray();
+			return output;
 		} catch (IOException e) {
 			throw Throwables.propagate(e);
 		}

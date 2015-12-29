@@ -1,16 +1,15 @@
 package openmods.serializable;
 
+import io.netty.buffer.Unpooled;
+
 import java.io.IOException;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.serializable.cls.ClassSerializersProvider;
 import openmods.serializable.cls.Serialize;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 
 public class ClassSerializerTest {
 
@@ -18,18 +17,17 @@ public class ClassSerializerTest {
 
 	private static <T> void testSerializer(final IObjectSerializer<T> serializer, T source, T target) {
 		try {
-			ByteArrayDataOutput output = ByteStreams.newDataOutput();
-			serializer.writeToStream(source, output);
-			ByteArrayDataInput input = ByteStreams.newDataInput(output.toByteArray());
-			serializer.readFromStream(target, input);
-			assertFullyRead(input);
+			final PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
+			serializer.writeToStream(source, buffer);
+			serializer.readFromStream(target, buffer);
+			assertFullyRead(buffer);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private static void assertFullyRead(ByteArrayDataInput input) {
-		Assert.assertEquals(0, input.skipBytes(256));
+	private static void assertFullyRead(PacketBuffer buffer) {
+		Assert.assertEquals(0, buffer.readableBytes());
 	}
 
 	public static class NonNullableClass {
@@ -142,16 +140,15 @@ public class ClassSerializerTest {
 		IObjectSerializer<CompatibleSourceClass> serializerA = ClassSerializersProvider.instance.getSerializer(CompatibleSourceClass.class);
 
 		CompatibleSourceClass source = new CompatibleSourceClass();
-		ByteArrayDataOutput output = ByteStreams.newDataOutput();
-		serializerA.writeToStream(source, output);
+		final PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
+		serializerA.writeToStream(source, buffer);
 
 		IObjectSerializer<CompatibleTargetClass> serializerB = ClassSerializersProvider.instance.getSerializer(CompatibleTargetClass.class);
 
 		CompatibleTargetClass target = new CompatibleTargetClass();
-		ByteArrayDataInput input = ByteStreams.newDataInput(output.toByteArray());
-		serializerB.readFromStream(target, input);
+		serializerB.readFromStream(target, buffer);
 
-		assertFullyRead(input);
+		assertFullyRead(buffer);
 
 		Assert.assertEquals(source.field1, target.field3);
 		Assert.assertEquals(source.field2, target.field1);

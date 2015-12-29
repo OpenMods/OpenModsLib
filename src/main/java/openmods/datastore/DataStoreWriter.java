@@ -1,9 +1,8 @@
 package openmods.datastore;
 
-import java.io.DataOutput;
 import java.io.IOException;
 
-import openmods.utils.ByteUtils;
+import net.minecraft.network.PacketBuffer;
 import openmods.utils.io.IStreamWriter;
 
 public class DataStoreWriter<K, V> {
@@ -17,11 +16,11 @@ public class DataStoreWriter<K, V> {
 		this.valueWriter = valueWriter;
 	}
 
-	public void write(final DataOutput output) {
+	public void write(final PacketBuffer output) {
 		data.visit(new IDataVisitor<K, V>() {
 			@Override
 			public void begin(int size) {
-				ByteUtils.writeVLI(output, size);
+				output.writeVarIntToBuffer(size);
 			}
 
 			@Override

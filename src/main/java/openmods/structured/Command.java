@@ -1,11 +1,11 @@
 package openmods.structured;
 
-import java.io.DataInput;
-import java.io.DataOutput;
+import io.netty.buffer.ByteBuf;
+
 import java.io.IOException;
 import java.util.*;
 
-import openmods.utils.ByteUtils;
+import net.minecraft.network.PacketBuffer;
 import openmods.utils.CollectionUtils;
 
 import com.google.common.base.Preconditions;
@@ -25,7 +25,7 @@ public abstract class Command {
 	public static class CommandList extends ArrayList<Command> {
 		private static final long serialVersionUID = 8317603452787461684L;
 
-		public void readFromStream(DataInput input) throws IOException {
+		public void readFromStream(PacketBuffer input) throws IOException {
 			while (true) {
 				Command command = Command.createFromStream(input);
 				if (command.isEnd()) return;
@@ -33,7 +33,7 @@ public abstract class Command {
 			}
 		}
 
-		public void writeToStream(DataOutput output) throws IOException {
+		public void writeToStream(PacketBuffer output) throws IOException {
 			Collections.sort(this, Command.COMPARATOR);
 
 			for (Command c : this) {
@@ -110,23 +110,23 @@ public abstract class Command {
 		}
 
 		@Override
-		protected void readDataFromStream(DataInput input) {
-			elementCount = ByteUtils.readVLI(input);
-			minElementId = ByteUtils.readVLI(input);
-			maxElementId = ByteUtils.readVLI(input);
-			containerCount = ByteUtils.readVLI(input);
-			minContainerId = ByteUtils.readVLI(input);
-			maxContainerId = ByteUtils.readVLI(input);
+		protected void readDataFromStream(PacketBuffer input) {
+			elementCount = input.readVarIntFromBuffer();
+			minElementId = input.readVarIntFromBuffer();
+			maxElementId = input.readVarIntFromBuffer();
+			containerCount = input.readVarIntFromBuffer();
+			minContainerId = input.readVarIntFromBuffer();
+			maxContainerId = input.readVarIntFromBuffer();
 		}
 
 		@Override
-		protected void writeDataToStream(DataOutput output) {
-			ByteUtils.writeVLI(output, elementCount);
-			ByteUtils.writeVLI(output, minElementId);
-			ByteUtils.writeVLI(output, maxElementId);
-			ByteUtils.writeVLI(output, containerCount);
-			ByteUtils.writeVLI(output, minContainerId);
-			ByteUtils.writeVLI(output, maxContainerId);
+		protected void writeDataToStream(PacketBuffer output) {
+			output.writeVarIntToBuffer(elementCount);
+			output.writeVarIntToBuffer(minElementId);
+			output.writeVarIntToBuffer(maxElementId);
+			output.writeVarIntToBuffer(containerCount);
+			output.writeVarIntToBuffer(minContainerId);
+			output.writeVarIntToBuffer(maxContainerId);
 		}
 
 		@Override
@@ -138,10 +138,10 @@ public abstract class Command {
 
 	public abstract static class EmptyCommand extends Command {
 		@Override
-		protected void readDataFromStream(DataInput input) {}
+		protected void readDataFromStream(PacketBuffer input) {}
 
 		@Override
-		protected void writeDataToStream(DataOutput output) {}
+		protected void writeDataToStream(PacketBuffer output) {}
 	}
 
 	public static final class Reset extends EmptyCommand {
@@ -191,12 +191,12 @@ public abstract class Command {
 		}
 
 		@Override
-		protected void readDataFromStream(DataInput input) {
+		protected void readDataFromStream(PacketBuffer input) {
 			CollectionUtils.readSortedIdList(input, idList);
 		}
 
 		@Override
-		protected void writeDataToStream(DataOutput output) {
+		protected void writeDataToStream(PacketBuffer output) {
 			CollectionUtils.writeSortedIdList(output, idList);
 		}
 
@@ -209,8 +209,8 @@ public abstract class Command {
 	public static class Create extends Command {
 		public final List<ContainerInfo> containers = Lists.newArrayList();
 
-		byte[] containerPayload;
-		byte[] elementPayload;
+		PacketBuffer containerPayload;
+		PacketBuffer elementPayload;
 
 		@Override
 		public Type type() {
@@ -218,16 +218,16 @@ public abstract class Command {
 		}
 
 		@Override
-		protected void readDataFromStream(DataInput input) throws IOException {
-			int elemCount = ByteUtils.readVLI(input);
+		protected void readDataFromStream(PacketBuffer input) {
+			final int elemCount = input.readVarIntFromBuffer();
 
 			int currentContainerId = 0;
 			int currentElementId = 0;
 
 			for (int i = 0; i < elemCount; i++) {
-				currentContainerId += ByteUtils.readVLI(input);
-				int type = ByteUtils.readVLI(input);
-				currentElementId += ByteUtils.readVLI(input);
+				currentContainerId += input.readVarIntFromBuffer();
+				final int type = input.readVarIntFromBuffer();
+				currentElementId += input.readVarIntFromBuffer();
 
 				containers.add(new ContainerInfo(currentContainerId, type, currentElementId));
 			}
@@ -237,8 +237,8 @@ public abstract class Command {
 		}
 
 		@Override
-		protected void writeDataToStream(DataOutput output) throws IOException {
-			ByteUtils.writeVLI(output, containers.size());
+		protected void writeDataToStream(PacketBuffer output) {
+			output.writeVarIntToBuffer(containers.size());
 
 			int prevContainerId = 0;
 			int prevElementId = 0;
@@ -249,9 +249,9 @@ public abstract class Command {
 				int deltaElementId = info.start - prevElementId;
 				Preconditions.checkArgument(deltaElementId >= 0, "Element ids must be sorted in ascending order");
 
-				ByteUtils.writeVLI(output, deltaContainerId);
-				ByteUtils.writeVLI(output, info.type);
-				ByteUtils.writeVLI(output, deltaElementId);
+				output.writeVarIntToBuffer(deltaContainerId);
+				output.writeVarIntToBuffer(info.type);
+				output.writeVarIntToBuffer(deltaElementId);
 
 				prevContainerId = info.id;
 				prevElementId = info.start;
@@ -264,21 +264,21 @@ public abstract class Command {
 		@Override
 		public String dumpContents() {
 			return String.format("%s -> %s", containers,
-					(elementPayload == null? "<null>" : Integer.toString(elementPayload.length)));
+					(elementPayload == null? "<null>" : Integer.toString(elementPayload.writerIndex())));
 		}
 	}
 
 	public abstract static class Update extends Command {
 		public final SortedSet<Integer> idList = Sets.newTreeSet();
-		byte[] elementPayload;
+		PacketBuffer elementPayload;
 
 		@Override
-		protected void readDataFromStream(DataInput input) throws IOException {
+		protected void readDataFromStream(PacketBuffer input) {
 			elementPayload = readChunk(input);
 		}
 
 		@Override
-		protected void writeDataToStream(DataOutput output) throws IOException {
+		protected void writeDataToStream(PacketBuffer output) {
 			writeChunk(output, elementPayload);
 		}
 	}
@@ -291,13 +291,13 @@ public abstract class Command {
 		}
 
 		@Override
-		protected void readDataFromStream(DataInput input) throws IOException {
+		protected void readDataFromStream(PacketBuffer input) {
 			CollectionUtils.readSortedIdList(input, idList);
 			super.readDataFromStream(input);
 		}
 
 		@Override
-		protected void writeDataToStream(DataOutput output) throws IOException {
+		protected void writeDataToStream(PacketBuffer output) {
 			CollectionUtils.writeSortedIdList(output, idList);
 			super.writeDataToStream(output);
 		}
@@ -305,7 +305,7 @@ public abstract class Command {
 		@Override
 		public String dumpContents() {
 			return String.format("%s -> %s", idList,
-					(elementPayload == null? "<null>" : Integer.toString(elementPayload.length)));
+					(elementPayload == null? "<null>" : Integer.toString(elementPayload.writerIndex())));
 		}
 	}
 
@@ -318,47 +318,43 @@ public abstract class Command {
 		}
 
 		@Override
-		protected void readDataFromStream(DataInput input) throws IOException {
-
+		protected void readDataFromStream(PacketBuffer input) {
 			super.readDataFromStream(input);
 		}
 
 		@Override
-		protected void writeDataToStream(DataOutput output) throws IOException {
-
+		protected void writeDataToStream(PacketBuffer output) {
 			super.writeDataToStream(output);
 		}
 	}
 
 	public abstract Type type();
 
-	protected abstract void readDataFromStream(DataInput input) throws IOException;
+	protected abstract void readDataFromStream(PacketBuffer input) throws IOException;
 
-	protected abstract void writeDataToStream(DataOutput output) throws IOException;
+	protected abstract void writeDataToStream(PacketBuffer output) throws IOException;
 
-	public static Command createFromStream(DataInput input) throws IOException {
-		int id = ByteUtils.readVLI(input);
+	public static Command createFromStream(PacketBuffer input) throws IOException {
+		final int id = input.readVarIntFromBuffer();
 		Type type = Type.TYPES[id];
 		Command command = type.create();
 		command.readDataFromStream(input);
 		return command;
 	}
 
-	public void writeToStream(DataOutput output) throws IOException {
-		ByteUtils.writeVLI(output, type().ordinal());
+	public void writeToStream(PacketBuffer output) throws IOException {
+		output.writeVarIntToBuffer(type().ordinal());
 		writeDataToStream(output);
 	}
 
-	protected static byte[] readChunk(DataInput input) throws IOException {
-		int size = ByteUtils.readVLI(input);
-		byte[] chunk = new byte[size];
-		input.readFully(chunk);
-		return chunk;
+	protected static PacketBuffer readChunk(PacketBuffer input) {
+		final int size = input.readVarIntFromBuffer();
+		return new PacketBuffer(input.readBytes(size));
 	}
 
-	protected static void writeChunk(DataOutput output, byte[] chunk) throws IOException {
-		ByteUtils.writeVLI(output, chunk.length);
-		output.write(chunk);
+	protected static void writeChunk(PacketBuffer output, ByteBuf chunk) {
+		output.writeVarIntToBuffer(chunk.readableBytes());
+		output.writeBytes(chunk);
 	}
 
 	protected boolean isEnd() {

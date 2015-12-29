@@ -1,13 +1,15 @@
 package openmods.serializable;
 
-import java.io.DataInput;
-import java.io.DataOutput;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
 import java.io.IOException;
 import java.lang.annotation.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.*;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.serializable.cls.SerializableClass;
 import openmods.serializable.cls.Serialize;
 import openmods.utils.io.IStreamSerializer;
@@ -19,36 +21,29 @@ import org.mockito.Mockito;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.google.common.reflect.TypeToken;
 
 public class SerializableTest {
 
 	private final SerializerRegistry registry = new SerializerRegistry();
 
-	private static void assertFullyRead(ByteArrayDataInput input) {
-		Assert.assertEquals(0, input.skipBytes(256));
+	private static void assertFullyRead(ByteBuf input) {
+		Assert.assertEquals(0, input.readableBytes());
 	}
 
 	public <T> T serializeDeserialize(Class<? extends T> cls, T value) throws IOException {
-		ByteArrayDataOutput output = ByteStreams.newDataOutput();
-		registry.writeToStream(output, cls, value);
-
-		ByteArrayDataInput input = ByteStreams.newDataInput(output.toByteArray());
-		final T result = registry.createFromStream(input, cls);
-		assertFullyRead(input);
+		final PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
+		registry.writeToStream(buffer, cls, value);
+		final T result = registry.createFromStream(buffer, cls);
+		assertFullyRead(buffer);
 		return result;
 	}
 
 	public Object genericSerializeDeserialize(Type type, Object value) throws IOException {
-		ByteArrayDataOutput output = ByteStreams.newDataOutput();
-		registry.writeToStream(output, type, value);
-
-		ByteArrayDataInput input = ByteStreams.newDataInput(output.toByteArray());
-		final Object result = registry.createFromStream(input, type);
-		assertFullyRead(input);
+		final PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
+		registry.writeToStream(buffer, type, value);
+		final Object result = registry.createFromStream(buffer, type);
+		assertFullyRead(buffer);
 		return result;
 	}
 
@@ -90,7 +85,7 @@ public class SerializableTest {
 	private static IStreamSerializer<TestCls> createSerializer() throws IOException {
 		IStreamSerializer<TestCls> serializer = Mockito.mock(TestSerializer.class);
 
-		Mockito.when(serializer.readFromStream(Matchers.any(DataInput.class))).thenReturn(new TestCls());
+		Mockito.when(serializer.readFromStream(Matchers.any(PacketBuffer.class))).thenReturn(new TestCls());
 		return serializer;
 	}
 
@@ -129,8 +124,8 @@ public class SerializableTest {
 
 		testValue(testInstance);
 
-		Mockito.verify(serializer).writeToStream(Matchers.eq(testInstance), Matchers.any(DataOutput.class));
-		Mockito.verify(serializer).readFromStream(Matchers.any(DataInput.class));
+		Mockito.verify(serializer).writeToStream(Matchers.eq(testInstance), Matchers.any(PacketBuffer.class));
+		Mockito.verify(serializer).readFromStream(Matchers.any(PacketBuffer.class));
 	}
 
 	@Test
@@ -142,20 +137,20 @@ public class SerializableTest {
 		registry.register(new IStreamSerializer<TestCls>() {
 
 			@Override
-			public TestCls readFromStream(DataInput input) throws IOException {
+			public TestCls readFromStream(PacketBuffer input) throws IOException {
 				return wrappedSerializer.readFromStream(input);
 			}
 
 			@Override
-			public void writeToStream(TestCls o, DataOutput output) throws IOException {
+			public void writeToStream(TestCls o, PacketBuffer output) throws IOException {
 				wrappedSerializer.writeToStream(o, output);
 			}
 		});
 
 		testValue(testInstance);
 
-		Mockito.verify(wrappedSerializer).writeToStream(Matchers.eq(testInstance), Matchers.any(DataOutput.class));
-		Mockito.verify(wrappedSerializer).readFromStream(Matchers.any(DataInput.class));
+		Mockito.verify(wrappedSerializer).writeToStream(Matchers.eq(testInstance), Matchers.any(PacketBuffer.class));
+		Mockito.verify(wrappedSerializer).readFromStream(Matchers.any(PacketBuffer.class));
 	}
 
 	public class TestSerializable implements IStreamSerializable {
@@ -167,12 +162,12 @@ public class SerializableTest {
 		public IStreamSerializable delegate;
 
 		@Override
-		public void readFromStream(DataInput input) throws IOException {
+		public void readFromStream(PacketBuffer input) throws IOException {
 			delegate.readFromStream(input);
 		}
 
 		@Override
-		public void writeToStream(DataOutput output) throws IOException {
+		public void writeToStream(PacketBuffer output) throws IOException {
 			delegate.writeToStream(output);
 		}
 
@@ -201,8 +196,8 @@ public class SerializableTest {
 
 		testValue(inputInstance);
 
-		Mockito.verify(inputInstance.delegate).writeToStream(Matchers.any(DataOutput.class));
-		Mockito.verify(outputInstance.delegate).readFromStream(Matchers.any(DataInput.class));
+		Mockito.verify(inputInstance.delegate).writeToStream(Matchers.any(PacketBuffer.class));
+		Mockito.verify(outputInstance.delegate).readFromStream(Matchers.any(PacketBuffer.class));
 	}
 
 	public static enum SingleClassEnum {

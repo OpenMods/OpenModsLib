@@ -1,12 +1,13 @@
 package openmods.serializable.cls;
 
-import java.io.DataInput;
-import java.io.DataOutput;
+import io.netty.buffer.Unpooled;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.reflection.FieldAccess;
 import openmods.reflection.TypeUtils;
 import openmods.serializable.IObjectSerializer;
@@ -17,8 +18,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.google.common.reflect.TypeToken;
 
 public class ClassSerializerBuilder<T> {
@@ -47,7 +46,7 @@ public class ClassSerializerBuilder<T> {
 		}
 
 		@Override
-		public void readFromStream(T object, DataInput input) throws IOException {
+		public void readFromStream(T object, PacketBuffer input) throws IOException {
 			for (SerializableField field : fields) {
 				Object value = field.serializer.readFromStream(input);
 				field.set(object, value);
@@ -55,7 +54,7 @@ public class ClassSerializerBuilder<T> {
 		}
 
 		@Override
-		public void writeToStream(T object, DataOutput output) throws IOException {
+		public void writeToStream(T object, PacketBuffer output) throws IOException {
 			for (SerializableField field : fields) {
 				Object value = field.get(object);
 				Preconditions.checkNotNull(value, "Non-nullable %s has null value", field.field);
@@ -76,7 +75,7 @@ public class ClassSerializerBuilder<T> {
 		}
 
 		@Override
-		public void readFromStream(T object, DataInput input) throws IOException {
+		public void readFromStream(T object, PacketBuffer input) throws IOException {
 			final byte[] nullBits = StreamUtils.readBytes(input, nullBytesCount);
 			final InputBitStream nullBitStream = InputBitStream.create(nullBits);
 
@@ -88,10 +87,10 @@ public class ClassSerializerBuilder<T> {
 		}
 
 		@Override
-		public void writeToStream(T object, DataOutput output) throws IOException {
-			final ByteArrayDataOutput payload = ByteStreams.newDataOutput();
+		public void writeToStream(T object, PacketBuffer output) throws IOException {
 			final OutputBitStream nullBitsStream = OutputBitStream.create(output);
 
+			final PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
 			for (SerializableField field : fields) {
 				final Object value = field.get(object);
 				if (field.isNullable) {
@@ -107,7 +106,7 @@ public class ClassSerializerBuilder<T> {
 			}
 
 			nullBitsStream.flush();
-			output.write(payload.toByteArray());
+			output.writeBytes(payload);
 		}
 	}
 

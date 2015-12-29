@@ -7,6 +7,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 import java.util.Map.Entry;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.reflection.TypeUtils;
 import openmods.utils.io.IStreamReader;
 import openmods.utils.io.IStreamWriter;
@@ -80,6 +81,16 @@ public class CollectionUtils {
 		}
 	}
 
+	public static void readSortedIdList(PacketBuffer input, Collection<Integer> output) {
+		final int elemCount = input.readVarIntFromBuffer();
+
+		int currentId = 0;
+		for (int i = 0; i < elemCount; i++) {
+			currentId += input.readVarIntFromBuffer();
+			output.add(currentId);
+		}
+	}
+
 	public static void writeSortedIdList(DataOutput output, SortedSet<Integer> idList) {
 		ByteUtils.writeVLI(output, idList.size());
 
@@ -91,13 +102,24 @@ public class CollectionUtils {
 		}
 	}
 
-	public static <D> void readSortedIdMap(DataInput input, Map<Integer, D> output, IStreamReader<D> reader) {
-		int elemCount = ByteUtils.readVLI(input);
+	public static void writeSortedIdList(PacketBuffer output, SortedSet<Integer> idList) {
+		output.writeVarIntToBuffer(idList.size());
+
+		int currentId = 0;
+		for (Integer id : idList) {
+			int delta = id - currentId;
+			output.writeVarIntToBuffer(delta);
+			currentId = id;
+		}
+	}
+
+	public static <D> void readSortedIdMap(PacketBuffer input, Map<Integer, D> output, IStreamReader<D> reader) {
+		final int elemCount = input.readVarIntFromBuffer();
 
 		int currentId = 0;
 		try {
 			for (int i = 0; i < elemCount; i++) {
-				currentId += ByteUtils.readVLI(input);
+				currentId += input.readVarIntFromBuffer();
 				D data = reader.readFromStream(input);
 				output.put(currentId, data);
 			}
@@ -106,15 +128,15 @@ public class CollectionUtils {
 		}
 	}
 
-	public static <D> void writeSortedIdMap(DataOutput output, SortedMap<Integer, D> input, IStreamWriter<D> writer) {
-		ByteUtils.writeVLI(output, input.size());
+	public static <D> void writeSortedIdMap(PacketBuffer output, SortedMap<Integer, D> input, IStreamWriter<D> writer) {
+		output.writeVarIntToBuffer(input.size());
 
 		int currentId = 0;
 		try {
 			for (Map.Entry<Integer, D> e : input.entrySet()) {
 				final int id = e.getKey();
 				final int delta = id - currentId;
-				ByteUtils.writeVLI(output, delta);
+				output.writeVarIntToBuffer(delta);
 				writer.writeToStream(e.getValue(), output);
 				currentId = id;
 			}

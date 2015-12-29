@@ -1,11 +1,10 @@
 package openmods.serializable.providers;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Set;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.reflection.TypeUtils;
 import openmods.serializable.IGenericSerializerProvider;
 import openmods.utils.io.IStreamSerializer;
@@ -32,13 +31,13 @@ public class SetSerializerProvider implements IGenericSerializerProvider {
 		return new IStreamSerializer<Set<?>>() {
 
 			@Override
-			public Set<?> readFromStream(DataInput input) throws IOException {
+			public Set<?> readFromStream(PacketBuffer input) throws IOException {
 				Object[] values = arraySerializer.readFromStream(input);
 				return Sets.newHashSet(values);
 			}
 
 			@Override
-			public void writeToStream(Set<?> o, DataOutput output) throws IOException {
+			public void writeToStream(Set<?> o, PacketBuffer output) throws IOException {
 				final Object[] tmp = new Object[o.size()];
 				arraySerializer.writeToStream(o.toArray(tmp), output);
 			}

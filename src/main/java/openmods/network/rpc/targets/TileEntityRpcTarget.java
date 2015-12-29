@@ -1,11 +1,9 @@
 package openmods.network.rpc.targets;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import openmods.network.rpc.IRpcTarget;
 import openmods.utils.WorldUtils;
@@ -26,22 +24,18 @@ public class TileEntityRpcTarget implements IRpcTarget {
 	}
 
 	@Override
-	public void writeToStream(DataOutput output) throws IOException {
+	public void writeToStream(PacketBuffer output) {
 		output.writeInt(te.getWorld().provider.getDimensionId());
-		output.writeInt(te.xCoord);
-		output.writeInt(te.yCoord);
-		output.writeInt(te.zCoord);
+		output.writeBlockPos(te.getPos());
 	}
 
 	@Override
-	public void readFromStreamStream(EntityPlayer player, DataInput input) throws IOException {
+	public void readFromStreamStream(EntityPlayer player, PacketBuffer input) {
 		int worldId = input.readInt();
-		int x = input.readInt();
-		int y = input.readInt();
-		int z = input.readInt();
+		BlockPos pos = input.readBlockPos();
 
 		World world = WorldUtils.getWorld(worldId);
-		te = world.getTileEntity(x, y, z);
+		te = world.getTileEntity(pos);
 	}
 
 	@Override

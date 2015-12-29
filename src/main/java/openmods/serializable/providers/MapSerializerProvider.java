@@ -1,23 +1,19 @@
 package openmods.serializable.providers;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.reflection.TypeUtils;
 import openmods.serializable.IGenericSerializerProvider;
 import openmods.serializable.SerializerRegistry;
-import openmods.utils.ByteUtils;
 import openmods.utils.io.*;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.google.common.reflect.TypeToken;
 
 public class MapSerializerProvider implements IGenericSerializerProvider {
@@ -36,8 +32,8 @@ public class MapSerializerProvider implements IGenericSerializerProvider {
 			return new IStreamSerializer<Map<Object, Object>>() {
 
 				@Override
-				public Map<Object, Object> readFromStream(DataInput input) throws IOException {
-					final int length = ByteUtils.readVLI(input);
+				public Map<Object, Object> readFromStream(PacketBuffer input) throws IOException {
+					final int length = input.readVarIntFromBuffer();
 
 					Map<Object, Object> result = Maps.newHashMap();
 
@@ -61,13 +57,12 @@ public class MapSerializerProvider implements IGenericSerializerProvider {
 				}
 
 				@Override
-				public void writeToStream(Map<Object, Object> o, DataOutput output) throws IOException {
+				public void writeToStream(Map<Object, Object> o, PacketBuffer output) throws IOException {
 					final int length = o.size();
-					ByteUtils.writeVLI(output, length);
+					output.writeVarIntToBuffer(length);
 
 					if (length > 0) {
-						final ByteArrayDataOutput nullBits = ByteStreams.newDataOutput();
-						final OutputBitStream nullBitsStream = OutputBitStream.create(nullBits);
+							final OutputBitStream nullBitsStream = OutputBitStream.create(output);
 
 						List<Map.Entry<Object, Object>> entries = ImmutableList.copyOf(o.entrySet());
 
@@ -77,7 +72,6 @@ public class MapSerializerProvider implements IGenericSerializerProvider {
 						}
 
 						nullBitsStream.flush();
-						output.write(nullBits.toByteArray());
 
 						for (Map.Entry<Object, Object> e : entries) {
 							writeValue(e.getKey(), keySerializer, output);
@@ -86,7 +80,7 @@ public class MapSerializerProvider implements IGenericSerializerProvider {
 					}
 				}
 
-				private void writeValue(Object value, IStreamSerializer<Object> serializer, DataOutput output) throws IOException {
+				private void writeValue(Object value, IStreamSerializer<Object> serializer, PacketBuffer output) throws IOException {
 					if (value != null) serializer.writeToStream(value, output);
 				}
 			};

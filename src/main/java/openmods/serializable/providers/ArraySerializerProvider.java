@@ -1,13 +1,11 @@
 package openmods.serializable.providers;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Array;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.serializable.ISerializerProvider;
 import openmods.serializable.SerializerRegistry;
-import openmods.utils.ByteUtils;
 import openmods.utils.io.IStreamSerializer;
 
 import com.google.common.reflect.TypeToken;
@@ -31,8 +29,8 @@ public class ArraySerializerProvider implements ISerializerProvider {
 		final Class<?> componentCls = componentType.getRawType();
 		return new IStreamSerializer<Object>() {
 			@Override
-			public Object readFromStream(DataInput input) throws IOException {
-				final int length = ByteUtils.readVLI(input);
+			public Object readFromStream(PacketBuffer input) throws IOException {
+				final int length = input.readVarIntFromBuffer();
 				Object result = Array.newInstance(componentCls, length);
 
 				for (int i = 0; i < length; i++) {
@@ -44,9 +42,9 @@ public class ArraySerializerProvider implements ISerializerProvider {
 			}
 
 			@Override
-			public void writeToStream(Object o, DataOutput output) throws IOException {
+			public void writeToStream(Object o, PacketBuffer output) throws IOException {
 				final int length = Array.getLength(o);
-				ByteUtils.writeVLI(output, length);
+				output.writeVarIntToBuffer(length);
 
 				for (int i = 0; i < length; i++) {
 					Object value = Array.get(o, i);

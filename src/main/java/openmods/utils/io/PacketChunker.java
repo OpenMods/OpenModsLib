@@ -20,12 +20,6 @@ public class PacketChunker {
 	public static final int PACKET_SIZE_S3F = 0x001FFFF0;
 	public static final int PACKET_SIZE_C17 = 0x00007FFF;
 
-	/***
-	 * Split a byte array into one or more chunks with headers
-	 *
-	 * @param data
-	 * @return the list of chunks
-	 */
 	public byte[][] splitIntoChunks(byte[] data, int maxChunkSize) {
 
 		final int numChunks = (data.length + maxChunkSize - 1) / maxChunkSize;

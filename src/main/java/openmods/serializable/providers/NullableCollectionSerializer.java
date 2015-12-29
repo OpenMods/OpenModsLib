@@ -1,17 +1,13 @@
 package openmods.serializable.providers;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.serializable.SerializerRegistry;
-import openmods.utils.ByteUtils;
 import openmods.utils.io.*;
 
 import com.google.common.base.Preconditions;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.google.common.reflect.TypeToken;
 
 public abstract class NullableCollectionSerializer<T> implements IStreamSerializer<T> {
@@ -52,8 +48,8 @@ public abstract class NullableCollectionSerializer<T> implements IStreamSerializ
 	}
 
 	@Override
-	public T readFromStream(DataInput input) throws IOException {
-		final int length = ByteUtils.readVLI(input);
+	public T readFromStream(PacketBuffer input) throws IOException {
+		final int length = input.readVarIntFromBuffer();
 
 		T result = createCollection(componentType, length);
 
@@ -74,13 +70,12 @@ public abstract class NullableCollectionSerializer<T> implements IStreamSerializ
 	}
 
 	@Override
-	public void writeToStream(T o, DataOutput output) throws IOException {
+	public void writeToStream(T o, PacketBuffer output) throws IOException {
 		final int length = getLength(o);
-		ByteUtils.writeVLI(output, length);
+		output.writeVarIntToBuffer(length);
 
 		if (length > 0) {
-			final ByteArrayDataOutput nullBits = ByteStreams.newDataOutput();
-			final OutputBitStream nullBitsStream = OutputBitStream.create(nullBits);
+			final OutputBitStream nullBitsStream = OutputBitStream.create(output);
 
 			for (int i = 0; i < length; i++) {
 				Object value = getElement(o, i);
@@ -88,7 +83,6 @@ public abstract class NullableCollectionSerializer<T> implements IStreamSerializ
 			}
 
 			nullBitsStream.flush();
-			output.write(nullBits.toByteArray());
 
 			for (int i = 0; i < length; i++) {
 				Object value = getElement(o, i);

@@ -1,12 +1,12 @@
 package openmods.structured;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
+
+import net.minecraft.network.PacketBuffer;
 
 public interface ICustomCreateData {
 
-	public void readCustomDataFromStream(DataInput input) throws IOException;
+	public void readCustomDataFromStream(PacketBuffer input) throws IOException;
 
-	public void writeCustomDataFromStream(DataOutput output) throws IOException;
+	public void writeCustomDataFromStream(PacketBuffer output) throws IOException;
 }

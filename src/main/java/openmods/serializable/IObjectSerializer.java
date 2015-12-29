@@ -1,11 +1,11 @@
 package openmods.serializable;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
-public interface IObjectSerializer<T> {
-	public void readFromStream(T object, DataInput input) throws IOException;
+import net.minecraft.network.PacketBuffer;
 
-	public void writeToStream(T object, DataOutput output) throws IOException;
+public interface IObjectSerializer<T> {
+	public void readFromStream(T object, PacketBuffer input) throws IOException;
+
+	public void writeToStream(T object, PacketBuffer output) throws IOException;
 }

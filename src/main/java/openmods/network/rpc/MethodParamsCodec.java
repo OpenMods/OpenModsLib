@@ -1,12 +1,11 @@
 package openmods.network.rpc;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.serializable.SerializerRegistry;
 import openmods.utils.AnnotationMap;
 import openmods.utils.CachedFactory;
@@ -65,7 +64,7 @@ public class MethodParamsCodec {
 			this.params[i] = new MethodParam(types[i], annotations[i]);
 	}
 
-	public void writeArgs(DataOutput output, Object... args) {
+	public void writeArgs(PacketBuffer output, Object... args) {
 		if (args == null) {
 			Preconditions.checkArgument(0 == params.length,
 					"Argument list length mismatch, expected %d, got 0", params.length);
@@ -84,7 +83,7 @@ public class MethodParamsCodec {
 		}
 	}
 
-	private static void writeArg(DataOutput output, int argIndex, IStreamWriter<Object> writer, boolean isNullable, Object value) throws IOException {
+	private static void writeArg(PacketBuffer output, int argIndex, IStreamWriter<Object> writer, boolean isNullable, Object value) throws IOException {
 		if (isNullable) {
 			if (value == null) {
 				output.writeBoolean(false);
@@ -98,7 +97,7 @@ public class MethodParamsCodec {
 		writer.writeToStream(value, output);
 	}
 
-	public Object[] readArgs(DataInput input) {
+	public Object[] readArgs(PacketBuffer input) {
 		if (params.length == 0) return null;
 
 		Object[] result = new Object[params.length];
@@ -114,7 +113,7 @@ public class MethodParamsCodec {
 		return result;
 	}
 
-	private static Object readArg(DataInput input, IStreamReader<Object> reader, boolean isNullable) throws IOException {
+	private static Object readArg(PacketBuffer input, IStreamReader<Object> reader, boolean isNullable) throws IOException {
 		if (isNullable) {
 			boolean hasValue = input.readBoolean();
 			if (!hasValue) return null;

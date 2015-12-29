@@ -1,12 +1,9 @@
 package openmods.utils.io;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.Map;
 
 import net.minecraft.nbt.*;
-import openmods.utils.ByteUtils;
+import net.minecraft.network.PacketBuffer;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -16,12 +13,12 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 	public static final TypeRW<Integer> INTEGER = new TypeRW<Integer>() {
 
 		@Override
-		public void writeToStream(Integer o, DataOutput output) throws IOException {
+		public void writeToStream(Integer o, PacketBuffer output) {
 			output.writeInt(o);
 		}
 
 		@Override
-		public Integer readFromStream(DataInput input) throws IOException {
+		public Integer readFromStream(PacketBuffer input) {
 			return input.readInt();
 		}
 
@@ -68,12 +65,12 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public void writeToStream(Float o, DataOutput output) throws IOException {
+		public void writeToStream(Float o, PacketBuffer output) {
 			output.writeFloat(o);
 		}
 
 		@Override
-		public Float readFromStream(DataInput input) throws IOException {
+		public Float readFromStream(PacketBuffer input) {
 			return input.readFloat();
 		}
 
@@ -106,12 +103,12 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public void writeToStream(Double o, DataOutput output) throws IOException {
+		public void writeToStream(Double o, PacketBuffer output) {
 			output.writeDouble(o);
 		}
 
 		@Override
-		public Double readFromStream(DataInput input) throws IOException {
+		public Double readFromStream(PacketBuffer input) {
 			return input.readDouble();
 		}
 
@@ -143,13 +140,13 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public void writeToStream(String o, DataOutput output) throws IOException {
-			output.writeUTF(Strings.nullToEmpty(o));
+		public void writeToStream(String o, PacketBuffer output) {
+			output.writeString(Strings.nullToEmpty(o));
 		}
 
 		@Override
-		public String readFromStream(DataInput input) throws IOException {
-			return input.readUTF();
+		public String readFromStream(PacketBuffer input) {
+			return input.readStringFromBuffer(0xFFFF);
 		}
 
 		@Override
@@ -176,12 +173,12 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public void writeToStream(Short o, DataOutput output) throws IOException {
+		public void writeToStream(Short o, PacketBuffer output) {
 			output.writeShort(o);
 		}
 
 		@Override
-		public Short readFromStream(DataInput input) throws IOException {
+		public Short readFromStream(PacketBuffer input) {
 			return input.readShort();
 		}
 
@@ -213,12 +210,12 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public void writeToStream(Byte o, DataOutput output) throws IOException {
+		public void writeToStream(Byte o, PacketBuffer output) {
 			output.writeByte(o);
 		}
 
 		@Override
-		public Byte readFromStream(DataInput input) throws IOException {
+		public Byte readFromStream(PacketBuffer input) {
 			return input.readByte();
 		}
 
@@ -250,12 +247,12 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public void writeToStream(Boolean o, DataOutput output) throws IOException {
+		public void writeToStream(Boolean o, PacketBuffer output) {
 			output.writeBoolean(o);
 		}
 
 		@Override
-		public Boolean readFromStream(DataInput input) throws IOException {
+		public Boolean readFromStream(PacketBuffer input) {
 			return input.readBoolean();
 		}
 
@@ -286,12 +283,12 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public void writeToStream(Long o, DataOutput output) throws IOException {
+		public void writeToStream(Long o, PacketBuffer output) {
 			output.writeLong(o);
 		}
 
 		@Override
-		public Long readFromStream(DataInput input) throws IOException {
+		public Long readFromStream(PacketBuffer input) {
 			return input.readLong();
 		}
 
@@ -313,17 +310,13 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public void writeToStream(byte[] o, DataOutput output) throws IOException {
-			ByteUtils.writeVLI(output, o.length);
-			output.write(o);
+		public void writeToStream(byte[] o, PacketBuffer output) {
+			output.writeByteArray(o);
 		}
 
 		@Override
-		public byte[] readFromStream(DataInput input) throws IOException {
-			int lenght = ByteUtils.readVLI(input);
-			byte[] result = new byte[lenght];
-			input.readFully(result);
-			return result;
+		public byte[] readFromStream(PacketBuffer input) {
+			return input.readByteArray();
 		}
 
 		@Override
@@ -345,25 +338,25 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 	public static final IStreamSerializer<Integer> VLI_SERIALIZABLE = new IStreamSerializer<Integer>() {
 
 		@Override
-		public void writeToStream(Integer o, DataOutput output) {
-			ByteUtils.writeVLI(output, o);
+		public void writeToStream(Integer o, PacketBuffer output) {
+			output.writeVarIntToBuffer(o);
 		}
 
 		@Override
-		public Integer readFromStream(DataInput input) {
-			return ByteUtils.readVLI(input);
+		public Integer readFromStream(PacketBuffer input) {
+			return input.readVarIntFromBuffer();
 		}
 	};
 
 	public static final IStreamSerializer<Character> CHAR = new IStreamSerializer<Character>() {
 
 		@Override
-		public void writeToStream(Character o, DataOutput output) throws IOException {
+		public void writeToStream(Character o, PacketBuffer output) {
 			output.writeChar(o);
 		}
 
 		@Override
-		public Character readFromStream(DataInput input) throws IOException {
+		public Character readFromStream(PacketBuffer input) {
 			return input.readChar();
 		}
 	};

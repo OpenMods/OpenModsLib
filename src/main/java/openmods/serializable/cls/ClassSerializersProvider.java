@@ -1,11 +1,10 @@
 package openmods.serializable.cls;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.serializable.IObjectSerializer;
 import openmods.utils.CachedFactory;
 import openmods.utils.FieldsSelector;
@@ -50,11 +49,11 @@ public class ClassSerializersProvider {
 		return getSerializer((Class<? extends T>)object.getClass());
 	}
 
-	public void readFromStream(Object object, DataInput input) throws IOException {
+	public void readFromStream(Object object, PacketBuffer input) throws IOException {
 		getSerializer(object).readFromStream(object, input);
 	}
 
-	public void writeToStream(Object object, DataOutput output) throws IOException {
+	public void writeToStream(Object object, PacketBuffer output) throws IOException {
 		getSerializer(object).writeToStream(object, output);
 	}
 

@@ -1,18 +1,17 @@
 package openmods.network.rpc;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.network.PacketBuffer;
 
 public interface IRpcTarget {
 
 	public Object getTarget();
 
-	public void writeToStream(DataOutput output) throws IOException;
+	public void writeToStream(PacketBuffer output) throws IOException;
 
-	public void readFromStreamStream(EntityPlayer player, DataInput input) throws IOException;
+	public void readFromStreamStream(EntityPlayer player, PacketBuffer input) throws IOException;
 
 	public void afterCall();
 }

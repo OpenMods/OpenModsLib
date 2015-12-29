@@ -50,15 +50,12 @@ public class NetworkEventRegistry implements IDataVisitor<String, Integer> {
 		}
 
 		final boolean isCompressed;
-		final boolean isChunked;
 		final EventDirection direction;
 
 		if (meta != null) {
-			isChunked = meta.chunked();
 			isCompressed = meta.compressed();
 			direction = meta.direction();
 		} else {
-			isChunked = false;
 			isCompressed = false;
 			direction = EventDirection.ANY;
 		}
@@ -67,11 +64,6 @@ public class NetworkEventRegistry implements IDataVisitor<String, Integer> {
 			@Override
 			public boolean isCompressed() {
 				return isCompressed;
-			}
-
-			@Override
-			public boolean isChunked() {
-				return isChunked;
 			}
 
 			@Override

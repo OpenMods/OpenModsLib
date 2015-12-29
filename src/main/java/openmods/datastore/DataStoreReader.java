@@ -1,10 +1,9 @@
 package openmods.datastore;
 
-import java.io.DataInput;
 import java.io.IOException;
 import java.util.Map;
 
-import openmods.utils.ByteUtils;
+import net.minecraft.network.PacketBuffer;
 import openmods.utils.io.IStreamReader;
 
 import com.google.common.collect.Maps;
@@ -20,9 +19,9 @@ public class DataStoreReader<K, V> {
 		this.wrapper = wrapper;
 	}
 
-	public void read(DataInput input) {
-		int size = ByteUtils.readVLI(input);
-		Map<K, V> values = Maps.newHashMap();
+	public void read(PacketBuffer input) {
+		final int size = input.readVarIntFromBuffer();
+		final Map<K, V> values = Maps.newHashMap();
 
 		try {
 			for (int i = 0; i < size; i++) {

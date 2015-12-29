@@ -1,12 +1,11 @@
 package openmods.serializable;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.reflection.ConstructorAccess;
 import openmods.reflection.TypeUtils;
 import openmods.serializable.providers.*;
@@ -117,19 +116,19 @@ public class SerializerRegistry {
 		return null;
 	}
 
-	public <T> T createFromStream(DataInput input, Class<? extends T> cls) throws IOException {
+	public <T> T createFromStream(PacketBuffer input, Class<? extends T> cls) throws IOException {
 		IStreamReader<T> reader = findSerializer(cls);
 		Preconditions.checkNotNull(reader, "Can't find reader for %s", cls);
 		return reader.readFromStream(input);
 	}
 
-	public Object createFromStream(DataInput input, Type type) throws IOException {
+	public Object createFromStream(PacketBuffer input, Type type) throws IOException {
 		IStreamReader<?> reader = findSerializer(type);
 		Preconditions.checkNotNull(reader, "Can't find reader for %s", type);
 		return reader.readFromStream(input);
 	}
 
-	public <T> void writeToStream(DataOutput output, Class<? extends T> cls, T target) throws IOException {
+	public <T> void writeToStream(PacketBuffer output, Class<? extends T> cls, T target) throws IOException {
 		Preconditions.checkNotNull(target);
 
 		IStreamWriter<T> writer = findSerializer(cls);
@@ -137,7 +136,7 @@ public class SerializerRegistry {
 		writer.writeToStream(target, output);
 	}
 
-	public void writeToStream(DataOutput output, Type type, Object target) throws IOException {
+	public void writeToStream(PacketBuffer output, Type type, Object target) throws IOException {
 		Preconditions.checkNotNull(target);
 
 		IStreamWriter<Object> writer = findSerializer(type);

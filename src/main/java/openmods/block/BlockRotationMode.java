@@ -7,8 +7,6 @@ import net.minecraft.util.EnumFacing;
 import openmods.geometry.BlockTextureTransform;
 import openmods.geometry.HalfAxis;
 import openmods.geometry.Orientation;
-import openmods.renderer.rotations.IRendererSetup;
-import openmods.renderer.rotations.RendererSetupProxy;
 import openmods.utils.BlockUtils;
 
 import com.google.common.base.Preconditions;
@@ -52,11 +50,6 @@ public enum BlockRotationMode {
 		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST);
-		}
-
-		@Override
-		public IRendererSetup getRenderSetup() {
-			return RendererSetupProxy.NULL;
 		}
 	},
 	/**
@@ -110,11 +103,6 @@ public enum BlockRotationMode {
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST);
 		}
-
-		@Override
-		public IRendererSetup getRenderSetup() {
-			return RendererSetupProxy.proxy.getVanillaRenderer();
-		}
 	},
 	/**
 	 * Three orientations: N-S, W-E, T-B.
@@ -156,11 +144,6 @@ public enum BlockRotationMode {
 		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
-		}
-
-		@Override
-		public IRendererSetup getRenderSetup() {
-			return RendererSetupProxy.proxy.getTweakedRenderer();
 		}
 	},
 	/**
@@ -218,11 +201,6 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public IRendererSetup getRenderSetup() {
-			return RendererSetupProxy.proxy.getVanillaRenderer();
-		}
-
-		@Override
 		public Orientation getInventoryRenderOrientation() {
 			return Orientation.XN_YP;
 		}
@@ -270,11 +248,6 @@ public enum BlockRotationMode {
 		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
-		}
-
-		@Override
-		public IRendererSetup getRenderSetup() {
-			return RendererSetupProxy.proxy.getTweakedRenderer();
 		}
 
 		@Override
@@ -337,11 +310,6 @@ public enum BlockRotationMode {
 		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
 			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
-		}
-
-		@Override
-		public IRendererSetup getRenderSetup() {
-			return RendererSetupProxy.proxy.getTweakedRenderer();
 		}
 
 		@Override
@@ -430,11 +398,6 @@ public enum BlockRotationMode {
 			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
 		}
 
-		@Override
-		public IRendererSetup getRenderSetup() {
-			return RendererSetupProxy.proxy.getTweakedRenderer();
-		}
-
 	};
 
 	private static final int MAX_ORIENTATIONS = 16;
@@ -489,8 +452,6 @@ public enum BlockRotationMode {
 	public final BlockTextureTransform textureTransform;
 
 	protected abstract BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder);
-
-	public abstract IRendererSetup getRenderSetup();
 
 	public Orientation fromValue(int value) {
 		try {

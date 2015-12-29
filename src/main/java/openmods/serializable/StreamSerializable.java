@@ -1,9 +1,8 @@
 package openmods.serializable;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.utils.io.IStreamReader;
 import openmods.utils.io.IStreamSerializer;
 import openmods.utils.io.IStreamWriter;
@@ -29,12 +28,12 @@ public class StreamSerializable<T> implements IStreamSerializable {
 	}
 
 	@Override
-	public void readFromStream(DataInput input) throws IOException {
+	public void readFromStream(PacketBuffer input) throws IOException {
 		value = streamReader.readFromStream(input);
 	}
 
 	@Override
-	public void writeToStream(DataOutput output) throws IOException {
+	public void writeToStream(PacketBuffer output) throws IOException {
 		streamWriter.writeToStream(value, output);
 	}
 

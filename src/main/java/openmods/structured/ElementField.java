@@ -1,10 +1,9 @@
 package openmods.structured;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
+import net.minecraft.network.PacketBuffer;
 import openmods.reflection.InstanceFieldAccess;
 import openmods.reflection.TypeUtils;
 import openmods.serializable.SerializerRegistry;
@@ -26,13 +25,13 @@ public class ElementField extends InstanceFieldAccess<Object> implements IStruct
 	}
 
 	@Override
-	public void writeToStream(DataOutput output) throws IOException {
+	public void writeToStream(PacketBuffer output) throws IOException {
 		Object value = get();
 		serializer.writeToStream(value, output);
 	}
 
 	@Override
-	public void readFromStream(DataInput input) throws IOException {
+	public void readFromStream(PacketBuffer input) throws IOException {
 		Object value = serializer.readFromStream(input);
 		set(value);
 	}

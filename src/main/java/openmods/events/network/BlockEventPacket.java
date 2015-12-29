@@ -1,10 +1,8 @@
 package openmods.events.network;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.List;
 
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
@@ -29,24 +27,20 @@ public abstract class BlockEventPacket extends NetworkEvent {
 	}
 
 	@Override
-	protected void readFromStream(DataInput input) throws IOException {
+	protected void readFromStream(PacketBuffer input) {
 		dimension = input.readInt();
-		xCoord = input.readInt();
-		yCoord = input.readInt();
-		zCoord = input.readInt();
+		blockPos = input.readBlockPos();
 	}
 
 	@Override
-	protected void writeToStream(DataOutput output) throws IOException {
+	protected void writeToStream(PacketBuffer output) {
 		output.writeInt(dimension);
-		output.writeInt(xCoord);
-		output.writeInt(yCoord);
-		output.writeInt(zCoord);
+		output.writeBlockPos(blockPos);
 	}
 
 	@Override
 	protected void appendLogInfo(List<String> info) {
-		info.add(String.format("%d -> %d,%d,%d", dimension, xCoord, yCoord, zCoord));
+		info.add(String.format("%d -> %s", dimension, blockPos));
 	}
 
 	public void sendToWatchers() {
@@ -54,7 +48,7 @@ public abstract class BlockEventPacket extends NetworkEvent {
 	}
 
 	public DimCoord getDimCoords() {
-		return new DimCoord(dimension, xCoord, yCoord, zCoord);
+		return new DimCoord(dimension, blockPos);
 	}
 
 	public World getWorld() {
