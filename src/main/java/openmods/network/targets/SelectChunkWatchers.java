@@ -30,7 +30,7 @@ public class SelectChunkWatchers implements IPacketTargetSelector {
 
 		WorldServer server = DimensionManager.getWorld(coord.dimension);
 
-		Set<EntityPlayerMP> players = NetUtils.getPlayersWatchingBlock(server, coord.x, coord.z);
+		Set<EntityPlayerMP> players = NetUtils.getPlayersWatchingBlock(server, coord.blockPos.getX(), coord.blockPos.getZ());
 
 		for (EntityPlayerMP player : players) {
 			NetworkDispatcher dispatcher = NetUtils.getPlayerDispatcher(player);

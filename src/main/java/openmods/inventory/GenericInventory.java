@@ -14,7 +14,6 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.IChatComponent;
 import openmods.api.IInventoryCallback;
-import openmods.utils.ItemUtils;
 
 public class GenericInventory implements IInventory {
 
@@ -139,7 +138,7 @@ public class GenericInventory implements IInventory {
 			NBTTagCompound stacktag = nbttaglist.getCompoundTagAt(i);
 			int j = stacktag.getByte(TAG_SLOT);
 			if (j >= 0 && j < inventoryContents.length) {
-				inventoryContents[j] = ItemUtils.readStack(stacktag);
+				inventoryContents[j] = ItemStack.loadItemStackFromNBT(stacktag);
 			}
 		}
 	}
@@ -160,7 +159,8 @@ public class GenericInventory implements IInventory {
 		NBTTagList nbttaglist = new NBTTagList();
 		for (int i = 0; i < inventoryContents.length; i++) {
 			if (inventoryContents[i] != null) {
-				NBTTagCompound stacktag = ItemUtils.writeStack(inventoryContents[i]);
+				NBTTagCompound stacktag = new NBTTagCompound();
+				inventoryContents[i].writeToNBT(stacktag);
 				stacktag.setByte(TAG_SLOT, (byte)i);
 				nbttaglist.appendTag(stacktag);
 			}

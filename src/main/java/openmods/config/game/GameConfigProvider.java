@@ -201,13 +201,6 @@ public class GameConfigProvider {
 						item.setUnlocalizedName(unlocalizedName);
 					}
 				});
-
-				setItemPrefixedId(annotation.textureName(), name, textureDecorator, new IdSetter() {
-					@Override
-					public void setId(String textureName) {
-						item.setTextureName(textureName);
-					}
-				});
 			}
 
 			@Override
@@ -248,13 +241,6 @@ public class GameConfigProvider {
 					@Override
 					public void setId(String unlocalizedName) {
 						block.setUnlocalizedName(unlocalizedName);
-					}
-				});
-
-				setBlockPrefixedId(annotation.textureName(), name, textureDecorator, new IdSetter() {
-					@Override
-					public void setId(String textureName) {
-						block.setBlockTextureName(textureName);
 					}
 				});
 

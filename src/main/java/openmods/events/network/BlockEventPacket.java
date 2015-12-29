@@ -25,7 +25,7 @@ public abstract class BlockEventPacket extends NetworkEvent {
 	}
 
 	public BlockEventPacket(TileEntity tile) {
-		this(tile.getWorld().provider.dimensionId, tile.getPos());
+		this(tile.getWorld().provider.getDimensionId(), tile.getPos());
 	}
 
 	@Override

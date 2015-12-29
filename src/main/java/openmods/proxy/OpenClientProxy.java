@@ -14,8 +14,6 @@ import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.FMLClientHandler;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.ICrashCallable;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import openmods.LibConfig;
 import openmods.Log;
@@ -26,9 +24,6 @@ import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
 import openmods.source.CommandSource;
-import openmods.stencil.FramebufferConstants;
-import openmods.stencil.StencilPoolManager;
-import openmods.stencil.StencilPoolManager.StencilPool;
 import openmods.utils.render.RenderUtils;
 
 import com.google.common.base.Optional;
@@ -100,19 +95,6 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		RenderUtils.registerFogUpdater();
 
 		MinecraftForge.EVENT_BUS.register(new BlockSelectionHandler());
-
-		FMLCommonHandler.instance().registerCrashCallable(new ICrashCallable() {
-			@Override
-			public String call() throws Exception {
-				final StencilPool pool = StencilPoolManager.pool();
-				return String.format("Function set: %s, pool: %s, bits: %s", FramebufferConstants.getMethodSet(), pool.getType(), pool.getSize());
-			}
-
-			@Override
-			public String getLabel() {
-				return "Stencil buffer state";
-			}
-		});
 	}
 
 	@Override

@@ -88,8 +88,6 @@ public class ItemDistribution {
 	}
 
 	public static int moveItemInto(IInventory fromInventory, int fromSlot, CustomSinks.ICustomSink sink, int maxAmount, EnumFacing direction, boolean doMove) {
-		fromInventory = InventoryUtils.getInventory(fromInventory);
-
 		ItemStack sourceStack = fromInventory.getStackInSlot(fromSlot);
 		if (sourceStack == null || maxAmount <= 0) return 0;
 
@@ -147,8 +145,6 @@ public class ItemDistribution {
 	 * @return The amount of items moved
 	 */
 	public static int moveItemInto(IInventory fromInventory, int fromSlot, IInventory toInventory, int intoSlot, int maxAmount, EnumFacing direction, boolean doMove, boolean canStack) {
-		fromInventory = InventoryUtils.getInventory(fromInventory);
-
 		ItemStack sourceStack = fromInventory.getStackInSlot(fromSlot);
 		if (sourceStack == null || maxAmount <= 0) return 0;
 
@@ -158,11 +154,10 @@ public class ItemDistribution {
 		final int amountToMove = Math.min(sourceStack.stackSize, maxAmount);
 		ItemStack insertedStack = InventoryUtils.copyAndChange(sourceStack, amountToMove);
 
-		IInventory targetInventory = InventoryUtils.getInventory(toInventory);
 		EnumFacing side = direction.getOpposite();
 		// try insert the item into the target inventory. this'll reduce the
 		// stackSize of our stack
-		insertItemIntoInventory(targetInventory, insertedStack, side, intoSlot, doMove, canStack);
+		insertItemIntoInventory(toInventory, insertedStack, side, intoSlot, doMove, canStack);
 		int inserted = amountToMove - insertedStack.stackSize;
 
 		if (doMove) InventoryUtils.removeFromSlot(fromInventory, fromSlot, inserted);
@@ -213,8 +208,6 @@ public class ItemDistribution {
 			sides = shuffledSides;
 		}
 
-		IInventory ourInventory = InventoryUtils.getInventory(inv);
-
 		// loop through the shuffled sides
 		for (EnumFacing dir : sides) {
 			TileEntity tileOnSurface = BlockUtils.getTileInDirection(te, dir);
@@ -223,10 +216,10 @@ public class ItemDistribution {
 				final IInventory neighbor = (IInventory)tileOnSurface;
 				Set<Integer> slots = filterStack == null? InventoryUtils.getAllSlots(neighbor) : InventoryUtils.getAllSlotsWithStack(neighbor, filterStack);
 				for (Integer slot : slots) {
-					int moved = moveItemInto(neighbor, slot, ourInventory, intoSlot, maxAmount, dir.getOpposite(), true);
+					int moved = moveItemInto(neighbor, slot, inv, intoSlot, maxAmount, dir.getOpposite(), true);
 					if (moved > 0) {
 						// information is lost after leaving this method, so must commit here
-						ourInventory.markDirty();
+						inv.markDirty();
 						neighbor.markDirty();
 						return moved;
 					}
@@ -236,9 +229,7 @@ public class ItemDistribution {
 		return 0;
 	}
 
-	public static int moveItemsToOneOfSides(TileEntity te, IInventory inv, int fromSlot, int maxAmount, Iterable<EnumFacing> sides, boolean randomize) {
-		final IInventory inventory = InventoryUtils.getInventory(inv);
-
+	public static int moveItemsToOneOfSides(TileEntity te, IInventory inventory, int fromSlot, int maxAmount, Iterable<EnumFacing> sides, boolean randomize) {
 		// if we've not got a stack in that slot, we dont care.
 		if (inventory.getStackInSlot(fromSlot) == null) return 0;
 

@@ -7,7 +7,6 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.Constants;
 import openmods.utils.ByteUtils;
-import openmods.utils.ItemUtils;
 
 import com.google.common.io.ByteStreams;
 
@@ -80,7 +79,8 @@ public class SyncableItemStack extends SyncableObjectBase {
 	@Override
 	public void writeToNBT(NBTTagCompound nbt, String name) {
 		if (stack != null) {
-			NBTTagCompound serialized = ItemUtils.writeStack(stack);
+			NBTTagCompound serialized = new NBTTagCompound();
+			stack.writeToNBT(serialized);
 			nbt.setTag(name, serialized);
 		}
 	}
@@ -89,7 +89,7 @@ public class SyncableItemStack extends SyncableObjectBase {
 	public void readFromNBT(NBTTagCompound nbt, String name) {
 		if (nbt.hasKey(name, Constants.NBT.TAG_COMPOUND)) {
 			NBTTagCompound serialized = nbt.getCompoundTag(name);
-			stack = ItemUtils.readStack(serialized);
+			stack = ItemStack.loadItemStackFromNBT(serialized);
 		} else {
 			stack = null;
 		}

@@ -13,6 +13,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 import openmods.Log;
 import openmods.utils.ByteUtils;
 
@@ -20,8 +21,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
-import cpw.mods.fml.common.network.ByteBufUtils;
 
 public abstract class SyncMap<H extends ISyncMapProvider> {
 
