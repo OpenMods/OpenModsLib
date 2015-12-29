@@ -1,10 +1,7 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 
 import com.google.common.base.Objects;
 
@@ -33,14 +30,13 @@ public class SyncableString extends SyncableObjectBase implements ISyncableValue
 	}
 
 	@Override
-	public void readFromStream(DataInputStream stream) throws IOException {
-		value = stream.readUTF();
+	public void readFromStream(PacketBuffer stream) {
+		value = stream.readStringFromBuffer(32767);
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream)
-			throws IOException {
-		stream.writeUTF(value);
+	public void writeToStream(PacketBuffer stream) {
+		stream.writeString(value);
 	}
 
 	@Override

@@ -1,13 +1,9 @@
 package openmods.sync;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-
-import java.io.DataInputStream;
-
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import openmods.OpenMods;
@@ -27,12 +23,11 @@ public class InboundSyncHandler extends SimpleChannelInboundHandler<FMLProxyPack
 	protected void channelRead0(ChannelHandlerContext ctx, FMLProxyPacket msg) throws Exception {
 		World world = OpenMods.proxy.getClientWorld();
 
-		ByteBuf payload = msg.payload();
-		DataInputStream input = new DataInputStream(new ByteBufInputStream(payload));
+		PacketBuffer payload = new PacketBuffer(msg.payload());
 
-		ISyncMapProvider provider = SyncMap.findSyncMap(world, input);
+		ISyncMapProvider provider = SyncMap.findSyncMap(world, payload);
 		try {
-			if (provider != null) provider.getSyncMap().readFromStream(input);
+			if (provider != null) provider.getSyncMap().readFromStream(payload);
 		} catch (Throwable e) {
 			throw new SyncException(e, provider);
 		}

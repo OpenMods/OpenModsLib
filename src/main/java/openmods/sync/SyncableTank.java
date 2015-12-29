@@ -1,18 +1,15 @@
 package openmods.sync;
 
-import java.io.*;
+import java.io.IOException;
 
-import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueProvider;
 import openmods.liquids.GenericTank;
-import openmods.utils.ByteUtils;
-
-import com.google.common.io.ByteStreams;
 
 public class SyncableTank extends GenericTank implements ISyncableObject, IValueProvider<FluidStack> {
 
@@ -46,41 +43,28 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 	}
 
 	@Override
-	public void readFromStream(DataInputStream stream) throws IOException {
+	public void readFromStream(PacketBuffer stream) throws IOException {
 		if (stream.readBoolean()) {
-			String fluidName = stream.readUTF();
+			String fluidName = stream.readStringFromBuffer(32767);
 			Fluid fluid = FluidRegistry.getFluid(fluidName);
 
 			int fluidAmount = stream.readInt();
 
 			this.fluid = new FluidStack(fluid, fluidAmount);
-
-			final int tagSize = ByteUtils.readVLI(stream);
-			if (tagSize > 0) {
-				this.fluid.tag = CompressedStreamTools.readCompressed(ByteStreams.limit(stream, tagSize));
-			}
-
+			this.fluid.tag = stream.readNBTTagCompoundFromBuffer();
 		} else {
 			this.fluid = null;
 		}
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream) throws IOException {
+	public void writeToStream(PacketBuffer stream) {
 		if (fluid != null) {
 			stream.writeBoolean(true);
-			stream.writeUTF(FluidRegistry.getFluidName(fluid.getFluid()));
+			final String id = FluidRegistry.getFluidName(fluid.getFluid());
+			stream.writeString(id);
 			stream.writeInt(fluid.amount);
-			if (fluid.tag != null) {
-				ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-				CompressedStreamTools.writeCompressed(fluid.tag, buffer);
-
-				byte[] bytes = buffer.toByteArray();
-				ByteUtils.writeVLI(stream, bytes.length);
-				stream.write(bytes);
-			} else {
-				stream.writeByte(0);
-			}
+			stream.writeNBTTagCompoundToBuffer(fluid.tag);
 		} else {
 			stream.writeBoolean(false);
 		}

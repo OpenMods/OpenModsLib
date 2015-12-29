@@ -1,11 +1,9 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.UUID;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.util.Constants;
 import openmods.api.IValueProvider;
 
@@ -16,22 +14,19 @@ public class SyncableUUID extends SyncableObjectBase implements IValueProvider<U
 	private UUID uuid;
 
 	@Override
-	public void readFromStream(DataInputStream stream) throws IOException {
+	public void readFromStream(PacketBuffer stream) {
 		if (stream.readBoolean()) {
-			long msb = stream.readLong();
-			long lsb = stream.readLong();
-			this.uuid = new UUID(msb, lsb);
+			this.uuid = stream.readUuid();
 		} else {
 			this.uuid = null;
 		}
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream) throws IOException {
+	public void writeToStream(PacketBuffer stream) {
 		if (uuid != null) {
 			stream.writeBoolean(true);
-			stream.writeLong(uuid.getMostSignificantBits());
-			stream.writeLong(uuid.getLeastSignificantBits());
+			stream.writeUuid(uuid);
 		} else {
 			stream.writeBoolean(false);
 		}

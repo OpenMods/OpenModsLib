@@ -1,10 +1,7 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 
 public class SyncableFloat extends SyncableObjectBase implements ISyncableValueProvider<Float> {
 
@@ -38,12 +35,12 @@ public class SyncableFloat extends SyncableObjectBase implements ISyncableValueP
 	}
 
 	@Override
-	public void readFromStream(DataInputStream stream) throws IOException {
+	public void readFromStream(PacketBuffer stream) {
 		value = stream.readFloat();
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream) throws IOException {
+	public void writeToStream(PacketBuffer stream) {
 		stream.writeFloat(value);
 	}
 

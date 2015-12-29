@@ -1,10 +1,7 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-
 import net.minecraft.nbt.NBTTagCompound;
-import openmods.utils.ByteUtils;
+import net.minecraft.network.PacketBuffer;
 
 import com.google.common.base.Preconditions;
 
@@ -41,13 +38,13 @@ public class SyncableVarInt extends SyncableObjectBase implements ISyncableValue
 	}
 
 	@Override
-	public void readFromStream(DataInputStream stream) {
-		value = ByteUtils.readVLI(stream);
+	public void readFromStream(PacketBuffer stream) {
+		value = stream.readVarIntFromBuffer();
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream) {
-		ByteUtils.writeVLI(stream, value);
+	public void writeToStream(PacketBuffer stream) {
+		stream.writeVarIntToBuffer(value);
 	}
 
 	@Override

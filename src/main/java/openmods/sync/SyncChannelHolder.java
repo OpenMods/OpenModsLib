@@ -1,7 +1,5 @@
 package openmods.sync;
 
-import io.netty.buffer.ByteBuf;
-
 import java.util.Collection;
 import java.util.Map;
 
@@ -29,12 +27,12 @@ public class SyncChannelHolder {
 		ExtendedOutboundHandler.install(this.channels);
 	}
 
-	public static Packet<?> createPacket(ByteBuf payload) {
-		return new FMLProxyPacket(new PacketBuffer(payload), CHANNEL_NAME);
+	public static Packet<?> createPacket(PacketBuffer payload) {
+		return new FMLProxyPacket(payload, CHANNEL_NAME);
 	}
 
-	public void sendPayloadToPlayers(ByteBuf payload, Collection<EntityPlayerMP> players) {
-		FMLProxyPacket packet = new FMLProxyPacket(new PacketBuffer(payload), CHANNEL_NAME);
+	public void sendPayloadToPlayers(PacketBuffer payload, Collection<EntityPlayerMP> players) {
+		FMLProxyPacket packet = new FMLProxyPacket(payload, CHANNEL_NAME);
 		FMLEmbeddedChannel channel = channels.get(Side.SERVER);
 		ExtendedOutboundHandler.selectTargets(channel, SelectMultiplePlayers.INSTANCE, players);
 		channel.writeAndFlush(packet).addListener(NetUtils.LOGGING_LISTENER);

@@ -1,10 +1,7 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 import openmods.utils.ByteUtils;
 import openmods.utils.bitmap.IBitMap;
 import openmods.utils.bitmap.IRpcIntBitMap;
@@ -15,12 +12,12 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 
 	private static class ByteFlags extends SyncableFlags {
 		@Override
-		public void readFromStream(DataInputStream stream) throws IOException {
+		public void readFromStream(PacketBuffer stream) {
 			value = stream.readByte();
 		}
 
 		@Override
-		public void writeToStream(DataOutputStream stream) throws IOException {
+		public void writeToStream(PacketBuffer stream) {
 			stream.writeByte(value);
 		}
 
@@ -37,12 +34,12 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 
 	private static class ShortFlags extends SyncableFlags {
 		@Override
-		public void readFromStream(DataInputStream stream) throws IOException {
+		public void readFromStream(PacketBuffer stream) {
 			value = stream.readShort();
 		}
 
 		@Override
-		public void writeToStream(DataOutputStream stream) throws IOException {
+		public void writeToStream(PacketBuffer stream) {
 			stream.writeShort(value);
 		}
 
@@ -59,12 +56,12 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 
 	private static class IntFlags extends SyncableFlags {
 		@Override
-		public void readFromStream(DataInputStream stream) throws IOException {
+		public void readFromStream(PacketBuffer stream) {
 			value = stream.readInt();
 		}
 
 		@Override
-		public void writeToStream(DataOutputStream stream) throws IOException {
+		public void writeToStream(PacketBuffer stream) {
 			stream.writeInt(value);
 		}
 

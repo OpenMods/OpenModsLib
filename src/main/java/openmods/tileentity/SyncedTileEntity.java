@@ -1,12 +1,11 @@
 package openmods.tileentity;
 
-import io.netty.buffer.ByteBuf;
-
 import java.io.IOException;
 import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
+import net.minecraft.network.PacketBuffer;
 import openmods.Log;
 import openmods.network.rpc.IRpcTarget;
 import openmods.network.rpc.RpcCallDispatcher;
@@ -76,7 +75,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	@Override
 	public Packet<?> getDescriptionPacket() {
 		try {
-			ByteBuf payload = syncMap.createPayload(true);
+			PacketBuffer payload = syncMap.createPayload(true);
 			return SyncChannelHolder.createPacket(payload);
 		} catch (IOException e) {
 			Log.severe(e, "Error during description packet creation");

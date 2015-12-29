@@ -1,13 +1,11 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.EnumFacing;
 import openmods.utils.ByteUtils;
 import openmods.utils.DirUtils;
@@ -30,12 +28,12 @@ public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBi
 	}
 
 	@Override
-	public void readFromStream(DataInputStream stream) throws IOException {
+	public void readFromStream(PacketBuffer stream) {
 		read(stream.readByte());
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream) throws IOException {
+	public void writeToStream(PacketBuffer stream) {
 		stream.writeByte(write());
 	}
 

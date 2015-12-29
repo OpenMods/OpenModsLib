@@ -1,10 +1,9 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 
 public interface ISyncableObject {
 	public boolean isDirty();
@@ -13,9 +12,9 @@ public interface ISyncableObject {
 
 	public void markDirty();
 
-	public void readFromStream(DataInputStream stream) throws IOException;
+	public void readFromStream(PacketBuffer buf) throws IOException;
 
-	public void writeToStream(DataOutputStream stream) throws IOException;
+	public void writeToStream(PacketBuffer buf) throws IOException;
 
 	public void writeToNBT(NBTTagCompound nbt, String name);
 

@@ -1,10 +1,7 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 
 public class SyncableByteArray extends SyncableObjectBase implements ISyncableValueProvider<byte[]> {
 
@@ -29,24 +26,16 @@ public class SyncableByteArray extends SyncableObjectBase implements ISyncableVa
 	}
 
 	@Override
-	public void readFromStream(DataInputStream stream) throws IOException {
-		int length = stream.readInt();
-		value = new byte[length];
-		for (int i = 0; i < length; i++) {
-			value[i] = stream.readByte();
-		}
+	public void readFromStream(PacketBuffer stream) {
+		value = stream.readByteArray();
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream)
-			throws IOException {
+	public void writeToStream(PacketBuffer stream) {
 		if (value == null) {
 			stream.writeInt(0);
 		} else {
-			stream.writeInt(value.length);
-			for (byte element : value) {
-				stream.writeByte(element);
-			}
+			stream.writeByteArray(value);
 		}
 	}
 

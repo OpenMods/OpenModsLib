@@ -1,19 +1,18 @@
 package openmods.sync;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 import openmods.Log;
 import openmods.utils.ByteUtils;
 
@@ -42,28 +41,24 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 		TILE_ENTITY {
 
 			@Override
-			public ISyncMapProvider findHandler(World world, DataInput input) throws IOException {
-				int x = input.readInt();
-				int y = input.readInt();
-				int z = input.readInt();
+			public ISyncMapProvider findHandler(World world, PacketBuffer input) {
+				final BlockPos pos = input.readBlockPos();
 				if (world != null) {
-					if (world.blockExists(x, y, z)) {
-						TileEntity tile = world.getTileEntity(x, y, z);
+					if (world.isBlockLoaded(pos)) {
+						final TileEntity tile = world.getTileEntity(pos);
 						if (tile instanceof ISyncMapProvider) return (ISyncMapProvider)tile;
 					}
 				}
 
-				Log.warn("Invalid handler info: can't find ISyncHandler TE @ (%d,%d,%d)", x, y, z);
+				Log.warn("Invalid handler info: can't find ISyncHandler TE @ (%s)", pos);
 				return null;
 			}
 
 			@Override
-			public void writeHandlerInfo(ISyncMapProvider handler, DataOutput output) throws IOException {
+			public void writeHandlerInfo(ISyncMapProvider handler, PacketBuffer output) {
 				try {
-					TileEntity te = (TileEntity)handler;
-					output.writeInt(te.xCoord);
-					output.writeInt(te.yCoord);
-					output.writeInt(te.zCoord);
+					final TileEntity te = (TileEntity)handler;
+					output.writeBlockPos(te.getPos());
 				} catch (ClassCastException e) {
 					throw new RuntimeException("Invalid usage of handler type", e);
 				}
@@ -73,7 +68,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 		ENTITY {
 
 			@Override
-			public ISyncMapProvider findHandler(World world, DataInput input) throws IOException {
+			public ISyncMapProvider findHandler(World world, PacketBuffer input) {
 				int entityId = input.readInt();
 				Entity entity = world.getEntityByID(entityId);
 				if (entity instanceof ISyncMapProvider)
@@ -84,7 +79,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 			}
 
 			@Override
-			public void writeHandlerInfo(ISyncMapProvider handler, DataOutput output) throws IOException {
+			public void writeHandlerInfo(ISyncMapProvider handler, PacketBuffer output) {
 				try {
 					Entity e = (Entity)handler;
 					output.writeInt(e.getEntityId());
@@ -95,9 +90,9 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 
 		};
 
-		public abstract ISyncMapProvider findHandler(World world, DataInput input) throws IOException;
+		public abstract ISyncMapProvider findHandler(World world, PacketBuffer input) throws IOException;
 
-		public abstract void writeHandlerInfo(ISyncMapProvider handler, DataOutput output) throws IOException;
+		public abstract void writeHandlerInfo(ISyncMapProvider handler, PacketBuffer output) throws IOException;
 
 		private static final HandlerType[] TYPES = values();
 	}
@@ -152,7 +147,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 		return index;
 	}
 
-	public void readFromStream(DataInputStream dis) throws IOException {
+	public void readFromStream(PacketBuffer dis) {
 		int mask = dis.readShort();
 		Set<ISyncableObject> changes = Sets.newIdentityHashSet();
 		int currentBit = 0;
@@ -176,7 +171,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 		if (!changes.isEmpty()) notifySyncListeners(updateListeners, Collections.unmodifiableSet(changes));
 	}
 
-	private void writeToStream(DataOutputStream dos, boolean fullPacket) throws IOException {
+	private void writeToStream(PacketBuffer dos, boolean fullPacket) {
 		int mask = 0;
 		for (int i = 0; i < index; i++) {
 			final ISyncableObject object = objects[i];
@@ -228,7 +223,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 
 		try {
 			if (!deltaPacketTargets.isEmpty()) {
-				ByteBuf deltaPayload = createPayload(false);
+				final PacketBuffer deltaPayload = createPayload(false);
 				SyncChannelHolder.INSTANCE.sendPayloadToPlayers(deltaPayload, deltaPacketTargets);
 			}
 		} catch (IOException e) {
@@ -237,8 +232,8 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 
 		try {
 			if (!fullPacketTargets.isEmpty()) {
-				ByteBuf deltaPayload = createPayload(true);
-				SyncChannelHolder.INSTANCE.sendPayloadToPlayers(deltaPayload, fullPacketTargets);
+				final PacketBuffer fullPayload = createPayload(true);
+				SyncChannelHolder.INSTANCE.sendPayloadToPlayers(fullPayload, fullPacketTargets);
 			}
 		} catch (IOException e) {
 			Log.warn(e, "IOError during full sync");
@@ -265,28 +260,27 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 			obj.markClean();
 	}
 
-	public ByteBuf createPayload(boolean fullPacket) throws IOException {
-		ByteBuf output = Unpooled.buffer();
+	public PacketBuffer createPayload(boolean fullPacket) throws IOException {
+		final PacketBuffer output = new PacketBuffer(Unpooled.buffer());
 
-		HandlerType type = getHandlerType();
-		ByteBufUtils.writeVarInt(output, type.ordinal(), 5);
+		final HandlerType type = getHandlerType();
+		output.writeVarIntToBuffer(type.ordinal());
 
-		DataOutputStream dataOutput = new DataOutputStream(new ByteBufOutputStream(output));
-		type.writeHandlerInfo(handler, dataOutput);
-		writeToStream(dataOutput, fullPacket);
+		type.writeHandlerInfo(handler, output);
+		writeToStream(output, fullPacket);
 
-		return output.copy();
+		return output;
 	}
 
-	public static ISyncMapProvider findSyncMap(World world, DataInput input) throws IOException {
-		int handlerTypeId = ByteUtils.readVLI(input);
+	public static ISyncMapProvider findSyncMap(World world, PacketBuffer input) throws IOException {
+		final int handlerTypeId = input.readVarIntFromBuffer();
 
 		// If this happens, abort! Serious bug!
 		Preconditions.checkPositionIndex(handlerTypeId, HandlerType.TYPES.length, "handler type");
 
-		HandlerType handlerType = HandlerType.TYPES[handlerTypeId];
+		final HandlerType handlerType = HandlerType.TYPES[handlerTypeId];
 
-		ISyncMapProvider handler = handlerType.findHandler(world, input);
+		final ISyncMapProvider handler = handlerType.findHandler(world, input);
 		return handler;
 	}
 

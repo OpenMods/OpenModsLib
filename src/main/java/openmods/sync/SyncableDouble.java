@@ -1,10 +1,7 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 
 public class SyncableDouble extends SyncableObjectBase implements ISyncableValueProvider<Double> {
 
@@ -33,12 +30,12 @@ public class SyncableDouble extends SyncableObjectBase implements ISyncableValue
 	}
 
 	@Override
-	public void readFromStream(DataInputStream stream) throws IOException {
+	public void readFromStream(PacketBuffer stream) {
 		value = stream.readDouble();
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream) throws IOException {
+	public void writeToStream(PacketBuffer stream) {
 		stream.writeDouble(value);
 	}
 

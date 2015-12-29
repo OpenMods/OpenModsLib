@@ -1,9 +1,13 @@
 package openmods.utils;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 
-public class TagUtils {
+public class NbtUtils {
+
+	private static final String KEY = "K";
+	private static final String VALUE = "V";
 
 	private static final String TAG_Z = "Z";
 	private static final String TAG_Y = "Y";
@@ -45,5 +49,19 @@ public class TagUtils {
 		final double y = tag.getDouble(TAG_Y);
 		final double z = tag.getDouble(TAG_Z);
 		return new Vec3(x, y, z);
+	}
+
+	public static NBTTagCompound writeResourceLocation(ResourceLocation location) {
+		NBTTagCompound entry = new NBTTagCompound();
+		entry.setString(KEY, location.getResourceDomain());
+		entry.setString(VALUE, location.getResourcePath());
+		return entry;
+	}
+
+	public static ResourceLocation readResourceLocation(final NBTTagCompound entry) {
+		final String domain = entry.getString(KEY);
+		final String path = entry.getString(VALUE);
+		final ResourceLocation blockLocation = new ResourceLocation(domain, path);
+		return blockLocation;
 	}
 }

@@ -1,10 +1,7 @@
 package openmods.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-
 import net.minecraft.nbt.NBTTagCompound;
-import openmods.utils.ByteUtils;
+import net.minecraft.network.PacketBuffer;
 
 import com.google.common.base.Preconditions;
 
@@ -24,14 +21,14 @@ public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implemen
 	}
 
 	@Override
-	public void readFromStream(DataInputStream stream) {
-		int ordinal = ByteUtils.readVLI(stream);
+	public void readFromStream(PacketBuffer stream) {
+		int ordinal = stream.readVarIntFromBuffer();
 		value = values[ordinal];
 	}
 
 	@Override
-	public void writeToStream(DataOutputStream stream) {
-		ByteUtils.writeVLI(stream, value.ordinal());
+	public void writeToStream(PacketBuffer stream) {
+		stream.writeVarIntToBuffer(value.ordinal());
 	}
 
 	@Override
