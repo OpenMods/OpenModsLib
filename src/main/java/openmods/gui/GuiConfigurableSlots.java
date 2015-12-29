@@ -24,38 +24,38 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 
 	protected abstract Iterable<E> getSlots();
 
-	protected abstract void addCustomizations(BaseComposite root);
+	protected abstract void addCustomizations(IComponentParent parent, BaseComposite root);
 
-	protected abstract GuiComponentTab createTab(E slot);
+	protected abstract GuiComponentTab createTab(IComponentParent parent, E slot);
 
-	protected GuiComponentSideSelector createSideSelector(E slot, Block block, int meta, T te) {
-		return new GuiComponentSideSelector(15, 15, 40.0, block, meta, te, true);
+	protected GuiComponentSideSelector createSideSelector(IComponentParent parent, E slot, Block block, int meta, T te) {
+		return new GuiComponentSideSelector(parent, 15, 15, 40.0, block, meta, te, true);
 	}
 
-	protected GuiComponentCheckbox createCheckbox(E slot) {
-		return new GuiComponentCheckbox(10, 82, false, 0xFFFFFF);
+	protected GuiComponentCheckbox createCheckbox(IComponentParent parent, E slot) {
+		return new GuiComponentCheckbox(parent, 10, 82, false, 0xFFFFFF);
 	}
 
 	protected abstract GuiComponentLabel createLabel(E slot);
 
 	@Override
-	protected final BaseComposite createRoot() {
+	protected final BaseComposite createRoot(IComponentParent parent) {
 		T te = getContainer().getOwner();
 
 		final int meta = te.getBlockMetadata();
 		final Block block = te.getBlockType();
 
-		BaseComposite main = super.createRoot();
-		addCustomizations(main);
+		BaseComposite main = super.createRoot(parent);
+		addCustomizations(parent, main);
 
-		GuiComponentTabWrapper tabs = new GuiComponentTabWrapper(0, 0, main);
+		GuiComponentTabWrapper tabs = new GuiComponentTabWrapper(parent, 0, 0, main);
 
 		for (E slot : getSlots()) {
-			GuiComponentTab tabTool = createTab(slot);
+			GuiComponentTab tabTool = createTab(parent, slot);
 			tabs.addComponent(tabTool);
 
-			GuiComponentSideSelector sideSelector = createSideSelector(slot, block, meta, te);
-			GuiComponentCheckbox checkbox = createCheckbox(slot);
+			GuiComponentSideSelector sideSelector = createSideSelector(parent, slot, block, meta, te);
+			GuiComponentCheckbox checkbox = createCheckbox(parent, slot);
 
 			setupCheckBox(checkbox, te.createAutoFlagProvider(slot), te.createAutoSlotReceiver(slot));
 			setupSelector(sideSelector, te.createAllowedDirectionsProvider(slot), te.createAllowedDirectionsReceiver(slot));

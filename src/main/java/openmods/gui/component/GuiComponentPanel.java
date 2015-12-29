@@ -2,10 +2,10 @@ package openmods.gui.component;
 
 import java.util.Map;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
+import openmods.gui.IComponentParent;
 import openmods.gui.misc.BoxRenderer;
 import openmods.gui.misc.ISlotBackgroundRenderer;
 
@@ -52,8 +52,8 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 
 	private final Container container;
 
-	public GuiComponentPanel(int x, int y, int width, int height, Container container) {
-		super(x, y, width, height);
+	public GuiComponentPanel(IComponentParent parent, int x, int y, int width, int height, Container container) {
+		super(parent, x, y, width, height);
 		this.container = container;
 	}
 
@@ -62,14 +62,14 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 	}
 
 	@Override
-	protected void renderComponentBackground(Minecraft minecraft, int x, int y, int mouseX, int mouseY) {
+	protected void renderComponentBackground(int x, int y, int mouseX, int mouseY) {
 		GL11.glColor3f(1, 1, 1);
 		bindComponentsSheet();
 		BOX_RENDERER.render(this, this.x + x, this.y + y, width, height, 0xFFFFFFFF);
 	}
 
 	@Override
-	protected void renderComponentForeground(Minecraft minecraft, int x, int y, int mouseX, int mouseY) {
+	protected void renderComponentForeground(int x, int y, int mouseX, int mouseY) {
 		GL11.glColor3f(1, 1, 1);
 		bindComponentsSheet();
 

@@ -34,7 +34,7 @@ public class ProjectionHelper {
 		float objectY = objectCoords.get(1);
 		float objectZ = objectCoords.get(2);
 
-		return Vec3.createVectorHelper(objectX, objectY, objectZ);
+		return new Vec3(objectX, objectY, objectZ);
 	}
 
 	public Vec3 project(float objX, float objY, float objZ) {
@@ -44,6 +44,6 @@ public class ProjectionHelper {
 		float winY = winCoords.get(1);
 		float winZ = winCoords.get(2);
 
-		return Vec3.createVectorHelper(winX, winY, winZ);
+		return new Vec3(winX, winY, winZ);
 	}
 }

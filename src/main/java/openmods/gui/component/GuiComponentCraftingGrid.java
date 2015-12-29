@@ -1,25 +1,17 @@
 package openmods.gui.component;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.Random;
 
 import javax.annotation.Nullable;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.ResourceLocation;
+import openmods.gui.IComponentParent;
+import openmods.gui.Icon;
 import openmods.utils.CollectionUtils;
 
-import org.lwjgl.opengl.GL11;
-
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 public class GuiComponentCraftingGrid extends GuiComponentSprite {
 
@@ -41,12 +33,12 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 
 	private int changeCountdown = UPDATE_DELAY;
 
-	public GuiComponentCraftingGrid(int x, int y, ItemStack[] items, IIcon background, ResourceLocation backgroundTexture) {
-		this(x, y, CollectionUtils.transform(items, EXPAND_TRANSFORM), background, backgroundTexture);
+	public GuiComponentCraftingGrid(IComponentParent parent, int x, int y, ItemStack[] items, Icon background) {
+		this(parent, x, y, CollectionUtils.transform(items, EXPAND_TRANSFORM), background);
 	}
 
-	public GuiComponentCraftingGrid(int x, int y, ItemStack[][] items, IIcon icon, ResourceLocation texture) {
-		super(x, y, icon, texture);
+	public GuiComponentCraftingGrid(IComponentParent parent, int x, int y, ItemStack[][] items, Icon background) {
+		super(parent, x, y, background);
 		Preconditions.checkNotNull(items, "No items in grid");
 		this.items = items;
 		this.selectedItems = new ItemStack[items.length];
@@ -125,32 +117,9 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 			}
 
 			if (tooltip != null) {
-				drawItemStackTooltip(tooltip, relativeMouseX + 25, relativeMouseY + 30);
+				parent.drawItemStackTooltip(tooltip, relativeMouseX + 25, relativeMouseY + 30);
 			}
 		}
-	}
-
-	protected void drawItemStackTooltip(ItemStack stack, int x, int y) {
-		final Minecraft mc = Minecraft.getMinecraft();
-		FontRenderer font = Objects.firstNonNull(stack.getItem().getFontRenderer(stack), mc.fontRenderer);
-
-		GL11.glColor3f(1, 1, 1);
-		GL11.glDisable(GL11.GL_LIGHTING);
-		@SuppressWarnings("unchecked")
-		List<String> list = stack.getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips);
-
-		List<String> colored = Lists.newArrayListWithCapacity(list.size());
-		Iterator<String> it = list.iterator();
-		colored.add(getRarityColor(stack) + it.next());
-
-		while (it.hasNext())
-			colored.add(EnumChatFormatting.GRAY + it.next());
-
-		drawHoveringText(colored, x, y, font);
-	}
-
-	private static EnumChatFormatting getRarityColor(ItemStack stack) {
-		return stack.getRarity().rarityColor;
 	}
 
 }

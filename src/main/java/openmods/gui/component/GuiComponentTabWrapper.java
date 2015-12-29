@@ -1,14 +1,14 @@
 package openmods.gui.component;
 
-import net.minecraft.client.Minecraft;
+import openmods.gui.IComponentParent;
 import openmods.gui.listener.IMouseDownListener;
 
 public class GuiComponentTabWrapper extends BaseComposite {
 	protected final BaseComponent mainComponent;
 	protected GuiComponentTab activeTab;
 
-	public GuiComponentTabWrapper(int x, int y, BaseComponent mainComponent) {
-		super(x, y);
+	public GuiComponentTabWrapper(IComponentParent parent, int x, int y, BaseComponent mainComponent) {
+		super(parent, x, y);
 		this.mainComponent = mainComponent;
 		addComponent(mainComponent);
 	}
@@ -37,7 +37,7 @@ public class GuiComponentTabWrapper extends BaseComposite {
 	}
 
 	@Override
-	protected void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	protected void renderComponentBackground(int offsetX, int offsetY, int mouseX, int mouseY) {
 		realignTabsVertically();
 	}
 

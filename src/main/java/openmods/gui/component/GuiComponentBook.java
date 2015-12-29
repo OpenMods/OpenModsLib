@@ -2,14 +2,13 @@ package openmods.gui.component;
 
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
-import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
+import openmods.gui.IComponentParent;
+import openmods.gui.Icon;
 import openmods.gui.component.page.BookScaleConfig;
 import openmods.gui.listener.IMouseDownListener;
-import openmods.utils.render.FakeIcon;
 
 import com.google.common.collect.Lists;
 
@@ -17,39 +16,39 @@ public class GuiComponentBook extends BaseComposite {
 
 	private static final ResourceLocation PAGETURN = new ResourceLocation("openmodslib", "pageturn");
 
+	public static final ResourceLocation BOOK_WIDGETS = new ResourceLocation("openmodslib:textures/gui/book.png");
+
+	public static final Icon iconPageLeft = Icon.createSheetIcon(BOOK_WIDGETS, 211, 0, -211, 180);
+	public static final Icon iconPageRight = Icon.createSheetIcon(BOOK_WIDGETS, 0, 0, 211, 180);
+	public static final Icon iconPrev = Icon.createSheetIcon(BOOK_WIDGETS, 57, 226, 18, 10);
+	public static final Icon iconNext = Icon.createSheetIcon(BOOK_WIDGETS, 57, 213, 18, 10);
+	public static final Icon iconPrevHover = Icon.createSheetIcon(BOOK_WIDGETS, 80, 226, 18, 10);
+	public static final Icon iconNextHover = Icon.createSheetIcon(BOOK_WIDGETS, 80, 213, 18, 10);
+
 	private GuiComponentSpriteButton imgPrev;
 	private GuiComponentSpriteButton imgNext;
 	private GuiComponentLabel pageNumberLeft;
 	private GuiComponentLabel pageNumberRight;
 
-	public static IIcon iconPageLeft = FakeIcon.createSheetIcon(211, 0, -211, 180);
-	public static IIcon iconPageRight = FakeIcon.createSheetIcon(0, 0, 211, 180);
-	public static IIcon iconPrev = FakeIcon.createSheetIcon(57, 226, 18, 10);
-	public static IIcon iconNext = FakeIcon.createSheetIcon(57, 213, 18, 10);
-	public static IIcon iconPrevHover = FakeIcon.createSheetIcon(80, 226, 18, 10);
-	public static IIcon iconNextHover = FakeIcon.createSheetIcon(80, 213, 18, 10);
-
-	private static final ResourceLocation texture = new ResourceLocation("openmodslib:textures/gui/book.png");
-
 	public List<BaseComponent> pages;
 
 	private int index = 0;
 
-	public GuiComponentBook() {
-		super(0, 0);
+	public GuiComponentBook(IComponentParent parent) {
+		super(parent, 0, 0);
 
-		GuiComponentSprite imgLeftBackground = new GuiComponentSprite(0, 0, iconPageLeft, texture);
-		GuiComponentSprite imgRightBackground = new GuiComponentSprite(0, 0, iconPageRight, texture);
-		imgRightBackground.setX(iconPageRight.getIconWidth());
+		GuiComponentSprite imgLeftBackground = new GuiComponentSprite(parent, 0, 0, iconPageLeft);
+		GuiComponentSprite imgRightBackground = new GuiComponentSprite(parent, 0, 0, iconPageRight);
+		imgRightBackground.setX(iconPageRight.width);
 
-		imgPrev = new GuiComponentSpriteButton(24, 158, iconPrev, iconPrevHover, texture);
+		imgPrev = new GuiComponentSpriteButton(parent, 24, 158, iconPrev, iconPrevHover);
 		imgPrev.setListener(new IMouseDownListener() {
 			@Override
 			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
 				prevPage();
 			}
 		});
-		imgNext = new GuiComponentSpriteButton(380, 158, iconNext, iconNextHover, texture);
+		imgNext = new GuiComponentSpriteButton(parent, 380, 158, iconNext, iconNextHover);
 		imgNext.setListener(new IMouseDownListener() {
 			@Override
 			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
@@ -58,9 +57,9 @@ public class GuiComponentBook extends BaseComposite {
 		});
 
 		final float scalePageNumber = BookScaleConfig.getPageNumberScale();
-		pageNumberLeft = new GuiComponentLabel(85, 163, 100, 10, "XXX");
+		pageNumberLeft = new GuiComponentLabel(parent, 85, 163, 100, 10, "XXX");
 		pageNumberLeft.setScale(scalePageNumber);
-		pageNumberRight = new GuiComponentLabel(295, 163, 100, 10, "XXX");
+		pageNumberRight = new GuiComponentLabel(parent, 295, 163, 100, 10, "XXX");
 		pageNumberRight.setScale(scalePageNumber);
 
 		addComponent(imgLeftBackground);
@@ -80,12 +79,12 @@ public class GuiComponentBook extends BaseComposite {
 
 	@Override
 	public int getWidth() {
-		return iconPageRight.getIconWidth() * 2;
+		return iconPageRight.width * 2;
 	}
 
 	@Override
 	public int getHeight() {
-		return iconPageRight.getIconHeight();
+		return iconPageRight.height;
 	}
 
 	public void addPage(BaseComponent page) {
@@ -106,7 +105,7 @@ public class GuiComponentBook extends BaseComposite {
 
 			} else if (isRight) {
 				page.setEnabled(true);
-				page.setX(10 + iconPageRight.getIconWidth());
+				page.setX(10 + iconPageRight.width);
 			} else {
 				page.setEnabled(false);
 			}
@@ -121,9 +120,6 @@ public class GuiComponentBook extends BaseComposite {
 		pageNumberRight.setText(StatCollector.translateToLocalFormatted("openblocks.misc.page", index + 2, totalPageCount));
 	}
 
-	@Override
-	public void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
-
 	public void changePage(int newPage) {
 		newPage &= ~1;
 		if (newPage != index) {
@@ -133,8 +129,8 @@ public class GuiComponentBook extends BaseComposite {
 		}
 	}
 
-	private static void playPageTurnSound() {
-		Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(PAGETURN, 1.0f));
+	private void playPageTurnSound() {
+		parent.getSoundHandler().playSound(PositionedSoundRecord.create(PAGETURN, 1.0f));
 	}
 
 	public IMouseDownListener createBookmarkListener(final int index) {

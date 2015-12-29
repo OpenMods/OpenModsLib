@@ -3,7 +3,7 @@ package openmods.gui.component;
 import java.util.Iterator;
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
+import openmods.gui.IComponentParent;
 import openmods.gui.listener.IValueChangedListener;
 
 import com.google.common.collect.ImmutableList;
@@ -34,8 +34,8 @@ public class GuiComponentPalettePicker extends BaseComponent {
 
 	private boolean drawTooltip = false;
 
-	public GuiComponentPalettePicker(int x, int y) {
-		super(x, y);
+	public GuiComponentPalettePicker(IComponentParent parent, int x, int y) {
+		super(parent, x, y);
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class GuiComponentPalettePicker extends BaseComponent {
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		Iterator<PaletteEntry> it = palette.iterator();
 
 		final int bx = x + offsetX;
@@ -107,10 +107,10 @@ public class GuiComponentPalettePicker extends BaseComponent {
 	}
 
 	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (drawTooltip && isMouseOver(mouseX, mouseY)) {
 			final PaletteEntry entry = findEntry(mouseX - x, mouseY - y);
-			if (entry != null) drawHoveringText(entry.name, offsetX + mouseX, offsetY + mouseY, minecraft.fontRenderer);
+			if (entry != null) drawHoveringText(entry.name, offsetX + mouseX, offsetY + mouseY);
 		}
 	}
 

@@ -1,14 +1,23 @@
 package openmods.gui;
 
 import java.io.IOException;
+import java.util.List;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.SoundHandler;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import openmods.gui.component.BaseComposite;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+
+import com.google.common.base.Preconditions;
 
 public abstract class ComponentGui extends GuiContainer {
 
@@ -18,10 +27,58 @@ public abstract class ComponentGui extends GuiContainer {
 		super(container);
 		this.xSize = width;
 		this.ySize = height;
-		root = createRoot();
+		root = createRoot(createParent());
 	}
 
-	protected abstract BaseComposite createRoot();
+	private IComponentParent createParent() {
+		return new IComponentParent() {
+
+			@Override
+			public SoundHandler getSoundHandler() {
+				return mc.getSoundHandler();
+			}
+
+			@Override
+			public Minecraft getMinecraft() {
+				return mc;
+			}
+
+			@Override
+			public RenderItem getItemRenderer() {
+				return itemRender;
+			}
+
+			@Override
+			public FontRenderer getFontRenderer() {
+				return fontRendererObj;
+			}
+
+			@Override
+			public void drawItemStackTooltip(ItemStack stack, int x, int y) {
+				drawItemStackTooltip(stack, x, y);
+			}
+
+			@Override
+			public void drawHoveringText(List<String> textLines, int x, int y) {
+				drawHoveringText(textLines, x, y);
+			}
+
+			@Override
+			public void drawGradientRect(int left, int top, int right, int bottom, int startColor, int endColor) {
+				drawGradientRect(left, top, right, bottom, startColor, endColor);
+			}
+
+			private ResourceLocation texture;
+
+			@Override
+			public void bindTexture(ResourceLocation texture) {
+				Preconditions.checkNotNull(texture);
+				if (this.texture == null || this.texture.equals(texture)) mc.renderEngine.bindTexture(texture);
+			}
+		};
+	}
+
+	protected abstract BaseComposite createRoot(IComponentParent parent);
 
 	@Override
 	public void updateScreen() {
@@ -65,7 +122,7 @@ public abstract class ComponentGui extends GuiContainer {
 		preRender(mouseX, mouseY);
 		GL11.glPushMatrix();
 		GL11.glTranslated(this.guiLeft, this.guiTop, 0);
-		root.render(this.mc, 0, 0, mouseX - this.guiLeft, mouseY - this.guiTop);
+		root.render(0, 0, mouseX - this.guiLeft, mouseY - this.guiTop);
 		GL11.glPopMatrix();
 	}
 
@@ -79,7 +136,7 @@ public abstract class ComponentGui extends GuiContainer {
 		super.drawScreen(par1, par2, par3);
 		prepareRenderState();
 		GL11.glPushMatrix();
-		root.renderOverlay(this.mc, this.guiLeft, this.guiTop, par1 - this.guiLeft, par2 - this.guiTop);
+		root.renderOverlay(this.guiLeft, this.guiTop, par1 - this.guiLeft, par2 - this.guiTop);
 		GL11.glPopMatrix();
 		restoreRenderState();
 	}

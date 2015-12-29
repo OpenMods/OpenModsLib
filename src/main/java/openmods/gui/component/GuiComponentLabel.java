@@ -2,9 +2,9 @@ package openmods.gui.component;
 
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import openmods.api.IValueReceiver;
+import openmods.gui.IComponentParent;
 
 import org.lwjgl.opengl.GL11;
 
@@ -21,33 +21,28 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 	private int additionalLineHeight = 0;
 	private List<String> tooltip;
 
-	private static FontRenderer getFontRenderer() {
-		return Minecraft.getMinecraft().fontRenderer;
+	public GuiComponentLabel(IComponentParent parent, int x, int y, String text) {
+		this(parent, x, y, parent.getFontRenderer().getStringWidth(text), parent.getFontRenderer().FONT_HEIGHT, text);
 	}
 
-	public GuiComponentLabel(int x, int y, String text) {
-		this(x, y, getFontRenderer().getStringWidth(text), getFontRenderer().FONT_HEIGHT, text);
-	}
-
-	public GuiComponentLabel(int x, int y, int width, int height, String text) {
-		super(x, y);
+	public GuiComponentLabel(IComponentParent parent, int x, int y, int width, int height, String text) {
+		super(parent, x, y);
 		this.text = text;
 		this.maxHeight = height;
 		this.maxWidth = width;
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<String> getFormattedText(FontRenderer fr) {
 		if (formattedText == null) {
-			if (Strings.isNullOrEmpty(text)) formattedText = ImmutableList.of();
+			if (Strings.isNullOrEmpty(text)) formattedText = ImmutableList.<String> of();
 			else formattedText = ImmutableList.copyOf(fr.listFormattedStringToWidth(text, getMaxWidth()));
 		}
 		return formattedText;
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		final FontRenderer fontRenderer = minecraft.fontRenderer;
+	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+		final FontRenderer fontRenderer = parent.getFontRenderer();
 
 		if (getMaxHeight() < fontRenderer.FONT_HEIGHT) return;
 		if (getMaxWidth() < fontRenderer.getCharWidth('m')) return;
@@ -66,14 +61,14 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 	}
 
 	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (tooltip != null && !tooltip.isEmpty() && isMouseOver(mouseX, mouseY)) {
-			drawHoveringText(tooltip, offsetX + mouseX, offsetY + mouseY, minecraft.fontRenderer);
+			drawHoveringText(tooltip, offsetX + mouseX, offsetY + mouseY);
 		}
 	}
 
 	private int calculateHeight() {
-		FontRenderer fr = getFontRenderer();
+		final FontRenderer fr = parent.getFontRenderer();
 		int offset = 0;
 		int lineCount = 0;
 		for (String s : getFormattedText(fr)) {
@@ -85,7 +80,7 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 	}
 
 	private int calculateWidth() {
-		FontRenderer fr = getFontRenderer();
+		final FontRenderer fr = parent.getFontRenderer();
 		int maxWidth = 0;
 		for (String s : getFormattedText(fr)) {
 			if (s == null) break;
@@ -115,7 +110,7 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 	}
 
 	public int getFontHeight() {
-		return getFontRenderer().FONT_HEIGHT + additionalLineHeight;
+		return parent.getFontRenderer().FONT_HEIGHT + additionalLineHeight;
 	}
 
 	public int getMaxHeight() {
@@ -155,7 +150,7 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 	}
 
 	public boolean isOverflowing() {
-		FontRenderer fr = getFontRenderer();
+		final FontRenderer fr = parent.getFontRenderer();
 		return getFormattedText(fr).size() > getMaxLines();
 	}
 

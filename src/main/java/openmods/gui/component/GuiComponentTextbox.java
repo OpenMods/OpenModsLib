@@ -1,8 +1,8 @@
 package openmods.gui.component;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
 import openmods.api.IValueReceiver;
+import openmods.gui.IComponentParent;
 import openmods.gui.listener.IValueChangedListener;
 
 public class GuiComponentTextbox extends BaseComponent implements IValueReceiver<String> {
@@ -14,11 +14,11 @@ public class GuiComponentTextbox extends BaseComponent implements IValueReceiver
 
 	private IValueChangedListener<String> listener;
 
-	public GuiComponentTextbox(int x, int y, int width, int height) {
-		super(x, y);
+	public GuiComponentTextbox(IComponentParent parent, int x, int y, int width, int height) {
+		super(parent, x, y);
 		this.width = width;
 		this.height = height;
-		textfield = new GuiTextField(Minecraft.getMinecraft().fontRenderer, x, y, width, height);
+		textfield = new GuiTextField(0, parent.getFontRenderer(), x, y, width, height);
 	}
 
 	@Override
@@ -32,12 +32,9 @@ public class GuiComponentTextbox extends BaseComponent implements IValueReceiver
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		textfield.drawTextBox();
 	}
-
-	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	@Override
 	public void keyTyped(char par1, int par2) {

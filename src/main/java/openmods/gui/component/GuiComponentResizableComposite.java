@@ -1,13 +1,13 @@
 package openmods.gui.component;
 
-import net.minecraft.client.Minecraft;
+import openmods.gui.IComponentParent;
 
 public abstract class GuiComponentResizableComposite extends BaseComposite {
 	protected int width;
 	protected int height;
 
-	public GuiComponentResizableComposite(int x, int y, int width, int height) {
-		super(x, y);
+	public GuiComponentResizableComposite(IComponentParent parent, int x, int y, int width, int height) {
+		super(parent, x, y);
 		this.width = width;
 		this.height = height;
 	}
@@ -29,8 +29,5 @@ public abstract class GuiComponentResizableComposite extends BaseComposite {
 	public void setHeight(int height) {
 		this.height = height;
 	}
-
-	@Override
-	protected abstract void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY);
 
 }

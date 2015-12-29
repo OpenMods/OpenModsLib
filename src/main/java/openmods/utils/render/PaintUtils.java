@@ -4,13 +4,13 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import openmods.Mods;
 
 import com.google.common.collect.Sets;
-
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.registry.GameRegistry;
 
 public class PaintUtils {
 
@@ -64,8 +64,8 @@ public class PaintUtils {
 		return allowed.contains(block);
 	}
 
-	public boolean isAllowedToReplace(World world, int x, int y, int z) {
-		if (world.isAirBlock(x, y, z)) { return false; }
-		return isAllowedToReplace(world.getBlock(x, y, z));
+	public boolean isAllowedToReplace(World world, BlockPos pos) {
+		if (world.isAirBlock(pos)) { return false; }
+		return isAllowedToReplace(world.getBlockState(pos).getBlock());
 	}
 }

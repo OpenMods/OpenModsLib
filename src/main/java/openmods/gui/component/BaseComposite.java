@@ -2,7 +2,7 @@ package openmods.gui.component;
 
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
+import openmods.gui.IComponentParent;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -13,8 +13,8 @@ public abstract class BaseComposite extends BaseComponent {
 
 	protected final List<BaseComponent> tickingComponents = Lists.newArrayList();
 
-	public BaseComposite(int x, int y) {
-		super(x, y);
+	public BaseComposite(IComponentParent parent, int x, int y) {
+		super(parent, x, y);
 	}
 
 	protected boolean areChildrenActive() {
@@ -35,13 +35,13 @@ public abstract class BaseComposite extends BaseComponent {
 		return isComponentEnabled(component) && component.isMouseOver(mouseX, mouseY);
 	}
 
-	protected abstract void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY);
+	protected void renderComponentBackground(int offsetX, int offsetY, int mouseX, int mouseY) {}
 
-	protected void renderComponentForeground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
+	protected void renderComponentForeground(int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	@Override
-	public final void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		renderComponentBackground(minecraft, offsetX, offsetY, mouseX, mouseY);
+	public final void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+		renderComponentBackground(offsetX, offsetY, mouseX, mouseY);
 
 		if (!areChildrenActive()) return;
 
@@ -53,17 +53,17 @@ public abstract class BaseComposite extends BaseComponent {
 		for (BaseComponent component : components)
 			if (isComponentEnabled(component)) {
 
-				component.render(minecraft, ownX, ownY, relMouseX, relMouseY);
+				component.render(ownX, ownY, relMouseX, relMouseY);
 			}
 
-		renderComponentForeground(minecraft, offsetX, offsetY, mouseX, mouseY);
+		renderComponentForeground(offsetX, offsetY, mouseX, mouseY);
 	}
 
-	protected void renderComponentOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
+	protected void renderComponentOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	@Override
-	public final void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		renderComponentOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
+	public final void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
+		renderComponentOverlay(offsetX, offsetY, mouseX, mouseY);
 
 		if (!areChildrenActive()) return;
 
@@ -74,7 +74,7 @@ public abstract class BaseComposite extends BaseComponent {
 
 		for (BaseComponent component : components)
 			if (isComponentEnabled(component)) {
-				component.renderOverlay(minecraft, ownX, ownY, relMouseX, relMouseY);
+				component.renderOverlay(ownX, ownY, relMouseX, relMouseY);
 			}
 
 	}

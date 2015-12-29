@@ -4,16 +4,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
+import openmods.gui.Icon;
 import openmods.gui.component.*;
 import openmods.utils.RecipeUtils;
-import openmods.utils.render.FakeIcon;
 
 import com.google.common.base.Strings;
 
 public class StandardRecipePage extends PageBase {
 
-	public static IIcon iconCraftingGrid = FakeIcon.createSheetIcon(0, 180, 56, 56);
-	public static IIcon iconArrow = FakeIcon.createSheetIcon(60, 198, 48, 15);
+	public static IIcon iconCraftingGrid = Icon.createSheetIcon(0, 180, 56, 56);
+	public static IIcon iconArrow = Icon.createSheetIcon(60, 198, 48, 15);
 
 	public StandardRecipePage(String title, String description, ItemStack resultingItem) {
 		addComponent(new GuiComponentSprite(75, 40, iconArrow, BOOK_TEXTURE));

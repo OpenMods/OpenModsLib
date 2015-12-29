@@ -1,20 +1,14 @@
 package openmods.gui.component;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.item.ItemStack;
+import openmods.gui.IComponentParent;
 import openmods.gui.misc.BoxRenderer;
-
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 public class GuiComponentTab extends GuiComponentResizableComposite {
 
 	private static final int FOLDED_WIDTH = 24;
 	private static final int FOLDED_HEIGHT = 24;
-	protected static RenderItem itemRenderer = new RenderItem();
 	protected final int expandedWidth;
 	protected final int expandedHeight;
 	private boolean active = false;
@@ -34,8 +28,8 @@ public class GuiComponentTab extends GuiComponentResizableComposite {
 		protected void renderLeftEdge(Gui gui, int height) {}
 	};
 
-	public GuiComponentTab(int color, ItemStack iconStack, int expandedWidth, int expandedHeight) {
-		super(-5, 0, FOLDED_WIDTH, FOLDED_HEIGHT);
+	public GuiComponentTab(IComponentParent parent, int color, ItemStack iconStack, int expandedWidth, int expandedHeight) {
+		super(parent, -5, 0, FOLDED_WIDTH, FOLDED_HEIGHT);
 		this.expandedWidth = expandedWidth;
 		this.expandedHeight = expandedHeight;
 		this.iconStack = iconStack;
@@ -48,7 +42,7 @@ public class GuiComponentTab extends GuiComponentResizableComposite {
 	}
 
 	@Override
-	public void renderComponentBackground(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void renderComponentBackground(int offsetX, int offsetY, int mouseX, int mouseY) {
 		double targetWidth = active? expandedWidth : FOLDED_WIDTH;
 		double targetHeight = active? expandedHeight : FOLDED_HEIGHT;
 		if (width != targetWidth) dWidth += (targetWidth - dWidth) / 4;
@@ -60,14 +54,7 @@ public class GuiComponentTab extends GuiComponentResizableComposite {
 		bindComponentsSheet();
 		BOX_RENDERER.render(this, offsetX + x, offsetY + y, width, height, color);
 
-		GL11.glColor4f(1, 1, 1, 1);
-		RenderHelper.enableGUIStandardItemLighting();
-		GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-		itemRenderer.renderItemAndEffectIntoGUI(minecraft.fontRenderer, minecraft.getTextureManager(), iconStack,
-				offsetX + x + 3, offsetY + y + 3);
-		GL11.glColor3f(1, 1, 1);
-		GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-		GL11.glDisable(GL11.GL_LIGHTING);
+		drawItemStack(iconStack, offsetX + x + 3, offsetY + y + 3);
 	}
 
 	public boolean isOrigin(int x, int y) {

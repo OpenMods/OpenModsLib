@@ -13,17 +13,17 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 import openmods.Log;
+import openmods.gui.Icon;
 import openmods.gui.component.*;
 import openmods.gui.listener.IMouseDownListener;
-import openmods.utils.render.FakeIcon;
 
 import org.apache.logging.log4j.Level;
 
 public abstract class PageBase extends BaseComposite {
 
 	public enum ActionIcon {
-		YOUTUBE(FakeIcon.createSheetIcon(0, 236, 12, 8)),
-		FOLDER(FakeIcon.createSheetIcon(12, 236, 12, 8));
+		YOUTUBE(Icon.createSheetIcon(0, 236, 12, 8)),
+		FOLDER(Icon.createSheetIcon(12, 236, 12, 8));
 
 		private ActionIcon(IIcon icon) {
 			this.icon = icon;

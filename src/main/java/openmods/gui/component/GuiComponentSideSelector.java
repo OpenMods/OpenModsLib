@@ -4,7 +4,6 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -14,6 +13,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
 import openmods.api.IValueReceiver;
+import openmods.gui.IComponentParent;
 import openmods.gui.listener.IListenerBase;
 import openmods.gui.misc.*;
 import openmods.gui.misc.SidePicker.HitCoord;
@@ -33,8 +33,6 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		public void onSideToggled(EnumFacing side, boolean currentState);
 	}
 
-	private final RenderBlocks blockRender = new RenderBlocks();
-
 	private final TrackballWrapper trackball = new TrackballWrapper(1, 40);
 
 	private final int diameter;
@@ -51,8 +49,8 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	private int meta;
 	private TileEntity te;
 
-	public GuiComponentSideSelector(int x, int y, double scale, Block block, int meta, TileEntity te, boolean highlightSelectedSides) {
-		super(x, y);
+	public GuiComponentSideSelector(IComponentParent parent, int x, int y, double scale, Block block, int meta, TileEntity te, boolean highlightSelectedSides) {
+		super(parent, x, y);
 		this.scale = scale;
 		this.diameter = MathHelper.ceiling_double_int(scale * SQRT_3);
 		this.block = block;
@@ -62,7 +60,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (isInInitialPosition == false || Mouse.isButtonDown(2)) {
 			trackball.setTransform(MathUtils.createEntityRotateMatrix(minecraft.renderViewEntity));
 			isInInitialPosition = true;
@@ -95,9 +93,6 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 		GL11.glPopMatrix();
 	}
-
-	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	private static void drawHighlight(Tessellator t, SidePicker.Side side, int color) {
 		GL11.glDisable(GL11.GL_LIGHTING);

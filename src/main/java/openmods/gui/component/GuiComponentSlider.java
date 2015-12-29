@@ -1,8 +1,9 @@
 package openmods.gui.component;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.MathHelper;
 import openmods.api.IValueReceiver;
+import openmods.gui.IComponentParent;
 import openmods.gui.listener.IValueChangedListener;
 
 import org.lwjgl.opengl.GL11;
@@ -20,13 +21,13 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 
 	private IValueChangedListener<Integer> listener;
 
-	public GuiComponentSlider(int x, int y, int width, int min, int max, int initialValue, boolean showValue) {
-		this(x, y, width, min, max, initialValue);
+	public GuiComponentSlider(IComponentParent parent, int x, int y, int width, int min, int max, int initialValue, boolean showValue) {
+		this(parent, x, y, width, min, max, initialValue);
 		this.showValue = showValue;
 	}
 
-	public GuiComponentSlider(int x, int y, int width, int min, int max, int initialValue) {
-		super(x, y);
+	public GuiComponentSlider(IComponentParent parent, int x, int y, int width, int min, int max, int initialValue) {
+		super(parent, x, y);
 		this.width = width;
 		this.min = min;
 		this.max = max;
@@ -37,7 +38,7 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		GL11.glColor4f(1, 1, 1, 1);
 		int left = offsetX + x;
 		int top = offsetY + y;
@@ -55,13 +56,11 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 		drawTexturedModalRect(handleX, top + 1, 3, 70, 9, 10);
 		if (showValue) {
 			String label = formatValue(value);
-			int strWidth = minecraft.fontRenderer.getStringWidth(label);
-			minecraft.fontRenderer.drawString(label, handleX + 4 - (strWidth / 2), top + 15, 4210752);
+			final FontRenderer fr = parent.getFontRenderer();
+			int strWidth = fr.getStringWidth(label);
+			fr.drawString(label, handleX + 4 - (strWidth / 2), top + 15, 4210752);
 		}
 	}
-
-	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	@Override
 	public void mouseDrag(int mouseX, int mouseY, int button, long time) {

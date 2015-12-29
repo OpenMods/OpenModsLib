@@ -2,9 +2,9 @@ package openmods.gui.component;
 
 import java.awt.Color;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import openmods.api.IValueReceiver;
+import openmods.gui.IComponentParent;
 import openmods.gui.listener.IValueChangedListener;
 
 import org.lwjgl.opengl.GL11;
@@ -15,8 +15,8 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 	public int tone;
 	private IValueChangedListener<Integer> listener;
 
-	public GuiComponentColorPicker(int x, int y) {
-		super(x, y);
+	public GuiComponentColorPicker(IComponentParent parent, int x, int y) {
+		super(parent, x, y);
 	}
 
 	public int getColor() {
@@ -72,7 +72,7 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		GL11.glColor4f(1, 1, 1, 1);
 
 		int renderX = offsetX + x;
@@ -105,9 +105,6 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 				renderX + pointX + 1,
 				renderY + pointY + 1, 0xCCCC0000);
 	}
-
-	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	@Override
 	public void setValue(Integer value) {

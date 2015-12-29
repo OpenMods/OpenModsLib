@@ -1,16 +1,12 @@
 package openmods.gui.component;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.ResourceLocation;
-import openmods.utils.render.FakeIcon;
-
-import org.lwjgl.opengl.GL11;
+import net.minecraft.client.renderer.GlStateManager;
+import openmods.gui.IComponentParent;
+import openmods.gui.Icon;
 
 public class GuiComponentSprite extends BaseComponent {
 
-	protected IIcon icon;
-	protected ResourceLocation texture;
+	protected Icon icon;
 	protected float r = 1, g = 1, b = 1;
 	protected boolean overlay_mode;
 
@@ -24,14 +20,13 @@ public class GuiComponentSprite extends BaseComponent {
 	}
 
 	public static class Sprites {
-		public static IIcon hammer = FakeIcon.createSheetIcon(0, 233, 23, 23);
-		public static IIcon plus = FakeIcon.createSheetIcon(23, 242, 13, 13);
-		public static IIcon result = FakeIcon.createSheetIcon(36, 241, 22, 15);
+		public static Icon hammer = Icon.createSheetIcon(WIDGETS, 0, 233, 23, 23);
+		public static Icon plus = Icon.createSheetIcon(WIDGETS, 23, 242, 13, 13);
+		public static Icon result = Icon.createSheetIcon(WIDGETS, 36, 241, 22, 15);
 	}
 
-	public GuiComponentSprite(int x, int y, IIcon icon, ResourceLocation texture) {
-		super(x, y);
-		this.texture = texture;
+	public GuiComponentSprite(IComponentParent parent, int x, int y, Icon icon) {
+		super(parent, x, y);
 		this.icon = icon;
 	}
 
@@ -43,33 +38,33 @@ public class GuiComponentSprite extends BaseComponent {
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (!overlay_mode) doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
+	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+		if (!overlay_mode) doRender(offsetX, offsetY, mouseX, mouseY);
 	}
 
 	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (overlay_mode) doRender(minecraft, offsetX, offsetY, mouseX, mouseY);
+	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
+		if (overlay_mode) doRender(offsetX, offsetY, mouseX, mouseY);
 	}
 
-	protected void doRender(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	protected void doRender(int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (icon == null) return;
-		if (texture != null) minecraft.renderEngine.bindTexture(texture);
-		GL11.glColor3f(r, g, b);
-		drawTexturedModelRectFromIcon(offsetX + x, offsetY + y, icon, icon.getIconWidth(), icon.getIconHeight());
+
+		GlStateManager.color(r, g, b);
+		drawSprite(icon, offsetX + x, offsetY + y);
 	}
 
 	@Override
 	public int getWidth() {
-		return icon != null? icon.getIconWidth() : 0;
+		return icon != null? icon.width : 0;
 	}
 
 	@Override
 	public int getHeight() {
-		return icon != null? icon.getIconHeight() : 0;
+		return icon != null? icon.height : 0;
 	}
 
-	public void setIcon(IIcon icon) {
+	public void setIcon(Icon icon) {
 		this.icon = icon;
 	}
 }

@@ -2,18 +2,15 @@ package openmods.gui.component;
 
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
+import openmods.gui.IComponentParent;
 
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.collect.ImmutableList;
 
 public class GuiComponentItemStack extends BaseComponent {
-
-	protected static RenderItem itemRenderer = new RenderItem();
 
 	private final ItemStack stack;
 
@@ -25,8 +22,8 @@ public class GuiComponentItemStack extends BaseComponent {
 
 	private final List<String> displayName;
 
-	public GuiComponentItemStack(int x, int y, ItemStack stack, boolean drawTooltip, float scale) {
-		super(x, y);
+	public GuiComponentItemStack(IComponentParent parent, int x, int y, ItemStack stack, boolean drawTooltip, float scale) {
+		super(parent, x, y);
 		this.stack = stack;
 		this.drawTooltip = drawTooltip;
 		this.scale = scale;
@@ -46,7 +43,7 @@ public class GuiComponentItemStack extends BaseComponent {
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (scale != 1) {
 			GL11.glPushMatrix();
 			GL11.glScalef(scale, scale, 1);
@@ -56,8 +53,8 @@ public class GuiComponentItemStack extends BaseComponent {
 	}
 
 	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (drawTooltip && isMouseOver(mouseX, mouseY)) drawHoveringText(displayName, offsetX + mouseX, offsetY + mouseY, minecraft.fontRenderer);
+	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
+		if (drawTooltip && isMouseOver(mouseX, mouseY)) drawHoveringText(displayName, offsetX + mouseX, offsetY + mouseY);
 	}
 
 }

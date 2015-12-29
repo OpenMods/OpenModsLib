@@ -1,7 +1,7 @@
 package openmods.gui.component;
 
-import net.minecraft.client.Minecraft;
 import openmods.api.IValueReceiver;
+import openmods.gui.IComponentParent;
 
 public class GuiComponentLevel extends BaseComponent implements IValueReceiver<Float> {
 	private int width;
@@ -11,8 +11,8 @@ public class GuiComponentLevel extends BaseComponent implements IValueReceiver<F
 	private float value;
 	private float min, max;
 
-	public GuiComponentLevel(int x, int y, int width, int height, int levelColor, int backgroundColor, float min, float max, float value) {
-		super(x, y);
+	public GuiComponentLevel(IComponentParent parent, int x, int y, int width, int height, int levelColor, int backgroundColor, float min, float max, float value) {
+		super(parent, x, y);
 		this.width = width;
 		this.height = height;
 		this.fColor = levelColor;
@@ -50,7 +50,7 @@ public class GuiComponentLevel extends BaseComponent implements IValueReceiver<F
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		int oX = x + offsetX;
 		int oY = y + offsetY;
 		// Fill with background
@@ -58,7 +58,4 @@ public class GuiComponentLevel extends BaseComponent implements IValueReceiver<F
 		// Draw level
 		drawRect(oX, oY + (height - (int)getFillHeight()), oX + width, oY + height, fColor);
 	}
-
-	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 }

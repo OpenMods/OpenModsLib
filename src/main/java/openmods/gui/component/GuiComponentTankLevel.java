@@ -1,12 +1,11 @@
 package openmods.gui.component;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.util.IIcon;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueReceiver;
+import openmods.gui.IComponentParent;
 import openmods.gui.misc.BoxRenderer;
 
 public class GuiComponentTankLevel extends GuiComponentResizable {
@@ -18,13 +17,13 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 
 	private int capacity;
 
-	public GuiComponentTankLevel(int x, int y, int width, int height, int capacity) {
-		super(x, y, width, height);
+	public GuiComponentTankLevel(IComponentParent parent, int x, int y, int width, int height, int capacity) {
+		super(parent, x, y, width, height);
 		this.capacity = capacity;
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		bindComponentsSheet();
 		BOX_RENDERER.render(this, x + offsetX, y + offsetY, width, height, BORDER_COLOR);
 
@@ -32,7 +31,7 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 		final Fluid fluid = fluidStack.getFluid();
 		if (fluid == null) return;
 
-		minecraft.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
+		parent.bindTexture(TextureMap.locationBlocksTexture);
 		Tessellator tessellator = Tessellator.instance;
 		tessellator.startDrawingQuads();
 		tessellator.setColorOpaque_F(1, 1, 1);
@@ -56,9 +55,6 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 			tessellator.draw();
 		}
 	}
-
-	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	public void setFluid(FluidStack value) {
 		fluidStack = value;
