@@ -1,13 +1,14 @@
 package openmods.tileentity;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import openmods.api.IInventoryCallback;
 import openmods.block.OpenBlock;
 import openmods.geometry.Orientation;
@@ -28,7 +29,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	public void setup() {}
 
 	public DimCoord getDimCoords() {
-		return new DimCoord(worldObj.provider.getDimensionId(), getPos());
+		return new DimCoord(worldObj.provider.getDimensionId(), pos);
 	}
 
 	public Orientation getOrientation() {
@@ -40,58 +41,37 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return openBlock.getOrientation(getBlockMetadata());
 	}
 
-	@SideOnly(Side.CLIENT)
-	public void prepareForInventoryRender(Block block, int metadata) {
-		if (this.worldObj != null) {
-			System.out.println("SEVERE PROGRAMMER ERROR! Inventory Render on World TileEntity. Expect hell!");
-		} // But of course, we continue, because YOLO.
-		isUsedForClientInventoryRendering = true;
-		this.blockType = block;
-		this.blockMetadata = metadata;
-	}
-
 	public boolean isAddedToWorld() {
 		return worldObj != null;
 	}
 
-	private TileEntity getTileEntity(int x, int y, int z) {
-		return (worldObj != null && worldObj.blockExists(x, y, z))? worldObj.getTileEntity(x, y, z) : null;
+	private TileEntity getTileEntity(BlockPos blockPos) {
+		return (worldObj != null && worldObj.isBlockLoaded(blockPos))? worldObj.getTileEntity(blockPos) : null;
 	}
 
-	public TileEntity getTileInDirection(ForgeDirection direction) {
-		return getNeighbour(direction.offsetX, direction.offsetY, direction.offsetZ);
+	public TileEntity getTileInDirection(EnumFacing direction) {
+		return getTileEntity(pos.offset(direction));
 	}
 
-	public TileEntity getNeighbour(int dx, int dy, int dz) {
-		return getTileEntity(xCoord + dx, yCoord + dy, zCoord + dz);
-	}
-
-	@Override
-	public String toString() {
-		return String.format("%s,%s,%s", xCoord, yCoord, zCoord);
-	}
-
-	public boolean isAirBlock(ForgeDirection direction) {
-		return worldObj != null
-				&& worldObj.isAirBlock(xCoord + direction.offsetX, yCoord
-						+ direction.offsetY, zCoord + direction.offsetZ);
+	public boolean isAirBlock(EnumFacing direction) {
+		return worldObj != null && worldObj.isAirBlock(getPos().offset(direction));
 	}
 
 	public void sendBlockEvent(int event, int param) {
-		worldObj.addBlockEvent(xCoord, yCoord, zCoord, getBlockType(), event, param);
+		worldObj.addBlockEvent(pos, getBlockType(), event, param);
 	}
 
 	@Override
-	public boolean shouldRefresh(Block oldBlock, Block newBlock, int oldMeta, int newMeta, World world, int x, int y, int z) {
-		return oldBlock != newBlock;
+	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+		return oldState.getBlock() != newState.getBlock();
 	}
 
 	public void openGui(Object instance, EntityPlayer player) {
-		player.openGui(instance, -1, worldObj, xCoord, yCoord, zCoord);
+		player.openGui(instance, -1, worldObj, pos.getX(), pos.getY(), pos.getZ());
 	}
 
 	public AxisAlignedBB getBB() {
-		return AxisAlignedBB.getBoundingBox(xCoord, yCoord, zCoord, xCoord + 1, yCoord + 1, zCoord + 1);
+		return new AxisAlignedBB(pos, pos.add(1, 1, 1));
 	}
 
 	public boolean isRenderedInInventory() {
@@ -119,7 +99,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public void markUpdated() {
-		worldObj.markTileEntityChunkModified(xCoord, yCoord, zCoord, this);
+		worldObj.markChunkDirty(pos, this);
 	}
 
 	protected IInventoryCallback createInventoryCallback() {
@@ -136,6 +116,6 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public boolean isValid(EntityPlayer player) {
-		return (worldObj.getTileEntity(xCoord, yCoord, zCoord) == this) && (player.getDistanceSq(xCoord + 0.5, yCoord + 0.5, zCoord + 0.5) <= 64.0D);
+		return (worldObj.getTileEntity(pos) == this) && (player.getDistanceSqToCenter(pos) <= 64.0D);
 	}
 }

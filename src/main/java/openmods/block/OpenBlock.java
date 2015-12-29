@@ -1,10 +1,11 @@
 package openmods.block;
 
-import java.util.*;
+import java.util.EnumSet;
+import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -18,22 +19,18 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import openmods.api.*;
 import openmods.config.game.IRegisterableBlock;
-import openmods.geometry.BlockSpaceTransform;
 import openmods.geometry.Orientation;
 import openmods.inventory.IInventoryProvider;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.BlockNotifyFlags;
-import openmods.utils.BlockUtils;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public static final int OPEN_MODS_TE_GUI = -1;
 	private static final int EVENT_ADDED = -1;
 
 	private enum TileEntityCapability {
-		ICON_PROVIDER(IIconProvider.class),
 		GUI_PROVIDER(IHasGui.class),
 		ACTIVATE_LISTENER(IActivateAwareTile.class),
 		SURFACE_ATTACHEMENT(ISurfaceAttachment.class),
@@ -76,8 +73,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	protected BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
 	protected Orientation inventoryRenderOrientation;
 	protected RenderMode renderMode = RenderMode.BLOCK_ONLY;
-
-	public IIcon[] textures = new IIcon[6];
 
 	public boolean hasCapability(TileEntityCapability capability) {
 		return teCapabilities.contains(capability);
@@ -163,32 +158,17 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	public void setBoundsBasedOnOrientation(Orientation orientation) {}
 
-	public static OpenBlock getOpenBlock(IBlockAccess world, int x, int y, int z) {
+	public static OpenBlock getOpenBlock(IBlockAccess world, BlockPos blockPos) {
 		if (world == null) return null;
-		Block block = world.getBlock(x, y, z);
+		Block block = world.getBlockState(blockPos).getBlock();
 		if (block instanceof OpenBlock) return (OpenBlock)block;
 		return null;
 	}
 
 	@Override
-	public TileEntity createTileEntity(World world, int metadata) {
+	public TileEntity createTileEntity(World world, IBlockState state) {
 		final TileEntity te = createTileEntity();
-
-		if (te != null) {
-			te.blockType = this;
-			if (te instanceof OpenTileEntity) {
-				((OpenTileEntity)te).setup();
-			}
-		}
-
-		return te;
-	}
-
-	public TileEntity createTileEntityForRender() {
-		final TileEntity te = createTileEntity();
-		Preconditions.checkNotNull(te, "Trying to get rendering TE for '%s', but it's not configured", this);
-		te.blockType = this;
-		te.blockMetadata = 0;
+		if (te instanceof OpenTileEntity) ((OpenTileEntity)te).setup();
 		return te;
 	}
 
@@ -210,86 +190,13 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	@SuppressWarnings("deprecation")
-	public ItemStack getPickBlock(MovingObjectPosition target, World world, int x, int y, int z) {
+	public ItemStack getPickBlock(MovingObjectPosition target, World world, BlockPos blockPos, EntityPlayer player) {
 		if (hasCapability(TileEntityCapability.CUSTOM_PICK_ITEM)) {
-			TileEntity te = world.getTileEntity(x, y, z);
+			TileEntity te = world.getTileEntity(blockPos);
 			if (te instanceof ICustomPickItem) return ((ICustomPickItem)te).getPickBlock();
 		}
 
-		return suppressPickBlock()? null : super.getPickBlock(target, world, x, y, z);
-	}
-
-	private static List<ItemStack> getTileBreakDrops(TileEntity te) {
-		List<ItemStack> breakDrops = Lists.newArrayList();
-		BlockUtils.getTileInventoryDrops(te, breakDrops);
-		if (te instanceof ICustomBreakDrops) ((ICustomBreakDrops)te).addDrops(breakDrops);
-		return breakDrops;
-	}
-
-	@Override
-	public void breakBlock(World world, int x, int y, int z, Block block, int meta) {
-		if (shouldDropFromTeAfterBreak()) {
-			final TileEntity te = world.getTileEntity(x, y, z);
-			if (te != null) {
-				if (te instanceof IBreakAwareTile) ((IBreakAwareTile)te).onBlockBroken();
-
-				for (ItemStack stack : getTileBreakDrops(te))
-					BlockUtils.dropItemStackInWorld(world, x, y, z, stack);
-
-				world.removeTileEntity(x, y, z);
-			}
-		}
-		super.breakBlock(world, x, y, z, block, meta);
-	}
-
-	protected ArrayList<ItemStack> getDropsWithTileEntity(World world, EntityPlayer player, int x, int y, int z) {
-		if (hasCapability(TileEntityCapability.CUSTOM_HARVEST_DROPS)) {
-			final TileEntity te = world.getTileEntity(x, y, z);
-
-			if (te instanceof ICustomHarvestDrops) {
-				final ICustomHarvestDrops dropper = (ICustomHarvestDrops)te;
-
-				final ArrayList<ItemStack> drops;
-				if (!dropper.suppressNormalHarvestDrops()) {
-					final int metadata = world.getBlockMetadata(x, y, z);
-					int fortune = player != null? EnchantmentHelper.getFortuneModifier(player) : 0;
-					drops = super.getDrops(world, x, y, z, metadata, fortune);
-				} else {
-					drops = Lists.newArrayList();
-				}
-
-				dropper.addHarvestDrops(player, drops);
-				return drops;
-			}
-		}
-
-		return null;
-	}
-
-	@Override
-	public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
-		if (willHarvest && shouldOverrideHarvestWithTeLogic()) {
-			List<ItemStack> drops = getDropsWithTileEntity(world, player, x, y, z);
-			if (drops != null) BlockDropsStore.instance.storeDrops(world, x, y, z, drops);
-		}
-
-		return super.removedByPlayer(world, player, x, y, z, willHarvest);
-	}
-
-	@Override
-	public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
-		ArrayList<ItemStack> result = BlockDropsStore.instance.harvestDrops(world, x, y, z);
-
-		// Case A - drops stored earlier (by this.removedByPlayer) and TE is already dead
-		if (result != null) return result;
-
-		// Case B - drops removed in other way (explosion) but TE may be still alive
-		result = getDropsWithTileEntity(world, null, x, y, z);
-		if (result != null) return result;
-
-		// Case C - TE is dead, just drop vanilla stuff
-		return super.getDrops(world, x, y, z, metadata, fortune);
+		return suppressPickBlock()? null : super.getPickBlock(target, world, blockPos, player);
 	}
 
 	@Override
@@ -304,59 +211,56 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public boolean hasTileEntity(int metadata) {
+	public boolean hasTileEntity(IBlockState state) {
 		return teClass != null;
 	}
 
-	public final static boolean isNeighborBlockSolid(IBlockAccess world, int x, int y, int z, ForgeDirection side) {
-		x += side.offsetX;
-		y += side.offsetY;
-		z += side.offsetZ;
-		return world.isSideSolid(x, y, z, side.getOpposite(), false);
+	public final static boolean isNeighborBlockSolid(IBlockAccess world, BlockPos blockPos, EnumFacing side) {
+		return world.isSideSolid(blockPos.offset(side), side.getOpposite(), false);
 	}
 
-	public final static boolean areNeighborBlocksSolid(World world, int x, int y, int z, ForgeDirection... sides) {
-		for (ForgeDirection side : sides) {
-			if (isNeighborBlockSolid(world, x, y, z, side)) { return true; }
+	public final static boolean areNeighborBlocksSolid(World world, BlockPos blockPos, EnumFacing... sides) {
+		for (EnumFacing side : sides) {
+			if (isNeighborBlockSolid(world, blockPos, side)) return true;
 		}
 		return false;
 	}
 
 	@Override
-	public void onNeighborBlockChange(World world, int x, int y, int z, Block neighbour) {
+	public void onNeighborBlockChange(World world, BlockPos blockPos, IBlockState state, Block neighbour) {
 		if (hasCapabilities(TileEntityCapability.NEIGBOUR_LISTENER, TileEntityCapability.SURFACE_ATTACHEMENT)) {
-			final TileEntity te = world.getTileEntity(x, y, z);
+			final TileEntity te = world.getTileEntity(blockPos);
 			if (te instanceof INeighbourAwareTile) ((INeighbourAwareTile)te).onNeighbourChanged(neighbour);
 
 			if (te instanceof ISurfaceAttachment) {
-				final ForgeDirection direction = ((ISurfaceAttachment)te).getSurfaceDirection();
-				breakBlockIfSideNotSolid(world, x, y, z, direction);
+				final EnumFacing direction = ((ISurfaceAttachment)te).getSurfaceDirection();
+				breakBlockIfSideNotSolid(world, blockPos, direction);
 			}
 		}
 	}
 
-	protected void breakBlockIfSideNotSolid(World world, int x, int y, int z, ForgeDirection direction) {
-		if (!isNeighborBlockSolid(world, x, y, z, direction)) {
-			world.func_147480_a(x, y, z, true);
+	protected void breakBlockIfSideNotSolid(World world, BlockPos blockPos, EnumFacing direction) {
+		if (!isNeighborBlockSolid(world, blockPos, direction)) {
+			world.destroyBlock(blockPos, true);
 		}
 	}
 
 	@Override
-	public void onBlockAdded(World world, int x, int y, int z) {
-		super.onBlockAdded(world, x, y, z);
+	public void onBlockAdded(World world, BlockPos blockPos, IBlockState state) {
+		super.onBlockAdded(world, blockPos, state);
 
 		if (hasCapability(TileEntityCapability.ADD_LISTENER)) {
-			world.addBlockEvent(x, y, z, this, EVENT_ADDED, 0);
+			world.addBlockEvent(blockPos, this, EVENT_ADDED, 0);
 		}
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitX, float hitY, float hitZ) {
+	public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState state, EntityPlayer player, EnumFacing side, float hitX, float hitY, float hitZ) {
 		if (hasCapabilities(TileEntityCapability.GUI_PROVIDER, TileEntityCapability.ACTIVATE_LISTENER)) {
-			final TileEntity te = world.getTileEntity(x, y, z);
+			final TileEntity te = world.getTileEntity(blockPos);
 
 			if (te instanceof IHasGui && ((IHasGui)te).canOpenGui(player) && !player.isSneaking()) {
-				if (!world.isRemote) openGui(player, world, x, y, z);
+				if (!world.isRemote) openGui(player, world, blockPos);
 				return true;
 			}
 
@@ -367,17 +271,12 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public boolean renderAsNormalBlock() {
-		return isOpaqueCube();
-	}
-
-	@Override
-	public boolean onBlockEventReceived(World world, int x, int y, int z, int eventId, int eventParam) {
+	public boolean onBlockEventReceived(World world, BlockPos blockPos, IBlockState state, int eventId, int eventParam) {
 		if (eventId < 0 && !world.isRemote) {
 			switch (eventId) {
 				case EVENT_ADDED: {
 					if (hasCapability(TileEntityCapability.ADD_LISTENER)) {
-						final IAddAwareTile te = getTileEntity(world, x, y, z, IAddAwareTile.class);
+						final IAddAwareTile te = getTileEntity(world, blockPos, IAddAwareTile.class);
 						if (te != null) te.onAdded();
 					}
 				}
@@ -387,11 +286,11 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 			return false;
 		}
 		if (isBlockContainer) {
-			super.onBlockEventReceived(world, x, y, z, eventId, eventParam);
-			TileEntity te = world.getTileEntity(x, y, z);
+			super.onBlockEventReceived(world, blockPos, state, eventId, eventParam);
+			TileEntity te = world.getTileEntity(blockPos);
 			return te != null? te.receiveClientEvent(eventId, eventParam) : false;
 		} else {
-			return super.onBlockEventReceived(world, x, y, z, eventId, eventParam);
+			return super.onBlockEventReceived(world, blockPos, state, eventId, eventParam);
 		}
 	}
 
@@ -409,40 +308,40 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public AxisAlignedBB getSelectedBoundingBoxFromPool(World world, int x, int y, int z) {
-		setBlockBoundsBasedOnState(world, x, y, z);
-		return super.getSelectedBoundingBoxFromPool(world, x, y, z);
+	public AxisAlignedBB getSelectedBoundingBox(World world, BlockPos blockPos) {
+		setBlockBoundsBasedOnState(world, blockPos);
+		return super.getSelectedBoundingBox(world, blockPos);
 	}
 
 	@Override
-	public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z) {
-		setBlockBoundsBasedOnState(world, x, y, z);
-		return super.getCollisionBoundingBoxFromPool(world, x, y, z);
+	public AxisAlignedBB getCollisionBoundingBox(World world, BlockPos blockPos, IBlockState state) {
+		setBlockBoundsBasedOnState(world, blockPos);
+		return super.getCollisionBoundingBox(world, blockPos, state);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <U> U getTileEntity(IBlockAccess world, int x, int y, int z, Class<? extends U> cls) {
-		final TileEntity te = world.getTileEntity(x, y, z);
+	public static <U> U getTileEntity(IBlockAccess world, BlockPos blockPos, Class<? extends U> cls) {
+		final TileEntity te = world.getTileEntity(blockPos);
 		return (cls.isInstance(te))? (U)te : null;
 	}
 
 	@SuppressWarnings("unchecked")
-	public <U extends TileEntity> U getTileEntity(IBlockAccess world, int x, int y, int z) {
+	public <U extends TileEntity> U getTileEntity(IBlockAccess world, BlockPos blockPos) {
 		Preconditions.checkNotNull(teClass, "This block has no tile entity");
-		final TileEntity te = world.getTileEntity(x, y, z);
+		final TileEntity te = world.getTileEntity(blockPos);
 		return (teClass.isInstance(te))? (U)te : null;
 	}
 
-	public boolean canPlaceBlock(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection sideDir, Orientation blockOrientation, float hitX, float hitY, float hitZ, int newMeta) {
+	public boolean canPlaceBlock(World world, EntityPlayer player, ItemStack stack, BlockPos blockPos, EnumFacing sideDir, Orientation blockOrientation, float hitX, float hitY, float hitZ, int newMeta) {
 		return getRotationMode().isPlacementValid(blockOrientation);
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase placer, ItemStack stack) {
-		super.onBlockPlacedBy(world, x, y, z, placer, stack);
+	public void onBlockPlacedBy(World world, BlockPos blockPos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+		super.onBlockPlacedBy(world, blockPos, state, placer, stack);
 
 		if (hasCapability(TileEntityCapability.PLACER_LISTENER)) {
-			final TileEntity te = world.getTileEntity(x, y, z);
+			final TileEntity te = world.getTileEntity(blockPos);
 			if (te instanceof IPlacerAwareTile) ((IPlacerAwareTile)te).onBlockPlacedBy(placer, stack);
 		}
 	}
@@ -452,31 +351,32 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 * you'll ever need.
 	 * This is called if your ItemBlock extends ItemOpenBlock
 	 */
-	public void afterBlockPlaced(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, Orientation blockOrientation, float hitX, float hitY, float hitZ, int itemMeta) {
+	// TODO actually call this
+	public void afterBlockPlaced(World world, EntityPlayer player, ItemStack stack, BlockPos blockPos, EnumFacing side, Orientation blockOrientation, float hitX, float hitY, float hitZ, int itemMeta) {
 		int blockMeta = getRotationMode().toValue(blockOrientation);
 
 		// silently set meta, since we want to notify TE before neighbors
-		world.setBlockMetadataWithNotify(x, y, z, blockMeta, BlockNotifyFlags.NONE);
+		world.setBlockMetadataWithNotify(blockPos, blockMeta, BlockNotifyFlags.NONE);
 
-		notifyTileEntity(world, player, stack, x, y, z, side, blockOrientation, hitX, hitY, hitZ);
+		notifyTileEntity(world, player, stack, blockPos, side, blockOrientation, hitX, hitY, hitZ);
 
-		world.markBlockForUpdate(x, y, z);
-		if (!world.isRemote) world.notifyBlockChange(x, y, z, this);
+		world.markBlockForUpdate(blockPos);
+		if (!world.isRemote) world.notifyBlockChange(blockPos, this);
 	}
 
-	protected void notifyTileEntity(World world, EntityPlayer player, ItemStack stack, int x, int y, int z, ForgeDirection side, Orientation blockOrientation, float hitX, float hitY, float hitZ) {
+	protected void notifyTileEntity(World world, EntityPlayer player, ItemStack stack, BlockPos blockPos, EnumFacing side, Orientation blockOrientation, float hitX, float hitY, float hitZ) {
 		if (hasCapability(TileEntityCapability.PLACE_LISTENER)) {
-			final TileEntity te = world.getTileEntity(x, y, z);
+			final TileEntity te = world.getTileEntity(blockPos);
 			if (te instanceof IPlaceAwareTile) ((IPlaceAwareTile)te).onBlockPlacedBy(player, side, stack, hitX, hitY, hitZ);
 		}
 	}
 
-	protected void setRotationMeta(World world, int x, int y, int z, Orientation blockOrientation) {
+	protected void setRotationMeta(World world, BlockPos blockPos, Orientation blockOrientation) {
 		int blockMeta = getRotationMode().toValue(blockOrientation);
-		world.setBlockMetadataWithNotify(x, y, z, blockMeta, BlockNotifyFlags.ALL);
+		world.setBlockMetadataWithNotify(blockPos, blockMeta, BlockNotifyFlags.ALL);
 	}
 
-	public Orientation calculatePlacementSide(EntityPlayer player, ForgeDirection side) {
+	public Orientation calculatePlacementSide(EntityPlayer player, EnumFacing side) {
 		if (blockPlacementMode == BlockPlacementMode.SURFACE) {
 			return getRotationMode().getPlacementOrientationFromSurface(side);
 		} else {
@@ -484,106 +384,15 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		}
 	}
 
-	@Override
-	public final boolean canPlaceBlockOnSide(World world, int x, int y, int z, int side) {
-		return canPlaceBlockOnSide(world, x, y, z, ForgeDirection.getOrientation(side).getOpposite());
-	}
-
-	public boolean canPlaceBlockOnSide(World world, int x, int y, int z, ForgeDirection side) {
-		return canPlaceBlockAt(world, x, y, z); // default to vanilla rules
-	}
-
-	protected boolean isOnTopOfSolidBlock(World world, int x, int y, int z, ForgeDirection side) {
-		return side == ForgeDirection.DOWN
-				&& isNeighborBlockSolid(world, x, y, z, ForgeDirection.DOWN);
-	}
-
-	public void setTexture(ForgeDirection direction, IIcon icon) {
-		textures[direction.ordinal()] = icon;
-	}
-
-	public void setTextures(IIcon icon, ForgeDirection... directions) {
-		for (ForgeDirection direction : directions)
-			textures[direction.ordinal()] = icon;
-	}
-
-	protected IIcon getUnrotatedTexture(ForgeDirection direction) {
-		if (direction != ForgeDirection.UNKNOWN) {
-			final int directionId = direction.ordinal();
-			if (textures[directionId] != null) return textures[directionId];
-		}
-		return blockIcon;
-	}
-
-	/**
-	 * This method should be overriden if needed. We're getting the texture for
-	 * the UNROTATED block for a particular side (direction). Feel free to look
-	 * up data in the TileEntity to grab additional information here
-	 */
-	public IIcon getUnrotatedTexture(ForgeDirection direction, IBlockAccess world, int x, int y, int z) {
-		return getUnrotatedTexture(direction);
-	}
-
-	/**
-	 * Get the texture, but rotate the block around the metadata rotation first
-	 */
-	@Override
-	@SideOnly(Side.CLIENT)
-	public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {
-		final ForgeDirection direction = rotateSideByMetadata(side, world.getBlockMetadata(x, y, z));
-		IIcon iconOverride = null;
-		if (hasCapability(TileEntityCapability.ICON_PROVIDER)) {
-			IIconProvider provider = getTileEntity(world, x, y, z, IIconProvider.class);
-			if (provider != null) iconOverride = provider.getIcon(direction);
-		}
-		return iconOverride != null? iconOverride : getUnrotatedTexture(direction, world, x, y, z);
-	}
-
-	/***
-	 * This is called by the blockrenderer when rendering an item into the
-	 * inventory.
-	 * We'll return the block, rotated as we wish, but without any additional
-	 * texture
-	 * changes that are caused by the blocks current state
-	 */
-	@Override
-	@SideOnly(Side.CLIENT)
-	public final IIcon getIcon(int side, int metadata) {
-		ForgeDirection newRotation = rotateSideByMetadata(side, metadata);
-		return getUnrotatedTexture(newRotation);
-	}
-
-	public ForgeDirection rotateSideByMetadata(int side, int metadata) {
-		final ForgeDirection dir = ForgeDirection.getOrientation(side);
-		return rotateSideByMetadata(dir, metadata);
-	}
-
-	public ForgeDirection rotateSideByMetadata(ForgeDirection side, int metadata) {
-		final Orientation rotation = getOrientation(metadata);
-		return rotation.globalToLocalDirection(side);
-	}
-
-	public Vec3 rotateVectorByMetadata(Vec3 vec, int metadata) {
-		return rotateVectorByMetadata(vec.xCoord, vec.yCoord, vec.zCoord, metadata);
-	}
-
-	public Vec3 rotateVectorByMetadata(double x, double y, double z, int metadata) {
-		final Orientation rotation = getOrientation(metadata);
-		return rotateVectorByDirection(rotation, x, y, z);
-	}
-
-	public Vec3 rotateVectorByDirection(Orientation orientation, double x, double y, double z) {
-		return BlockSpaceTransform.instance.mapWorldToBlock(orientation, x, y, z);
-	}
-
-	public void setDefaultTexture(IIcon icon) {
-		this.blockIcon = icon;
+	protected boolean isOnTopOfSolidBlock(World world, BlockPos blockPos, EnumFacing side) {
+		return side == EnumFacing.DOWN
+				&& isNeighborBlockSolid(world, blockPos, EnumFacing.DOWN);
 	}
 
 	protected abstract Object getModInstance();
 
-	public void openGui(EntityPlayer player, World world, int x, int y, int z) {
-		player.openGui(getModInstance(), OPEN_MODS_TE_GUI, world, x, y, z);
+	public void openGui(EntityPlayer player, World world, BlockPos blockPos) {
+		player.openGui(getModInstance(), OPEN_MODS_TE_GUI, world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
 	}
 
 	public final boolean shouldRenderBlock() {
@@ -598,20 +407,20 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return getRotationMode() != BlockRotationMode.NONE;
 	}
 
-	public RotationHelper createRotationHelper(World world, int x, int y, int z) {
-		return new RotationHelper(getRotationMode(), world, x, y, z);
+	public RotationHelper createRotationHelper(World world, BlockPos blockPos) {
+		return new RotationHelper(getRotationMode(), world, blockPos);
 	}
 
 	@Override
-	public boolean rotateBlock(World worldObj, BlockPos pos, EnumFacing axis) {
+	public boolean rotateBlock(World worldObj, BlockPos blockPos, EnumFacing axis) {
 		if (!canRotateWithTool()) return false;
-		if (!createRotationHelper(worldObj, x, y, z).rotateWithTool(axis)) return false;
+		if (!createRotationHelper(worldObj, blockPos).rotateWithTool(axis)) return false;
 
 		if (teCapabilities.contains(TileEntityCapability.SURFACE_ATTACHEMENT)) {
-			final ISurfaceAttachment te = getTileEntity(worldObj, x, y, z, ISurfaceAttachment.class);
+			final ISurfaceAttachment te = getTileEntity(worldObj, blockPos, ISurfaceAttachment.class);
 			if (te == null) return false;
 
-			breakBlockIfSideNotSolid(worldObj, x, y, z, te.getSurfaceDirection());
+			breakBlockIfSideNotSolid(worldObj, blockPos, te.getSurfaceDirection());
 		}
 
 		return true;
