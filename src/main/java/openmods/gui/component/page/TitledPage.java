@@ -1,21 +1,22 @@
 package openmods.gui.component.page;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.util.StatCollector;
+import openmods.gui.IComponentParent;
 import openmods.gui.component.GuiComponentLabel;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
 public class TitledPage extends PageBase {
 
-	public TitledPage(String title, String content) {
+	public TitledPage(IComponentParent parent, String title, String content) {
+		super(parent);
 		String translatedTitle = StatCollector.translateToLocal(title);
 		String translatedContent = StringEscapeUtils.unescapeJava(StatCollector.translateToLocal(content));
-		int x = (getWidth() - Minecraft.getMinecraft().fontRenderer.getStringWidth(translatedTitle)) / 2;
+		int x = (getWidth() - parent.getFontRenderer().getStringWidth(translatedTitle)) / 2;
 
-		addComponent(new GuiComponentLabel(x, 12, translatedTitle).setScale(BookScaleConfig.getPageTitleScale()));
+		addComponent(new GuiComponentLabel(parent, x, 12, translatedTitle).setScale(BookScaleConfig.getPageTitleScale()));
 
-		final GuiComponentLabel lblContent = new GuiComponentLabel(0, 35, getWidth() - 20, 300, translatedContent);
+		final GuiComponentLabel lblContent = new GuiComponentLabel(parent, 0, 35, getWidth() - 20, 300, translatedContent);
 
 		lblContent.setScale(BookScaleConfig.getPageContentScale());
 		lblContent.setAdditionalLineHeight(BookScaleConfig.getTitlePageSeparator());

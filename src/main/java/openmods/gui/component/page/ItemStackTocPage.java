@@ -2,6 +2,7 @@ package openmods.gui.component.page;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
+import openmods.gui.IComponentParent;
 import openmods.gui.component.GuiComponentItemStack;
 import openmods.gui.listener.IMouseDownListener;
 
@@ -25,7 +26,8 @@ public class ItemStackTocPage extends PageBase {
 
 	private final int iconSize;
 
-	public ItemStackTocPage(int rows, int columns, float iconScale) {
+	public ItemStackTocPage(IComponentParent parent, int rows, int columns, float iconScale) {
+		super(parent);
 		this.capacity = rows * columns;
 
 		this.iconScale = iconScale;
@@ -53,7 +55,7 @@ public class ItemStackTocPage extends PageBase {
 		int x = column * (iconSize + spacerWidth);
 		int y = row * (iconSize + spacerHeight);
 
-		final GuiComponentItemStack component = new GuiComponentItemStack(x, y, stack, true, iconScale);
+		final GuiComponentItemStack component = new GuiComponentItemStack(parent, x, y, stack, true, iconScale);
 		component.setListener(clickListener);
 		addComponent(component);
 

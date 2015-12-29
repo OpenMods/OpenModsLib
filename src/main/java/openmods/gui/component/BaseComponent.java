@@ -34,7 +34,7 @@ public abstract class BaseComponent extends Gui {
 	private IMouseUpListener mouseUpListener;
 	private IMouseDragListener mouseDragListener;
 
-	protected final IComponentParent parent;
+	public final IComponentParent parent;
 
 	public BaseComponent(IComponentParent parent, int x, int y) {
 		this.parent = parent;

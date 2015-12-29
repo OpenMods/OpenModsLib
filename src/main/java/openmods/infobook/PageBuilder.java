@@ -11,6 +11,7 @@ import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;
 import net.minecraftforge.fml.common.registry.GameData;
 import openmods.Log;
 import openmods.OpenMods;
+import openmods.gui.IComponentParent;
 import openmods.gui.component.BaseComponent;
 import openmods.gui.component.GuiComponentBook;
 import openmods.gui.component.page.ItemStackTocPage;
@@ -18,6 +19,7 @@ import openmods.gui.component.page.StandardRecipePage;
 import openmods.gui.listener.IMouseDownListener;
 import openmods.utils.CachedInstanceFactory;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -32,12 +34,27 @@ public class PageBuilder {
 	private static final CachedInstanceFactory<ICustomBookEntryProvider> PROVIDERS = CachedInstanceFactory.create();
 
 	private static class Entry {
-		public final BaseComponent page;
 		public final ItemStack stack;
 
-		public Entry(BaseComponent page, ItemStack stack) {
-			this.page = page;
+		public final String nameKey;
+
+		public final String descriptionKey;
+
+		public final Optional<String> mediaKey;
+
+		public Entry(ItemStack stack, String nameKey, String descriptionKey, Optional<String> mediaKey) {
 			this.stack = stack;
+			this.nameKey = nameKey;
+			this.descriptionKey = descriptionKey;
+			this.mediaKey = mediaKey;
+		}
+
+		public BaseComponent getPage(IComponentParent parent) {
+			if (mediaKey.isPresent()) {
+				return new StandardRecipePage(parent, nameKey, descriptionKey, mediaKey.get(), stack);
+			} else {
+				return new StandardRecipePage(parent, nameKey, descriptionKey, stack);
+			}
 		}
 	}
 
@@ -98,7 +115,7 @@ public class PageBuilder {
 
 		int tocEntriesCount = pages.size();
 		while (tocEntriesCount > 0) {
-			ItemStackTocPage page = new ItemStackTocPage(rows, columns, scale);
+			ItemStackTocPage page = new ItemStackTocPage(book.parent, rows, columns, scale);
 			tocEntriesCount -= page.getCapacity();
 			tocPages.add(page);
 			book.addPage(page);
@@ -112,7 +129,7 @@ public class PageBuilder {
 				addToToc(book, e.stack, target);
 			}
 
-			book.addPage(e.page);
+			book.addPage(e.getPage(book.parent));
 		}
 	}
 
@@ -134,15 +151,12 @@ public class PageBuilder {
 
 		final String translatedName = StatCollector.translateToLocal(nameKey);
 
-		final StandardRecipePage page;
 		if (hasVideo) {
 			final String mediaKey = getMediaLink(modId, type, id);
-			page = new StandardRecipePage(nameKey, descriptionKey, mediaKey, stack);
+			pages.put(translatedName + ":" + id, new Entry(stack, nameKey, descriptionKey, Optional.of(mediaKey)));
 		} else {
-			page = new StandardRecipePage(nameKey, descriptionKey, stack);
+			pages.put(translatedName + ":" + id, new Entry(stack, nameKey, descriptionKey, Optional.<String> absent()));
 		}
-
-		pages.put(translatedName + ":" + id, new Entry(page, stack));
 	}
 
 	protected String getTranslationKey(String name, String modId, String type, String category) {
