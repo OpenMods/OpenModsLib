@@ -211,8 +211,8 @@ public class GenericInventory implements IInventory {
 
 	@Override
 	public IChatComponent getDisplayName() {
-		final String name = this.getCommandSenderName();
-		return this.hasCustomName()
+		final String name = getCommandSenderName();
+		return hasCustomName()
 				? new ChatComponentText(name)
 				: new ChatComponentTranslation(name);
 	}

@@ -57,7 +57,7 @@ public class SidePicker {
 				case ZPos:
 					return EnumFacing.SOUTH;
 				default:
-					throw new IllegalArgumentException(this.toString());
+					throw new IllegalArgumentException(toString());
 			}
 		}
 	}

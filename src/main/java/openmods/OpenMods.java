@@ -83,7 +83,7 @@ public class OpenMods {
 		MinecraftForge.EVENT_BUS.register(BlockDropsStore.instance);
 
 		MinecraftForge.EVENT_BUS.register(DelayedActionTickHandler.INSTANCE);
-		
+
 		MinecraftForge.EVENT_BUS.register(ConfigStorage.instance);
 
 		collector = new ClassSourceCollector(evt.getAsmData());

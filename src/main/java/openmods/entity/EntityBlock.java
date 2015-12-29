@@ -22,7 +22,6 @@ import openmods.fakeplayer.FakePlayerPool;
 import openmods.fakeplayer.FakePlayerPool.PlayerUserReturning;
 import openmods.fakeplayer.OpenModsFakePlayer;
 import openmods.utils.BlockManipulator;
-import openmods.utils.BlockProperties;
 
 //TODO: Review later
 public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {

@@ -62,7 +62,7 @@ public class MapSerializerProvider implements IGenericSerializerProvider {
 					output.writeVarIntToBuffer(length);
 
 					if (length > 0) {
-							final OutputBitStream nullBitsStream = OutputBitStream.create(output);
+						final OutputBitStream nullBitsStream = OutputBitStream.create(output);
 
 						List<Map.Entry<Object, Object>> entries = ImmutableList.copyOf(o.entrySet());
 
