@@ -6,12 +6,11 @@ import java.io.DataOutputStream;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fml.common.registry.GameData;
 import openmods.utils.ByteUtils;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
-
-import cpw.mods.fml.common.registry.GameData;
 
 public class SyncableBlock extends SyncableObjectBase implements ISyncableValueProvider<Block> {
 

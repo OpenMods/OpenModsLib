@@ -9,11 +9,10 @@ import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.fml.common.network.IGuiHandler;
 import openmods.gui.CommonGuiHandler;
 
 import com.google.common.base.Optional;
-
-import cpw.mods.fml.common.network.IGuiHandler;
 
 public final class OpenServerProxy implements IOpenModsProxy {
 

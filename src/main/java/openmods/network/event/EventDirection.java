@@ -1,6 +1,6 @@
 package openmods.network.event;
 
-import cpw.mods.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.Side;
 
 public enum EventDirection {
 	C2S {

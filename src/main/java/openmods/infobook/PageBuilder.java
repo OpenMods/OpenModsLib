@@ -5,7 +5,10 @@ import java.util.*;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
+import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;
+import net.minecraftforge.fml.common.registry.GameData;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.gui.component.BaseComponent;
@@ -16,14 +19,10 @@ import openmods.gui.listener.IMouseDownListener;
 import openmods.utils.CachedInstanceFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
-import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
-import cpw.mods.fml.common.registry.GameData;
 
 public class PageBuilder {
 	public interface StackProvider<T> {
@@ -54,12 +53,9 @@ public class PageBuilder {
 	}
 
 	public <T> void addPages(String type, FMLControlledNamespacedRegistry<T> registry, StackProvider<T> provider) {
-		@SuppressWarnings("unchecked")
-		Set<String> ids = registry.getKeys();
+		Set<ResourceLocation> ids = registry.getKeys();
 
-		Splitter splitter = Splitter.on(':');
-
-		for (String id : ids) {
+		for (ResourceLocation id : ids) {
 			final T obj = registry.getObject(id);
 			if (obj == null) continue;
 
@@ -76,12 +72,11 @@ public class PageBuilder {
 
 			if (doc == null) continue;
 
-			Iterator<String> components = splitter.split(id).iterator();
-			final String itemModId = components.next();
+			final String itemModId = id.getResourcePath();
 
 			if (modIds != null && !modIds.contains(itemModId)) continue;
 
-			final String itemName = components.next();
+			final String itemName = id.getResourceDomain();
 			final Class<? extends ICustomBookEntryProvider> customProviderCls = doc.customProvider();
 
 			if (customProviderCls == BookDocumentation.EMPTY.class) {

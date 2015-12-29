@@ -7,12 +7,8 @@ import openmods.reflection.FieldAccess;
 
 public class EntityUtils {
 
-	public static Vec3 getCurrentPosition(Entity entity) {
-		return Vec3.createVectorHelper(entity.posX, entity.posY, entity.posZ);
-	}
-
 	public static Vec3 getPredictedPosition(Entity entity) {
-		return getCurrentPosition(entity).addVector(
+		return entity.getPositionVector().addVector(
 				entity.motionX,
 				entity.motionY,
 				entity.motionZ
@@ -23,8 +19,8 @@ public class EntityUtils {
 
 		if (entity == null || entity.worldObj == null) { return null; }
 
-		return entity.worldObj.func_147447_a(
-				getCurrentPosition(entity),
+		return entity.worldObj.rayTraceBlocks(
+				entity.getPositionVector(),
 				getPredictedPosition(entity),
 				false,
 				true,

@@ -7,16 +7,15 @@ import java.util.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
+import net.minecraftforge.fml.relauncher.Side;
 import openmods.LibConfig;
 import openmods.Log;
 import openmods.utils.Coord;
 
 import com.google.common.collect.*;
-
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.Phase;
-import cpw.mods.fml.common.gameevent.TickEvent.WorldTickEvent;
-import cpw.mods.fml.relauncher.Side;
 
 public class BlockDropsStore {
 
@@ -106,7 +105,7 @@ public class BlockDropsStore {
 	private synchronized WorldDrops getDrops(World world) {
 		if (world.isRemote) return null;
 
-		final int dimensionId = world.provider.dimensionId;
+		final int dimensionId = world.provider.getDimensionId();
 		WorldDrops result = worldDrops.get(dimensionId);
 		if (result == null) {
 			result = new WorldDrops(dimensionId);
@@ -127,31 +126,19 @@ public class BlockDropsStore {
 		return (drops != null)? drops.harvestDrops(x, y, z) : null;
 	}
 
-	public class ForgeListener {
-		@SubscribeEvent
-		public void onWorldUnload(WorldEvent.Unload evt) {
-			final World world = evt.world;
-			if (!world.isRemote) cleanup(world, "unload");
-		}
+	@SubscribeEvent
+	public void onWorldUnload(WorldEvent.Unload evt) {
+		final World world = evt.world;
+		if (!world.isRemote) cleanup(world, "unload");
 	}
 
-	public class FmlListener {
-		@SubscribeEvent
-		public void onWorldTick(WorldTickEvent evt) {
-			if (evt.side == Side.SERVER && evt.phase == Phase.END) cleanup(evt.world, "tick");
-		}
-	}
-
-	public Object createForgeListener() {
-		return new ForgeListener();
-	}
-
-	public Object createFmlListener() {
-		return new FmlListener();
+	@SubscribeEvent
+	public void onWorldTick(WorldTickEvent evt) {
+		if (evt.side == Side.SERVER && evt.phase == Phase.END) cleanup(evt.world, "tick");
 	}
 
 	private void cleanup(final World world, final String location) {
-		final int dimensionId = world.provider.dimensionId;
+		final int dimensionId = world.provider.getDimensionId();
 		final WorldDrops drops = worldDrops.get(dimensionId);
 		if (drops != null) drops.cleanup(location);
 	}

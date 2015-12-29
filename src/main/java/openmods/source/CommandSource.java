@@ -10,6 +10,7 @@ import java.util.Set;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentTranslation;
 import openmods.Log;
 import openmods.source.ClassSourceCollector.ApiInfo;
@@ -38,7 +39,7 @@ public class CommandSource extends SidedCommand {
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) {
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
 		if (args.length < 1) throw new SyntaxErrorException();
 
 		final String subCommand = args[0];
@@ -64,7 +65,7 @@ public class CommandSource extends SidedCommand {
 		}
 	}
 
-	private ClassMeta getMeta(final String clsName) {
+	private ClassMeta getMeta(final String clsName) throws CommandException {
 		try {
 			return classMeta.getClassInfo(clsName);
 		} catch (ClassNotFoundException e) {
@@ -76,8 +77,7 @@ public class CommandSource extends SidedCommand {
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
-	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
 		if (args.length == 1) return filterPrefixes(args[0], subcommands);
 
 		return null;

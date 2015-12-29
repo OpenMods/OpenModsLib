@@ -4,14 +4,14 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 
 import com.google.common.collect.Lists;
 
 public class CustomSinks {
 
 	public interface ICustomSink {
-		public int accept(ItemStack stack, boolean doInsert, ForgeDirection direction);
+		public int accept(ItemStack stack, boolean doInsert, EnumFacing direction);
 	}
 
 	public interface ICustomSinkProvider {

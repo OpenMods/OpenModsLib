@@ -154,7 +154,7 @@ public class Matrix3d {
 		final double tx = transformX(vec.xCoord, vec.yCoord, vec.zCoord);
 		final double ty = transformY(vec.xCoord, vec.yCoord, vec.zCoord);
 		final double tz = transformZ(vec.xCoord, vec.yCoord, vec.zCoord);
-		return Vec3.createVectorHelper(tx, ty, tz);
+		return new Vec3(tx, ty, tz);
 	}
 
 	public Matrix3d transpose() {

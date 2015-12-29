@@ -2,24 +2,27 @@ package openmods.utils;
 
 import java.util.Map;
 
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Vec3i;
 
 import com.google.common.collect.Maps;
 
 public enum Diagonal {
-	NW(ForgeDirection.NORTH, ForgeDirection.WEST),
-	NE(ForgeDirection.NORTH, ForgeDirection.EAST),
-	SW(ForgeDirection.SOUTH, ForgeDirection.WEST),
-	SE(ForgeDirection.SOUTH, ForgeDirection.EAST);
+	NW(EnumFacing.NORTH, EnumFacing.WEST),
+	NE(EnumFacing.NORTH, EnumFacing.EAST),
+	SW(EnumFacing.SOUTH, EnumFacing.WEST),
+	SE(EnumFacing.SOUTH, EnumFacing.EAST);
 
 	public final int offsetX;
 	public final int offsetY;
 	public final int offsetZ;
 
-	private Diagonal(ForgeDirection a, ForgeDirection b) {
-		this.offsetX = a.offsetX + b.offsetX;
-		this.offsetY = a.offsetY + b.offsetY;
-		this.offsetZ = a.offsetZ + b.offsetZ;
+	private Diagonal(EnumFacing a, EnumFacing b) {
+		final Vec3i va = a.getDirectionVec();
+		final Vec3i vb = b.getDirectionVec();
+		this.offsetX = va.getX() + vb.getX();
+		this.offsetY = va.getY() + vb.getY();
+		this.offsetZ = va.getZ() + vb.getZ();
 	}
 
 	private static final Map<Diagonal, Diagonal> OPPOSITES = Maps.newEnumMap(Diagonal.class);

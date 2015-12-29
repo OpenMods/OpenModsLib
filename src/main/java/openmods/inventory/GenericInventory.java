@@ -10,6 +10,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.IChatComponent;
 import openmods.api.IInventoryCallback;
 import openmods.utils.ItemUtils;
 
@@ -120,6 +123,12 @@ public class GenericInventory implements IInventory {
 		onInventoryChanged(0);
 	}
 
+	@Override
+	public void clear() {
+		for (int i = 0; i < this.inventoryContents.length; ++i)
+			this.inventoryContents[i] = null;
+	}
+
 	public void readFromNBT(NBTTagCompound tag) {
 		if (tag.hasKey(TAG_SIZE)) {
 			this.slotsCount = tag.getInteger(TAG_SIZE);
@@ -185,18 +194,41 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
-	public String getInventoryName() {
+	public String getCommandSenderName() {
 		return this.inventoryTitle;
 	}
 
 	@Override
-	public boolean hasCustomInventoryName() {
+	public boolean hasCustomName() {
 		return this.isInvNameLocalized;
 	}
 
 	@Override
-	public void openInventory() {}
+	public void openInventory(EntityPlayer player) {}
 
 	@Override
-	public void closeInventory() {}
+	public void closeInventory(EntityPlayer player) {}
+
+	@Override
+	public IChatComponent getDisplayName() {
+		final String name = this.getCommandSenderName();
+		return this.hasCustomName()
+				? new ChatComponentText(name)
+				: new ChatComponentTranslation(name);
+	}
+
+	// TODO: figure if it's usable
+
+	@Override
+	public int getField(int id) {
+		return 0;
+	}
+
+	@Override
+	public void setField(int id, int value) {}
+
+	@Override
+	public int getFieldCount() {
+		return 0;
+	}
 }

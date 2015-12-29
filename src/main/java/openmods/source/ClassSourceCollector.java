@@ -5,17 +5,16 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraftforge.fml.common.API;
+import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.common.discovery.ASMDataTable;
+import net.minecraftforge.fml.common.discovery.ModCandidate;
 import openmods.Log;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
-import cpw.mods.fml.common.API;
-import cpw.mods.fml.common.ModContainer;
-import cpw.mods.fml.common.discovery.ASMDataTable;
-import cpw.mods.fml.common.discovery.ModCandidate;
 
 public class ClassSourceCollector {
 

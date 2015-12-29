@@ -3,6 +3,7 @@ package openmods.calc.command;
 import java.util.Arrays;
 import java.util.List;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.ChatComponentTranslation;
@@ -23,12 +24,12 @@ public class CommandCalcFunction extends CommandCalcBase {
 	}
 
 	@Override
-	public List<?> getCommandAliases() {
+	public List<String> getCommandAliases() {
 		return Lists.newArrayList("=function");
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) {
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
 		if (args.length < 3) throw new SyntaxErrorException();
 
 		final String name = args[0];

@@ -14,7 +14,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import openmods.api.*;
 import openmods.config.game.IRegisterableBlock;
 import openmods.geometry.BlockSpaceTransform;
@@ -26,9 +27,6 @@ import openmods.utils.BlockUtils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public static final int OPEN_MODS_TE_GUI = -1;
@@ -605,7 +603,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public boolean rotateBlock(World worldObj, int x, int y, int z, ForgeDirection axis) {
+	public boolean rotateBlock(World worldObj, BlockPos pos, EnumFacing axis) {
 		if (!canRotateWithTool()) return false;
 		if (!createRotationHelper(worldObj, x, y, z).rotateWithTool(axis)) return false;
 
@@ -620,7 +618,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public ForgeDirection[] getValidRotations(World worldObj, int x, int y, int z) {
+	public EnumFacing[] getValidRotations(World worldObj, BlockPos pos) {
 		if (!canRotateWithTool()) return RotationAxis.NO_AXIS;
 		return getRotationMode().rotationAxes;
 	}

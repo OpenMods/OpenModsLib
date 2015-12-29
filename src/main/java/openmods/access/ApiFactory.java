@@ -3,6 +3,9 @@ package openmods.access;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.discovery.ASMDataTable;
+import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData;
 import openmods.Log;
 import openmods.reflection.FieldAccess;
 import openmods.utils.CachedFactory;
@@ -10,10 +13,6 @@ import openmods.utils.CachedFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
-
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.discovery.ASMDataTable;
-import cpw.mods.fml.common.discovery.ASMDataTable.ASMData;
 
 public class ApiFactory {
 

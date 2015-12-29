@@ -42,7 +42,7 @@ public class EqualComponents {
 	public static final IItemStackTester NBT_TESTER = new IItemStackTester() {
 		@Override
 		public boolean isEqual(ItemStack left, ItemStack right) {
-			return Objects.equal(left.stackTagCompound, right.stackTagCompound);
+			return Objects.equal(left.getTagCompound(), right.getTagCompound());
 		}
 	};
 }

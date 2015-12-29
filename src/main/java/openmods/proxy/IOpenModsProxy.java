@@ -6,10 +6,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.INetHandler;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.IGuiHandler;
 
 import com.google.common.base.Optional;
-
-import cpw.mods.fml.common.network.IGuiHandler;
 
 public interface IOpenModsProxy {
 

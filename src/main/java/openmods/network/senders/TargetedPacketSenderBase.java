@@ -4,8 +4,8 @@ import io.netty.channel.Channel;
 
 import java.util.Collection;
 
+import net.minecraftforge.fml.common.network.FMLOutboundHandler;
 import openmods.utils.NetUtils;
-import cpw.mods.fml.common.network.FMLOutboundHandler;
 
 public class TargetedPacketSenderBase<T> implements ITargetedPacketSender<T> {
 

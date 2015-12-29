@@ -3,23 +3,18 @@ package openmods.utils;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 
-import java.lang.reflect.Field;
 import java.util.Set;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
-import net.minecraft.entity.EntityTrackerEntry;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.management.PlayerManager;
-import net.minecraft.util.IntHashMap;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import openmods.Log;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-
-import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class NetUtils {
 
@@ -28,27 +23,11 @@ public class NetUtils {
 		return dispatcher;
 	}
 
-	private static Field trackingPlayers;
+	public static Set<EntityPlayerMP> getPlayersWatchingEntity(WorldServer server, Entity entity) {
+		final EntityTracker tracker = server.getEntityTracker();
 
-	public static Set<EntityPlayerMP> getPlayersWatchingEntity(WorldServer server, int entityId) {
-		EntityTracker tracker = server.getEntityTracker();
-
-		if (trackingPlayers == null) trackingPlayers = ReflectionHelper.findField(EntityTracker.class, "trackedEntityIDs", "field_72794_c");
-
-		IntHashMap trackers;
-		try {
-			trackers = (IntHashMap)trackingPlayers.get(tracker);
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
-		}
-
-		EntityTrackerEntry entry = (EntityTrackerEntry)trackers.lookup(entityId);
-
-		if (entry == null) return ImmutableSet.of();
-
-		@SuppressWarnings({ "unchecked" })
-		Set<EntityPlayerMP> trackingPlayers = entry.trackingPlayers;
-
+		@SuppressWarnings("unchecked")
+		final Set<EntityPlayerMP> trackingPlayers = (Set<EntityPlayerMP>)tracker.getTrackingPlayers(entity);
 		return ImmutableSet.copyOf(trackingPlayers);
 	}
 

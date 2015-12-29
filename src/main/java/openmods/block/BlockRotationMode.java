@@ -3,7 +3,7 @@ package openmods.block;
 import java.util.Set;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 import openmods.geometry.BlockTextureTransform;
 import openmods.geometry.HalfAxis;
 import openmods.geometry.Orientation;
@@ -35,7 +35,7 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return Orientation.XP_YP;
 		}
 
@@ -45,13 +45,13 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			return null;
 		}
 
 		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
+			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST);
 		}
 
 		@Override
@@ -65,7 +65,7 @@ public enum BlockRotationMode {
 	 * Tool rotation will either rotate around Y (if clicked T or B) or set to clicked side (otherwise).
 	 */
 	TWO_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.ZN_YP, Orientation.XP_YP) {
-		private Orientation directionToOrientation(final ForgeDirection normalDir) {
+		private Orientation directionToOrientation(final EnumFacing normalDir) {
 			switch (normalDir) {
 				case EAST:
 				case WEST:
@@ -79,18 +79,18 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
 		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			final ForgeDirection playerOrientation = BlockUtils.get2dOrientation(player);
+			final EnumFacing playerOrientation = BlockUtils.get2dOrientation(player);
 			return directionToOrientation(playerOrientation);
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			switch (axis) {
 				case UP:
 					return currentOrientation.rotateAround(HalfAxis.POS_Y);
@@ -108,7 +108,7 @@ public enum BlockRotationMode {
 
 		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
+			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST);
 		}
 
 		@Override
@@ -122,7 +122,7 @@ public enum BlockRotationMode {
 	 * Tool rotation will set top direction to clicked side.
 	 */
 	THREE_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YP, Orientation.YP_XN, Orientation.XP_ZN) {
-		private Orientation directionToOrientation(ForgeDirection dir) {
+		private Orientation directionToOrientation(EnumFacing dir) {
 			switch (dir) {
 				case EAST:
 				case WEST:
@@ -138,24 +138,24 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
 		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			final ForgeDirection normalDir = BlockUtils.get3dOrientation(player);
+			final EnumFacing normalDir = BlockUtils.get3dOrientation(player);
 			return directionToOrientation(normalDir);
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			return directionToOrientation(axis);
 		}
 
 		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
+			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
 		}
 
 		@Override
@@ -169,7 +169,7 @@ public enum BlockRotationMode {
 	 * Tool rotation will either rotate around Y (if clicked T or B) or set to clicked side (otherwise).
 	 */
 	FOUR_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YP, Orientation.ZN_YP, Orientation.XN_YP, Orientation.ZP_YP) {
-		private Orientation directionToOrientation(ForgeDirection side) {
+		private Orientation directionToOrientation(EnumFacing side) {
 			switch (side) {
 				case SOUTH:
 					return Orientation.XP_YP;
@@ -185,18 +185,18 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
 		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			final ForgeDirection side = BlockUtils.get2dOrientation(player).getOpposite();
+			final EnumFacing side = BlockUtils.get2dOrientation(player).getOpposite();
 			return directionToOrientation(side);
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			switch (axis) {
 				case UP:
 					return currentOrientation.rotateAround(HalfAxis.POS_Y);
@@ -214,7 +214,7 @@ public enum BlockRotationMode {
 
 		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST);
+			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST);
 		}
 
 		@Override
@@ -233,7 +233,7 @@ public enum BlockRotationMode {
 	 * Tool rotation will set top to clicked side.
 	 */
 	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XN_YN, Orientation.XP_YP, Orientation.XP_ZN, Orientation.XP_ZP, Orientation.YP_XN, Orientation.YN_XP) {
-		public Orientation directionToOrientation(ForgeDirection localTop) {
+		public Orientation directionToOrientation(EnumFacing localTop) {
 			switch (localTop) {
 				case DOWN:
 					return Orientation.XN_YN;
@@ -252,24 +252,24 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
 		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			final ForgeDirection localTop = BlockUtils.get3dOrientation(player).getOpposite();
+			final EnumFacing localTop = BlockUtils.get3dOrientation(player).getOpposite();
 			return directionToOrientation(localTop);
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			return directionToOrientation(axis);
 		}
 
 		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
+			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
 		}
 
 		@Override
@@ -294,7 +294,7 @@ public enum BlockRotationMode {
 			Orientation.YP_XN, Orientation.YN_XN, Orientation.ZP_XN, Orientation.ZN_XN,
 			Orientation.XP_ZN, Orientation.XN_ZN, Orientation.YP_ZN, Orientation.YN_ZN) {
 
-		private Orientation directionToOrientation(ForgeDirection dir) {
+		private Orientation directionToOrientation(EnumFacing dir) {
 			switch (dir) {
 				case EAST:
 				case WEST:
@@ -310,19 +310,19 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
 		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			final ForgeDirection normalDir = BlockUtils.get3dOrientation(player);
+			final EnumFacing normalDir = BlockUtils.get3dOrientation(player);
 			return directionToOrientation(normalDir);
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
-			final HalfAxis newTop = HalfAxis.fromDirection(axis);
+		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
+			final HalfAxis newTop = HalfAxis.fromEnumFacing(axis);
 			final HalfAxis currentTop = currentOrientation.y;
 
 			if (newTop == currentTop) {
@@ -336,7 +336,7 @@ public enum BlockRotationMode {
 
 		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
+			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
 		}
 
 		@Override
@@ -371,7 +371,7 @@ public enum BlockRotationMode {
 			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_X),
 			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.NEG_X)) {
 
-		public Orientation directionToOrientation(ForgeDirection localTop) {
+		public Orientation directionToOrientation(EnumFacing localTop) {
 			switch (localTop) {
 				case DOWN:
 					return Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.NEG_Z);
@@ -390,30 +390,30 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(ForgeDirection side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
 		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			ForgeDirection playerDir = BlockUtils.get2dOrientation(player).getOpposite();
+			EnumFacing playerDir = BlockUtils.get2dOrientation(player).getOpposite();
 			if (player.rotationPitch > 45.5F) {
-				return Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.fromDirection(playerDir));
+				return Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.fromEnumFacing(playerDir));
 			} else if (player.rotationPitch < -45.5F) {
-				return Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.fromDirection(playerDir));
+				return Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.fromEnumFacing(playerDir));
 			} else {
-				return Orientation.lookupYZ(HalfAxis.fromDirection(playerDir), HalfAxis.NEG_Y);
+				return Orientation.lookupYZ(HalfAxis.fromEnumFacing(playerDir), HalfAxis.NEG_Y);
 			}
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			switch (axis) {
 				case NORTH:
 				case SOUTH:
 				case EAST:
 				case WEST:
-					return Orientation.lookupYZ(HalfAxis.fromDirection(axis), HalfAxis.NEG_Y);
+					return Orientation.lookupYZ(HalfAxis.fromEnumFacing(axis), HalfAxis.NEG_Y);
 				case UP:
 					if (currentOrientation.y != HalfAxis.POS_Y) return Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_Z);
 					else return currentOrientation.rotateAround(HalfAxis.POS_Y);
@@ -427,7 +427,7 @@ public enum BlockRotationMode {
 
 		@Override
 		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).mirrorU(ForgeDirection.DOWN);
+			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
 		}
 
 		@Override
@@ -439,7 +439,7 @@ public enum BlockRotationMode {
 
 	private static final int MAX_ORIENTATIONS = 16;
 
-	private BlockRotationMode(ForgeDirection[] rotations, Orientation... validOrientations) {
+	private BlockRotationMode(EnumFacing[] rotations, Orientation... validOrientations) {
 		this.rotationAxes = rotations;
 		this.validDirections = ImmutableSet.copyOf(validOrientations);
 
@@ -478,7 +478,7 @@ public enum BlockRotationMode {
 
 	private final int[] orientationToId;
 
-	public final ForgeDirection[] rotationAxes;
+	public final EnumFacing[] rotationAxes;
 
 	public final Set<Orientation> validDirections;
 
@@ -512,11 +512,11 @@ public enum BlockRotationMode {
 		return validDirections.contains(dir);
 	}
 
-	public abstract Orientation getPlacementOrientationFromSurface(ForgeDirection side);
+	public abstract Orientation getPlacementOrientationFromSurface(EnumFacing side);
 
 	public abstract Orientation getPlacementOrientationFromEntity(EntityPlayer player);
 
-	public abstract Orientation calculateToolRotation(Orientation currentOrientation, ForgeDirection axis);
+	public abstract Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis);
 
 	public Orientation getInventoryRenderOrientation() {
 		return Orientation.XP_YP;

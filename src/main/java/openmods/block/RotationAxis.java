@@ -1,9 +1,9 @@
 package openmods.block;
 
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 
 class RotationAxis {
-	public static final ForgeDirection[] NO_AXIS = {};
-	public static final ForgeDirection[] SINGLE_AXIS = { ForgeDirection.UP, ForgeDirection.DOWN };
-	public static final ForgeDirection[] THREE_AXIS = ForgeDirection.VALID_DIRECTIONS;
+	public static final EnumFacing[] NO_AXIS = {};
+	public static final EnumFacing[] SINGLE_AXIS = { EnumFacing.UP, EnumFacing.DOWN };
+	public static final EnumFacing[] THREE_AXIS = EnumFacing.VALUES;
 }

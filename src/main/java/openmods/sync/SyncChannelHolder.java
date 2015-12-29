@@ -7,13 +7,14 @@ import java.util.Map;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.common.network.FMLEmbeddedChannel;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+import net.minecraftforge.fml.relauncher.Side;
 import openmods.network.ExtendedOutboundHandler;
 import openmods.network.targets.SelectMultiplePlayers;
 import openmods.utils.NetUtils;
-import cpw.mods.fml.common.network.FMLEmbeddedChannel;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
-import cpw.mods.fml.relauncher.Side;
 
 public class SyncChannelHolder {
 
@@ -28,12 +29,12 @@ public class SyncChannelHolder {
 		ExtendedOutboundHandler.install(this.channels);
 	}
 
-	public static Packet createPacket(ByteBuf payload) {
-		return new FMLProxyPacket(payload, CHANNEL_NAME);
+	public static Packet<?> createPacket(ByteBuf payload) {
+		return new FMLProxyPacket(new PacketBuffer(payload), CHANNEL_NAME);
 	}
 
 	public void sendPayloadToPlayers(ByteBuf payload, Collection<EntityPlayerMP> players) {
-		FMLProxyPacket packet = new FMLProxyPacket(payload, CHANNEL_NAME);
+		FMLProxyPacket packet = new FMLProxyPacket(new PacketBuffer(payload), CHANNEL_NAME);
 		FMLEmbeddedChannel channel = channels.get(Side.SERVER);
 		ExtendedOutboundHandler.selectTargets(channel, SelectMultiplePlayers.INSTANCE, players);
 		channel.writeAndFlush(packet).addListener(NetUtils.LOGGING_LISTENER);

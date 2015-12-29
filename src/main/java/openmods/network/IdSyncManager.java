@@ -10,21 +10,21 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.LoaderState;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
+import net.minecraftforge.fml.common.network.NetworkHandshakeEstablished;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.datastore.*;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.Closer;
-
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.LoaderState;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
-import cpw.mods.fml.common.network.NetworkHandshakeEstablished;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 
 public class IdSyncManager extends DataStoreManager {
 
@@ -74,7 +74,7 @@ public class IdSyncManager extends DataStoreManager {
 			throw new RuntimeException(e);
 		}
 
-		return new FMLProxyPacket(payload.copy(), CHANNEL_NAME);
+		return new FMLProxyPacket(new PacketBuffer(payload.copy()), CHANNEL_NAME);
 	}
 
 	private IdSyncManager() {
@@ -127,6 +127,6 @@ public class IdSyncManager extends DataStoreManager {
 
 	public void finishLoading() {
 		validate();
-		FMLCommonHandler.instance().bus().register(this);
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 }

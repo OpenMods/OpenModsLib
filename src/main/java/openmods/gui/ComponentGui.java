@@ -1,5 +1,7 @@
 package openmods.gui;
 
+import java.io.IOException;
+
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.inventory.Container;
@@ -29,14 +31,14 @@ public abstract class ComponentGui extends GuiContainer {
 	}
 
 	@Override
-	protected void mouseClicked(int x, int y, int button) {
+	protected void mouseClicked(int x, int y, int button) throws IOException {
 		super.mouseClicked(x, y, button);
 		if (root.isMouseOver(x - this.guiLeft, y - this.guiTop)) root.mouseDown(x - this.guiLeft, y - this.guiTop, button);
 	}
 
 	@Override
-	protected void mouseMovedOrUp(int x, int y, int button) {
-		super.mouseMovedOrUp(x, y, button);
+	protected void mouseReleased(int x, int y, int button) {
+		super.mouseReleased(x, y, button);
 		if (root.isMouseOver(x - this.guiLeft, y - this.guiTop)) {
 			if (button >= 0) root.mouseUp(x - this.guiLeft, y - this.guiTop, button);
 		}
@@ -49,7 +51,7 @@ public abstract class ComponentGui extends GuiContainer {
 	}
 
 	@Override
-	protected void keyTyped(char par1, int par2) {
+	protected void keyTyped(char par1, int par2) throws IOException {
 		super.keyTyped(par1, par2);
 		root.keyTyped(par1, par2);
 	}

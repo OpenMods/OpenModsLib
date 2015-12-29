@@ -4,16 +4,15 @@ import java.util.Set;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
-import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.fluids.*;
+import net.minecraftforge.fml.common.eventhandler.Event.Result;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import com.google.common.collect.Sets;
-
-import cpw.mods.fml.common.eventhandler.Event.Result;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class BucketFillHandler {
 
@@ -32,7 +31,7 @@ public class BucketFillHandler {
 		return (target instanceof IFluidHandler) && whitelist.contains(target.getClass());
 	}
 
-	private static ItemStack fillTank(IFluidHandler handler, ForgeDirection dir, ItemStack container) {
+	private static ItemStack fillTank(IFluidHandler handler, EnumFacing dir, ItemStack container) {
 		FluidTankInfo tanks[] = handler.getTankInfo(dir);
 
 		for (FluidTankInfo tank : tanks) {
@@ -62,10 +61,10 @@ public class BucketFillHandler {
 		final MovingObjectPosition target = evt.target;
 		if (target.typeOfHit != MovingObjectType.BLOCK) return;
 
-		TileEntity te = evt.world.getTileEntity(target.blockX, target.blockY, target.blockZ);
+		TileEntity te = evt.world.getTileEntity(target.getBlockPos());
 
 		if (shouldFill(te)) {
-			ItemStack result = fillTank((IFluidHandler)te, ForgeDirection.getOrientation(target.sideHit), evt.current);
+			ItemStack result = fillTank((IFluidHandler)te, target.sideHit, evt.current);
 			if (result != null) {
 				evt.result = result;
 				evt.setResult(Result.ALLOW);

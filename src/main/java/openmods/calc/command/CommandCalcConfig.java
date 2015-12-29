@@ -8,8 +8,10 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.util.BlockPos;
 import openmods.calc.Calculator.ExprType;
 import openmods.calc.command.CalcState.CalculatorType;
 import openmods.calc.command.CalcState.NoSuchNameException;
@@ -57,7 +59,7 @@ public class CommandCalcConfig extends CommandCalcBase {
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) {
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
 		if (args.length < 1) throw new SyntaxErrorException();
 
 		final String subCommand = args[0];
@@ -127,7 +129,7 @@ public class CommandCalcConfig extends CommandCalcBase {
 	}
 
 	@Override
-	public List<?> addTabCompletionOptions(ICommandSender sender, String[] args) {
+	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos blockPos) {
 		if (args.length == 0) return null;
 		if (args.length == 1) return filterPrefixes(args[0], SUB_COMMANDS);
 

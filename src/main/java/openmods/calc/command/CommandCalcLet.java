@@ -2,6 +2,7 @@ package openmods.calc.command;
 
 import java.util.Arrays;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.ChatComponentTranslation;
@@ -21,7 +22,7 @@ public class CommandCalcLet extends CommandCalcBase {
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) {
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
 		if (args.length < 2) throw new SyntaxErrorException();
 
 		final String name = args[0];

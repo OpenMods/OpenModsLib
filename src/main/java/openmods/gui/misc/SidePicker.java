@@ -2,8 +2,8 @@ package openmods.gui.misc;
 
 import java.util.Map;
 
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Vec3;
-import net.minecraftforge.common.util.ForgeDirection;
 import openmods.utils.render.ProjectionHelper;
 
 import org.lwjgl.input.Mouse;
@@ -22,7 +22,7 @@ public class SidePicker {
 		ZNeg,
 		ZPos;
 
-		public static Side fromForgeDirection(ForgeDirection dir) {
+		public static Side fromForgeDirection(EnumFacing dir) {
 			switch (dir) {
 				case WEST:
 					return XNeg;
@@ -42,22 +42,22 @@ public class SidePicker {
 			return null;
 		}
 
-		public ForgeDirection toForgeDirection() {
+		public EnumFacing toForgeDirection() {
 			switch (this) {
 				case XNeg:
-					return ForgeDirection.WEST;
+					return EnumFacing.WEST;
 				case XPos:
-					return ForgeDirection.EAST;
+					return EnumFacing.EAST;
 				case YNeg:
-					return ForgeDirection.DOWN;
+					return EnumFacing.DOWN;
 				case YPos:
-					return ForgeDirection.UP;
+					return EnumFacing.UP;
 				case ZNeg:
-					return ForgeDirection.NORTH;
+					return EnumFacing.NORTH;
 				case ZPos:
-					return ForgeDirection.SOUTH;
+					return EnumFacing.SOUTH;
 				default:
-					return ForgeDirection.UNKNOWN;
+					throw new IllegalArgumentException(this.toString());
 			}
 		}
 	}
@@ -99,7 +99,7 @@ public class SidePicker {
 		double y = near.yCoord + diff.yCoord * p;
 		double z = near.zCoord + diff.zCoord * p;
 
-		if (negY <= y && y <= posY && negZ <= z && z <= posZ) return Vec3.createVectorHelper(x, y, z);
+		if (negY <= y && y <= posY && negZ <= z && z <= posZ) return new Vec3(x, y, z);
 
 		return null;
 	}
@@ -110,7 +110,7 @@ public class SidePicker {
 		double x = near.xCoord + diff.xCoord * p;
 		double z = near.zCoord + diff.zCoord * p;
 
-		if (negX <= x && x <= posX && negZ <= z && z <= posZ) return Vec3.createVectorHelper(x, y, z);
+		if (negX <= x && x <= posX && negZ <= z && z <= posZ) return new Vec3(x, y, z);
 
 		return null;
 	}
@@ -121,7 +121,7 @@ public class SidePicker {
 		double x = near.xCoord + diff.xCoord * p;
 		double y = near.yCoord + diff.yCoord * p;
 
-		if (negX <= x && x <= posX && negY <= y && y <= posY) return Vec3.createVectorHelper(x, y, z);
+		if (negX <= x && x <= posX && negY <= y && y <= posY) return new Vec3(x, y, z);
 
 		return null;
 	}

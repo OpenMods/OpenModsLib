@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.launchwrapper.IClassTransformer;
+import net.minecraftforge.fml.common.discovery.ASMDataTable;
+import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData;
 import openmods.Log;
 import openmods.api.IResultListener;
 import openmods.asm.TransformerState;
@@ -29,9 +31,6 @@ import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.collect.*;
-
-import cpw.mods.fml.common.discovery.ASMDataTable;
-import cpw.mods.fml.common.discovery.ASMDataTable.ASMData;
 
 public class OpenModsClassTransformer implements IClassTransformer {
 

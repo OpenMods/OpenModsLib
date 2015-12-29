@@ -27,7 +27,7 @@ public class TileEntityRpcTarget implements IRpcTarget {
 
 	@Override
 	public void writeToStream(DataOutput output) throws IOException {
-		output.writeInt(te.getWorldObj().provider.dimensionId);
+		output.writeInt(te.getWorld().provider.getDimensionId());
 		output.writeInt(te.xCoord);
 		output.writeInt(te.yCoord);
 		output.writeInt(te.zCoord);

@@ -1,7 +1,6 @@
 package openmods.block;
 
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 import openmods.Log;
 import openmods.geometry.HalfAxis;
 import openmods.geometry.Orientation;

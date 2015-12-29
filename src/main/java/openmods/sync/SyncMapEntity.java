@@ -21,7 +21,7 @@ public class SyncMapEntity<H extends Entity & ISyncMapProvider> extends SyncMap<
 
 	@Override
 	protected Set<EntityPlayerMP> getPlayersWatching() {
-		return NetUtils.getPlayersWatchingEntity((WorldServer)handler.worldObj, handler.getEntityId());
+		return NetUtils.getPlayersWatchingEntity((WorldServer)handler.worldObj, handler);
 	}
 
 	@Override

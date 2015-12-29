@@ -5,15 +5,14 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
-import net.minecraftforge.common.util.ForgeDirection;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IListenerBase;
 import openmods.gui.misc.*;
@@ -26,12 +25,12 @@ import openmods.utils.bitmap.IReadableBitMap;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-public class GuiComponentSideSelector extends BaseComponent implements IValueReceiver<Set<ForgeDirection>> {
+public class GuiComponentSideSelector extends BaseComponent implements IValueReceiver<Set<EnumFacing>> {
 
 	private static final double SQRT_3 = Math.sqrt(3);
 
 	public static interface ISideSelectedListener extends IListenerBase {
-		public void onSideToggled(ForgeDirection side, boolean currentState);
+		public void onSideToggled(EnumFacing side, boolean currentState);
 	}
 
 	private final RenderBlocks blockRender = new RenderBlocks();
@@ -40,8 +39,8 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 	private final int diameter;
 	private final double scale;
-	private ForgeDirection lastSideHovered;
-	private final Set<ForgeDirection> selectedSides = EnumSet.noneOf(ForgeDirection.class);
+	private EnumFacing lastSideHovered;
+	private final Set<EnumFacing> selectedSides = EnumSet.noneOf(EnumFacing.class);
 	private boolean highlightSelectedSides = true;
 
 	private boolean isInInitialPosition;
@@ -87,12 +86,12 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		if (coord != null) drawHighlight(tessellator, coord.side, 0x444444);
 
 		if (highlightSelectedSides) {
-			for (ForgeDirection dir : selectedSides) {
+			for (EnumFacing dir : selectedSides) {
 				drawHighlight(tessellator, Side.fromForgeDirection(dir), 0xCC0000);
 			}
 		}
 
-		lastSideHovered = coord == null? ForgeDirection.UNKNOWN : coord.side.toForgeDirection();
+		lastSideHovered = coord == null? null : coord.side.toForgeDirection();
 
 		GL11.glPopMatrix();
 	}
@@ -170,20 +169,20 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		t.draw();
 	}
 
-	private void toggleSide(ForgeDirection side) {
+	private void toggleSide(EnumFacing side) {
 		boolean wasntPresent = !selectedSides.remove(side);
 		if (wasntPresent) selectedSides.add(side);
 		notifyListeners(side, wasntPresent);
 	}
 
-	private void notifyListeners(final ForgeDirection side, final boolean wasntPresent) {
+	private void notifyListeners(EnumFacing side, boolean wasntPresent) {
 		if (sideSelectedListener != null) sideSelectedListener.onSideToggled(side, wasntPresent);
 	}
 
 	@Override
 	public void mouseUp(int mouseX, int mouseY, int button) {
 		super.mouseDown(mouseX, mouseY, button);
-		if (button == 0 && lastSideHovered != null && lastSideHovered != ForgeDirection.UNKNOWN) {
+		if (button == 0 && lastSideHovered != null && lastSideHovered != null) {
 			toggleSide(lastSideHovered);
 		}
 	}
@@ -205,15 +204,15 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	}
 
 	@Override
-	public void setValue(Set<ForgeDirection> dirs) {
+	public void setValue(Set<EnumFacing> dirs) {
 		selectedSides.clear();
 		selectedSides.addAll(dirs);
 	}
 
-	public void setValue(IReadableBitMap<ForgeDirection> dirs) {
+	public void setValue(IReadableBitMap<EnumFacing> dirs) {
 		selectedSides.clear();
 
-		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+		for (EnumFacing dir : EnumFacing.VALUES)
 			if (dirs.get(dir)) selectedSides.add(dir);
 	}
 

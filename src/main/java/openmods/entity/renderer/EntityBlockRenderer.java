@@ -1,7 +1,6 @@
 package openmods.entity.renderer;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
@@ -10,7 +9,7 @@ import openmods.entity.EntityBlock;
 
 import org.lwjgl.opengl.GL11;
 
-public class EntityBlockRenderer extends Render {
+public class EntityBlockRenderer extends Render<EntityBlock> {
 
 	private final RenderBlocks renderBlocks = new RenderBlocks();
 

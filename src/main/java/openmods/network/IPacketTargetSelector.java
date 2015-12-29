@@ -2,8 +2,8 @@ package openmods.network;
 
 import java.util.Collection;
 
-import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
-import cpw.mods.fml.relauncher.Side;
+import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
+import net.minecraftforge.fml.relauncher.Side;
 
 public interface IPacketTargetSelector {
 	public boolean isAllowedOnSide(Side side);

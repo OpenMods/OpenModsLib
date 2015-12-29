@@ -35,7 +35,7 @@ public class AabbUtils {
 			maxZ = z2;
 		}
 
-		return AxisAlignedBB.getBoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
+		return AxisAlignedBB.fromBounds(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 }

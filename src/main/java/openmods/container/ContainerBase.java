@@ -136,7 +136,7 @@ public abstract class ContainerBase<T> extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotId) {
-		Slot slot = (Slot)inventorySlots.get(slotId);
+		final Slot slot = inventorySlots.get(slotId);
 
 		if (slot != null && canTransferItemOut(slot) && slot.getHasStack()) {
 			ItemStack itemToTransfer = slot.getStack();
@@ -167,15 +167,13 @@ public abstract class ContainerBase<T> extends Container {
 		return inventorySize;
 	}
 
-	@SuppressWarnings("unchecked")
 	protected List<Slot> getSlots() {
 		return inventorySlots;
 	}
 
-	@SuppressWarnings("unchecked")
 	public Set<EntityPlayer> getPlayers() {
 		Set<EntityPlayer> players = new HashSet<EntityPlayer>();
-		for (ICrafting crafter : (List<ICrafting>)crafters) {
+		for (ICrafting crafter : crafters) {
 			if (crafter instanceof EntityPlayerMP) {
 				players.add((EntityPlayerMP)crafter);
 			}

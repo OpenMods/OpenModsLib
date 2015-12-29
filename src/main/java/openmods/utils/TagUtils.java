@@ -1,9 +1,7 @@
 package openmods.utils;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.ChunkPosition;
 
 public class TagUtils {
 
@@ -27,14 +25,6 @@ public class TagUtils {
 		return result;
 	}
 
-	public static NBTTagCompound store(ChunkCoordinates coords) {
-		return store(coords.posX, coords.posY, coords.posZ);
-	}
-
-	public static NBTTagCompound store(ChunkPosition coords) {
-		return store(coords.chunkPosX, coords.chunkPosY, coords.chunkPosZ);
-	}
-
 	public static NBTTagCompound store(Coord coords) {
 		return store(coords.x, coords.y, coords.z);
 	}
@@ -54,6 +44,6 @@ public class TagUtils {
 		final double x = tag.getDouble(TAG_X);
 		final double y = tag.getDouble(TAG_Y);
 		final double z = tag.getDouble(TAG_Z);
-		return Vec3.createVectorHelper(x, y, z);
+		return new Vec3(x, y, z);
 	}
 }

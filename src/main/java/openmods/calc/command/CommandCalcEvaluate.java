@@ -25,12 +25,12 @@ public class CommandCalcEvaluate extends CommandCalcBase {
 	}
 
 	@Override
-	public List<?> getCommandAliases() {
+	public List<String> getCommandAliases() {
 		return Lists.newArrayList("=evaluate", "=");
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) {
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
 		final String expr = spaceJoiner.join(args);
 		try {
 			if (state.exprType == ExprType.INFIX) {

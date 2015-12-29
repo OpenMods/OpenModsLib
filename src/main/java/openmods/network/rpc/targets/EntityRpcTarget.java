@@ -27,7 +27,7 @@ public class EntityRpcTarget implements IRpcTarget {
 
 	@Override
 	public void writeToStream(DataOutput output) throws IOException {
-		output.writeInt(entity.worldObj.provider.dimensionId);
+		output.writeInt(entity.worldObj.provider.getDimensionId());
 		output.writeInt(entity.getEntityId());
 	}
 

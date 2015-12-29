@@ -48,8 +48,8 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 	@Override
 	public void readFromStream(DataInputStream stream) throws IOException {
 		if (stream.readBoolean()) {
-			int fluidId = ByteUtils.readVLI(stream);
-			Fluid fluid = FluidRegistry.getFluid(fluidId);
+			String fluidName = stream.readUTF();
+			Fluid fluid = FluidRegistry.getFluid(fluidName);
 
 			int fluidAmount = stream.readInt();
 
@@ -69,7 +69,7 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 	public void writeToStream(DataOutputStream stream) throws IOException {
 		if (fluid != null) {
 			stream.writeBoolean(true);
-			ByteUtils.writeVLI(stream, fluid.getFluidID());
+			stream.writeUTF(FluidRegistry.getFluidName(fluid.getFluid()));
 			stream.writeInt(fluid.amount);
 			if (fluid.tag != null) {
 				ByteArrayOutputStream buffer = new ByteArrayOutputStream();

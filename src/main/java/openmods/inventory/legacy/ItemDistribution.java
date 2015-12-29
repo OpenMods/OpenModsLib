@@ -8,7 +8,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 import openmods.inventory.GenericInventory;
 import openmods.utils.BlockUtils;
 import openmods.utils.InventoryUtils;
@@ -34,21 +34,20 @@ public class ItemDistribution {
 	}
 
 	public static boolean insertItemIntoInventory(IInventory inventory, ItemStack stack) {
-		return insertItemIntoInventory(inventory, stack, ForgeDirection.UNKNOWN, -1);
+		return insertItemIntoInventory(inventory, stack, null, -1);
 	}
 
-	public static boolean insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot) {
+	public static boolean insertItemIntoInventory(IInventory inventory, ItemStack stack, EnumFacing side, int intoSlot) {
 		return insertItemIntoInventory(inventory, stack, side, intoSlot, true);
 	}
 
-	public static boolean insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot, boolean doMove) {
+	public static boolean insertItemIntoInventory(IInventory inventory, ItemStack stack, EnumFacing side, int intoSlot, boolean doMove) {
 		return insertItemIntoInventory(inventory, stack, side, intoSlot, doMove, true);
 	}
 
-	public static boolean insertItemIntoInventory(IInventory inventory, ItemStack stack, ForgeDirection side, int intoSlot, boolean doMove, boolean canStack) {
+	public static boolean insertItemIntoInventory(IInventory inventory, ItemStack stack, EnumFacing side, int intoSlot, boolean doMove, boolean canStack) {
 		if (stack == null) return false;
 
-		final int sideId = side.ordinal();
 		IInventory targetInventory = inventory;
 
 		// if we're not meant to move, make a clone of the inventory
@@ -61,10 +60,10 @@ public class ItemDistribution {
 		final Set<Integer> attemptSlots = Sets.newTreeSet();
 
 		// if it's a sided inventory, get all the accessible slots
-		final boolean isSidedInventory = inventory instanceof ISidedInventory && side != ForgeDirection.UNKNOWN;
+		final boolean isSidedInventory = inventory instanceof ISidedInventory && side != null;
 
 		if (isSidedInventory) {
-			int[] accessibleSlots = ((ISidedInventory)inventory).getAccessibleSlotsFromSide(sideId);
+			int[] accessibleSlots = ((ISidedInventory)inventory).getSlotsForFace(side);
 			for (int slot : accessibleSlots)
 				attemptSlots.add(slot);
 		} else {
@@ -81,21 +80,21 @@ public class ItemDistribution {
 		boolean result = false;
 		for (Integer slot : attemptSlots) {
 			if (stack.stackSize <= 0) break;
-			if (isSidedInventory && !((ISidedInventory)inventory).canInsertItem(slot, stack, sideId)) continue;
+			if (isSidedInventory && !((ISidedInventory)inventory).canInsertItem(slot, stack, side)) continue;
 			result |= tryInsertStack(targetInventory, slot, stack, canStack);
 		}
 
 		return result;
 	}
 
-	public static int moveItemInto(IInventory fromInventory, int fromSlot, CustomSinks.ICustomSink sink, int maxAmount, ForgeDirection direction, boolean doMove) {
+	public static int moveItemInto(IInventory fromInventory, int fromSlot, CustomSinks.ICustomSink sink, int maxAmount, EnumFacing direction, boolean doMove) {
 		fromInventory = InventoryUtils.getInventory(fromInventory);
 
 		ItemStack sourceStack = fromInventory.getStackInSlot(fromSlot);
 		if (sourceStack == null || maxAmount <= 0) return 0;
 
 		if (fromInventory instanceof ISidedInventory
-				&& !((ISidedInventory)fromInventory).canExtractItem(fromSlot, sourceStack, direction.ordinal())) return 0;
+				&& !((ISidedInventory)fromInventory).canExtractItem(fromSlot, sourceStack, direction)) return 0;
 
 		final int amountToMove = Math.min(sourceStack.stackSize, maxAmount);
 		ItemStack clonedSourceStack = InventoryUtils.copyAndChange(sourceStack, amountToMove);
@@ -105,7 +104,7 @@ public class ItemDistribution {
 		return inserted;
 	}
 
-	public static boolean insertItemInto(ItemStack stack, CustomSinks.ICustomSink sink, ForgeDirection intoSide, boolean doMove) {
+	public static boolean insertItemInto(ItemStack stack, CustomSinks.ICustomSink sink, EnumFacing intoSide, boolean doMove) {
 		ItemStack clonedSourceStack = stack.copy();
 
 		final int inserted = sink.accept(clonedSourceStack, doMove, intoSide);
@@ -118,7 +117,7 @@ public class ItemDistribution {
 		return false;
 	}
 
-	public static int moveItemInto(IInventory fromInventory, int fromSlot, IInventory target, int intoSlot, int maxAmount, ForgeDirection direction, boolean doMove) {
+	public static int moveItemInto(IInventory fromInventory, int fromSlot, IInventory target, int intoSlot, int maxAmount, EnumFacing direction, boolean doMove) {
 		return moveItemInto(fromInventory, fromSlot, target, intoSlot, maxAmount, direction, doMove, true);
 	}
 
@@ -147,20 +146,20 @@ public class ItemDistribution {
 	 * @param canStack
 	 * @return The amount of items moved
 	 */
-	public static int moveItemInto(IInventory fromInventory, int fromSlot, IInventory toInventory, int intoSlot, int maxAmount, ForgeDirection direction, boolean doMove, boolean canStack) {
+	public static int moveItemInto(IInventory fromInventory, int fromSlot, IInventory toInventory, int intoSlot, int maxAmount, EnumFacing direction, boolean doMove, boolean canStack) {
 		fromInventory = InventoryUtils.getInventory(fromInventory);
 
 		ItemStack sourceStack = fromInventory.getStackInSlot(fromSlot);
 		if (sourceStack == null || maxAmount <= 0) return 0;
 
 		if (fromInventory instanceof ISidedInventory
-				&& !((ISidedInventory)fromInventory).canExtractItem(fromSlot, sourceStack, direction.ordinal())) return 0;
+				&& !((ISidedInventory)fromInventory).canExtractItem(fromSlot, sourceStack, direction)) return 0;
 
 		final int amountToMove = Math.min(sourceStack.stackSize, maxAmount);
 		ItemStack insertedStack = InventoryUtils.copyAndChange(sourceStack, amountToMove);
 
 		IInventory targetInventory = InventoryUtils.getInventory(toInventory);
-		ForgeDirection side = direction.getOpposite();
+		EnumFacing side = direction.getOpposite();
 		// try insert the item into the target inventory. this'll reduce the
 		// stackSize of our stack
 		insertItemIntoInventory(targetInventory, insertedStack, side, intoSlot, doMove, canStack);
@@ -171,7 +170,7 @@ public class ItemDistribution {
 		return inserted;
 	}
 
-	public static int moveItemInto(IInventory fromInventory, int fromSlot, TileEntity te, ForgeDirection intoSide, int maxAmount, boolean doMove) {
+	public static int moveItemInto(IInventory fromInventory, int fromSlot, TileEntity te, EnumFacing intoSide, int maxAmount, boolean doMove) {
 		if (te == null) return 0;
 
 		if (te instanceof IInventory) {
@@ -187,7 +186,7 @@ public class ItemDistribution {
 		return 0;
 	}
 
-	public static boolean insertItemInto(ItemStack stack, TileEntity te, ForgeDirection intoSide, boolean doMove) {
+	public static boolean insertItemInto(ItemStack stack, TileEntity te, EnumFacing intoSide, boolean doMove) {
 		if (te == null) return false;
 
 		if (te instanceof IInventory) {
@@ -203,13 +202,13 @@ public class ItemDistribution {
 		return false;
 	}
 
-	public static int moveItemsFromOneOfSides(TileEntity te, IInventory inv, int maxAmount, int intoSlot, Iterable<ForgeDirection> sides, boolean randomize) {
+	public static int moveItemsFromOneOfSides(TileEntity te, IInventory inv, int maxAmount, int intoSlot, Iterable<EnumFacing> sides, boolean randomize) {
 		return moveItemsFromOneOfSides(te, inv, null, maxAmount, intoSlot, sides, randomize);
 	}
 
-	public static int moveItemsFromOneOfSides(TileEntity te, IInventory inv, ItemStack filterStack, int maxAmount, int intoSlot, Iterable<ForgeDirection> sides, boolean randomize) {
+	public static int moveItemsFromOneOfSides(TileEntity te, IInventory inv, ItemStack filterStack, int maxAmount, int intoSlot, Iterable<EnumFacing> sides, boolean randomize) {
 		if (randomize) {
-			List<ForgeDirection> shuffledSides = Lists.newArrayList(sides);
+			List<EnumFacing> shuffledSides = Lists.newArrayList(sides);
 			Collections.shuffle(shuffledSides);
 			sides = shuffledSides;
 		}
@@ -217,7 +216,7 @@ public class ItemDistribution {
 		IInventory ourInventory = InventoryUtils.getInventory(inv);
 
 		// loop through the shuffled sides
-		for (ForgeDirection dir : sides) {
+		for (EnumFacing dir : sides) {
 			TileEntity tileOnSurface = BlockUtils.getTileInDirection(te, dir);
 			// if it's an inventory
 			if (tileOnSurface instanceof IInventory) {
@@ -237,7 +236,7 @@ public class ItemDistribution {
 		return 0;
 	}
 
-	public static int moveItemsToOneOfSides(TileEntity te, IInventory inv, int fromSlot, int maxAmount, Iterable<ForgeDirection> sides, boolean randomize) {
+	public static int moveItemsToOneOfSides(TileEntity te, IInventory inv, int fromSlot, int maxAmount, Iterable<EnumFacing> sides, boolean randomize) {
 		final IInventory inventory = InventoryUtils.getInventory(inv);
 
 		// if we've not got a stack in that slot, we dont care.
@@ -246,12 +245,12 @@ public class ItemDistribution {
 		// shuffle the sides that have been passed in
 
 		if (randomize) {
-			List<ForgeDirection> shuffledSides = Lists.newArrayList(sides);
+			List<EnumFacing> shuffledSides = Lists.newArrayList(sides);
 			Collections.shuffle(shuffledSides);
 			sides = shuffledSides;
 		}
 
-		for (ForgeDirection dir : sides) {
+		for (EnumFacing dir : sides) {
 			// grab the tile in the current direction
 			TileEntity tileOnSurface = BlockUtils.getTileInDirection(te, dir);
 			int inserted = moveItemInto(inventory, fromSlot, tileOnSurface, dir, maxAmount, true);

@@ -16,8 +16,8 @@ public abstract class SidedCommand implements ICommand {
 	}
 
 	@Override
-	public int compareTo(Object o) {
-		return name.compareTo(((ICommand)o).getCommandName());
+	public int compareTo(ICommand o) {
+		return name.compareTo(o.getCommandName());
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public abstract class SidedCommand implements ICommand {
 	}
 
 	@Override
-	public List<?> getCommandAliases() {
+	public List<String> getCommandAliases() {
 		return null;
 	}
 

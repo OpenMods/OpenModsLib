@@ -1,13 +1,13 @@
 package openmods.movement;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MovementInput;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import openmods.movement.PlayerMovementEvent.Type;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 
 public class PlayerMovementManager {
 
@@ -37,7 +37,7 @@ public class PlayerMovementManager {
 	public static class LegacyTickHandler {
 		@SubscribeEvent
 		public void onClientTick(ClientTickEvent evt) {
-			EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
+			final EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
 			if (player != null) PlayerMovementManager.updateMovementState(player.movementInput, player);
 		}
 	}

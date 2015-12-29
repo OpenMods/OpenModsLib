@@ -6,13 +6,12 @@ import java.util.Set;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
+import net.minecraftforge.fml.relauncher.Side;
 import openmods.network.IPacketTargetSelector;
 import openmods.utils.NetUtils;
 
 import com.google.common.base.Preconditions;
-
-import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
-import cpw.mods.fml.relauncher.Side;
 
 public class SelectEntityWatchers implements IPacketTargetSelector {
 
@@ -30,7 +29,7 @@ public class SelectEntityWatchers implements IPacketTargetSelector {
 
 		Preconditions.checkArgument(entity.worldObj instanceof WorldServer, "Invalid side");
 		WorldServer server = (WorldServer)entity.worldObj;
-		Set<EntityPlayerMP> players = NetUtils.getPlayersWatchingEntity(server, entity.getEntityId());
+		Set<EntityPlayerMP> players = NetUtils.getPlayersWatchingEntity(server, entity);
 
 		for (EntityPlayerMP player : players) {
 			NetworkDispatcher dispatcher = NetUtils.getPlayerDispatcher(player);

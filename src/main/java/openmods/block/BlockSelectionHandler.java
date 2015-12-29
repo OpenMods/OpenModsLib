@@ -1,12 +1,13 @@
 package openmods.block;
 
 import net.minecraft.block.Block;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import openmods.api.ISelectionAware;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class BlockSelectionHandler {
 
@@ -15,15 +16,13 @@ public class BlockSelectionHandler {
 		final MovingObjectPosition mop = evt.target;
 
 		if (mop != null && mop.typeOfHit == MovingObjectType.BLOCK) {
-			final int x = mop.blockX;
-			final int y = mop.blockY;
-			final int z = mop.blockZ;
 
 			final World world = evt.player.worldObj;
-			final Block block = world.getBlock(x, y, z);
+			final BlockPos blockPos = mop.getBlockPos();
+			final Block block = world.getBlockState(blockPos).getBlock();
 
 			if (block instanceof ISelectionAware) {
-				final boolean result = ((ISelectionAware)block).onSelected(world, x, y, z, evt);
+				final boolean result = ((ISelectionAware)block).onSelected(world, blockPos, evt);
 				evt.setCanceled(result);
 			}
 		}

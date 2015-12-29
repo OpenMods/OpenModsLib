@@ -2,7 +2,7 @@ package openmods.movement;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import cpw.mods.fml.common.eventhandler.Cancelable;
+import net.minecraftforge.fml.common.eventhandler.Cancelable;
 
 @Cancelable
 public class PlayerMovementEvent extends PlayerEvent {

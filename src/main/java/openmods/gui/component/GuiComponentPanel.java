@@ -1,6 +1,5 @@
 package openmods.gui.component;
 
-import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
@@ -70,13 +69,12 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	protected void renderComponentForeground(Minecraft minecraft, int x, int y, int mouseX, int mouseY) {
 		GL11.glColor3f(1, 1, 1);
 		bindComponentsSheet();
 
 		if (container != null) {
-			for (Slot slot : (List<Slot>)container.inventorySlots) {
+			for (Slot slot : container.inventorySlots) {
 				Objects.firstNonNull(slotRenderers.get(slot.slotNumber), normalSlot).render(this, slot);
 			}
 		}

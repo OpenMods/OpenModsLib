@@ -6,6 +6,10 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Property;
+import net.minecraftforge.fml.client.config.DummyConfigElement.DummyCategoryElement;
+import net.minecraftforge.fml.client.config.*;
+import net.minecraftforge.fml.client.config.GuiConfigEntries.CategoryEntry;
+import net.minecraftforge.fml.client.config.GuiConfigEntries.IConfigEntry;
 import openmods.config.game.AbstractFeatureManager;
 import openmods.config.game.FeatureRegistry;
 import openmods.config.properties.ConfigProcessing;
@@ -14,12 +18,6 @@ import openmods.config.properties.ConfigPropertyMeta;
 
 import com.google.common.collect.Lists;
 
-import cpw.mods.fml.client.config.DummyConfigElement.DummyCategoryElement;
-import cpw.mods.fml.client.config.*;
-import cpw.mods.fml.client.config.GuiConfigEntries.CategoryEntry;
-import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
-
-@SuppressWarnings({ "rawtypes", "unchecked" })
 public class OpenModsConfigScreen extends GuiConfig {
 
 	private static class CategoryElement extends DummyCategoryElement {
@@ -60,19 +58,19 @@ public class OpenModsConfigScreen extends GuiConfig {
 		List<IConfigElement> result = Lists.newArrayList();
 
 		{
-			final IConfigElement<?> features = createFeatureEntries(modId);
+			final IConfigElement features = createFeatureEntries(modId);
 			if (features != null) result.add(features);
 		}
 
 		{
-			final IConfigElement<?> config = createConfigEntries(modId);
+			final IConfigElement config = createConfigEntries(modId);
 			if (config != null) result.add(config);
 		}
 
 		return result;
 	}
 
-	protected static IConfigElement<?> createFeatureEntries(String modId) {
+	protected static IConfigElement createFeatureEntries(String modId) {
 		final AbstractFeatureManager manager = FeatureRegistry.instance.getManager(modId);
 		if (manager == null) return null;
 
@@ -91,7 +89,7 @@ public class OpenModsConfigScreen extends GuiConfig {
 		return new CategoryElement("features", "openmodslib.config.features", categories);
 	}
 
-	private static IConfigElement<?> createConfigEntries(String modId) {
+	private static IConfigElement createConfigEntries(String modId) {
 		final ModConfig config = ConfigProcessing.getConfig(modId);
 		if (config == null) return null;
 

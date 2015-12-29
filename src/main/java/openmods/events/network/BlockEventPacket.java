@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import openmods.network.DimCoord;
 import openmods.network.event.NetworkEvent;
@@ -14,21 +15,17 @@ import openmods.utils.WorldUtils;
 
 public abstract class BlockEventPacket extends NetworkEvent {
 	public int dimension;
-	public int xCoord;
-	public int yCoord;
-	public int zCoord;
+	public BlockPos blockPos;
 
 	public BlockEventPacket() {}
 
-	public BlockEventPacket(int dimension, int xCoord, int yCoord, int zCoord) {
+	public BlockEventPacket(int dimension, BlockPos blockPos) {
 		this.dimension = dimension;
-		this.xCoord = xCoord;
-		this.yCoord = yCoord;
-		this.zCoord = zCoord;
+		this.blockPos = blockPos;
 	}
 
 	public BlockEventPacket(TileEntity tile) {
-		this(tile.getWorldObj().provider.dimensionId, tile.xCoord, tile.yCoord, tile.zCoord);
+		this(tile.getWorld().provider.dimensionId, tile.getPos());
 	}
 
 	@Override

@@ -14,15 +14,15 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import net.minecraft.network.INetHandler;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+import net.minecraftforge.fml.relauncher.Side;
 import openmods.OpenMods;
 import openmods.utils.io.PacketChunker;
 
 import com.google.common.base.Preconditions;
-
-import cpw.mods.fml.common.network.ByteBufUtils;
-import cpw.mods.fml.common.network.NetworkRegistry;
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
-import cpw.mods.fml.relauncher.Side;
 
 @Sharable
 public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, NetworkEvent> {
@@ -110,7 +110,7 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 		ByteBuf buf = Unpooled.buffer(payload.length + 5);
 		ByteBufUtils.writeVarInt(buf, id, 5);
 		buf.writeBytes(payload);
-		FMLProxyPacket partialPacket = new FMLProxyPacket(buf.copy(), NetworkEventDispatcher.CHANNEL_NAME);
+		FMLProxyPacket partialPacket = new FMLProxyPacket(new PacketBuffer(buf.copy()), NetworkEventDispatcher.CHANNEL_NAME);
 		return partialPacket;
 	}
 

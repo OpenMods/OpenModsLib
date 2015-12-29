@@ -13,6 +13,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.ICrashCallable;
+import net.minecraftforge.fml.common.network.IGuiHandler;
 import openmods.LibConfig;
 import openmods.Log;
 import openmods.OpenMods;
@@ -28,11 +32,6 @@ import openmods.stencil.StencilPoolManager.StencilPool;
 import openmods.utils.render.RenderUtils;
 
 import com.google.common.base.Optional;
-
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.ICrashCallable;
-import cpw.mods.fml.common.network.IGuiHandler;
 
 public final class OpenClientProxy implements IOpenModsProxy {
 
@@ -123,7 +122,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 	public void postInit() {
 		if (!PlayerMovementManager.isCallbackInjected()) {
 			Log.info("EntityPlayerSP movement callback patch not applied, using legacy solution");
-			FMLCommonHandler.instance().bus().register(new PlayerMovementManager.LegacyTickHandler());
+			MinecraftForge.EVENT_BUS.register(new PlayerMovementManager.LegacyTickHandler());
 		}
 	}
 

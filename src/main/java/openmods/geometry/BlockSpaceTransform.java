@@ -164,7 +164,7 @@ public abstract class BlockSpaceTransform {
 
 	// wrapper over obfuscated method
 	protected static Vec3 createVector(double x, double y, double z) {
-		return Vec3.createVectorHelper(x, y, z);
+		return new Vec3(x, y, z);
 	}
 
 	public AxisAlignedBB mapWorldToBlock(Orientation orientation, AxisAlignedBB aabb) {

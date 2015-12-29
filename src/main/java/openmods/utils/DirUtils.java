@@ -1,32 +1,28 @@
 package openmods.utils;
 
-import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.Set;
 
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 import openmods.utils.ByteUtils.CountingBitIterator;
 
 public class DirUtils {
 
-	public static final Set<ForgeDirection> VALID_DIRECTIONS = EnumSet.complementOf(EnumSet.of(ForgeDirection.UNKNOWN));
-
-	private static class DirectionBitsetIterator extends CountingBitIterator<ForgeDirection> {
+	private static class DirectionBitsetIterator extends CountingBitIterator<EnumFacing> {
 		public DirectionBitsetIterator(int value) {
 			super(value);
 		}
 
 		@Override
-		protected ForgeDirection convert(int bit) {
-			return ForgeDirection.getOrientation(bit);
+		protected EnumFacing convert(int bit) {
+			return EnumFacing.VALUES[bit];
 		}
 	}
 
-	public static Iterator<ForgeDirection> bitsToValidDirs(int value) {
+	public static Iterator<EnumFacing> bitsToValidDirs(int value) {
 		return new DirectionBitsetIterator(value & 0x3F);
 	}
 
-	public static Iterator<ForgeDirection> bitsToAllDirs(int value) {
+	public static Iterator<EnumFacing> bitsToAllDirs(int value) {
 		return new DirectionBitsetIterator(value & 0x7F);
 	}
 }

@@ -37,17 +37,17 @@ public class CalcState {
 
 		public int getX() {
 			Preconditions.checkNotNull(sender, "DERP");
-			return sender.getPlayerCoordinates().posX;
+			return sender.getPosition().getX();
 		}
 
 		public int getY() {
 			Preconditions.checkNotNull(sender, "DERP");
-			return sender.getPlayerCoordinates().posY;
+			return sender.getPosition().getY();
 		}
 
 		public int getZ() {
 			Preconditions.checkNotNull(sender, "DERP");
-			return sender.getPlayerCoordinates().posZ;
+			return sender.getPosition().getZ();
 		}
 
 		public <E> Calculator<E> addPrinter(final Calculator<E> calculator) {

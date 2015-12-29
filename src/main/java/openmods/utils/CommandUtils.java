@@ -1,8 +1,6 @@
 package openmods.utils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import net.minecraft.command.*;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -42,15 +40,21 @@ public class CommandUtils {
 		sender.addChatMessage(new ChatComponentTranslation(format, args));
 	}
 
-	public static CommandException error(String format, Object... args) {
+	public static CommandException error(String format, Object... args) throws CommandException {
 		throw new CommandException(format, args);
 	}
 
-	public static EntityPlayerMP getPlayer(ICommandSender sender, String playerName) {
+	public static EntityPlayerMP getPlayer(ICommandSender sender, String playerName) throws PlayerNotFoundException {
 		EntityPlayerMP player = PlayerSelector.matchOnePlayer(sender, playerName);
 		if (player != null) return player;
 
-		player = MinecraftServer.getServer().getConfigurationManager().func_152612_a(playerName);
+		try {
+			player = MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(UUID.fromString(playerName));
+		} catch (IllegalArgumentException e) {}
+
+		if (player != null) return player;
+
+		player = MinecraftServer.getServer().getConfigurationManager().getPlayerByUsername(playerName);
 		if (player != null) return player;
 
 		throw new PlayerNotFoundException();

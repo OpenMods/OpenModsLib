@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.util.BlockPos;
 
 import com.google.common.base.Joiner;
 
@@ -20,8 +21,8 @@ abstract class CommandCalcBase implements ICommand {
 	}
 
 	@Override
-	public int compareTo(Object o) {
-		return name.compareTo(((ICommand)o).getCommandName());
+	public int compareTo(ICommand o) {
+		return name.compareTo(o.getCommandName());
 	}
 
 	@Override
@@ -30,7 +31,7 @@ abstract class CommandCalcBase implements ICommand {
 	}
 
 	@Override
-	public List<?> getCommandAliases() {
+	public List<String> getCommandAliases() {
 		return null;
 	}
 
@@ -40,7 +41,7 @@ abstract class CommandCalcBase implements ICommand {
 	}
 
 	@Override
-	public List<?> addTabCompletionOptions(ICommandSender sender, String[] args) {
+	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
 		return null;
 	}
 

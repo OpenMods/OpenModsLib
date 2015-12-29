@@ -1,25 +1,25 @@
 package openmods.geometry;
 
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 
 public enum HalfAxis {
-	NEG_X(ForgeDirection.WEST),
-	NEG_Y(ForgeDirection.DOWN),
-	NEG_Z(ForgeDirection.NORTH),
-	POS_X(ForgeDirection.EAST),
-	POS_Y(ForgeDirection.UP),
-	POS_Z(ForgeDirection.SOUTH);
+	NEG_X(EnumFacing.WEST),
+	NEG_Y(EnumFacing.DOWN),
+	NEG_Z(EnumFacing.NORTH),
+	POS_X(EnumFacing.EAST),
+	POS_Y(EnumFacing.UP),
+	POS_Z(EnumFacing.SOUTH);
 
 	public final int x;
 	public final int y;
 	public final int z;
 
-	public final ForgeDirection dir;
+	public final EnumFacing dir;
 
-	private HalfAxis(ForgeDirection dir) {
-		this.x = dir.offsetX;
-		this.y = dir.offsetY;
-		this.z = dir.offsetZ;
+	private HalfAxis(EnumFacing dir) {
+		this.x = dir.getFrontOffsetX();
+		this.y = dir.getFrontOffsetY();
+		this.z = dir.getFrontOffsetZ();
 
 		this.dir = dir;
 	}
@@ -62,7 +62,7 @@ public enum HalfAxis {
 		return negate(this);
 	}
 
-	public static HalfAxis fromDirection(ForgeDirection dir) {
+	public static HalfAxis fromEnumFacing(EnumFacing dir) {
 		switch (dir) {
 			case EAST:
 				return POS_X;

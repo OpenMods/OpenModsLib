@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 
@@ -53,14 +54,13 @@ public class EnchantmentUtils {
 	public static boolean enchantItem(ItemStack itemstack, int level, Random rand) {
 		if (itemstack == null) return false;
 
-		@SuppressWarnings("unchecked")
 		List<EnchantmentData> enchantments = EnchantmentHelper.buildEnchantmentList(rand, itemstack, level);
 		if (enchantments == null || enchantments.isEmpty()) return false;
 
 		boolean isBook = itemstack.getItem() == Items.book;
 
 		if (isBook) {
-			itemstack.func_150996_a(Items.enchanted_book);
+			itemstack.setItem(Items.enchanted_book);
 
 			final int count = enchantments.size();
 			int ignored = count > 1? rand.nextInt(count) : -1;
@@ -99,29 +99,30 @@ public class EnchantmentUtils {
 		return i - 1;
 	}
 
-	public static float getPower(World worldObj, int xCoord, int yCoord, int zCoord) {
+	public static float getPower(World worldObj, BlockPos pos) {
 		float power = 0;
 
 		for (int x = -1; x <= 1; ++x) {
 			for (int z = -1; z <= 1; ++z) {
-				final int innerX = xCoord + z;
-				final int innerZ = zCoord + x;
-				final int outerX = xCoord + z * 2;
-				final int outerZ = zCoord + x * 2;
-				final int middle = yCoord;
-				final int top = yCoord + 1;
-				if ((x != 0 || z != 0)
-						&& worldObj.isAirBlock(innerX, middle, innerZ)
-						&& worldObj.isAirBlock(innerX, top, innerZ)) {
+				final int innerX = pos.getX() + z;
+				final int innerZ = pos.getZ() + x;
+				final int outerX = pos.getX() + z * 2;
+				final int outerZ = pos.getZ() + x * 2;
+				final int middle = pos.getY();
+				final int top = pos.getY() + 1;
 
-					power += ForgeHooks.getEnchantPower(worldObj, outerX, middle, outerZ);
-					power += ForgeHooks.getEnchantPower(worldObj, outerX, top, outerZ);
+				if ((x != 0 || z != 0)
+						&& worldObj.isAirBlock(new BlockPos(innerX, middle, innerZ))
+						&& worldObj.isAirBlock(new BlockPos(innerX, top, innerZ))) {
+
+					power += ForgeHooks.getEnchantPower(worldObj, new BlockPos(outerX, middle, outerZ));
+					power += ForgeHooks.getEnchantPower(worldObj, new BlockPos(outerX, top, outerZ));
 
 					if (z != 0 && x != 0) {
-						power += ForgeHooks.getEnchantPower(worldObj, outerX, middle, innerZ);
-						power += ForgeHooks.getEnchantPower(worldObj, outerX, top, innerZ);
-						power += ForgeHooks.getEnchantPower(worldObj, innerX, middle, outerZ);
-						power += ForgeHooks.getEnchantPower(worldObj, innerX, top, outerZ);
+						power += ForgeHooks.getEnchantPower(worldObj, new BlockPos(outerX, middle, innerZ));
+						power += ForgeHooks.getEnchantPower(worldObj, new BlockPos(outerX, top, innerZ));
+						power += ForgeHooks.getEnchantPower(worldObj, new BlockPos(innerX, middle, outerZ));
+						power += ForgeHooks.getEnchantPower(worldObj, new BlockPos(innerX, top, outerZ));
 					}
 				}
 			}

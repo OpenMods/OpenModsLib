@@ -1,6 +1,6 @@
 package openmods.geometry;
 
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 import openmods.geometry.BlockTextureTransform.TexCoords;
 import openmods.geometry.BlockTextureTransform.WorldCoords;
 
@@ -11,7 +11,7 @@ public class BlockTextureTransformTest {
 
 	private static final double DELTA = 0.00001;
 
-	private static void testInversion(BlockTextureTransform t, ForgeDirection dir, double x, double y, double z) {
+	private static void testInversion(BlockTextureTransform t, EnumFacing dir, double x, double y, double z) {
 		TexCoords c = t.worldVecToTextureCoords(dir, x, y, z);
 		WorldCoords r = t.textureCoordsToWorldVec(dir, c.u, c.v, c.h);
 		Assert.assertEquals(x, r.x, DELTA);
@@ -19,7 +19,7 @@ public class BlockTextureTransformTest {
 		Assert.assertEquals(z, r.z, DELTA);
 	}
 
-	public void testInversion(BlockTextureTransform t, ForgeDirection dir) {
+	public void testInversion(BlockTextureTransform t, EnumFacing dir) {
 		testInversion(t, dir, 0, 0, 0);
 		testInversion(t, dir, 1, 0, 0);
 		testInversion(t, dir, 0, 1, 0);
@@ -31,7 +31,7 @@ public class BlockTextureTransformTest {
 	}
 
 	public void testInversion(BlockTextureTransform t) {
-		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+		for (EnumFacing dir : EnumFacing.VALUES)
 			testInversion(t, dir);
 	}
 
@@ -42,41 +42,41 @@ public class BlockTextureTransformTest {
 
 	@Test
 	public void testInversionAfterCWRotation() {
-		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+		for (EnumFacing dir : EnumFacing.VALUES)
 			testInversion(BlockTextureTransform.builder().rotateCW(dir).build());
 	}
 
 	@Test
 	public void testInversionAfterCCWRotation() {
-		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+		for (EnumFacing dir : EnumFacing.VALUES)
 			testInversion(BlockTextureTransform.builder().rotateCCW(dir).build());
 	}
 
 	@Test
 	public void testInversionAfterUWSwapRotation() {
-		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+		for (EnumFacing dir : EnumFacing.VALUES)
 			testInversion(BlockTextureTransform.builder().swapUV(dir).build());
 	}
 
 	@Test
 	public void testInversionAfterMirrorURotation() {
-		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+		for (EnumFacing dir : EnumFacing.VALUES)
 			testInversion(BlockTextureTransform.builder().mirrorU(dir).build());
 	}
 
 	@Test
 	public void testInversionAfterMirrorUVRotation() {
-		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+		for (EnumFacing dir : EnumFacing.VALUES)
 			testInversion(BlockTextureTransform.builder().mirrorUV(dir).build());
 	}
 
 	@Test
 	public void testInversionAfterMirrorVRotation() {
-		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+		for (EnumFacing dir : EnumFacing.VALUES)
 			testInversion(BlockTextureTransform.builder().mirrorV(dir).build());
 	}
 
-	private static void testIdentity(ForgeDirection dir, double x, double y, double z, BlockTextureTransform a, BlockTextureTransform b) {
+	private static void testIdentity(EnumFacing dir, double x, double y, double z, BlockTextureTransform a, BlockTextureTransform b) {
 		{
 			final TexCoords at = a.worldVecToTextureCoords(dir, x, y, z);
 			final TexCoords bt = b.worldVecToTextureCoords(dir, x, y, z);
@@ -95,7 +95,7 @@ public class BlockTextureTransformTest {
 	}
 
 	private static void testIdentity(final BlockTextureTransform a, final BlockTextureTransform b) {
-		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+		for (EnumFacing dir : EnumFacing.VALUES) {
 			testIdentity(dir, 0, 0, 0, a, b);
 			testIdentity(dir, 0, 1, 0, a, b);
 			testIdentity(dir, 1, 1, 0, a, b);
@@ -105,7 +105,7 @@ public class BlockTextureTransformTest {
 
 	@Test
 	public void testIdentities() {
-		for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
+		for (EnumFacing dir : EnumFacing.VALUES) {
 			{
 				final BlockTextureTransform normal = BlockTextureTransform.builder().build();
 
@@ -193,9 +193,9 @@ public class BlockTextureTransformTest {
 		}
 	}
 
-	public static void checkCoordinates(ForgeDirection direction, double x, double y, double z, double u, double v, double h) {
+	public static void checkCoordinates(EnumFacing direction, double x, double y, double z, double u, double v, double h) {
 		// standard Minecraft model
-		final BlockTextureTransform mapper = BlockTextureTransform.builder().mirrorU(ForgeDirection.NORTH).mirrorU(ForgeDirection.EAST).build();
+		final BlockTextureTransform mapper = BlockTextureTransform.builder().mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).build();
 
 		{
 			final TexCoords t = mapper.worldVecToTextureCoords(direction, x, y, z);
@@ -214,56 +214,56 @@ public class BlockTextureTransformTest {
 
 	@Test
 	public void testDefaultNorthMapping() {
-		checkCoordinates(ForgeDirection.NORTH, 1, 1, 0, 0, 0, 0);
-		checkCoordinates(ForgeDirection.NORTH, 0, 1, 0, 1, 0, 0);
-		checkCoordinates(ForgeDirection.NORTH, 1, 0, 0, 0, 1, 0);
-		checkCoordinates(ForgeDirection.NORTH, 0, 0, 0, 1, 1, 0);
-		checkCoordinates(ForgeDirection.NORTH, 0.1, 0.1, 0.1, 0.9, 0.9, -0.1);
+		checkCoordinates(EnumFacing.NORTH, 1, 1, 0, 0, 0, 0);
+		checkCoordinates(EnumFacing.NORTH, 0, 1, 0, 1, 0, 0);
+		checkCoordinates(EnumFacing.NORTH, 1, 0, 0, 0, 1, 0);
+		checkCoordinates(EnumFacing.NORTH, 0, 0, 0, 1, 1, 0);
+		checkCoordinates(EnumFacing.NORTH, 0.1, 0.1, 0.1, 0.9, 0.9, -0.1);
 	}
 
 	@Test
 	public void testDefaultSouthMapping() {
-		checkCoordinates(ForgeDirection.SOUTH, 0, 1, 1, 0, 0, 0);
-		checkCoordinates(ForgeDirection.SOUTH, 1, 1, 1, 1, 0, 0);
-		checkCoordinates(ForgeDirection.SOUTH, 0, 0, 1, 0, 1, 0);
-		checkCoordinates(ForgeDirection.SOUTH, 1, 0, 1, 1, 1, 0);
-		checkCoordinates(ForgeDirection.SOUTH, 0.1, 0.1, 1.1, 0.1, 0.9, 0.1);
+		checkCoordinates(EnumFacing.SOUTH, 0, 1, 1, 0, 0, 0);
+		checkCoordinates(EnumFacing.SOUTH, 1, 1, 1, 1, 0, 0);
+		checkCoordinates(EnumFacing.SOUTH, 0, 0, 1, 0, 1, 0);
+		checkCoordinates(EnumFacing.SOUTH, 1, 0, 1, 1, 1, 0);
+		checkCoordinates(EnumFacing.SOUTH, 0.1, 0.1, 1.1, 0.1, 0.9, 0.1);
 	}
 
 	@Test
 	public void testDefaultEastMapping() {
-		checkCoordinates(ForgeDirection.EAST, 1, 1, 1, 0, 0, 0);
-		checkCoordinates(ForgeDirection.EAST, 1, 1, 0, 1, 0, 0);
-		checkCoordinates(ForgeDirection.EAST, 1, 0, 1, 0, 1, 0);
-		checkCoordinates(ForgeDirection.EAST, 1, 0, 0, 1, 1, 0);
-		checkCoordinates(ForgeDirection.EAST, 1.1, 0.1, 0.1, 0.9, 0.9, 0.1);
+		checkCoordinates(EnumFacing.EAST, 1, 1, 1, 0, 0, 0);
+		checkCoordinates(EnumFacing.EAST, 1, 1, 0, 1, 0, 0);
+		checkCoordinates(EnumFacing.EAST, 1, 0, 1, 0, 1, 0);
+		checkCoordinates(EnumFacing.EAST, 1, 0, 0, 1, 1, 0);
+		checkCoordinates(EnumFacing.EAST, 1.1, 0.1, 0.1, 0.9, 0.9, 0.1);
 	}
 
 	@Test
 	public void testDefaultWestMapping() {
-		checkCoordinates(ForgeDirection.WEST, 0, 1, 0, 0, 0, 0);
-		checkCoordinates(ForgeDirection.WEST, 0, 1, 1, 1, 0, 0);
-		checkCoordinates(ForgeDirection.WEST, 0, 0, 0, 0, 1, 0);
-		checkCoordinates(ForgeDirection.WEST, 0, 0, 1, 1, 1, 0);
-		checkCoordinates(ForgeDirection.WEST, 0.1, 0.1, 0.1, 0.1, 0.9, -0.1);
+		checkCoordinates(EnumFacing.WEST, 0, 1, 0, 0, 0, 0);
+		checkCoordinates(EnumFacing.WEST, 0, 1, 1, 1, 0, 0);
+		checkCoordinates(EnumFacing.WEST, 0, 0, 0, 0, 1, 0);
+		checkCoordinates(EnumFacing.WEST, 0, 0, 1, 1, 1, 0);
+		checkCoordinates(EnumFacing.WEST, 0.1, 0.1, 0.1, 0.1, 0.9, -0.1);
 	}
 
 	@Test
 	public void testDefaultTopMapping() {
-		checkCoordinates(ForgeDirection.UP, 0, 1, 0, 0, 0, 0);
-		checkCoordinates(ForgeDirection.UP, 1, 1, 0, 1, 0, 0);
-		checkCoordinates(ForgeDirection.UP, 0, 1, 1, 0, 1, 0);
-		checkCoordinates(ForgeDirection.UP, 1, 1, 1, 1, 1, 0);
-		checkCoordinates(ForgeDirection.UP, 0.1, 1.1, 0.1, 0.1, 0.1, 0.1);
+		checkCoordinates(EnumFacing.UP, 0, 1, 0, 0, 0, 0);
+		checkCoordinates(EnumFacing.UP, 1, 1, 0, 1, 0, 0);
+		checkCoordinates(EnumFacing.UP, 0, 1, 1, 0, 1, 0);
+		checkCoordinates(EnumFacing.UP, 1, 1, 1, 1, 1, 0);
+		checkCoordinates(EnumFacing.UP, 0.1, 1.1, 0.1, 0.1, 0.1, 0.1);
 	}
 
 	@Test
 	public void testDefaultBottomMapping() {
-		checkCoordinates(ForgeDirection.DOWN, 0, 0, 0, 0, 0, 0);
-		checkCoordinates(ForgeDirection.DOWN, 1, 0, 0, 1, 0, 0);
-		checkCoordinates(ForgeDirection.DOWN, 0, 0, 1, 0, 1, 0);
-		checkCoordinates(ForgeDirection.DOWN, 1, 0, 1, 1, 1, 0);
-		checkCoordinates(ForgeDirection.DOWN, 0.1, 0.1, 0.1, 0.1, 0.1, -0.1);
+		checkCoordinates(EnumFacing.DOWN, 0, 0, 0, 0, 0, 0);
+		checkCoordinates(EnumFacing.DOWN, 1, 0, 0, 1, 0, 0);
+		checkCoordinates(EnumFacing.DOWN, 0, 0, 1, 0, 1, 0);
+		checkCoordinates(EnumFacing.DOWN, 1, 0, 1, 1, 1, 0);
+		checkCoordinates(EnumFacing.DOWN, 0.1, 0.1, 0.1, 0.1, 0.1, -0.1);
 	}
 
 }

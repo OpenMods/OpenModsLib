@@ -9,8 +9,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import java.io.DataInputStream;
 
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import openmods.OpenMods;
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 
 @Sharable
 public class InboundSyncHandler extends SimpleChannelInboundHandler<FMLProxyPacket> {

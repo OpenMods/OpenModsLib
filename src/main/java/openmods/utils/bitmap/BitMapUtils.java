@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;
 
@@ -79,20 +79,20 @@ public class BitMapUtils {
 		};
 	}
 
-	public static IWriteableBitMap<ForgeDirection> createRpcAdapter(final IRpcDirectionBitMap map) {
-		return new IWriteableBitMap<ForgeDirection>() {
+	public static IWriteableBitMap<EnumFacing> createRpcAdapter(final IRpcDirectionBitMap map) {
+		return new IWriteableBitMap<EnumFacing>() {
 			@Override
-			public void toggle(ForgeDirection value) {
+			public void toggle(EnumFacing value) {
 				map.toggle(value);
 			}
 
 			@Override
-			public void set(ForgeDirection key, boolean value) {
+			public void set(EnumFacing key, boolean value) {
 				map.set(key, value);
 			}
 
 			@Override
-			public void mark(ForgeDirection value) {
+			public void mark(EnumFacing value) {
 				map.mark(value);
 			}
 
@@ -102,7 +102,7 @@ public class BitMapUtils {
 			}
 
 			@Override
-			public void clear(ForgeDirection value) {
+			public void clear(EnumFacing value) {
 				map.clear(value);
 			}
 		};

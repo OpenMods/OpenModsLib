@@ -10,18 +10,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import openmods.Log;
 import openmods.utils.InventoryUtils;
 import openmods.utils.MathUtils;
 
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
-
-import cpw.mods.fml.common.eventhandler.Event;
 
 public class OpenModsFakePlayer extends FakePlayer {
 
@@ -38,7 +36,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 
 	@Override
 	public void setDead() {
-		inventory.clearInventory(null, -1);
+		inventory.clear();
 		isDead = true;
 	}
 

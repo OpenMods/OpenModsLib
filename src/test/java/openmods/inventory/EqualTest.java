@@ -73,16 +73,25 @@ public class EqualTest {
 	@Test
 	public void testNBTComparator() {
 		ItemStack stackAa1 = new ItemStack(Utils.ITEM_A, 1);
-		stackAa1.stackTagCompound = new NBTTagCompound();
-		stackAa1.stackTagCompound.setBoolean("test", true);
+		{
+			NBTTagCompound stackTagCompound = new NBTTagCompound();
+			stackTagCompound.setBoolean("test", true);
+			stackAa1.setTagCompound(stackTagCompound);
+		}
 
 		ItemStack stackAa2 = new ItemStack(Utils.ITEM_A, 2);
-		stackAa2.stackTagCompound = new NBTTagCompound();
-		stackAa2.stackTagCompound.setBoolean("test", true);
+		{
+			NBTTagCompound stackTagCompound = new NBTTagCompound();
+			stackTagCompound.setBoolean("test", true);
+			stackAa2.setTagCompound(stackTagCompound);
+		}
 
 		ItemStack stackAb = new ItemStack(Utils.ITEM_A);
-		stackAb.stackTagCompound = new NBTTagCompound();
-		stackAb.stackTagCompound.setBoolean("test", false);
+		{
+			NBTTagCompound stackTagCompound = new NBTTagCompound();
+			stackTagCompound.setBoolean("test", false);
+			stackAb.setTagCompound(stackTagCompound);
+		}
 
 		ItemStack stackAn = new ItemStack(Utils.ITEM_A);
 		ItemStack stackBn = new ItemStack(Utils.ITEM_B);

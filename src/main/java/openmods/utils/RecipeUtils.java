@@ -59,7 +59,6 @@ public class RecipeUtils {
 
 	private static FieldAccess<Integer> shapedOreRecipeHeight = FieldAccess.create(ShapedOreRecipe.class, "height");
 
-	@SuppressWarnings("unchecked")
 	public static List<IRecipe> getVanillaRecipes() {
 		return CraftingManager.getInstance().getRecipeList();
 	}
@@ -109,7 +108,6 @@ public class RecipeUtils {
 		return entry;
 	}
 
-	@SuppressWarnings("unchecked")
 	public static Object[] getRecipeInput(IRecipe recipe) {
 		if (recipe instanceof ShapelessOreRecipe) return ((ShapelessOreRecipe)recipe).getInput().toArray();
 		else if (recipe instanceof ShapedOreRecipe) return getShapedOreRecipe((ShapedOreRecipe)recipe);
@@ -205,7 +203,6 @@ public class RecipeUtils {
 
 	public static ItemStack[][] getFullRecipeInput(ShapelessRecipes recipe) {
 		final InputBuilder builder = new InputBuilder(9);
-		@SuppressWarnings("unchecked")
 		final List<ItemStack> input = recipe.recipeItems;
 
 		for (int i = 0; i < recipe.getRecipeSize(); i++)

@@ -2,15 +2,13 @@ package openmods.utils;
 
 import java.util.*;
 
-import net.minecraft.block.Block;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.inventory.InventoryLargeChest;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityChest;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
@@ -42,39 +40,15 @@ public class InventoryUtils {
 		}
 	}
 
-	private static IInventory doubleChestFix(TileEntity te) {
-		final World world = te.getWorldObj();
-		final int x = te.xCoord;
-		final int y = te.yCoord;
-		final int z = te.zCoord;
-		final Block block = te.getBlockType();
-		if (world.getBlock(x - 1, y, z) == block) return new InventoryLargeChest("Large chest", (IInventory)world.getTileEntity(x - 1, y, z), (IInventory)te);
-		if (world.getBlock(x + 1, y, z) == block) return new InventoryLargeChest("Large chest", (IInventory)te, (IInventory)world.getTileEntity(x + 1, y, z));
-		if (world.getBlock(x, y, z - 1) == block) return new InventoryLargeChest("Large chest", (IInventory)world.getTileEntity(x, y, z - 1), (IInventory)te);
-		if (world.getBlock(x, y, z + 1) == block) return new InventoryLargeChest("Large chest", (IInventory)te, (IInventory)world.getTileEntity(x, y, z + 1));
-		return (te instanceof IInventory)? (IInventory)te : null;
+	public static IInventory getInventory(World world, BlockPos pos) {
+		TileEntity tileEntity = world.getTileEntity(pos);
+		return tileEntity instanceof IInventory? (IInventory)tileEntity : null;
 	}
 
-	public static IInventory getInventory(World world, int x, int y, int z) {
-		TileEntity tileEntity = world.getTileEntity(x, y, z);
-		if (tileEntity instanceof TileEntityChest) return doubleChestFix(tileEntity);
-		if (tileEntity instanceof IInventory) return (IInventory)tileEntity;
-		return null;
-	}
+	public static IInventory getInventory(World world, BlockPos blockPos, EnumFacing direction) {
+		if (direction != null) blockPos = blockPos.offset(direction);
+		return getInventory(world, blockPos);
 
-	public static IInventory getInventory(World world, int x, int y, int z, ForgeDirection direction) {
-		if (direction != null) {
-			x += direction.offsetX;
-			y += direction.offsetY;
-			z += direction.offsetZ;
-		}
-		return getInventory(world, x, y, z);
-
-	}
-
-	public static IInventory getInventory(IInventory inventory) {
-		if (inventory instanceof TileEntityChest) return doubleChestFix((TileEntity)inventory);
-		return inventory;
 	}
 
 	public static List<ItemStack> getInventoryContents(IInventory inventory) {
@@ -94,7 +68,6 @@ public class InventoryUtils {
 	 * @return Returns -1 if none found
 	 */
 	public static int getFirstSlotWithStack(IInventory inventory, ItemStack stack) {
-		inventory = getInventory(inventory);
 		for (int i = 0; i < inventory.getSizeInventory(); i++) {
 			ItemStack stackInSlot = inventory.getStackInSlot(i);
 			if (stackInSlot != null && stackInSlot.isItemEqual(stack)) { return i; }
@@ -111,7 +84,6 @@ public class InventoryUtils {
 	 * @return Returns a set of the slot indexes
 	 */
 	public static Set<Integer> getAllSlotsWithStack(IInventory inventory, ItemStack stack) {
-		inventory = getInventory(inventory);
 		Set<Integer> slots = Sets.newHashSet();
 		for (int i = 0; i < inventory.getSizeInventory(); i++) {
 			ItemStack stackInSlot = inventory.getStackInSlot(i);
@@ -129,7 +101,6 @@ public class InventoryUtils {
 	}
 
 	public static Set<Integer> getAllSlots(IInventory inventory) {
-		inventory = getInventory(inventory);
 		Set<Integer> slots = Sets.newHashSet();
 		for (int i = 0; i < inventory.getSizeInventory(); i++)
 			slots.add(i);
@@ -202,11 +173,11 @@ public class InventoryUtils {
 		inventory.setInventorySlotContents(slot2, stack1);
 	}
 
-	public static void swapStacks(ISidedInventory inventory, int slot1, ForgeDirection side1, int slot2, ForgeDirection side2) {
+	public static void swapStacks(ISidedInventory inventory, int slot1, EnumFacing side1, int slot2, EnumFacing side2) {
 		swapStacks(inventory, slot1, side1, slot2, side2, true, true);
 	}
 
-	public static void swapStacks(ISidedInventory inventory, int slot1, ForgeDirection side1, int slot2, ForgeDirection side2, boolean copy, boolean validate) {
+	public static void swapStacks(ISidedInventory inventory, int slot1, EnumFacing side1, int slot2, EnumFacing side2, boolean copy, boolean validate) {
 		Preconditions.checkElementIndex(slot1, inventory.getSizeInventory(), "input slot id");
 		Preconditions.checkElementIndex(slot2, inventory.getSizeInventory(), "output slot id");
 
@@ -237,13 +208,13 @@ public class InventoryUtils {
 		Preconditions.checkArgument(inventory.isItemValidForSlot(slot, stack), "Slot %s cannot accept item", slot);
 	}
 
-	protected static void canInsert(ISidedInventory inventory, int slot, ForgeDirection side, ItemStack stack) {
-		Preconditions.checkArgument(inventory.canInsertItem(slot, stack, side.ordinal()),
+	protected static void canInsert(ISidedInventory inventory, int slot, EnumFacing side, ItemStack stack) {
+		Preconditions.checkArgument(inventory.canInsertItem(slot, stack, side),
 				"Item cannot be inserted into slot %s on side %s", slot, side);
 	}
 
-	protected static void canExtract(ISidedInventory inventory, int slot, ForgeDirection side, ItemStack stack) {
-		Preconditions.checkArgument(inventory.canExtractItem(slot, stack, side.ordinal()),
+	protected static void canExtract(ISidedInventory inventory, int slot, EnumFacing side, ItemStack stack) {
+		Preconditions.checkArgument(inventory.canExtractItem(slot, stack, side),
 				"Item cannot be extracted from slot %s on side %s", slot, side);
 	}
 

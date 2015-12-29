@@ -3,7 +3,7 @@ package openmods.geometry;
 import java.util.EnumMap;
 import java.util.Map;
 
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 
 import com.google.common.collect.Maps;
 
@@ -41,67 +41,67 @@ public class BlockTextureTransform {
 	private static final Matrix2d SWAP = Matrix2d.createSwap();
 
 	public static class Builder {
-		private final Map<ForgeDirection, Matrix2d> transforms = Maps.newEnumMap(ForgeDirection.class);
+		private final Map<EnumFacing, Matrix2d> transforms = Maps.newEnumMap(EnumFacing.class);
 
 		private Builder() {
-			for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
+			for (EnumFacing dir : EnumFacing.VALUES)
 				transforms.put(dir, Matrix2d.createIdentity());
 		}
 
-		private Builder(Map<ForgeDirection, Matrix2d> transforms) {
-			for (Map.Entry<ForgeDirection, Matrix2d> e : transforms.entrySet())
+		private Builder(Map<EnumFacing, Matrix2d> transforms) {
+			for (Map.Entry<EnumFacing, Matrix2d> e : transforms.entrySet())
 				this.transforms.put(e.getKey(), e.getValue().copy());
 		}
 
 		public BlockTextureTransform build() {
-			final EnumMap<ForgeDirection, Matrix2d> inverseTransforms = Maps.newEnumMap(transforms);
-			for (Map.Entry<ForgeDirection, Matrix2d> e : inverseTransforms.entrySet())
+			final EnumMap<EnumFacing, Matrix2d> inverseTransforms = Maps.newEnumMap(transforms);
+			for (Map.Entry<EnumFacing, Matrix2d> e : inverseTransforms.entrySet())
 				e.setValue(e.getValue().invertCopy());
 
 			return new BlockTextureTransform(Maps.newEnumMap(transforms), inverseTransforms);
 		}
 
-		public Builder mirrorU(ForgeDirection side) {
+		public Builder mirrorU(EnumFacing side) {
 			transforms.get(side).mulRight(MIRROR_U);
 			return this;
 		}
 
-		public Builder mirrorV(ForgeDirection side) {
+		public Builder mirrorV(EnumFacing side) {
 			transforms.get(side).mulRight(MIRROR_V);
 			return this;
 		}
 
-		public Builder mirrorUV(ForgeDirection side) {
+		public Builder mirrorUV(EnumFacing side) {
 			transforms.get(side).mulRight(MIRROR_UV);
 			return this;
 		}
 
-		public Builder rotateCW(ForgeDirection side) {
+		public Builder rotateCW(EnumFacing side) {
 			transforms.get(side).mulRight(ROTATE_CW);
 			return this;
 		}
 
-		public Builder rotateCCW(ForgeDirection side) {
+		public Builder rotateCCW(EnumFacing side) {
 			transforms.get(side).mulRight(ROTATE_CCW);
 			return this;
 		}
 
-		public Builder swapUV(ForgeDirection side) {
+		public Builder swapUV(EnumFacing side) {
 			transforms.get(side).mulRight(SWAP);
 			return this;
 		}
 	}
 
-	private final Map<ForgeDirection, Matrix2d> transforms;
+	private final Map<EnumFacing, Matrix2d> transforms;
 
-	private final Map<ForgeDirection, Matrix2d> inverseTransforms;
+	private final Map<EnumFacing, Matrix2d> inverseTransforms;
 
-	private BlockTextureTransform(Map<ForgeDirection, Matrix2d> transforms, Map<ForgeDirection, Matrix2d> inverseTransforms) {
+	private BlockTextureTransform(Map<EnumFacing, Matrix2d> transforms, Map<EnumFacing, Matrix2d> inverseTransforms) {
 		this.transforms = transforms;
 		this.inverseTransforms = inverseTransforms;
 	}
 
-	public TexCoords worldVecToTextureCoords(ForgeDirection side, double x, double y, double z) {
+	public TexCoords worldVecToTextureCoords(EnumFacing side, double x, double y, double z) {
 		final double wallX;
 		final double wallY;
 		final double h;
@@ -147,7 +147,7 @@ public class BlockTextureTransform {
 		return new TexCoords(u, v, h);
 	}
 
-	public WorldCoords textureCoordsToWorldVec(ForgeDirection side, double u, double v, double h) {
+	public WorldCoords textureCoordsToWorldVec(EnumFacing side, double u, double v, double h) {
 		final Matrix2d transformation = inverseTransforms.get(side);
 		if (transformation == null) throw new IllegalArgumentException(side.toString());
 

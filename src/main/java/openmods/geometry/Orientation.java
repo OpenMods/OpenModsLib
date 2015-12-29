@@ -2,7 +2,7 @@ package openmods.geometry;
 
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 
 import com.google.common.base.Preconditions;
 
@@ -110,15 +110,15 @@ public enum Orientation {
 
 	public final HalfAxis z; // +Z, south
 
-	private final ForgeDirection[] localToGlobalDirections = new ForgeDirection[ForgeDirection.values().length];
-	private final ForgeDirection[] globalToLocalDirections = new ForgeDirection[ForgeDirection.values().length];
+	private final EnumFacing[] localToGlobalDirections = new EnumFacing[EnumFacing.values().length];
+	private final EnumFacing[] globalToLocalDirections = new EnumFacing[EnumFacing.values().length];
 
-	private void addDirectionMapping(ForgeDirection local, ForgeDirection global) {
+	private void addDirectionMapping(EnumFacing local, EnumFacing global) {
 		localToGlobalDirections[local.ordinal()] = global;
 		globalToLocalDirections[global.ordinal()] = local;
 	}
 
-	private void addDirectionMappings(ForgeDirection local, ForgeDirection global) {
+	private void addDirectionMappings(EnumFacing local, EnumFacing global) {
 		addDirectionMapping(local, global);
 		addDirectionMapping(local.getOpposite(), global.getOpposite());
 	}
@@ -128,42 +128,41 @@ public enum Orientation {
 		this.y = y;
 		this.z = x.cross(y);
 
-		addDirectionMappings(ForgeDirection.EAST, x.dir);
-		addDirectionMappings(ForgeDirection.UP, y.dir);
-		addDirectionMappings(ForgeDirection.SOUTH, z.dir);
-		addDirectionMapping(ForgeDirection.UNKNOWN, ForgeDirection.UNKNOWN);
+		addDirectionMappings(EnumFacing.EAST, x.dir);
+		addDirectionMappings(EnumFacing.UP, y.dir);
+		addDirectionMappings(EnumFacing.SOUTH, z.dir);
 	}
 
-	public ForgeDirection localToGlobalDirection(ForgeDirection local) {
+	public EnumFacing localToGlobalDirection(EnumFacing local) {
 		return localToGlobalDirections[local.ordinal()];
 	}
 
-	public ForgeDirection globalToLocalDirection(ForgeDirection global) {
+	public EnumFacing globalToLocalDirection(EnumFacing global) {
 		return globalToLocalDirections[global.ordinal()];
 	}
 
-	public ForgeDirection north() {
-		return localToGlobalDirection(ForgeDirection.NORTH);
+	public EnumFacing north() {
+		return localToGlobalDirection(EnumFacing.NORTH);
 	}
 
-	public ForgeDirection south() {
-		return localToGlobalDirection(ForgeDirection.SOUTH);
+	public EnumFacing south() {
+		return localToGlobalDirection(EnumFacing.SOUTH);
 	}
 
-	public ForgeDirection east() {
-		return localToGlobalDirection(ForgeDirection.EAST);
+	public EnumFacing east() {
+		return localToGlobalDirection(EnumFacing.EAST);
 	}
 
-	public ForgeDirection west() {
-		return localToGlobalDirection(ForgeDirection.WEST);
+	public EnumFacing west() {
+		return localToGlobalDirection(EnumFacing.WEST);
 	}
 
-	public ForgeDirection up() {
-		return localToGlobalDirection(ForgeDirection.UP);
+	public EnumFacing up() {
+		return localToGlobalDirection(EnumFacing.UP);
 	}
 
-	public ForgeDirection down() {
-		return localToGlobalDirection(ForgeDirection.DOWN);
+	public EnumFacing down() {
+		return localToGlobalDirection(EnumFacing.DOWN);
 	}
 
 	public double transformX(double x, double y, double z) {

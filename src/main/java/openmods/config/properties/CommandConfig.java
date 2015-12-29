@@ -8,7 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.util.BlockPos;
 import openmods.Log;
 import openmods.config.properties.ConfigProcessing.ModConfig;
 import openmods.utils.SidedCommand;
@@ -60,7 +62,7 @@ public class CommandConfig extends SidedCommand {
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) {
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
 		if (args.length < 2) throw error("openmodslib.command.no_enough_args");
 
 		final String command = args[0];
@@ -124,7 +126,7 @@ public class CommandConfig extends SidedCommand {
 
 	}
 
-	protected void changeValue(ModConfig config, ICommandSender sender, ConfigPropertyMeta property, String... values) {
+	protected void changeValue(ModConfig config, ICommandSender sender, ConfigPropertyMeta property, String... values) throws CommandException {
 		try {
 			ConfigPropertyMeta.Result changeResult = property.tryChangeValue(values);
 			switch (changeResult) {
@@ -148,8 +150,7 @@ public class CommandConfig extends SidedCommand {
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
-	public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos blockPos) {
 		String command = args[0];
 		if (args.length == 1) return filterPrefixes(command, SUBCOMMANDS);
 

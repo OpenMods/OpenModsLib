@@ -4,6 +4,11 @@ import java.io.File;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.*;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Mod.Instance;
+import net.minecraftforge.fml.common.event.*;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 import openmods.block.BlockDropsStore;
 import openmods.config.ConfigStorage;
 import openmods.config.properties.CommandConfig;
@@ -28,11 +33,6 @@ import openmods.utils.bitmap.IRpcDirectionBitMap;
 import openmods.utils.bitmap.IRpcIntBitMap;
 import openmods.world.DelayedActionTickHandler;
 import openmods.world.DropCapture;
-import cpw.mods.fml.common.*;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.event.*;
-import cpw.mods.fml.common.registry.EntityRegistry;
 
 @Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = "$LIB-VERSION$", dependencies = "required-after:OpenModsCore", guiFactory = "openmods.GuiFactory")
 public class OpenMods {
@@ -80,13 +80,11 @@ public class OpenMods {
 
 		MinecraftForge.EVENT_BUS.register(BucketFillHandler.instance);
 
-		MinecraftForge.EVENT_BUS.register(BlockDropsStore.instance.createForgeListener());
+		MinecraftForge.EVENT_BUS.register(BlockDropsStore.instance);
 
-		FMLCommonHandler.instance().bus().register(DelayedActionTickHandler.INSTANCE);
-
-		FMLCommonHandler.instance().bus().register(BlockDropsStore.instance.createFmlListener());
-
-		FMLCommonHandler.instance().bus().register(ConfigStorage.instance);
+		MinecraftForge.EVENT_BUS.register(DelayedActionTickHandler.INSTANCE);
+		
+		MinecraftForge.EVENT_BUS.register(ConfigStorage.instance);
 
 		collector = new ClassSourceCollector(evt.getAsmData());
 

@@ -44,7 +44,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		return new ISyncListener() {
 			@Override
 			public void onSync(Set<ISyncableObject> changes) {
-				worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+				worldObj.markBlockForUpdate(getPos());
 			}
 		};
 	}
@@ -53,7 +53,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		return new ISyncListener() {
 			@Override
 			public void onSync(Set<ISyncableObject> changes) {
-				if (changes.contains(target)) worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
+				if (changes.contains(target)) worldObj.markBlockForUpdate(getPos());
 			}
 		};
 	}
@@ -74,7 +74,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	}
 
 	@Override
-	public Packet getDescriptionPacket() {
+	public Packet<?> getDescriptionPacket() {
 		try {
 			ByteBuf payload = syncMap.createPayload(true);
 			return SyncChannelHolder.createPacket(payload);

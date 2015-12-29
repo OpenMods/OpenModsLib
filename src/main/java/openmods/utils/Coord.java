@@ -1,10 +1,8 @@
 package openmods.utils;
 
-import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.ChunkPosition;
-import net.minecraftforge.common.util.ForgeDirection;
 
 public class Coord implements Cloneable {
 	public final int x;
@@ -23,28 +21,16 @@ public class Coord implements Cloneable {
 		this.z = MathHelper.floor_double(z);
 	}
 
-	public Coord(ForgeDirection direction) {
-		this(direction.offsetX, direction.offsetY, direction.offsetZ);
-	}
-
 	public Coord(int[] coords) {
 		this(coords[0], coords[1], coords[2]);
 	}
 
-	public Coord(ChunkPosition pos) {
-		this(pos.chunkPosX, pos.chunkPosY, pos.chunkPosZ);
-	}
-
-	public Coord(ChunkCoordinates pos) {
-		this(pos.posX, pos.posY, pos.posZ);
+	public Coord(BlockPos pos) {
+		this(pos.getX(), pos.getY(), pos.getZ());
 	}
 
 	public Coord(Vec3 vec) {
 		this(vec.xCoord, vec.yCoord, vec.zCoord);
-	}
-
-	public Coord offset(ForgeDirection direction) {
-		return new Coord(x + direction.offsetX, y + direction.offsetY, z + direction.offsetZ);
 	}
 
 	public Coord offset(int ox, int oy, int oz) {
@@ -73,16 +59,12 @@ public class Coord implements Cloneable {
 		return new Coord(x, y, z);
 	}
 
-	public ChunkPosition asChunkPosition() {
-		return new ChunkPosition(x, y, z);
-	}
-
-	public ChunkCoordinates asChunkCoordinate() {
-		return new ChunkCoordinates(x, y, z);
+	public BlockPos asBlockPos() {
+		return new BlockPos(x, y, z);
 	}
 
 	public Vec3 asVector() {
-		return Vec3.createVectorHelper(x, y, z);
+		return new Vec3(x, y, z);
 	}
 
 	public Coord add(Coord other) {
@@ -99,53 +81,6 @@ public class Coord implements Cloneable {
 
 	public double length() {
 		return Math.sqrt(lengthSq());
-	}
-
-	public Coord getAdjacentCoord(ForgeDirection fd) {
-		return getOffsetCoord(fd, 1);
-	}
-
-	public Coord getOffsetCoord(ForgeDirection fd, int distance) {
-		return new Coord(x + (fd.offsetX * distance), y + (fd.offsetY * distance), z + (fd.offsetZ * distance));
-	}
-
-	public Coord[] getDirectlyAdjacentCoords() {
-		return getDirectlyAdjacentCoords(true);
-	}
-
-	public Coord[] getDirectlyAdjacentCoords(boolean includeBelow) {
-		Coord[] adjacents;
-		if (includeBelow) adjacents = new Coord[6];
-		else adjacents = new Coord[5];
-
-		adjacents[0] = getAdjacentCoord(ForgeDirection.UP);
-		adjacents[1] = getAdjacentCoord(ForgeDirection.NORTH);
-		adjacents[2] = getAdjacentCoord(ForgeDirection.EAST);
-		adjacents[3] = getAdjacentCoord(ForgeDirection.SOUTH);
-		adjacents[4] = getAdjacentCoord(ForgeDirection.WEST);
-
-		if (includeBelow) adjacents[5] = getAdjacentCoord(ForgeDirection.DOWN);
-
-		return adjacents;
-	}
-
-	public Coord[] getAdjacentCoords() {
-		return getAdjacentCoords(true, true);
-	}
-
-	public Coord[] getAdjacentCoords(boolean includeBelow, boolean includeDiagonal) {
-		if (!includeDiagonal) return getDirectlyAdjacentCoords(includeBelow);
-
-		Coord[] adjacents = new Coord[(includeBelow? 26 : 17)];
-
-		int index = 0;
-
-		for (int xl = -1; xl < 1; xl++)
-			for (int zl = -1; zl < 1; zl++)
-				for (int yl = (includeBelow? -1 : 0); yl < 1; yl++)
-					if (xl != 0 || zl != 0 || yl != 0) adjacents[index++] = new Coord(x + xl, y + yl, z + zl);
-
-		return adjacents;
 	}
 
 	public boolean isAbove(Coord pos) {

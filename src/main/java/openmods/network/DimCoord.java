@@ -1,16 +1,14 @@
 package openmods.network;
 
+import net.minecraft.util.BlockPos;
+
 public class DimCoord {
 	public final int dimension;
-	public final int x;
-	public final int y;
-	public final int z;
+	public final BlockPos blockPos;
 
-	public DimCoord(int dimension, int x, int y, int z) {
+	public DimCoord(int dimension, BlockPos blockPos) {
 		this.dimension = dimension;
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		this.blockPos = blockPos;
 	}
 
 }

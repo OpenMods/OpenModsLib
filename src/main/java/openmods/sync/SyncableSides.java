@@ -8,7 +8,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 import openmods.utils.ByteUtils;
 import openmods.utils.DirUtils;
 import openmods.utils.bitmap.IBitMap;
@@ -16,9 +16,9 @@ import openmods.utils.bitmap.IRpcDirectionBitMap;
 
 import com.google.common.collect.Iterators;
 
-public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBitMap, IBitMap<ForgeDirection>, ISyncableValueProvider<Set<ForgeDirection>> {
+public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBitMap, IBitMap<EnumFacing>, ISyncableValueProvider<Set<EnumFacing>> {
 
-	private Set<ForgeDirection> dirs = EnumSet.noneOf(ForgeDirection.class);
+	private Set<EnumFacing> dirs = EnumSet.noneOf(EnumFacing.class);
 
 	private void read(int bits) {
 		dirs.clear();
@@ -50,22 +50,22 @@ public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBi
 	}
 
 	@Override
-	public Set<ForgeDirection> getValue() {
+	public Set<EnumFacing> getValue() {
 		return Collections.unmodifiableSet(dirs);
 	}
 
 	@Override
-	public void mark(ForgeDirection dir) {
+	public void mark(EnumFacing dir) {
 		if (dirs.add(dir)) markDirty();
 	}
 
 	@Override
-	public void clear(ForgeDirection dir) {
+	public void clear(EnumFacing dir) {
 		if (dirs.remove(dir)) markDirty();
 	}
 
 	@Override
-	public boolean get(ForgeDirection dir) {
+	public boolean get(EnumFacing dir) {
 		return dirs.contains(dir);
 	}
 
@@ -76,13 +76,13 @@ public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBi
 	}
 
 	@Override
-	public void toggle(ForgeDirection value) {
+	public void toggle(EnumFacing value) {
 		if (!dirs.remove(value)) dirs.add(value);
 		markDirty();
 	}
 
 	@Override
-	public void set(ForgeDirection key, boolean value) {
+	public void set(EnumFacing key, boolean value) {
 		if (value) dirs.add(key);
 		else dirs.remove(key);
 		markDirty();

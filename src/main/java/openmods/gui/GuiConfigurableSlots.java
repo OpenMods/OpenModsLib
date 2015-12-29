@@ -4,7 +4,7 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.EnumFacing;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;
 import openmods.container.ContainerBase;
@@ -68,10 +68,10 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 		return tabs;
 	}
 
-	private void setupSelector(GuiComponentSideSelector selector, IValueProvider<Set<ForgeDirection>> source, final IWriteableBitMap<ForgeDirection> updater) {
+	private void setupSelector(GuiComponentSideSelector selector, IValueProvider<Set<EnumFacing>> source, final IWriteableBitMap<EnumFacing> updater) {
 		selector.setListener(new ISideSelectedListener() {
 			@Override
-			public void onSideToggled(ForgeDirection side, boolean currentState) {
+			public void onSideToggled(EnumFacing side, boolean currentState) {
 				updater.set(side, currentState);
 			}
 		});

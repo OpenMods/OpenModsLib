@@ -6,10 +6,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import com.google.common.collect.Lists;
-
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class DropCapture {
 
@@ -23,7 +22,7 @@ public class DropCapture {
 		}
 
 		private boolean check(EntityItem item) {
-			if (!item.isDead && aabb.intersectsWith(item.boundingBox)) {
+			if (!item.isDead && aabb.intersectsWith(item.getEntityBoundingBox())) {
 				drops.add(item);
 				return true;
 			}
@@ -48,7 +47,7 @@ public class DropCapture {
 	}
 
 	public CaptureContext start(int x, int y, int z) {
-		return start(AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1));
+		return start(AxisAlignedBB.fromBounds(x, y, z, x + 1, y + 1, z + 1));
 	}
 
 	@SubscribeEvent

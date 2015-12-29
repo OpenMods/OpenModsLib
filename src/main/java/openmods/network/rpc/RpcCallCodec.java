@@ -11,12 +11,12 @@ import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.INetHandler;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import openmods.OpenMods;
 import openmods.utils.ByteUtils;
 
 import com.google.common.base.Preconditions;
-
-import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 
 @Sharable
 public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall> {
@@ -51,7 +51,7 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 			paramsCodec.writeArgs(output, call.args);
 		}
 
-		FMLProxyPacket packet = new FMLProxyPacket(buf.copy(), RpcCallDispatcher.CHANNEL_NAME);
+		FMLProxyPacket packet = new FMLProxyPacket(new PacketBuffer(buf.copy()), RpcCallDispatcher.CHANNEL_NAME);
 		out.add(packet);
 	}
 

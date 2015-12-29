@@ -11,6 +11,10 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.common.event.FMLMissingMappingsEvent.MissingMapping;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import openmods.Log;
 import openmods.config.BlockInstances;
 import openmods.config.InstanceContainer;
@@ -21,11 +25,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.ModContainer;
-import cpw.mods.fml.common.event.FMLMissingMappingsEvent.MissingMapping;
-import cpw.mods.fml.common.registry.GameRegistry;
 
 public class GameConfigProvider {
 
@@ -248,7 +247,7 @@ public class GameConfigProvider {
 				setBlockPrefixedId(annotation.unlocalizedName(), name, langDecorator, new IdSetter() {
 					@Override
 					public void setId(String unlocalizedName) {
-						block.setBlockName(unlocalizedName);
+						block.setUnlocalizedName(unlocalizedName);
 					}
 				});
 

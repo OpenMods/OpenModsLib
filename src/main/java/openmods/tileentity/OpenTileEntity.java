@@ -6,7 +6,8 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import openmods.api.IInventoryCallback;
 import openmods.block.OpenBlock;
 import openmods.geometry.Orientation;
@@ -18,9 +19,6 @@ import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.network.senders.IPacketSender;
 import openmods.reflection.TypeUtils;
-import openmods.utils.Coord;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenTileEntity extends TileEntity implements IRpcTargetProvider {
 
@@ -29,12 +27,8 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	/** Place for TE specific setup. Called once upon creation */
 	public void setup() {}
 
-	public Coord getPosition() {
-		return new Coord(xCoord, yCoord, zCoord);
-	}
-
 	public DimCoord getDimCoords() {
-		return new DimCoord(worldObj.provider.dimensionId, xCoord, yCoord, zCoord);
+		return new DimCoord(worldObj.provider.getDimensionId(), getPos());
 	}
 
 	public Orientation getOrientation() {

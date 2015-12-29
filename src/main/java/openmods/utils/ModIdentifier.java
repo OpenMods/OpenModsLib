@@ -4,15 +4,13 @@ import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.common.registry.GameData;
 
 import com.google.common.collect.Maps;
-
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.ModContainer;
-import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.common.registry.GameRegistry.UniqueIdentifier;
 
 public class ModIdentifier {
 
@@ -47,18 +45,19 @@ public class ModIdentifier {
 	}
 
 	private static ModContainer identifyBlock(Block block) {
-		return findModContainer(GameRegistry.findUniqueIdentifierFor(block));
+		final ResourceLocation id = GameData.getBlockRegistry().getNameForObject(block);
+		return findModContainer(id);
 	}
 
-	private ModContainer identifyItem(Item item) {
-		if (item instanceof ItemBlock) return getModForBlock(((ItemBlock)item).field_150939_a);
-		return findModContainer(GameRegistry.findUniqueIdentifierFor(item));
+	private static ModContainer identifyItem(Item item) {
+		final ResourceLocation id = GameData.getItemRegistry().getNameForObject(item);
+		return findModContainer(id);
 	}
 
-	private static ModContainer findModContainer(UniqueIdentifier id) {
+	private static ModContainer findModContainer(ResourceLocation id) {
 		if (id == null) return null;
 
-		String modId = id.modId;
+		String modId = id.getResourceDomain();
 		return Loader.instance().getIndexedModList().get(modId);
 	}
 }

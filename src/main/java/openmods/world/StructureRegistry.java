@@ -2,18 +2,17 @@ package openmods.world;
 
 import java.util.*;
 
-import net.minecraft.world.ChunkPosition;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.*;
 import net.minecraft.world.gen.structure.MapGenStructure;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import net.minecraftforge.fml.relauncher.ReflectionHelper.UnableToAccessFieldException;
 import openmods.Log;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
-
-import cpw.mods.fml.relauncher.ReflectionHelper;
-import cpw.mods.fml.relauncher.ReflectionHelper.UnableToAccessFieldException;
 
 public class StructureRegistry {
 
@@ -121,16 +120,16 @@ public class StructureRegistry {
 			String name = n.identify(structure);
 			if (!Strings.isNullOrEmpty(name)) return name;
 		}
-		return structure.func_143025_a();
+		return structure.getStructureName();
 	}
 
-	public Map<String, ChunkPosition> getNearestStructures(final WorldServer world, final int x, final int y, final int z) {
-		final ImmutableMap.Builder<String, ChunkPosition> result = ImmutableMap.builder();
+	public Map<String, BlockPos> getNearestStructures(final WorldServer world, final BlockPos pos) {
+		final ImmutableMap.Builder<String, BlockPos> result = ImmutableMap.builder();
 		visitStructures(world, new IStructureVisitor() {
 			@Override
 			public void visit(MapGenStructure structure) {
 				try {
-					ChunkPosition structPos = structure.func_151545_a(world, x, y, z);
+					BlockPos structPos = structure.getClosestStrongholdPos(world, pos);
 
 					if (structPos != null) {
 						String structType = identifyStructure(structure);
@@ -146,15 +145,15 @@ public class StructureRegistry {
 		return result.build();
 	}
 
-	public Set<ChunkPosition> getNearestInstance(final String name, final WorldServer world, final int x, final int y, final int z) {
-		final ImmutableSet.Builder<ChunkPosition> result = ImmutableSet.builder();
+	public Set<BlockPos> getNearestInstance(final String name, final WorldServer world, final BlockPos blockPos) {
+		final ImmutableSet.Builder<BlockPos> result = ImmutableSet.builder();
 		visitStructures(world, new IStructureVisitor() {
 			@Override
 			public void visit(MapGenStructure structure) {
 				String structType = identifyStructure(structure);
 				if (name.equals(structType)) {
 					try {
-						ChunkPosition structPos = structure.func_151545_a(world, x, y, z);
+						BlockPos structPos = structure.getClosestStrongholdPos(world, blockPos);
 						if (structPos != null) result.add(structPos);
 					} catch (IndexOutOfBoundsException e) {
 						// bug in MC, just ignore

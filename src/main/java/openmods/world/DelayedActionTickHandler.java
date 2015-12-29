@@ -4,14 +4,13 @@ import java.util.Map;
 import java.util.Queue;
 
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
+import net.minecraftforge.fml.relauncher.Side;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
-
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.Phase;
-import cpw.mods.fml.common.gameevent.TickEvent.WorldTickEvent;
-import cpw.mods.fml.relauncher.Side;
 
 public class DelayedActionTickHandler {
 
@@ -35,14 +34,14 @@ public class DelayedActionTickHandler {
 	}
 
 	public void addTickCallback(World world, Runnable callback) {
-		int worldId = world.provider.dimensionId;
+		int worldId = world.provider.getDimensionId();
 		getWorldQueue(worldId).add(callback);
 	}
 
 	@SubscribeEvent
 	public void onWorldTick(WorldTickEvent evt) {
 		if (evt.side == Side.SERVER && evt.phase == Phase.END) {
-			int worldId = evt.world.provider.dimensionId;
+			int worldId = evt.world.provider.getDimensionId();
 			Queue<Runnable> callbacks = getWorldQueue(worldId);
 
 			Runnable callback;

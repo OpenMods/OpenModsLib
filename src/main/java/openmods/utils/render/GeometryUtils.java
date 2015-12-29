@@ -4,8 +4,9 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Vec3;
-import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraft.util.Vec3i;
 import openmods.shapes.IShapeable;
 import openmods.utils.Coord;
 import openmods.utils.MathUtils;
@@ -15,17 +16,17 @@ import com.google.common.collect.ImmutableList;
 public class GeometryUtils {
 
 	public enum Axis {
-		X(1, 0, 0, ForgeDirection.EAST, ForgeDirection.WEST),
-		Y(0, 1, 0, ForgeDirection.UP, ForgeDirection.DOWN),
-		Z(0, 0, 1, ForgeDirection.SOUTH, ForgeDirection.NORTH);
+		X(1, 0, 0, EnumFacing.EAST, EnumFacing.WEST),
+		Y(0, 1, 0, EnumFacing.UP, EnumFacing.DOWN),
+		Z(0, 0, 1, EnumFacing.SOUTH, EnumFacing.NORTH);
 		public final int dx;
 		public final int dy;
 		public final int dz;
 
-		public final ForgeDirection positive;
-		public final ForgeDirection negative;
+		public final EnumFacing positive;
+		public final EnumFacing negative;
 
-		private Axis(int dx, int dy, int dz, ForgeDirection positive, ForgeDirection negative) {
+		private Axis(int dx, int dy, int dz, EnumFacing positive, EnumFacing negative) {
 			this.dx = dx;
 			this.dy = dy;
 			this.dz = dz;
@@ -99,13 +100,15 @@ public class GeometryUtils {
 	/**
 	 * Makes a link of blocks in a shape
 	 */
-	public static void makeLine(int startX, int startY, int startZ, ForgeDirection direction, int length, IShapeable shapeable) {
+	public static void makeLine(int startX, int startY, int startZ, EnumFacing direction, int length, IShapeable shapeable) {
 		if (length < 0) return;
+		final Vec3i v = direction.getDirectionVec();
 		for (int offset = 0; offset <= length; offset++)
 			/* Create a line in the direction of direction, length in size */
-			shapeable.setBlock(startX + (offset * direction.offsetX), startY
-					+ (offset * direction.offsetY), startZ
-					+ (offset * direction.offsetZ));
+			shapeable.setBlock(
+					startX + (offset * v.getX()),
+					startY + (offset * v.getY()),
+					startZ + (offset * v.getZ()));
 	}
 
 	public static void makePlane(int startX, int startY, int startZ, int width, int height, Axis right, Axis up, IShapeable shapeable) {
@@ -115,14 +118,16 @@ public class GeometryUtils {
 	/**
 	 * Makes a flat plane along two directions
 	 */
-	public static void makePlane(int startX, int startY, int startZ, int width, int height, ForgeDirection right, ForgeDirection up, IShapeable shapeable) {
+	public static void makePlane(int startX, int startY, int startZ, int width, int height, EnumFacing right, EnumFacing up, IShapeable shapeable) {
 		if (width < 0 || height < 0) return;
 		int lineOffsetX, lineOffsetY, lineOffsetZ;
 		// We offset each line by up, and then apply it right
+
+		final Vec3i v = up.getDirectionVec();
 		for (int h = 0; h <= height; h++) {
-			lineOffsetX = startX + (h * up.offsetX);
-			lineOffsetY = startY + (h * up.offsetY);
-			lineOffsetZ = startZ + (h * up.offsetZ);
+			lineOffsetX = startX + (h * v.getX());
+			lineOffsetY = startY + (h * v.getY());
+			lineOffsetZ = startZ + (h * v.getZ());
 			makeLine(lineOffsetX, lineOffsetY, lineOffsetZ, right, width, shapeable);
 		}
 	}
