@@ -23,21 +23,25 @@ public class DropTagSerializer {
 	}
 
 	public void addFields(Object target) {
-		for (Field field : target.getClass().getDeclaredFields()) {
-			StoreOnDrop marker = field.getAnnotation(StoreOnDrop.class);
-			if (marker == null) continue;
+		Class<?> cls = target.getClass();
+		while (cls != Object.class) {
+			for (Field field : cls.getDeclaredFields()) {
+				StoreOnDrop marker = field.getAnnotation(StoreOnDrop.class);
+				if (marker == null) continue;
 
-			Preconditions.checkArgument(ISyncableObject.class.isAssignableFrom(field.getType()),
-					"Field '%s' has SyncableDrop annotation, but it's ISyncableObject", field);
+				Preconditions.checkArgument(ISyncableObject.class.isAssignableFrom(field.getType()),
+						"Field '%s' has SyncableDrop annotation, but isn't ISyncableObject", field);
 
-			final FieldAccess<ISyncableObject> wrappedField = FieldAccess.create(field);
-			final ISyncableObject obj = wrappedField.get(target);
-			Preconditions.checkNotNull(obj, "Field '%s' contains null", field);
+				final FieldAccess<ISyncableObject> wrappedField = FieldAccess.create(field);
+				final ISyncableObject obj = wrappedField.get(target);
+				Preconditions.checkNotNull(obj, "Field '%s' contains null", field);
 
-			final String suggestedName = field.getName();
-			final String name = Strings.isNullOrEmpty(marker.name())? suggestedName : marker.name();
+				final String suggestedName = field.getName();
+				final String name = Strings.isNullOrEmpty(marker.name())? suggestedName : marker.name();
 
-			addObject(name, obj);
+				addObject(name, obj);
+			}
+			cls = cls.getSuperclass();
 		}
 	}
 
