@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.BlockPos;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -48,6 +49,10 @@ public class DropCapture {
 
 	public CaptureContext start(int x, int y, int z) {
 		return start(AxisAlignedBB.fromBounds(x, y, z, x + 1, y + 1, z + 1));
+	}
+
+	public CaptureContext start(BlockPos pos) {
+		return start(pos.getX(), pos.getY(), pos.getZ());
 	}
 
 	@SubscribeEvent

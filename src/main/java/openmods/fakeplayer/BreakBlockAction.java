@@ -3,9 +3,13 @@ package openmods.fakeplayer;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent;
@@ -17,15 +21,19 @@ import com.google.common.collect.Lists;
 
 public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 	private final World worldObj;
-	private final int x;
-	private final int y;
-	private final int z;
+	private final BlockPos blockPos;
 
-	public BreakBlockAction(World worldObj, int x, int y, int z) {
+	public BreakBlockAction(World worldObj, BlockPos blockPos) {
 		this.worldObj = worldObj;
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		this.blockPos = blockPos;
+	}
+
+	private boolean removeBlock(EntityPlayer player, BlockPos pos, IBlockState state, boolean canHarvest) {
+		final Block block = state.getBlock();
+		block.onBlockHarvested(worldObj, pos, state, player);
+		final boolean result = block.removedByPlayer(worldObj, pos, player, canHarvest);
+		if (result) block.onBlockDestroyedByPlayer(worldObj, pos, state);
+		return result;
 	}
 
 	@Override
@@ -33,28 +41,27 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 		fakePlayer.inventory.currentItem = 0;
 		fakePlayer.inventory.setInventorySlotContents(0, new ItemStack(Items.diamond_pickaxe, 0, 0));
 
-		if (!worldObj.canMineBlock(fakePlayer, x, y, z)) return Lists.newArrayList();
+		if (!worldObj.isBlockModifiable(fakePlayer, blockPos)) return Lists.newArrayList();
 
-		final Block block = worldObj.getBlock(x, y, z);
-		final int metadata = worldObj.getBlockMetadata(x, y, z);
+		// this mirrors ItemInWorldManager.tryHarvestBlock
+		final IBlockState state = worldObj.getBlockState(blockPos);
 
-		CaptureContext dropsCapturer = DropCapture.instance.start(x, y, z);
+		final CaptureContext dropsCapturer = DropCapture.instance.start(blockPos);
 
 		final List<EntityItem> drops;
 		try {
-			BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(x, y, z, worldObj, block, metadata, fakePlayer);
+			BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(worldObj, blockPos, state, fakePlayer);
 			if (MinecraftForge.EVENT_BUS.post(event)) return Lists.newArrayList();
 
-			boolean canHarvest = block.canHarvestBlock(fakePlayer, metadata);
+			final TileEntity te = worldObj.getTileEntity(blockPos); // OHHHHH YEEEEAAAH
 
-			block.onBlockHarvested(worldObj, x, y, z, metadata, fakePlayer);
-			boolean canRemove = block.removedByPlayer(worldObj, fakePlayer, x, y, z, canHarvest);
-
-			if (canRemove) {
-				block.onBlockDestroyedByPlayer(worldObj, x, y, z, metadata);
-				if (canHarvest) block.harvestBlock(worldObj, fakePlayer, x, y, z, metadata);
-				worldObj.playAuxSFX(2001, x, y, z, Block.getIdFromBlock(block) + (metadata << 12));
+			boolean canHarvest = state.getBlock().canHarvestBlock(worldObj, blockPos, fakePlayer);
+			boolean isRemoved = removeBlock(fakePlayer, blockPos, state, canHarvest);
+			if (isRemoved && canHarvest) {
+				state.getBlock().harvestBlock(worldObj, fakePlayer, blockPos, state, te);
+				worldObj.playAuxSFXAtEntity(fakePlayer, 2001, blockPos, Block.getStateId(state));
 			}
+
 		} finally {
 			drops = dropsCapturer.stop();
 		}
