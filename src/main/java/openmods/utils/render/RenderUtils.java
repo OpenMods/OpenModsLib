@@ -1,11 +1,8 @@
 package openmods.utils.render;
 
-import java.util.EnumSet;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -17,8 +14,6 @@ import openmods.utils.ColorUtils.RGB;
 import org.lwjgl.opengl.GL11;
 
 public class RenderUtils {
-
-	private static final EnumSet<ForgeDirection> ALL_SIDES = EnumSet.allOf(ForgeDirection.class);
 
 	public static class FogColorUpdater {
 		@SubscribeEvent(priority = EventPriority.LOWEST)
@@ -64,9 +59,9 @@ public class RenderUtils {
 
 	public static void translateToPlayer(Entity e, float partialTickTime) {
 		GL11.glTranslated(
-				interpolateValue(e.posX, e.prevPosX, partialTickTime) - RenderManager.renderPosX,
-				interpolateValue(e.posY, e.prevPosY, partialTickTime) - RenderManager.renderPosY,
-				interpolateValue(e.posZ, e.prevPosZ, partialTickTime) - RenderManager.renderPosZ);
+				interpolateValue(e.posX, e.prevPosX, partialTickTime) - TileEntityRendererDispatcher.staticPlayerX,
+				interpolateValue(e.posY, e.prevPosY, partialTickTime) - TileEntityRendererDispatcher.staticPlayerY,
+				interpolateValue(e.posZ, e.prevPosZ, partialTickTime) - TileEntityRendererDispatcher.staticPlayerZ);
 	}
 
 	public static void translateToWorld(Entity e, float partialTickTime) {
@@ -76,7 +71,11 @@ public class RenderUtils {
 				interpolateValue(e.posZ, e.prevPosZ, partialTickTime));
 	}
 
-	public static void renderCube(Tessellator tes, double x1, double y1, double z1, double x2, double y2, double z2) {
+	public interface IVertexSink {
+		public void addVertex(double x, double y, double z);
+	}
+
+	public static void renderCube(IVertexSink tes, double x1, double y1, double z1, double x2, double y2, double z2) {
 		tes.addVertex(x1, y1, z1);
 		tes.addVertex(x1, y2, z1);
 		tes.addVertex(x2, y2, z1);

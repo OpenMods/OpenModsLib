@@ -5,6 +5,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 import openmods.LibConfig;
 import openmods.Log;
 
@@ -17,8 +19,8 @@ public class TessellatorPool {
 
 	private TessellatorPool() {}
 
-	public static interface TessellatorUser {
-		public void execute(Tessellator tes);
+	public static interface WorldRendererUser {
+		public void execute(WorldRenderer tes);
 	}
 
 	private Tessellator reserveTessellator() {
@@ -27,27 +29,18 @@ public class TessellatorPool {
 		if (tes == null) {
 			int id = count.incrementAndGet();
 			if (id > LibConfig.tessellatorPoolLimit) Log.warn("Maximum number of tessellators in use reached. Something may leak them!");
-			tes = new Tessellator();
+			tes = new Tessellator(0x8000); // Maybe?
 		}
 
 		return tes;
 	}
 
-	public void startDrawing(TessellatorUser user, int primitive) {
+	public void startDrawing(WorldRendererUser user, int primitive, VertexFormat vertexFormat) {
 		final Tessellator tes = reserveTessellator();
 
-		tes.startDrawing(primitive);
-		user.execute(tes);
-		tes.draw();
-
-		pool.add(tes);
-	}
-
-	public void startDrawingQuads(TessellatorUser user) {
-		final Tessellator tes = reserveTessellator();
-
-		tes.startDrawingQuads();
-		user.execute(tes);
+		final WorldRenderer wr = tes.getWorldRenderer();
+		wr.func_181668_a(primitive, vertexFormat);
+		user.execute(wr);
 		tes.draw();
 
 		pool.add(tes);
