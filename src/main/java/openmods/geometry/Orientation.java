@@ -2,11 +2,15 @@ package openmods.geometry;
 
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
+
+import java.util.Locale;
+
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.IStringSerializable;
 
 import com.google.common.base.Preconditions;
 
-public enum Orientation {
+public enum Orientation implements IStringSerializable {
 	XN_YN(HalfAxis.NEG_X, HalfAxis.NEG_Y),
 	XN_YP(HalfAxis.NEG_X, HalfAxis.POS_Y),
 	XN_ZN(HalfAxis.NEG_X, HalfAxis.NEG_Z),
@@ -110,6 +114,8 @@ public enum Orientation {
 
 	public final HalfAxis z; // +Z, south
 
+	private final String name;
+
 	private final EnumFacing[] localToGlobalDirections = new EnumFacing[EnumFacing.values().length];
 	private final EnumFacing[] globalToLocalDirections = new EnumFacing[EnumFacing.values().length];
 
@@ -131,6 +137,8 @@ public enum Orientation {
 		addDirectionMappings(EnumFacing.EAST, x.dir);
 		addDirectionMappings(EnumFacing.UP, y.dir);
 		addDirectionMappings(EnumFacing.SOUTH, z.dir);
+
+		this.name = name().toLowerCase(Locale.ENGLISH);
 	}
 
 	public EnumFacing localToGlobalDirection(EnumFacing local) {
@@ -204,5 +212,10 @@ public enum Orientation {
 		mat.m21 = z.y;
 		mat.m22 = z.z;
 		return mat;
+	}
+
+	@Override
+	public String getName() {
+		return name;
 	}
 }

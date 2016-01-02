@@ -2,6 +2,8 @@ package openmods.block;
 
 import java.util.Set;
 
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
 import openmods.geometry.BlockTextureTransform;
@@ -481,5 +483,9 @@ public enum BlockRotationMode {
 
 	public Orientation getInventoryRenderOrientation() {
 		return Orientation.XP_YP;
+	}
+
+	public IProperty<Orientation> createProperty() {
+		return PropertyEnum.create("orientation", Orientation.class, validDirections);
 	}
 }

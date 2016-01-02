@@ -5,6 +5,7 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,6 +18,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import openmods.Log;
 import openmods.api.*;
 import openmods.config.game.IRegisterableBlock;
 import openmods.geometry.Orientation;
@@ -69,8 +71,11 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 * The tile entity class associated with this block
 	 */
 	private Class<? extends TileEntity> teClass = null;
-	protected BlockRotationMode blockRotationMode = BlockRotationMode.NONE;
-	protected BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
+	private BlockRotationMode blockRotationMode = BlockRotationMode.NONE;
+	private IProperty<Orientation> orientationProperty = BlockRotationMode.NONE.createProperty();
+
+	private BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
+
 	protected Orientation inventoryRenderOrientation;
 	protected RenderMode renderMode = RenderMode.BLOCK_ONLY;
 
@@ -103,6 +108,11 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	protected void setRotationMode(BlockRotationMode mode) {
 		this.blockRotationMode = mode;
+		this.orientationProperty = mode.createProperty();
+	}
+
+	public IProperty<Orientation> getOrientationProperty() {
+		return this.orientationProperty;
 	}
 
 	public BlockRotationMode getRotationMode() {
@@ -124,18 +134,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public Orientation getOrientation(int metadata) {
 		final BlockRotationMode rotationMode = getRotationMode();
 		return rotationMode.fromValue(metadata & rotationMode.mask);
-	}
-
-	@SideOnly(Side.CLIENT)
-	public Orientation getInventoryRenderOrientation() {
-		return inventoryRenderOrientation != null? inventoryRenderOrientation : getRotationMode().getInventoryRenderOrientation();
-	}
-
-	@SideOnly(Side.CLIENT)
-	public int getInventoryRenderMetadata(int itemMetadata) {
-		final BlockRotationMode rotationMode = getRotationMode();
-		final Orientation renderOrientation = inventoryRenderOrientation != null? inventoryRenderOrientation : rotationMode.getInventoryRenderOrientation();
-		return rotationMode.toValue(renderOrientation);
 	}
 
 	public void setBlockBounds(AxisAlignedBB aabb) {
@@ -407,14 +405,50 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return getRotationMode() != BlockRotationMode.NONE;
 	}
 
-	public RotationHelper createRotationHelper(World world, BlockPos blockPos) {
-		return new RotationHelper(getRotationMode(), world, blockPos);
+	@Override
+	public IBlockState getStateFromMeta(int meta) {
+		return getDefaultState()
+				.withProperty(getOrientationProperty(), getRotationMode().fromValue(meta));
+	}
+
+	@SideOnly(Side.CLIENT)
+	public Orientation getInventoryRenderOrientation() {
+		return inventoryRenderOrientation != null? inventoryRenderOrientation : getRotationMode().getInventoryRenderOrientation();
+	}
+
+	@Override
+	@SideOnly(Side.CLIENT)
+	public IBlockState getStateForEntityRender(IBlockState state) {
+		return getDefaultState().withProperty(getOrientationProperty(), getInventoryRenderOrientation());
+	}
+
+	@Override
+	public int getMetaFromState(IBlockState state) {
+		final Orientation orientation = state.getValue(getOrientationProperty());
+		return getRotationMode().toValue(orientation);
 	}
 
 	@Override
 	public boolean rotateBlock(World worldObj, BlockPos blockPos, EnumFacing axis) {
 		if (!canRotateWithTool()) return false;
-		if (!createRotationHelper(worldObj, blockPos).rotateWithTool(axis)) return false;
+
+		final IBlockState currentState = worldObj.getBlockState(blockPos);
+
+		final BlockRotationMode mode = getRotationMode();
+		final IProperty<Orientation> currentOrientation = getOrientationProperty();
+		final Orientation orientation = currentState.getValue(currentOrientation);
+
+		final Orientation newOrientation = mode.calculateToolRotation(orientation, axis);
+
+		if (newOrientation != null) {
+			if (mode.isPlacementValid(newOrientation)) {
+				final IBlockState newState = createNewStateAfterRotation(worldObj, blockPos, currentState, currentOrientation, newOrientation);
+				worldObj.setBlockState(blockPos, newState, BlockNotifyFlags.ALL);
+			} else {
+				Log.info("Invalid tool rotation: [%s] %s: (%s): %s->%s", mode, axis, blockPos, orientation, newOrientation);
+				return false;
+			}
+		}
 
 		if (teCapabilities.contains(TileEntityCapability.SURFACE_ATTACHEMENT)) {
 			final ISurfaceAttachment te = getTileEntity(worldObj, blockPos, ISurfaceAttachment.class);
@@ -424,6 +458,10 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		}
 
 		return true;
+	}
+
+	protected IBlockState createNewStateAfterRotation(World worldObj, BlockPos blockPos, IBlockState currentState, IProperty<Orientation> currentOrientation, Orientation newOrientation) {
+		return currentState.withProperty(getOrientationProperty(), newOrientation);
 	}
 
 	@Override
