@@ -2,6 +2,7 @@ package openmods.sync.drops;
 
 import java.util.List;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -40,7 +41,7 @@ public abstract class DroppableTileEntity extends SyncedTileEntity implements IP
 	}
 
 	@Override
-	public void onBlockPlacedBy(EntityLivingBase placer, ItemStack stack) {
+	public void onBlockPlacedBy(IBlockState state, EntityLivingBase placer, ItemStack stack) {
 		getDropSerializer().read(stack, true);
 	}
 
