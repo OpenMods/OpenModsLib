@@ -2,7 +2,7 @@ package openmods.gui;
 
 import java.util.Set;
 
-import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import openmods.api.IValueProvider;
@@ -28,8 +28,8 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 
 	protected abstract GuiComponentTab createTab(IComponentParent parent, E slot);
 
-	protected GuiComponentSideSelector createSideSelector(IComponentParent parent, E slot, Block block, int meta, T te) {
-		return new GuiComponentSideSelector(parent, 15, 15, 40.0, block, meta, te, true);
+	protected GuiComponentSideSelector createSideSelector(IComponentParent parent, E slot, IBlockState state, T te) {
+		return new GuiComponentSideSelector(parent, 15, 15, 40.0, state, te, true);
 	}
 
 	protected GuiComponentCheckbox createCheckbox(IComponentParent parent, E slot) {
@@ -42,8 +42,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 	protected final BaseComposite createRoot(IComponentParent parent) {
 		T te = getContainer().getOwner();
 
-		final int meta = te.getBlockMetadata();
-		final Block block = te.getBlockType();
+		final IBlockState state = te.getWorld().getBlockState(te.getPos());
 
 		BaseComposite main = super.createRoot(parent);
 		addCustomizations(parent, main);
@@ -54,7 +53,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 			GuiComponentTab tabTool = createTab(parent, slot);
 			tabs.addComponent(tabTool);
 
-			GuiComponentSideSelector sideSelector = createSideSelector(parent, slot, block, meta, te);
+			GuiComponentSideSelector sideSelector = createSideSelector(parent, slot, state, te);
 			GuiComponentCheckbox checkbox = createCheckbox(parent, slot);
 
 			setupCheckBox(checkbox, te.createAutoFlagProvider(slot), te.createAutoSlotReceiver(slot));

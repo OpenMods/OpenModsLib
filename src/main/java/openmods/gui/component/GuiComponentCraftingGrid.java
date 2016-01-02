@@ -4,7 +4,6 @@ import java.util.Random;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import openmods.gui.IComponentParent;
 import openmods.gui.Icon;
@@ -60,8 +59,8 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 	}
 
 	@Override
-	public void render(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(minecraft, offsetX, offsetY, mouseX, mouseY);
+	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+		super.render(offsetX, offsetY, mouseX, mouseY);
 
 		final int gridOffsetX = 1;
 		final int gridOffsetY = 1;
@@ -91,8 +90,8 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 	}
 
 	@Override
-	public void renderOverlay(Minecraft minecraft, int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.renderOverlay(minecraft, offsetX, offsetY, mouseX, mouseY);
+	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
+		super.renderOverlay(offsetX, offsetY, mouseX, mouseY);
 
 		final int relativeMouseX = mouseX + offsetX - x;
 		final int relativeMouseY = mouseY + offsetY - y;

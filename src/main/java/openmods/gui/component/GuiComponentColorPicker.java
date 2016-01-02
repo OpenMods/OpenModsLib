@@ -2,7 +2,7 @@ package openmods.gui.component;
 
 import java.awt.Color;
 
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.GlStateManager;
 import openmods.api.IValueReceiver;
 import openmods.gui.IComponentParent;
 import openmods.gui.listener.IValueChangedListener;
@@ -82,23 +82,22 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 		drawTexturedModalRect(renderX, renderY, 156, 206, getWidth(), getColorsHeight());
 		drawRect(renderX, renderY, renderX + getWidth(), renderY + getColorsHeight(), (tone << 24) | 0xFFFFFF);
 
-		Tessellator tessellator = Tessellator.instance;
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GlStateManager.enableBlend();
+		GlStateManager.disableTexture2D();
 		GL11.glDisable(GL11.GL_ALPHA_TEST);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		GL11.glShadeModel(GL11.GL_SMOOTH);
-		tessellator.startDrawingQuads();
-		tessellator.setColorRGBA_F(0, 0, 0, 1.0f);
-		tessellator.addVertex(renderX, (double)renderY + getColorsHeight(), 0.0D);
-		tessellator.addVertex((double)renderX + getWidth(), (double)renderY + getColorsHeight(), 0.0D);
-		tessellator.setColorRGBA_F(0, 0, 0, 0f);
-		tessellator.addVertex((double)renderX + getWidth(), renderY, 0.0D);
-		tessellator.addVertex(renderX, renderY, 0.0D);
-		tessellator.draw();
-		GL11.glShadeModel(GL11.GL_FLAT);
-		GL11.glDisable(GL11.GL_BLEND);
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GlStateManager.alphaFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GlStateManager.shadeModel(GL11.GL_SMOOTH);
+		GL11.glBegin(GL11.GL_QUADS);
+		GL11.glColor4f(0, 0, 0, 1.0f);
+		GL11.glVertex3d(renderX, renderY + getColorsHeight(), 0.0);
+		GL11.glVertex3d(renderX + getWidth(), renderY + getColorsHeight(), 0.0);
+		GL11.glColor4f(0, 0, 0, 0f);
+		GL11.glVertex3d(renderX + getWidth(), renderY, 0.0D);
+		GL11.glVertex3d(renderX, renderY, 0.0);
+		GL11.glEnd();
+		GlStateManager.shadeModel(GL11.GL_FLAT);
+		GlStateManager.disableBlend();
+		GlStateManager.enableTexture2D();
 		GL11.glEnable(GL11.GL_ALPHA_TEST);
 		drawRect(renderX + pointX - 1,
 				renderY + pointY - 1,

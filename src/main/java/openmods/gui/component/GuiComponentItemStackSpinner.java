@@ -1,6 +1,10 @@
 package openmods.gui.component;
 
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.ItemModelMesher;
+import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.resources.model.IBakedModel;
 import net.minecraft.item.ItemStack;
 import openmods.gui.IComponentParent;
 
@@ -42,7 +46,24 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 		GL11.glPopMatrix();
 	}
 
-	public void renderItem(ItemStack itemStack) {
-		// TODO
+	private void renderItem(ItemStack itemStack) {
+		parent.bindTexture(TextureMap.locationBlocksTexture);
+
+		final RenderItem itemRenderer = parent.getItemRenderer();
+		final ItemModelMesher itemModelMesher = itemRenderer.getItemModelMesher();
+		final IBakedModel model = itemModelMesher.getItemModel(stack);
+
+		GlStateManager.enableRescaleNormal();
+		GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
+		GlStateManager.enableBlend();
+		GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+		GlStateManager.pushMatrix();
+		itemRenderer.renderItem(stack, model);
+		GlStateManager.cullFace(GL11.GL_BACK);
+		GlStateManager.popMatrix();
+		GlStateManager.disableRescaleNormal();
+		GlStateManager.disableBlend();
+
+		GlStateManager.enableLighting();
 	}
 }

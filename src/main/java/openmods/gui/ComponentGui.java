@@ -9,6 +9,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -41,6 +42,11 @@ public abstract class ComponentGui extends GuiContainer {
 			@Override
 			public Minecraft getMinecraft() {
 				return mc;
+			}
+
+			@Override
+			public TextureMap getBlocksTextureMap() {
+				return mc.getTextureMapBlocks();
 			}
 
 			@Override

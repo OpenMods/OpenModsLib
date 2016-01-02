@@ -22,7 +22,7 @@ public class FakeBlockAccess implements IBlockAccess {
 		this(state, null);
 	}
 
-	private static final BlockPos ORIGIN = new BlockPos(0, 0, 0);
+	public static final BlockPos ORIGIN = new BlockPos(0, 0, 0);
 
 	private static boolean isOrigin(BlockPos blockPos) {
 		return ORIGIN.equals(blockPos);

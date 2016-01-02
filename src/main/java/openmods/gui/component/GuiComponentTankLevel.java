@@ -1,12 +1,15 @@
 package openmods.gui.component;
 
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueReceiver;
 import openmods.gui.IComponentParent;
 import openmods.gui.misc.BoxRenderer;
+
+import org.lwjgl.opengl.GL11;
 
 public class GuiComponentTankLevel extends GuiComponentResizable {
 
@@ -22,6 +25,11 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 		this.capacity = capacity;
 	}
 
+	private static void addVertexWithUV(double x, double y, double z, float u, float v) {
+		GL11.glTexCoord2f(u, v);
+		GL11.glVertex3d(x, y, z);
+	}
+
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		bindComponentsSheet();
@@ -32,10 +40,10 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 		if (fluid == null) return;
 
 		parent.bindTexture(TextureMap.locationBlocksTexture);
-		Tessellator tessellator = Tessellator.instance;
-		tessellator.startDrawingQuads();
-		tessellator.setColorOpaque_F(1, 1, 1);
-		IIcon icon = fluid.getIcon();
+
+		final ResourceLocation textureLocation = fluid.getStill(fluidStack);
+		TextureAtlasSprite icon = parent.getBlocksTextureMap().getAtlasSprite(textureLocation.toString());
+
 		if (icon != null) {
 			double percentFull = Math.max(0, Math.min(1, (double)fluidStack.amount / (double)capacity));
 			double fluidHeight = (height - 3) * percentFull;
@@ -48,11 +56,12 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 			final float minV = icon.getMinV();
 			final float maxV = icon.getMaxV();
 
-			tessellator.addVertexWithUV(posX + 3, posY + height - 3, this.zLevel, minU, maxV);
-			tessellator.addVertexWithUV(posX + width - 3, posY + height - 3, this.zLevel, maxU, maxV);
-			tessellator.addVertexWithUV(posX + width - 3, posY + (height - fluidHeight), this.zLevel, maxU, minV);
-			tessellator.addVertexWithUV(posX + 3, posY + (height - fluidHeight), this.zLevel, minU, minV);
-			tessellator.draw();
+			GL11.glBegin(GL11.GL_QUADS);
+			addVertexWithUV(posX + 3, posY + height - 3, this.zLevel, minU, maxV);
+			addVertexWithUV(posX + width - 3, posY + height - 3, this.zLevel, maxU, maxV);
+			addVertexWithUV(posX + width - 3, posY + (height - fluidHeight), this.zLevel, maxU, minV);
+			addVertexWithUV(posX + 3, posY + (height - fluidHeight), this.zLevel, minU, minV);
+			GL11.glEnd();
 		}
 	}
 

@@ -1,14 +1,15 @@
 package openmods.gui.component;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
-import net.minecraft.block.Block;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.init.Blocks;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.resources.model.IBakedModel;
+import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
@@ -19,11 +20,15 @@ import openmods.gui.misc.*;
 import openmods.gui.misc.SidePicker.HitCoord;
 import openmods.gui.misc.SidePicker.Side;
 import openmods.gui.misc.Trackball.TrackballWrapper;
+import openmods.utils.FakeBlockAccess;
 import openmods.utils.MathUtils;
 import openmods.utils.bitmap.IReadableBitMap;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+
+import com.google.common.collect.Lists;
 
 public class GuiComponentSideSelector extends BaseComponent implements IValueReceiver<Set<EnumFacing>> {
 
@@ -45,16 +50,14 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 	private ISideSelectedListener sideSelectedListener;
 
-	private Block block;
-	private int meta;
+	private IBlockState blockState;
 	private TileEntity te;
 
-	public GuiComponentSideSelector(IComponentParent parent, int x, int y, double scale, Block block, int meta, TileEntity te, boolean highlightSelectedSides) {
+	public GuiComponentSideSelector(IComponentParent parent, int x, int y, double scale, IBlockState blockState, TileEntity te, boolean highlightSelectedSides) {
 		super(parent, x, y);
 		this.scale = scale;
 		this.diameter = MathHelper.ceiling_double_int(scale * SQRT_3);
-		this.block = block;
-		this.meta = meta;
+		this.blockState = blockState;
 		this.te = te;
 		this.highlightSelectedSides = highlightSelectedSides;
 	}
@@ -62,7 +65,8 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (isInInitialPosition == false || Mouse.isButtonDown(2)) {
-			trackball.setTransform(MathUtils.createEntityRotateMatrix(minecraft.renderViewEntity));
+			final Entity rve = parent.getMinecraft().getRenderViewEntity();
+			trackball.setTransform(MathUtils.createEntityRotateMatrix(rve));
 			isInInitialPosition = true;
 		}
 
@@ -70,98 +74,102 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		final int height = getWidth();
 		// assumption: block is rendered in (0,0,0) - (1,1,1) coordinates
 		GL11.glPushMatrix();
-		Tessellator tessellator = Tessellator.instance;
 		GL11.glTranslatef(offsetX + x + width / 2, offsetY + y + height / 2, diameter);
 		GL11.glScaled(scale, -scale, scale);
 		trackball.update(mouseX - width, -(mouseY - height));
 		if (te != null) TileEntityRendererDispatcher.instance.renderTileEntityAt(te, -0.5, -0.5, -0.5, 0.0F);
-		if (block != null) drawBlock(minecraft.renderEngine, tessellator);
+		if (blockState != null) drawBlock();
 
 		SidePicker picker = new SidePicker(0.5);
 
-		HitCoord coord = picker.getNearestHit();
-
-		if (coord != null) drawHighlight(tessellator, coord.side, 0x444444);
+		List<Pair<Side, Integer>> selections = Lists.newArrayListWithCapacity(6 + 1);
+		final HitCoord coord = picker.getNearestHit();
+		if (coord != null) selections.add(Pair.of(coord.side, 0x444444));
 
 		if (highlightSelectedSides) {
-			for (EnumFacing dir : selectedSides) {
-				drawHighlight(tessellator, Side.fromForgeDirection(dir), 0xCC0000);
-			}
+			for (EnumFacing dir : selectedSides)
+				selections.add(Pair.of(Side.fromForgeDirection(dir), 0xCC0000));
 		}
+
+		if (selections != null) drawHighlight(selections);
 
 		lastSideHovered = coord == null? null : coord.side.toForgeDirection();
 
 		GL11.glPopMatrix();
 	}
 
-	private static void drawHighlight(Tessellator t, SidePicker.Side side, int color) {
-		GL11.glDisable(GL11.GL_LIGHTING);
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glDisable(GL11.GL_DEPTH_TEST);
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		t.startDrawingQuads();
-		t.setColorRGBA_I(color, 64);
-		switch (side) {
-			case XPos:
-				t.addVertex(0.5, -0.5, -0.5);
-				t.addVertex(0.5, 0.5, -0.5);
-				t.addVertex(0.5, 0.5, 0.5);
-				t.addVertex(0.5, -0.5, 0.5);
-				break;
-			case YPos:
-				t.addVertex(-0.5, 0.5, -0.5);
-				t.addVertex(-0.5, 0.5, 0.5);
-				t.addVertex(0.5, 0.5, 0.5);
-				t.addVertex(0.5, 0.5, -0.5);
-				break;
-			case ZPos:
-				t.addVertex(-0.5, -0.5, 0.5);
-				t.addVertex(0.5, -0.5, 0.5);
-				t.addVertex(0.5, 0.5, 0.5);
-				t.addVertex(-0.5, 0.5, 0.5);
-				break;
-			case XNeg:
-				t.addVertex(-0.5, -0.5, -0.5);
-				t.addVertex(-0.5, -0.5, 0.5);
-				t.addVertex(-0.5, 0.5, 0.5);
-				t.addVertex(-0.5, 0.5, -0.5);
-				break;
-			case YNeg:
-				t.addVertex(-0.5, -0.5, -0.5);
-				t.addVertex(0.5, -0.5, -0.5);
-				t.addVertex(0.5, -0.5, 0.5);
-				t.addVertex(-0.5, -0.5, 0.5);
-				break;
-			case ZNeg:
-				t.addVertex(-0.5, -0.5, -0.5);
-				t.addVertex(-0.5, 0.5, -0.5);
-				t.addVertex(0.5, 0.5, -0.5);
-				t.addVertex(0.5, -0.5, -0.5);
-				break;
-			default:
-				break;
-		}
-		t.draw();
-		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		GL11.glDisable(GL11.GL_BLEND);
+	private void drawBlock() {
+		final Tessellator tessellator = Tessellator.getInstance();
+		final WorldRenderer wr = tessellator.getWorldRenderer();
+		wr.func_181668_a(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+
+		FakeBlockAccess access = new FakeBlockAccess(blockState);
+
+		final BlockRendererDispatcher dispatcher = parent.getMinecraft().getBlockRendererDispatcher();
+		final IBakedModel model = dispatcher.getModelFromBlockState(blockState, access, FakeBlockAccess.ORIGIN);
+		dispatcher.getBlockModelRenderer().renderModel(access, model, blockState, FakeBlockAccess.ORIGIN, wr, false);
+		wr.setTranslation(0.0D, 0.0D, 0.0D);
+		tessellator.draw();
 	}
 
-	private void drawBlock(TextureManager manager, Tessellator t) {
-		GL11.glColor4f(1, 1, 1, 1);
-		manager.bindTexture(TextureMap.locationBlocksTexture);
-		blockRender.setRenderBoundsFromBlock(block);
-		t.startDrawingQuads();
+	private static void drawHighlight(List<Pair<Side, Integer>> selections) {
+		GlStateManager.disableLighting();
+		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GlStateManager.enableBlend();
+		GlStateManager.disableDepth();
+		GlStateManager.disableTexture2D();
 
-		blockRender.renderFaceXNeg(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(4, meta));
-		blockRender.renderFaceXPos(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(5, meta));
-		blockRender.renderFaceYPos(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(1, meta));
-		blockRender.renderFaceYNeg(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(0, meta));
-		blockRender.renderFaceZNeg(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(2, meta));
-		blockRender.renderFaceZPos(Blocks.stone, -0.5, -0.5, -0.5, block.getIcon(3, meta));
+		GL11.glBegin(GL11.GL_QUADS);
+		for (Pair<Side, Integer> p : selections) {
+			final Integer color = p.getRight();
+			GlStateManager.color((color >> 16) / 255.0F, (color >> 8 & 255) / 255.0F, (color & 255) / 255.0F, 0.25f);
 
-		t.draw();
+			switch (p.getLeft()) {
+				case XPos:
+					GL11.glVertex3d(0.5, -0.5, -0.5);
+					GL11.glVertex3d(0.5, 0.5, -0.5);
+					GL11.glVertex3d(0.5, 0.5, 0.5);
+					GL11.glVertex3d(0.5, -0.5, 0.5);
+					break;
+				case YPos:
+					GL11.glVertex3d(-0.5, 0.5, -0.5);
+					GL11.glVertex3d(-0.5, 0.5, 0.5);
+					GL11.glVertex3d(0.5, 0.5, 0.5);
+					GL11.glVertex3d(0.5, 0.5, -0.5);
+					break;
+				case ZPos:
+					GL11.glVertex3d(-0.5, -0.5, 0.5);
+					GL11.glVertex3d(0.5, -0.5, 0.5);
+					GL11.glVertex3d(0.5, 0.5, 0.5);
+					GL11.glVertex3d(-0.5, 0.5, 0.5);
+					break;
+				case XNeg:
+					GL11.glVertex3d(-0.5, -0.5, -0.5);
+					GL11.glVertex3d(-0.5, -0.5, 0.5);
+					GL11.glVertex3d(-0.5, 0.5, 0.5);
+					GL11.glVertex3d(-0.5, 0.5, -0.5);
+					break;
+				case YNeg:
+					GL11.glVertex3d(-0.5, -0.5, -0.5);
+					GL11.glVertex3d(0.5, -0.5, -0.5);
+					GL11.glVertex3d(0.5, -0.5, 0.5);
+					GL11.glVertex3d(-0.5, -0.5, 0.5);
+					break;
+				case ZNeg:
+					GL11.glVertex3d(-0.5, -0.5, -0.5);
+					GL11.glVertex3d(-0.5, 0.5, -0.5);
+					GL11.glVertex3d(0.5, 0.5, -0.5);
+					GL11.glVertex3d(0.5, -0.5, -0.5);
+					break;
+				default:
+					break;
+			}
+		}
+		GL11.glEnd();
+
+		GlStateManager.disableBlend();
+		GlStateManager.enableDepth();
+		GlStateManager.enableTexture2D();
 	}
 
 	private void toggleSide(EnumFacing side) {
