@@ -1,112 +1,95 @@
 package openmods.entity;
 
 import io.netty.buffer.ByteBuf;
+
+import java.util.Random;
+
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import openmods.Log;
 import openmods.fakeplayer.FakePlayerPool;
 import openmods.fakeplayer.FakePlayerPool.PlayerUserReturning;
 import openmods.fakeplayer.OpenModsFakePlayer;
 import openmods.utils.BlockManipulator;
+import openmods.utils.NbtUtils;
 
-//TODO: Review later
 public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	private static final String TAG_TILE_ENTITY = "TileEntity";
 	private static final String TAG_BLOCK_META = "BlockMeta";
-	private static final String TAG_BLOCK_NAME = "BlockName";
-	private static final int OBJECT_BLOCK_NAME = 11;
-	private static final int OBJECT_BLOCK_META = 12;
+	private static final String TAG_BLOCK_ID = "BlockId";
+
+	public static final EnumFacing[] PLACE_DIRECTIONS = { EnumFacing.UP, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST, EnumFacing.DOWN };
+
 	private boolean hasGravity = false;
 	/* Should this entity return to a block on the ground? */
 	private boolean shouldDrop = true;
 	private boolean hasAirResistance = true;
 
-	public static final ForgeDirection[] PLACE_DIRECTIONS = { ForgeDirection.UNKNOWN, ForgeDirection.UP, ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST, ForgeDirection.DOWN };
+	private IBlockState blockState;
+	private NBTTagCompound tileEntity;
 
 	public EntityBlock(World world) {
 		super(world);
 		setSize(0.925F, 0.925F);
 	}
 
+	public EntityBlock(World world, IBlockState state, NBTTagCompound tileEntity) {
+		super(world);
+		setSize(0.925F, 0.925F);
+	}
+
 	private void setHeight(float height) {
 		this.height = height;
-		yOffset = 0;
 	}
 
-	public static EntityBlock create(EntityPlayer player, World world, int x, int y, int z) {
-		return create(player, world, x, y, z, EntityBlock.class);
+	public interface EntityFactory {
+		public EntityBlock create(World world);
 	}
 
-	public static EntityBlock create(EntityPlayer player, World world, int x, int y, int z, Class<? extends EntityBlock> klazz) {
+	public static EntityBlock create(EntityPlayer player, World world, BlockPos pos) {
+		return create(player, world, pos, new EntityFactory() {
+			@Override
+			public EntityBlock create(World world) {
+				return new EntityBlock(world);
+			}
+		});
+	}
 
-		Block block = world.getBlock(x, y, z);
+	public static EntityBlock create(EntityPlayer player, World world, BlockPos pos, EntityFactory factory) {
+		if (world.isAirBlock(pos)) return null;
 
-		if (block.isAir(world, x, y, z)) return null;
+		final EntityBlock entity = factory.create(world);
 
-		int meta = world.getBlockMetadata(x, y, z);
+		entity.blockState = world.getBlockState(pos);
 
-		final EntityBlock entity;
-		try {
-			entity = klazz.getConstructor(World.class).newInstance(world);
-		} catch (Throwable t) {
-			Log.warn(t, "Failed to create EntityBlock(%s) at %d,%d,%d", klazz, x, y, z);
-			return null;
-		}
-
-		entity.setBlockNameAndMeta(BlockProperties.getBlockName(block), meta);
-
-		final TileEntity te = world.getTileEntity(x, y, z);
+		final TileEntity te = world.getTileEntity(pos);
 		if (te != null) {
 			entity.tileEntity = new NBTTagCompound();
 			te.writeToNBT(entity.tileEntity);
 		}
 
-		final boolean blockRemoved = new BlockManipulator(world, player, x, y, z).setSilentTeRemove(true).remove();
+		final boolean blockRemoved = new BlockManipulator(world, player, pos).setSilentTeRemove(true).remove();
 		if (!blockRemoved) return null;
 
-		entity.setPositionAndRotation(x + 0.5, y + 0.5, z + 0.5, 0, 0);
+		entity.setPositionAndRotation(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 0, 0);
 
 		return entity;
 	}
 
-	private NBTTagCompound tileEntity;
-
-	@Override
-	protected void entityInit() {
-		dataWatcher.addObject(OBJECT_BLOCK_NAME, BlockProperties.getBlockName(Blocks.bedrock));
-		dataWatcher.addObject(OBJECT_BLOCK_META, 0);
-	}
-
-	public void setBlockNameAndMeta(String name, int meta) {
-		this.dataWatcher.updateObject(OBJECT_BLOCK_NAME, name);
-		this.dataWatcher.updateObject(OBJECT_BLOCK_META, meta);
-	}
-
-	public String getBlockName() {
-		return dataWatcher.getWatchableObjectString(OBJECT_BLOCK_NAME);
-	}
-
-	public Block getBlock() {
-		return BlockProperties.getBlockByName(getBlockName());
-	}
-
-	public int getBlockMeta() {
-		return dataWatcher.getWatchableObjectInt(OBJECT_BLOCK_META);
+	public IBlockState getBlockState() {
+		return blockState;
 	}
 
 	public void setShouldDrop(boolean bool) {
@@ -119,18 +102,11 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound tag) {
+		int meta = tag.getByte(TAG_BLOCK_META) & 255;
 
-		String blockName = tag.getString(TAG_BLOCK_NAME);
-
-		Block block = BlockProperties.getBlockByName(blockName);
-
-		if (block == null) {
-			setDead();
-			return;
-		}
-
-		int blockMeta = tag.getInteger(TAG_BLOCK_META);
-		setBlockNameAndMeta(blockName, blockMeta);
+		final ResourceLocation blockId = NbtUtils.readResourceLocation(tag.getCompoundTag(TAG_BLOCK_ID));
+		final Block block = Block.blockRegistry.getObject(blockId);
+		this.blockState = block.getStateFromMeta(meta);
 
 		if (tag.hasKey(TAG_TILE_ENTITY, Constants.NBT.TAG_COMPOUND)) this.tileEntity = tag.getCompoundTag(TAG_TILE_ENTITY);
 		else this.tileEntity = null;
@@ -138,9 +114,23 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound tag) {
-		tag.setString(TAG_BLOCK_NAME, getBlockName());
-		tag.setInteger(TAG_BLOCK_META, getBlockMeta());
+		final Block block = blockState.getBlock();
+		final ResourceLocation blockId = Block.blockRegistry.getNameForObject(block);
+		tag.setTag(TAG_BLOCK_ID, NbtUtils.writeResourceLocation(blockId));
+		tag.setByte(TAG_BLOCK_META, (byte)block.getMetaFromState(this.blockState));
 		if (tileEntity != null) tag.setTag(TAG_TILE_ENTITY, tileEntity.copy());
+	}
+
+	@Override
+	public void writeSpawnData(ByteBuf data) {
+		data.writeInt(Block.getStateId(blockState));
+		data.writeBoolean(hasGravity);
+	}
+
+	@Override
+	public void readSpawnData(ByteBuf additionalData) {
+		this.blockState = Block.getStateById(additionalData.readInt());
+		this.hasGravity = additionalData.readBoolean();
 	}
 
 	@Override
@@ -165,16 +155,13 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		extinguish();
 		moveEntity(motionX, motionY, motionZ);
 
-		Block block = getBlock();
+		final Block block = blockState.getBlock();
 		if (block == null) setDead();
 		else setHeight((float)block.getBlockBoundsMaxY());
 
 		if (worldObj instanceof WorldServer && shouldPlaceBlock()) {
-			int x = MathHelper.floor_double(posX);
-			int y = MathHelper.floor_double(posY);
-			int z = MathHelper.floor_double(posZ);
-
-			if (!tryPlaceBlock((WorldServer)worldObj, x, y, z)) dropBlock();
+			final BlockPos dropPos = new BlockPos(posX, posY, posZ);
+			if (!tryPlaceBlock((WorldServer)worldObj, dropPos)) dropBlock();
 
 			setDead();
 		}
@@ -184,28 +171,15 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		return onGround && shouldDrop;
 	}
 
-	private boolean tryPlaceBlock(WorldServer world, final int baseX, final int baseY, final int baseZ) {
+	private boolean tryPlaceBlock(final WorldServer world, final BlockPos pos) {
 		return FakePlayerPool.instance.executeOnPlayer(world, new PlayerUserReturning<Boolean>() {
 
 			@Override
 			public Boolean usePlayer(OpenModsFakePlayer fakePlayer) {
-				for (ForgeDirection dir : PLACE_DIRECTIONS) {
-					int x = baseX + dir.offsetX;
-					int y = baseY + dir.offsetY;
-					int z = baseZ + dir.offsetZ;
-					if (!worldObj.isAirBlock(x, y, z)) continue;
+				if (tryPlaceBlock(fakePlayer, world, pos, EnumFacing.DOWN)) return true;
 
-					boolean blockPlaced = new BlockManipulator(worldObj, fakePlayer, x, y, z).place(getBlock(), getBlockMeta());
-					if (!blockPlaced) continue;
-
-					if (tileEntity != null) {
-						tileEntity.setInteger("x", x);
-						tileEntity.setInteger("y", y);
-						tileEntity.setInteger("z", z);
-						TileEntity te = worldObj.getTileEntity(x, y, z);
-						te.readFromNBT(tileEntity);
-					}
-					return true;
+				for (EnumFacing dir : PLACE_DIRECTIONS) {
+					if (tryPlaceBlock(fakePlayer, world, pos, dir)) return true;
 				}
 				return false;
 			}
@@ -213,10 +187,36 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	}
 
-	private void dropBlock() {
-		ItemStack item = new ItemStack(getBlock(), 1, getBlockMeta());
+	private boolean tryPlaceBlock(EntityPlayer player, WorldServer world, BlockPos pos, EnumFacing fromSide) {
+		if (!worldObj.isAirBlock(pos)) return false;
 
-		entityDropItem(item, 0.1f);
+		boolean blockPlaced = new BlockManipulator(worldObj, player, pos).place(blockState, fromSide);
+		if (!blockPlaced) return false;
+
+		if (tileEntity != null) {
+			tileEntity.setInteger("x", pos.getX());
+			tileEntity.setInteger("y", pos.getY());
+			tileEntity.setInteger("z", pos.getZ());
+			TileEntity te = worldObj.getTileEntity(pos);
+			te.readFromNBT(tileEntity);
+		}
+
+		return true;
+	}
+
+	private void dropBlock() {
+		final Block block = blockState.getBlock();
+
+		Random rand = worldObj.rand;
+
+		final int count = block.quantityDropped(blockState, 0, rand);
+		for (int i = 0; i < count; i++) {
+			final Item item = block.getItemDropped(blockState, rand, 0);
+			if (item != null) {
+				ItemStack toDrop = new ItemStack(item, 1, block.damageDropped(blockState));
+				entityDropItem(toDrop, 0.1f);
+			}
+		}
 
 		if (tileEntity instanceof IInventory) {
 			IInventory inv = (IInventory)tileEntity;
@@ -233,12 +233,6 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	public boolean hasGravity() {
 		return hasGravity;
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public float getShadowSize() {
-		return 0.0F;
 	}
 
 	@Override
@@ -260,11 +254,6 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	protected void dealFireDamage(int i) {}
 
 	@Override
-	public void writeSpawnData(ByteBuf data) {
-		data.writeBoolean(hasGravity);
-	}
-
-	@Override
 	public boolean attackEntityFrom(DamageSource p_70097_1_, float p_70097_2_) {
 		if (!isDead && !worldObj.isRemote) dropBlock();
 		setDead();
@@ -272,7 +261,5 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	@Override
-	public void readSpawnData(ByteBuf additionalData) {
-		hasGravity = additionalData.readBoolean();
-	}
+	protected void entityInit() {}
 }
