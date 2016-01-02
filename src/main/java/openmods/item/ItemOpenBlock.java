@@ -1,13 +1,15 @@
 package openmods.item;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import openmods.block.OpenBlock;
-import openmods.geometry.Orientation;
 
 public class ItemOpenBlock extends ItemBlock {
 
@@ -15,11 +17,7 @@ public class ItemOpenBlock extends ItemBlock {
 		super(block);
 	}
 
-	private static boolean canReplace(Block block, World world, int x, int y, int z) {
-		return block != null && block.isReplaceable(world, x, y, z);
-	}
-
-	protected void afterBlockPlaced(ItemStack stack, EntityPlayer player, World world, int x, int y, int z) {
+	protected void afterBlockPlaced(ItemStack stack, EntityPlayer player, World world, BlockPos pos) {
 		stack.stackSize--;
 	}
 
@@ -31,54 +29,29 @@ public class ItemOpenBlock extends ItemBlock {
 	 * Replicates the super method, but with our own hooks
 	 */
 	@Override
-	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ) {
+	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ) {
+		final IBlockState clickedBlockState = world.getBlockState(pos);
+		final Block clickedBlock = clickedBlockState.getBlock();
+
+		if (!clickedBlock.isReplaceable(world, pos)) pos = pos.offset(side);
 		if (!isStackValid(stack, player)) return false;
+		if (!player.canPlayerEdit(pos, side, stack)) return false;
+		if (!world.canBlockBePlaced(this.block, pos, false, side, (Entity)null, stack)) return false;
 
-		Block block = world.getBlock(x, y, z);
+		final int itemMetadata = getMetadata(stack.getMetadata());
 
-		if (block == Blocks.snow && (world.getBlockMetadata(x, y, z) & 7) < 1) side = 1;
-
-		ForgeDirection sideDir = ForgeDirection.getOrientation(side);
-
-		if (!canReplace(block, world, x, y, z)) {
-			x += sideDir.offsetX;
-			y += sideDir.offsetY;
-			z += sideDir.offsetZ;
+		if (this.block instanceof OpenBlock) {
+			final OpenBlock openBlock = (OpenBlock)this.block;
+			if (!openBlock.canBlockBePlaced(world, pos, side, hitX, hitY, hitZ, itemMetadata, player)) return false;
 		}
 
-		if (!player.canPlayerEdit(x, y, z, side, stack)) return false;
+		final IBlockState newBlockState = this.block.onBlockPlaced(world, pos, side, hitX, hitY, hitZ, itemMetadata, player);
 
-		Block ownBlock = this.field_150939_a;
-		if (y == 255 && ownBlock.getMaterial().isSolid()) return false;
-
-		if (!world.canPlaceEntityOnSide(ownBlock, x, y, z, false, side, player, stack)) return false;
-
-		if (ownBlock instanceof OpenBlock) {
-			OpenBlock ob = (OpenBlock)ownBlock;
-			Orientation blockOrientation = ob.calculatePlacementSide(player, sideDir);
-
-			if (blockOrientation == null) return false;
-
-			int newMeta = calculateBlockMeta(world, ownBlock, x, y, z, side, hitX, hitY, hitZ, stack.getItemDamage());
-
-			if (!ob.canPlaceBlock(world, player, stack, x, y, z, sideDir, blockOrientation, hitX, hitY, hitZ, newMeta)) return false;
-
-			if (!placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, newMeta)) return false;
-
-			ob.afterBlockPlaced(world, player, stack, x, y, z, sideDir, blockOrientation, hitX, hitY, hitZ, newMeta);
-		} else {
-			int newMeta = calculateBlockMeta(world, ownBlock, x, y, z, side, hitX, hitY, hitZ, stack.getItemDamage());
-			if (!placeBlockAt(stack, player, world, x, y, z, side, hitX, hitY, hitZ, newMeta)) return false;
+		if (placeBlockAt(stack, player, world, pos, side, hitX, hitY, hitZ, newBlockState)) {
+			world.playSoundEffect(pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F, this.block.stepSound.getPlaceSound(), (this.block.stepSound.getVolume() + 1.0F) / 2.0F, this.block.stepSound.getFrequency() * 0.8F);
+			afterBlockPlaced(stack, player, world, pos);
 		}
-
-		world.playSoundEffect(x + 0.5, y + 0.5, z + 0.5, ownBlock.stepSound.getBreakSound(), (ownBlock.stepSound.getVolume() + 1.0F) / 2.0F, ownBlock.stepSound.getPitch() * 0.8F);
-		afterBlockPlaced(stack, player, world, x, y, z);
 
 		return true;
-	}
-
-	protected int calculateBlockMeta(World world, Block ownBlock, int x, int y, int z, int side, float hitX, float hitY, float hitZ, int damage) {
-		int newMeta = getMetadata(damage);
-		return ownBlock.onBlockPlaced(world, x, y, z, side, hitX, hitY, hitZ, newMeta);
 	}
 }

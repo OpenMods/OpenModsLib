@@ -37,7 +37,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		ACTIVATE_LISTENER(IActivateAwareTile.class),
 		SURFACE_ATTACHEMENT(ISurfaceAttachment.class),
 		BREAK_LISTENER(IBreakAwareTile.class),
-		PLACER_LISTENER(IPlacerAwareTile.class),
 		PLACE_LISTENER(IPlaceAwareTile.class),
 		ADD_LISTENER(IAddAwareTile.class),
 		CUSTOM_PICK_ITEM(ICustomPickItem.class),
@@ -330,55 +329,31 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return (teClass.isInstance(te))? (U)te : null;
 	}
 
-	public boolean canPlaceBlock(World world, EntityPlayer player, ItemStack stack, BlockPos blockPos, EnumFacing sideDir, Orientation blockOrientation, float hitX, float hitY, float hitZ, int newMeta) {
-		return getRotationMode().isPlacementValid(blockOrientation);
+	protected Orientation calculateOrientationAfterPlace(BlockPos pos, EnumFacing facing, EntityLivingBase placer) {
+		if (blockPlacementMode == BlockPlacementMode.SURFACE) {
+			return getRotationMode().getPlacementOrientationFromSurface(pos, facing);
+		} else {
+			return getRotationMode().getPlacementOrientationFromEntity(pos, placer);
+		}
+	}
+
+	public boolean canBlockBePlaced(World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, int itemMetadata, EntityPlayer player) {
+		return true;
+	}
+
+	@Override
+	public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+		final Orientation orientation = calculateOrientationAfterPlace(pos, facing, placer);
+		return getDefaultState().withProperty(getOrientationProperty(), orientation);
 	}
 
 	@Override
 	public void onBlockPlacedBy(World world, BlockPos blockPos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
 		super.onBlockPlacedBy(world, blockPos, state, placer, stack);
 
-		if (hasCapability(TileEntityCapability.PLACER_LISTENER)) {
-			final TileEntity te = world.getTileEntity(blockPos);
-			if (te instanceof IPlacerAwareTile) ((IPlacerAwareTile)te).onBlockPlacedBy(placer, stack);
-		}
-	}
-
-	/***
-	 * An extended block placement function which includes ALL the details
-	 * you'll ever need.
-	 * This is called if your ItemBlock extends ItemOpenBlock
-	 */
-	// TODO actually call this
-	public void afterBlockPlaced(World world, EntityPlayer player, ItemStack stack, BlockPos blockPos, EnumFacing side, Orientation blockOrientation, float hitX, float hitY, float hitZ, int itemMeta) {
-		int blockMeta = getRotationMode().toValue(blockOrientation);
-
-		// silently set meta, since we want to notify TE before neighbors
-		world.setBlockMetadataWithNotify(blockPos, blockMeta, BlockNotifyFlags.NONE);
-
-		notifyTileEntity(world, player, stack, blockPos, side, blockOrientation, hitX, hitY, hitZ);
-
-		world.markBlockForUpdate(blockPos);
-		if (!world.isRemote) world.notifyBlockChange(blockPos, this);
-	}
-
-	protected void notifyTileEntity(World world, EntityPlayer player, ItemStack stack, BlockPos blockPos, EnumFacing side, Orientation blockOrientation, float hitX, float hitY, float hitZ) {
 		if (hasCapability(TileEntityCapability.PLACE_LISTENER)) {
 			final TileEntity te = world.getTileEntity(blockPos);
-			if (te instanceof IPlaceAwareTile) ((IPlaceAwareTile)te).onBlockPlacedBy(player, side, stack, hitX, hitY, hitZ);
-		}
-	}
-
-	protected void setRotationMeta(World world, BlockPos blockPos, Orientation blockOrientation) {
-		int blockMeta = getRotationMode().toValue(blockOrientation);
-		world.setBlockMetadataWithNotify(blockPos, blockMeta, BlockNotifyFlags.ALL);
-	}
-
-	public Orientation calculatePlacementSide(EntityPlayer player, EnumFacing side) {
-		if (blockPlacementMode == BlockPlacementMode.SURFACE) {
-			return getRotationMode().getPlacementOrientationFromSurface(side);
-		} else {
-			return getRotationMode().getPlacementOrientationFromEntity(player);
+			if (te instanceof IPlaceAwareTile) ((IPlaceAwareTile)te).onBlockPlacedBy(state, placer, stack);
 		}
 	}
 

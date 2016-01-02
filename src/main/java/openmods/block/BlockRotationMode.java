@@ -4,7 +4,8 @@ import java.util.Set;
 
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import openmods.geometry.BlockTextureTransform;
 import openmods.geometry.HalfAxis;
@@ -35,12 +36,12 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
 			return Orientation.XP_YP;
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
 			return Orientation.XP_YP;
 		}
 
@@ -74,14 +75,13 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			final EnumFacing playerOrientation = BlockUtils.get2dOrientation(player);
-			return directionToOrientation(playerOrientation);
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+			return directionToOrientation(player.getHorizontalFacing());
 		}
 
 		@Override
@@ -128,13 +128,13 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			final EnumFacing normalDir = BlockUtils.get3dOrientation(player);
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+			final EnumFacing normalDir = BlockUtils.get3dOrientation(player, pos);
 			return directionToOrientation(normalDir);
 		}
 
@@ -170,13 +170,13 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			final EnumFacing side = BlockUtils.get2dOrientation(player).getOpposite();
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+			final EnumFacing side = player.getHorizontalFacing().getOpposite();
 			return directionToOrientation(side);
 		}
 
@@ -232,13 +232,13 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			final EnumFacing localTop = BlockUtils.get3dOrientation(player).getOpposite();
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+			final EnumFacing localTop = BlockUtils.get3dOrientation(player, pos).getOpposite();
 			return directionToOrientation(localTop);
 		}
 
@@ -285,13 +285,13 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			final EnumFacing normalDir = BlockUtils.get3dOrientation(player);
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+			final EnumFacing normalDir = BlockUtils.get3dOrientation(player, pos);
 			return directionToOrientation(normalDir);
 		}
 
@@ -360,13 +360,13 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(EntityPlayer player) {
-			EnumFacing playerDir = BlockUtils.get2dOrientation(player).getOpposite();
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+			EnumFacing playerDir = player.getHorizontalFacing().getOpposite();
 			if (player.rotationPitch > 45.5F) {
 				return Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.fromEnumFacing(playerDir));
 			} else if (player.rotationPitch < -45.5F) {
@@ -475,9 +475,9 @@ public enum BlockRotationMode {
 		return validDirections.contains(dir);
 	}
 
-	public abstract Orientation getPlacementOrientationFromSurface(EnumFacing side);
+	public abstract Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side);
 
-	public abstract Orientation getPlacementOrientationFromEntity(EntityPlayer player);
+	public abstract Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player);
 
 	public abstract Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis);
 

@@ -15,19 +15,9 @@ import openmods.inventory.IInventoryProvider;
 
 public class BlockUtils {
 
+	@Deprecated
 	public static EnumFacing get2dOrientation(EntityLivingBase entity) {
-		int l = MathHelper.floor_double(entity.rotationYaw * 4.0F / 360.0F + 0.5D) & 0x3;
-		switch (l) {
-			case 0:
-				return EnumFacing.SOUTH;
-			case 1:
-				return EnumFacing.WEST;
-			case 2:
-				return EnumFacing.NORTH;
-			case 3:
-				return EnumFacing.EAST;
-		}
-		return EnumFacing.SOUTH;
+		return entity.getHorizontalFacing();
 
 	}
 
@@ -65,11 +55,17 @@ public class BlockUtils {
 		}
 	}
 
-	public static EnumFacing get3dOrientation(EntityLivingBase entity) {
-		if (entity.rotationPitch > 45.5F) {
-			return EnumFacing.DOWN;
-		} else if (entity.rotationPitch < -45.5F) { return EnumFacing.UP; }
-		return get2dOrientation(entity);
+	public static EnumFacing get3dOrientation(EntityLivingBase entity, BlockPos pos) {
+		if (MathHelper.abs((float)entity.posX - pos.getX()) < 2.0F
+				&& MathHelper.abs((float)entity.posZ - pos.getZ()) < 2.0F) {
+			final double eyePos = entity.posY + entity.getEyeHeight();
+			final double blockPos = pos.getY();
+
+			if (eyePos - blockPos > 2.0D) return EnumFacing.UP;
+			if (blockPos - eyePos > 0.0D) return EnumFacing.DOWN;
+		}
+
+		return entity.getHorizontalFacing();
 	}
 
 	public static EntityItem dropItemStackInWorld(World worldObj, double x, double y, double z, ItemStack stack) {

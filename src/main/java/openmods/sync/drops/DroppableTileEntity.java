@@ -7,10 +7,10 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import openmods.api.ICustomHarvestDrops;
 import openmods.api.ICustomPickItem;
-import openmods.api.IPlacerAwareTile;
+import openmods.api.IPlaceAwareTile;
 import openmods.tileentity.SyncedTileEntity;
 
-public abstract class DroppableTileEntity extends SyncedTileEntity implements IPlacerAwareTile, ICustomHarvestDrops, ICustomPickItem {
+public abstract class DroppableTileEntity extends SyncedTileEntity implements IPlaceAwareTile, ICustomHarvestDrops, ICustomPickItem {
 
 	public DroppableTileEntity() {
 		getDropSerializer().addFields(this);
