@@ -71,7 +71,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	 */
 	private Class<? extends TileEntity> teClass = null;
 	private BlockRotationMode blockRotationMode = BlockRotationMode.NONE;
-	private IProperty<Orientation> orientationProperty = BlockRotationMode.NONE.createProperty();
+	private IProperty<Orientation> orientationProperty = BlockRotationMode.NONE.property;
 
 	private BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
 
@@ -107,7 +107,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	protected void setRotationMode(BlockRotationMode mode) {
 		this.blockRotationMode = mode;
-		this.orientationProperty = mode.createProperty();
+		this.orientationProperty = mode.property;
 	}
 
 	public IProperty<Orientation> getOrientationProperty() {

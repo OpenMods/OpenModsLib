@@ -2,7 +2,6 @@ package openmods.block;
 
 import java.util.Set;
 
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.BlockPos;
@@ -411,8 +410,9 @@ public enum BlockRotationMode {
 		final int count = validOrientations.length;
 
 		Preconditions.checkArgument(this.validDirections.size() == count, "Duplicated directions");
-
 		Preconditions.checkArgument(count <= MAX_ORIENTATIONS, "Too many values: %s", count);
+
+		this.property = PropertyEnum.create("orientation", Orientation.class, validDirections);
 
 		this.idToOrientation = new Orientation[MAX_ORIENTATIONS];
 		this.orientationToId = new int[Orientation.VALUES.length];
@@ -453,6 +453,8 @@ public enum BlockRotationMode {
 
 	public final BlockTextureTransform textureTransform;
 
+	public final PropertyEnum<Orientation> property;
+
 	protected abstract BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder);
 
 	public Orientation fromValue(int value) {
@@ -483,9 +485,5 @@ public enum BlockRotationMode {
 
 	public Orientation getInventoryRenderOrientation() {
 		return Orientation.XP_YP;
-	}
-
-	public IProperty<Orientation> createProperty() {
-		return PropertyEnum.create("orientation", Orientation.class, validDirections);
 	}
 }
