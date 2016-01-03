@@ -97,6 +97,8 @@ public class GameConfigProvider {
 
 	private final String modId;
 
+	private final ModContainer modContainer;
+
 	public GameConfigProvider(String modPrefix) {
 		langDecorator.setMod(modPrefix);
 		itemModelDecorator.setMod(modPrefix);
@@ -104,9 +106,9 @@ public class GameConfigProvider {
 		legacyBlockDecorator.setMod(modPrefix);
 		legacyItemDecorator.setMod(modPrefix);
 
-		ModContainer mod = Loader.instance().activeModContainer();
-		Preconditions.checkNotNull(mod, "This class can only be initialized in mod init");
-		this.modId = mod.getModId();
+		this.modContainer = Loader.instance().activeModContainer();
+		Preconditions.checkNotNull(this.modContainer, "This class can only be initialized in mod init");
+		this.modId = this.modContainer.getModId();
 	}
 
 	public void setLanguageModId(String modId) {
@@ -259,7 +261,7 @@ public class GameConfigProvider {
 					GameRegistry.registerTileEntity(teClass, teName);
 				}
 
-				if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(modId, name, teClass, itemBlockClass);
+				if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(modContainer, name, teClass, itemBlockClass);
 
 				for (RegisterTileEntity te : annotation.tileEntities()) {
 					final String teName = teDecorator.decorate(te.name());

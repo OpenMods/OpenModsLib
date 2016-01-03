@@ -20,6 +20,7 @@ import net.minecraft.util.*;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import openmods.Log;
@@ -34,7 +35,7 @@ import openmods.utils.BlockUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-public abstract class OpenBlock extends Block implements IRegisterableBlock {
+public class OpenBlock extends Block implements IRegisterableBlock {
 	public static final int OPEN_MODS_TE_GUI = -1;
 	private static final int EVENT_ADDED = -1;
 
@@ -72,9 +73,7 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	private final Set<TileEntityCapability> teCapabilities = EnumSet.noneOf(TileEntityCapability.class);
 
-	/**
-	 * The tile entity class associated with this block
-	 */
+	private Object modInstance = null;
 	private Class<? extends TileEntity> teClass = null;
 	private BlockRotationMode blockRotationMode = BlockRotationMode.NONE;
 	private IProperty<Orientation> orientationProperty = BlockRotationMode.NONE.property;
@@ -283,7 +282,9 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void setupBlock(String modId, String blockName, Class<? extends TileEntity> tileEntity, Class<? extends ItemBlock> itemClass) {
+	public void setupBlock(ModContainer container, String blockName, Class<? extends TileEntity> tileEntity, Class<? extends ItemBlock> itemClass) {
+		this.modInstance = container.getMod();
+
 		if (tileEntity != null) {
 			this.teClass = tileEntity;
 			isBlockContainer = true;
@@ -448,10 +449,8 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 				&& isNeighborBlockSolid(world, blockPos, EnumFacing.DOWN);
 	}
 
-	protected abstract Object getModInstance();
-
 	public void openGui(EntityPlayer player, World world, BlockPos blockPos) {
-		player.openGui(getModInstance(), OPEN_MODS_TE_GUI, world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
+		player.openGui(modInstance, OPEN_MODS_TE_GUI, world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
 	}
 
 	public final boolean shouldRenderBlock() {
