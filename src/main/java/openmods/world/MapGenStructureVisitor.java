@@ -29,7 +29,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 		 * checkcast class net/minecraft/world/gen/structure/StructureStart
 		 * astore X
 		 * aload X
-		 *
+		 * 
 		 * We use that to get id of local variable that stores 'structurestart'
 		 */
 
@@ -59,7 +59,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 		 * to
 		 * if (structurestart.isSizeableStructure() &&
 		 * !structurestart.getComponents().isEmpty())
-		 *
+		 * 
 		 * Again, we assume that compilator places IFEQ jump just after calling
 		 * isSizeableStructure from first expression. We can then reuse label
 		 * for second part
@@ -98,16 +98,12 @@ public class MapGenStructureVisitor extends ClassVisitor {
 		this.listener = listener;
 
 		structureStartCls = MappedType.of("net/minecraft/world/gen/structure/StructureStart");
-		MappedType chunkPositionCls = MappedType.of("net/minecraft/world/ChunkPosition");
+		MappedType blockPosCls = MappedType.of("net/minecraft/util/BlockPos");
 		MappedType worldCls = MappedType.of("net/minecraft/world/World");
 
-		String descriptor = Type.getMethodDescriptor(
-				chunkPositionCls.type(),
-				worldCls.type(),
-				Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE
-				);
+		String descriptor = Type.getMethodDescriptor(blockPosCls.type(), worldCls.type(), blockPosCls.type());
 
-		modifiedMethod = new MethodMatcher(obfClassName, descriptor, "func_151545_a", "func_151545_a");
+		modifiedMethod = new MethodMatcher(obfClassName, descriptor, "getClosestStrongholdPos", "func_180706_b");
 		markerMethod = new MethodMatcher(structureStartCls, "()Z", "isSizeableStructure", "func_75069_d");
 	}
 

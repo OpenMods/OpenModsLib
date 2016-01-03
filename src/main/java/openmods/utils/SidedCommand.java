@@ -1,5 +1,6 @@
 package openmods.utils;
 
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.command.ICommand;
@@ -27,7 +28,7 @@ public abstract class SidedCommand implements ICommand {
 
 	@Override
 	public List<String> getCommandAliases() {
-		return null;
+		return Collections.emptyList();
 	}
 
 	@Override

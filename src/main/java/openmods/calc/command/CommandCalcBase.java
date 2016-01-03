@@ -1,5 +1,6 @@
 package openmods.calc.command;
 
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.command.ICommand;
@@ -32,7 +33,7 @@ abstract class CommandCalcBase implements ICommand {
 
 	@Override
 	public List<String> getCommandAliases() {
-		return null;
+		return Collections.emptyList();
 	}
 
 	@Override
