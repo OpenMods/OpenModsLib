@@ -5,8 +5,11 @@ import java.io.File;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.client.renderer.ItemModelMesher;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.world.World;
@@ -120,6 +123,12 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		if (handler instanceof NetHandlerPlayClient) return getThePlayer();
 
 		return null;
+	}
+
+	@Override
+	public void registerItemModel(Item item, int metadata, String modelName) {
+		final ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
+		mesher.register(item, metadata, new ModelResourceLocation(modelName, "inventory"));
 	}
 
 }

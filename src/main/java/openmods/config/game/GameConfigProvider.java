@@ -16,6 +16,7 @@ import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLMissingMappingsEvent.MissingMapping;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import openmods.Log;
+import openmods.OpenMods;
 import openmods.config.BlockInstances;
 import openmods.config.InstanceContainer;
 import openmods.config.ItemInstances;
@@ -65,6 +66,8 @@ public class GameConfigProvider {
 
 	private final Map<String, Block> blockRemaps = Maps.newHashMap();
 
+	private final Map<Item, String> itemModelIds = Maps.newHashMap();
+
 	private static class IdDecorator {
 		private String modId;
 		private final String joiner;
@@ -84,7 +87,7 @@ public class GameConfigProvider {
 
 	private final IdDecorator langDecorator = new IdDecorator(".");
 
-	private final IdDecorator textureDecorator = new IdDecorator(":");
+	private final IdDecorator itemModelDecorator = new IdDecorator(":");
 
 	private final IdDecorator teDecorator = new IdDecorator("_");
 
@@ -96,7 +99,7 @@ public class GameConfigProvider {
 
 	public GameConfigProvider(String modPrefix) {
 		langDecorator.setMod(modPrefix);
-		textureDecorator.setMod(modPrefix);
+		itemModelDecorator.setMod(modPrefix);
 		teDecorator.setMod(modPrefix);
 		legacyBlockDecorator.setMod(modPrefix);
 		legacyItemDecorator.setMod(modPrefix);
@@ -110,8 +113,8 @@ public class GameConfigProvider {
 		langDecorator.setMod(modId);
 	}
 
-	public void setTextureModId(String modId) {
-		textureDecorator.setMod(modId);
+	public void setItemModelId(String modId) {
+		itemModelDecorator.setMod(modId);
 	}
 
 	public void setTileEntityModId(String modId) {
@@ -199,6 +202,13 @@ public class GameConfigProvider {
 					@Override
 					public void setId(String unlocalizedName) {
 						item.setUnlocalizedName(unlocalizedName);
+					}
+				});
+
+				setItemPrefixedId(annotation.modelId(), name, itemModelDecorator, new IdSetter() {
+					@Override
+					public void setId(String id) {
+						itemModelIds.put(item, id);
 					}
 				});
 			}
@@ -293,6 +303,11 @@ public class GameConfigProvider {
 
 			}
 		}
+	}
+
+	public void registerItemModels() {
+		for (Map.Entry<Item, String> modelId : itemModelIds.entrySet())
+			OpenMods.proxy.registerItemModel(modelId.getKey(), 0, modelId.getValue());
 	}
 
 }

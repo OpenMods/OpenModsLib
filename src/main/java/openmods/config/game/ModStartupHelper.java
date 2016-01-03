@@ -73,6 +73,10 @@ public class ModStartupHelper {
 		setupProvider(gameConfig);
 	}
 
+	public void init() {
+		gameConfig.registerItemModels();
+	}
+
 	public void handleRenames(FMLMissingMappingsEvent event) {
 		gameConfig.handleRemaps(event.get());
 	}

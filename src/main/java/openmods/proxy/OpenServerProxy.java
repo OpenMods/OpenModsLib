@@ -4,6 +4,7 @@ import java.io.File;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.server.MinecraftServer;
@@ -79,4 +80,7 @@ public final class OpenServerProxy implements IOpenModsProxy {
 
 		return null;
 	}
+
+	@Override
+	public void registerItemModel(Item item, int metadata, String modelName) {}
 }

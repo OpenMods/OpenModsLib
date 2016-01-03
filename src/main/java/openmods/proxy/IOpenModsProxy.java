@@ -4,6 +4,7 @@ import java.io.File;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.network.INetHandler;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
@@ -39,4 +40,6 @@ public interface IOpenModsProxy {
 	public void setNowPlayingTitle(String nowPlaying);
 
 	public EntityPlayer getPlayerFromHandler(INetHandler handler);
+
+	public void registerItemModel(Item item, int metadata, String modelName);
 }
