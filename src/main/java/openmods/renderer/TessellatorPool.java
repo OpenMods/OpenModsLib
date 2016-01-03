@@ -39,7 +39,7 @@ public class TessellatorPool {
 		final Tessellator tes = reserveTessellator();
 
 		final WorldRenderer wr = tes.getWorldRenderer();
-		wr.func_181668_a(primitive, vertexFormat);
+		wr.begin(primitive, vertexFormat);
 		user.execute(wr);
 		tes.draw();
 

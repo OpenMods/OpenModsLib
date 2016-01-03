@@ -101,7 +101,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	private void drawBlock() {
 		final Tessellator tessellator = Tessellator.getInstance();
 		final WorldRenderer wr = tessellator.getWorldRenderer();
-		wr.func_181668_a(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+		wr.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
 		FakeBlockAccess access = new FakeBlockAccess(blockState);
 

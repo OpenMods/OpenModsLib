@@ -78,8 +78,8 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public ItemStack getStackInSlotOnClosing(int i) {
-		return inventory.getStackInSlotOnClosing(i);
+	public ItemStack removeStackFromSlot(int slot) {
+		return inventory.removeStackFromSlot(slot);
 	}
 
 	@Override
@@ -131,8 +131,8 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public String getCommandSenderName() {
-		return inventory.getCommandSenderName();
+	public String getName() {
+		return inventory.getName();
 	}
 
 	@Override

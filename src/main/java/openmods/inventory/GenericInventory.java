@@ -86,11 +86,11 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
-	public ItemStack getStackInSlotOnClosing(int i) {
-		if (i >= this.inventoryContents.length) { return null; }
-		if (this.inventoryContents[i] != null) {
-			ItemStack itemstack = this.inventoryContents[i];
-			this.inventoryContents[i] = null;
+	public ItemStack removeStackFromSlot(int slot) {
+		if (slot >= this.inventoryContents.length) { return null; }
+		if (this.inventoryContents[slot] != null) {
+			ItemStack itemstack = this.inventoryContents[slot];
+			this.inventoryContents[slot] = null;
 			return itemstack;
 		}
 		return null;
@@ -194,7 +194,7 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
-	public String getCommandSenderName() {
+	public String getName() {
 		return this.inventoryTitle;
 	}
 
@@ -211,7 +211,7 @@ public class GenericInventory implements IInventory {
 
 	@Override
 	public IChatComponent getDisplayName() {
-		final String name = getCommandSenderName();
+		final String name = getName();
 		return hasCustomName()
 				? new ChatComponentText(name)
 				: new ChatComponentTranslation(name);

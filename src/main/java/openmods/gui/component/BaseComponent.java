@@ -152,11 +152,11 @@ public abstract class BaseComponent extends Gui {
 
 		Tessellator tessellator = Tessellator.getInstance();
 		WorldRenderer worldrenderer = tessellator.getWorldRenderer();
-		worldrenderer.func_181668_a(GL11.GL_QUADS, DefaultVertexFormats.field_181707_g);
-		worldrenderer.func_181662_b(x + 0, y + height, this.zLevel).func_181673_a(icon.minU, icon.maxV).func_181675_d();
-		worldrenderer.func_181662_b(x + width, y + height, this.zLevel).func_181673_a(icon.maxU, icon.maxV).func_181675_d();
-		worldrenderer.func_181662_b(x + width, y + 0, this.zLevel).func_181673_a(icon.maxU, icon.minV).func_181675_d();
-		worldrenderer.func_181662_b(x + 0, y + 0, this.zLevel).func_181673_a(icon.minU, icon.minV).func_181675_d();
+		worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+		worldrenderer.pos(x + 0, y + height, this.zLevel).tex(icon.minU, icon.maxV).endVertex();
+		worldrenderer.pos(x + width, y + height, this.zLevel).tex(icon.maxU, icon.maxV).endVertex();
+		worldrenderer.pos(x + width, y + 0, this.zLevel).tex(icon.maxU, icon.minV).endVertex();
+		worldrenderer.pos(x + 0, y + 0, this.zLevel).tex(icon.minU, icon.minV).endVertex();
 		tessellator.draw();
 	}
 

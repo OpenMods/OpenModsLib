@@ -36,7 +36,7 @@ public class EntityBlockRenderer extends Render<EntityBlock> {
 
 			final Tessellator tessellator = Tessellator.getInstance();
 			final WorldRenderer wr = tessellator.getWorldRenderer();
-			wr.func_181668_a(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+			wr.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
 			wr.setTranslation((float)(-x) - 0.5F, (-y), (float)(-z) - 0.5F);
 
