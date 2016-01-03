@@ -31,4 +31,8 @@ public @interface RegisterBlock {
 	public boolean isEnabled() default true;
 
 	public boolean isConfigurable() default true;
+
+	public boolean registerDefaultItemModel() default true;
+
+	public boolean addToModCreativeTab() default true;
 }

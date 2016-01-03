@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
@@ -68,6 +69,8 @@ public class GameConfigProvider {
 
 	private final Map<Item, String> itemModelIds = Maps.newHashMap();
 
+	private CreativeTabs creativeTab;
+
 	private static class IdDecorator {
 		private String modId;
 		private final String joiner;
@@ -109,6 +112,10 @@ public class GameConfigProvider {
 		this.modContainer = Loader.instance().activeModContainer();
 		Preconditions.checkNotNull(this.modContainer, "This class can only be initialized in mod init");
 		this.modId = this.modContainer.getModId();
+	}
+
+	public void setCreativeTab(CreativeTabs creativeTab) {
+		this.creativeTab = creativeTab;
 	}
 
 	public void setLanguageModId(String modId) {
@@ -207,12 +214,15 @@ public class GameConfigProvider {
 					}
 				});
 
-				setItemPrefixedId(annotation.modelId(), name, itemModelDecorator, new IdSetter() {
-					@Override
-					public void setId(String id) {
-						itemModelIds.put(item, id);
-					}
-				});
+				if (annotation.registerDefaultModel()) {
+					final String id = itemModelDecorator.decorate(name);
+					itemModelIds.put(item, id);
+				}
+
+				if (annotation.addToModCreativeTab()) {
+					Preconditions.checkNotNull(creativeTab, "Trying to set creative tab, but none provided");
+					item.setCreativeTab(creativeTab);
+				}
 			}
 
 			@Override
@@ -266,6 +276,16 @@ public class GameConfigProvider {
 				for (RegisterTileEntity te : annotation.tileEntities()) {
 					final String teName = teDecorator.decorate(te.name());
 					GameRegistry.registerTileEntity(te.cls(), teName);
+				}
+
+				if (annotation.addToModCreativeTab()) {
+					Preconditions.checkNotNull(creativeTab, "Trying to set creative tab, but none provided");
+					block.setCreativeTab(creativeTab);
+				}
+
+				if (annotation.registerDefaultItemModel()) {
+					final String id = itemModelDecorator.decorate(name);
+					itemModelIds.put(Item.getItemFromBlock(block), id);
 				}
 			}
 

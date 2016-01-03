@@ -58,7 +58,7 @@ public class ModStartupHelper {
 
 		gameConfig.setFeatures(features);
 
-		setupIds(gameConfig);
+		setupConfigPre(gameConfig);
 
 		setupBlockFactory(gameConfig.getBlockFactory());
 
@@ -70,7 +70,7 @@ public class ModStartupHelper {
 		for (Class<? extends ItemInstances> itemHolder : itemHolders)
 			gameConfig.registerItems(itemHolder);
 
-		setupProvider(gameConfig);
+		setupConfigPost(gameConfig);
 	}
 
 	public void init() {
@@ -89,7 +89,7 @@ public class ModStartupHelper {
 
 	protected void registerCustomFeatures(ConfigurableFeatureManager features) {}
 
-	protected void setupIds(GameConfigProvider gameConfig) {}
+	protected void setupConfigPre(GameConfigProvider gameConfig) {}
 
-	protected void setupProvider(GameConfigProvider gameConfig) {}
+	protected void setupConfigPost(GameConfigProvider gameConfig) {}
 }

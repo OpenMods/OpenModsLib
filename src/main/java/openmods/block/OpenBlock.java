@@ -7,6 +7,7 @@ import java.util.Set;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
@@ -35,7 +36,7 @@ import openmods.utils.BlockUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-public class OpenBlock extends Block implements IRegisterableBlock {
+public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public static final int OPEN_MODS_TE_GUI = -1;
 	private static final int EVENT_ADDED = -1;
 
@@ -75,8 +76,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	private Object modInstance = null;
 	private Class<? extends TileEntity> teClass = null;
-	private BlockRotationMode blockRotationMode = BlockRotationMode.NONE;
-	private IProperty<Orientation> orientationProperty = BlockRotationMode.NONE.property;
 
 	private BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
 
@@ -98,7 +97,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return false;
 	}
 
-	protected OpenBlock(Material material) {
+	public OpenBlock(Material material) {
 		super(material);
 		setHardness(1.0F);
 
@@ -110,18 +109,11 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		this.blockPlacementMode = mode;
 	}
 
-	protected void setRotationMode(BlockRotationMode mode) {
-		this.blockRotationMode = mode;
-		this.orientationProperty = mode.property;
-	}
-
 	public IProperty<Orientation> getOrientationProperty() {
-		return this.orientationProperty;
+		return getRotationMode().property;
 	}
 
-	public BlockRotationMode getRotationMode() {
-		return this.blockRotationMode;
-	}
+	public abstract BlockRotationMode getRotationMode();
 
 	protected BlockPlacementMode getPlacementMode() {
 		return this.blockPlacementMode;
@@ -474,6 +466,11 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	@SideOnly(Side.CLIENT)
 	public Orientation getInventoryRenderOrientation() {
 		return inventoryRenderOrientation != null? inventoryRenderOrientation : getRotationMode().getInventoryRenderOrientation();
+	}
+
+	@Override
+	protected BlockState createBlockState() {
+		return new BlockState(this, getRotationMode().property);
 	}
 
 	@Override

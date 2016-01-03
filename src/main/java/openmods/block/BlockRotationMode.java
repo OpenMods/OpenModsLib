@@ -18,7 +18,7 @@ public enum BlockRotationMode {
 	/**
 	 * No rotations - always oriented by world directions
 	 */
-	NONE(RotationAxis.NO_AXIS) {
+	NONE(RotationAxis.NO_AXIS, Orientation.XP_YP) {
 		@Override
 		public boolean isPlacementValid(Orientation dir) {
 			return true;
@@ -47,11 +47,6 @@ public enum BlockRotationMode {
 		@Override
 		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			return null;
-		}
-
-		@Override
-		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST);
 		}
 	},
 	/**
@@ -99,11 +94,6 @@ public enum BlockRotationMode {
 					return null;
 			}
 		}
-
-		@Override
-		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST);
-		}
 	},
 	/**
 	 * Three orientations: N-S, W-E, T-B.
@@ -140,11 +130,6 @@ public enum BlockRotationMode {
 		@Override
 		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			return directionToOrientation(axis);
-		}
-
-		@Override
-		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
 		}
 	},
 	/**
@@ -197,11 +182,6 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST);
-		}
-
-		@Override
 		public Orientation getInventoryRenderOrientation() {
 			return Orientation.XN_YP;
 		}
@@ -244,11 +224,6 @@ public enum BlockRotationMode {
 		@Override
 		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			return directionToOrientation(axis);
-		}
-
-		@Override
-		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
 		}
 
 		@Override
@@ -306,11 +281,6 @@ public enum BlockRotationMode {
 			} else {
 				return directionToOrientation(axis);
 			}
-		}
-
-		@Override
-		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
 		}
 
 		@Override
@@ -394,11 +364,6 @@ public enum BlockRotationMode {
 			}
 		}
 
-		@Override
-		protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-			return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorU(EnumFacing.DOWN);
-		}
-
 	};
 
 	private static final int MAX_ORIENTATIONS = 16;
@@ -455,7 +420,9 @@ public enum BlockRotationMode {
 
 	public final PropertyEnum<Orientation> property;
 
-	protected abstract BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder);
+	protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
+		return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorV(EnumFacing.DOWN);
+	}
 
 	public Orientation fromValue(int value) {
 		try {
