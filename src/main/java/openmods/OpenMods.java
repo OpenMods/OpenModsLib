@@ -9,7 +9,6 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
-import openmods.block.BlockDropsStore;
 import openmods.config.ConfigStorage;
 import openmods.config.properties.CommandConfig;
 import openmods.config.properties.ConfigProcessing;
@@ -79,8 +78,6 @@ public class OpenMods {
 		MinecraftForge.EVENT_BUS.register(DropCapture.instance);
 
 		MinecraftForge.EVENT_BUS.register(BucketFillHandler.instance);
-
-		MinecraftForge.EVENT_BUS.register(BlockDropsStore.instance);
 
 		MinecraftForge.EVENT_BUS.register(DelayedActionTickHandler.INSTANCE);
 

@@ -1,21 +1,25 @@
 package openmods.block;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import openmods.Log;
@@ -25,8 +29,10 @@ import openmods.geometry.Orientation;
 import openmods.inventory.IInventoryProvider;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.BlockNotifyFlags;
+import openmods.utils.BlockUtils;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public static final int OPEN_MODS_TE_GUI = -1;
@@ -190,10 +196,90 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public ItemStack getPickBlock(MovingObjectPosition target, World world, BlockPos blockPos, EntityPlayer player) {
 		if (hasCapability(TileEntityCapability.CUSTOM_PICK_ITEM)) {
 			TileEntity te = world.getTileEntity(blockPos);
-			if (te instanceof ICustomPickItem) return ((ICustomPickItem)te).getPickBlock();
+			if (te instanceof ICustomPickItem) return ((ICustomPickItem)te).getPickBlock(player);
 		}
 
 		return suppressPickBlock()? null : super.getPickBlock(target, world, blockPos, player);
+	}
+
+	private static List<ItemStack> getTileBreakDrops(TileEntity te) {
+		List<ItemStack> breakDrops = Lists.newArrayList();
+		BlockUtils.getTileInventoryDrops(te, breakDrops);
+		if (te instanceof ICustomBreakDrops) ((ICustomBreakDrops)te).addDrops(breakDrops);
+		return breakDrops;
+	}
+
+	@Override
+	public void breakBlock(World world, BlockPos pos, IBlockState state) {
+		if (shouldDropFromTeAfterBreak()) {
+			final TileEntity te = world.getTileEntity(pos);
+			if (te != null) {
+				if (te instanceof IBreakAwareTile) ((IBreakAwareTile)te).onBlockBroken();
+
+				for (ItemStack stack : getTileBreakDrops(te))
+					BlockUtils.dropItemStackInWorld(world, pos, stack);
+
+				world.removeTileEntity(pos);
+			}
+		}
+		super.breakBlock(world, pos, state);
+	}
+
+	@Override
+	public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te) {
+		player.triggerAchievement(StatList.mineBlockStatArray[getIdFromBlock(this)]);
+		player.addExhaustion(0.025F);
+
+		if (canSilkHarvest(world, pos, state, player) && EnchantmentHelper.getSilkTouchModifier(player)) {
+			handleSilkTouchDrops(world, player, pos, state, te);
+		} else {
+			handleNormalDrops(world, player, pos, state, te);
+		}
+	}
+
+	protected void handleNormalDrops(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te) {
+		harvesters.set(player);
+		final int fortune = EnchantmentHelper.getFortuneModifier(player);
+
+		boolean addNormalDrops = true;
+
+		if (te instanceof ICustomHarvestDrops) {
+			final ICustomHarvestDrops dropper = (ICustomHarvestDrops)te;
+			final List<ItemStack> drops = Lists.newArrayList();
+			dropper.addHarvestDrops(player, drops, fortune, false);
+
+			ForgeEventFactory.fireBlockHarvesting(drops, world, pos, state, fortune, 1.0f, false, player);
+			for (ItemStack stack : drops)
+				spawnAsEntity(world, pos, stack);
+
+			addNormalDrops = !dropper.suppressBlockHarvestDrops();
+		}
+
+		if (addNormalDrops) dropBlockAsItem(world, pos, state, fortune);
+
+		harvesters.set(null);
+	}
+
+	protected void handleSilkTouchDrops(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te) {
+		List<ItemStack> items = Lists.newArrayList();
+
+		boolean addNormalDrops = true;
+
+		if (te instanceof ICustomHarvestDrops) {
+			final ICustomHarvestDrops dropper = (ICustomHarvestDrops)te;
+
+			dropper.addHarvestDrops(player, items, 0, true);
+			addNormalDrops = !dropper.suppressBlockHarvestDrops();
+		}
+
+		if (addNormalDrops) {
+			final ItemStack drop = createStackedBlock(state);
+			if (drop != null) items.add(drop);
+		}
+
+		ForgeEventFactory.fireBlockHarvesting(items, world, pos, state, 0, 1.0f, true, player);
+		for (ItemStack stack : items)
+			spawnAsEntity(world, pos, stack);
 	}
 
 	@Override

@@ -9,8 +9,8 @@ import net.minecraft.item.ItemStack;
 
 public interface ICustomHarvestDrops {
 
-	boolean suppressNormalHarvestDrops();
+	boolean suppressBlockHarvestDrops();
 
-	void addHarvestDrops(@Nullable EntityPlayer player, List<ItemStack> drops);
+	void addHarvestDrops(@Nullable EntityPlayer player, List<ItemStack> drops, int fortune, boolean isSilkTouch);
 
 }

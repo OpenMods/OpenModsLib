@@ -18,7 +18,7 @@ public abstract class DroppableTileEntity extends SyncedTileEntity implements IP
 	}
 
 	@Override
-	public boolean suppressNormalHarvestDrops() {
+	public boolean suppressBlockHarvestDrops() {
 		return true;
 	}
 
@@ -27,12 +27,12 @@ public abstract class DroppableTileEntity extends SyncedTileEntity implements IP
 	}
 
 	@Override
-	public void addHarvestDrops(EntityPlayer player, List<ItemStack> drops) {
+	public void addHarvestDrops(EntityPlayer player, List<ItemStack> drops, int fortune, boolean isSilkTouch) {
 		drops.add(getDropStack());
 	}
 
 	@Override
-	public ItemStack getPickBlock() {
+	public ItemStack getPickBlock(EntityPlayer player) {
 		return getDropStack();
 	}
 

@@ -68,6 +68,10 @@ public class BlockUtils {
 		return entity.getHorizontalFacing();
 	}
 
+	public static EntityItem dropItemStackInWorld(World worldObj, Vec3i pos, ItemStack stack) {
+		return dropItemStackInWorld(worldObj, pos.getX(), pos.getY(), pos.getZ(), stack);
+	}
+
 	public static EntityItem dropItemStackInWorld(World worldObj, double x, double y, double z, ItemStack stack) {
 		float f = 0.7F;
 		float d0 = worldObj.rand.nextFloat() * f + (1.0F - f) * 0.5F;
