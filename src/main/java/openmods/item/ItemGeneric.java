@@ -14,6 +14,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import openmods.OpenMods;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -27,9 +28,16 @@ public abstract class ItemGeneric extends Item {
 		setMaxDamage(0);
 	}
 
+	public void registerItems(IMetaItemFactory... factories) {
+		for (IMetaItemFactory m : factories)
+			if (m.isEnabled()) registerItem(m.getMeta(), m.createMetaItem());
+	}
+
 	public void registerItem(int id, IMetaItem item) {
 		IMetaItem prev = metaitems.put(id, item);
 		Preconditions.checkState(prev == null, "Config error: replacing meta item %s with %s", prev, item);
+
+		OpenMods.proxy.registerCustomItemModel(this, id, item.getLocation());
 	}
 
 	public void initRecipes() {

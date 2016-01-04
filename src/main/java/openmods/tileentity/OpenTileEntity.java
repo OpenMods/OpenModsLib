@@ -23,8 +23,6 @@ import openmods.reflection.TypeUtils;
 
 public abstract class OpenTileEntity extends TileEntity implements IRpcTargetProvider {
 
-	private boolean isUsedForClientInventoryRendering = false;
-
 	/** Place for TE specific setup. Called once upon creation */
 	public void setup() {}
 
@@ -37,7 +35,6 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		if (!(block instanceof OpenBlock)) return Orientation.XP_YP;
 		final OpenBlock openBlock = (OpenBlock)block;
 
-		if (isUsedForClientInventoryRendering) return openBlock.getInventoryRenderOrientation();
 		return openBlock.getOrientation(getBlockMetadata());
 	}
 
@@ -72,10 +69,6 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 
 	public AxisAlignedBB getBB() {
 		return new AxisAlignedBB(pos, pos.add(1, 1, 1));
-	}
-
-	public boolean isRenderedInInventory() {
-		return isUsedForClientInventoryRendering;
 	}
 
 	@Override

@@ -36,7 +36,7 @@ import openmods.utils.BlockUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-public abstract class OpenBlock extends Block implements IRegisterableBlock {
+public class OpenBlock extends Block implements IRegisterableBlock {
 	public static final int OPEN_MODS_TE_GUI = -1;
 	private static final int EVENT_ADDED = -1;
 
@@ -66,12 +66,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		SURFACE
 	}
 
-	public enum RenderMode {
-		TESR_ONLY,
-		BLOCK_ONLY,
-		BOTH
-	}
-
 	private final Set<TileEntityCapability> teCapabilities = EnumSet.noneOf(TileEntityCapability.class);
 
 	private Object modInstance = null;
@@ -80,7 +74,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	private BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
 
 	protected Orientation inventoryRenderOrientation;
-	protected RenderMode renderMode = RenderMode.BLOCK_ONLY;
 
 	public boolean hasCapability(TileEntityCapability capability) {
 		return teCapabilities.contains(capability);
@@ -113,7 +106,9 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		return getRotationMode().property;
 	}
 
-	public abstract BlockRotationMode getRotationMode();
+	public BlockRotationMode getRotationMode() {
+		return BlockRotationMode.NONE;
+	}
 
 	protected BlockPlacementMode getPlacementMode() {
 		return this.blockPlacementMode;
@@ -121,10 +116,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	protected void setInventoryRenderOrientation(Orientation orientation) {
 		inventoryRenderOrientation = orientation;
-	}
-
-	protected void setRenderMode(RenderMode renderMode) {
-		this.renderMode = renderMode;
 	}
 
 	public Orientation getOrientation(int metadata) {
@@ -443,14 +434,6 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 
 	public void openGui(EntityPlayer player, World world, BlockPos blockPos) {
 		player.openGui(modInstance, OPEN_MODS_TE_GUI, world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
-	}
-
-	public final boolean shouldRenderBlock() {
-		return renderMode != RenderMode.TESR_ONLY;
-	}
-
-	public final boolean shouldRenderTesrInInventory() {
-		return renderMode != RenderMode.BLOCK_ONLY;
 	}
 
 	public boolean canRotateWithTool() {

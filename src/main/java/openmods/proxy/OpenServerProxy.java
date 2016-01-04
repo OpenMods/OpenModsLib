@@ -8,6 +8,7 @@ import net.minecraft.item.Item;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.network.IGuiHandler;
@@ -82,5 +83,8 @@ public final class OpenServerProxy implements IOpenModsProxy {
 	}
 
 	@Override
-	public void registerItemModel(Item item, int metadata, String modelName) {}
+	public void bindItemModelToItemMeta(Item item, int metadata, ResourceLocation model) {}
+
+	@Override
+	public void registerCustomItemModel(Item item, int metadata, ResourceLocation resourceLocation) {}
 }

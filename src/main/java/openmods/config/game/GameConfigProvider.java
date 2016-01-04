@@ -12,6 +12,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.event.FMLMissingMappingsEvent.MissingMapping;
@@ -67,7 +68,7 @@ public class GameConfigProvider {
 
 	private final Map<String, Block> blockRemaps = Maps.newHashMap();
 
-	private final Map<Item, String> itemModelIds = Maps.newHashMap();
+	private final Map<Item, ResourceLocation> itemModelIds = Maps.newHashMap();
 
 	private CreativeTabs creativeTab;
 
@@ -88,9 +89,21 @@ public class GameConfigProvider {
 		}
 	}
 
+	private static class ResourceLocationBuilder {
+		private String modId;
+
+		public void setMod(String modId) {
+			this.modId = modId;
+		}
+
+		public ResourceLocation build(String id) {
+			return new ResourceLocation(modId, id);
+		}
+	}
+
 	private final IdDecorator langDecorator = new IdDecorator(".");
 
-	private final IdDecorator itemModelDecorator = new IdDecorator(":");
+	private final ResourceLocationBuilder itemModelDecorator = new ResourceLocationBuilder();
 
 	private final IdDecorator teDecorator = new IdDecorator("_");
 
@@ -215,7 +228,7 @@ public class GameConfigProvider {
 				});
 
 				if (annotation.registerDefaultModel()) {
-					final String id = itemModelDecorator.decorate(name);
+					final ResourceLocation id = itemModelDecorator.build(name);
 					itemModelIds.put(item, id);
 				}
 
@@ -284,7 +297,7 @@ public class GameConfigProvider {
 				}
 
 				if (annotation.registerDefaultItemModel()) {
-					final String id = itemModelDecorator.decorate(name);
+					final ResourceLocation id = itemModelDecorator.build(name);
 					itemModelIds.put(Item.getItemFromBlock(block), id);
 				}
 			}
@@ -328,8 +341,8 @@ public class GameConfigProvider {
 	}
 
 	public void registerItemModels() {
-		for (Map.Entry<Item, String> modelId : itemModelIds.entrySet())
-			OpenMods.proxy.registerItemModel(modelId.getKey(), 0, modelId.getValue());
+		for (Map.Entry<Item, ResourceLocation> modelId : itemModelIds.entrySet())
+			OpenMods.proxy.bindItemModelToItemMeta(modelId.getKey(), 0, modelId.getValue());
 	}
 
 }

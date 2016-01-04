@@ -6,6 +6,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.network.INetHandler;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 
@@ -41,5 +42,7 @@ public interface IOpenModsProxy {
 
 	public EntityPlayer getPlayerFromHandler(INetHandler handler);
 
-	public void registerItemModel(Item item, int metadata, String modelName);
+	public void bindItemModelToItemMeta(Item item, int metadata, ResourceLocation resourceLocation);
+
+	public void registerCustomItemModel(Item item, int metadata, ResourceLocation resourceLocation);
 }

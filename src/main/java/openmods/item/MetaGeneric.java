@@ -11,6 +11,7 @@ import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 public class MetaGeneric implements IMetaItem {
@@ -29,6 +30,7 @@ public class MetaGeneric implements IMetaItem {
 
 	private final String mod;
 	private final String name;
+
 	private Object[] recipes;
 	private boolean visibleInCreative = true;
 
@@ -89,6 +91,11 @@ public class MetaGeneric implements IMetaItem {
 	@Override
 	public boolean hasEffect() {
 		return false;
+	}
+
+	@Override
+	public ResourceLocation getLocation() {
+		return new ResourceLocation(mod, name);
 	}
 
 }

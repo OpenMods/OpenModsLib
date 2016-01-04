@@ -8,6 +8,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 public interface IMetaItem {
@@ -25,4 +26,6 @@ public interface IMetaItem {
 	public void addToCreativeList(Item item, int meta, List<ItemStack> result);
 
 	public boolean hasEffect();
+
+	public ResourceLocation getLocation();
 }
