@@ -9,7 +9,7 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import openmods.utils.ColorUtils.RGB;
+import openmods.colors.RGB;
 
 import org.lwjgl.opengl.GL11;
 
