@@ -1,6 +1,6 @@
 package openmods.integration.modules;
 
-import static openmods.integration.Conditions.classExists;
+import static openmods.integration.IntegrationConditions.classExists;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;

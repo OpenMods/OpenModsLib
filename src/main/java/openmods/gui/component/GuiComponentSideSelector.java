@@ -185,7 +185,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	@Override
 	public void mouseUp(int mouseX, int mouseY, int button) {
 		super.mouseDown(mouseX, mouseY, button);
-		if (button == 0 && lastSideHovered != null && lastSideHovered != null) {
+		if (button == 0 && lastSideHovered != null) {
 			toggleSide(lastSideHovered);
 		}
 	}

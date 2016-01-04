@@ -61,25 +61,28 @@ public abstract class ComponentGui extends GuiContainer {
 
 			@Override
 			public void drawItemStackTooltip(ItemStack stack, int x, int y) {
-				drawItemStackTooltip(stack, x, y);
+				ComponentGui.this.renderToolTip(stack, x, y);
 			}
 
 			@Override
 			public void drawHoveringText(List<String> textLines, int x, int y) {
-				drawHoveringText(textLines, x, y);
+				ComponentGui.this.drawHoveringText(textLines, x, y);
 			}
 
 			@Override
 			public void drawGradientRect(int left, int top, int right, int bottom, int startColor, int endColor) {
-				drawGradientRect(left, top, right, bottom, startColor, endColor);
+				ComponentGui.this.drawGradientRect(left, top, right, bottom, startColor, endColor);
 			}
 
-			private ResourceLocation texture;
+			private ResourceLocation currentTexture = null;
 
 			@Override
 			public void bindTexture(ResourceLocation texture) {
 				Preconditions.checkNotNull(texture);
-				if (this.texture == null || this.texture.equals(texture)) mc.renderEngine.bindTexture(texture);
+				if (this.currentTexture == null || this.currentTexture.equals(texture)) {
+					mc.renderEngine.bindTexture(texture);
+					this.currentTexture = texture;
+				}
 			}
 		};
 	}
