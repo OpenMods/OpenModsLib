@@ -1,6 +1,7 @@
 package openmods.utils.render;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.entity.Entity;
@@ -108,15 +109,15 @@ public class RenderUtils {
 	}
 
 	public static void disableLightmap() {
-		OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
-		OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+		GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+		GlStateManager.disableTexture2D();
+		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 	}
 
 	public static void enableLightmap() {
-		OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+		GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+		GlStateManager.enableTexture2D();
+		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
 	}
 
 	public static RGB getFogColor() {
