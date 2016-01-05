@@ -50,7 +50,6 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 					}
 				}
 
-				Log.warn("Invalid handler info: can't find ISyncHandler TE @ (%s)", pos);
 				return null;
 			}
 
@@ -280,8 +279,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 
 		final HandlerType handlerType = HandlerType.TYPES[handlerTypeId];
 
-		final ISyncMapProvider handler = handlerType.findHandler(world, input);
-		return handler;
+		return handlerType.findHandler(world, input);
 	}
 
 	public void writeToNBT(NBTTagCompound tag) {
