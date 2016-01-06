@@ -45,9 +45,15 @@ public enum BlockRotationMode {
 		}
 
 		@Override
+		public boolean toolRotationAllowed() {
+			return false;
+		}
+
+		@Override
 		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			return null;
 		}
+
 	},
 	/**
 	 * Two orientations - either N-S or W-E. Top side remains unchanged.
@@ -447,6 +453,10 @@ public enum BlockRotationMode {
 	public abstract Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side);
 
 	public abstract Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player);
+
+	public boolean toolRotationAllowed() {
+		return true;
+	}
 
 	public abstract Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis);
 

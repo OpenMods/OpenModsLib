@@ -118,6 +118,10 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	private BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
 
+	public final BlockRotationMode rotationMode;
+
+	public final IProperty<Orientation> propertyOrientation;
+
 	protected Orientation inventoryRenderOrientation;
 
 	public boolean hasCapability(TileEntityCapability capability) {
@@ -140,18 +144,18 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		setHardness(1.0F);
 
 		// I dont think vanilla actually uses this..
-		isBlockContainer = false;
+		this.isBlockContainer = false;
+
+		this.rotationMode = getRotationMode();
+		Preconditions.checkNotNull(this.rotationMode);
+		this.propertyOrientation = this.rotationMode.property;
 	}
 
 	protected void setPlacementMode(BlockPlacementMode mode) {
 		this.blockPlacementMode = mode;
 	}
 
-	public IProperty<Orientation> getOrientationProperty() {
-		return getRotationMode().property;
-	}
-
-	public BlockRotationMode getRotationMode() {
+	protected BlockRotationMode getRotationMode() {
 		return BlockRotationMode.NONE;
 	}
 
@@ -169,8 +173,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public Orientation getOrientation(IBlockState state) {
-		final BlockRotationMode rotationMode = getRotationMode();
-		return state.getValue(rotationMode.property);
+		return state.getValue(propertyOrientation);
 	}
 
 	public void setBlockBounds(AxisAlignedBB aabb) {
@@ -449,9 +452,9 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	protected Orientation calculateOrientationAfterPlace(BlockPos pos, EnumFacing facing, EntityLivingBase placer) {
 		if (blockPlacementMode == BlockPlacementMode.SURFACE) {
-			return getRotationMode().getPlacementOrientationFromSurface(pos, facing);
+			return rotationMode.getPlacementOrientationFromSurface(pos, facing);
 		} else {
-			return getRotationMode().getPlacementOrientationFromEntity(pos, placer);
+			return rotationMode.getPlacementOrientationFromEntity(pos, placer);
 		}
 	}
 
@@ -462,7 +465,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	@Override
 	public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
 		final Orientation orientation = calculateOrientationAfterPlace(pos, facing, placer);
-		return getDefaultState().withProperty(getOrientationProperty(), orientation);
+		return getDefaultState().withProperty(propertyOrientation, orientation);
 	}
 
 	@Override
@@ -484,36 +487,40 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		player.openGui(modInstance, OPEN_MODS_TE_GUI, world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
 	}
 
-	public boolean canRotateWithTool() {
-		return getRotationMode() != BlockRotationMode.NONE;
+	public Orientation getOrientationFromMeta(int meta) {
+		return rotationMode.fromValue(meta & rotationMode.mask);
+	}
+
+	public int getMetaFromOrientation(Orientation orientation) {
+		return rotationMode.toValue(orientation);
 	}
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
 		return getDefaultState()
-				.withProperty(getOrientationProperty(), getRotationMode().fromValue(meta));
+				.withProperty(propertyOrientation, getOrientationFromMeta(meta));
+	}
+
+	@Override
+	public int getMetaFromState(IBlockState state) {
+		final Orientation orientation = state.getValue(propertyOrientation);
+		return getMetaFromOrientation(orientation);
 	}
 
 	@SideOnly(Side.CLIENT)
 	public Orientation getInventoryRenderOrientation() {
-		return inventoryRenderOrientation != null? inventoryRenderOrientation : getRotationMode().getInventoryRenderOrientation();
+		return inventoryRenderOrientation != null? inventoryRenderOrientation : rotationMode.getInventoryRenderOrientation();
 	}
 
 	@Override
 	protected BlockState createBlockState() {
-		return new BlockState(this, getRotationMode().property);
+		return new BlockState(this, propertyOrientation);
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public IBlockState getStateForEntityRender(IBlockState state) {
-		return getDefaultState().withProperty(getOrientationProperty(), getInventoryRenderOrientation());
-	}
-
-	@Override
-	public int getMetaFromState(IBlockState state) {
-		final Orientation orientation = state.getValue(getOrientationProperty());
-		return getRotationMode().toValue(orientation);
+		return getDefaultState().withProperty(propertyOrientation, getInventoryRenderOrientation());
 	}
 
 	@Override
@@ -522,18 +529,16 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 		final IBlockState currentState = worldObj.getBlockState(blockPos);
 
-		final BlockRotationMode mode = getRotationMode();
-		final IProperty<Orientation> currentOrientation = getOrientationProperty();
-		final Orientation orientation = currentState.getValue(currentOrientation);
+		final Orientation orientation = currentState.getValue(propertyOrientation);
 
-		final Orientation newOrientation = mode.calculateToolRotation(orientation, axis);
+		final Orientation newOrientation = rotationMode.calculateToolRotation(orientation, axis);
 
 		if (newOrientation != null) {
-			if (mode.isPlacementValid(newOrientation)) {
-				final IBlockState newState = createNewStateAfterRotation(worldObj, blockPos, currentState, currentOrientation, newOrientation);
+			if (rotationMode.isPlacementValid(newOrientation)) {
+				final IBlockState newState = createNewStateAfterRotation(worldObj, blockPos, currentState, propertyOrientation, newOrientation);
 				worldObj.setBlockState(blockPos, newState, BlockNotifyFlags.ALL);
 			} else {
-				Log.info("Invalid tool rotation: [%s] %s: (%s): %s->%s", mode, axis, blockPos, orientation, newOrientation);
+				Log.info("Invalid tool rotation: [%s] %s: (%s): %s->%s", rotationMode, axis, blockPos, orientation, newOrientation);
 				return false;
 			}
 		}
@@ -548,13 +553,18 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return true;
 	}
 
-	protected IBlockState createNewStateAfterRotation(World worldObj, BlockPos blockPos, IBlockState currentState, IProperty<Orientation> currentOrientation, Orientation newOrientation) {
-		return currentState.withProperty(getOrientationProperty(), newOrientation);
+	protected IBlockState createNewStateAfterRotation(World worldObj, BlockPos blockPos, IBlockState currentState, IProperty<Orientation> currentOrientation,
+			Orientation newOrientation) {
+		return currentState.withProperty(propertyOrientation, newOrientation);
+	}
+
+	public boolean canRotateWithTool() {
+		return rotationMode.toolRotationAllowed();
 	}
 
 	@Override
 	public EnumFacing[] getValidRotations(World worldObj, BlockPos pos) {
 		if (!canRotateWithTool()) return RotationAxis.NO_AXIS;
-		return getRotationMode().rotationAxes;
+		return rotationMode.rotationAxes;
 	}
 }
