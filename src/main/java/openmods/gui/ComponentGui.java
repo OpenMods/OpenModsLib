@@ -24,11 +24,14 @@ public abstract class ComponentGui extends GuiContainer {
 
 	protected final BaseComposite root;
 
+	protected final IComponentParent componentParent;
+
 	public ComponentGui(Container container, int width, int height) {
 		super(container);
 		this.xSize = width;
 		this.ySize = height;
-		root = createRoot(createParent());
+		this.componentParent = createParent();
+		this.root = createRoot(componentParent);
 	}
 
 	private IComponentParent createParent() {

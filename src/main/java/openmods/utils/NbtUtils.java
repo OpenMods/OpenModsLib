@@ -3,6 +3,7 @@ package openmods.utils;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
+import net.minecraft.util.Vec3i;
 
 public class NbtUtils {
 
@@ -27,6 +28,10 @@ public class NbtUtils {
 		result.setDouble(TAG_Y, y);
 		result.setDouble(TAG_Z, z);
 		return result;
+	}
+
+	public static NBTTagCompound store(Vec3i coords) {
+		return store(coords.getX(), coords.getY(), coords.getZ());
 	}
 
 	public static NBTTagCompound store(Coord coords) {

@@ -37,6 +37,51 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class OpenBlock extends Block implements IRegisterableBlock {
+
+	public static class TwoDirections extends OpenBlock {
+		public TwoDirections(Material material) {
+			super(material);
+		}
+
+		@Override
+		public BlockRotationMode getRotationMode() {
+			return BlockRotationMode.TWO_DIRECTIONS;
+		}
+	}
+
+	public static class ThreeDirections extends OpenBlock {
+		public ThreeDirections(Material material) {
+			super(material);
+		}
+
+		@Override
+		public BlockRotationMode getRotationMode() {
+			return BlockRotationMode.THREE_DIRECTIONS;
+		}
+	}
+
+	public static class FourDirections extends OpenBlock {
+		public FourDirections(Material material) {
+			super(material);
+		}
+
+		@Override
+		public BlockRotationMode getRotationMode() {
+			return BlockRotationMode.FOUR_DIRECTIONS;
+		}
+	}
+
+	public static class SixDirections extends OpenBlock {
+		public SixDirections(Material material) {
+			super(material);
+		}
+
+		@Override
+		public BlockRotationMode getRotationMode() {
+			return BlockRotationMode.SIX_DIRECTIONS;
+		}
+	}
+
 	public static final int OPEN_MODS_TE_GUI = -1;
 	private static final int EVENT_ADDED = -1;
 
