@@ -31,11 +31,11 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public Orientation getOrientation() {
-		final Block block = getBlockType();
+		final IBlockState state = worldObj.getBlockState(pos);
+		final Block block = state.getBlock();
 		if (!(block instanceof OpenBlock)) return Orientation.XP_YP;
 		final OpenBlock openBlock = (OpenBlock)block;
-
-		return openBlock.getOrientation(getBlockMetadata());
+		return openBlock.getOrientation(state);
 	}
 
 	public boolean isAddedToWorld() {

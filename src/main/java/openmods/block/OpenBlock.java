@@ -163,9 +163,14 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		inventoryRenderOrientation = orientation;
 	}
 
-	public Orientation getOrientation(int metadata) {
+	protected Orientation getOrientation(IBlockAccess world, BlockPos pos) {
+		final IBlockState state = world.getBlockState(pos);
+		return getOrientation(state);
+	}
+
+	public Orientation getOrientation(IBlockState state) {
 		final BlockRotationMode rotationMode = getRotationMode();
-		return rotationMode.fromValue(metadata & rotationMode.mask);
+		return state.getValue(rotationMode.property);
 	}
 
 	public void setBlockBounds(AxisAlignedBB aabb) {
@@ -185,8 +190,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	public boolean shouldOverrideHarvestWithTeLogic() {
 		return hasCapability(TileEntityCapability.CUSTOM_HARVEST_DROPS);
 	}
-
-	public void setBoundsBasedOnOrientation(Orientation orientation) {}
 
 	public static OpenBlock getOpenBlock(IBlockAccess world, BlockPos blockPos) {
 		if (world == null) return null;

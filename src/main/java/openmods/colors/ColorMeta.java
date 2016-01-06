@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.IStringSerializable;
 import net.minecraftforge.oredict.OreDictionary;
 
 import org.apache.commons.lang3.text.WordUtils;
@@ -14,7 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public enum ColorMeta {
+public enum ColorMeta implements IStringSerializable {
 	BLACK("black", 0x1E1B1B, EnumDyeColor.BLACK),
 	RED("red", 0xB3312C, EnumDyeColor.RED),
 	GREEN("green", 0x3B511A, EnumDyeColor.GREEN),
@@ -134,5 +135,10 @@ public enum ColorMeta {
 
 	public static Collection<ColorMeta> getAllColors() {
 		return ImmutableList.copyOf(VALUES);
+	}
+
+	@Override
+	public String getName() {
+		return name;
 	}
 }
