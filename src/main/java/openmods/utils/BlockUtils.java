@@ -132,4 +132,15 @@ public class BlockUtils {
 		return world.getTileEntity(coord.offset(direction));
 	}
 
+	public static AxisAlignedBB expandAround(BlockPos pos, int x, int y, int z) {
+		return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + x, pos.getY() + y, pos.getZ() + z);
+	}
+
+	public static AxisAlignedBB singleBlock(BlockPos pos) {
+		return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
+	}
+
+	public static void playSoundAtPos(World world, BlockPos pos, String sound, float volume, float pitch) {
+		world.playSoundEffect(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, sound, volume, pitch);
+	}
 }

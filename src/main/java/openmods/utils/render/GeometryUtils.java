@@ -374,6 +374,10 @@ public class GeometryUtils {
 		line3D(start.x, start.y, start.z, end.x, end.y, end.z, shapeable);
 	}
 
+	public static void line3D(Vec3i start, Vec3i end, IShapeable shapeable) {
+		line3D(start.getX(), start.getY(), start.getZ(), end.getX(), end.getY(), end.getZ(), shapeable);
+	}
+
 	public static void line3D(final int startX, final int startY, final int startZ, final int endX, final int endY, final int endZ, IShapeable shapeable) {
 		final int dx = endX - startX;
 		final int dy = endY - startY;

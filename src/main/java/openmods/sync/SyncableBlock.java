@@ -33,7 +33,7 @@ public class SyncableBlock extends SyncableObjectBase implements ISyncableValueP
 	public void writeToNBT(NBTTagCompound nbt, String name) {
 		ResourceLocation location = GameData.getBlockRegistry().getNameForObject(this.block);
 		if (location != null) {
-			final NBTTagCompound entry = NbtUtils.writeResourceLocation(location);
+			final NBTTagCompound entry = NbtUtils.store(location);
 			nbt.setTag(name, entry);
 		}
 	}

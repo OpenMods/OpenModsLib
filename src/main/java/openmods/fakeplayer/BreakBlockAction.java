@@ -23,9 +23,17 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 	private final World worldObj;
 	private final BlockPos blockPos;
 
+	private ItemStack stackToUse;
+
 	public BreakBlockAction(World worldObj, BlockPos blockPos) {
 		this.worldObj = worldObj;
 		this.blockPos = blockPos;
+		this.stackToUse = new ItemStack(Items.diamond_pickaxe, 0, 0);
+	}
+
+	public BreakBlockAction setStackToUse(ItemStack stack) {
+		this.stackToUse = stack;
+		return this;
 	}
 
 	private boolean removeBlock(EntityPlayer player, BlockPos pos, IBlockState state, boolean canHarvest) {
@@ -39,7 +47,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 	@Override
 	public List<EntityItem> usePlayer(OpenModsFakePlayer fakePlayer) {
 		fakePlayer.inventory.currentItem = 0;
-		fakePlayer.inventory.setInventorySlotContents(0, new ItemStack(Items.diamond_pickaxe, 0, 0));
+		fakePlayer.inventory.setInventorySlotContents(0, stackToUse);
 
 		if (!worldObj.isBlockModifiable(fakePlayer, blockPos)) return Lists.newArrayList();
 

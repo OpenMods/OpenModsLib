@@ -20,6 +20,7 @@ import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.network.senders.IPacketSender;
 import openmods.reflection.TypeUtils;
+import openmods.utils.BlockUtils;
 
 public abstract class OpenTileEntity extends TileEntity implements IRpcTargetProvider {
 
@@ -52,6 +53,10 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 
 	public boolean isAirBlock(EnumFacing direction) {
 		return worldObj != null && worldObj.isAirBlock(getPos().offset(direction));
+	}
+
+	protected void playSoundAtBlock(String sound, float volume, float pitch) {
+		BlockUtils.playSoundAtPos(worldObj, pos, sound, volume, pitch);
 	}
 
 	public void sendBlockEvent(int event, int param) {

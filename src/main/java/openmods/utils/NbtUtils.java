@@ -1,9 +1,9 @@
 package openmods.utils;
 
+import java.util.UUID;
+
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.*;
 
 public class NbtUtils {
 
@@ -14,32 +14,74 @@ public class NbtUtils {
 	private static final String TAG_Y = "Y";
 	private static final String TAG_X = "X";
 
+	public static NBTTagCompound store(NBTTagCompound tag, int x, int y, int z) {
+		tag.setInteger(TAG_X, x);
+		tag.setInteger(TAG_Y, y);
+		tag.setInteger(TAG_Z, z);
+		return tag;
+	}
+
 	public static NBTTagCompound store(int x, int y, int z) {
-		NBTTagCompound result = new NBTTagCompound();
-		result.setInteger(TAG_X, x);
-		result.setInteger(TAG_Y, y);
-		result.setInteger(TAG_Z, z);
-		return result;
+		return store(new NBTTagCompound(), x, y, z);
+	}
+
+	public static NBTTagCompound store(NBTTagCompound tag, double x, double y, double z) {
+		tag.setDouble(TAG_X, x);
+		tag.setDouble(TAG_Y, y);
+		tag.setDouble(TAG_Z, z);
+		return tag;
 	}
 
 	public static NBTTagCompound store(double x, double y, double z) {
-		NBTTagCompound result = new NBTTagCompound();
-		result.setDouble(TAG_X, x);
-		result.setDouble(TAG_Y, y);
-		result.setDouble(TAG_Z, z);
-		return result;
+		return store(new NBTTagCompound(), x, y, z);
+	}
+
+	public static NBTTagCompound store(NBTTagCompound tag, Vec3i coords) {
+		return store(tag, coords.getX(), coords.getY(), coords.getZ());
 	}
 
 	public static NBTTagCompound store(Vec3i coords) {
-		return store(coords.getX(), coords.getY(), coords.getZ());
+		return store(new NBTTagCompound(), coords.getX(), coords.getY(), coords.getZ());
+	}
+
+	public static NBTTagCompound store(NBTTagCompound tag, Coord coords) {
+		return store(tag, coords.x, coords.y, coords.z);
 	}
 
 	public static NBTTagCompound store(Coord coords) {
-		return store(coords.x, coords.y, coords.z);
+		return store(new NBTTagCompound(), coords.x, coords.y, coords.z);
+	}
+
+	public static NBTTagCompound store(NBTTagCompound tag, BlockPos coords) {
+		return store(tag, coords.getX(), coords.getY(), coords.getZ());
+	}
+
+	public static NBTTagCompound store(BlockPos coords) {
+		return store(new NBTTagCompound(), coords.getX(), coords.getY(), coords.getZ());
+	}
+
+	public static NBTTagCompound store(NBTTagCompound tag, UUID uuid) {
+		tag.setLong("UUIDMost", uuid.getMostSignificantBits());
+		tag.setLong("UUIDLeast", uuid.getLeastSignificantBits());
+		return tag;
+	}
+
+	public static NBTTagCompound store(UUID uuid) {
+		return store(new NBTTagCompound(), uuid);
 	}
 
 	public static NBTTagCompound store(Vec3 vec) {
 		return store(vec.xCoord, vec.yCoord, vec.zCoord);
+	}
+
+	public static NBTTagCompound store(NBTTagCompound tag, ResourceLocation location) {
+		tag.setString(KEY, location.getResourceDomain());
+		tag.setString(VALUE, location.getResourcePath());
+		return tag;
+	}
+
+	public static NBTTagCompound store(ResourceLocation location) {
+		return store(new NBTTagCompound(), location);
 	}
 
 	public static Coord readCoord(NBTTagCompound tag) {
@@ -49,6 +91,13 @@ public class NbtUtils {
 		return new Coord(x, y, z);
 	}
 
+	public static BlockPos readBlockPos(NBTTagCompound tag) {
+		final int x = tag.getInteger(TAG_X);
+		final int y = tag.getInteger(TAG_Y);
+		final int z = tag.getInteger(TAG_Z);
+		return new BlockPos(x, y, z);
+	}
+
 	public static Vec3 readVec(NBTTagCompound tag) {
 		final double x = tag.getDouble(TAG_X);
 		final double y = tag.getDouble(TAG_Y);
@@ -56,11 +105,10 @@ public class NbtUtils {
 		return new Vec3(x, y, z);
 	}
 
-	public static NBTTagCompound writeResourceLocation(ResourceLocation location) {
-		NBTTagCompound entry = new NBTTagCompound();
-		entry.setString(KEY, location.getResourceDomain());
-		entry.setString(VALUE, location.getResourcePath());
-		return entry;
+	public static UUID readUuid(NBTTagCompound tag) {
+		final long most = tag.getLong("UUIDMost");
+		final long least = tag.getLong("UUIDLeast");
+		return new UUID(most, least);
 	}
 
 	public static ResourceLocation readResourceLocation(final NBTTagCompound entry) {

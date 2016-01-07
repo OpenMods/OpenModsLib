@@ -116,7 +116,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	protected void writeEntityToNBT(NBTTagCompound tag) {
 		final Block block = blockState.getBlock();
 		final ResourceLocation blockId = Block.blockRegistry.getNameForObject(block);
-		tag.setTag(TAG_BLOCK_ID, NbtUtils.writeResourceLocation(blockId));
+		tag.setTag(TAG_BLOCK_ID, NbtUtils.store(blockId));
 		tag.setByte(TAG_BLOCK_META, (byte)block.getMetaFromState(this.blockState));
 		if (tileEntity != null) tag.setTag(TAG_TILE_ENTITY, tileEntity.copy());
 	}

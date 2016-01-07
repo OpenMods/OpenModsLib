@@ -1,9 +1,12 @@
 package openmods.utils.io;
 
 import java.util.Map;
+import java.util.UUID;
 
 import net.minecraft.nbt.*;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.BlockPos;
+import openmods.utils.NbtUtils;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -349,7 +352,6 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 	};
 
 	public static final IStreamSerializer<Character> CHAR = new IStreamSerializer<Character>() {
-
 		@Override
 		public void writeToStream(Character o, PacketBuffer output) {
 			output.writeChar(o);
@@ -358,6 +360,63 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		@Override
 		public Character readFromStream(PacketBuffer input) {
 			return input.readChar();
+		}
+	};
+
+	public static final ISerializer<BlockPos> BLOCK_POS = new ISerializer<BlockPos>() {
+
+		@Override
+		public BlockPos readFromStream(PacketBuffer input) {
+			return input.readBlockPos();
+		}
+
+		@Override
+		public void writeToStream(BlockPos o, PacketBuffer output) {
+			output.writeBlockPos(o);
+		}
+
+		@Override
+		public BlockPos readFromNBT(NBTTagCompound tag, String name) {
+			NBTTagCompound coordTag = tag.getCompoundTag(name);
+			return NbtUtils.readBlockPos(coordTag);
+		}
+
+		@Override
+		public void writeToNBT(BlockPos o, NBTTagCompound tag, String name) {
+			tag.setTag(name, NbtUtils.store(o));
+		}
+
+		@Override
+		public boolean checkTagType(NBTBase tag) {
+			return tag instanceof NBTTagCompound;
+		}
+	};
+
+	public static final ISerializer<UUID> UUID = new ISerializer<UUID>() {
+
+		@Override
+		public UUID readFromStream(PacketBuffer input) {
+			return input.readUuid();
+		}
+
+		@Override
+		public void writeToStream(UUID o, PacketBuffer output) {
+			output.writeUuid(o);
+		}
+
+		@Override
+		public UUID readFromNBT(NBTTagCompound tag, String name) {
+			return NbtUtils.readUuid(tag);
+		}
+
+		@Override
+		public void writeToNBT(UUID o, NBTTagCompound tag, String name) {
+			tag.setTag(name, NbtUtils.store(o));
+		}
+
+		@Override
+		public boolean checkTagType(NBTBase tag) {
+			return tag instanceof NBTTagCompound;
 		}
 	};
 
@@ -383,10 +442,14 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 			.putAll(UNIVERSAL_SERIALIZERS)
 			.put(Character.class, CHAR)
 			.put(char.class, CHAR)
+			.put(BlockPos.class, BLOCK_POS)
+			.put(UUID.class, UUID)
 			.build();
 
 	public static final Map<Class<?>, INBTSerializer<?>> NBT_SERIALIZERS = ImmutableMap.<Class<?>, INBTSerializer<?>> builder()
 			.putAll(UNIVERSAL_SERIALIZERS)
+			.put(BlockPos.class, BLOCK_POS)
+			.put(UUID.class, UUID)
 			.build();
 
 	public static final Map<Class<?>, IStringSerializer<?>> STRING_SERIALIZERS = ImmutableMap.<Class<?>, IStringSerializer<?>> builder()
