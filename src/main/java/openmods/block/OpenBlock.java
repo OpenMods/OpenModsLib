@@ -159,6 +159,10 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return BlockRotationMode.NONE;
 	}
 
+	protected IProperty<Orientation> getPropertyOrientation() {
+		return getRotationMode().property;
+	}
+
 	protected BlockPlacementMode getPlacementMode() {
 		return this.blockPlacementMode;
 	}
@@ -514,7 +518,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	protected BlockState createBlockState() {
-		return new BlockState(this, propertyOrientation);
+		// WARNING: this is called from superclass, so rotationMode is not set yet
+		return new BlockState(this, getPropertyOrientation());
 	}
 
 	@Override
