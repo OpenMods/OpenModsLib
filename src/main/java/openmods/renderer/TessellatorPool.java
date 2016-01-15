@@ -20,7 +20,7 @@ public class TessellatorPool {
 	private TessellatorPool() {}
 
 	public static interface WorldRendererUser {
-		public void execute(WorldRenderer tes);
+		public void execute(WorldRenderer wr);
 	}
 
 	private Tessellator reserveTessellator() {
@@ -35,7 +35,7 @@ public class TessellatorPool {
 		return tes;
 	}
 
-	public void startDrawing(WorldRendererUser user, int primitive, VertexFormat vertexFormat) {
+	public void startDrawing(int primitive, VertexFormat vertexFormat, WorldRendererUser user) {
 		final Tessellator tes = reserveTessellator();
 
 		final WorldRenderer wr = tes.getWorldRenderer();

@@ -2,6 +2,7 @@ package openmods.network.event;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 
+import java.lang.reflect.Constructor;
 import java.util.Map;
 
 import openmods.datastore.IDataVisitor;
@@ -36,7 +37,7 @@ public class NetworkEventRegistry implements IDataVisitor<String, Integer> {
 		clsToId.clear();
 	}
 
-	public static INetworkEventType createPacketType(final Class<? extends NetworkEvent> cls) {
+	private static INetworkEventType createPacketType(Class<? extends NetworkEvent> cls) {
 		final NetworkEventMeta meta = cls.getAnnotation(NetworkEventMeta.class);
 		final NetworkEventCustomType customType = cls.getAnnotation(NetworkEventCustomType.class);
 
@@ -49,22 +50,16 @@ public class NetworkEventRegistry implements IDataVisitor<String, Integer> {
 			}
 		}
 
-		final boolean isCompressed;
-		final EventDirection direction;
+		final EventDirection direction = (meta != null)? meta.direction() : EventDirection.ANY;
 
-		if (meta != null) {
-			isCompressed = meta.compressed();
-			direction = meta.direction();
-		} else {
-			isCompressed = false;
-			direction = EventDirection.ANY;
+		final Constructor<? extends NetworkEvent> ctor;
+		try {
+			ctor = cls.getConstructor();
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Class " + cls + " has no parameterless constructor");
 		}
 
 		return new INetworkEventType() {
-			@Override
-			public boolean isCompressed() {
-				return isCompressed;
-			}
 
 			@Override
 			public EventDirection getDirection() {
@@ -74,7 +69,7 @@ public class NetworkEventRegistry implements IDataVisitor<String, Integer> {
 			@Override
 			public NetworkEvent createPacket() {
 				try {
-					return cls.newInstance();
+					return ctor.newInstance();
 				} catch (Exception e) {
 					throw Throwables.propagate(e);
 				}

@@ -5,9 +5,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import openmods.api.IInventoryCallback;
 import openmods.block.OpenBlock;
@@ -43,7 +41,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return worldObj != null;
 	}
 
-	private TileEntity getTileEntity(BlockPos blockPos) {
+	protected TileEntity getTileEntity(BlockPos blockPos) {
 		return (worldObj != null && worldObj.isBlockLoaded(blockPos))? worldObj.getTileEntity(blockPos) : null;
 	}
 
@@ -57,6 +55,14 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 
 	protected void playSoundAtBlock(String sound, float volume, float pitch) {
 		BlockUtils.playSoundAtPos(worldObj, pos, sound, volume, pitch);
+	}
+
+	protected void spawnParticle(EnumParticleTypes particle, double dx, double dy, double dz, double vx, double vy, double vz, int... args) {
+		worldObj.spawnParticle(particle, pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz, vx, vy, vz, args);
+	}
+
+	protected void spawnParticle(EnumParticleTypes particle, double vx, double vy, double vz, int... args) {
+		spawnParticle(particle, 0.5, 0.5, 0.5, vx, vy, vz, args);
 	}
 
 	public void sendBlockEvent(int event, int param) {

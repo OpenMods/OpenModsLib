@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
+import net.minecraftforge.common.util.Constants;
+
+import com.google.common.base.Objects;
 
 public class NbtUtils {
 
@@ -13,6 +16,12 @@ public class NbtUtils {
 	private static final String TAG_Z = "Z";
 	private static final String TAG_Y = "Y";
 	private static final String TAG_X = "X";
+
+	public static boolean hasCoordinates(NBTTagCompound tag) {
+		return tag.hasKey(TAG_X, Constants.NBT.TAG_ANY_NUMERIC) &&
+				tag.hasKey(TAG_Y, Constants.NBT.TAG_ANY_NUMERIC) &&
+				tag.hasKey(TAG_Z, Constants.NBT.TAG_ANY_NUMERIC);
+	}
 
 	public static NBTTagCompound store(NBTTagCompound tag, int x, int y, int z) {
 		tag.setInteger(TAG_X, x);
@@ -116,5 +125,19 @@ public class NbtUtils {
 		final String path = entry.getString(VALUE);
 		final ResourceLocation blockLocation = new ResourceLocation(domain, path);
 		return blockLocation;
+	}
+
+	public static <T extends Enum<T>> T readEnum(NBTTagCompound tag, String name, Class<T> cls) {
+		if (tag.hasKey(name, Constants.NBT.TAG_ANY_NUMERIC)) {
+			int ordinal = tag.getInteger(name);
+			return EnumUtils.fromOrdinal(cls, ordinal);
+		}
+
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends Enum<T>> T readEnum(NBTTagCompound tag, String name, T defaultValue) {
+		return Objects.firstNonNull(readEnum(tag, name, (Class<T>)defaultValue.getClass()), defaultValue);
 	}
 }

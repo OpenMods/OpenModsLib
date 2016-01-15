@@ -1,9 +1,9 @@
 package openmods.utils.render;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -76,36 +76,48 @@ public class RenderUtils {
 		public void addVertex(double x, double y, double z);
 	}
 
-	public static void renderCube(IVertexSink tes, double x1, double y1, double z1, double x2, double y2, double z2) {
-		tes.addVertex(x1, y1, z1);
-		tes.addVertex(x1, y2, z1);
-		tes.addVertex(x2, y2, z1);
-		tes.addVertex(x2, y1, z1);
+	public static void renderCube(IVertexSink sink, double x1, double y1, double z1, double x2, double y2, double z2) {
+		sink.addVertex(x1, y1, z1);
+		sink.addVertex(x1, y2, z1);
+		sink.addVertex(x2, y2, z1);
+		sink.addVertex(x2, y1, z1);
 
-		tes.addVertex(x1, y1, z2);
-		tes.addVertex(x2, y1, z2);
-		tes.addVertex(x2, y2, z2);
-		tes.addVertex(x1, y2, z2);
+		sink.addVertex(x1, y1, z2);
+		sink.addVertex(x2, y1, z2);
+		sink.addVertex(x2, y2, z2);
+		sink.addVertex(x1, y2, z2);
 
-		tes.addVertex(x1, y1, z1);
-		tes.addVertex(x1, y1, z2);
-		tes.addVertex(x1, y2, z2);
-		tes.addVertex(x1, y2, z1);
+		sink.addVertex(x1, y1, z1);
+		sink.addVertex(x1, y1, z2);
+		sink.addVertex(x1, y2, z2);
+		sink.addVertex(x1, y2, z1);
 
-		tes.addVertex(x2, y1, z1);
-		tes.addVertex(x2, y2, z1);
-		tes.addVertex(x2, y2, z2);
-		tes.addVertex(x2, y1, z2);
+		sink.addVertex(x2, y1, z1);
+		sink.addVertex(x2, y2, z1);
+		sink.addVertex(x2, y2, z2);
+		sink.addVertex(x2, y1, z2);
 
-		tes.addVertex(x1, y1, z1);
-		tes.addVertex(x2, y1, z1);
-		tes.addVertex(x2, y1, z2);
-		tes.addVertex(x1, y1, z2);
+		sink.addVertex(x1, y1, z1);
+		sink.addVertex(x2, y1, z1);
+		sink.addVertex(x2, y1, z2);
+		sink.addVertex(x1, y1, z2);
 
-		tes.addVertex(x1, y2, z1);
-		tes.addVertex(x1, y2, z2);
-		tes.addVertex(x2, y2, z2);
-		tes.addVertex(x2, y2, z1);
+		sink.addVertex(x1, y2, z1);
+		sink.addVertex(x1, y2, z2);
+		sink.addVertex(x2, y2, z2);
+		sink.addVertex(x2, y2, z1);
+	}
+
+	public static void renderSolidCube(Tessellator tes, double x1, double y1, double z1, double x2, double y2, double z2) {
+		final WorldRenderer wr = tes.getWorldRenderer();
+		wr.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
+		renderCube(new IVertexSink() {
+			@Override
+			public void addVertex(double x, double y, double z) {
+				wr.pos(x, y, z).endVertex();
+			}
+		}, x1, y1, z1, x2, y2, z2);
+		tes.draw();
 	}
 
 	public static void disableLightmap() {

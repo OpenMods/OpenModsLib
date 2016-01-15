@@ -48,7 +48,7 @@ public class DropCapture {
 	}
 
 	public CaptureContext start(int x, int y, int z) {
-		return start(AxisAlignedBB.fromBounds(x, y, z, x + 1, y + 1, z + 1));
+		return start(new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1));
 	}
 
 	public CaptureContext start(BlockPos pos) {

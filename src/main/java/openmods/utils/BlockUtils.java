@@ -136,6 +136,18 @@ public class BlockUtils {
 		return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + x, pos.getY() + y, pos.getZ() + z);
 	}
 
+	public static AxisAlignedBB expandAround(BlockPos pos, double x, double y, double z) {
+		return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + x, pos.getY() + y, pos.getZ() + z);
+	}
+
+	public static AxisAlignedBB aabbOffset(BlockPos pos, double x1, double y1, double z1, double x2, double y2, double z2) {
+		return new AxisAlignedBB(pos.getX() + x1, pos.getY() + y1, pos.getZ() + z1, pos.getX() + x2, pos.getY() + y2, pos.getZ() + z2);
+	}
+
+	public static AxisAlignedBB aabbOffset(BlockPos pos, AxisAlignedBB aabb) {
+		return aabb.offset(pos.getX(), pos.getY(), pos.getZ());
+	}
+
 	public static AxisAlignedBB singleBlock(BlockPos pos) {
 		return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
 	}

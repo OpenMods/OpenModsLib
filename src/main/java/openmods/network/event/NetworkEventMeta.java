@@ -5,7 +5,5 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NetworkEventMeta {
-	public boolean compressed() default false;
-
 	public EventDirection direction() default EventDirection.ANY;
 }

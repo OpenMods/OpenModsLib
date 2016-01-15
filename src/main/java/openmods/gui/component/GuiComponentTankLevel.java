@@ -42,7 +42,7 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 		parent.bindTexture(TextureMap.locationBlocksTexture);
 
 		final ResourceLocation textureLocation = fluid.getStill(fluidStack);
-		TextureAtlasSprite icon = parent.getBlocksTextureMap().getAtlasSprite(textureLocation.toString());
+		TextureAtlasSprite icon = parent.getIcon(textureLocation);
 
 		if (icon != null) {
 			double percentFull = Math.max(0, Math.min(1, (double)fluidStack.amount / (double)capacity));

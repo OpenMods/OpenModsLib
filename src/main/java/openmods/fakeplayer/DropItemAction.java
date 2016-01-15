@@ -2,6 +2,7 @@ package openmods.fakeplayer;
 
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import openmods.Log;
 import openmods.fakeplayer.FakePlayerPool.PlayerUser;
@@ -26,8 +27,13 @@ public class DropItemAction implements PlayerUser {
 		this.side = side;
 	}
 
+	public DropItemAction(ItemStack stack, BlockPos pos, EnumFacing side) {
+		this(stack, pos.getX(), pos.getY(), pos.getZ(), side);
+	}
+
 	@Override
 	public void usePlayer(OpenModsFakePlayer player) {
+		// TODO fix. This is old code
 		Preconditions.checkArgument(side == EnumFacing.DOWN, "Other directions than down are not implemented");
 		player.setPositionAndRotation(x + 0.5F, y - 1.5, z + 0.5F, 0, 90);
 

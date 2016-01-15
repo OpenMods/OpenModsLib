@@ -5,6 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 
 // NOTE: I'm aware of java.util.BitSet, but it has no byte[] convenrsion functions in Java < 7, so here is derpy version
 public class BitSet {
@@ -50,10 +51,18 @@ public class BitSet {
 		output.write(bits);
 	}
 
+	public void writeToBuffer(PacketBuffer output) {
+		output.writeByteArray(bits);
+	}
+
 	public void readFromStream(DataInput input) throws IOException {
-		int size = ByteUtils.readVLI(input);
+		final int size = ByteUtils.readVLI(input);
 		bits = new byte[size];
 		input.readFully(bits);
+	}
+
+	public void readFromBuffer(PacketBuffer input) {
+		bits = input.readByteArray();
 	}
 
 	public void writeToNBT(NBTTagCompound tag) {

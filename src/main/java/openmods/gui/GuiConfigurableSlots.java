@@ -36,7 +36,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 		return new GuiComponentCheckbox(parent, 10, 82, false, 0xFFFFFF);
 	}
 
-	protected abstract GuiComponentLabel createLabel(E slot);
+	protected abstract GuiComponentLabel createLabel(IComponentParent parent, E slot);
 
 	@Override
 	protected final BaseComposite createRoot(IComponentParent parent) {
@@ -61,7 +61,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 
 			tabTool.addComponent(sideSelector);
 			tabTool.addComponent(checkbox);
-			tabTool.addComponent(createLabel(slot));
+			tabTool.addComponent(createLabel(parent, slot));
 		}
 
 		return tabs;

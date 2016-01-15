@@ -1,10 +1,16 @@
 package openmods.gui.component;
 
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
 import openmods.gui.IComponentParent;
 import openmods.gui.Icon;
 
 public class GuiComponentSprite extends BaseComponent {
+
+	public static Icon adaptSprite(TextureAtlasSprite icon) {
+		return new Icon(TextureMap.locationBlocksTexture, icon.getMinU(), icon.getMaxU(), icon.getMinV(), icon.getMaxV(), icon.getIconWidth(), icon.getIconHeight());
+	}
 
 	protected Icon icon;
 	protected float r = 1, g = 1, b = 1;
@@ -28,6 +34,10 @@ public class GuiComponentSprite extends BaseComponent {
 	public GuiComponentSprite(IComponentParent parent, int x, int y, Icon icon) {
 		super(parent, x, y);
 		this.icon = icon;
+	}
+
+	public GuiComponentSprite(IComponentParent parent, int x, int y, TextureAtlasSprite icon) {
+		this(parent, x, y, adaptSprite(icon));
 	}
 
 	public GuiComponentSprite setColor(float r, float g, float b) {
@@ -66,5 +76,9 @@ public class GuiComponentSprite extends BaseComponent {
 
 	public void setIcon(Icon icon) {
 		this.icon = icon;
+	}
+
+	public void setIcon(TextureAtlasSprite icon) {
+		this.icon = adaptSprite(icon);
 	}
 }
