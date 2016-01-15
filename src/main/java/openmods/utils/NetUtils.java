@@ -27,7 +27,7 @@ public class NetUtils {
 		final EntityTracker tracker = server.getEntityTracker();
 
 		@SuppressWarnings("unchecked")
-		final Set<EntityPlayerMP> trackingPlayers = (Set<EntityPlayerMP>)tracker.getTrackingPlayers(entity);
+		final Set<? extends EntityPlayerMP> trackingPlayers = (Set<? extends EntityPlayerMP>)tracker.getTrackingPlayers(entity);
 		return ImmutableSet.copyOf(trackingPlayers);
 	}
 

@@ -83,8 +83,7 @@ public abstract class ItemGeneric extends Item {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void getSubItems(Item item, CreativeTabs tab, List subItems) {
+	public void getSubItems(Item item, CreativeTabs tab, List<ItemStack> subItems) {
 		for (Entry<Integer, IMetaItem> entry : metaitems.entrySet())
 			entry.getValue().addToCreativeList(item, entry.getKey(), subItems);
 	}
