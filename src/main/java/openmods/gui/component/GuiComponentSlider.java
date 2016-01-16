@@ -4,7 +4,6 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 import openmods.api.IValueReceiver;
-import openmods.gui.IComponentParent;
 import openmods.gui.listener.IValueChangedListener;
 
 import org.lwjgl.opengl.GL11;
@@ -22,13 +21,13 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 
 	private IValueChangedListener<Integer> listener;
 
-	public GuiComponentSlider(IComponentParent parent, int x, int y, int width, int min, int max, int initialValue, boolean showValue) {
-		this(parent, x, y, width, min, max, initialValue);
+	public GuiComponentSlider(int x, int y, int width, int min, int max, int initialValue, boolean showValue) {
+		this(x, y, width, min, max, initialValue);
 		this.showValue = showValue;
 	}
 
-	public GuiComponentSlider(IComponentParent parent, int x, int y, int width, int min, int max, int initialValue) {
-		super(parent, x, y);
+	public GuiComponentSlider(int x, int y, int width, int min, int max, int initialValue) {
+		super(x, y);
 		this.width = width;
 		this.min = min;
 		this.max = max;

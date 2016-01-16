@@ -13,12 +13,29 @@ public abstract class BaseComposite extends BaseComponent {
 
 	protected final List<BaseComponent> tickingComponents = Lists.newArrayList();
 
-	public BaseComposite(IComponentParent parent, int x, int y) {
-		super(parent, x, y);
+	public BaseComposite(int x, int y) {
+		super(x, y);
 	}
 
 	protected boolean areChildrenActive() {
 		return true;
+	}
+
+	@Override
+	public void init(IComponentParent parent) {
+		super.init(parent);
+		for (BaseComponent child : components)
+			child.init(parent);
+	}
+
+	@Override
+	public int getWidth() {
+		return 0;
+	}
+
+	@Override
+	public int getHeight() {
+		return 0;
 	}
 
 	public BaseComposite addComponent(BaseComponent component) {

@@ -14,10 +14,16 @@ public class GuiComponentTextbox extends BaseComponent implements IValueReceiver
 
 	private IValueChangedListener<String> listener;
 
-	public GuiComponentTextbox(IComponentParent parent, int x, int y, int width, int height) {
-		super(parent, x, y);
+	public GuiComponentTextbox(int x, int y, int width, int height) {
+		super(x, y);
 		this.width = width;
 		this.height = height;
+
+	}
+
+	@Override
+	public void init(IComponentParent parent) {
+		super.init(parent);
 		textfield = new GuiTextField(0, parent.getFontRenderer(), x, y, width, height);
 	}
 

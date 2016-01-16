@@ -1,14 +1,13 @@
 package openmods.gui.component;
 
-import openmods.gui.IComponentParent;
 import openmods.gui.listener.IMouseDownListener;
 
 public class GuiComponentTabWrapper extends BaseComposite {
 	protected final BaseComponent mainComponent;
 	protected GuiComponentTab activeTab;
 
-	public GuiComponentTabWrapper(IComponentParent parent, int x, int y, BaseComponent mainComponent) {
-		super(parent, x, y);
+	public GuiComponentTabWrapper(int x, int y, BaseComponent mainComponent) {
+		super(x, y);
 		this.mainComponent = mainComponent;
 		addComponent(mainComponent);
 	}

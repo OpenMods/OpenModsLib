@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
-import openmods.gui.IComponentParent;
 
 import org.lwjgl.opengl.GL11;
 
@@ -22,8 +21,8 @@ public class GuiComponentItemStack extends BaseComponent {
 
 	private final List<String> displayName;
 
-	public GuiComponentItemStack(IComponentParent parent, int x, int y, ItemStack stack, boolean drawTooltip, float scale) {
-		super(parent, x, y);
+	public GuiComponentItemStack(int x, int y, ItemStack stack, boolean drawTooltip, float scale) {
+		super(x, y);
 		this.stack = stack;
 		this.drawTooltip = drawTooltip;
 		this.scale = scale;

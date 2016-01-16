@@ -14,7 +14,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
 import openmods.api.IValueReceiver;
-import openmods.gui.IComponentParent;
 import openmods.gui.listener.IListenerBase;
 import openmods.gui.misc.*;
 import openmods.gui.misc.SidePicker.HitCoord;
@@ -54,8 +53,8 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	private IBlockState blockState;
 	private TileEntity te;
 
-	public GuiComponentSideSelector(IComponentParent parent, int x, int y, double scale, IBlockState blockState, TileEntity te, boolean highlightSelectedSides) {
-		super(parent, x, y);
+	public GuiComponentSideSelector(int x, int y, double scale, IBlockState blockState, TileEntity te, boolean highlightSelectedSides) {
+		super(x, y);
 		this.scale = scale;
 		this.diameter = MathHelper.ceiling_double_int(scale * SQRT_3);
 		this.blockState = blockState;

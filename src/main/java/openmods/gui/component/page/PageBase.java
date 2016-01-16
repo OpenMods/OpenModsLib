@@ -12,7 +12,6 @@ import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 import openmods.Log;
-import openmods.gui.IComponentParent;
 import openmods.gui.Icon;
 import openmods.gui.component.*;
 import openmods.gui.listener.IMouseDownListener;
@@ -34,8 +33,8 @@ public abstract class PageBase extends BaseComposite {
 
 	public static final ResourceLocation BOOK_TEXTURE = new ResourceLocation("openmodslib:textures/gui/book.png");
 
-	public PageBase(IComponentParent parent) {
-		super(parent, 0, 15); // x is set on page turn
+	public PageBase() {
+		super(0, 15); // x is set on page turn
 	}
 
 	@Override
@@ -53,13 +52,13 @@ public abstract class PageBase extends BaseComposite {
 	}
 
 	protected BaseComponent createActionButton(int x, int y, final String link, Icon icon, String text, final IConfirmListener listener) {
-		EmptyComposite result = new EmptyComposite(parent, x, y, 50, 8);
+		EmptyComposite result = new EmptyComposite(x, y, 50, 8);
 
-		GuiComponentLabel label = new GuiComponentLabel(parent, 15, 2, StatCollector.translateToLocal(text));
+		GuiComponentLabel label = new GuiComponentLabel(15, 2, StatCollector.translateToLocal(text));
 		label.setScale(BookScaleConfig.getPageContentScale());
 		result.addComponent(label);
 
-		GuiComponentSprite image = new GuiComponentSprite(parent, 0, 0, icon);
+		GuiComponentSprite image = new GuiComponentSprite(0, 0, icon);
 		result.addComponent(image);
 
 		result.setListener(new IMouseDownListener() {

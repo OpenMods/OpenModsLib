@@ -1,7 +1,6 @@
 package openmods.gui.component;
 
 import net.minecraft.client.renderer.GlStateManager;
-import openmods.gui.IComponentParent;
 import openmods.gui.Icon;
 
 import org.lwjgl.input.Mouse;
@@ -10,8 +9,8 @@ public class GuiComponentSpriteButton extends GuiComponentSprite {
 
 	private final Icon hoverIcon;
 
-	public GuiComponentSpriteButton(IComponentParent parent, int x, int y, Icon icon, Icon hoverIcon) {
-		super(parent, x, y, icon);
+	public GuiComponentSpriteButton(int x, int y, Icon icon, Icon hoverIcon) {
+		super(x, y, icon);
 		this.hoverIcon = hoverIcon;
 	}
 

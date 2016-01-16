@@ -3,7 +3,6 @@ package openmods.gui.component;
 import java.util.Iterator;
 import java.util.List;
 
-import openmods.gui.IComponentParent;
 import openmods.gui.listener.IValueChangedListener;
 
 import com.google.common.collect.ImmutableList;
@@ -34,8 +33,8 @@ public class GuiComponentPalettePicker extends BaseComponent {
 
 	private boolean drawTooltip = false;
 
-	public GuiComponentPalettePicker(IComponentParent parent, int x, int y) {
-		super(parent, x, y);
+	public GuiComponentPalettePicker(int x, int y) {
+		super(x, y);
 	}
 
 	@Override

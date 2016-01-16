@@ -6,7 +6,6 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
-import openmods.gui.IComponentParent;
 import openmods.gui.misc.BoxRenderer;
 import openmods.gui.misc.ISlotBackgroundRenderer;
 import openmods.utils.render.RenderUtils;
@@ -52,8 +51,8 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 
 	private final Container container;
 
-	public GuiComponentPanel(IComponentParent parent, int x, int y, int width, int height, Container container) {
-		super(parent, x, y, width, height);
+	public GuiComponentPanel(int x, int y, int width, int height, Container container) {
+		super(x, y, width, height);
 		this.container = container;
 	}
 

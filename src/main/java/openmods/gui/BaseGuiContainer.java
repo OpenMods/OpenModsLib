@@ -14,8 +14,8 @@ public abstract class BaseGuiContainer<T extends ContainerBase<?>> extends Compo
 	}
 
 	@Override
-	protected BaseComposite createRoot(IComponentParent parent) {
-		return new GuiComponentPanel(parent, 0, 0, xSize, ySize, getContainer());
+	protected BaseComposite createRoot() {
+		return new GuiComponentPanel(0, 0, xSize, ySize, getContainer());
 	}
 
 	@SuppressWarnings("unchecked")

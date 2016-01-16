@@ -4,7 +4,6 @@ import java.awt.Color;
 
 import net.minecraft.client.renderer.GlStateManager;
 import openmods.api.IValueReceiver;
-import openmods.gui.IComponentParent;
 import openmods.gui.listener.IValueChangedListener;
 
 import org.lwjgl.opengl.GL11;
@@ -15,8 +14,8 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 	public int tone;
 	private IValueChangedListener<Integer> listener;
 
-	public GuiComponentColorPicker(IComponentParent parent, int x, int y) {
-		super(parent, x, y);
+	public GuiComponentColorPicker(int x, int y) {
+		super(x, y);
 	}
 
 	public int getColor() {

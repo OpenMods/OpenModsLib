@@ -1,6 +1,5 @@
 package openmods.gui.component;
 
-import openmods.gui.IComponentParent;
 import openmods.gui.misc.BoxRenderer;
 
 import org.lwjgl.input.Mouse;
@@ -15,8 +14,8 @@ public abstract class GuiComponentButton extends GuiComponentResizable {
 
 	protected boolean buttonEnabled = true;
 
-	public GuiComponentButton(IComponentParent parent, int x, int y, int width, int height, int borderColor) {
-		super(parent, x, y, width, height);
+	public GuiComponentButton(int x, int y, int width, int height, int borderColor) {
+		super(x, y, width, height);
 		this.borderColor = borderColor;
 	}
 

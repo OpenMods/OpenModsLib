@@ -1,7 +1,6 @@
 package openmods.gui.component;
 
 import openmods.api.IValueReceiver;
-import openmods.gui.IComponentParent;
 
 public class GuiComponentLevel extends BaseComponent implements IValueReceiver<Float> {
 	private int width;
@@ -11,8 +10,8 @@ public class GuiComponentLevel extends BaseComponent implements IValueReceiver<F
 	private float value;
 	private float min, max;
 
-	public GuiComponentLevel(IComponentParent parent, int x, int y, int width, int height, int levelColor, int backgroundColor, float min, float max, float value) {
-		super(parent, x, y);
+	public GuiComponentLevel(int x, int y, int width, int height, int levelColor, int backgroundColor, float min, float max, float value) {
+		super(x, y);
 		this.width = width;
 		this.height = height;
 		this.fColor = levelColor;

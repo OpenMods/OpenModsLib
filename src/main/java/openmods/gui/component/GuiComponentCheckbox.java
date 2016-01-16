@@ -2,7 +2,6 @@ package openmods.gui.component;
 
 import net.minecraft.client.renderer.GlStateManager;
 import openmods.api.IValueReceiver;
-import openmods.gui.IComponentParent;
 import openmods.gui.listener.IValueChangedListener;
 
 public class GuiComponentCheckbox extends BaseComponent implements IValueReceiver<Boolean> {
@@ -10,8 +9,8 @@ public class GuiComponentCheckbox extends BaseComponent implements IValueReceive
 	private boolean value;
 	private IValueChangedListener<Boolean> listener;
 
-	public GuiComponentCheckbox(IComponentParent parent, int x, int y, boolean initialValue, int color) {
-		super(parent, x, y);
+	public GuiComponentCheckbox(int x, int y, boolean initialValue, int color) {
+		super(x, y);
 		this.color = color;
 		this.value = initialValue;
 	}

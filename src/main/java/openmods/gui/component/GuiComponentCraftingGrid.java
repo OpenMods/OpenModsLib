@@ -5,7 +5,6 @@ import java.util.Random;
 import javax.annotation.Nullable;
 
 import net.minecraft.item.ItemStack;
-import openmods.gui.IComponentParent;
 import openmods.gui.Icon;
 import openmods.utils.CollectionUtils;
 
@@ -32,12 +31,12 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 
 	private int changeCountdown = UPDATE_DELAY;
 
-	public GuiComponentCraftingGrid(IComponentParent parent, int x, int y, ItemStack[] items, Icon background) {
-		this(parent, x, y, CollectionUtils.transform(items, EXPAND_TRANSFORM), background);
+	public GuiComponentCraftingGrid(int x, int y, ItemStack[] items, Icon background) {
+		this(x, y, CollectionUtils.transform(items, EXPAND_TRANSFORM), background);
 	}
 
-	public GuiComponentCraftingGrid(IComponentParent parent, int x, int y, ItemStack[][] items, Icon background) {
-		super(parent, x, y, background);
+	public GuiComponentCraftingGrid(int x, int y, ItemStack[][] items, Icon background) {
+		super(x, y, background);
 		Preconditions.checkNotNull(items, "No items in grid");
 		this.items = items;
 		this.selectedItems = new ItemStack[items.length];

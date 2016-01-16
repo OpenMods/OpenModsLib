@@ -5,7 +5,6 @@ import java.util.List;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
-import openmods.gui.IComponentParent;
 import openmods.gui.Icon;
 import openmods.gui.component.page.BookScaleConfig;
 import openmods.gui.listener.IMouseDownListener;
@@ -34,21 +33,21 @@ public class GuiComponentBook extends BaseComposite {
 
 	private int index = 0;
 
-	public GuiComponentBook(IComponentParent parent) {
-		super(parent, 0, 0);
+	public GuiComponentBook() {
+		super(0, 0);
 
-		GuiComponentSprite imgLeftBackground = new GuiComponentSprite(parent, 0, 0, iconPageLeft);
-		GuiComponentSprite imgRightBackground = new GuiComponentSprite(parent, 0, 0, iconPageRight);
+		GuiComponentSprite imgLeftBackground = new GuiComponentSprite(0, 0, iconPageLeft);
+		GuiComponentSprite imgRightBackground = new GuiComponentSprite(0, 0, iconPageRight);
 		imgRightBackground.setX(iconPageRight.width);
 
-		imgPrev = new GuiComponentSpriteButton(parent, 24, 158, iconPrev, iconPrevHover);
+		imgPrev = new GuiComponentSpriteButton(24, 158, iconPrev, iconPrevHover);
 		imgPrev.setListener(new IMouseDownListener() {
 			@Override
 			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
 				prevPage();
 			}
 		});
-		imgNext = new GuiComponentSpriteButton(parent, 380, 158, iconNext, iconNextHover);
+		imgNext = new GuiComponentSpriteButton(380, 158, iconNext, iconNextHover);
 		imgNext.setListener(new IMouseDownListener() {
 			@Override
 			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
@@ -57,9 +56,9 @@ public class GuiComponentBook extends BaseComposite {
 		});
 
 		final float scalePageNumber = BookScaleConfig.getPageNumberScale();
-		pageNumberLeft = new GuiComponentLabel(parent, 85, 163, 100, 10, "XXX");
+		pageNumberLeft = new GuiComponentLabel(85, 163, 100, 10, "XXX");
 		pageNumberLeft.setScale(scalePageNumber);
-		pageNumberRight = new GuiComponentLabel(parent, 295, 163, 100, 10, "XXX");
+		pageNumberRight = new GuiComponentLabel(295, 163, 100, 10, "XXX");
 		pageNumberRight.setScale(scalePageNumber);
 
 		addComponent(imgLeftBackground);

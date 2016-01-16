@@ -6,7 +6,6 @@ import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.model.IBakedModel;
 import net.minecraft.item.ItemStack;
-import openmods.gui.IComponentParent;
 
 import org.lwjgl.opengl.GL11;
 
@@ -15,8 +14,8 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 	private final ItemStack stack;
 	private float rotationY = 0f;
 
-	public GuiComponentItemStackSpinner(IComponentParent parent, int x, int y, ItemStack stack) {
-		super(parent, x, y);
+	public GuiComponentItemStackSpinner(int x, int y, ItemStack stack) {
+		super(x, y);
 		this.stack = stack;
 	}
 

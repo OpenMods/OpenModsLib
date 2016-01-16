@@ -1,27 +1,29 @@
 package openmods.gui.component.page;
 
 import net.minecraft.util.StatCollector;
-import openmods.gui.IComponentParent;
+import openmods.gui.component.GuiComponentHCenter;
 import openmods.gui.component.GuiComponentLabel;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
 public class TitledPage extends PageBase {
 
-	public TitledPage(IComponentParent parent, String title, String content) {
-		super(parent);
-		String translatedTitle = StatCollector.translateToLocal(title);
-		String translatedContent = StringEscapeUtils.unescapeJava(StatCollector.translateToLocal(content));
-		int x = (getWidth() - parent.getFontRenderer().getStringWidth(translatedTitle)) / 2;
+	public TitledPage(String title, String content) {
+		{
+			final String translatedTitle = StatCollector.translateToLocal(title);
+			final GuiComponentLabel titleLabel = new GuiComponentLabel(0, 0, translatedTitle).setScale(BookScaleConfig.getPageTitleScale());
+			addComponent(new GuiComponentHCenter(0, 12, getWidth()).addComponent(titleLabel));
+		}
 
-		addComponent(new GuiComponentLabel(parent, x, 12, translatedTitle).setScale(BookScaleConfig.getPageTitleScale()));
+		{
+			final String translatedContent = StringEscapeUtils.unescapeJava(StatCollector.translateToLocal(content));
+			final GuiComponentLabel lblContent = new GuiComponentLabel(0, 0, getWidth() - 20, 300, translatedContent);
 
-		final GuiComponentLabel lblContent = new GuiComponentLabel(parent, 0, 35, getWidth() - 20, 300, translatedContent);
+			lblContent.setScale(BookScaleConfig.getPageContentScale());
+			lblContent.setAdditionalLineHeight(BookScaleConfig.getTitlePageSeparator());
 
-		lblContent.setScale(BookScaleConfig.getPageContentScale());
-		lblContent.setAdditionalLineHeight(BookScaleConfig.getTitlePageSeparator());
-
-		lblContent.setX((getWidth() - lblContent.getWidth()) / 2);
-		addComponent(lblContent);
+			addComponent(new GuiComponentHCenter(0, 35, getWidth()).addComponent(lblContent));
+		}
 	}
+
 }

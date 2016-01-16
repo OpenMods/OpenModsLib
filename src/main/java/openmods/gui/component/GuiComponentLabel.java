@@ -21,15 +21,23 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 	private int additionalLineHeight = 0;
 	private List<String> tooltip;
 
-	public GuiComponentLabel(IComponentParent parent, int x, int y, String text) {
-		this(parent, x, y, parent.getFontRenderer().getStringWidth(text), parent.getFontRenderer().FONT_HEIGHT, text);
+	public GuiComponentLabel(int x, int y, String text) {
+		this(x, y, -1, -1, text);
 	}
 
-	public GuiComponentLabel(IComponentParent parent, int x, int y, int width, int height, String text) {
-		super(parent, x, y);
+	public GuiComponentLabel(int x, int y, int width, int height, String text) {
+		super(x, y);
 		this.text = text;
 		this.maxHeight = height;
 		this.maxWidth = width;
+	}
+
+	@Override
+	public void init(IComponentParent parent) {
+		super.init(parent);
+
+		if (maxHeight < 0) maxHeight = parent.getFontRenderer().FONT_HEIGHT;
+		if (maxWidth < 0) maxWidth = parent.getFontRenderer().getStringWidth(text);
 	}
 
 	public List<String> getFormattedText(FontRenderer fr) {

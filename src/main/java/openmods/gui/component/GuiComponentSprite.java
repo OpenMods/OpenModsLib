@@ -3,7 +3,6 @@ package openmods.gui.component;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
-import openmods.gui.IComponentParent;
 import openmods.gui.Icon;
 
 public class GuiComponentSprite extends BaseComponent {
@@ -31,13 +30,17 @@ public class GuiComponentSprite extends BaseComponent {
 		public static Icon result = Icon.createSheetIcon(WIDGETS, 36, 241, 22, 15);
 	}
 
-	public GuiComponentSprite(IComponentParent parent, int x, int y, Icon icon) {
-		super(parent, x, y);
+	public GuiComponentSprite(int x, int y) {
+		this(x, y, (Icon)null);
+	}
+
+	public GuiComponentSprite(int x, int y, Icon icon) {
+		super(x, y);
 		this.icon = icon;
 	}
 
-	public GuiComponentSprite(IComponentParent parent, int x, int y, TextureAtlasSprite icon) {
-		this(parent, x, y, adaptSprite(icon));
+	public GuiComponentSprite(int x, int y, TextureAtlasSprite icon) {
+		this(x, y, adaptSprite(icon));
 	}
 
 	public GuiComponentSprite setColor(float r, float g, float b) {

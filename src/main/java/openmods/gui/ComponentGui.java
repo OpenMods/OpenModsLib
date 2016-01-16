@@ -25,15 +25,14 @@ public abstract class ComponentGui extends GuiContainer {
 
 	protected final BaseComposite root;
 
-	protected final IComponentParent componentParent;
-
 	public ComponentGui(Container container, int width, int height) {
 		super(container);
 		this.xSize = width;
 		this.ySize = height;
-		this.componentParent = createParent();
-		this.root = createRoot(componentParent);
+		this.root = createRoot();
 	}
+
+	private ResourceLocation currentTexture = null;
 
 	private IComponentParent createParent() {
 		return new IComponentParent() {
@@ -83,20 +82,24 @@ public abstract class ComponentGui extends GuiContainer {
 				ComponentGui.this.drawGradientRect(left, top, right, bottom, startColor, endColor);
 			}
 
-			private ResourceLocation currentTexture = null;
-
 			@Override
 			public void bindTexture(ResourceLocation texture) {
 				Preconditions.checkNotNull(texture);
-				if (this.currentTexture == null || this.currentTexture.equals(texture)) {
+				if (currentTexture == null || !currentTexture.equals(texture)) {
 					mc.renderEngine.bindTexture(texture);
-					this.currentTexture = texture;
+					currentTexture = texture;
 				}
 			}
 		};
 	}
 
-	protected abstract BaseComposite createRoot(IComponentParent parent);
+	@Override
+	public void initGui() {
+		super.initGui();
+		root.init(createParent());
+	}
+
+	protected abstract BaseComposite createRoot();
 
 	@Override
 	public void updateScreen() {
@@ -152,6 +155,7 @@ public abstract class ComponentGui extends GuiContainer {
 	@Override
 	public void drawScreen(int par1, int par2, float par3) {
 		super.drawScreen(par1, par2, par3);
+		currentTexture = null;
 		prepareRenderState();
 		GL11.glPushMatrix();
 		root.renderOverlay(this.guiLeft, this.guiTop, par1 - this.guiLeft, par2 - this.guiTop);

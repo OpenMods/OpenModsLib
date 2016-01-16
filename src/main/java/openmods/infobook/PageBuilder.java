@@ -11,7 +11,6 @@ import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;
 import net.minecraftforge.fml.common.registry.GameData;
 import openmods.Log;
 import openmods.OpenMods;
-import openmods.gui.IComponentParent;
 import openmods.gui.component.BaseComponent;
 import openmods.gui.component.GuiComponentBook;
 import openmods.gui.component.page.ItemStackTocPage;
@@ -49,11 +48,11 @@ public class PageBuilder {
 			this.mediaKey = mediaKey;
 		}
 
-		public BaseComponent getPage(IComponentParent parent) {
+		public BaseComponent getPage() {
 			if (mediaKey.isPresent()) {
-				return new StandardRecipePage(parent, nameKey, descriptionKey, mediaKey.get(), stack);
+				return new StandardRecipePage(nameKey, descriptionKey, mediaKey.get(), stack);
 			} else {
-				return new StandardRecipePage(parent, nameKey, descriptionKey, stack);
+				return new StandardRecipePage(nameKey, descriptionKey, stack);
 			}
 		}
 	}
@@ -89,22 +88,22 @@ public class PageBuilder {
 
 			if (doc == null) continue;
 
-			final String itemModId = id.getResourcePath();
+			final String modId = id.getResourceDomain().toLowerCase(Locale.ENGLISH);
 
-			if (modIds != null && !modIds.contains(itemModId)) continue;
+			if (modIds != null && !modIds.contains(modId)) continue;
 
-			final String itemName = id.getResourceDomain();
+			final String itemId = id.getResourcePath();
 			final Class<? extends ICustomBookEntryProvider> customProviderCls = doc.customProvider();
 
 			if (customProviderCls == BookDocumentation.EMPTY.class) {
-				final ItemStack stack = provider.createStack(itemModId, itemName, obj);
+				final ItemStack stack = provider.createStack(modId, itemId, obj);
 				if (stack == null) continue;
 				final String customName = doc.customName();
-				addPage(Strings.isNullOrEmpty(customName)? itemName : customName, itemModId.toLowerCase(Locale.ENGLISH), type, doc.hasVideo(), stack);
+				addPage(Strings.isNullOrEmpty(customName)? itemId : customName, modId, type, doc.hasVideo(), stack);
 			} else {
 				ICustomBookEntryProvider customProvider = PROVIDERS.getOrCreate(customProviderCls);
 				for (ICustomBookEntryProvider.Entry e : customProvider.getBookEntries())
-					addPage(e.name, itemModId.toLowerCase(Locale.ENGLISH), type, doc.hasVideo(), e.stack);
+					addPage(e.name, modId, type, doc.hasVideo(), e.stack);
 			}
 		}
 	}
@@ -115,7 +114,7 @@ public class PageBuilder {
 
 		int tocEntriesCount = pages.size();
 		while (tocEntriesCount > 0) {
-			ItemStackTocPage page = new ItemStackTocPage(book.parent, rows, columns, scale);
+			ItemStackTocPage page = new ItemStackTocPage(rows, columns, scale);
 			tocEntriesCount -= page.getCapacity();
 			tocPages.add(page);
 			book.addPage(page);
@@ -129,7 +128,7 @@ public class PageBuilder {
 				addToToc(book, e.stack, target);
 			}
 
-			book.addPage(e.getPage(book.parent));
+			book.addPage(e.getPage());
 		}
 	}
 
@@ -165,7 +164,7 @@ public class PageBuilder {
 
 	public void includeModId(String modid) {
 		if (modIds == null) modIds = Sets.newHashSet();
-		modIds.add(modid);
+		modIds.add(modid.toLowerCase(Locale.ENGLISH));
 	}
 
 	public void addItemPages(StackProvider<Item> provider) {

@@ -2,6 +2,8 @@ package openmods.gui;
 
 import net.minecraft.util.ResourceLocation;
 
+import com.google.common.base.Preconditions;
+
 public class Icon {
 
 	public final ResourceLocation texture;
@@ -15,6 +17,7 @@ public class Icon {
 	public final int height;
 
 	public Icon(ResourceLocation texture, float minU, float maxU, float minV, float maxV, int width, int height) {
+		Preconditions.checkNotNull(texture);
 		this.texture = texture;
 
 		this.minU = minU;

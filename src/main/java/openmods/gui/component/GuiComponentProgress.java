@@ -2,15 +2,14 @@ package openmods.gui.component;
 
 import net.minecraft.client.renderer.GlStateManager;
 import openmods.api.IValueReceiver;
-import openmods.gui.IComponentParent;
 
 public class GuiComponentProgress extends BaseComponent {
 
 	private int progress;
 	private float scale;
 
-	public GuiComponentProgress(IComponentParent parent, int x, int y, int maxProgress) {
-		super(parent, x, y);
+	public GuiComponentProgress(int x, int y, int maxProgress) {
+		super(x, y);
 		setMaxProgress(maxProgress);
 	}
 
