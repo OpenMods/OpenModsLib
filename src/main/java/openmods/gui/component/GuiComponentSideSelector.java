@@ -122,7 +122,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		GL11.glBegin(GL11.GL_QUADS);
 		for (Pair<Side, Integer> p : selections) {
 			final Integer color = p.getRight();
-			GlStateManager.color((color >> 16) / 255.0F, (color >> 8 & 255) / 255.0F, (color & 255) / 255.0F, 0.25f);
+			GlStateManager.color(((color >> 16) & 0xFF) / 255.0F, ((color >> 8) & 0xFF) / 255.0F, (color & 0xFF) / 255.0F, 0.25f);
 
 			switch (p.getLeft()) {
 				case XPos:

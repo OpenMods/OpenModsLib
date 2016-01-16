@@ -73,7 +73,7 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		GL11.glColor4f(1, 1, 1, 1);
+		GlStateManager.color(1, 1, 1, 1);
 
 		int renderX = offsetX + x;
 		int renderY = offsetY + y;
@@ -84,21 +84,21 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 
 		GlStateManager.enableBlend();
 		GlStateManager.disableTexture2D();
-		GL11.glDisable(GL11.GL_ALPHA_TEST);
+		GlStateManager.disableAlpha();
 		GlStateManager.alphaFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);
 		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glColor4f(0, 0, 0, 1.0f);
+		GlStateManager.color(0, 0, 0, 1.0f);
 		GL11.glVertex3d(renderX, renderY + getColorsHeight(), 0.0);
 		GL11.glVertex3d(renderX + getWidth(), renderY + getColorsHeight(), 0.0);
-		GL11.glColor4f(0, 0, 0, 0f);
+		GlStateManager.color(0, 0, 0, 0f);
 		GL11.glVertex3d(renderX + getWidth(), renderY, 0.0D);
 		GL11.glVertex3d(renderX, renderY, 0.0);
 		GL11.glEnd();
 		GlStateManager.shadeModel(GL11.GL_FLAT);
 		GlStateManager.disableBlend();
 		GlStateManager.enableTexture2D();
-		GL11.glEnable(GL11.GL_ALPHA_TEST);
+		GlStateManager.enableAlpha();
 		drawRect(renderX + pointX - 1,
 				renderY + pointY - 1,
 				renderX + pointX + 1,

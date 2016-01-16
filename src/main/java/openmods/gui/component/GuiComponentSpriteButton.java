@@ -1,10 +1,10 @@
 package openmods.gui.component;
 
+import net.minecraft.client.renderer.GlStateManager;
 import openmods.gui.IComponentParent;
 import openmods.gui.Icon;
 
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 
 public class GuiComponentSpriteButton extends GuiComponentSprite {
 
@@ -19,7 +19,7 @@ public class GuiComponentSpriteButton extends GuiComponentSprite {
 	protected void doRender(int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (icon == null) { return; }
 
-		GL11.glColor3f(r, g, b);
+		GlStateManager.color(r, g, b);
 		boolean mouseOver = isMouseOver(mouseX, mouseY);
 		boolean pressed = mouseOver && Mouse.isButtonDown(0);
 		int offset = pressed? 1 : 0;

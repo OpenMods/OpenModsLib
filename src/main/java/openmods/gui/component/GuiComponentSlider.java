@@ -1,6 +1,7 @@
 package openmods.gui.component;
 
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.MathHelper;
 import openmods.api.IValueReceiver;
 import openmods.gui.IComponentParent;
@@ -39,7 +40,7 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		GL11.glColor4f(1, 1, 1, 1);
+		GlStateManager.color(1, 1, 1, 1);
 		int left = offsetX + x;
 		int top = offsetY + y;
 		int barStartX = left + 1;

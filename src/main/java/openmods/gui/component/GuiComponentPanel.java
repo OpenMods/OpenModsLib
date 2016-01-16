@@ -3,13 +3,12 @@ package openmods.gui.component;
 import java.util.Map;
 
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import openmods.gui.IComponentParent;
 import openmods.gui.misc.BoxRenderer;
 import openmods.gui.misc.ISlotBackgroundRenderer;
-
-import org.lwjgl.opengl.GL11;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
@@ -41,9 +40,9 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 		return new ISlotBackgroundRenderer() {
 			@Override
 			public void render(Gui gui, Slot slot) {
-				GL11.glColor3ub((byte)(color >> 16), (byte)(color >> 8), (byte)(color >> 0));
+				GlStateManager.color(((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, ((color >> 0) & 0xFF) / 255.0f);
 				gui.drawTexturedModalRect(slot.xDisplayPosition - 1, slot.yDisplayPosition - 1, 0, 20, 18, 18);
-				GL11.glColor3f(1, 1, 1);
+				GlStateManager.color(1, 1, 1);
 			}
 		};
 	}
@@ -63,14 +62,14 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 
 	@Override
 	protected void renderComponentBackground(int x, int y, int mouseX, int mouseY) {
-		GL11.glColor3f(1, 1, 1);
+		GlStateManager.color(1, 1, 1);
 		bindComponentsSheet();
 		BOX_RENDERER.render(this, this.x + x, this.y + y, width, height, 0xFFFFFFFF);
 	}
 
 	@Override
 	protected void renderComponentForeground(int x, int y, int mouseX, int mouseY) {
-		GL11.glColor3f(1, 1, 1);
+		GlStateManager.color(1, 1, 1);
 		bindComponentsSheet();
 
 		if (container != null) {

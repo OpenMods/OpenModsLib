@@ -1,6 +1,7 @@
 package openmods.gui.misc;
 
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.GlStateManager;
 
 import org.lwjgl.opengl.GL11;
 
@@ -97,9 +98,9 @@ public class BoxRenderer {
 	}
 
 	private static void setColor(int color) {
-		byte r = (byte)(color >> 16);
-		byte g = (byte)(color >> 8);
-		byte b = (byte)(color);
-		GL11.glColor3ub(r, g, b);
+		float r = ((color >> 16) & 0xFF) / 255.0f;
+		float g = ((color >> 8) & 0xFF) / 255.0f;
+		float b = ((color >> 0) & 0xFF) / 255.0f;
+		GlStateManager.color(r, g, b);
 	}
 }

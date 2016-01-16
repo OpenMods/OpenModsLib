@@ -1,9 +1,8 @@
 package openmods.gui.component;
 
+import net.minecraft.client.renderer.GlStateManager;
 import openmods.api.IValueReceiver;
 import openmods.gui.IComponentParent;
-
-import org.lwjgl.opengl.GL11;
 
 public class GuiComponentProgress extends BaseComponent {
 
@@ -18,7 +17,7 @@ public class GuiComponentProgress extends BaseComponent {
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		bindComponentsSheet();
-		GL11.glColor3f(1, 1, 1);
+		GlStateManager.color(1, 1, 1);
 		drawTexturedModalRect(offsetX + x, offsetY + y, 0, 38, getWidth(), getHeight());
 		int pxProgress = Math.round(progress * scale);
 		drawTexturedModalRect(offsetX + x, offsetY + y, 0, 50, pxProgress, getHeight());
