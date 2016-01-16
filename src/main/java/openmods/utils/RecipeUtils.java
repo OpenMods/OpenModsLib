@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.*;
 import net.minecraftforge.oredict.OreDictionary;
@@ -13,6 +14,7 @@ import net.minecraftforge.oredict.ShapelessOreRecipe;
 import openmods.reflection.FieldAccess;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
 public class RecipeUtils {
 
@@ -137,9 +139,21 @@ public class RecipeUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void add(InputBuilder builder, int slot, Object value) {
+	private static void addOreRecipeEntry(InputBuilder builder, int slot, Object value) {
 		if (value instanceof ItemStack) builder.add(slot, (ItemStack)value);
-		else if (value instanceof Collection) builder.add(slot, (Collection<ItemStack>)value);
+		else if (value instanceof Collection) {
+			List<ItemStack> variants = Lists.newArrayList();
+			for (ItemStack stack : (Collection<ItemStack>)value) {
+				if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+					final Item item = stack.getItem();
+					item.getSubItems(item, null, variants);
+				} else {
+					variants.add(stack);
+				}
+			}
+
+			builder.add(slot, variants);
+		}
 	}
 
 	public static ItemStack[][] getFullRecipeInput(IRecipe recipe) {
@@ -158,7 +172,7 @@ public class RecipeUtils {
 
 		for (int i = 0; i < size; i++) {
 			final Object input = inputs.get(i);
-			add(builder, i, input);
+			addOreRecipeEntry(builder, i, input);
 		}
 
 		return builder.build();
@@ -175,7 +189,7 @@ public class RecipeUtils {
 		for (int row = 0; row < height; row++) {
 			for (int column = 0; column < width; column++) {
 				final int outputIndex = row * 3 + column;
-				add(builder, outputIndex, input[inputIndex]);
+				addOreRecipeEntry(builder, outputIndex, input[inputIndex]);
 				inputIndex++;
 
 			}
