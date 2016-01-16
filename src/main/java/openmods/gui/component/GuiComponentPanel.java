@@ -9,6 +9,7 @@ import net.minecraft.inventory.Slot;
 import openmods.gui.IComponentParent;
 import openmods.gui.misc.BoxRenderer;
 import openmods.gui.misc.ISlotBackgroundRenderer;
+import openmods.utils.render.RenderUtils;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
@@ -40,7 +41,7 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 		return new ISlotBackgroundRenderer() {
 			@Override
 			public void render(Gui gui, Slot slot) {
-				GlStateManager.color(((color >> 16) & 0xFF) / 255.0f, ((color >> 8) & 0xFF) / 255.0f, ((color >> 0) & 0xFF) / 255.0f);
+				RenderUtils.setColor(color);
 				gui.drawTexturedModalRect(slot.xDisplayPosition - 1, slot.yDisplayPosition - 1, 0, 20, 18, 18);
 				GlStateManager.color(1, 1, 1);
 			}

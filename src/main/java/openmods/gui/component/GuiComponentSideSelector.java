@@ -23,6 +23,7 @@ import openmods.gui.misc.Trackball.TrackballWrapper;
 import openmods.utils.FakeBlockAccess;
 import openmods.utils.MathUtils;
 import openmods.utils.bitmap.IReadableBitMap;
+import openmods.utils.render.RenderUtils;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.input.Mouse;
@@ -122,7 +123,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		GL11.glBegin(GL11.GL_QUADS);
 		for (Pair<Side, Integer> p : selections) {
 			final Integer color = p.getRight();
-			GlStateManager.color(((color >> 16) & 0xFF) / 255.0F, ((color >> 8) & 0xFF) / 255.0F, (color & 0xFF) / 255.0F, 0.25f);
+			RenderUtils.setColor(color);
 
 			switch (p.getLeft()) {
 				case XPos:

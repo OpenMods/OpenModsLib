@@ -1,7 +1,7 @@
 package openmods.gui.misc;
 
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.GlStateManager;
+import openmods.utils.render.RenderUtils;
 
 import org.lwjgl.opengl.GL11;
 
@@ -80,7 +80,7 @@ public class BoxRenderer {
 	}
 
 	public void render(Gui gui, int x, int y, int width, int height, int color) {
-		setColor(color);
+		RenderUtils.setColor(color);
 
 		GL11.glPushMatrix();
 		GL11.glTranslatef(x, y, 0);
@@ -97,10 +97,4 @@ public class BoxRenderer {
 		GL11.glPopMatrix();
 	}
 
-	private static void setColor(int color) {
-		float r = ((color >> 16) & 0xFF) / 255.0f;
-		float g = ((color >> 8) & 0xFF) / 255.0f;
-		float b = ((color >> 0) & 0xFF) / 255.0f;
-		GlStateManager.color(r, g, b);
-	}
 }

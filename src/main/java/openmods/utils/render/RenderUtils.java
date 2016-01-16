@@ -120,6 +120,22 @@ public class RenderUtils {
 		tes.draw();
 	}
 
+	public static void setColor(int rgb) {
+		final float r = (float)((rgb >> 16) & 0xFF) / 255;
+		final float g = (float)((rgb >> 8) & 0xFF) / 255;
+		final float b = (float)((rgb >> 0) & 0xFF) / 255;
+
+		GlStateManager.color(r, g, b);
+	}
+
+	public static void setColor(int rgb, float alpha) {
+		final float r = (float)((rgb >> 16) & 0xFF) / 255;
+		final float g = (float)((rgb >> 8) & 0xFF) / 255;
+		final float b = (float)((rgb >> 0) & 0xFF) / 255;
+
+		GlStateManager.color(r, g, b, alpha);
+	}
+
 	public static void disableLightmap() {
 		GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
 		GlStateManager.disableTexture2D();
