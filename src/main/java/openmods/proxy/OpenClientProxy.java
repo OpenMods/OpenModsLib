@@ -28,6 +28,7 @@ import openmods.calc.command.*;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
+import openmods.renderer.CustomModelLoader;
 import openmods.source.CommandSource;
 import openmods.utils.render.RenderUtils;
 
@@ -94,12 +95,13 @@ public final class OpenClientProxy implements IOpenModsProxy {
 			ClientCommandHandler.instance.registerCommand(new CommandCalcEvaluate(state));
 			ClientCommandHandler.instance.registerCommand(new CommandCalcFunction(state));
 			ClientCommandHandler.instance.registerCommand(new CommandCalcLet(state));
-
 		}
 
 		RenderUtils.registerFogUpdater();
 
 		MinecraftForge.EVENT_BUS.register(new BlockSelectionHandler());
+
+		MinecraftForge.EVENT_BUS.register(CustomModelLoader.instance);
 	}
 
 	@Override

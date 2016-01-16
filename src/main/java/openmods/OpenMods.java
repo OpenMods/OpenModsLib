@@ -25,7 +25,6 @@ import openmods.network.rpc.targets.EntityRpcTarget;
 import openmods.network.rpc.targets.SyncRpcTarget;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.proxy.IOpenModsProxy;
-import openmods.renderer.CustomModelLoader;
 import openmods.source.ClassSourceCollector;
 import openmods.source.CommandSource;
 import openmods.sync.SyncChannelHolder;
@@ -83,8 +82,6 @@ public class OpenMods {
 		MinecraftForge.EVENT_BUS.register(DelayedActionTickHandler.INSTANCE);
 
 		MinecraftForge.EVENT_BUS.register(ConfigStorage.instance);
-
-		MinecraftForge.EVENT_BUS.register(CustomModelLoader.instance);
 
 		collector = new ClassSourceCollector(evt.getAsmData());
 
