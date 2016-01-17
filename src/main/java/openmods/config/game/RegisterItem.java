@@ -19,4 +19,6 @@ public @interface RegisterItem {
 	public boolean registerDefaultModel() default true;
 
 	public boolean addToModCreativeTab() default true;
+
+	public Class<? extends ICustomItemModelProvider> customItemModels() default ICustomItemModelProvider.class;
 }

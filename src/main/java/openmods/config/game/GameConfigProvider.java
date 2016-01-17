@@ -23,6 +23,8 @@ import openmods.config.BlockInstances;
 import openmods.config.InstanceContainer;
 import openmods.config.ItemInstances;
 import openmods.config.game.RegisterBlock.RegisterTileEntity;
+import openmods.utils.CachedFactory;
+import openmods.utils.SneakyThrower;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -53,6 +55,18 @@ public class GameConfigProvider {
 		@Override
 		public Set<String> getFeaturesInCategory(String category) {
 			return ImmutableSet.of();
+		}
+	};
+
+	private static final CachedFactory<Class<? extends ICustomItemModelProvider>, ICustomItemModelProvider> customItemModelProviders = new CachedFactory<Class<? extends ICustomItemModelProvider>, ICustomItemModelProvider>() {
+
+		@Override
+		protected ICustomItemModelProvider create(Class<? extends ICustomItemModelProvider> key) {
+			try {
+				return key.newInstance();
+			} catch (Exception e) {
+				throw SneakyThrower.sneakyThrow(e);
+			}
 		}
 	};
 
@@ -227,9 +241,14 @@ public class GameConfigProvider {
 					}
 				});
 
+				final ResourceLocation itemLocation = itemModelDecorator.build(name);
+
 				if (annotation.registerDefaultModel()) {
-					final ResourceLocation id = itemModelDecorator.build(name);
-					itemModelIds.put(item, id);
+					itemModelIds.put(item, itemLocation);
+				}
+
+				if (annotation.customItemModels() != ICustomItemModelProvider.class) {
+					registerCustomItemModels(item, itemLocation, annotation.customItemModels());
 				}
 
 				if (annotation.addToModCreativeTab()) {
@@ -246,6 +265,17 @@ public class GameConfigProvider {
 			@Override
 			public boolean isEnabled(String name) {
 				return features.isItemEnabled(name);
+			}
+		});
+	}
+
+	private static void registerCustomItemModels(final Item item, ResourceLocation itemLocation, Class<? extends ICustomItemModelProvider> providerCls) {
+
+		final ICustomItemModelProvider provider = customItemModelProviders.getOrCreate(providerCls);
+		provider.addCustomItemModels(item, itemLocation, new ICustomItemModelProvider.IModelRegistrationSink() {
+			@Override
+			public void register(int meta, ResourceLocation modelLocation) {
+				OpenMods.proxy.registerCustomItemModel(item, meta, modelLocation);
 			}
 		});
 	}
@@ -296,9 +326,16 @@ public class GameConfigProvider {
 					block.setCreativeTab(creativeTab);
 				}
 
+				final Item item = Item.getItemFromBlock(block);
+
+				final ResourceLocation itemLocation = itemModelDecorator.build(name);
+
+				if (annotation.customItemModels() != ICustomItemModelProvider.class) {
+					registerCustomItemModels(item, itemLocation, annotation.customItemModels());
+				}
+
 				if (annotation.registerDefaultItemModel()) {
-					final ResourceLocation id = itemModelDecorator.build(name);
-					itemModelIds.put(Item.getItemFromBlock(block), id);
+					itemModelIds.put(item, itemLocation);
 				}
 			}
 

@@ -35,4 +35,6 @@ public @interface RegisterBlock {
 	public boolean registerDefaultItemModel() default true;
 
 	public boolean addToModCreativeTab() default true;
+
+	public Class<? extends ICustomItemModelProvider> customItemModels() default ICustomItemModelProvider.class;
 }
