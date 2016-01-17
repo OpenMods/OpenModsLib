@@ -7,6 +7,7 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import openmods.OpenMods;
+import openmods.utils.NetUtils;
 
 @Sharable
 public class InboundSyncHandler extends SimpleChannelInboundHandler<FMLProxyPacket> {
@@ -20,16 +21,21 @@ public class InboundSyncHandler extends SimpleChannelInboundHandler<FMLProxyPack
 	}
 
 	@Override
-	protected void channelRead0(ChannelHandlerContext ctx, FMLProxyPacket msg) throws Exception {
-		World world = OpenMods.proxy.getClientWorld();
+	protected void channelRead0(ChannelHandlerContext ctx, final FMLProxyPacket msg) throws Exception {
+		NetUtils.executeSynchronized(ctx, new Runnable() {
+			@Override
+			public void run() {
+				World world = OpenMods.proxy.getClientWorld();
 
-		PacketBuffer payload = new PacketBuffer(msg.payload());
+				PacketBuffer payload = new PacketBuffer(msg.payload());
 
-		ISyncMapProvider provider = SyncMap.findSyncMap(world, payload);
-		try {
-			if (provider != null) provider.getSyncMap().readFromStream(payload);
-		} catch (Throwable e) {
-			throw new SyncException(e, provider);
-		}
+				ISyncMapProvider provider = SyncMap.findSyncMap(world, payload);
+				try {
+					if (provider != null) provider.getSyncMap().readFromStream(payload);
+				} catch (Throwable e) {
+					throw new SyncException(e, provider);
+				}
+			}
+		});
 	}
 }

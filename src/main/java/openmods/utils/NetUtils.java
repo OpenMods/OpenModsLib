@@ -2,6 +2,7 @@ package openmods.utils;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
 
 import java.util.Set;
 
@@ -9,7 +10,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.management.PlayerManager;
+import net.minecraft.util.IThreadListener;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import openmods.Log;
 
@@ -56,5 +60,14 @@ public class NetUtils {
 			}
 		}
 	};
+
+	public static void executeSynchronized(ChannelHandlerContext ctx, Runnable runnable) {
+		final IThreadListener thread = FMLCommonHandler.instance().getWorldThread(ctx.channel().attr(NetworkRegistry.NET_HANDLER).get());
+		if (!thread.isCallingFromMinecraftThread()) {
+			thread.addScheduledTask(runnable);
+		} else {
+			runnable.run();
+		}
+	}
 
 }

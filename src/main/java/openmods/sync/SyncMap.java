@@ -89,7 +89,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 
 		};
 
-		public abstract ISyncMapProvider findHandler(World world, PacketBuffer input) throws IOException;
+		public abstract ISyncMapProvider findHandler(World world, PacketBuffer input);
 
 		public abstract void writeHandlerInfo(ISyncMapProvider handler, PacketBuffer output) throws IOException;
 
@@ -271,7 +271,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 		return output;
 	}
 
-	public static ISyncMapProvider findSyncMap(World world, PacketBuffer input) throws IOException {
+	public static ISyncMapProvider findSyncMap(World world, PacketBuffer input) {
 		final int handlerTypeId = input.readVarIntFromBuffer();
 
 		// If this happens, abort! Serious bug!
