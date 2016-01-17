@@ -469,7 +469,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	@Override
 	public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
 		final Orientation orientation = calculateOrientationAfterPlace(pos, facing, placer);
-		return getDefaultState().withProperty(propertyOrientation, orientation);
+		return getStateFromMeta(meta).withProperty(propertyOrientation, orientation);
 	}
 
 	@Override
