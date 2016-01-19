@@ -177,7 +177,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public Orientation getOrientation(IBlockState state) {
-		return state.getValue(propertyOrientation);
+		// TODO fix semi-hack
+		return (state.getBlock() instanceof OpenBlock)? state.getValue(propertyOrientation) : Orientation.XP_YP;
 	}
 
 	public void setBlockBounds(AxisAlignedBB aabb) {
@@ -429,18 +430,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		this.maxZ = maxZ;
 	}
 
-	@Override
-	public AxisAlignedBB getSelectedBoundingBox(World world, BlockPos blockPos) {
-		setBlockBoundsBasedOnState(world, blockPos);
-		return super.getSelectedBoundingBox(world, blockPos);
-	}
-
-	@Override
-	public AxisAlignedBB getCollisionBoundingBox(World world, BlockPos blockPos, IBlockState state) {
-		setBlockBoundsBasedOnState(world, blockPos);
-		return super.getCollisionBoundingBox(world, blockPos, state);
-	}
-
 	@SuppressWarnings("unchecked")
 	public static <U> U getTileEntity(IBlockAccess world, BlockPos blockPos, Class<? extends U> cls) {
 		final TileEntity te = world.getTileEntity(blockPos);
@@ -483,7 +472,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	protected boolean isOnTopOfSolidBlock(World world, BlockPos blockPos, EnumFacing side) {
-		return side == EnumFacing.DOWN
+		return side == EnumFacing.UP
 				&& isNeighborBlockSolid(world, blockPos, EnumFacing.DOWN);
 	}
 
