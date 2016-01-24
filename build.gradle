@@ -76,8 +76,7 @@ ext.env = System.getenv()
 //================================================
 // Jar data
 
-
-// Grab system env
+mod_version += "." + (env.BUILD_NUMBER ?: 'dev')
 version = mc_ver + "-" + mod_version
 
 ext.in_jenkins = false
@@ -93,9 +92,6 @@ ext.jenkinsManifest = manifest {
 
 def branch = in_jenkins ? env.GIT_BRANCH.minus("origin/") : gitBranch()
 def hash = gitHash()
-
-// Version tag for jar file name
-version += "." + (env.BUILD_NUMBER ?: 'dev')
 
 // Get Git metadata (if in Jenkins)
 ext.gitManifest = manifest {
