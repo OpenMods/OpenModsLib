@@ -94,19 +94,8 @@ ext.jenkinsManifest = manifest {
 def branch = in_jenkins ? env.GIT_BRANCH.minus("origin/") : gitBranch()
 def hash = gitHash()
 
-// If not on master, add branch to jar name
-if (branch != null && !branch.equals("master")) {
-    version += "-" + branch
-} else {
-    //version += "-" + hash
-}
-
 // Version tag for jar file name
-if (env.BUILD_NUMBER != null) {
-    version += "-snapshot-" + env.BUILD_NUMBER
-}
-
-
+version += "." + (env.BUILD_NUMBER ?: 'dev')
 
 // Get Git metadata (if in Jenkins)
 ext.gitManifest = manifest {
@@ -159,27 +148,9 @@ jar {
     }
 }
 
-// Dev jar
-task deobfJar(type: Jar) {
-    from sourceSets.main.output
-    classifier = 'deobf'
-    manifest {
-        from jenkinsManifest, gitManifest, fmlManifest
-    }
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'src'
-    from sourceSets.main.java
-}
-
 javadoc {
     if (JavaVersion.current().isJava8Compatible()) {
         options.addBooleanOption('Xdoclint:accessibility,html,syntax', true)
     }
 }
 
-artifacts {
-    archives deobfJar
-    archives sourcesJar
-}
