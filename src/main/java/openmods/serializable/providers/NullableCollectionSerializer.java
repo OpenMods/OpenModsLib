@@ -5,7 +5,11 @@ import java.lang.reflect.Type;
 
 import net.minecraft.network.PacketBuffer;
 import openmods.serializable.SerializerRegistry;
-import openmods.utils.io.*;
+import openmods.utils.bitstream.InputBitStream;
+import openmods.utils.bitstream.OutputBitStream;
+import openmods.utils.io.IStreamSerializer;
+import openmods.utils.io.StreamAdapters;
+import openmods.utils.io.StreamUtils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
@@ -56,7 +60,7 @@ public abstract class NullableCollectionSerializer<T> implements IStreamSerializ
 		if (length > 0) {
 			final int nullBitsSize = StreamUtils.bitsToBytes(length);
 			final byte[] nullBits = StreamUtils.readBytes(input, nullBitsSize);
-			final InputBitStream nullBitStream = InputBitStream.create(nullBits);
+			final InputBitStream nullBitStream = new InputBitStream(StreamAdapters.createSource(nullBits));
 
 			for (int i = 0; i < length; i++) {
 				if (nullBitStream.readBit()) {
@@ -75,7 +79,7 @@ public abstract class NullableCollectionSerializer<T> implements IStreamSerializ
 		output.writeVarIntToBuffer(length);
 
 		if (length > 0) {
-			final OutputBitStream nullBitsStream = OutputBitStream.create(output);
+			final OutputBitStream nullBitsStream = new OutputBitStream(StreamAdapters.createSink(output));
 
 			for (int i = 0; i < length; i++) {
 				Object value = getElement(o, i);

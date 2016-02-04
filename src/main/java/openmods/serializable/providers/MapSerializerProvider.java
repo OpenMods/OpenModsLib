@@ -9,7 +9,11 @@ import net.minecraft.network.PacketBuffer;
 import openmods.reflection.TypeUtils;
 import openmods.serializable.IGenericSerializerProvider;
 import openmods.serializable.SerializerRegistry;
-import openmods.utils.io.*;
+import openmods.utils.bitstream.InputBitStream;
+import openmods.utils.bitstream.OutputBitStream;
+import openmods.utils.io.IStreamSerializer;
+import openmods.utils.io.StreamAdapters;
+import openmods.utils.io.StreamUtils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -40,7 +44,7 @@ public class MapSerializerProvider implements IGenericSerializerProvider {
 					if (length > 0) {
 						final int nullBitsSize = StreamUtils.bitsToBytes(length * 2);
 						final byte[] nullBits = StreamUtils.readBytes(input, nullBitsSize);
-						final InputBitStream nullBitStream = InputBitStream.create(nullBits);
+						final InputBitStream nullBitStream = new InputBitStream(StreamAdapters.createSource(nullBits));
 
 						for (int i = 0; i < length; i++) {
 							Object key = null;
@@ -62,7 +66,7 @@ public class MapSerializerProvider implements IGenericSerializerProvider {
 					output.writeVarIntToBuffer(length);
 
 					if (length > 0) {
-						final OutputBitStream nullBitsStream = OutputBitStream.create(output);
+						final OutputBitStream nullBitsStream = new OutputBitStream(StreamAdapters.createSink(output));
 
 						List<Map.Entry<Object, Object>> entries = ImmutableList.copyOf(o.entrySet());
 

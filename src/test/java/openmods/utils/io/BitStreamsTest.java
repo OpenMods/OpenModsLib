@@ -4,6 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import openmods.utils.bitstream.InputBitStream;
+import openmods.utils.bitstream.OutputBitStream;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,12 +37,16 @@ public class BitStreamsTest {
 
 	public static InputBitStream createInputStream(byte[] bytes) {
 		ByteArrayInputStream input = new ByteArrayInputStream(bytes);
-		return InputBitStream.create(input);
+		return new InputBitStream(StreamAdapters.createSource(input));
+	}
+
+	private static OutputBitStream createOutputStream(ByteArrayOutputStream output) {
+		return new OutputBitStream(StreamAdapters.createSink(output));
 	}
 
 	public static void checkInputOutput(int size, boolean[] bits) throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		OutputBitStream outputStream = OutputBitStream.create(output);
+		OutputBitStream outputStream = createOutputStream(output);
 
 		for (boolean bit : bits)
 			outputStream.writeBit(bit);
@@ -49,7 +56,7 @@ public class BitStreamsTest {
 		final byte[] bytes = output.toByteArray();
 		Assert.assertEquals(size, bytes.length);
 		ByteArrayInputStream input = new ByteArrayInputStream(bytes);
-		InputBitStream inputStream = InputBitStream.create(input);
+		InputBitStream inputStream = new InputBitStream(StreamAdapters.createSource(input));
 
 		checkInputStream(inputStream, bits);
 	}
@@ -131,7 +138,7 @@ public class BitStreamsTest {
 	@Test
 	public void testOutputEmptyFlush() throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		OutputBitStream stream = OutputBitStream.create(output);
+		OutputBitStream stream = createOutputStream(output);
 
 		Assert.assertEquals(0, stream.bytesWritten());
 		Assert.assertArrayEquals(new byte[0], output.toByteArray());
@@ -145,7 +152,7 @@ public class BitStreamsTest {
 	@Test
 	public void testOutputBasicOperations() throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		OutputBitStream stream = OutputBitStream.create(output);
+		OutputBitStream stream = createOutputStream(output);
 
 		for (int i = 0; i < 8; i++) {
 
@@ -180,7 +187,7 @@ public class BitStreamsTest {
 	@Test
 	public void testOutputSingleBitFlush() throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		OutputBitStream stream = OutputBitStream.create(output);
+		OutputBitStream stream = createOutputStream(output);
 
 		Assert.assertEquals(0, stream.bytesWritten());
 		Assert.assertEquals(0, output.toByteArray().length);
@@ -198,7 +205,7 @@ public class BitStreamsTest {
 	@Test
 	public void testOutputTwoBitFlush() throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		OutputBitStream stream = OutputBitStream.create(output);
+		OutputBitStream stream = createOutputStream(output);
 
 		Assert.assertEquals(0, stream.bytesWritten());
 		Assert.assertEquals(0, output.toByteArray().length);
@@ -217,7 +224,7 @@ public class BitStreamsTest {
 	@Test
 	public void testOutputFourAlternatingBits() throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		OutputBitStream stream = OutputBitStream.create(output);
+		OutputBitStream stream = createOutputStream(output);
 
 		writeBits(stream, true, false, true, false);
 

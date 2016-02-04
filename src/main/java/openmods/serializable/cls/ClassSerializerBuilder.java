@@ -12,7 +12,11 @@ import openmods.reflection.FieldAccess;
 import openmods.reflection.TypeUtils;
 import openmods.serializable.IObjectSerializer;
 import openmods.serializable.SerializerRegistry;
-import openmods.utils.io.*;
+import openmods.utils.bitstream.InputBitStream;
+import openmods.utils.bitstream.OutputBitStream;
+import openmods.utils.io.IStreamSerializer;
+import openmods.utils.io.StreamAdapters;
+import openmods.utils.io.StreamUtils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -77,7 +81,7 @@ public class ClassSerializerBuilder<T> {
 		@Override
 		public void readFromStream(T object, PacketBuffer input) throws IOException {
 			final byte[] nullBits = StreamUtils.readBytes(input, nullBytesCount);
-			final InputBitStream nullBitStream = InputBitStream.create(nullBits);
+			final InputBitStream nullBitStream = new InputBitStream(StreamAdapters.createSource(nullBits));
 
 			for (SerializableField field : fields) {
 				final boolean isNull = field.isNullable && nullBitStream.readBit();
@@ -88,7 +92,7 @@ public class ClassSerializerBuilder<T> {
 
 		@Override
 		public void writeToStream(T object, PacketBuffer output) throws IOException {
-			final OutputBitStream nullBitsStream = OutputBitStream.create(output);
+			final OutputBitStream nullBitsStream = new OutputBitStream(StreamAdapters.createSink(output));
 
 			final PacketBuffer payload = new PacketBuffer(Unpooled.buffer());
 			for (SerializableField field : fields) {
