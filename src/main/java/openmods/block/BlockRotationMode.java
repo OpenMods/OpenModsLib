@@ -88,9 +88,8 @@ public enum BlockRotationMode {
 		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			switch (axis) {
 				case UP:
-					return currentOrientation.rotateAround(HalfAxis.POS_Y);
 				case DOWN:
-					return currentOrientation.rotateAround(HalfAxis.NEG_Y);
+					return (currentOrientation == Orientation.ZN_YP)? Orientation.XP_YP : Orientation.ZN_YP;
 				case NORTH:
 				case SOUTH:
 				case EAST:
