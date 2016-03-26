@@ -37,6 +37,8 @@ public class BuildCraftPipes extends IntegrationModule {
 	private static class Live implements BuildCraftAccess {
 
 		@Override
+		// left for BC 6
+		@SuppressWarnings("deprecation")
 		public int tryAcceptIntoPipe(TileEntity possiblePipe, ItemStack nextStack, boolean doInsert, ForgeDirection direction) {
 			if (possiblePipe instanceof IPipeTile) return ((IPipeTile)possiblePipe).injectItem(nextStack, doInsert, direction.getOpposite());
 			return 0;
