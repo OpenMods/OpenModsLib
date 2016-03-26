@@ -31,20 +31,31 @@ buildscript {
 apply plugin: 'forge'
 apply plugin: 'java'
 
-repositories {
-    mavenCentral()
-    jcenter()
-    maven {
-        name 'Forge'
-        url 'http://files.minecraftforge.net/maven'
-    }
-    maven {
-        name 'MinecraftS3'
-        url 'http://s3.amazonaws.com/Minecraft.Download/libraries'
-    }
-    ivy {
-        name 'BuildCraft'
-        artifactPattern 'http://www.mod-buildcraft.com/releases/BuildCraft/[revision]/[module]-[revision]-[classifier].[ext]'
+// HACK: we want to add those repos to all including projects, but still be available to compile this project directly
+rootProject.allprojects {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            name 'Forge'
+            url 'http://files.minecraftforge.net/maven'
+        }
+        maven {
+            name 'MinecraftS3'
+            url 'http://s3.amazonaws.com/Minecraft.Download/libraries'
+        }
+        maven {
+            name "OpenMods"
+            url "http://repo.openmods.info/artifactory/openmods"
+        }
+        maven {
+            name "OpenMods Extras"
+            url 'http://repo.openmods.info/artifactory/thirdparty'
+        }
+        ivy {
+            name 'BuildCraft'
+            artifactPattern 'http://www.mod-buildcraft.com/releases/BuildCraft/[revision]/[module]-[revision]-[classifier].[ext]'
+        }
     }
 }
 
