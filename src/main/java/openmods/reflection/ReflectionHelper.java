@@ -209,7 +209,9 @@ public class ReflectionHelper {
 	public static Method getDeclaredMethod(Class<?> clazz, String name, Class<?>[] argsTypes) {
 		while (clazz != null) {
 			try {
-				return clazz.getDeclaredMethod(name, argsTypes);
+				final Method m = clazz.getDeclaredMethod(name, argsTypes);
+				ReflectionLog.logLoad(m);
+				return m;
 			} catch (NoSuchMethodException e) {} catch (Exception e) {
 				throw Throwables.propagate(e);
 			}
@@ -221,8 +223,10 @@ public class ReflectionHelper {
 	public static List<Method> getAllMethods(Class<?> clazz) {
 		List<Method> methods = Lists.newArrayList();
 		while (clazz != null) {
-			for (Method m : clazz.getDeclaredMethods())
+			for (Method m : clazz.getDeclaredMethods()) {
 				methods.add(m);
+				ReflectionLog.logLoad(m);
+			}
 			clazz = clazz.getSuperclass();
 		}
 		return methods;
@@ -234,8 +238,9 @@ public class ReflectionHelper {
 			Class<?> current = klazz;
 			while (current != null) {
 				try {
-					Field f = current.getDeclaredField(field);
+					final Field f = current.getDeclaredField(field);
 					f.setAccessible(true);
+					ReflectionLog.logLoad(f);
 					return f;
 				} catch (NoSuchFieldException e) {} catch (Exception e) {
 					throw Throwables.propagate(e);
@@ -250,7 +255,9 @@ public class ReflectionHelper {
 	public static Class<?> getClass(String className) {
 		if (Strings.isNullOrEmpty(className)) return null;
 		try {
-			return Class.forName(className);
+			final Class<?> cls = Class.forName(className);
+			ReflectionLog.logLoad(cls);
+			return cls;
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
@@ -260,7 +267,9 @@ public class ReflectionHelper {
 		for (String className : classNames) {
 			Preconditions.checkNotNull(className);
 			try {
-				return Class.forName(className);
+				final Class<?> cls = Class.forName(className);
+				ReflectionLog.logLoad(cls);
+				return cls;
 			} catch (ClassNotFoundException e) {
 				Log.log(Level.DEBUG, e, "Class %s not found", className);
 			} catch (Exception e) {

@@ -10,6 +10,11 @@ public class InstanceFieldAccess<T> {
 	public final Field field;
 
 	public InstanceFieldAccess(Object parent, Field field) {
+		this(parent, field, true);
+	}
+
+	private InstanceFieldAccess(Object parent, Field field, boolean log) {
+		if (log) ReflectionLog.logLoad(field);
 		this.target = parent;
 		this.field = field;
 		field.setAccessible(true);
@@ -34,7 +39,7 @@ public class InstanceFieldAccess<T> {
 
 	public static <T> InstanceFieldAccess<T> create(Class<?> cls, Object target, String... names) {
 		Field f = ReflectionHelper.getField(cls, names);
-		return new InstanceFieldAccess<T>(target, f);
+		return new InstanceFieldAccess<T>(target, f, false); // log done in ReflectionHelper
 	}
 
 	public static <T> InstanceFieldAccess<T> create(Class<?> cls, String... names) {

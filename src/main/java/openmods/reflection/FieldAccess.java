@@ -25,6 +25,11 @@ public class FieldAccess<T> {
 	public final Field field;
 
 	public FieldAccess(Field field) {
+		this(field, true);
+	}
+
+	private FieldAccess(Field field, boolean log) {
+		if (log) ReflectionLog.logLoad(field);
 		this.field = field;
 		field.setAccessible(true);
 	}
@@ -80,10 +85,10 @@ public class FieldAccess<T> {
 
 	public static <T> FieldAccess<T> create(Class<?> cls, String... names) {
 		Field f = ReflectionHelper.getField(cls, names);
-		return new FieldAccess<T>(f);
+		return new FieldAccess<T>(f, false); // log done in ReflectionHelper
 	}
 
 	public static <T> FieldAccess<T> create(Field f) {
-		return new FieldAccess<T>(f);
+		return new FieldAccess<T>(f, true);
 	}
 }
