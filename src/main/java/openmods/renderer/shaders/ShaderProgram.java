@@ -11,20 +11,37 @@ public class ShaderProgram {
 	private final int program;
 
 	private final List<Integer> shaders;
-	private final TObjectIntMap<String> uniforms = new TObjectIntHashMap<String>() {
+
+	private abstract static class ComputingObjectIntMap<T> extends TObjectIntHashMap<T> {
 		@Override
 		public int get(Object key) {
 			int index = index(key);
 			if (index < 0) {
-				final String uniform = (String)key;
-				final int result = ShaderHelper.methods().glGetUniformLocation(program, uniform);
-				put(uniform, result);
+				@SuppressWarnings("unchecked")
+				final T k = (T)key;
+				final int result = computeValue(k);
+				put(k, result);
 				return result;
 			} else {
 				return _values[index];
 			}
 		}
 
+		protected abstract int computeValue(T key);
+	}
+
+	private final TObjectIntMap<String> uniforms = new ComputingObjectIntMap<String>() {
+		@Override
+		protected int computeValue(String key) {
+			return ShaderHelper.methods().glGetUniformLocation(program, key);
+		}
+	};
+
+	private final TObjectIntMap<String> attributes = new ComputingObjectIntMap<String>() {
+		@Override
+		protected int computeValue(String key) {
+			return ShaderHelper.methods().glGetAttribLocation(program, key);
+		}
 	};
 
 	ShaderProgram(int program, List<Integer> shaders) {
@@ -52,6 +69,10 @@ public class ShaderProgram {
 		return uniforms.get(uniform);
 	}
 
+	private int getAttributeLocation(String attribute) {
+		return attributes.get(attribute);
+	}
+
 	public void uniform1i(String name, int val) {
 		final int location = getUniformLocation(name);
 		if (location >= 0) ShaderHelper.methods().glUniform1i(location, val);
@@ -72,7 +93,8 @@ public class ShaderProgram {
 	}
 
 	public void instanceAttributePointer(String attrib, int size, int type, boolean normalized, int stride, long offset) {
-		instanceAttributePointer(ShaderHelper.methods().glGetAttribLocation(program, attrib), size, type, normalized, stride, offset);
+		final int index = getAttributeLocation(attrib);
+		if (index >= 0) instanceAttributePointer(index, size, type, normalized, stride, offset);
 	}
 
 	public void instanceAttributePointer(int index, int size, int type, boolean normalized, int stride, long offset) {
@@ -81,7 +103,7 @@ public class ShaderProgram {
 	}
 
 	public void attributePointer(String attrib, int size, int type, boolean normalized, int stride, long offset) {
-		final int index = ShaderHelper.methods().glGetAttribLocation(program, attrib);
+		final int index = getAttributeLocation(attrib);
 		if (index >= 0) attributePointer(index, size, type, normalized, stride, offset);
 	}
 
