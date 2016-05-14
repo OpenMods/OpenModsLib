@@ -8,6 +8,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -40,7 +41,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 		// mimics ItemInworldObjManager.activateBlockOrUseItem
 		if (itemStack == null) return false;
 
-		PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(this, PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK, worldObj, pos, face);
+		PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(this, PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK, worldObj, pos, face, new Vec3(hitX, hitY, hitZ));
 		if (event.isCanceled()) return false;
 
 		final IBlockState iblockstate = worldObj.getBlockState(pos);
