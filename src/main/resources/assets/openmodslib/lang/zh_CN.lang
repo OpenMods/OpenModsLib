@@ -15,6 +15,23 @@ openmodslib.command.class_source=类 '%s' 来自于 '%s'
 openmodslib.command.api_class=API 信息: name='%s', ownerMod='%s', version='%s'
 openmodslib.command.class_provider=类来自于文件 %s (mods: %s)
 
+#openmodslib.command.calc_set=Value %s set to %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_no_type=Please provide new calculator type ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_no_name=Please provide calculator name ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_invalid_name=Invalid calculator name ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_invalid_type=Invalid calculator type. Allowed types: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_invalid_mode=Invalid calculator mode. Allowed modes: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_no_key=Please provide name of property ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_no_value=Please provide new value of property ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_invalid_key=Invalid property name ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_cant_set=Failed to set property ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_function_defined=Defined function %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_error=Failed to execute: '%s' ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_stack_underflow=Calculator stack underflow ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_after_push=Pushed calculator, stack size: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_after_pop=Popped calculator, stack size: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_stack_size=Stack size: %s ## NEEDS TRANSLATION ##
+
 openmodslib.color.black=黑色
 openmodslib.color.red=红色
 openmodslib.color.green=绿色
@@ -32,6 +49,8 @@ openmodslib.color.magenta=品红色
 openmodslib.color.orange=橙色
 openmodslib.color.white=白色
 
+#openmodslib.gui.watch_video=Watch video ## NEEDS TRANSLATION ##
+
 openmodslib.locale.book.scale.pageNumber=1.0
 openmodslib.locale.book.scale.sectionTitle=2.0
 openmodslib.locale.book.scale.pageTitle=1.0
@@ -39,3 +58,9 @@ openmodslib.locale.book.scale.pageContent=1.0
 
 openmodslib.locale.book.lineSpace.titledPage=0
 openmodslib.locale.book.lineSpace.recipePage=0
+
+#openmodslib.config.features=Enable/disable features ## NEEDS TRANSLATION ##
+#openmodslib.config.features.blocks=Enable/disable blocks ## NEEDS TRANSLATION ##
+#openmodslib.config.features.items=Enable/disable items ## NEEDS TRANSLATION ##
+#openmodslib.config.config=Mod specific configuration ## NEEDS TRANSLATION ##
+#openmodslib.config.update_warning=§c§lNote:§r to change configuration in runtime, use §l/om_config_s§r or §l/om_config_m§r commands ## NEEDS TRANSLATION ##

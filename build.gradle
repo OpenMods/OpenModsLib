@@ -17,36 +17,51 @@ buildscript {
             name = 'Forge'
             url = 'http://files.minecraftforge.net/maven'
         }
+        maven {
+              name 'OpenMods Third Party'
+              url 'http://repo.openmods.info/artifactory/simple/thirdparty'
+        }
     }
 
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+        classpath 'net.thesilkminer.gradle.translationchecker:TranslationChecker:1.1'
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'java'
 
-repositories {
-    mavenCentral()
-    jcenter()
-    maven {
-        name 'Forge'
-        url 'http://files.minecraftforge.net/maven'
-    }
-    maven {
-        name 'MinecraftS3'
-        url 'http://s3.amazonaws.com/Minecraft.Download/libraries'
-    }
-
-    ivy {
-        name "BuildCraft"
-        artifactPattern "http://www.mod-buildcraft.com/releases/BuildCraft/[revision]/[module]-[revision]-[classifier].[ext]"
+// HACK: we want to add those repos to all including projects, but still be available to compile this project directly
+rootProject.allprojects {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            name 'Forge'
+            url 'http://files.minecraftforge.net/maven'
+        }
+        maven {
+            name 'MinecraftS3'
+            url 'http://s3.amazonaws.com/Minecraft.Download/libraries'
+        }
+        maven {
+            name "OpenMods"
+            url "http://repo.openmods.info/artifactory/openmods"
+        }
+        maven {
+            name "OpenMods Extras"
+            url 'http://repo.openmods.info/artifactory/thirdparty'
+        }
+        ivy {
+            name 'BuildCraft'
+            artifactPattern 'http://www.mod-buildcraft.com/releases/BuildCraft/[revision]/[module]-[revision]-[classifier].[ext]'
+        }
     }
 }
 
 dependencies {
-    //compile name: "buildcraft", version: "7.0.9", classifier: "dev"
+    compile name: 'buildcraft', version: '7.2.6', classifier: 'api', ext: 'jar'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile "org.mockito:mockito-core:1.10.19"
@@ -150,3 +165,15 @@ javadoc {
     }
 }
 
+task updateTranslations(type: net.thesilkminer.gradle.plugin.translationchecker.tasks.TranslationCheckTask) {
+    modId = "openmodslib"
+}
+
+task checkTranslations(type: net.thesilkminer.gradle.plugin.translationchecker.tasks.TranslationCheckTask) {
+    modId = "openmodslib"
+    dryRun = true
+}
+
+task wrapper (type: Wrapper) {
+    gradleVersion = "2.12"
+}

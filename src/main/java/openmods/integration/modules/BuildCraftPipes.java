@@ -8,6 +8,7 @@ import openmods.integration.IntegrationModule;
 import openmods.inventory.legacy.CustomSinks;
 import openmods.inventory.legacy.CustomSinks.ICustomSink;
 import openmods.inventory.legacy.CustomSinks.ICustomSinkProvider;
+import buildcraft.api.transport.IInjectable;
 
 public class BuildCraftPipes extends IntegrationModule {
 
@@ -37,13 +38,13 @@ public class BuildCraftPipes extends IntegrationModule {
 
 		@Override
 		public int tryAcceptIntoPipe(TileEntity possiblePipe, ItemStack nextStack, boolean doInsert, EnumFacing direction) {
-			// if (possiblePipe instanceof IPipeTile) return ((IPipeTile)possiblePipe).injectItem(nextStack, doInsert, direction.getOpposite());
+			if (possiblePipe instanceof IInjectable) return ((IInjectable)possiblePipe).injectItem(nextStack, doInsert, direction.getOpposite(), null);
 			return 0;
 		}
 
 		@Override
 		public boolean isPipe(TileEntity tile) {
-			return false; // tile instanceof IPipeTile;
+			return tile instanceof IInjectable;
 		}
 	}
 

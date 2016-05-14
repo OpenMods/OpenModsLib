@@ -39,6 +39,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 
 	public boolean rightClick(ItemStack itemStack, BlockPos pos, EnumFacing face, float hitX, float hitY, float hitZ) {
 		// mimics ItemInworldObjManager.activateBlockOrUseItem
+
 		if (itemStack == null) return false;
 
 		PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(this, PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK, worldObj, pos, face, new Vec3(hitX, hitY, hitZ));
@@ -67,7 +68,6 @@ public class OpenModsFakePlayer extends FakePlayer {
 				Log.warn(t, "Invalid use of fake player with item %s @ (%s), aborting. Don't do it again", usedItem, pos);
 				return false;
 			}
-
 		}
 
 		return false;

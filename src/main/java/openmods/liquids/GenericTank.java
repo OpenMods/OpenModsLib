@@ -116,18 +116,25 @@ public class GenericTank extends FluidTank {
 		return 0;
 	}
 
-	public void distributeToSides(int amountPerTick, World world, BlockPos coord, Set<EnumFacing> sides) {
+	public void distributeToSides(int amountPerTick, World world, BlockPos coord, Set<EnumFacing> allowedSides) {
 		if (world == null) return;
 
 		if (getFluidAmount() <= 0) return;
 
 		if (surroundingTanks.isEmpty()) return;
 
+		final List<EnumFacing> sides = Lists.newArrayList(surroundingTanks);
+
+		if (allowedSides != null) {
+			sides.retainAll(allowedSides);
+			if (sides.isEmpty()) return;
+		}
+
 		FluidStack drainedFluid = drain(amountPerTick, false);
 
 		if (drainedFluid != null && drainedFluid.amount > 0) {
 			int startingAmount = drainedFluid.amount;
-			Collections.shuffle(surroundingTanks);
+			Collections.shuffle(sides);
 
 			for (EnumFacing side : surroundingTanks) {
 				if (drainedFluid.amount <= 0) break;
@@ -146,7 +153,7 @@ public class GenericTank extends FluidTank {
 		fillFromSides(maxAmount, world, coord, null);
 	}
 
-	public void fillFromSides(int maxAmount, World world, BlockPos coord, Set<EnumFacing> sides) {
+	public void fillFromSides(int maxAmount, World world, BlockPos coord, Set<EnumFacing> allowedSides) {
 		if (world == null) return;
 
 		int toDrain = Math.min(maxAmount, getSpace());
@@ -154,12 +161,17 @@ public class GenericTank extends FluidTank {
 
 		if (surroundingTanks.isEmpty()) return;
 
-		Collections.shuffle(surroundingTanks);
-		for (EnumFacing side : surroundingTanks) {
+		final List<EnumFacing> sides = Lists.newArrayList(surroundingTanks);
+
+		if (allowedSides != null) {
+			sides.retainAll(allowedSides);
+			if (sides.isEmpty()) return;
+		}
+
+		Collections.shuffle(sides);
+		for (EnumFacing side : sides) {
 			if (toDrain <= 0) break;
-			if (sides == null || sides.contains(side)) {
-				toDrain -= fillInternal(world, coord, side, toDrain);
-			}
+			toDrain -= fillInternal(world, coord, side, toDrain);
 		}
 	}
 

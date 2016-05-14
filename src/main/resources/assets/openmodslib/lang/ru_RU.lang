@@ -14,3 +14,53 @@ openmodslib.command.unknown_error_details=Неизвестная ошибка. �
 openmodslib.command.class_source=Класс '%s' загружен из '%s'
 openmodslib.command.api_class=Информация об API: name='%s', ownerMod='%s', version='%s'
 openmodslib.command.class_provider=Класс предоставленный файлом %s (моды: %s)
+
+#openmodslib.command.calc_set=Value %s set to %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_no_type=Please provide new calculator type ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_no_name=Please provide calculator name ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_invalid_name=Invalid calculator name ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_invalid_type=Invalid calculator type. Allowed types: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_invalid_mode=Invalid calculator mode. Allowed modes: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_no_key=Please provide name of property ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_no_value=Please provide new value of property ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_invalid_key=Invalid property name ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_cant_set=Failed to set property ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_function_defined=Defined function %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_error=Failed to execute: '%s' ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_stack_underflow=Calculator stack underflow ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_after_push=Pushed calculator, stack size: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_after_pop=Popped calculator, stack size: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_stack_size=Stack size: %s ## NEEDS TRANSLATION ##
+
+#openmodslib.color.black=Black ## NEEDS TRANSLATION ##
+#openmodslib.color.red=Red ## NEEDS TRANSLATION ##
+#openmodslib.color.green=Green ## NEEDS TRANSLATION ##
+#openmodslib.color.brown=Brown ## NEEDS TRANSLATION ##
+#openmodslib.color.blue=Blue ## NEEDS TRANSLATION ##
+#openmodslib.color.purple=Purple ## NEEDS TRANSLATION ##
+#openmodslib.color.cyan=Cyan ## NEEDS TRANSLATION ##
+#openmodslib.color.lightGray=Light Gray ## NEEDS TRANSLATION ##
+#openmodslib.color.gray=Gray ## NEEDS TRANSLATION ##
+#openmodslib.color.pink=Pink ## NEEDS TRANSLATION ##
+#openmodslib.color.lime=Lime ## NEEDS TRANSLATION ##
+#openmodslib.color.yellow=Yellow ## NEEDS TRANSLATION ##
+#openmodslib.color.lightBlue=Light Blue ## NEEDS TRANSLATION ##
+#openmodslib.color.magenta=Magenta ## NEEDS TRANSLATION ##
+#openmodslib.color.orange=Orange ## NEEDS TRANSLATION ##
+#openmodslib.color.white=White ## NEEDS TRANSLATION ##
+
+#openmodslib.gui.watch_video=Watch video ## NEEDS TRANSLATION ##
+
+#openmodslib.locale.book.scale.pageNumber=0.5 ## NEEDS TRANSLATION ##
+#openmodslib.locale.book.scale.sectionTitle=2.0 ## NEEDS TRANSLATION ##
+#openmodslib.locale.book.scale.pageTitle=1.0 ## NEEDS TRANSLATION ##
+#openmodslib.locale.book.scale.pageContent=0.5 ## NEEDS TRANSLATION ##
+
+#openmodslib.locale.book.lineSpace.titledPage=2 ## NEEDS TRANSLATION ##
+#openmodslib.locale.book.lineSpace.recipePage=4 ## NEEDS TRANSLATION ##
+
+#openmodslib.config.features=Enable/disable features ## NEEDS TRANSLATION ##
+#openmodslib.config.features.blocks=Enable/disable blocks ## NEEDS TRANSLATION ##
+#openmodslib.config.features.items=Enable/disable items ## NEEDS TRANSLATION ##
+#openmodslib.config.config=Mod specific configuration ## NEEDS TRANSLATION ##
+#openmodslib.config.update_warning=§c§lNote:§r to change configuration in runtime, use §l/om_config_s§r or §l/om_config_m§r commands ## NEEDS TRANSLATION ##
