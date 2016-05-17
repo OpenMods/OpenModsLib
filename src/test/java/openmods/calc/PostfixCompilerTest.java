@@ -5,6 +5,9 @@ import static openmods.calc.CalcTestUtils.*;
 import java.util.Arrays;
 import java.util.List;
 
+import openmods.calc.parsing.PostfixCompiler;
+import openmods.calc.parsing.Token;
+
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -1,5 +1,6 @@
-package openmods.calc;
+package openmods.calc.types.fp;
 
+import openmods.calc.*;
 import openmods.config.simpler.Configurable;
 
 public class DoubleCalculator extends Calculator<Double> {

@@ -10,7 +10,6 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.commons.Method;
 
 import com.google.common.base.*;
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;

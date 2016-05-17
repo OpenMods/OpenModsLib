@@ -7,6 +7,9 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 import openmods.calc.*;
 import openmods.calc.Calculator.ExprType;
+import openmods.calc.types.bigint.BigIntCalculator;
+import openmods.calc.types.fp.DoubleCalculator;
+import openmods.calc.types.fraction.FractionCalculator;
 import openmods.config.simpler.ConfigurableClassAdapter;
 import openmods.utils.Stack;
 

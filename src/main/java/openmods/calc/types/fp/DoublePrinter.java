@@ -1,4 +1,6 @@
-package openmods.calc;
+package openmods.calc.types.fp;
+
+import openmods.calc.PositionalNotationPrinter;
 
 import org.apache.commons.lang3.tuple.Pair;
 

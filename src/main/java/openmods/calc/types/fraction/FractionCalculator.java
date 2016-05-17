@@ -1,5 +1,6 @@
-package openmods.calc;
+package openmods.calc.types.fraction;
 
+import openmods.calc.*;
 import openmods.config.simpler.Configurable;
 
 import org.apache.commons.lang3.math.Fraction;

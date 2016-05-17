@@ -2,6 +2,7 @@ package openmods.calc;
 
 import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.Calculator.ExprType;
+import openmods.calc.types.fraction.FractionCalculator;
 
 import org.apache.commons.lang3.math.Fraction;
 import org.junit.Test;

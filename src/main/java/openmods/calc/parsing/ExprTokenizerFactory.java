@@ -1,4 +1,4 @@
-package openmods.calc;
+package openmods.calc.parsing;
 
 import java.util.Comparator;
 import java.util.Iterator;

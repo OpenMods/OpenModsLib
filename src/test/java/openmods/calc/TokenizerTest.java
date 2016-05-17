@@ -1,6 +1,8 @@
 package openmods.calc;
 
 import static openmods.calc.CalcTestUtils.*;
+import openmods.calc.parsing.ExprTokenizerFactory;
+import openmods.calc.parsing.Token;
 
 import org.junit.Assert;
 import org.junit.Test;

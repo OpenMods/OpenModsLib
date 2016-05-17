@@ -1,7 +1,8 @@
-package openmods.calc;
+package openmods.calc.types.bigint;
 
 import java.math.BigInteger;
 
+import openmods.calc.*;
 import openmods.config.simpler.Configurable;
 
 public class BigIntCalculator extends Calculator<BigInteger> {

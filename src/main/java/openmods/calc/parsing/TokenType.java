@@ -1,11 +1,11 @@
-package openmods.calc;
+package openmods.calc.parsing;
 
 import java.util.EnumSet;
 import java.util.Set;
 
 enum TokenProperties {
 	VALUE,
-	NEXT_OP_INFIX,
+	NEXT_OP_UNARY,
 	POSSIBLE_FUNCTION
 }
 
@@ -19,17 +19,17 @@ public enum TokenType {
 	SYMBOL(TokenProperties.POSSIBLE_FUNCTION),
 	SYMBOL_WITH_ARGS(TokenProperties.POSSIBLE_FUNCTION),
 
-	OPERATOR(TokenProperties.NEXT_OP_INFIX),
-	LEFT_BRACKET(TokenProperties.NEXT_OP_INFIX),
+	OPERATOR(TokenProperties.NEXT_OP_UNARY),
+	LEFT_BRACKET(TokenProperties.NEXT_OP_UNARY),
 	RIGHT_BRACKET(),
-	SEPARATOR(TokenProperties.NEXT_OP_INFIX);
+	SEPARATOR(TokenProperties.NEXT_OP_UNARY);
 
 	public boolean isValue() {
 		return properties.contains(TokenProperties.VALUE);
 	}
 
-	public final boolean isNextOpInfix() {
-		return properties.contains(TokenProperties.NEXT_OP_INFIX);
+	public final boolean isNextOpUnary() {
+		return properties.contains(TokenProperties.NEXT_OP_UNARY);
 	}
 
 	public final boolean isPossibleFunction() {

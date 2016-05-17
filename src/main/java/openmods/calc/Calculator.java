@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import openmods.calc.parsing.*;
 import openmods.utils.Stack;
 
 import com.google.common.base.Function;

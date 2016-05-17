@@ -1,7 +1,8 @@
-package openmods.calc;
+package openmods.calc.parsing;
 
 import java.util.List;
 
+import openmods.calc.*;
 import openmods.utils.Stack;
 import openmods.utils.Stack.StackUnderflowException;
 
@@ -79,7 +80,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 					}
 					case OPERATOR: {
 						final Operator<E> op;
-						if (lastToken == null || lastToken.type.isNextOpInfix()) {
+						if (lastToken == null || lastToken.type.isNextOpUnary()) {
 							op = operators.getUnaryOperator(token.value);
 							Preconditions.checkArgument(op != null, "No unary version of operator: %s", token.value);
 						} else

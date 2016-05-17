@@ -1,4 +1,4 @@
-package openmods.calc;
+package openmods.calc.parsing;
 
 public class Token {
 	public final TokenType type;
