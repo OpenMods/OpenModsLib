@@ -5,8 +5,9 @@ import java.util.Set;
 
 enum TokenProperties {
 	VALUE,
+	SYMBOL,
 	NEXT_OP_UNARY,
-	SYMBOL
+	INSERT_DEFAULT_OP
 }
 
 public enum TokenType {
@@ -16,11 +17,11 @@ public enum TokenType {
 	BIN_NUMBER(TokenProperties.VALUE),
 	QUOTED_NUMBER(TokenProperties.VALUE),
 
-	SYMBOL(TokenProperties.SYMBOL),
+	SYMBOL(TokenProperties.SYMBOL, TokenProperties.INSERT_DEFAULT_OP),
 	SYMBOL_WITH_ARGS(TokenProperties.SYMBOL),
 
 	OPERATOR(TokenProperties.NEXT_OP_UNARY),
-	LEFT_BRACKET(TokenProperties.NEXT_OP_UNARY),
+	LEFT_BRACKET(TokenProperties.NEXT_OP_UNARY, TokenProperties.INSERT_DEFAULT_OP),
 	RIGHT_BRACKET(),
 	SEPARATOR(TokenProperties.NEXT_OP_UNARY);
 
@@ -28,12 +29,16 @@ public enum TokenType {
 		return properties.contains(TokenProperties.VALUE);
 	}
 
+	public final boolean isSymbol() {
+		return properties.contains(TokenProperties.SYMBOL);
+	}
+
 	public final boolean isNextOpUnary() {
 		return properties.contains(TokenProperties.NEXT_OP_UNARY);
 	}
 
-	public final boolean isSymbol() {
-		return properties.contains(TokenProperties.SYMBOL);
+	public final boolean canInsertDefaultOp() {
+		return properties.contains(TokenProperties.INSERT_DEFAULT_OP);
 	}
 
 	private final Set<TokenProperties> properties;

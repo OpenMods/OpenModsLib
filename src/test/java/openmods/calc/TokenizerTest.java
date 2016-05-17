@@ -140,6 +140,13 @@ public class TokenizerTest {
 	}
 
 	@Test
+	public void testPosfixSymbols() {
+		verifyTokens("1i", dec("1"), symbol("i"));
+		verifyTokens("0x1i", hex("1"), symbol("i"));
+		verifyTokens("16#4324 i", quoted("16#4324"), symbol("i"));
+	}
+
+	@Test
 	public void testTwoOperators() {
 		factory.addOperator("+");
 		factory.addOperator("-");

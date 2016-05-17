@@ -24,7 +24,7 @@ public class InfixCompilerTest {
 	}
 
 	private class ResultTester {
-		private final InfixCompiler<?> compiler = new InfixCompiler<String>(VALUE_PARSER, operators);
+		private final InfixCompiler<?> compiler = new InfixCompiler<String>(VALUE_PARSER, operators, MULTIPLY);
 
 		private final List<?> actual;
 
@@ -192,6 +192,12 @@ public class InfixCompilerTest {
 		given(LEFT_BRACKET, dec("2"), RIGHT_BRACKET, OP_MINUS, dec("3"))
 				.expect(c("2"), c("3"), MINUS);
 
+		given(OP_MINUS, LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
+				.expect(c("2"), UNARY_MINUS);
+
+		given(OP_MINUS, LEFT_BRACKET, dec("2"), OP_MINUS, dec("3"), RIGHT_BRACKET)
+				.expect(c("2"), c("3"), MINUS, UNARY_MINUS);
+
 		given(OP_MINUS, symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
 				.expect(c("2"), s("sin", 1), UNARY_MINUS);
 	}
@@ -209,5 +215,26 @@ public class InfixCompilerTest {
 
 		given(OP_NEG, OP_MINUS, OP_PLUS, dec("2"))
 				.expect(c("2"), UNARY_PLUS, UNARY_MINUS, UNARY_NEG);
+	}
+
+	@Test
+	public void testDefaultOperator() {
+		given(dec("2"), symbol("a"))
+				.expect(c("2"), s("a", 0), MULTIPLY);
+
+		given(dec("2"), LEFT_BRACKET, symbol("a"), RIGHT_BRACKET)
+				.expect(c("2"), s("a", 0), MULTIPLY);
+
+		given(dec("3"), symbol("a"), OP_PLUS, dec("2"))
+				.expect(c("3"), s("a", 0), MULTIPLY, c("2"), PLUS);
+
+		given(dec("3"), OP_PLUS, dec("2"), symbol("a"))
+				.expect(c("3"), c("2"), s("a", 0), MULTIPLY, PLUS);
+
+		given(dec("3"), symbol("a"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
+				.expect(c("3"), c("2"), s("a", 1), MULTIPLY);
+
+		given(symbol("a"), LEFT_BRACKET, dec("2"), symbol("i"), COMMA, dec("4"), RIGHT_BRACKET)
+				.expect(c("2"), s("i", 0), MULTIPLY, c("4"), s("a", 2));
 	}
 }

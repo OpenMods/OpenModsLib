@@ -16,9 +16,16 @@ public class InfixCompiler<E> implements ICompiler<E> {
 
 	private final OperatorDictionary<E> operators;
 
+	private final BinaryOperator<E> defaultOperator;
+
 	public InfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
+		this(valueParser, operators, null);
+	}
+
+	public InfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators, BinaryOperator<E> defaultOperator) {
 		this.valueParser = valueParser;
 		this.operators = operators;
+		this.defaultOperator = defaultOperator;
 	}
 
 	@Override
@@ -29,6 +36,13 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		Token lastToken = null;
 
 		for (Token token : input) {
+			if (defaultOperator != null &&
+					token.type.canInsertDefaultOp() &&
+					lastToken != null &&
+					lastToken.type.isValue()) {
+				pushOperator(nodeStack, operatorStack, defaultOperator);
+			}
+
 			if (token.type.isValue()) {
 				final E value = valueParser.parseToken(token);
 				nodeStack.push(new ValueNode<E>(value));
@@ -63,18 +77,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 							Preconditions.checkArgument(op != null, "Invalid operator: %s", token.value);
 						}
 
-						while (!operatorStack.isEmpty()) {
-							final Optional<Operator<E>> top = operatorStack.peek(0);
-							if (!top.isPresent()) break;
-
-							final Operator<E> topOp = top.get();
-							if (!op.isLessThan(topOp)) break;
-
-							operatorStack.pop();
-							pushOperator(nodeStack, topOp);
-						}
-
-						operatorStack.push(Optional.of(op));
+						pushOperator(nodeStack, operatorStack, op);
 						break;
 					}
 					default:
@@ -95,6 +98,21 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		final List<IExecutable<E>> output = Lists.newArrayList();
 		nodeStack.pop().flatten(output);
 		return new ExecutableList<E>(output);
+	}
+
+	private void pushOperator(Stack<IExprNode<E>> output, Stack<Optional<Operator<E>>> operatorStack, Operator<E> newOp) {
+		while (!operatorStack.isEmpty()) {
+			final Optional<Operator<E>> top = operatorStack.peek(0);
+			if (!top.isPresent()) break;
+
+			final Operator<E> topOp = top.get();
+			if (!newOp.isLessThan(topOp)) break;
+
+			operatorStack.pop();
+			pushOperator(output, topOp);
+		}
+
+		operatorStack.push(Optional.of(newOp));
 	}
 
 	private void appendNodeChild(Stack<IExprNode<E>> output) {
