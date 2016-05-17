@@ -24,12 +24,12 @@ public class SymbolReference<E> implements IExecutable<E> {
 		this.returnCount = Optional.of(returnCount);
 	}
 
-	public SymbolReference<?> setArgumentsCount(int count) {
+	public SymbolReference<E> setArgumentsCount(int count) {
 		this.argCount = Optional.of(count);
 		return this;
 	}
 
-	public SymbolReference<?> setReturnsCount(int count) {
+	public SymbolReference<E> setReturnsCount(int count) {
 		this.returnCount = Optional.of(count);
 		return this;
 	}
@@ -69,5 +69,23 @@ public class SymbolReference<E> implements IExecutable<E> {
 	@Override
 	public String toString() {
 		return id + "[-" + printOptional(argCount) + "+" + printOptional(returnCount) + "]";
+	}
+
+	@Override
+	public String serialize() {
+		if (argCount.isPresent()) {
+			final int a = argCount.get();
+			if (returnCount.isPresent()) {
+				final int r = returnCount.get();
+				return id + "@" + a + "," + r;
+			} else {
+				return id + "@" + a;
+			}
+		} else if (returnCount.isPresent()) {
+			final int r = returnCount.get();
+			return id + "@," + r;
+		} else {
+			return id;
+		}
 	}
 }

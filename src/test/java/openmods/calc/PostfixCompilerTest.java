@@ -15,7 +15,8 @@ public class PostfixCompilerTest {
 
 	public final OperatorDictionary<String> operators = new OperatorDictionary<String>();
 	{
-		operators.registerMixedOperator("+", PLUS, UNARY_PLUS);
+		operators.registerBinaryOperator(PLUS);
+		operators.registerUnaryOperator(UNARY_MINUS);
 	}
 
 	private class ResultTester {

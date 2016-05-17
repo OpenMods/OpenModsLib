@@ -24,59 +24,63 @@ public class DoubleCalculator extends Calculator<Double> {
 
 	@Override
 	protected void setupOperators(OperatorDictionary<Double> operators) {
-		operators.registerUnaryOperator("neg", new UnaryOperator<Double>() {
+		operators.registerUnaryOperator(new UnaryOperator<Double>("neg") {
 			@Override
 			protected Double execute(Double value) {
 				return -value;
 			}
 		});
 
-		operators.registerMixedOperator("+", new BinaryOperator<Double>(MAX_PRIO - 4) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("+", MAX_PRIO - 4) {
 			@Override
 			protected Double execute(Double left, Double right) {
 				return left + right;
 			}
-		}, new UnaryOperator<Double>() {
+		});
+
+		operators.registerUnaryOperator(new UnaryOperator<Double>("+") {
 			@Override
 			protected Double execute(Double value) {
 				return +value;
 			}
 		});
 
-		operators.registerMixedOperator("-", new BinaryOperator<Double>(MAX_PRIO - 4) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("-", MAX_PRIO - 4) {
 			@Override
 			protected Double execute(Double left, Double right) {
 				return left - right;
 			}
-		}, new UnaryOperator<Double>() {
+		});
+
+		operators.registerUnaryOperator(new UnaryOperator<Double>("-") {
 			@Override
 			protected Double execute(Double value) {
 				return -value;
 			}
 		});
 
-		operators.registerBinaryOperator("*", new BinaryOperator<Double>(MAX_PRIO - 3) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("*", MAX_PRIO - 3) {
 			@Override
 			protected Double execute(Double left, Double right) {
 				return left * right;
 			}
 		});
 
-		operators.registerBinaryOperator("/", new BinaryOperator<Double>(MAX_PRIO - 3) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("/", MAX_PRIO - 3) {
 			@Override
 			protected Double execute(Double left, Double right) {
 				return left / right;
 			}
 		});
 
-		operators.registerBinaryOperator("%", new BinaryOperator<Double>(MAX_PRIO - 3) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("%", MAX_PRIO - 3) {
 			@Override
 			protected Double execute(Double left, Double right) {
 				return left % right;
 			}
 		});
 
-		operators.registerBinaryOperator("^", new BinaryOperator<Double>(MAX_PRIO - 2) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("^", MAX_PRIO - 2) {
 			@Override
 			protected Double execute(Double left, Double right) {
 				return Math.pow(left, right);

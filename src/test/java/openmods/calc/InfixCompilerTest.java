@@ -15,10 +15,12 @@ public class InfixCompilerTest {
 
 	public final OperatorDictionary<String> operators = new OperatorDictionary<String>();
 	{
-		operators.registerMixedOperator("+", PLUS, UNARY_PLUS);
-		operators.registerMixedOperator("-", MINUS, UNARY_MINUS);
-		operators.registerUnaryOperator("!", UNARY_NEG);
-		operators.registerBinaryOperator("*", MULTIPLY);
+		operators.registerBinaryOperator(PLUS);
+		operators.registerUnaryOperator(UNARY_PLUS);
+		operators.registerBinaryOperator(MINUS);
+		operators.registerUnaryOperator(UNARY_MINUS);
+		operators.registerUnaryOperator(UNARY_NEG);
+		operators.registerBinaryOperator(MULTIPLY);
 	}
 
 	private class ResultTester {
@@ -75,6 +77,12 @@ public class InfixCompilerTest {
 		given(LEFT_BRACKET, dec("1"), OP_PLUS, LEFT_BRACKET, dec("2"), OP_MINUS, LEFT_BRACKET, dec("3"), RIGHT_BRACKET, RIGHT_BRACKET, RIGHT_BRACKET)
 				.expect(c("1"), c("2"), c("3"), MINUS, PLUS);
 
+		given(LEFT_BRACKET, LEFT_BRACKET, dec("1"), RIGHT_BRACKET, RIGHT_BRACKET)
+				.expect(c("1"));
+
+		given(LEFT_BRACKET, LEFT_BRACKET, LEFT_BRACKET, dec("1"), RIGHT_BRACKET, RIGHT_BRACKET, RIGHT_BRACKET)
+				.expect(c("1"));
+
 		given(LEFT_BRACKET, LEFT_BRACKET, LEFT_BRACKET, dec("1"), RIGHT_BRACKET, OP_PLUS, dec("2"), RIGHT_BRACKET, OP_MINUS, dec("3"), RIGHT_BRACKET)
 				.expect(c("1"), c("2"), PLUS, c("3"), MINUS);
 	}
@@ -116,6 +124,9 @@ public class InfixCompilerTest {
 
 		given(symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET, OP_PLUS, symbol("cos"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET)
 				.expect(c("2"), s("sin", 1), c("3"), s("cos", 1), PLUS);
+
+		given(symbol("sin"), LEFT_BRACKET, LEFT_BRACKET, dec("1"), RIGHT_BRACKET, RIGHT_BRACKET)
+				.expect(c("1"), s("sin", 1));
 	}
 
 	@Test
@@ -125,6 +136,9 @@ public class InfixCompilerTest {
 
 		given(symbol("exp"), LEFT_BRACKET, dec("2"), OP_PLUS, dec("3"), COMMA, dec("4"), OP_MINUS, dec("5"), RIGHT_BRACKET)
 				.expect(c("2"), c("3"), PLUS, c("4"), c("5"), MINUS, s("exp", 2));
+
+		given(symbol("exp"), LEFT_BRACKET, LEFT_BRACKET, dec("2"), RIGHT_BRACKET, COMMA, dec("3"), RIGHT_BRACKET)
+				.expect(c("2"), c("3"), s("exp", 2));
 	}
 
 	@Test

@@ -6,23 +6,11 @@ import openmods.calc.*;
 import openmods.utils.Stack;
 import openmods.utils.Stack.StackUnderflowException;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class InfixCompiler<E> implements ICompiler<E> {
-
-	private class BracketMarker implements IExecutable<E> {
-		private int argCount = 0;
-
-		public int incrementArgCount() {
-			return ++argCount;
-		}
-
-		@Override
-		public void execute(ICalculatorFrame<E> frame) {
-			throw new UnsupportedOperationException();
-		}
-	}
 
 	private final IValueParser<E> valueParser;
 
@@ -35,47 +23,34 @@ public class InfixCompiler<E> implements ICompiler<E> {
 
 	@Override
 	public IExecutable<E> compile(Iterable<Token> input) {
-		final List<IExecutable<E>> output = Lists.newArrayList();
-		final Stack<IExecutable<E>> operatorStack = Stack.create();
+		final Stack<IExprNode<E>> nodeStack = Stack.create();
+		final Stack<Optional<Operator<E>>> operatorStack = Stack.create();
 
 		Token lastToken = null;
 
 		for (Token token : input) {
 			if (token.type.isValue()) {
 				final E value = valueParser.parseToken(token);
-				output.add(Value.create(value));
-			} else if (token.type.isPossibleFunction()) {
+				nodeStack.push(new ValueNode<E>(value));
+			} else if (token.type.isSymbol()) {
 				Preconditions.checkArgument(token.type != TokenType.SYMBOL_WITH_ARGS, "Symbol '%s' can't be used in infix mode", token.value);
-				operatorStack.push(new SymbolReference<E>(token.value));
+				nodeStack.push(new SymbolNode<E>(token.value));
 			} else {
-				if (lastToken != null && token.type != TokenType.LEFT_BRACKET && lastToken.type.isPossibleFunction()) {
-					final IExecutable<E> top = operatorStack.pop();
-					setArgCount(top, 0);
-					output.add(top);
-				}
 				switch (token.type) {
 					case LEFT_BRACKET:
-						operatorStack.push(new BracketMarker());
+						operatorStack.push(Optional.<Operator<E>> absent());
 						break;
 					case RIGHT_BRACKET: {
 						Preconditions.checkNotNull(lastToken, "Right bracket on invalid postion");
-						final int argCount = lastToken.type != TokenType.LEFT_BRACKET? popUntilBracket(output, operatorStack) : 0;
-						operatorStack.pop(); // left bracket
-						if (!operatorStack.isEmpty()) {
-							final IExecutable<E> top = operatorStack.peek(0);
-							if (top instanceof SymbolReference) {
-								((SymbolReference<?>)top).setArgumentsCount(argCount).setReturnsCount(1);
-								operatorStack.pop();
-								output.add(top);
-							}
-						} else {
-							Preconditions.checkState(argCount > 0, "Empty brackets after non-fuction");
-							Preconditions.checkState(argCount == 1, "Comma used in non-function brackets");
-						}
+						popUntilBracket(nodeStack, operatorStack);
+						if (lastToken.type != TokenType.LEFT_BRACKET) appendNodeChild(nodeStack);
 						break;
 					}
 					case SEPARATOR: {
-						popUntilBracket(output, operatorStack);
+						Preconditions.checkNotNull(lastToken, "Comma on invalid postion");
+						popUntilBracket(nodeStack, operatorStack);
+						appendNodeChild(nodeStack);
+						operatorStack.push(Optional.<Operator<E>> absent());
 						break;
 					}
 					case OPERATOR: {
@@ -83,24 +58,23 @@ public class InfixCompiler<E> implements ICompiler<E> {
 						if (lastToken == null || lastToken.type.isNextOpUnary()) {
 							op = operators.getUnaryOperator(token.value);
 							Preconditions.checkArgument(op != null, "No unary version of operator: %s", token.value);
-						} else
-						{
+						} else {
 							op = operators.getBinaryOperator(token.value);
 							Preconditions.checkArgument(op != null, "Invalid operator: %s", token.value);
 						}
 
 						while (!operatorStack.isEmpty()) {
-							final IExecutable<E> top = operatorStack.peek(0);
-							if (!(top instanceof Operator)) break;
+							final Optional<Operator<E>> top = operatorStack.peek(0);
+							if (!top.isPresent()) break;
 
-							final Operator<E> topOp = (Operator<E>)top;
+							final Operator<E> topOp = top.get();
 							if (!op.isLessThan(topOp)) break;
 
 							operatorStack.pop();
-							output.add(top);
+							pushOperator(nodeStack, topOp);
 						}
 
-						operatorStack.push(op);
+						operatorStack.push(Optional.of(op));
 						break;
 					}
 					default:
@@ -112,29 +86,47 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		}
 
 		while (!operatorStack.isEmpty()) {
-			final IExecutable<E> top = operatorStack.pop();
-			if (top instanceof InfixCompiler.BracketMarker) throw new IllegalArgumentException("Unmatched brackets");
-			setArgCount(top, 0);
-			output.add(top);
+			final Optional<Operator<E>> e = operatorStack.pop();
+			if (e.isPresent()) pushOperator(nodeStack, e.get());
+			else throw new IllegalArgumentException("Unmatched brackets");
 		}
 
+		Preconditions.checkState(nodeStack.size() == 1, "Not valid infix expression");
+		final List<IExecutable<E>> output = Lists.newArrayList();
+		nodeStack.pop().flatten(output);
 		return new ExecutableList<E>(output);
 	}
 
-	protected void setArgCount(final IExecutable<E> symbol, final int argCount) {
-		if (symbol instanceof SymbolReference<?>) ((SymbolReference<?>)symbol).setArgumentsCount(argCount).setReturnsCount(1);
+	private void appendNodeChild(Stack<IExprNode<E>> output) {
+		if (output.size() > 1) {
+			final IExprNode<E> t = output.peek(1);
+			if (t instanceof IInnerNode) {
+				final IExprNode<E> top = output.pop();
+				((IInnerNode<E>)t).addChild(top);
+			}
+		}
 	}
 
-	private int popUntilBracket(List<IExecutable<E>> output, Stack<IExecutable<E>> operatorStack) {
+	private void popUntilBracket(Stack<IExprNode<E>> output, Stack<Optional<Operator<E>>> operatorStack) {
 		try {
 			while (true) {
-				final IExecutable<E> op = operatorStack.peek(0);
-				if (op instanceof InfixCompiler.BracketMarker) return ((InfixCompiler<?>.BracketMarker)op).incrementArgCount();
-				operatorStack.pop();
-				output.add(op);
+				final Optional<Operator<E>> e = operatorStack.pop();
+				if (e.isPresent()) pushOperator(output, e.get());
+				else break;
 			}
 		} catch (StackUnderflowException e) {
 			throw new IllegalArgumentException("Unmatched brackets");
 		}
+	}
+
+	private void pushOperator(Stack<IExprNode<E>> output, Operator<E> op) {
+		if (op instanceof BinaryOperator) {
+			final IExprNode<E> right = output.pop();
+			final IExprNode<E> left = output.pop();
+			output.push(new BinaryOpNode<E>((BinaryOperator<E>)op, left, right));
+		} else if (op instanceof UnaryOperator) {
+			final IExprNode<E> arg = output.pop();
+			output.push(new UnaryOpNode<E>((UnaryOperator<E>)op, arg));
+		} else throw new IllegalStateException("Unknown type of operator: " + op.getClass());
 	}
 }

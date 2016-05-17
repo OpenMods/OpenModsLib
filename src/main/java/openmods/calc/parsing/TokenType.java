@@ -6,7 +6,7 @@ import java.util.Set;
 enum TokenProperties {
 	VALUE,
 	NEXT_OP_UNARY,
-	POSSIBLE_FUNCTION
+	SYMBOL
 }
 
 public enum TokenType {
@@ -16,8 +16,8 @@ public enum TokenType {
 	BIN_NUMBER(TokenProperties.VALUE),
 	QUOTED_NUMBER(TokenProperties.VALUE),
 
-	SYMBOL(TokenProperties.POSSIBLE_FUNCTION),
-	SYMBOL_WITH_ARGS(TokenProperties.POSSIBLE_FUNCTION),
+	SYMBOL(TokenProperties.SYMBOL),
+	SYMBOL_WITH_ARGS(TokenProperties.SYMBOL),
 
 	OPERATOR(TokenProperties.NEXT_OP_UNARY),
 	LEFT_BRACKET(TokenProperties.NEXT_OP_UNARY),
@@ -32,8 +32,8 @@ public enum TokenType {
 		return properties.contains(TokenProperties.NEXT_OP_UNARY);
 	}
 
-	public final boolean isPossibleFunction() {
-		return properties.contains(TokenProperties.POSSIBLE_FUNCTION);
+	public final boolean isSymbol() {
+		return properties.contains(TokenProperties.SYMBOL);
 	}
 
 	private final Set<TokenProperties> properties;

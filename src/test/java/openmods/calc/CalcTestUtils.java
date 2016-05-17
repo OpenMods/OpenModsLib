@@ -104,16 +104,9 @@ public class CalcTestUtils {
 	public static final Token LEFT_BRACKET = t(TokenType.LEFT_BRACKET, "(");
 
 	public static class DummyBinaryOperator<E> extends BinaryOperator<E> {
-		private final String id;
 
 		public DummyBinaryOperator(int precendence, String id) {
-			super(precendence);
-			this.id = id;
-		}
-
-		@Override
-		public String toString() {
-			return "Binary operator [" + id + "]";
+			super(id, precendence);
 		}
 
 		@Override
@@ -123,37 +116,29 @@ public class CalcTestUtils {
 	}
 
 	public static class DummyUnaryOperator<E> extends UnaryOperator<E> {
-		private final String id;
-
 		public DummyUnaryOperator(String id) {
-			this.id = id;
-		}
-
-		@Override
-		public String toString() {
-			return "Unary operator [" + id + "]";
+			super(id);
 		}
 
 		@Override
 		protected E execute(E value) {
 			return null;
 		}
-
 	}
 
 	public static final BinaryOperator<String> PLUS = new DummyBinaryOperator<String>(1, "+");
 
 	public static final Token OP_PLUS = op("+");
 
-	public static final UnaryOperator<String> UNARY_PLUS = new DummyUnaryOperator<String>("u+");
+	public static final UnaryOperator<String> UNARY_PLUS = new DummyUnaryOperator<String>("+");
 
 	public static final BinaryOperator<String> MINUS = new DummyBinaryOperator<String>(1, "-");
 
 	public static final Token OP_MINUS = op("-");
 
-	public static final UnaryOperator<String> UNARY_MINUS = new DummyUnaryOperator<String>("u-");
+	public static final UnaryOperator<String> UNARY_MINUS = new DummyUnaryOperator<String>("-");
 
-	public static final UnaryOperator<String> UNARY_NEG = new DummyUnaryOperator<String>("u!");
+	public static final UnaryOperator<String> UNARY_NEG = new DummyUnaryOperator<String>("!");
 
 	public static final Token OP_NEG = op("!");
 

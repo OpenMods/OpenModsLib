@@ -25,13 +25,14 @@ public abstract class BinaryOperator<E> extends Operator<E> {
 
 	public final Associativity associativity;
 
-	public BinaryOperator(int precedence, Associativity associativity) {
+	public BinaryOperator(String id, int precedence, Associativity associativity) {
+		super(id);
 		this.precedence = precedence;
 		this.associativity = associativity;
 	}
 
-	public BinaryOperator(int precendence) {
-		this(precendence, Associativity.LEFT);
+	public BinaryOperator(String id, int precendence) {
+		this(id, precendence, Associativity.LEFT);
 	}
 
 	protected abstract E execute(E left, E right);
@@ -52,6 +53,11 @@ public abstract class BinaryOperator<E> extends Operator<E> {
 
 		final BinaryOperator<E> o = (BinaryOperator<E>)other;
 		return associativity.isLessThan(precedence, o.precedence);
+	}
+
+	@Override
+	public String toString() {
+		return "BinaryOperator [" + id + "]";
 	}
 
 }
