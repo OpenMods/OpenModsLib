@@ -75,6 +75,8 @@ public class DoubleCalculatorTest {
 		infix("-PI").expectResult(-Math.PI).expectEmptyStack();
 		infix("2*E").expectResult(2 * Math.E).expectEmptyStack();
 		infix("2*-E").expectResult(2 * -Math.E).expectEmptyStack();
+		infix("2E").expectResult(2 * Math.E).expectEmptyStack();
+		infix("2(E)").expectResult(2 * Math.E).expectEmptyStack();
 		infix("-2*-3*10^3").expectResult(6e3).expectEmptyStack();
 		infix("-2*-3*10^+3").expectResult(6e3).expectEmptyStack();
 		infix("-2*-3*10^-3").expectResult(6e-3).expectEmptyStack();
@@ -103,6 +105,7 @@ public class DoubleCalculatorTest {
 		infix("sin(0)").expectResult(0.0).expectEmptyStack();
 		infix("cos(0)").expectResult(1.0).expectEmptyStack();
 		infix("1+cos(0)").expectResult(2.0).expectEmptyStack();
+		infix("5cos(0)").expectResult(5.0).expectEmptyStack();
 		infix("min(2,3)").expectResult(2.0).expectEmptyStack();
 		infix("max(2,3)").expectResult(3.0).expectEmptyStack();
 		infix("2-max(2,3)").expectResult(-1.0).expectEmptyStack();

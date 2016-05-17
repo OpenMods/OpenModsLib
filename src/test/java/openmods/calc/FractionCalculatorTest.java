@@ -77,6 +77,7 @@ public class FractionCalculatorTest {
 	public void testBasicInfix() {
 		infix("1 + 2").expectResult(f(3)).expectEmptyStack();
 		infix("2 * 3").expectResult(f(6)).expectEmptyStack();
+		infix("10(2)").expectResult(f(20)).expectEmptyStack();
 		infix("10 / 2").expectResult(f(5)).expectEmptyStack();
 		infix("1/2 + 1/2").expectResult(f(1)).expectEmptyStack();
 		infix("0.5 + 1/2").expectResult(f(1)).expectEmptyStack();
@@ -99,6 +100,7 @@ public class FractionCalculatorTest {
 	public void testBasicInfixFunctions() {
 		infix("min(2,3)").expectResult(f(2)).expectEmptyStack();
 		infix("max(2,3)").expectResult(f(3)).expectEmptyStack();
+		infix("5max(2,3)").expectResult(f(15)).expectEmptyStack();
 		infix("sqrt(9/4)").expectResult(f(3, 2)).expectEmptyStack();
 		infix("2-max(2,3)").expectResult(f(-1)).expectEmptyStack();
 		infix("int(7/3)").expectResult(f(2)).expectEmptyStack();

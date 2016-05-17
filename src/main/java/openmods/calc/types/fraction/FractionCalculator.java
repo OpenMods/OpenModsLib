@@ -1,6 +1,8 @@
 package openmods.calc.types.fraction;
 
 import openmods.calc.*;
+import openmods.calc.parsing.ICompiler;
+import openmods.calc.parsing.InfixCompiler;
 import openmods.config.simpler.Configurable;
 
 import org.apache.commons.lang3.math.Fraction;
@@ -10,7 +12,6 @@ import com.google.common.collect.Ordering;
 public class FractionCalculator extends Calculator<Fraction> {
 
 	private static final int MAX_PRIO = 5;
-
 	@Configurable
 	public boolean properFractions;
 
@@ -19,6 +20,18 @@ public class FractionCalculator extends Calculator<Fraction> {
 
 	public FractionCalculator() {
 		super(new FractionParser(), Fraction.ZERO);
+	}
+
+	private static final BinaryOperator<Fraction> MULTIPLY = new BinaryOperator<Fraction>("*", MAX_PRIO - 3) {
+		@Override
+		protected Fraction execute(Fraction left, Fraction right) {
+			return left.multiplyBy(right);
+		}
+	};
+
+	@Override
+	protected ICompiler<Fraction> createInfixCompiler(IValueParser<Fraction> valueParser, OperatorDictionary<Fraction> operators) {
+		return new InfixCompiler<Fraction>(valueParser, operators, MULTIPLY);
 	}
 
 	@Override
@@ -58,12 +71,7 @@ public class FractionCalculator extends Calculator<Fraction> {
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Fraction>("*", MAX_PRIO - 3) {
-			@Override
-			protected Fraction execute(Fraction left, Fraction right) {
-				return left.multiplyBy(right);
-			}
-		});
+		operators.registerBinaryOperator(MULTIPLY);
 
 		operators.registerBinaryOperator(new BinaryOperator<Fraction>("/", MAX_PRIO - 3) {
 			@Override

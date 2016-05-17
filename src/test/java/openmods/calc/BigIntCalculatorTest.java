@@ -81,6 +81,7 @@ public class BigIntCalculatorTest {
 		infix("2*3").expectResult(v(6)).expectEmptyStack();
 		infix("10/2").expectResult(v(5)).expectEmptyStack();
 		infix("2**5").expectResult(v(32)).expectEmptyStack();
+		infix("2(5)").expectResult(v(10)).expectEmptyStack();
 		infix("0b010|0b101").expectResult(v(7)).expectEmptyStack();
 		infix("0b100&0b101").expectResult(v(4)).expectEmptyStack();
 		infix("0b110^0b101").expectResult(v(3)).expectEmptyStack();
@@ -111,6 +112,7 @@ public class BigIntCalculatorTest {
 	public void testBasicInfixFunctions() {
 		infix("gcd(6, 8)").expectResult(v(2)).expectEmptyStack();
 		infix("abs(-2)").expectResult(v(2)).expectEmptyStack();
+		infix("5*abs(-2)").expectResult(v(10)).expectEmptyStack();
 		infix("1+abs(-2)").expectResult(v(3)).expectEmptyStack();
 		infix("min(2,3)").expectResult(v(2)).expectEmptyStack();
 		infix("max(2,3)").expectResult(v(3)).expectEmptyStack();

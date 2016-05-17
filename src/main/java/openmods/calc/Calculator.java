@@ -69,10 +69,18 @@ public abstract class Calculator<E> {
 		for (String operator : operators.allOperators())
 			tokenizerFactory.addOperator(operator);
 
-		this.rpnCompiler = new PostfixCompiler<E>(parser, operators);
-		this.infixCompiler = new InfixCompiler<E>(parser, operators);
+		this.rpnCompiler = createPostfixCompiler(parser, operators);
+		this.infixCompiler = createInfixCompiler(parser, operators);
 		setupGenericFunctions(topFrame);
 		setupGlobals(topFrame);
+	}
+
+	protected ICompiler<E> createInfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
+		return new InfixCompiler<E>(valueParser, operators);
+	}
+
+	protected ICompiler<E> createPostfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
+		return new PostfixCompiler<E>(valueParser, operators);
 	}
 
 	private static <E> void setupGenericFunctions(TopFrame<E> topFrame) {

@@ -1,6 +1,8 @@
 package openmods.calc.types.fp;
 
 import openmods.calc.*;
+import openmods.calc.parsing.ICompiler;
+import openmods.calc.parsing.InfixCompiler;
 import openmods.config.simpler.Configurable;
 
 public class DoubleCalculator extends Calculator<Double> {
@@ -20,6 +22,18 @@ public class DoubleCalculator extends Calculator<Double> {
 
 	public DoubleCalculator() {
 		super(new DoubleParser(), 0.0);
+	}
+
+	private static final BinaryOperator<Double> MULTIPLY = new BinaryOperator<Double>("*", MAX_PRIO - 3) {
+		@Override
+		protected Double execute(Double left, Double right) {
+			return left * right;
+		}
+	};
+
+	@Override
+	protected ICompiler<Double> createInfixCompiler(IValueParser<Double> valueParser, OperatorDictionary<Double> operators) {
+		return new InfixCompiler<Double>(valueParser, operators, MULTIPLY);
 	}
 
 	@Override
@@ -59,12 +73,7 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("*", MAX_PRIO - 3) {
-			@Override
-			protected Double execute(Double left, Double right) {
-				return left * right;
-			}
-		});
+		operators.registerBinaryOperator(MULTIPLY);
 
 		operators.registerBinaryOperator(new BinaryOperator<Double>("/", MAX_PRIO - 3) {
 			@Override
