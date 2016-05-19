@@ -22,16 +22,9 @@ public class FractionCalculator extends Calculator<Fraction> {
 		super(new FractionParser(), Fraction.ZERO);
 	}
 
-	private static final BinaryOperator<Fraction> MULTIPLY = new BinaryOperator<Fraction>("*", MAX_PRIO - 3) {
-		@Override
-		protected Fraction execute(Fraction left, Fraction right) {
-			return left.multiplyBy(right);
-		}
-	};
-
 	@Override
 	protected ICompiler<Fraction> createInfixCompiler(IValueParser<Fraction> valueParser, OperatorDictionary<Fraction> operators) {
-		return new InfixCompiler<Fraction>(valueParser, operators, MULTIPLY);
+		return new InfixCompiler<Fraction>(valueParser, operators);
 	}
 
 	@Override
@@ -71,7 +64,12 @@ public class FractionCalculator extends Calculator<Fraction> {
 			}
 		});
 
-		operators.registerBinaryOperator(MULTIPLY);
+		operators.registerBinaryOperator(new BinaryOperator<Fraction>("*", MAX_PRIO - 3) {
+			@Override
+			protected Fraction execute(Fraction left, Fraction right) {
+				return left.multiplyBy(right);
+			}
+		}).setDefault();
 
 		operators.registerBinaryOperator(new BinaryOperator<Fraction>("/", MAX_PRIO - 3) {
 			@Override

@@ -23,16 +23,9 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 
 	private static final int MAX_PRIO = 6;
 
-	private static final BinaryOperator<BigInteger> MULTIPLY = new BinaryOperator<BigInteger>("*", MAX_PRIO - 3) {
-		@Override
-		protected BigInteger execute(BigInteger left, BigInteger right) {
-			return left.multiply(right);
-		}
-	};
-
 	@Override
 	protected ICompiler<BigInteger> createInfixCompiler(IValueParser<BigInteger> valueParser, OperatorDictionary<BigInteger> operators) {
-		return new InfixCompiler<BigInteger>(valueParser, operators, MULTIPLY);
+		return new InfixCompiler<BigInteger>(valueParser, operators);
 	}
 
 	@Override
@@ -100,7 +93,12 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			}
 		});
 
-		operators.registerBinaryOperator(MULTIPLY);
+		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("*", MAX_PRIO - 3) {
+			@Override
+			protected BigInteger execute(BigInteger left, BigInteger right) {
+				return left.multiply(right);
+			}
+		}).setDefault();
 
 		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("/", MAX_PRIO - 3) {
 			@Override

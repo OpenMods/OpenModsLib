@@ -24,16 +24,9 @@ public class DoubleCalculator extends Calculator<Double> {
 		super(new DoubleParser(), 0.0);
 	}
 
-	private static final BinaryOperator<Double> MULTIPLY = new BinaryOperator<Double>("*", MAX_PRIO - 3) {
-		@Override
-		protected Double execute(Double left, Double right) {
-			return left * right;
-		}
-	};
-
 	@Override
 	protected ICompiler<Double> createInfixCompiler(IValueParser<Double> valueParser, OperatorDictionary<Double> operators) {
-		return new InfixCompiler<Double>(valueParser, operators, MULTIPLY);
+		return new InfixCompiler<Double>(valueParser, operators);
 	}
 
 	@Override
@@ -73,7 +66,12 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
-		operators.registerBinaryOperator(MULTIPLY);
+		operators.registerBinaryOperator(new BinaryOperator<Double>("*", MAX_PRIO - 3) {
+			@Override
+			protected Double execute(Double left, Double right) {
+				return left * right;
+			}
+		}).setDefault();
 
 		operators.registerBinaryOperator(new BinaryOperator<Double>("/", MAX_PRIO - 3) {
 			@Override

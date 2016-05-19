@@ -28,6 +28,6 @@ public class BinaryOpNode<E> implements IExprNode<E> {
 
 	@Override
 	public String toString() {
-		return "<op: '" + operator.serialize() + "', l: " + left + ", r: " + right + ">";
+		return "<op: '" + operator.id + "', l: " + left + ", r: " + right + ">";
 	}
 }

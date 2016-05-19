@@ -20,11 +20,11 @@ public class InfixCompilerTest {
 		operators.registerBinaryOperator(MINUS);
 		operators.registerUnaryOperator(UNARY_MINUS);
 		operators.registerUnaryOperator(UNARY_NEG);
-		operators.registerBinaryOperator(MULTIPLY);
+		operators.registerBinaryOperator(MULTIPLY).setDefault();
 	}
 
 	private class ResultTester {
-		private final InfixCompiler<?> compiler = new InfixCompiler<String>(VALUE_PARSER, operators, MULTIPLY);
+		private final InfixCompiler<?> compiler = new InfixCompiler<String>(VALUE_PARSER, operators);
 
 		private final List<?> actual;
 

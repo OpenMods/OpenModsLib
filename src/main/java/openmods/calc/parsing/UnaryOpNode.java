@@ -24,6 +24,6 @@ public class UnaryOpNode<E> implements IExprNode<E> {
 
 	@Override
 	public String toString() {
-		return "<op: " + operator.serialize() + " a: " + argument + ">";
+		return "<op: " + operator.id + " a: " + argument + ">";
 	}
 }

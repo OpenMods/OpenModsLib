@@ -52,7 +52,7 @@ public abstract class Calculator<E> {
 
 	private final TopFrame<E> topFrame = new TopFrame<E>();
 
-	private final OperatorDictionary<E> operators = new OperatorDictionary<E>();
+	private final OperatorDictionary<E> operators;
 
 	private final ExprTokenizerFactory tokenizerFactory = new ExprTokenizerFactory();
 
@@ -64,6 +64,8 @@ public abstract class Calculator<E> {
 
 	public Calculator(IValueParser<E> parser, E nullValue) {
 		this.nullValue = nullValue;
+
+		this.operators = createOperatorDictionary();
 		setupOperators(operators);
 
 		for (String operator : operators.allOperators())
@@ -73,6 +75,10 @@ public abstract class Calculator<E> {
 		this.infixCompiler = createInfixCompiler(parser, operators);
 		setupGenericFunctions(topFrame);
 		setupGlobals(topFrame);
+	}
+
+	private OperatorDictionary<E> createOperatorDictionary() {
+		return new OperatorDictionary<E>();
 	}
 
 	protected ICompiler<E> createInfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {

@@ -16,22 +16,17 @@ public class InfixCompiler<E> implements ICompiler<E> {
 
 	private final OperatorDictionary<E> operators;
 
-	private final BinaryOperator<E> defaultOperator;
-
 	public InfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
-		this(valueParser, operators, null);
-	}
-
-	public InfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators, BinaryOperator<E> defaultOperator) {
 		this.valueParser = valueParser;
 		this.operators = operators;
-		this.defaultOperator = defaultOperator;
 	}
 
 	@Override
 	public IExecutable<E> compile(Iterable<Token> input) {
 		final Stack<IExprNode<E>> nodeStack = Stack.create();
 		final Stack<Optional<Operator<E>>> operatorStack = Stack.create();
+
+		final BinaryOperator<E> defaultOperator = operators.getDefaultOperator();
 
 		Token lastToken = null;
 
@@ -41,6 +36,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 					lastToken != null &&
 					lastToken.type.isValue()) {
 				pushOperator(nodeStack, operatorStack, defaultOperator);
+				lastToken = new Token(TokenType.OPERATOR, defaultOperator.id);
 			}
 
 			if (token.type.isValue()) {
@@ -48,11 +44,12 @@ public class InfixCompiler<E> implements ICompiler<E> {
 				nodeStack.push(new ValueNode<E>(value));
 			} else if (token.type.isSymbol()) {
 				Preconditions.checkArgument(token.type != TokenType.SYMBOL_WITH_ARGS, "Symbol '%s' can't be used in infix mode", token.value);
-				nodeStack.push(new SymbolNode<E>(token.value));
+				nodeStack.push(createSymbolNode(token));
 			} else {
 				switch (token.type) {
 					case LEFT_BRACKET:
 						operatorStack.push(Optional.<Operator<E>> absent());
+						if (lastToken == null || !lastToken.type.isSymbol()) nodeStack.push(createBracketNode());
 						break;
 					case RIGHT_BRACKET: {
 						Preconditions.checkNotNull(lastToken, "Right bracket on invalid postion");
@@ -100,6 +97,14 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		return new ExecutableList<E>(output);
 	}
 
+	protected SymbolNode<E> createSymbolNode(Token token) {
+		return new SymbolNode<E>(token.value);
+	}
+
+	protected IInnerNode<E> createBracketNode() {
+		return new NullNode<E>();
+	}
+
 	private void pushOperator(Stack<IExprNode<E>> output, Stack<Optional<Operator<E>>> operatorStack, Operator<E> newOp) {
 		while (!operatorStack.isEmpty()) {
 			final Optional<Operator<E>> top = operatorStack.peek(0);
@@ -141,10 +146,10 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		if (op instanceof BinaryOperator) {
 			final IExprNode<E> right = output.pop();
 			final IExprNode<E> left = output.pop();
-			output.push(new BinaryOpNode<E>((BinaryOperator<E>)op, left, right));
+			output.push(operators.getExprNodeForOperator((BinaryOperator<E>)op, left, right));
 		} else if (op instanceof UnaryOperator) {
 			final IExprNode<E> arg = output.pop();
-			output.push(new UnaryOpNode<E>((UnaryOperator<E>)op, arg));
+			output.push(operators.getExprNodeForOperator((UnaryOperator<E>)op, arg));
 		} else throw new IllegalStateException("Unknown type of operator: " + op.getClass());
 	}
 }

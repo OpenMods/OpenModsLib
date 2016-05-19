@@ -2,7 +2,7 @@ package openmods.calc;
 
 public abstract class Operator<E> implements IExecutable<E> {
 
-	protected final String id;
+	public final String id;
 
 	public Operator(String id) {
 		this.id = id;

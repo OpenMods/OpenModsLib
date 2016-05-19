@@ -12,7 +12,7 @@ public class NullNode<E> implements IInnerNode<E> {
 
 	@Override
 	public void addChild(IExprNode<E> child) {
-		Preconditions.checkState(child == null, "More then one child in non-function parentheses");
+		Preconditions.checkState(this.child == null, "More then one child in non-function parentheses");
 		this.child = child;
 	}
 
