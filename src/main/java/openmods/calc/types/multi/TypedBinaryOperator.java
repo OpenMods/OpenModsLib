@@ -23,92 +23,145 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 		super(id, precendence);
 	}
 
-	public interface IGenericOperation {
+	@SuppressWarnings("unchecked")
+	private static <T> Class<T> resolveVariable(TypeToken<?> token, TypeVariable<?> var) {
+		return (Class<T>)token.resolveType(var).getRawType();
+	}
+
+	private interface IGenericOperation {
 		public TypedValue apply(TypeDomain domain, TypedValue left, TypedValue right);
 	}
 
-	private static final TypeVariable<?> VAR_T;
-
-	static {
-		final TypeVariable<?>[] typeParameters = ICoercedOperation.class.getTypeParameters();
-		VAR_T = typeParameters[0];
+	public interface ICoercedOperation<T> {
+		public TypedValue apply(TypeDomain domain, T left, T right);
 	}
 
-	private static class CoercedOperationWrapper<T> implements IGenericOperation {
-		private final ICoercedOperation<T> op;
-		private final Class<? extends T> type;
-
-		public CoercedOperationWrapper(Class<? extends T> type, ICoercedOperation<T> op) {
-			this.op = op;
-			this.type = type;
-		}
-
-		@Override
-		public TypedValue apply(TypeDomain domain, TypedValue left, TypedValue right) {
-			final T leftValue = left.unwrap(type);
-			final T rightValue = right.unwrap(type);
-			final T result = op.apply(domain, leftValue, rightValue);
-			return new TypedValue(left.domain, type, result);
-		}
-
+	public interface ISimpleCoercedOperation<T> {
+		public T apply(T left, T right);
 	}
 
 	private final Map<Class<?>, IGenericOperation> coercedOperations = Maps.newHashMap();
 
-	public <T> void registerOperation(Class<? extends T> type, ICoercedOperation<T> op) {
-		final IGenericOperation prev = coercedOperations.put(type, new CoercedOperationWrapper<T>(type, op));
+	public <T> void registerOperation(final Class<T> type, final ICoercedOperation<T> op) {
+		final IGenericOperation prev = coercedOperations.put(type, new IGenericOperation() {
+			@Override
+			public TypedValue apply(TypeDomain domain, TypedValue left, TypedValue right) {
+				final T leftValue = left.unwrap(type);
+				final T rightValue = right.unwrap(type);
+				return op.apply(domain, leftValue, rightValue);
+			}
+
+		});
+
 		Preconditions.checkState(prev == null, "Duplicate operation registration on operator '%s', type: %s", id, type);
 	}
 
-	@SuppressWarnings("unchecked")
+	public <T> void registerOperation(final Class<T> type, final ISimpleCoercedOperation<T> op) {
+		registerOperation(type, new ICoercedOperation<T>() {
+			@Override
+			public TypedValue apply(TypeDomain domain, T left, T right) {
+				final T result = op.apply(left, right);
+				return domain.create(type, result);
+			}
+		});
+	}
+
+	private static final TypeVariable<?> VAR_COERCED_T;
+
+	static {
+		final TypeVariable<?>[] typeParameters = ICoercedOperation.class.getTypeParameters();
+		VAR_COERCED_T = typeParameters[0];
+	}
+
 	public <T> void registerOperation(ICoercedOperation<T> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
-		final Class<T> type = (Class<T>)token.resolveType(VAR_T).getRawType();
+		final Class<T> type = resolveVariable(token, VAR_COERCED_T);
 		registerOperation(type, op);
 	}
 
-	private static final TypeVariable<?> VAR_L;
-	private static final TypeVariable<?> VAR_R;
+	private static final TypeVariable<?> VAR_SIMPLE_COERCED_T;
 
 	static {
-		final TypeVariable<?>[] typeParameters = IVariantOperation.class.getTypeParameters();
-		VAR_L = typeParameters[0];
-		VAR_R = typeParameters[1];
+		final TypeVariable<?>[] typeParameters = ISimpleCoercedOperation.class.getTypeParameters();
+		VAR_SIMPLE_COERCED_T = typeParameters[0];
 	}
 
-	private static class VariantOperationWrapper<L, R> implements IGenericOperation {
-		private final IVariantOperation<L, R> op;
-		private final Class<? extends L> leftType;
-		private final Class<? extends R> rightType;
+	public <T> void registerOperation(ISimpleCoercedOperation<T> op) {
+		final TypeToken<?> token = TypeToken.of(op.getClass());
+		final Class<T> type = resolveVariable(token, VAR_SIMPLE_COERCED_T);
+		registerOperation(type, op);
+	}
 
-		public VariantOperationWrapper(Class<? extends L> leftType, Class<? extends R> rightType, IVariantOperation<L, R> op) {
-			this.leftType = leftType;
-			this.rightType = rightType;
-			this.op = op;
-		}
+	public interface IVariantOperation<L, R> {
+		public TypedValue apply(TypeDomain domain, L left, R right);
+	}
 
-		@Override
-		public TypedValue apply(TypeDomain domain, TypedValue left, TypedValue right) {
-			final L leftValue = left.unwrap(leftType);
-			final R rightValue = right.unwrap(rightType);
-			return op.apply(domain, leftValue, rightValue);
-		}
-
+	public interface ISimpleVariantOperation<L, R, O> {
+		public O apply(L left, R right);
 	}
 
 	private final Table<Class<?>, Class<?>, IGenericOperation> variantOperations = HashBasedTable.create();
 
-	public <L, R> void registerOperation(Class<? extends L> left, Class<? extends R> right, IVariantOperation<L, R> op) {
-		final IGenericOperation prev = variantOperations.put(left, right, new VariantOperationWrapper<L, R>(left, right, op));
+	public <L, R> void registerOperation(final Class<? extends L> left, final Class<? extends R> right, final IVariantOperation<L, R> op) {
+		final IGenericOperation prev = variantOperations.put(left, right, new IGenericOperation() {
+			@Override
+			public TypedValue apply(TypeDomain domain, TypedValue leftArg, TypedValue rightArg) {
+				final L leftValue = leftArg.unwrap(left);
+				final R rightValue = rightArg.unwrap(right);
+				return op.apply(domain, leftValue, rightValue);
+			}
+
+		});
 		Preconditions.checkState(prev == null, "Duplicate operation registration on operator '%s', types: %s, %s", id, left, right);
 	}
 
-	@SuppressWarnings("unchecked")
+	public <L, R, O> void registerOperation(Class<? extends L> left, Class<? extends R> right, final Class<? super O> output, final ISimpleVariantOperation<L, R, O> op) {
+		registerOperation(left, right, new IVariantOperation<L, R>() {
+			@Override
+			public TypedValue apply(TypeDomain domain, L left, R right) {
+				final O result = op.apply(left, right);
+				return domain.create(output, result);
+			}
+		});
+	}
+
+	private static final TypeVariable<?> VAR_VARIANT_L;
+	private static final TypeVariable<?> VAR_VARIANT_R;
+
+	static {
+		final TypeVariable<?>[] typeParameters = IVariantOperation.class.getTypeParameters();
+		VAR_VARIANT_L = typeParameters[0];
+		VAR_VARIANT_R = typeParameters[1];
+	}
+
 	public <L, R> void registerOperation(IVariantOperation<L, R> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
-		final Class<L> left = (Class<L>)token.resolveType(VAR_L).getRawType();
-		final Class<R> right = (Class<R>)token.resolveType(VAR_R).getRawType();
+		final Class<L> left = resolveVariable(token, VAR_VARIANT_L);
+		final Class<R> right = resolveVariable(token, VAR_VARIANT_R);
 		registerOperation(left, right, op);
+	}
+
+	private static final TypeVariable<?> VAR_SIMPLE_VARIANT_L;
+	private static final TypeVariable<?> VAR_SIMPLE_VARIANT_R;
+	private static final TypeVariable<?> VAR_SIMPLE_VARIANT_O;
+
+	static {
+		final TypeVariable<?>[] typeParameters = ISimpleVariantOperation.class.getTypeParameters();
+		VAR_SIMPLE_VARIANT_L = typeParameters[0];
+		VAR_SIMPLE_VARIANT_R = typeParameters[1];
+		VAR_SIMPLE_VARIANT_O = typeParameters[2];
+	}
+
+	public <L, R, O> void registerOperation(ISimpleVariantOperation<L, R, O> op) {
+		final TypeToken<?> token = TypeToken.of(op.getClass());
+		final Class<L> left = resolveVariable(token, VAR_SIMPLE_VARIANT_L);
+		final Class<R> right = resolveVariable(token, VAR_SIMPLE_VARIANT_R);
+		final Class<O> output = resolveVariable(token, VAR_SIMPLE_VARIANT_O);
+		registerOperation(left, right, output, op);
+	}
+
+	public interface IDefaultOperation {
+		public Optional<TypedValue> apply(TypeDomain domain, TypedValue left, TypedValue right);
 	}
 
 	private IDefaultOperation defaultOperation;

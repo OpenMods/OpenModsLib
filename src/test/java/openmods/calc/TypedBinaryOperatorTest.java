@@ -2,6 +2,11 @@ package openmods.calc;
 
 import openmods.calc.types.multi.*;
 import openmods.calc.types.multi.TypeDomain.Coercion;
+import openmods.calc.types.multi.TypedBinaryOperator.ICoercedOperation;
+import openmods.calc.types.multi.TypedBinaryOperator.IDefaultOperation;
+import openmods.calc.types.multi.TypedBinaryOperator.ISimpleCoercedOperation;
+import openmods.calc.types.multi.TypedBinaryOperator.ISimpleVariantOperation;
+import openmods.calc.types.multi.TypedBinaryOperator.IVariantOperation;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,17 +48,51 @@ public class TypedBinaryOperatorTest {
 	}
 
 	@Test
+	public void testSimpleVariantOperation() {
+		final TypeDomain domain = new TypeDomain();
+
+		final TypedBinaryOperator op = new TypedBinaryOperator("+", 0);
+		op.registerOperation(new ISimpleVariantOperation<String, Integer, Boolean>() {
+			@Override
+			public Boolean apply(String left, Integer right) {
+				Assert.assertEquals("abc", left);
+				Assert.assertEquals(Integer.valueOf(123), right);
+				return Boolean.TRUE;
+			}
+		});
+
+		final TypedValue result = execute(op, domain.create(String.class, "abc"), domain.create(Integer.class, 123));
+		assertValueEquals(result, domain, Boolean.class, Boolean.TRUE);
+	}
+
+	@Test
 	public void testCoercedOperator() {
 		final TypeDomain domain = new TypeDomain();
 		domain.registerCast(Integer.class, Number.class);
-
 		domain.registerCoercionRule(Integer.class, Number.class, Coercion.TO_RIGHT);
 
 		final TypedBinaryOperator op = new TypedBinaryOperator("+", 0);
 		op.registerOperation(new ICoercedOperation<Number>() {
-
 			@Override
-			public Number apply(TypeDomain domain, Number left, Number right) {
+			public TypedValue apply(TypeDomain domain, Number left, Number right) {
+				return domain.create(Boolean.class, Boolean.TRUE);
+			}
+		});
+
+		final TypedValue result = execute(op, domain.create(Integer.class, 123), domain.create(Number.class, 567));
+		assertValueEquals(result, domain, Boolean.class, Boolean.TRUE);
+	}
+
+	@Test
+	public void testSimpleCoercedOperator() {
+		final TypeDomain domain = new TypeDomain();
+		domain.registerCast(Integer.class, Number.class);
+		domain.registerCoercionRule(Integer.class, Number.class, Coercion.TO_RIGHT);
+
+		final TypedBinaryOperator op = new TypedBinaryOperator("+", 0);
+		op.registerOperation(new ISimpleCoercedOperation<Number>() {
+			@Override
+			public Number apply(Number left, Number right) {
 				return left.intValue() + right.intValue();
 			}
 		});
@@ -66,10 +105,9 @@ public class TypedBinaryOperatorTest {
 	public void testSelfCoercedOperator() {
 		final TypeDomain domain = new TypeDomain();
 		final TypedBinaryOperator op = new TypedBinaryOperator("+", 0);
-		op.registerOperation(new ICoercedOperation<Integer>() {
-
+		op.registerOperation(new ISimpleCoercedOperation<Integer>() {
 			@Override
-			public Integer apply(TypeDomain domain, Integer left, Integer right) {
+			public Integer apply(Integer left, Integer right) {
 				return left + right;
 			}
 		});
@@ -78,6 +116,7 @@ public class TypedBinaryOperatorTest {
 		assertValueEquals(result, domain, Integer.class, 5);
 	}
 
+	@Test
 	public void testDefaultOperation() {
 		final TypeDomain domain = new TypeDomain();
 		final TypedBinaryOperator op = new TypedBinaryOperator("+", 0);
