@@ -36,9 +36,8 @@ public class InfixCompiler<E> implements ICompiler<E> {
 
 		for (Token token : input) {
 			if (defaultOperator != null &&
-					token.type.canInsertDefaultOp() &&
 					lastToken != null &&
-					lastToken.type.isValue()) {
+					shouldInsertDefaultOperator(token, lastToken)) {
 				pushOperator(nodeStack, operatorStack, defaultOperator);
 				lastToken = new Token(TokenType.OPERATOR, defaultOperator.id);
 			}
@@ -99,6 +98,12 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		final List<IExecutable<E>> output = Lists.newArrayList();
 		nodeStack.pop().flatten(output);
 		return new ExecutableList<E>(output);
+	}
+
+	protected boolean shouldInsertDefaultOperator(Token token, Token lastToken) {
+		// special rule: always assume call
+		if (token.type.isCallStart() && lastToken.type.isSymbol()) return false;
+		return token.type.canInsertDefaultOpOnLeft() && lastToken.type.canInsertDefaultOpOnRight();
 	}
 
 	protected SymbolNode<E> createSymbolNode(Token token) {

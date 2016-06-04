@@ -7,22 +7,24 @@ enum TokenProperties {
 	VALUE,
 	SYMBOL,
 	NEXT_OP_UNARY,
-	INSERT_DEFAULT_OP
+	INSERT_DEFAULT_OP_LEFT,
+	INSERT_DEFAULT_OP_RIGHT,
+	CALL_START
 }
 
 public enum TokenType {
-	DEC_NUMBER(TokenProperties.VALUE),
-	HEX_NUMBER(TokenProperties.VALUE),
-	OCT_NUMBER(TokenProperties.VALUE),
-	BIN_NUMBER(TokenProperties.VALUE),
-	QUOTED_NUMBER(TokenProperties.VALUE),
+	DEC_NUMBER(TokenProperties.VALUE, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.INSERT_DEFAULT_OP_RIGHT),
+	HEX_NUMBER(TokenProperties.VALUE, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.INSERT_DEFAULT_OP_RIGHT),
+	OCT_NUMBER(TokenProperties.VALUE, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.INSERT_DEFAULT_OP_RIGHT),
+	BIN_NUMBER(TokenProperties.VALUE, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.INSERT_DEFAULT_OP_RIGHT),
+	QUOTED_NUMBER(TokenProperties.VALUE, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.INSERT_DEFAULT_OP_RIGHT),
 
-	SYMBOL(TokenProperties.SYMBOL, TokenProperties.INSERT_DEFAULT_OP),
+	SYMBOL(TokenProperties.SYMBOL, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.INSERT_DEFAULT_OP_RIGHT),
 	SYMBOL_WITH_ARGS(TokenProperties.SYMBOL),
 
 	OPERATOR(TokenProperties.NEXT_OP_UNARY),
-	LEFT_BRACKET(TokenProperties.NEXT_OP_UNARY, TokenProperties.INSERT_DEFAULT_OP),
-	RIGHT_BRACKET(),
+	LEFT_BRACKET(TokenProperties.NEXT_OP_UNARY, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.CALL_START),
+	RIGHT_BRACKET(TokenProperties.INSERT_DEFAULT_OP_RIGHT),
 	SEPARATOR(TokenProperties.NEXT_OP_UNARY);
 
 	public boolean isValue() {
@@ -37,8 +39,16 @@ public enum TokenType {
 		return properties.contains(TokenProperties.NEXT_OP_UNARY);
 	}
 
-	public final boolean canInsertDefaultOp() {
-		return properties.contains(TokenProperties.INSERT_DEFAULT_OP);
+	public final boolean canInsertDefaultOpOnLeft() {
+		return properties.contains(TokenProperties.INSERT_DEFAULT_OP_LEFT);
+	}
+
+	public final boolean canInsertDefaultOpOnRight() {
+		return properties.contains(TokenProperties.INSERT_DEFAULT_OP_RIGHT);
+	}
+
+	public final boolean isCallStart() {
+		return properties.contains(TokenProperties.CALL_START);
 	}
 
 	private final Set<TokenProperties> properties;
