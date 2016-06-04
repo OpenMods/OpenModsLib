@@ -53,6 +53,9 @@ public class InfixCompilerTest extends CalcTestUtils {
 		// 1 + 2
 		given(dec("1"), OP_PLUS, dec("2"))
 				.expect(c("1"), c("2"), PLUS);
+
+		given(dec("1"), OP_MINUS, dec("2"))
+				.expect(c("1"), c("2"), MINUS);
 	}
 
 	@Test
@@ -308,6 +311,11 @@ public class InfixCompilerTest extends CalcTestUtils {
 				.expect(c("2"), s("a", 0), MULTIPLY)
 				.expectSameAs(dec("2"), OP_MULTIPLY, symbol("a"));
 
+		// -2a == -2 * a
+		given(OP_MINUS, dec("2"), symbol("a"))
+				.expect(c("2"), UNARY_MINUS, s("a", 0), MULTIPLY)
+				.expectSameAs(OP_MINUS, dec("2"), OP_MULTIPLY, symbol("a"));
+
 		// 2(a) = 2 * (a)
 		given(dec("2"), LEFT_BRACKET, symbol("a"), RIGHT_BRACKET)
 				.expect(c("2"), s("a", 0), MULTIPLY)
@@ -346,6 +354,11 @@ public class InfixCompilerTest extends CalcTestUtils {
 		given(LEFT_BRACKET, dec("2"), RIGHT_BRACKET, symbol("i"))
 				.expect(c("2"), s("i", 0), MULTIPLY)
 				.expectSameAs(dec("2"), OP_MULTIPLY, symbol("i"));
+
+		// -(2) i == -2 * i
+		given(OP_MINUS, LEFT_BRACKET, dec("2"), RIGHT_BRACKET, symbol("i"))
+				.expect(c("2"), UNARY_MINUS, s("i", 0), MULTIPLY)
+				.expectSameAs(OP_MINUS, dec("2"), OP_MULTIPLY, symbol("i"));
 
 		// a(2i, 4) == a(2*i, 4)
 		given(symbol("a"), LEFT_BRACKET, dec("2"), symbol("i"), COMMA, dec("4"), RIGHT_BRACKET)
@@ -391,5 +404,10 @@ public class InfixCompilerTest extends CalcTestUtils {
 		given(symbol("a"), symbol("b"))
 				.expect(s("a", 0), s("b", 0), MULTIPLY)
 				.expectSameAs(symbol("a"), OP_MULTIPLY, symbol("b"));
+
+		// -a b = -a * b
+		given(OP_MINUS, symbol("a"), symbol("b"))
+				.expect(s("a", 0), UNARY_MINUS, s("b", 0), MULTIPLY)
+				.expectSameAs(OP_MINUS, symbol("a"), OP_MULTIPLY, symbol("b"));
 	}
 }
