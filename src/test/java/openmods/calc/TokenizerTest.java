@@ -212,6 +212,9 @@ public class TokenizerTest extends CalcTestUtils {
 	public void testBrackets() {
 		factory.addOperator("+");
 		verifyTokens("()", LEFT_BRACKET, RIGHT_BRACKET);
+		verifyTokens("[]", leftBracket("["), rightBracket("]"));
+		verifyTokens("{}", leftBracket("{"), rightBracket("}"));
+		verifyTokens("([{}])", leftBracket("("), leftBracket("["), leftBracket("{"), rightBracket("}"), rightBracket("]"), rightBracket(")"));
 		verifyTokens("(,)", LEFT_BRACKET, COMMA, RIGHT_BRACKET);
 		verifyTokens("(1,2)", LEFT_BRACKET, dec("1"), COMMA, dec("2"), RIGHT_BRACKET);
 		verifyTokens(" ( 1 , 2 ) ", LEFT_BRACKET, dec("1"), COMMA, dec("2"), RIGHT_BRACKET);

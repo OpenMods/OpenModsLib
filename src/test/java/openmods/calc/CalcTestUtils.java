@@ -96,9 +96,17 @@ public class CalcTestUtils {
 		return t(TokenType.OPERATOR, value);
 	}
 
+	public static Token leftBracket(String value) {
+		return t(TokenType.LEFT_BRACKET, value);
+	}
+
+	public static Token rightBracket(String value) {
+		return t(TokenType.RIGHT_BRACKET, value);
+	}
+
 	public static final Token COMMA = t(TokenType.SEPARATOR, ",");
-	public static final Token RIGHT_BRACKET = t(TokenType.RIGHT_BRACKET, ")");
-	public static final Token LEFT_BRACKET = t(TokenType.LEFT_BRACKET, "(");
+	public static final Token RIGHT_BRACKET = rightBracket(")");
+	public static final Token LEFT_BRACKET = leftBracket("(");
 
 	public static class DummyBinaryOperator<E> extends BinaryOperator<E> {
 

@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import openmods.calc.parsing.InfixCompiler;
 import openmods.calc.parsing.Token;
+import openmods.calc.parsing.UnmatchedBracketsException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -81,6 +82,14 @@ public class InfixCompilerTest extends CalcTestUtils {
 		// 1 * (2 + 3)
 		given(dec("1"), OP_MULTIPLY, LEFT_BRACKET, dec("2"), OP_PLUS, dec("3"), RIGHT_BRACKET)
 				.expect(c("1"), c("2"), c("3"), PLUS, MULTIPLY);
+
+		// [1]
+		given(leftBracket("["), dec("1"), rightBracket("]"))
+				.expect(c("1"));
+
+		// {1}
+		given(leftBracket("{"), dec("1"), rightBracket("}"))
+				.expect(c("1"));
 	}
 
 	@Test
@@ -100,6 +109,35 @@ public class InfixCompilerTest extends CalcTestUtils {
 		// (((1) + 2) - 3)
 		given(LEFT_BRACKET, LEFT_BRACKET, LEFT_BRACKET, dec("1"), RIGHT_BRACKET, OP_PLUS, dec("2"), RIGHT_BRACKET, OP_MINUS, dec("3"), RIGHT_BRACKET)
 				.expect(c("1"), c("2"), PLUS, c("3"), MINUS);
+
+		// [{(1) + 2} - 3]
+		given(leftBracket("["), leftBracket("{"), LEFT_BRACKET, dec("1"), RIGHT_BRACKET, OP_PLUS, dec("2"), rightBracket("}"), OP_MINUS, dec("3"), rightBracket("]"))
+				.expect(c("1"), c("2"), PLUS, c("3"), MINUS);
+	}
+
+	@Test(expected = UnmatchedBracketsException.class)
+	public void testUnmatchedBrackets() {
+		given(leftBracket("["), dec("2"), rightBracket("}"));
+	}
+
+	@Test(expected = UnmatchedBracketsException.class)
+	public void testUnmatchedBracketsOnUnaryFunction() {
+		given(symbol("a"), leftBracket("("), dec("2"), rightBracket("}"));
+	}
+
+	@Test(expected = UnmatchedBracketsException.class)
+	public void testUnmatchedBracketsOnBinaryFunction() {
+		given(symbol("b"), leftBracket("("), dec("2"), COMMA, dec("3"), rightBracket("]"));
+	}
+
+	@Test(expected = UnmatchedBracketsException.class)
+	public void testUnclosedBracket() {
+		given(LEFT_BRACKET, dec("2"));
+	}
+
+	@Test(expected = UnmatchedBracketsException.class)
+	public void testUnclosedBracketWithComma() {
+		given(LEFT_BRACKET, dec("2"), COMMA, dec("3"));
 	}
 
 	@Test
@@ -139,6 +177,11 @@ public class InfixCompilerTest extends CalcTestUtils {
 		given(symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
 				.expect(c("2"), s("sin", 1));
 
+		// NOTE: this is default meaning of alternative brackets, may be changed by user
+		// sin{2}
+		given(symbol("sin"), leftBracket("{"), dec("2"), rightBracket("}"))
+				.expect(c("2"), s("sin", 1));
+
 		// sin((2))
 		given(symbol("sin"), LEFT_BRACKET, LEFT_BRACKET, dec("2"), RIGHT_BRACKET, RIGHT_BRACKET)
 				.expect(c("2"), s("sin", 1));
@@ -156,6 +199,10 @@ public class InfixCompilerTest extends CalcTestUtils {
 	public void testBinaryFunction() {
 		// exp(2, 3)
 		given(symbol("exp"), LEFT_BRACKET, dec("2"), COMMA, dec("3"), RIGHT_BRACKET)
+				.expect(c("2"), c("3"), s("exp", 2));
+
+		// exp(2, 3)
+		given(symbol("exp"), leftBracket("["), dec("2"), COMMA, dec("3"), rightBracket("]"))
 				.expect(c("2"), c("3"), s("exp", 2));
 
 		// exp(2 + 3, 3 - 4)

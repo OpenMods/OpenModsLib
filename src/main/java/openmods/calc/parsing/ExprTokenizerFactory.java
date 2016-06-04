@@ -25,6 +25,8 @@ public class ExprTokenizerFactory {
 
 	private static final Pattern SYMBOL_ARGS = Pattern.compile("^(@[0-9]*,?[0-9]*)");
 
+	public static final BiMap<String, String> BRACKETS = ImmutableBiMap.of("(", ")", "{", "}", "[", "]");
+
 	private final Set<String> operators = Sets.newTreeSet(new Comparator<String>() {
 
 		@Override
@@ -51,9 +53,12 @@ public class ExprTokenizerFactory {
 				skipWhitespace();
 				if (input.isEmpty()) return endOfData();
 
-				if (input.startsWith("(")) return rawToken(1, TokenType.LEFT_BRACKET);
-				if (input.startsWith(")")) return rawToken(1, TokenType.RIGHT_BRACKET);
-				if (input.startsWith(",")) return rawToken(1, TokenType.SEPARATOR);
+				{
+					String nextCh = input.substring(0, 1);
+					if (BRACKETS.containsKey(nextCh)) return rawToken(1, TokenType.LEFT_BRACKET);
+					if (BRACKETS.containsValue(nextCh)) return rawToken(1, TokenType.RIGHT_BRACKET);
+					if (nextCh.equals(",")) return rawToken(1, TokenType.SEPARATOR);
+				}
 
 				final Matcher symbolMatcher = SYMBOL.matcher(input);
 
