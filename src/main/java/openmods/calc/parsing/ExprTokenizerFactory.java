@@ -1,5 +1,6 @@
 package openmods.calc.parsing;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
@@ -26,6 +27,20 @@ public class ExprTokenizerFactory {
 	private static final Pattern SYMBOL_ARGS = Pattern.compile("^(@[0-9]*,?[0-9]*)");
 
 	public static final BiMap<String, String> BRACKETS = ImmutableBiMap.of("(", ")", "{", "}", "[", "]");
+
+	private static final Set<String> STRING_STARTERS = ImmutableSet.of("\"", "'");
+
+	private static final Map<Character, Character> ESCAPES = ImmutableMap.<Character, Character> builder()
+			.put('\\', '\\')
+			.put('\'', '\'')
+			.put('"', '"')
+			.put('0', '\0')
+			.put('b', '\b')
+			.put('t', '\t')
+			.put('n', '\n')
+			.put('f', '\f')
+			.put('r', '\r')
+			.build();
 
 	private final Set<String> operators = Sets.newTreeSet(new Comparator<String>() {
 
@@ -54,7 +69,8 @@ public class ExprTokenizerFactory {
 				if (input.isEmpty()) return endOfData();
 
 				{
-					String nextCh = input.substring(0, 1);
+					final String nextCh = input.substring(0, 1);
+					if (STRING_STARTERS.contains(nextCh)) return consumeStringLiteral();
 					if (BRACKETS.containsKey(nextCh)) return rawToken(1, TokenType.LEFT_BRACKET);
 					if (BRACKETS.containsValue(nextCh)) return rawToken(1, TokenType.RIGHT_BRACKET);
 					if (nextCh.equals(",")) return rawToken(1, TokenType.SEPARATOR);
@@ -67,15 +83,15 @@ public class ExprTokenizerFactory {
 
 					final String symbol = symbolMatcher.group(1);
 					if (operator != null && operator.length() >= symbol.length()) {
-						consumeInput(operator.length());
+						discardInput(operator.length());
 						return new Token(TokenType.OPERATOR, operator);
 					} else {
-						consumeInput(symbolMatcher.end());
+						discardInput(symbolMatcher.end());
 
 						final Matcher argMatcher = SYMBOL_ARGS.matcher(input);
 
 						if (argMatcher.find()) {
-							consumeInput(argMatcher.end());
+							discardInput(argMatcher.end());
 							final String symbolArgs = argMatcher.group(1);
 							return new Token(TokenType.SYMBOL_WITH_ARGS, symbol + symbolArgs);
 						} else {
@@ -86,7 +102,7 @@ public class ExprTokenizerFactory {
 
 				final String operator = findOperator();
 				if (operator != null) {
-					consumeInput(operator.length());
+					discardInput(operator.length());
 					return new Token(TokenType.OPERATOR, operator);
 				}
 
@@ -114,13 +130,61 @@ public class ExprTokenizerFactory {
 			}
 		}
 
-		protected void consumeInput(final int length) {
+		private Token consumeStringLiteral() {
+			final StringBuilder result = new StringBuilder();
+
+			final char terminator = input.charAt(0);
+
+			int pos = 1;
+			while (true) {
+				if (pos >= input.length()) throw new IllegalArgumentException("Unterminated string: '" + result + "'");
+				final char ch = input.charAt(pos++);
+				if (ch == terminator) break;
+				if (ch == '\\') {
+					if (pos >= input.length()) throw new IllegalArgumentException("Unterminated escape sequence: '" + result + "'");
+					final char escaped = input.charAt(pos++);
+					switch (escaped) {
+						case 'x':
+							result.append(parseHexChar(pos, 2));
+							pos += 2;
+							break;
+						case 'u':
+							result.append(parseHexChar(pos, 4));
+							pos += 4;
+							break;
+						case 'U':
+							result.append(parseHexChar(pos, 8));
+							pos += 8;
+							break;
+						// TODO: case 'N':
+						default: {
+							final Character sub = ESCAPES.get(escaped);
+							Preconditions.checkArgument(sub != null, "Invalid escape sequence: " + escaped);
+							result.append(sub);
+						}
+					}
+				} else {
+					result.append(ch);
+				}
+			}
+
+			discardInput(pos);
+			return new Token(TokenType.STRING, result.toString());
+		}
+
+		private char[] parseHexChar(int pos, int digits) {
+			final String code = input.substring(pos, pos + digits);
+			final int intCode = Integer.parseInt(code, 16);
+			return Character.toChars(intCode);
+		}
+
+		private void discardInput(int length) {
 			input = input.substring(length);
 		}
 
 		private Token rawToken(int charCount, TokenType type) {
 			final String value = input.substring(0, charCount);
-			consumeInput(charCount);
+			discardInput(charCount);
 			return new Token(type, value);
 		}
 
@@ -128,7 +192,7 @@ public class ExprTokenizerFactory {
 			final Matcher matcher = pattern.matcher(input);
 			if (matcher.find()) {
 				final String matched = matcher.group(1);
-				consumeInput(matcher.end());
+				discardInput(matcher.end());
 				return matched;
 			}
 
@@ -152,7 +216,7 @@ public class ExprTokenizerFactory {
 			while (i < input.length() && Character.isWhitespace(input.charAt(i)))
 				i++;
 
-			if (i > 0) consumeInput(i);
+			if (i > 0) discardInput(i);
 		}
 
 	}

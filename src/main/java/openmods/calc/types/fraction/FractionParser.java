@@ -8,7 +8,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class FractionParser implements IValueParser<Fraction> {
 
-	private static final PositionalNotationParser<Fraction> PARSER = new PositionalNotationParser<Fraction>() {
+	private static final PositionalNotationParser<Fraction, Fraction> PARSER = new PositionalNotationParser<Fraction, Fraction>() {
 		@Override
 		public Accumulator<Fraction> createIntegerAccumulator(final int radix) {
 			final Fraction fractionalRadix = Fraction.getFraction(radix, 1);

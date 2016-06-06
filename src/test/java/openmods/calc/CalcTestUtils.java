@@ -84,6 +84,10 @@ public class CalcTestUtils {
 		return t(TokenType.QUOTED_NUMBER, value);
 	}
 
+	public static Token string(String value) {
+		return t(TokenType.STRING, value);
+	}
+
 	public static Token symbol(String value) {
 		return t(TokenType.SYMBOL, value);
 	}

@@ -82,6 +82,47 @@ public class TokenizerTest extends CalcTestUtils {
 	}
 
 	@Test
+	public void testStrings() {
+		verifyTokens("''", string(""));
+		verifyTokens("'abc'", string("abc"));
+
+		verifyTokens("\"\"", string(""));
+		verifyTokens("\"abc\"", string("abc"));
+
+		verifyTokens("'\"\"'", string("\"\""));
+		verifyTokens("\"''\"", string("''"));
+
+		verifyTokens("'a\"bc'", string("a\"bc"));
+		verifyTokens("\"a'bc\"", string("a'bc"));
+
+		verifyTokens("'a''b'", string("a"), string("b"));
+		verifyTokens("'a' 'b'", string("a"), string("b"));
+	}
+
+	@Test
+	public void testStringEscapes() {
+		verifyTokens("'\\\\'", string("\\"));
+		verifyTokens("'\\\''", string("'"));
+		verifyTokens("\"\\\"\"", string("\""));
+
+		verifyTokens("'\\r'", string("\r"));
+		verifyTokens("'\\n'", string("\n"));
+		verifyTokens("'\\b'", string("\b"));
+		verifyTokens("'\\t'", string("\t"));
+		verifyTokens("'\\f'", string("\f"));
+		verifyTokens("'\\0'", string("\0"));
+
+		verifyTokens("'\\x20'", string(" "));
+		verifyTokens("'a\\x20'", string("a "));
+		verifyTokens("'\\x20a'", string(" a"));
+		verifyTokens("'\\x00'", string("\0"));
+
+		verifyTokens("'\\u2603'", string("\u2603"));
+		verifyTokens("'\\uD83D\\uDE08'", string("\uD83D\uDE08"));
+		verifyTokens("'\\U0001F608'", string("\uD83D\uDE08"));
+	}
+
+	@Test
 	public void testSymbols() {
 		verifyTokens("hello", symbol("hello"));
 		verifyTokens("f00", symbol("f00"));
@@ -144,10 +185,18 @@ public class TokenizerTest extends CalcTestUtils {
 	}
 
 	@Test
+	public void testSymbolsAndStrings() {
+		verifyTokens("'aaaa'bbbb", string("aaaa"), symbol("bbbb"));
+		verifyTokens("bbbb'aaaa'", symbol("bbbb"), string("aaaa"));
+	}
+
+	@Test
 	public void testTwoOperators() {
 		factory.addOperator("+");
 		factory.addOperator("-");
-		verifyTokens("0x1+0b1-16#4324-$1+3.4",
+		verifyTokens("'abc'-0x1+0b1-16#4324-$1+3.4",
+				string("abc"),
+				op("-"),
 				hex("1"),
 				op("+"),
 				bin("1"),

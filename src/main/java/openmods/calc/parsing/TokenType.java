@@ -19,6 +19,8 @@ public enum TokenType {
 	BIN_NUMBER(TokenProperties.VALUE, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.INSERT_DEFAULT_OP_RIGHT),
 	QUOTED_NUMBER(TokenProperties.VALUE, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.INSERT_DEFAULT_OP_RIGHT),
 
+	STRING(TokenProperties.VALUE, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.INSERT_DEFAULT_OP_RIGHT),
+
 	SYMBOL(TokenProperties.SYMBOL, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.INSERT_DEFAULT_OP_RIGHT),
 	SYMBOL_WITH_ARGS(TokenProperties.SYMBOL),
 

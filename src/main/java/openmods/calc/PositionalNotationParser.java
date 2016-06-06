@@ -9,7 +9,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public abstract class PositionalNotationParser<E> {
 
-	private final Splitter dotSplitter = Splitter.on('.');
+	private static final Splitter DOT_SPLITTER = Splitter.on('.');
 
 	public interface Accumulator<E> {
 		public void add(int digit);
@@ -17,11 +17,11 @@ public abstract class PositionalNotationParser<E> {
 		public E get();
 	}
 
-	protected abstract Accumulator<E> createIntegerAccumulator(int radix);
+	protected abstract Accumulator<I> createIntegerAccumulator(int radix);
 
-	protected abstract Accumulator<E> createFractionalAccumulator(int radix);
+	protected abstract Accumulator<F> createFractionalAccumulator(int radix);
 
-	private E parsePart(Accumulator<E> accumulator, String input, int radix) {
+	private static <E> E parsePart(Accumulator<E> accumulator, String input, int radix) {
 		final char[] charArray = input.toCharArray();
 		// if (reverse) ArrayUtils.reverse(charArray);
 
@@ -34,28 +34,28 @@ public abstract class PositionalNotationParser<E> {
 		return accumulator.get();
 	}
 
-	private Pair<E, E> parseFixedBaseNumber(String value, int radix) {
+	private Pair<I, F> parseFixedBaseNumber(String value, int radix) {
 		if (radix < Character.MIN_RADIX) throw new NumberFormatException("Base must be larger than " + Character.MIN_RADIX);
 		if (radix > Character.MAX_RADIX) throw new NumberFormatException("Base must be smaller than " + Character.MAX_RADIX);
 
-		final Iterator<String> parts = dotSplitter.split(value).iterator();
+		final Iterator<String> parts = DOT_SPLITTER.split(value).iterator();
 		Preconditions.checkState(parts.hasNext(), "Invalid input '%s'", value);
 
 		final String integerPart = parts.next();
-		final Accumulator<E> integerAccumulator = createIntegerAccumulator(radix);
-		final E integer = parsePart(integerAccumulator, integerPart, radix);
+		final Accumulator<I> integerAccumulator = createIntegerAccumulator(radix);
+		final I integer = parsePart(integerAccumulator, integerPart, radix);
 
 		if (!parts.hasNext()) return Pair.of(integer, null);
 
 		final String fractionalPart = parts.next();
-		final Accumulator<E> fractionalAccumulator = createFractionalAccumulator(radix);
-		final E fraction = parsePart(fractionalAccumulator, fractionalPart, radix);
+		final Accumulator<F> fractionalAccumulator = createFractionalAccumulator(radix);
+		final F fraction = parsePart(fractionalAccumulator, fractionalPart, radix);
 
 		Preconditions.checkState(!parts.hasNext(), "More than one comman in '%s'", value);
 		return Pair.of(integer, fraction);
 	}
 
-	private E parseQuotedPart(Accumulator<E> accumulator, final String input, int radix) {
+	private static <E> E parseQuotedPart(Accumulator<E> accumulator, final String input, int radix) {
 		if (radix < Character.MIN_RADIX) throw new NumberFormatException("Base must be larger than " + Character.MIN_RADIX);
 
 		String reminder = input;
@@ -85,7 +85,7 @@ public abstract class PositionalNotationParser<E> {
 		return accumulator.get();
 	}
 
-	protected Pair<E, E> parseQuotedNumber(String value) {
+	private Pair<I, F> parseQuotedNumber(String value) {
 		final int radixEnd = value.indexOf('#');
 		final String radixStr = value.substring(0, radixEnd);
 		if (radixStr.isEmpty()) throw new NumberFormatException("No radix given");
@@ -93,24 +93,24 @@ public abstract class PositionalNotationParser<E> {
 		if (radix < 2) throw new NumberFormatException("Invalid radix: " + radix);
 		final String numberStr = value.substring(radixEnd + 1).replace("\"", "''");
 
-		final Iterator<String> parts = dotSplitter.split(numberStr).iterator();
+		final Iterator<String> parts = DOT_SPLITTER.split(numberStr).iterator();
 		Preconditions.checkState(parts.hasNext(), "Invalid input '%s'", value);
 
 		final String integerPart = parts.next();
-		final Accumulator<E> integerAccumulator = createIntegerAccumulator(radix);
-		final E integer = parseQuotedPart(integerAccumulator, integerPart, radix);
+		final Accumulator<I> integerAccumulator = createIntegerAccumulator(radix);
+		final I integer = parseQuotedPart(integerAccumulator, integerPart, radix);
 
 		if (!parts.hasNext()) return Pair.of(integer, null);
 
 		final String fractionalPart = parts.next();
-		final Accumulator<E> fractionalAccumulator = createFractionalAccumulator(radix);
-		final E fraction = parseQuotedPart(fractionalAccumulator, fractionalPart, radix);
+		final Accumulator<F> fractionalAccumulator = createFractionalAccumulator(radix);
+		final F fraction = parseQuotedPart(fractionalAccumulator, fractionalPart, radix);
 
 		Preconditions.checkState(!parts.hasNext(), "More than one comma in '%s'", value);
 		return Pair.of(integer, fraction);
 	}
 
-	public Pair<E, E> parseToken(Token token) {
+	public Pair<I, F> parseToken(Token token) {
 		switch (token.type) {
 			case BIN_NUMBER:
 				return parseFixedBaseNumber(token.value, 2);

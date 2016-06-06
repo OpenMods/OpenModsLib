@@ -7,7 +7,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class DoubleParser implements IValueParser<Double> {
 
-	private static final PositionalNotationParser<Double> PARSER = new PositionalNotationParser<Double>() {
+	private static final PositionalNotationParser<Double, Double> PARSER = new PositionalNotationParser<Double, Double>() {
 		@Override
 		public Accumulator<Double> createIntegerAccumulator(int radix) {
 			final double doubleRadix = radix;
