@@ -100,29 +100,6 @@ public class TokenizerTest extends CalcTestUtils {
 	}
 
 	@Test
-	public void testStringEscapes() {
-		verifyTokens("'\\\\'", string("\\"));
-		verifyTokens("'\\\''", string("'"));
-		verifyTokens("\"\\\"\"", string("\""));
-
-		verifyTokens("'\\r'", string("\r"));
-		verifyTokens("'\\n'", string("\n"));
-		verifyTokens("'\\b'", string("\b"));
-		verifyTokens("'\\t'", string("\t"));
-		verifyTokens("'\\f'", string("\f"));
-		verifyTokens("'\\0'", string("\0"));
-
-		verifyTokens("'\\x20'", string(" "));
-		verifyTokens("'a\\x20'", string("a "));
-		verifyTokens("'\\x20a'", string(" a"));
-		verifyTokens("'\\x00'", string("\0"));
-
-		verifyTokens("'\\u2603'", string("\u2603"));
-		verifyTokens("'\\uD83D\\uDE08'", string("\uD83D\uDE08"));
-		verifyTokens("'\\U0001F608'", string("\uD83D\uDE08"));
-	}
-
-	@Test
 	public void testSymbols() {
 		verifyTokens("hello", symbol("hello"));
 		verifyTokens("f00", symbol("f00"));

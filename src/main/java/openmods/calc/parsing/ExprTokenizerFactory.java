@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class ExprTokenizerFactory {
 
@@ -29,18 +30,6 @@ public class ExprTokenizerFactory {
 	public static final BiMap<String, String> BRACKETS = ImmutableBiMap.of("(", ")", "{", "}", "[", "]");
 
 	private static final Set<String> STRING_STARTERS = ImmutableSet.of("\"", "'");
-
-	private static final Map<Character, Character> ESCAPES = ImmutableMap.<Character, Character> builder()
-			.put('\\', '\\')
-			.put('\'', '\'')
-			.put('"', '"')
-			.put('0', '\0')
-			.put('b', '\b')
-			.put('t', '\t')
-			.put('n', '\n')
-			.put('f', '\f')
-			.put('r', '\r')
-			.build();
 
 	private final Set<String> operators = Sets.newTreeSet(new Comparator<String>() {
 
@@ -131,51 +120,9 @@ public class ExprTokenizerFactory {
 		}
 
 		private Token consumeStringLiteral() {
-			final StringBuilder result = new StringBuilder();
-
-			final char terminator = input.charAt(0);
-
-			int pos = 1;
-			while (true) {
-				if (pos >= input.length()) throw new IllegalArgumentException("Unterminated string: '" + result + "'");
-				final char ch = input.charAt(pos++);
-				if (ch == terminator) break;
-				if (ch == '\\') {
-					if (pos >= input.length()) throw new IllegalArgumentException("Unterminated escape sequence: '" + result + "'");
-					final char escaped = input.charAt(pos++);
-					switch (escaped) {
-						case 'x':
-							result.append(parseHexChar(pos, 2));
-							pos += 2;
-							break;
-						case 'u':
-							result.append(parseHexChar(pos, 4));
-							pos += 4;
-							break;
-						case 'U':
-							result.append(parseHexChar(pos, 8));
-							pos += 8;
-							break;
-						// TODO: case 'N':
-						default: {
-							final Character sub = ESCAPES.get(escaped);
-							Preconditions.checkArgument(sub != null, "Invalid escape sequence: " + escaped);
-							result.append(sub);
-						}
-					}
-				} else {
-					result.append(ch);
-				}
-			}
-
-			discardInput(pos);
-			return new Token(TokenType.STRING, result.toString());
-		}
-
-		private char[] parseHexChar(int pos, int digits) {
-			final String code = input.substring(pos, pos + digits);
-			final int intCode = Integer.parseInt(code, 16);
-			return Character.toChars(intCode);
+			final Pair<String, Integer> result = StringEscaper.unescapeDelimitedString(input, 0);
+			discardInput(result.getRight());
+			return new Token(TokenType.STRING, result.getLeft());
 		}
 
 		private void discardInput(int length) {
