@@ -89,13 +89,8 @@ public class TokenizerTest extends CalcTestUtils {
 		verifyTokens("\"\"", string(""));
 		verifyTokens("\"abc\"", string("abc"));
 
-		verifyTokens("'\"\"'", string("\"\""));
-		verifyTokens("\"''\"", string("''"));
-
-		verifyTokens("'a\"bc'", string("a\"bc"));
-		verifyTokens("\"a'bc\"", string("a'bc"));
-
 		verifyTokens("'a''b'", string("a"), string("b"));
+		verifyTokens("'a'\"b\"", string("a"), string("b"));
 		verifyTokens("'a' 'b'", string("a"), string("b"));
 	}
 

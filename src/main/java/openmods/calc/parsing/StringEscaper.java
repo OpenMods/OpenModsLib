@@ -1,5 +1,7 @@
 package openmods.calc.parsing;
 
+import gnu.trove.set.TCharSet;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.base.Preconditions;
@@ -19,6 +21,40 @@ public class StringEscaper {
 			.put('f', '\f')
 			.put('r', '\r')
 			.build();
+
+	public static String escapeString(String value, char delimiter, TCharSet nonEscapeChars) {
+		final StringBuilder builder = new StringBuilder();
+		builder.append(delimiter);
+
+		int pos = 0;
+		while (pos < value.length()) {
+			final char ch = value.charAt(pos++);
+			if (nonEscapeChars.contains(ch)) {
+				builder.append(ch);
+			} else {
+				final Character possibleEscape = ESCAPES.inverse().get(ch);
+				if (possibleEscape != null) {
+					builder.append("\\").append(possibleEscape);
+				} else if (ch >= 0x20 && ch < 0x7F) {
+					builder.append(ch);
+				} else if (ch <= 0xFF) {
+					builder.append(String.format("\\x%02X", (int)ch));
+				} else if (!Character.isHighSurrogate(ch)) {
+					builder.append(String.format("\\u%04X", (int)ch));
+				} else {
+					Preconditions.checkState(pos < value.length(), "Malformed UTF-16 string: high surrogate at end of string");
+					final char nextCh = value.charAt(pos++);
+					Preconditions.checkState(Character.isLowSurrogate(nextCh), "Malformed UTF-16 string: expected low surrogate, got: %s", Integer.toHexString(nextCh));
+					final int codePoint = Character.toCodePoint(ch, nextCh);
+					builder.append(String.format("\\U%08X", codePoint));
+				}
+			}
+
+		}
+
+		builder.append(delimiter);
+		return builder.toString();
+	}
 
 	public static Pair<String, Integer> unescapeDelimitedString(String input, int start) {
 		final StringBuilder result = new StringBuilder();
