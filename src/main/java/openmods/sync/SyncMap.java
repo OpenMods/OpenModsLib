@@ -83,7 +83,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 				int entityId = input.readInt();
 				Entity entity = world.getEntityByID(entityId);
 				if (entity instanceof ISyncMapProvider)
-				return (ISyncMapProvider)entity;
+					return (ISyncMapProvider)entity;
 
 				Log.warn("Invalid handler info: can't find ISyncHandler entity id %d", entityId);
 				return null;

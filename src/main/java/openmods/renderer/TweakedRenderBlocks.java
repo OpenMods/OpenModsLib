@@ -14,8 +14,7 @@ public class TweakedRenderBlocks extends FixedRenderBlocks {
 	public void renderFaceYNeg(Block p_147768_1_, double p_147768_2_, double p_147768_4_, double p_147768_6_, IIcon p_147768_8_) {
 		Tessellator tessellator = Tessellator.instance;
 
-		if (hasOverrideBlockTexture())
-		{
+		if (hasOverrideBlockTexture()) {
 			p_147768_8_ = this.overrideBlockTexture;
 		}
 
@@ -24,14 +23,12 @@ public class TweakedRenderBlocks extends FixedRenderBlocks {
 		double d5 = p_147768_8_.getInterpolatedV(this.renderMinZ * 16.0D);
 		double d6 = p_147768_8_.getInterpolatedV(this.renderMaxZ * 16.0D);
 
-		if (this.renderMinX < 0.0D || this.renderMaxX > 1.0D)
-		{
+		if (this.renderMinX < 0.0D || this.renderMaxX > 1.0D) {
 			d3 = p_147768_8_.getMinU();
 			d4 = p_147768_8_.getMaxU();
 		}
 
-		if (this.renderMinZ < 0.0D || this.renderMaxZ > 1.0D)
-		{
+		if (this.renderMinZ < 0.0D || this.renderMaxZ > 1.0D) {
 			d5 = p_147768_8_.getMinV();
 			d6 = p_147768_8_.getMaxV();
 		}
@@ -41,8 +38,7 @@ public class TweakedRenderBlocks extends FixedRenderBlocks {
 		double d9 = d5;
 		double d10 = d6;
 
-		if (this.uvRotateBottom == 2)
-		{
+		if (this.uvRotateBottom == 2) {
 			d3 = p_147768_8_.getInterpolatedU(this.renderMinZ * 16.0D);
 			d5 = p_147768_8_.getInterpolatedV(16.0D - this.renderMaxX * 16.0D);
 			d4 = p_147768_8_.getInterpolatedU(this.renderMaxZ * 16.0D);
@@ -53,9 +49,7 @@ public class TweakedRenderBlocks extends FixedRenderBlocks {
 			d8 = d4;
 			d5 = d6;
 			d6 = d9;
-		}
-		else if (this.uvRotateBottom == 1)
-		{
+		} else if (this.uvRotateBottom == 1) {
 			d3 = p_147768_8_.getInterpolatedU(16.0D - this.renderMaxZ * 16.0D);
 			d5 = p_147768_8_.getInterpolatedV(this.renderMinX * 16.0D);
 			d4 = p_147768_8_.getInterpolatedU(16.0D - this.renderMinZ * 16.0D);
@@ -66,9 +60,7 @@ public class TweakedRenderBlocks extends FixedRenderBlocks {
 			d4 = d8;
 			d9 = d6;
 			d10 = d5;
-		}
-		else if (this.uvRotateBottom == 3)
-		{
+		} else if (this.uvRotateBottom == 3) {
 			d3 = p_147768_8_.getInterpolatedU(16.0D - this.renderMinX * 16.0D);
 			d4 = p_147768_8_.getInterpolatedU(16.0D - this.renderMaxX * 16.0D);
 			d5 = p_147768_8_.getInterpolatedV(16.0D - this.renderMinZ * 16.0D);
@@ -85,14 +77,12 @@ public class TweakedRenderBlocks extends FixedRenderBlocks {
 		double d14 = p_147768_6_ + this.renderMinZ;
 		double d15 = p_147768_6_ + this.renderMaxZ;
 
-		if (this.renderFromInside)
-		{
+		if (this.renderFromInside) {
 			d11 = p_147768_2_ + this.renderMaxX;
 			d12 = p_147768_2_ + this.renderMinX;
 		}
 
-		if (this.enableAO)
-		{
+		if (this.enableAO) {
 			tessellator.setColorOpaque_F(this.colorRedTopLeft, this.colorGreenTopLeft, this.colorBlueTopLeft);
 			tessellator.setBrightness(this.brightnessTopLeft);
 			tessellator.addVertexWithUV(d11, d13, d15, d7, d10);
@@ -105,9 +95,7 @@ public class TweakedRenderBlocks extends FixedRenderBlocks {
 			tessellator.setColorOpaque_F(this.colorRedTopRight, this.colorGreenTopRight, this.colorBlueTopRight);
 			tessellator.setBrightness(this.brightnessTopRight);
 			tessellator.addVertexWithUV(d12, d13, d15, d3, d6);
-		}
-		else
-		{
+		} else {
 			tessellator.addVertexWithUV(d11, d13, d15, d8, d10);
 			tessellator.addVertexWithUV(d11, d13, d14, d3, d5);
 			tessellator.addVertexWithUV(d12, d13, d14, d7, d9);

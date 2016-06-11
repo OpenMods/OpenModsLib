@@ -89,7 +89,8 @@ public class GenericTank extends FluidTank {
 	public FluidStack drain(FluidStack resource, boolean doDrain) {
 		if (resource == null ||
 				fluid == null ||
-				fluid.isFluidEqual(resource)) return null;
+				fluid.isFluidEqual(resource))
+			return null;
 
 		return drain(resource.amount, doDrain);
 	}

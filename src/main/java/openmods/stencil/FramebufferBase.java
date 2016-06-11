@@ -65,26 +65,22 @@ public class FramebufferBase {
 
 		unbindFramebuffer();
 
-		if (this.allocatedDepthBuffer > -1)
-		{
+		if (this.allocatedDepthBuffer > -1) {
 			OpenGlHelper.func_153184_g(this.allocatedDepthBuffer);
 			this.allocatedDepthBuffer = -1;
 		}
 
-		if (this.allocatedStencilBuffer > -1)
-		{
+		if (this.allocatedStencilBuffer > -1) {
 			OpenGlHelper.func_153184_g(this.allocatedStencilBuffer);
 			this.allocatedStencilBuffer = -1;
 		}
 
-		if (this.allocatedTexture > -1)
-		{
+		if (this.allocatedTexture > -1) {
 			TextureUtil.deleteTexture(this.allocatedTexture);
 			this.allocatedTexture = -1;
 		}
 
-		if (this.framebufferObject > -1)
-		{
+		if (this.framebufferObject > -1) {
 			OpenGlHelper.func_153174_h(this.framebufferObject);
 			this.framebufferObject = -1;
 			this.usedDepthBuffer = -1;

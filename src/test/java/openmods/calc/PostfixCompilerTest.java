@@ -7,7 +7,7 @@ import openmods.calc.parsing.Token;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class PostfixCompilerTest extends CalcTestUtils{
+public class PostfixCompilerTest extends CalcTestUtils {
 
 	public final OperatorDictionary<String> operators = new OperatorDictionary<String>();
 	{

@@ -93,7 +93,8 @@ public class ItemDistribution {
 		if (sourceStack == null || maxAmount <= 0) return 0;
 
 		if (fromInventory instanceof ISidedInventory
-				&& !((ISidedInventory)fromInventory).canExtractItem(fromSlot, sourceStack, direction.ordinal())) return 0;
+				&& !((ISidedInventory)fromInventory).canExtractItem(fromSlot, sourceStack, direction.ordinal()))
+			return 0;
 
 		final int amountToMove = Math.min(sourceStack.stackSize, maxAmount);
 		ItemStack clonedSourceStack = InventoryUtils.copyAndChange(sourceStack, amountToMove);
@@ -152,7 +153,8 @@ public class ItemDistribution {
 		if (sourceStack == null || maxAmount <= 0) return 0;
 
 		if (fromInventory instanceof ISidedInventory
-				&& !((ISidedInventory)fromInventory).canExtractItem(fromSlot, sourceStack, direction.ordinal())) return 0;
+				&& !((ISidedInventory)fromInventory).canExtractItem(fromSlot, sourceStack, direction.ordinal()))
+			return 0;
 
 		final int amountToMove = Math.min(sourceStack.stackSize, maxAmount);
 		ItemStack insertedStack = InventoryUtils.copyAndChange(sourceStack, amountToMove);

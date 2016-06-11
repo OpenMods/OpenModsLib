@@ -101,8 +101,7 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 					icon.getMaxV(),
 					icon.getIconWidth(),
 					icon.getIconHeight(),
-					0.0625F
-					);
+					0.0625F);
 		}
 	}
 }

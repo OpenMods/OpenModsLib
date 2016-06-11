@@ -100,10 +100,10 @@ public class GeometryUtils {
 	public static void makeLine(int startX, int startY, int startZ, ForgeDirection direction, int length, IShapeable shapeable) {
 		if (length < 0) return;
 		for (int offset = 0; offset <= length; offset++)
-			/* Create a line in the direction of direction, length in size */
-			shapeable.setBlock(startX + (offset * direction.offsetX), startY
-					+ (offset * direction.offsetY), startZ
-					+ (offset * direction.offsetZ));
+			// Create a line in the direction of direction, length in size
+			shapeable.setBlock(startX + (offset * direction.offsetX),
+					startY + (offset * direction.offsetY),
+					startZ + (offset * direction.offsetZ));
 	}
 
 	public static void makePlane(int startX, int startY, int startZ, int width, int height, Axis right, Axis up, IShapeable shapeable) {

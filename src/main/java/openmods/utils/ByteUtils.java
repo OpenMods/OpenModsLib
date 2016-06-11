@@ -53,7 +53,7 @@ public class ByteUtils {
 				value >>= 1;
 
 				if (result) return convert(count++);
-				else ++count;
+				else count++;
 			}
 			throw new IllegalStateException();
 		}

@@ -122,8 +122,7 @@ public class RenderUtils {
 		float r;
 		float g;
 		float b;
-		if (colorMultiplier > -1)
-		{
+		if (colorMultiplier > -1) {
 			r = (colorMultiplier >> 16 & 255) / 255.0F;
 			g = (colorMultiplier >> 8 & 255) / 255.0F;
 			b = (colorMultiplier & 255) / 255.0F;

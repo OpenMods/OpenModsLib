@@ -98,12 +98,10 @@ public class ApiFactory {
 	private static class ClassInfoCache extends CachedFactory<String, ClassInfo> {
 		@Override
 		protected ClassInfo create(String className) {
-			try
-			{
+			try {
 				final Class<?> cls = Class.forName(className, true, getClass().getClassLoader());
 				return new ClassInfo(cls);
-			} catch (Exception ex)
-			{
+			} catch (Exception ex) {
 				throw Throwables.propagate(ex);
 			}
 		}
@@ -137,8 +135,7 @@ public class ApiFactory {
 					Loader.instance().activeModContainer().getModId(),
 					targetClassName,
 					targetObjectName,
-					data.getCandidate().getModContainer()
-					);
+					data.getCandidate().getModContainer());
 		} else {
 			Log.info("Can't set API field %s:%s - no API for type %s",
 					targetClassName, targetObjectName, castAcceptedType);

@@ -57,8 +57,7 @@ public class CommandSource extends SidedCommand {
 			for (Map.Entry<File, Set<String>> e : meta.providerMods.entrySet())
 				sender.addChatMessage(new ChatComponentTranslation("openmodslib.command.class_provider",
 						e.getKey().getAbsolutePath(),
-						Joiner.on(',').join(e.getValue()))
-						);
+						Joiner.on(',').join(e.getValue())));
 		}
 	}
 

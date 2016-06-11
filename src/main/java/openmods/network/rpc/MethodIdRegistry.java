@@ -53,7 +53,8 @@ public class MethodIdRegistry implements IDataVisitor<String, Integer> {
 		} catch (NoSuchMethodException e) {
 			throw new IllegalArgumentException(
 					String.format("Can't find method, class %s has methods %s",
-							declaringCls, Arrays.toString(declaringCls.getMethods())), e);
+							declaringCls, Arrays.toString(declaringCls.getMethods())),
+					e);
 		}
 	}
 

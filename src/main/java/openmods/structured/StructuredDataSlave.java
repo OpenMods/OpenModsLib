@@ -76,7 +76,8 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 							msg.maxContainerId != maxContainerId ||
 							msg.elementCount != elementCount ||
 							msg.minElementId != minElementId ||
-							msg.maxElementId != maxElementId) throw new ConsistencyCheckFailed("Validation packet not matched");
+							msg.maxElementId != maxElementId)
+						throw new ConsistencyCheckFailed("Validation packet not matched");
 				} else if (c instanceof Reset) {
 					removeAll();
 					isStructureUpdated = true;

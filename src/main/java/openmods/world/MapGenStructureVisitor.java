@@ -83,8 +83,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 
 			if (markerMethodFound && localVarId != null && opcode == Opcodes.IFEQ) {
 				Log.debug("All conditions matched, inserting extra condition");
-				super.visitVarInsn(Opcodes.ALOAD, localVarId); // hopefully
-																// 'structurestart'
+				super.visitVarInsn(Opcodes.ALOAD, localVarId); // hopefully 'structurestart'
 				String getComponentsMethodName = VisitorHelper.useSrgNames()? "func_75073_b" : "getComponents";
 				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, structureStartCls.name(), getComponentsMethodName, "()Ljava/util/LinkedList;", false);
 				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/LinkedList", "isEmpty", "()Z", false);
@@ -107,8 +106,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 		String descriptor = Type.getMethodDescriptor(
 				chunkPositionCls.type(),
 				worldCls.type(),
-				Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE
-				);
+				Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE);
 
 		modifiedMethod = new MethodMatcher(obfClassName, descriptor, "func_151545_a", "func_151545_a");
 		markerMethod = new MethodMatcher(structureStartCls, "()Z", "isSizeableStructure", "func_75069_d");

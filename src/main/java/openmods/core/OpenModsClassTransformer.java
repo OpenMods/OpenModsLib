@@ -44,8 +44,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 			"com.google.",
 			"com.mojang.",
 			"joptsimple.",
-			"tv.twitch."
-			);
+			"tv.twitch.");
 
 	private final Map<String, TransformProvider> vanillaPatches = Maps.newHashMap();
 

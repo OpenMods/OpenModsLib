@@ -70,8 +70,7 @@ public class ItemUtils {
 	}
 
 	// backports from MC1.8
-	public static Item getByNameOrId(String id)
-	{
+	public static Item getByNameOrId(String id) {
 		final Item item = GameData.getItemRegistry().getObject(id);
 		if (item != null) return item;
 

@@ -11,7 +11,7 @@ public class SideRotationConfigurator {
 
 	public void setupFaces(RenderBlocks renderer, Orientation orientation) {
 		switch (orientation) {
-		// TOP = X+
+			// TOP = X+
 			case ZP_XP:
 				renderer.uvRotateTop = ROTATE_CW;
 				renderer.uvRotateBottom = ROTATE_CCW;
