@@ -1,13 +1,11 @@
 package openmods.inventory;
 
-import java.util.List;
-
-import net.minecraft.item.ItemStack;
-import openmods.inventory.comparator.ComparatorComponents;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
+import java.util.List;
+import net.minecraft.item.ItemStack;
+import openmods.inventory.comparator.ComparatorComponents;
 
 public class StackComparatorBuilder {
 

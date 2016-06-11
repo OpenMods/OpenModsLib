@@ -1,6 +1,13 @@
 package openmods.renderer.shaders;
 
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.ARBDrawInstanced;
+import org.lwjgl.opengl.ARBInstancedArrays;
+import org.lwjgl.opengl.ARBVertexArrayObject;
+import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL31;
+import org.lwjgl.opengl.GL33;
+import org.lwjgl.opengl.GLContext;
 
 public class ArraysHelper {
 	static {

@@ -1,9 +1,8 @@
 package openmods.inventory.comparator;
 
+import com.google.common.base.Objects;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-
-import com.google.common.base.Objects;
 
 public class EqualComponents {
 

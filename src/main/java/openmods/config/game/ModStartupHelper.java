@@ -1,8 +1,10 @@
 package openmods.config.game;
 
+import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
+import cpw.mods.fml.common.event.FMLMissingMappingsEvent;
 import java.io.File;
 import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
@@ -10,11 +12,6 @@ import net.minecraftforge.common.config.Property;
 import openmods.config.BlockInstances;
 import openmods.config.ConfigStorage;
 import openmods.config.ItemInstances;
-
-import com.google.common.collect.Sets;
-import com.google.common.collect.Table;
-
-import cpw.mods.fml.common.event.FMLMissingMappingsEvent;
 
 public class ModStartupHelper {
 

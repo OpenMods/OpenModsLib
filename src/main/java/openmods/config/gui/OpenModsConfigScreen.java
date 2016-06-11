@@ -1,7 +1,13 @@
 package openmods.config.gui;
 
+import com.google.common.collect.Lists;
+import cpw.mods.fml.client.config.DummyConfigElement.DummyCategoryElement;
+import cpw.mods.fml.client.config.GuiConfig;
+import cpw.mods.fml.client.config.GuiConfigEntries;
+import cpw.mods.fml.client.config.GuiConfigEntries.CategoryEntry;
+import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
+import cpw.mods.fml.client.config.IConfigElement;
 import java.util.List;
-
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.ConfigElement;
@@ -11,13 +17,6 @@ import openmods.config.game.FeatureRegistry;
 import openmods.config.properties.ConfigProcessing;
 import openmods.config.properties.ConfigProcessing.ModConfig;
 import openmods.config.properties.ConfigPropertyMeta;
-
-import com.google.common.collect.Lists;
-
-import cpw.mods.fml.client.config.DummyConfigElement.DummyCategoryElement;
-import cpw.mods.fml.client.config.*;
-import cpw.mods.fml.client.config.GuiConfigEntries.CategoryEntry;
-import cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class OpenModsConfigScreen extends GuiConfig {

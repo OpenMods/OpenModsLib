@@ -1,14 +1,12 @@
 package openmods.calc.command;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.List;
-
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.ChatComponentTranslation;
-
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 public class CommandCalcFunction extends CommandCalcBase {
 	private static final String NAME = "=func";

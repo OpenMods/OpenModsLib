@@ -1,7 +1,13 @@
 package openmods.block;
 
-import java.util.*;
-
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -11,11 +17,25 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.*;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.IIcon;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import openmods.api.*;
+import openmods.api.IActivateAwareTile;
+import openmods.api.IAddAwareTile;
+import openmods.api.IBreakAwareTile;
+import openmods.api.ICustomBreakDrops;
+import openmods.api.ICustomHarvestDrops;
+import openmods.api.ICustomPickItem;
+import openmods.api.IHasGui;
+import openmods.api.IIconProvider;
+import openmods.api.INeighbourAwareTile;
+import openmods.api.IPlaceAwareTile;
+import openmods.api.IPlacerAwareTile;
+import openmods.api.ISurfaceAttachment;
 import openmods.config.game.IRegisterableBlock;
 import openmods.geometry.BlockSpaceTransform;
 import openmods.geometry.Orientation;
@@ -23,12 +43,6 @@ import openmods.inventory.IInventoryProvider;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.BlockNotifyFlags;
 import openmods.utils.BlockUtils;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenBlock extends Block implements IRegisterableBlock {
 	public static final int OPEN_MODS_TE_GUI = -1;

@@ -1,11 +1,13 @@
 package openmods.gui.component;
 
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-
 import javax.annotation.Nullable;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.item.ItemStack;
@@ -13,13 +15,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import openmods.utils.CollectionUtils;
-
 import org.lwjgl.opengl.GL11;
-
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 public class GuiComponentCraftingGrid extends GuiComponentSprite {
 

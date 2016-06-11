@@ -1,16 +1,14 @@
 package openmods.utils.render;
 
+import com.google.common.collect.ImmutableList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.shapes.IShapeable;
 import openmods.utils.Coord;
 import openmods.utils.MathUtils;
-
-import com.google.common.collect.ImmutableList;
 
 public class GeometryUtils {
 

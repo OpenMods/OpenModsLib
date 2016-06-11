@@ -1,7 +1,6 @@
 package openmods.reflection;
 
 import java.lang.reflect.Constructor;
-
 import openmods.serializable.IInstanceFactory;
 import openmods.utils.SneakyThrower;
 

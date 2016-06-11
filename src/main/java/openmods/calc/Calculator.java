@@ -1,16 +1,17 @@
 package openmods.calc;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import openmods.calc.parsing.*;
-import openmods.utils.Stack;
-
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import java.util.List;
+import javax.annotation.Nullable;
+import openmods.calc.parsing.ExprTokenizerFactory;
+import openmods.calc.parsing.ICompiler;
+import openmods.calc.parsing.InfixCompiler;
+import openmods.calc.parsing.PostfixCompiler;
+import openmods.calc.parsing.Token;
+import openmods.utils.Stack;
 
 public abstract class Calculator<E> {
 

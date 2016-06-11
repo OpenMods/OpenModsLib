@@ -1,13 +1,14 @@
 package openmods.stencil;
 
+import com.google.common.base.Throwables;
 import openmods.Log;
 import openmods.api.IResultListener;
 import openmods.asm.MethodMatcher;
-
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
-
-import com.google.common.base.Throwables;
 
 public class CapabilitiesHookInjector extends ClassVisitor {
 

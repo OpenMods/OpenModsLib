@@ -1,13 +1,13 @@
 package openmods.movement;
 
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MovementInput;
 import net.minecraftforge.common.MinecraftForge;
 import openmods.movement.PlayerMovementEvent.Type;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 
 public class PlayerMovementManager {
 

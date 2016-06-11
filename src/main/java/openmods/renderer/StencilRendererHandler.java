@@ -1,9 +1,9 @@
 package openmods.renderer;
 
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public abstract class StencilRendererHandler {
 

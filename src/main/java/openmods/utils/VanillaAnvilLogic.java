@@ -2,7 +2,6 @@ package openmods.utils;
 
 import java.util.Iterator;
 import java.util.Map;
-
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Items;

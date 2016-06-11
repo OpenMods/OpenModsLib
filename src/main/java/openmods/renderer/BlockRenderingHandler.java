@@ -1,14 +1,11 @@
 package openmods.renderer;
 
+import com.google.common.collect.Maps;
+import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import java.util.Map;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.world.IBlockAccess;
-
-import com.google.common.collect.Maps;
-
-import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
 public class BlockRenderingHandler implements ISimpleBlockRenderingHandler {
 

@@ -1,7 +1,11 @@
 package openmods.proxy;
 
+import com.google.common.base.Optional;
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.ICrashCallable;
+import cpw.mods.fml.common.network.IGuiHandler;
 import java.io.File;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -17,7 +21,11 @@ import openmods.LibConfig;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.block.BlockSelectionHandler;
-import openmods.calc.command.*;
+import openmods.calc.command.CalcState;
+import openmods.calc.command.CommandCalcConfig;
+import openmods.calc.command.CommandCalcEvaluate;
+import openmods.calc.command.CommandCalcFunction;
+import openmods.calc.command.CommandCalcLet;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
@@ -26,13 +34,6 @@ import openmods.stencil.FramebufferConstants;
 import openmods.stencil.StencilPoolManager;
 import openmods.stencil.StencilPoolManager.StencilPool;
 import openmods.utils.render.RenderUtils;
-
-import com.google.common.base.Optional;
-
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.ICrashCallable;
-import cpw.mods.fml.common.network.IGuiHandler;
 
 public final class OpenClientProxy implements IOpenModsProxy {
 

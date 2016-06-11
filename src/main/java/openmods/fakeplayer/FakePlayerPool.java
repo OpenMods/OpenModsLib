@@ -1,17 +1,16 @@
 package openmods.fakeplayer;
 
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import java.util.Map;
 import java.util.Queue;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.world.WorldEvent;
 import openmods.LibConfig;
 import openmods.Log;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class FakePlayerPool {
 

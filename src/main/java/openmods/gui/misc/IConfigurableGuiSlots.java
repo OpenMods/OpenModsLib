@@ -1,7 +1,6 @@
 package openmods.gui.misc;
 
 import java.util.Set;
-
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;

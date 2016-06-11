@@ -1,7 +1,6 @@
 package openmods.stencil;
 
 import java.util.Set;
-
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import openmods.Log;

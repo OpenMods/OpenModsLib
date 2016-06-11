@@ -1,15 +1,13 @@
 package openmods.inventory;
 
-import java.util.List;
-
-import net.minecraft.item.ItemStack;
-import openmods.inventory.comparator.EqualComponents;
-import openmods.inventory.comparator.EqualComponents.IItemStackTester;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.util.List;
+import net.minecraft.item.ItemStack;
+import openmods.inventory.comparator.EqualComponents;
+import openmods.inventory.comparator.EqualComponents.IItemStackTester;
 
 public class StackEqualityTesterBuilder {
 

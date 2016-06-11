@@ -1,17 +1,14 @@
 package openmods.world;
 
-import java.util.Map;
-import java.util.Queue;
-
-import net.minecraft.world.World;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
-
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import cpw.mods.fml.common.gameevent.TickEvent.WorldTickEvent;
 import cpw.mods.fml.relauncher.Side;
+import java.util.Map;
+import java.util.Queue;
+import net.minecraft.world.World;
 
 public class DelayedActionTickHandler {
 

@@ -4,8 +4,10 @@ import openmods.Log;
 import openmods.api.IResultListener;
 import openmods.asm.MappedType;
 import openmods.asm.MethodMatcher;
-
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 public class FramebufferInjector extends ClassVisitor {
 

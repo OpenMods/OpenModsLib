@@ -10,10 +10,11 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
-import net.minecraftforge.client.*;
+import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.IItemRenderer;
 import net.minecraftforge.client.IItemRenderer.ItemRenderType;
+import net.minecraftforge.client.MinecraftForgeClient;
 import openmods.utils.TextureUtils;
-
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentItemStackSpinner extends BaseComponent {

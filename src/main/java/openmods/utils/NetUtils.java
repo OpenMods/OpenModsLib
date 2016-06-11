@@ -1,11 +1,14 @@
 package openmods.utils;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
+import cpw.mods.fml.relauncher.ReflectionHelper;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-
 import java.lang.reflect.Field;
 import java.util.Set;
-
 import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.EntityTrackerEntry;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -13,13 +16,6 @@ import net.minecraft.server.management.PlayerManager;
 import net.minecraft.util.IntHashMap;
 import net.minecraft.world.WorldServer;
 import openmods.Log;
-
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-
-import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 
 public class NetUtils {
 

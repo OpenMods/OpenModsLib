@@ -1,17 +1,13 @@
 package openmods.calc;
 
-import static openmods.calc.CalcTestUtils.*;
-
 import java.util.Arrays;
 import java.util.List;
-
 import openmods.calc.parsing.InfixCompiler;
 import openmods.calc.parsing.Token;
-
 import org.junit.Assert;
 import org.junit.Test;
 
-public class InfixCompilerTest {
+public class InfixCompilerTest extends CalcTestUtils {
 
 	public final OperatorDictionary<String> operators = new OperatorDictionary<String>();
 	{

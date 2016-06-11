@@ -1,28 +1,34 @@
 package openmods.serializable;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.lang.annotation.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.util.*;
-
-import openmods.serializable.cls.SerializableClass;
-import openmods.serializable.cls.Serialize;
-import openmods.utils.io.IStreamSerializer;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
-
 import com.google.common.base.Preconditions;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.common.reflect.TypeToken;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import openmods.serializable.cls.SerializableClass;
+import openmods.serializable.cls.Serialize;
+import openmods.utils.io.IStreamSerializer;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 public class SerializableTest {
 

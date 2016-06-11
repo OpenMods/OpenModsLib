@@ -1,13 +1,12 @@
 package openmods.utils;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.collect.UnmodifiableIterator;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Set;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.collect.UnmodifiableIterator;
 
 public class ByteUtils {
 

@@ -3,7 +3,6 @@ package openmods.serializable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
 import openmods.reflection.ConstructorAccess;
 import openmods.utils.io.IStreamReader;
 import openmods.utils.io.IStreamSerializer;

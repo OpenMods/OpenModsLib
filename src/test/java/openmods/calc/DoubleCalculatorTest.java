@@ -3,7 +3,6 @@ package openmods.calc;
 import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.Calculator.ExprType;
 import openmods.calc.types.fp.DoubleCalculator;
-
 import org.junit.Test;
 
 public class DoubleCalculatorTest {

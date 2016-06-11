@@ -1,10 +1,8 @@
 package openmods.integration;
 
-import java.util.List;
-
-import openmods.Log;
-
 import com.google.common.collect.Lists;
+import java.util.List;
+import openmods.Log;
 
 public class Integration {
 

@@ -1,11 +1,9 @@
 package openmods.calc.command;
 
+import com.google.common.base.Joiner;
 import java.util.List;
-
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-
-import com.google.common.base.Joiner;
 
 abstract class CommandCalcBase implements ICommand {
 	protected final Joiner spaceJoiner = Joiner.on(' ');

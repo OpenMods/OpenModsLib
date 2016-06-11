@@ -1,15 +1,22 @@
 package openmods.utils.io;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Map;
-
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagByte;
+import net.minecraft.nbt.NBTTagByteArray;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagFloat;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagLong;
+import net.minecraft.nbt.NBTTagShort;
+import net.minecraft.nbt.NBTTagString;
 import openmods.utils.ByteUtils;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 
 public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<T>, IStringSerializer<T> {
 

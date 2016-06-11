@@ -1,24 +1,21 @@
 package openmods.renderer.shaders;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
-
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.OpenGLException;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class ShaderProgramBuilder {
 

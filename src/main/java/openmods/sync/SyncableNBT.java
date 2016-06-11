@@ -1,12 +1,13 @@
 package openmods.sync;
 
-import java.io.*;
-
+import com.google.common.io.ByteStreams;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import openmods.utils.ByteUtils;
-
-import com.google.common.io.ByteStreams;
 
 /***
  * Note: you must manually .markDirty() right now

@@ -1,12 +1,10 @@
 package openmods.sync;
 
+import com.google.common.base.Objects;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
 import net.minecraft.nbt.NBTTagCompound;
-
-import com.google.common.base.Objects;
 
 public class SyncableString extends SyncableObjectBase implements ISyncableValueProvider<String> {
 

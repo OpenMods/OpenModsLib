@@ -1,12 +1,10 @@
 package openmods.calc.command;
 
+import com.google.common.collect.Iterables;
 import java.util.Arrays;
-
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.ChatComponentTranslation;
-
-import com.google.common.collect.Iterables;
 
 public class CommandCalcLet extends CommandCalcBase {
 	private static final String NAME = "=let";

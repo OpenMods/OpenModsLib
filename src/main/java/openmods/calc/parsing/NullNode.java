@@ -1,10 +1,8 @@
 package openmods.calc.parsing;
 
-import java.util.List;
-
-import openmods.calc.IExecutable;
-
 import com.google.common.base.Preconditions;
+import java.util.List;
+import openmods.calc.IExecutable;
 
 public class NullNode<E> implements IInnerNode<E> {
 

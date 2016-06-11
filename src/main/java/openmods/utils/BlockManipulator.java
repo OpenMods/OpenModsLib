@@ -1,7 +1,7 @@
 package openmods.utils;
 
+import com.google.common.base.Preconditions;
 import javax.annotation.Nonnull;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -9,8 +9,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.world.BlockEvent;
-
-import com.google.common.base.Preconditions;
 
 public class BlockManipulator {
 

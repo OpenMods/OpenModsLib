@@ -1,12 +1,19 @@
 package openmods.config.game;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
+import cpw.mods.fml.common.event.FMLMissingMappingsEvent.MissingMapping;
+import cpw.mods.fml.common.registry.GameRegistry;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
@@ -16,16 +23,6 @@ import openmods.config.BlockInstances;
 import openmods.config.InstanceContainer;
 import openmods.config.ItemInstances;
 import openmods.config.game.RegisterBlock.RegisterTileEntity;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.ModContainer;
-import cpw.mods.fml.common.event.FMLMissingMappingsEvent.MissingMapping;
-import cpw.mods.fml.common.registry.GameRegistry;
 
 public class GameConfigProvider {
 

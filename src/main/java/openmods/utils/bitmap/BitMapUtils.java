@@ -1,16 +1,14 @@
 package openmods.utils.bitmap;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import net.minecraftforge.common.util.ForgeDirection;
-import openmods.api.IValueProvider;
-import openmods.api.IValueReceiver;
-
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import net.minecraftforge.common.util.ForgeDirection;
+import openmods.api.IValueProvider;
+import openmods.api.IValueReceiver;
 
 public class BitMapUtils {
 

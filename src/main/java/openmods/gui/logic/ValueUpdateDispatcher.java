@@ -1,10 +1,9 @@
 package openmods.gui.logic;
 
-import java.util.Set;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import java.util.Set;
 
 public class ValueUpdateDispatcher {
 

@@ -1,10 +1,12 @@
 package openmods.datastore;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.*;
 
 public class DataStoreManager {
 

@@ -2,7 +2,6 @@ package openmods.gui.component;
 
 import net.minecraft.client.Minecraft;
 import openmods.gui.misc.BoxRenderer;
-
 import org.lwjgl.input.Mouse;
 
 public abstract class GuiComponentButton extends GuiComponentResizable {

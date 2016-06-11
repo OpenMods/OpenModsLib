@@ -1,9 +1,7 @@
 package openmods.calc.types.bigint;
 
 import java.math.BigInteger;
-
 import openmods.calc.PositionalNotationPrinter;
-
 import org.apache.commons.lang3.tuple.Pair;
 
 public class BigIntPrinter extends PositionalNotationPrinter<BigInteger> {

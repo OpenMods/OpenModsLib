@@ -1,11 +1,10 @@
 package openmods.words;
 
+import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
-import com.google.common.collect.ImmutableList;
 
 public class Alternative implements IGenerator {
 

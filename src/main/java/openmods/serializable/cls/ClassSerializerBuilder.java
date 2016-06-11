@@ -1,18 +1,5 @@
 package openmods.serializable.cls;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Set;
-
-import openmods.reflection.FieldAccess;
-import openmods.reflection.TypeUtils;
-import openmods.serializable.IObjectSerializer;
-import openmods.serializable.SerializerRegistry;
-import openmods.utils.io.*;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -20,6 +7,20 @@ import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.common.reflect.TypeToken;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Set;
+import openmods.reflection.FieldAccess;
+import openmods.reflection.TypeUtils;
+import openmods.serializable.IObjectSerializer;
+import openmods.serializable.SerializerRegistry;
+import openmods.utils.io.IStreamSerializer;
+import openmods.utils.io.InputBitStream;
+import openmods.utils.io.OutputBitStream;
+import openmods.utils.io.StreamUtils;
 
 public class ClassSerializerBuilder<T> {
 

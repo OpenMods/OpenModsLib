@@ -1,8 +1,8 @@
 package openmods.integration;
 
+import cpw.mods.fml.common.Loader;
 import openmods.conditions.ICondition;
 import openmods.reflection.SafeClassLoad;
-import cpw.mods.fml.common.Loader;
 
 public class Conditions extends openmods.conditions.Conditions {
 

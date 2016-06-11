@@ -1,26 +1,22 @@
 package openmods.access;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.discovery.ASMDataTable;
+import cpw.mods.fml.common.discovery.ASMDataTable.ASMData;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Set;
-
 import net.minecraftforge.common.util.EnumHelper;
 import openmods.Log;
 import openmods.utils.CachedFactory;
-
 import org.objectweb.asm.Type;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.discovery.ASMDataTable;
-import cpw.mods.fml.common.discovery.ASMDataTable.ASMData;
 
 public class ApiFactory {
 

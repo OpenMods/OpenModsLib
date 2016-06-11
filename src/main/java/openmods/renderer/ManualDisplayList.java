@@ -1,8 +1,7 @@
 package openmods.renderer;
 
-import org.lwjgl.opengl.GL11;
-
 import com.google.common.base.Preconditions;
+import org.lwjgl.opengl.GL11;
 
 public class ManualDisplayList {
 

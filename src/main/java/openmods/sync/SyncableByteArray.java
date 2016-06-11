@@ -3,7 +3,6 @@ package openmods.sync;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
 import net.minecraft.nbt.NBTTagCompound;
 
 public class SyncableByteArray extends SyncableObjectBase implements ISyncableValueProvider<byte[]> {

@@ -1,8 +1,7 @@
 package openmods.geometry;
 
-import net.minecraft.util.Vec3;
-
 import com.google.common.base.Objects;
+import net.minecraft.util.Vec3;
 
 public class Matrix3d {
 

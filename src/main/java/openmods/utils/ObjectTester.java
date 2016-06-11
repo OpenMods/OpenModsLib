@@ -1,10 +1,9 @@
 package openmods.utils;
 
-import java.util.List;
-import java.util.Set;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import java.util.List;
+import java.util.Set;
 
 public class ObjectTester<T> implements ITester<T> {
 	public static class ClassTester<T> implements ITester<T> {

@@ -1,7 +1,6 @@
 package openmods.calc.types.fp;
 
 import openmods.calc.PositionalNotationPrinter;
-
 import org.apache.commons.lang3.tuple.Pair;
 
 public class DoublePrinter extends PositionalNotationPrinter<Double> {

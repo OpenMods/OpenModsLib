@@ -1,5 +1,7 @@
 package openmods.tileentity;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -19,8 +21,6 @@ import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.network.senders.IPacketSender;
 import openmods.reflection.TypeUtils;
 import openmods.utils.Coord;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class OpenTileEntity extends TileEntity implements IRpcTargetProvider {
 

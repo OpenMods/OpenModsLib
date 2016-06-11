@@ -2,10 +2,8 @@ package openmods.utils.render;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.util.Vec3;
-
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 

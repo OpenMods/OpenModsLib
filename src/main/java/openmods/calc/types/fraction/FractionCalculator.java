@@ -1,13 +1,17 @@
 package openmods.calc.types.fraction;
 
-import openmods.calc.*;
+import com.google.common.collect.Ordering;
+import openmods.calc.BinaryOperator;
+import openmods.calc.Calculator;
+import openmods.calc.IValueParser;
+import openmods.calc.OperatorDictionary;
+import openmods.calc.TopFrame;
+import openmods.calc.UnaryFunction;
+import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.ICompiler;
 import openmods.calc.parsing.InfixCompiler;
 import openmods.config.simpler.Configurable;
-
 import org.apache.commons.lang3.math.Fraction;
-
-import com.google.common.collect.Ordering;
 
 public class FractionCalculator extends Calculator<Fraction> {
 

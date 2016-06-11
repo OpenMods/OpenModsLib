@@ -3,7 +3,6 @@ package openmods.utils;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
 import net.minecraft.nbt.NBTTagCompound;
 
 // NOTE: I'm aware of java.util.BitSet, but it has no byte[] convenrsion functions in Java < 7, so here is derpy version

@@ -1,6 +1,14 @@
 package openmods.calc.types.fp;
 
-import openmods.calc.*;
+import openmods.calc.BinaryFunction;
+import openmods.calc.BinaryOperator;
+import openmods.calc.Calculator;
+import openmods.calc.Constant;
+import openmods.calc.IValueParser;
+import openmods.calc.OperatorDictionary;
+import openmods.calc.TopFrame;
+import openmods.calc.UnaryFunction;
+import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.ICompiler;
 import openmods.calc.parsing.InfixCompiler;
 import openmods.config.simpler.Configurable;

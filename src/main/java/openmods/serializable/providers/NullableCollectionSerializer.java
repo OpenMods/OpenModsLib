@@ -1,18 +1,19 @@
 package openmods.serializable.providers;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.lang.reflect.Type;
-
-import openmods.serializable.SerializerRegistry;
-import openmods.utils.ByteUtils;
-import openmods.utils.io.*;
-
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.common.reflect.TypeToken;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import openmods.serializable.SerializerRegistry;
+import openmods.utils.ByteUtils;
+import openmods.utils.io.IStreamSerializer;
+import openmods.utils.io.InputBitStream;
+import openmods.utils.io.OutputBitStream;
+import openmods.utils.io.StreamUtils;
 
 public abstract class NullableCollectionSerializer<T> implements IStreamSerializer<T> {
 

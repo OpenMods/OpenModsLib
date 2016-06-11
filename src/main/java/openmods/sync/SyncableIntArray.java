@@ -4,7 +4,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-
 import net.minecraft.nbt.NBTTagCompound;
 
 public class SyncableIntArray extends SyncableObjectBase implements ISyncableValueProvider<int[]> {

@@ -1,7 +1,6 @@
 package openmods.utils;
 
 import java.util.List;
-
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.IInventory;

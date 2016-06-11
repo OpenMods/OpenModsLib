@@ -1,13 +1,11 @@
 package openmods.sync;
 
-import java.lang.reflect.Field;
-import java.util.List;
-
-import openmods.Log;
-import openmods.utils.FieldsSelector;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import java.lang.reflect.Field;
+import java.util.List;
+import openmods.Log;
+import openmods.utils.FieldsSelector;
 
 public class SyncObjectScanner extends FieldsSelector {
 	public static final SyncObjectScanner INSTANCE = new SyncObjectScanner();

@@ -1,7 +1,6 @@
 package openmods.gui.component;
 
 import java.util.List;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -9,9 +8,11 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import openmods.gui.listener.*;
+import openmods.gui.listener.IKeyTypedListener;
+import openmods.gui.listener.IMouseDownListener;
+import openmods.gui.listener.IMouseDragListener;
+import openmods.gui.listener.IMouseUpListener;
 import openmods.utils.TextureUtils;
-
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 

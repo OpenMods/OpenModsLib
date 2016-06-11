@@ -1,5 +1,8 @@
 package openmods.entity;
 
+import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -21,9 +24,6 @@ import openmods.fakeplayer.FakePlayerPool.PlayerUserReturning;
 import openmods.fakeplayer.OpenModsFakePlayer;
 import openmods.utils.BlockManipulator;
 import openmods.utils.BlockProperties;
-import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 //TODO: Review later
 public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {

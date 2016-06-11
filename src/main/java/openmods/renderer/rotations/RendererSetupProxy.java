@@ -1,11 +1,11 @@
 package openmods.renderer.rotations;
 
-import net.minecraft.client.renderer.RenderBlocks;
-import openmods.OpenMods;
-import openmods.geometry.Orientation;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.client.renderer.RenderBlocks;
+import openmods.OpenMods;
+import openmods.geometry.Orientation;
 
 public abstract class RendererSetupProxy {
 

@@ -1,11 +1,10 @@
 package openmods.calc;
 
-import java.util.List;
-
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import java.util.List;
 
 public class ExecutableList<E> implements IExecutable<E> {
 

@@ -1,9 +1,11 @@
 package openmods.inventory.legacy;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
@@ -12,10 +14,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 import openmods.inventory.GenericInventory;
 import openmods.utils.BlockUtils;
 import openmods.utils.InventoryUtils;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 // TODO Legacy methods, replace with something sane
 public class ItemDistribution {

@@ -7,7 +7,6 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import openmods.entity.EntityBlock;
-
 import org.lwjgl.opengl.GL11;
 
 public class EntityBlockRenderer extends Render {

@@ -1,7 +1,6 @@
 package openmods.geometry;
 
 import net.minecraft.util.Vec3;
-
 import org.junit.Assert;
 import org.junit.Test;
 

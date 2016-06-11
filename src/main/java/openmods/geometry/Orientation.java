@@ -1,10 +1,9 @@
 package openmods.geometry;
 
+import com.google.common.base.Preconditions;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import net.minecraftforge.common.util.ForgeDirection;
-
-import com.google.common.base.Preconditions;
 
 public enum Orientation {
 	XN_YN(HalfAxis.NEG_X, HalfAxis.NEG_Y),

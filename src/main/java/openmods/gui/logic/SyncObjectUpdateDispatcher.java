@@ -1,7 +1,6 @@
 package openmods.gui.logic;
 
 import java.util.Set;
-
 import openmods.sync.ISyncListener;
 import openmods.sync.ISyncableObject;
 

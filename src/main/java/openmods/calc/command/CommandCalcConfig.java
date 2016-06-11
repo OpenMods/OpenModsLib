@@ -4,10 +4,15 @@ import static openmods.utils.CommandUtils.error;
 import static openmods.utils.CommandUtils.filterPrefixes;
 import static openmods.utils.CommandUtils.respond;
 
-import java.util.*;
-
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import javax.annotation.Nullable;
-
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
 import openmods.calc.Calculator.ExprType;
@@ -15,11 +20,6 @@ import openmods.calc.command.CalcState.CalculatorType;
 import openmods.calc.command.CalcState.NoSuchNameException;
 import openmods.config.simpler.ConfigurableClassAdapter.NoSuchPropertyException;
 import openmods.utils.Stack.StackUnderflowException;
-
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 public class CommandCalcConfig extends CommandCalcBase {
 	private static final String NAME = "=config";

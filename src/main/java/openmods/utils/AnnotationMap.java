@@ -1,9 +1,8 @@
 package openmods.utils;
 
+import com.google.common.collect.Maps;
 import java.lang.annotation.Annotation;
 import java.util.Map;
-
-import com.google.common.collect.Maps;
 
 public class AnnotationMap {
 	private final Map<Class<? extends Annotation>, Annotation> annotations = Maps.newHashMap();

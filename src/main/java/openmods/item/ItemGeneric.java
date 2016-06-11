@@ -1,9 +1,12 @@
 package openmods.item;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
@@ -12,12 +15,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class ItemGeneric extends Item {
 

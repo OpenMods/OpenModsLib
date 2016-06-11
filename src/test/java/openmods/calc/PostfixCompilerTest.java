@@ -1,17 +1,13 @@
 package openmods.calc;
 
-import static openmods.calc.CalcTestUtils.*;
-
 import java.util.Arrays;
 import java.util.List;
-
 import openmods.calc.parsing.PostfixCompiler;
 import openmods.calc.parsing.Token;
-
 import org.junit.Assert;
 import org.junit.Test;
 
-public class PostfixCompilerTest {
+public class PostfixCompilerTest extends CalcTestUtils{
 
 	public final OperatorDictionary<String> operators = new OperatorDictionary<String>();
 	{

@@ -1,9 +1,8 @@
 package openmods.gui.logic;
 
+import com.google.common.collect.ImmutableList;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;
-
-import com.google.common.collect.ImmutableList;
 
 public class ValueCopyAction<T> implements IValueUpdateAction {
 

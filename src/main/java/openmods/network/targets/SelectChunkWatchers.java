@@ -1,19 +1,16 @@
 package openmods.network.targets;
 
+import com.google.common.base.Preconditions;
+import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
+import cpw.mods.fml.relauncher.Side;
 import java.util.Collection;
 import java.util.Set;
-
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import openmods.network.DimCoord;
 import openmods.network.IPacketTargetSelector;
 import openmods.utils.NetUtils;
-
-import com.google.common.base.Preconditions;
-
-import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
-import cpw.mods.fml.relauncher.Side;
 
 public class SelectChunkWatchers implements IPacketTargetSelector {
 

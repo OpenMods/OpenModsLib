@@ -1,11 +1,9 @@
 package openmods.calc.parsing;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import openmods.calc.IExecutable;
 import openmods.calc.SymbolReference;
-
-import com.google.common.collect.Lists;
 
 public class SymbolNode<E> implements IInnerNode<E> {
 

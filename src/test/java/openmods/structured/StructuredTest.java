@@ -6,19 +6,16 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
+import com.google.common.collect.Lists;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
 import openmods.structured.Command.Type;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.InOrder;
-
-import com.google.common.collect.Lists;
 
 public class StructuredTest {
 

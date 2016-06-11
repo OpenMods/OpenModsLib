@@ -3,7 +3,6 @@ package openmods.gui.component;
 import net.minecraft.client.Minecraft;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
-
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentCheckbox extends BaseComponent implements IValueReceiver<Boolean> {

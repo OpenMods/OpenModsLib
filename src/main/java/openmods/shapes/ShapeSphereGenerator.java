@@ -1,7 +1,6 @@
 package openmods.shapes;
 
 import java.util.Set;
-
 import openmods.utils.render.GeometryUtils;
 import openmods.utils.render.GeometryUtils.Octant;
 

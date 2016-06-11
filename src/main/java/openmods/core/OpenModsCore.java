@@ -1,14 +1,15 @@
 package openmods.core;
 
-import java.util.Arrays;
-
-import openmods.injector.InjectorSanityChecker;
-
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-
-import cpw.mods.fml.common.*;
+import cpw.mods.fml.common.DummyModContainer;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.ICrashCallable;
+import cpw.mods.fml.common.LoadController;
+import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.common.event.FMLConstructionEvent;
+import java.util.Arrays;
+import openmods.injector.InjectorSanityChecker;
 
 public class OpenModsCore extends DummyModContainer {
 

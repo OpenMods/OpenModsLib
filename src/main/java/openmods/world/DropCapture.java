@@ -1,15 +1,12 @@
 package openmods.world;
 
+import com.google.common.collect.Lists;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import java.util.List;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-
-import com.google.common.collect.Lists;
-
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class DropCapture {
 

@@ -2,7 +2,6 @@ package openmods.serializable.providers;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-
 import openmods.serializable.ISerializerProvider;
 import openmods.utils.ByteUtils;
 import openmods.utils.io.IStreamSerializer;

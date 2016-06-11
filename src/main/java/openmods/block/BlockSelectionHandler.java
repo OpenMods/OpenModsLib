@@ -1,12 +1,12 @@
 package openmods.block;
 
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.block.Block;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import openmods.api.ISelectionAware;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class BlockSelectionHandler {
 

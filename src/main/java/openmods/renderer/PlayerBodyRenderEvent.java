@@ -1,7 +1,7 @@
 package openmods.renderer;
 
-import net.minecraft.client.entity.AbstractClientPlayer;
 import cpw.mods.fml.common.eventhandler.Event;
+import net.minecraft.client.entity.AbstractClientPlayer;
 
 public class PlayerBodyRenderEvent extends Event {
 

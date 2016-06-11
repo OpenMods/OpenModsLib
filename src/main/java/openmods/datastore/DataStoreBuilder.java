@@ -1,13 +1,14 @@
 package openmods.datastore;
 
-import java.util.List;
-import java.util.Map;
-
-import openmods.utils.io.*;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.util.List;
+import java.util.Map;
+import openmods.utils.io.IStreamReader;
+import openmods.utils.io.IStreamSerializer;
+import openmods.utils.io.IStreamWriter;
+import openmods.utils.io.TypeRW;
 
 public class DataStoreBuilder<K, V> {
 

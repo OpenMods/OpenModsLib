@@ -1,17 +1,15 @@
 package openmods.sync.drops;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import java.lang.reflect.Field;
 import java.util.Map;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import openmods.reflection.FieldAccess;
 import openmods.sync.ISyncableObject;
 import openmods.utils.ItemUtils;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 
 public class DropTagSerializer {
 

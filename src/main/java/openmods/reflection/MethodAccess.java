@@ -1,9 +1,8 @@
 package openmods.reflection;
 
-import java.lang.reflect.Method;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import java.lang.reflect.Method;
 
 public class MethodAccess {
 

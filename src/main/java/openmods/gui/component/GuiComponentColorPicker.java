@@ -1,12 +1,10 @@
 package openmods.gui.component;
 
 import java.awt.Color;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
-
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentColorPicker extends BaseComponent implements IValueReceiver<Integer> {

@@ -1,16 +1,14 @@
 package openmods.calc.command;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import openmods.calc.Calculator.ExprType;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 public class CommandCalcEvaluate extends CommandCalcBase {
 	private static final String NAME = "=eval";

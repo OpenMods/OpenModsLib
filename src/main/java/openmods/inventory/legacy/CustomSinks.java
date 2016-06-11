@@ -1,12 +1,10 @@
 package openmods.inventory.legacy;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
-
-import com.google.common.collect.Lists;
 
 public class CustomSinks {
 

@@ -1,7 +1,9 @@
 package openmods.fakeplayer;
 
+import com.google.common.base.Preconditions;
+import com.mojang.authlib.GameProfile;
+import cpw.mods.fml.common.eventhandler.Event;
 import java.util.UUID;
-
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -12,11 +14,6 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import openmods.Log;
-
-import com.google.common.base.Preconditions;
-import com.mojang.authlib.GameProfile;
-
-import cpw.mods.fml.common.eventhandler.Event;
 
 public class OpenModsFakePlayer extends FakePlayer {
 

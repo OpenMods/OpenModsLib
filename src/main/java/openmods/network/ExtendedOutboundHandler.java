@@ -1,21 +1,21 @@
 package openmods.network;
 
-import io.netty.channel.*;
-import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.util.AttributeKey;
-
-import java.util.Collection;
-import java.util.Map;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-
 import cpw.mods.fml.common.network.FMLEmbeddedChannel;
 import cpw.mods.fml.common.network.FMLOutboundHandler;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import cpw.mods.fml.relauncher.Side;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.util.AttributeKey;
+import java.util.Collection;
+import java.util.Map;
 
 public class ExtendedOutboundHandler extends ChannelOutboundHandlerAdapter {
 	public static final AttributeKey<IPacketTargetSelector> MESSAGETARGET = new AttributeKey<IPacketTargetSelector>("om:outboundTarget");

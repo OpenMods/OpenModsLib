@@ -1,14 +1,18 @@
 package openmods.calc.parsing;
 
-import java.util.List;
-
-import openmods.calc.*;
-import openmods.utils.Stack;
-import openmods.utils.Stack.StackUnderflowException;
-
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import java.util.List;
+import openmods.calc.BinaryOperator;
+import openmods.calc.ExecutableList;
+import openmods.calc.IExecutable;
+import openmods.calc.IValueParser;
+import openmods.calc.Operator;
+import openmods.calc.OperatorDictionary;
+import openmods.calc.UnaryOperator;
+import openmods.utils.Stack;
+import openmods.utils.Stack.StackUnderflowException;
 
 public class InfixCompiler<E> implements ICompiler<E> {
 

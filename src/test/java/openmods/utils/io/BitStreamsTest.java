@@ -3,7 +3,6 @@ package openmods.utils.io;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import org.junit.Assert;
 import org.junit.Test;
 

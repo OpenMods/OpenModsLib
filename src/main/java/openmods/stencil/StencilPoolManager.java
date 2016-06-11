@@ -1,14 +1,12 @@
 package openmods.stencil;
 
+import com.google.common.collect.Sets;
 import java.lang.reflect.Field;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.TreeSet;
-
 import net.minecraftforge.client.MinecraftForgeClient;
 import openmods.Log;
-
-import com.google.common.collect.Sets;
 
 public class StencilPoolManager {
 

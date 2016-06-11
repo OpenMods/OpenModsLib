@@ -1,7 +1,9 @@
 package openmods.config.game;
 
-import java.lang.annotation.*;
-
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
 import openmods.item.ItemOpenBlock;

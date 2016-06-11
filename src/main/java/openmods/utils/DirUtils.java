@@ -3,7 +3,6 @@ package openmods.utils;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
-
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.utils.ByteUtils.CountingBitIterator;
 

@@ -1,8 +1,9 @@
 package openmods.utils.render;
 
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import java.util.EnumSet;
 import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -16,11 +17,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.block.OpenBlock;
 import openmods.utils.ColorUtils.RGB;
-
 import org.lwjgl.opengl.GL11;
-
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class RenderUtils {
 

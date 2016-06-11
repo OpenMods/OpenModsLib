@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.MathHelper;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
-
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentSlider extends BaseComponent implements IValueReceiver<Integer> {

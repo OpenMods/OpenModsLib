@@ -1,14 +1,13 @@
 package openmods.words;
 
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public abstract class Sequence implements IGenerator {
 

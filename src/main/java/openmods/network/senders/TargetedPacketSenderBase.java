@@ -1,11 +1,9 @@
 package openmods.network.senders;
 
-import io.netty.channel.Channel;
-
-import java.util.Collection;
-
-import openmods.utils.NetUtils;
 import cpw.mods.fml.common.network.FMLOutboundHandler;
+import io.netty.channel.Channel;
+import java.util.Collection;
+import openmods.utils.NetUtils;
 
 public class TargetedPacketSenderBase<T> implements ITargetedPacketSender<T> {
 

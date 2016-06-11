@@ -1,15 +1,13 @@
 package openmods.config;
 
+import com.google.common.base.Throwables;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import openmods.config.game.RegisterBlock;
 import openmods.config.game.RegisterItem;
-
-import com.google.common.base.Throwables;
 
 public class FieldProcessor {
 

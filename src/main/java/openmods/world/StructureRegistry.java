@@ -1,19 +1,26 @@
 package openmods.world;
 
-import java.util.*;
-
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import cpw.mods.fml.relauncher.ReflectionHelper;
+import cpw.mods.fml.relauncher.ReflectionHelper.UnableToAccessFieldException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.gen.*;
+import net.minecraft.world.gen.ChunkProviderFlat;
+import net.minecraft.world.gen.ChunkProviderGenerate;
+import net.minecraft.world.gen.ChunkProviderHell;
+import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.gen.structure.MapGenStructure;
 import openmods.Log;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.*;
-
-import cpw.mods.fml.relauncher.ReflectionHelper;
-import cpw.mods.fml.relauncher.ReflectionHelper.UnableToAccessFieldException;
 
 public class StructureRegistry {
 

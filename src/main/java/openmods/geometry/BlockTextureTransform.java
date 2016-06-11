@@ -1,11 +1,9 @@
 package openmods.geometry;
 
+import com.google.common.collect.Maps;
 import java.util.EnumMap;
 import java.util.Map;
-
 import net.minecraftforge.common.util.ForgeDirection;
-
-import com.google.common.collect.Maps;
 
 public class BlockTextureTransform {
 

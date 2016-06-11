@@ -1,10 +1,8 @@
 package openmods.calc;
 
 import java.math.BigInteger;
-
 import openmods.calc.CalcTestUtils.ValueParserHelper;
 import openmods.calc.types.bigint.BigIntParser;
-
 import org.junit.Test;
 
 public class BigIntParserTest {

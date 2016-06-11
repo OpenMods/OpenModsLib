@@ -1,12 +1,11 @@
 package openmods.network.event;
 
-import java.util.Map;
-
-import openmods.network.Dispatcher;
-import openmods.network.ExtendedOutboundHandler;
 import cpw.mods.fml.common.network.FMLEmbeddedChannel;
 import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.relauncher.Side;
+import java.util.Map;
+import openmods.network.Dispatcher;
+import openmods.network.ExtendedOutboundHandler;
 
 public class NetworkEventDispatcher extends Dispatcher {
 

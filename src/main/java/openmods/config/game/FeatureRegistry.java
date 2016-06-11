@@ -1,16 +1,13 @@
 package openmods.config.game;
 
-import java.util.Map;
-
-import net.minecraftforge.common.config.Property;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
+import java.util.Map;
+import net.minecraftforge.common.config.Property;
 
 public class FeatureRegistry {
 

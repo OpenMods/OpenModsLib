@@ -2,7 +2,6 @@ package openmods.gui.component;
 
 import java.util.EnumSet;
 import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderBlocks;
@@ -16,13 +15,12 @@ import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IListenerBase;
-import openmods.gui.misc.*;
+import openmods.gui.misc.SidePicker;
 import openmods.gui.misc.SidePicker.HitCoord;
 import openmods.gui.misc.SidePicker.Side;
 import openmods.gui.misc.Trackball.TrackballWrapper;
 import openmods.utils.MathUtils;
 import openmods.utils.bitmap.IReadableBitMap;
-
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 

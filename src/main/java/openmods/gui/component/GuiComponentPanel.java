@@ -1,19 +1,16 @@
 package openmods.gui.component;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import openmods.gui.misc.BoxRenderer;
 import openmods.gui.misc.ISlotBackgroundRenderer;
-
 import org.lwjgl.opengl.GL11;
-
-import com.google.common.base.Objects;
-import com.google.common.collect.Maps;
 
 public class GuiComponentPanel extends GuiComponentResizableComposite {
 

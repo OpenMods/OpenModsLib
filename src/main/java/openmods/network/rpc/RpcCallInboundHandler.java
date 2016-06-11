@@ -1,10 +1,9 @@
 package openmods.network.rpc;
 
+import com.google.common.base.Preconditions;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-
-import com.google.common.base.Preconditions;
 
 @Sharable
 public class RpcCallInboundHandler extends SimpleChannelInboundHandler<RpcCall> {

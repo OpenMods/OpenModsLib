@@ -1,10 +1,10 @@
 package openmods.network.senders;
 
-import io.netty.channel.Channel;
-import net.minecraft.entity.player.EntityPlayer;
 import cpw.mods.fml.common.network.FMLOutboundHandler;
 import cpw.mods.fml.common.network.FMLOutboundHandler.OutboundTarget;
 import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
+import io.netty.channel.Channel;
+import net.minecraft.entity.player.EntityPlayer;
 
 public class FmlPacketSenderFactory {
 

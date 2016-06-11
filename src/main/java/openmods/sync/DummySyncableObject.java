@@ -2,7 +2,6 @@ package openmods.sync;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-
 import net.minecraft.nbt.NBTTagCompound;
 import openmods.Log;
 

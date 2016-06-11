@@ -1,20 +1,23 @@
 package openmods.utils;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.*;
-import java.util.Map.Entry;
-
-import openmods.reflection.TypeUtils;
-import openmods.utils.io.IStreamReader;
-import openmods.utils.io.IStreamWriter;
-
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.reflect.TypeToken;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import openmods.reflection.TypeUtils;
+import openmods.utils.io.IStreamReader;
+import openmods.utils.io.IStreamWriter;
 
 public class CollectionUtils {
 

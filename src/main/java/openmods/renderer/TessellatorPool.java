@@ -3,7 +3,6 @@ package openmods.renderer;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import net.minecraft.client.renderer.Tessellator;
 import openmods.LibConfig;
 import openmods.Log;

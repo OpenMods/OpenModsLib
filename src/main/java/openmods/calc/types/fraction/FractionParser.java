@@ -3,7 +3,6 @@ package openmods.calc.types.fraction;
 import openmods.calc.IValueParser;
 import openmods.calc.PositionalNotationParser;
 import openmods.calc.parsing.Token;
-
 import org.apache.commons.lang3.math.Fraction;
 import org.apache.commons.lang3.tuple.Pair;
 

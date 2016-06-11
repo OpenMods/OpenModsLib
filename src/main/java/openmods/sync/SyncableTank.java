@@ -1,7 +1,10 @@
 package openmods.sync;
 
-import java.io.*;
-
+import com.google.common.io.ByteStreams;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.Constants;
@@ -11,8 +14,6 @@ import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueProvider;
 import openmods.liquids.GenericTank;
 import openmods.utils.ByteUtils;
-
-import com.google.common.io.ByteStreams;
 
 public class SyncableTank extends GenericTank implements ISyncableObject, IValueProvider<FluidStack> {
 

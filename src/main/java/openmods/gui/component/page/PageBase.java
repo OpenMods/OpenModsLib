@@ -4,7 +4,6 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiConfirmOpenLink;
 import net.minecraft.client.gui.GuiScreen;
@@ -13,10 +12,13 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 import openmods.Log;
-import openmods.gui.component.*;
+import openmods.gui.component.BaseComponent;
+import openmods.gui.component.BaseComposite;
+import openmods.gui.component.EmptyComposite;
+import openmods.gui.component.GuiComponentLabel;
+import openmods.gui.component.GuiComponentSprite;
 import openmods.gui.listener.IMouseDownListener;
 import openmods.utils.render.FakeIcon;
-
 import org.apache.logging.log4j.Level;
 
 public abstract class PageBase extends BaseComposite {

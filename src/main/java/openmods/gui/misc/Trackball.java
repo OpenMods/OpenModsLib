@@ -1,12 +1,10 @@
 package openmods.gui.misc;
 
+import com.google.common.base.Preconditions;
 import openmods.utils.render.OpenGLUtils;
-
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
-
-import com.google.common.base.Preconditions;
 
 public class Trackball {
 	public static class TrackballWrapper {

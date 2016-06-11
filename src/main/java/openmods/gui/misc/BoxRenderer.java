@@ -1,7 +1,6 @@
 package openmods.gui.misc;
 
 import net.minecraft.client.gui.Gui;
-
 import org.lwjgl.opengl.GL11;
 
 public class BoxRenderer {

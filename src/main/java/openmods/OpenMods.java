@@ -1,7 +1,16 @@
 package openmods;
 
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.Mod.Instance;
+import cpw.mods.fml.common.SidedProxy;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.registry.EntityRegistry;
 import java.io.File;
-
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import openmods.block.BlockDropsStore;
@@ -28,11 +37,6 @@ import openmods.utils.bitmap.IRpcDirectionBitMap;
 import openmods.utils.bitmap.IRpcIntBitMap;
 import openmods.world.DelayedActionTickHandler;
 import openmods.world.DropCapture;
-import cpw.mods.fml.common.*;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.event.*;
-import cpw.mods.fml.common.registry.EntityRegistry;
 
 @Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = "$LIB-VERSION$", dependencies = "required-after:OpenModsCore", guiFactory = "openmods.GuiFactory")
 public class OpenMods {

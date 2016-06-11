@@ -1,10 +1,8 @@
 package openmods.calc;
 
-import java.util.Map;
-
-import openmods.utils.Stack;
-
 import com.google.common.collect.Maps;
+import java.util.Map;
+import openmods.utils.Stack;
 
 public class LocalFrame<E> implements ICalculatorFrame<E> {
 

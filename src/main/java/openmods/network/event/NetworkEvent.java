@@ -1,17 +1,14 @@
 package openmods.network.event;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import cpw.mods.fml.common.eventhandler.Event;
+import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
-
 import net.minecraft.entity.player.EntityPlayer;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-
-import cpw.mods.fml.common.eventhandler.Event;
-import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
 
 public abstract class NetworkEvent extends Event {
 

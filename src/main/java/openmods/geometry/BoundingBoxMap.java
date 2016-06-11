@@ -1,15 +1,13 @@
 package openmods.geometry;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.Vec3;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.Vec3;
 
 public class BoundingBoxMap<T> {
 

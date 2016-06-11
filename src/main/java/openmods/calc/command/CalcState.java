@@ -1,25 +1,32 @@
 package openmods.calc.command;
 
-import java.math.BigInteger;
-import java.util.*;
-
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.ChatComponentText;
-import openmods.calc.*;
-import openmods.calc.Calculator.ExprType;
-import openmods.calc.types.bigint.BigIntCalculator;
-import openmods.calc.types.fp.DoubleCalculator;
-import openmods.calc.types.fraction.FractionCalculator;
-import openmods.config.simpler.ConfigurableClassAdapter;
-import openmods.utils.Stack;
-
-import org.apache.commons.lang3.math.Fraction;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.ChatComponentText;
+import openmods.calc.Calculator;
+import openmods.calc.Calculator.ExprType;
+import openmods.calc.CompiledFunction;
+import openmods.calc.Constant;
+import openmods.calc.FixedSymbol;
+import openmods.calc.ICalculatorFrame;
+import openmods.calc.IExecutable;
+import openmods.calc.ISymbol;
+import openmods.calc.StackValidationException;
+import openmods.calc.types.bigint.BigIntCalculator;
+import openmods.calc.types.fp.DoubleCalculator;
+import openmods.calc.types.fraction.FractionCalculator;
+import openmods.config.simpler.ConfigurableClassAdapter;
+import openmods.utils.Stack;
+import org.apache.commons.lang3.math.Fraction;
 
 public class CalcState {
 

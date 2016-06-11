@@ -1,18 +1,15 @@
 package openmods.network.rpc;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Set;
-
-import openmods.datastore.IDataVisitor;
-
-import org.apache.commons.lang3.ClassUtils;
-import org.objectweb.asm.Type;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Sets;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Set;
+import openmods.datastore.IDataVisitor;
+import org.apache.commons.lang3.ClassUtils;
+import org.objectweb.asm.Type;
 
 public class MethodIdRegistry implements IDataVisitor<String, Integer> {
 	private final Set<Class<?>> registeredInterfaces = Sets.newHashSet();

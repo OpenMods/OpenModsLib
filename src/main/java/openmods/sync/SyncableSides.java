@@ -1,20 +1,18 @@
 package openmods.sync;
 
+import com.google.common.collect.Iterators;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 import openmods.utils.ByteUtils;
 import openmods.utils.DirUtils;
 import openmods.utils.bitmap.IBitMap;
 import openmods.utils.bitmap.IRpcDirectionBitMap;
-
-import com.google.common.collect.Iterators;
 
 public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBitMap, IBitMap<ForgeDirection>, ISyncableValueProvider<Set<ForgeDirection>> {
 

@@ -1,12 +1,12 @@
 package openmods.gui;
 
+import cpw.mods.fml.common.network.IGuiHandler;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import openmods.api.IHasGui;
 import openmods.block.OpenBlock;
-import cpw.mods.fml.common.network.IGuiHandler;
 
 public class ClientGuiHandler extends CommonGuiHandler {
 

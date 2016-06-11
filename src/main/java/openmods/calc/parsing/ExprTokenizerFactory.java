@@ -1,14 +1,13 @@
 package openmods.calc.parsing;
 
+import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Sets;
-import com.google.common.primitives.Ints;
 
 public class ExprTokenizerFactory {
 

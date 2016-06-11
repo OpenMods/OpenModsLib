@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
-
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import openmods.network.DimCoord;

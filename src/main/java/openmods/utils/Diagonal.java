@@ -1,10 +1,8 @@
 package openmods.utils;
 
-import java.util.Map;
-
-import net.minecraftforge.common.util.ForgeDirection;
-
 import com.google.common.collect.Maps;
+import java.util.Map;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public enum Diagonal {
 	NW(ForgeDirection.NORTH, ForgeDirection.WEST),

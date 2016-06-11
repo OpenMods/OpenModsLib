@@ -1,12 +1,10 @@
 package openmods.sync;
 
+import com.google.common.primitives.SignedBytes;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
 import net.minecraft.nbt.NBTTagCompound;
-
-import com.google.common.primitives.SignedBytes;
 
 public class SyncableByte extends SyncableObjectBase implements ISyncableValueProvider<Byte> {
 

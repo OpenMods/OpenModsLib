@@ -1,13 +1,11 @@
 package openmods.datastore;
 
+import com.google.common.collect.Maps;
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.Map;
-
 import openmods.utils.ByteUtils;
 import openmods.utils.io.IStreamReader;
-
-import com.google.common.collect.Maps;
 
 public class DataStoreReader<K, V> {
 	private final IStreamReader<K> keyReader;

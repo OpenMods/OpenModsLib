@@ -1,11 +1,11 @@
 package openmods.network.event;
 
+import cpw.mods.fml.common.network.FMLOutboundHandler;
+import cpw.mods.fml.common.network.FMLOutboundHandler.OutboundTarget;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import net.minecraftforge.common.MinecraftForge;
-import cpw.mods.fml.common.network.FMLOutboundHandler;
-import cpw.mods.fml.common.network.FMLOutboundHandler.OutboundTarget;
 
 @Sharable
 public class NetworkEventInboundHandler extends SimpleChannelInboundHandler<NetworkEvent> {

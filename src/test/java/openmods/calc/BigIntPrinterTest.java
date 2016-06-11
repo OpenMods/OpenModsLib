@@ -1,9 +1,7 @@
 package openmods.calc;
 
 import java.math.BigInteger;
-
 import openmods.calc.types.bigint.BigIntPrinter;
-
 import org.junit.Assert;
 import org.junit.Test;
 

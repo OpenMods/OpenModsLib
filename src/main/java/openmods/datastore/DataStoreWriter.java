@@ -2,7 +2,6 @@ package openmods.datastore;
 
 import java.io.DataOutput;
 import java.io.IOException;
-
 import openmods.utils.ByteUtils;
 import openmods.utils.io.IStreamWriter;
 

@@ -1,16 +1,14 @@
 package openmods.serializable.providers;
 
+import com.google.common.reflect.TypeToken;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Array;
-
 import openmods.serializable.ISerializerProvider;
 import openmods.serializable.SerializerRegistry;
 import openmods.utils.ByteUtils;
 import openmods.utils.io.IStreamSerializer;
-
-import com.google.common.reflect.TypeToken;
 
 public class ArraySerializerProvider implements ISerializerProvider {
 

@@ -1,7 +1,6 @@
 package openmods.calc.parsing;
 
 import java.util.List;
-
 import openmods.calc.BinaryOperator;
 import openmods.calc.IExecutable;
 

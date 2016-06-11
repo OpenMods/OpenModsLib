@@ -1,16 +1,13 @@
 package openmods.utils.render;
 
+import com.google.common.collect.Sets;
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.registry.GameRegistry;
 import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import openmods.Mods;
-
-import com.google.common.collect.Sets;
-
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.registry.GameRegistry;
 
 public class PaintUtils {
 

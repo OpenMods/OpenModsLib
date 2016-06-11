@@ -1,12 +1,10 @@
 package openmods.sync;
 
+import com.google.common.base.Preconditions;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-
 import net.minecraft.nbt.NBTTagCompound;
 import openmods.utils.ByteUtils;
-
-import com.google.common.base.Preconditions;
 
 public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implements ISyncableValueProvider<E> {
 

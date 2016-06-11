@@ -1,22 +1,23 @@
 package openmods.structured;
 
-import java.io.DataInput;
-import java.io.IOException;
-import java.util.*;
-
-import openmods.structured.Command.ConsistencyCheck;
-import openmods.structured.Command.ContainerInfo;
-import openmods.structured.Command.Create;
-import openmods.structured.Command.Delete;
-import openmods.structured.Command.Reset;
-import openmods.structured.Command.Update;
-
 import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
+import java.io.DataInput;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import openmods.structured.Command.ConsistencyCheck;
+import openmods.structured.Command.ContainerInfo;
+import openmods.structured.Command.Create;
+import openmods.structured.Command.Delete;
+import openmods.structured.Command.Reset;
+import openmods.structured.Command.Update;
 
 public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E extends IStructureElement> extends StructuredData<C, E> {
 

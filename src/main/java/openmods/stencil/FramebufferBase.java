@@ -1,11 +1,9 @@
 package openmods.stencil;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.texture.TextureUtil;
-
 import org.lwjgl.opengl.GL11;
-
-import com.google.common.base.Preconditions;
 
 public class FramebufferBase {
 

@@ -3,7 +3,6 @@ package openmods.network.event;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
 import openmods.serializable.cls.ClassSerializersProvider;
 
 public class SerializableNetworkEvent extends NetworkEvent {

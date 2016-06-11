@@ -1,17 +1,13 @@
 package openmods.network.rpc;
 
+import com.google.common.base.Preconditions;
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.LoaderState;
 import java.lang.reflect.Method;
-
 import openmods.datastore.DataStoreBuilder;
 import openmods.network.IdSyncManager;
 import openmods.utils.io.TypeRW;
-
 import org.objectweb.asm.Type;
-
-import com.google.common.base.Preconditions;
-
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.LoaderState;
 
 public class RpcSetup {
 

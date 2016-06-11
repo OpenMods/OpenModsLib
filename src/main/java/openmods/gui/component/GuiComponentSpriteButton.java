@@ -3,7 +3,6 @@ package openmods.gui.component;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
-
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
