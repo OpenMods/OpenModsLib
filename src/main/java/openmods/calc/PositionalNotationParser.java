@@ -7,7 +7,7 @@ import openmods.calc.parsing.InvalidTokenException;
 import openmods.calc.parsing.Token;
 import org.apache.commons.lang3.tuple.Pair;
 
-public abstract class PositionalNotationParser<E> {
+public abstract class PositionalNotationParser<I, F> {
 
 	private static final Splitter DOT_SPLITTER = Splitter.on('.');
 

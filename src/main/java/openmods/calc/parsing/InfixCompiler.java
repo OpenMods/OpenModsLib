@@ -1,6 +1,5 @@
 package openmods.calc.parsing;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;

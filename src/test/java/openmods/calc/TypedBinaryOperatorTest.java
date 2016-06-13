@@ -1,17 +1,17 @@
 package openmods.calc;
 
-import openmods.calc.types.multi.*;
+import com.google.common.base.Optional;
+import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypeDomain.Coercion;
+import openmods.calc.types.multi.TypedBinaryOperator;
 import openmods.calc.types.multi.TypedBinaryOperator.ICoercedOperation;
 import openmods.calc.types.multi.TypedBinaryOperator.IDefaultOperation;
 import openmods.calc.types.multi.TypedBinaryOperator.ISimpleCoercedOperation;
 import openmods.calc.types.multi.TypedBinaryOperator.ISimpleVariantOperation;
 import openmods.calc.types.multi.TypedBinaryOperator.IVariantOperation;
-
+import openmods.calc.types.multi.TypedValue;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.google.common.base.Optional;
 
 public class TypedBinaryOperatorTest {
 

@@ -2,7 +2,6 @@ package openmods.calc;
 
 import gnu.trove.set.hash.TCharHashSet;
 import openmods.calc.parsing.StringEscaper;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;

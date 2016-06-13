@@ -1,8 +1,9 @@
 package openmods.calc;
 
-import openmods.calc.types.multi.*;
+import openmods.calc.types.multi.IConverter;
+import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypeDomain.Coercion;
-
+import openmods.calc.types.multi.TypedValue;
 import org.junit.Assert;
 import org.junit.Test;
 

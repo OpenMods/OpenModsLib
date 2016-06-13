@@ -1,12 +1,10 @@
 package openmods.calc.parsing;
 
-import gnu.trove.set.TCharSet;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import gnu.trove.set.TCharSet;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class StringEscaper {
 

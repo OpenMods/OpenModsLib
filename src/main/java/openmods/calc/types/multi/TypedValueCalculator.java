@@ -2,9 +2,7 @@ package openmods.calc.types.multi;
 
 import gnu.trove.set.TCharSet;
 import gnu.trove.set.hash.TCharHashSet;
-
 import java.math.BigInteger;
-
 import openmods.calc.Calculator;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.TopFrame;

@@ -1,17 +1,15 @@
 package openmods.calc.types.multi;
 
-import java.lang.reflect.TypeVariable;
-import java.util.Map;
-
-import openmods.calc.BinaryOperator;
-import openmods.calc.types.multi.TypeDomain.Coercion;
-
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.common.reflect.TypeToken;
+import java.lang.reflect.TypeVariable;
+import java.util.Map;
+import openmods.calc.BinaryOperator;
+import openmods.calc.types.multi.TypeDomain.Coercion;
 
 public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 

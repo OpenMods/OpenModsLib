@@ -1,13 +1,12 @@
 package openmods.calc.types.multi;
 
-import java.lang.reflect.TypeVariable;
-import java.util.Map;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.common.reflect.TypeToken;
+import java.lang.reflect.TypeVariable;
+import java.util.Map;
 
 public class TypeDomain {
 
