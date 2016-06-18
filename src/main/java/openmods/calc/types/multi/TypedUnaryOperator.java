@@ -33,7 +33,7 @@ public class TypedUnaryOperator extends UnaryOperator<TypedValue> {
 		public R apply(A value);
 	}
 
-	public <A> void registerOperation(final Class<? extends A> argCls, final IOperation<A> op) {
+	public <A> TypedUnaryOperator registerOperation(final Class<? extends A> argCls, final IOperation<A> op) {
 		final IGenericOperation prev = operations.put(argCls, new IGenericOperation() {
 			@Override
 			public TypedValue apply(TypeDomain domain, TypedValue left) {
@@ -42,10 +42,11 @@ public class TypedUnaryOperator extends UnaryOperator<TypedValue> {
 			}
 		});
 		Preconditions.checkState(prev == null, "Duplicate operation registration on operator '%s' for type %s", id, argCls);
+		return this;
 	}
 
-	public <A, R> void registerOperation(Class<? extends A> argCls, final Class<? super R> resultCls, final ISimpleOperation<A, R> op) {
-		registerOperation(argCls, new IOperation<A>() {
+	public <A, R> TypedUnaryOperator registerOperation(Class<? extends A> argCls, final Class<? super R> resultCls, final ISimpleOperation<A, R> op) {
+		return registerOperation(argCls, new IOperation<A>() {
 			@Override
 			public TypedValue apply(TypeDomain domain, A value) {
 				final R result = op.apply(value);
@@ -61,10 +62,10 @@ public class TypedUnaryOperator extends UnaryOperator<TypedValue> {
 		VAR_A = typeParameters[0];
 	}
 
-	public <A> void registerOperation(IOperation<A> op) {
+	public <A> TypedUnaryOperator registerOperation(IOperation<A> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
 		final Class<A> type = resolveVariable(token, VAR_A);
-		registerOperation(type, op);
+		return registerOperation(type, op);
 	}
 
 	private static final TypeVariable<?> VAR_SIMPLE_A;
@@ -76,11 +77,11 @@ public class TypedUnaryOperator extends UnaryOperator<TypedValue> {
 		VAR_SIMPLE_R = typeParameters[1];
 	}
 
-	public <A, R> void registerOperation(ISimpleOperation<A, R> op) {
+	public <A, R> TypedUnaryOperator registerOperation(ISimpleOperation<A, R> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
 		final Class<A> argType = resolveVariable(token, VAR_SIMPLE_A);
 		final Class<R> resultType = resolveVariable(token, VAR_SIMPLE_R);
-		registerOperation(argType, resultType, op);
+		return registerOperation(argType, resultType, op);
 	}
 
 	public interface IDefaultOperation {
@@ -89,8 +90,9 @@ public class TypedUnaryOperator extends UnaryOperator<TypedValue> {
 
 	private IDefaultOperation defaultOperation;
 
-	public void setDefaultOperation(IDefaultOperation defaultOperation) {
+	public TypedUnaryOperator setDefaultOperation(IDefaultOperation defaultOperation) {
 		this.defaultOperation = defaultOperation;
+		return this;
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
 public class TypedValue {
@@ -52,5 +53,9 @@ public class TypedValue {
 
 	public <T> T unwrap(Class<? extends T> type) {
 		return domain.unwrap(this, type);
+	}
+
+	public Optional<Boolean> isTruthy() {
+		return domain.isTruthy(this);
 	}
 }

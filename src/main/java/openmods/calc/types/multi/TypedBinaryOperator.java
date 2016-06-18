@@ -40,7 +40,7 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 
 	private final Map<Class<?>, IGenericOperation> coercedOperations = Maps.newHashMap();
 
-	public <T> void registerOperation(final Class<T> type, final ICoercedOperation<T> op) {
+	public <T> TypedBinaryOperator registerOperation(final Class<T> type, final ICoercedOperation<T> op) {
 		final IGenericOperation prev = coercedOperations.put(type, new IGenericOperation() {
 			@Override
 			public TypedValue apply(TypeDomain domain, TypedValue left, TypedValue right) {
@@ -52,10 +52,11 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 		});
 
 		Preconditions.checkState(prev == null, "Duplicate operation registration on operator '%s', type: %s", id, type);
+		return this;
 	}
 
-	public <T> void registerOperation(final Class<T> type, final ISimpleCoercedOperation<T> op) {
-		registerOperation(type, new ICoercedOperation<T>() {
+	public <T> TypedBinaryOperator registerOperation(final Class<T> type, final ISimpleCoercedOperation<T> op) {
+		return registerOperation(type, new ICoercedOperation<T>() {
 			@Override
 			public TypedValue apply(TypeDomain domain, T left, T right) {
 				final T result = op.apply(left, right);
@@ -71,10 +72,10 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 		VAR_COERCED_T = typeParameters[0];
 	}
 
-	public <T> void registerOperation(ICoercedOperation<T> op) {
+	public <T> TypedBinaryOperator registerOperation(ICoercedOperation<T> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
 		final Class<T> type = resolveVariable(token, VAR_COERCED_T);
-		registerOperation(type, op);
+		return registerOperation(type, op);
 	}
 
 	private static final TypeVariable<?> VAR_SIMPLE_COERCED_T;
@@ -84,10 +85,10 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 		VAR_SIMPLE_COERCED_T = typeParameters[0];
 	}
 
-	public <T> void registerOperation(ISimpleCoercedOperation<T> op) {
+	public <T> TypedBinaryOperator registerOperation(ISimpleCoercedOperation<T> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
 		final Class<T> type = resolveVariable(token, VAR_SIMPLE_COERCED_T);
-		registerOperation(type, op);
+		return registerOperation(type, op);
 	}
 
 	public interface IVariantOperation<L, R> {
@@ -100,7 +101,7 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 
 	private final Table<Class<?>, Class<?>, IGenericOperation> variantOperations = HashBasedTable.create();
 
-	public <L, R> void registerOperation(final Class<? extends L> left, final Class<? extends R> right, final IVariantOperation<L, R> op) {
+	public <L, R> TypedBinaryOperator registerOperation(final Class<? extends L> left, final Class<? extends R> right, final IVariantOperation<L, R> op) {
 		final IGenericOperation prev = variantOperations.put(left, right, new IGenericOperation() {
 			@Override
 			public TypedValue apply(TypeDomain domain, TypedValue leftArg, TypedValue rightArg) {
@@ -111,10 +112,11 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 
 		});
 		Preconditions.checkState(prev == null, "Duplicate operation registration on operator '%s', types: %s, %s", id, left, right);
+		return this;
 	}
 
-	public <L, R, O> void registerOperation(Class<? extends L> left, Class<? extends R> right, final Class<? super O> output, final ISimpleVariantOperation<L, R, O> op) {
-		registerOperation(left, right, new IVariantOperation<L, R>() {
+	public <L, R, O> TypedBinaryOperator registerOperation(Class<? extends L> left, Class<? extends R> right, final Class<? super O> output, final ISimpleVariantOperation<L, R, O> op) {
+		return registerOperation(left, right, new IVariantOperation<L, R>() {
 			@Override
 			public TypedValue apply(TypeDomain domain, L left, R right) {
 				final O result = op.apply(left, right);
@@ -132,11 +134,11 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 		VAR_VARIANT_R = typeParameters[1];
 	}
 
-	public <L, R> void registerOperation(IVariantOperation<L, R> op) {
+	public <L, R> TypedBinaryOperator registerOperation(IVariantOperation<L, R> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
 		final Class<L> left = resolveVariable(token, VAR_VARIANT_L);
 		final Class<R> right = resolveVariable(token, VAR_VARIANT_R);
-		registerOperation(left, right, op);
+		return registerOperation(left, right, op);
 	}
 
 	private static final TypeVariable<?> VAR_SIMPLE_VARIANT_L;
@@ -150,12 +152,12 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 		VAR_SIMPLE_VARIANT_O = typeParameters[2];
 	}
 
-	public <L, R, O> void registerOperation(ISimpleVariantOperation<L, R, O> op) {
+	public <L, R, O> TypedBinaryOperator registerOperation(ISimpleVariantOperation<L, R, O> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
 		final Class<L> left = resolveVariable(token, VAR_SIMPLE_VARIANT_L);
 		final Class<R> right = resolveVariable(token, VAR_SIMPLE_VARIANT_R);
 		final Class<O> output = resolveVariable(token, VAR_SIMPLE_VARIANT_O);
-		registerOperation(left, right, output, op);
+		return registerOperation(left, right, output, op);
 	}
 
 	public interface IDefaultOperation {
@@ -164,8 +166,9 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 
 	private IDefaultOperation defaultOperation;
 
-	public void setDefaultOperation(IDefaultOperation defaultOperation) {
+	public TypedBinaryOperator setDefaultOperation(IDefaultOperation defaultOperation) {
 		this.defaultOperation = defaultOperation;
+		return this;
 	}
 
 	@Override

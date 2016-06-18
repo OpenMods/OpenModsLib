@@ -1,5 +1,6 @@
 package openmods.calc.types.multi;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
@@ -57,22 +58,24 @@ public class TypeDomain {
 
 	private final Table<Class<?>, Class<?>, RawConverter> converters = HashBasedTable.create();
 
-	public <T> void registerCast(Class<? extends T> source, Class<T> target) {
+	public <T> TypeDomain registerCast(Class<? extends T> source, Class<T> target) {
 		final RawConverter prev = converters.put(source, target, new CastConverter<T>(target));
 		Preconditions.checkState(prev == null, "Duplicate registration for types (%s,%s)", source, target);
+		return this;
 	}
 
-	public <S, T> void registerConverter(Class<? extends S> source, Class<? extends T> target, IConverter<S, T> converter) {
+	public <S, T> TypeDomain registerConverter(Class<? extends S> source, Class<? extends T> target, IConverter<S, T> converter) {
 		final RawConverter prev = converters.put(source, target, new WrappedConverter<S, T>(source, converter));
 		Preconditions.checkState(prev == null, "Duplicate registration for types (%s,%s)", source, target);
+		return this;
 	}
 
 	@SuppressWarnings("unchecked")
-	public <S, T> void registerConverter(IConverter<S, T> converter) {
+	public <S, T> TypeDomain registerConverter(IConverter<S, T> converter) {
 		final TypeToken<?> converterType = TypeToken.of(converter.getClass());
 		final Class<S> sourceType = (Class<S>)converterType.resolveType(VAR_S).getRawType();
 		final Class<T> targetType = (Class<T>)converterType.resolveType(VAR_T).getRawType();
-		registerConverter(sourceType, targetType, converter);
+		return registerConverter(sourceType, targetType, converter);
 	}
 
 	private RawConverter getConverter(TypedValue value, Class<?> type) {
@@ -86,6 +89,7 @@ public class TypeDomain {
 	}
 
 	public TypedValue convert(TypedValue value, Class<?> type) {
+		Preconditions.checkArgument(value.domain == this, "Mixed domain");
 		if (value.type == type) return value;
 		final RawConverter converter = getConverter(value, type);
 		final Object convertedValue = converter.convert(value.value);
@@ -93,6 +97,7 @@ public class TypeDomain {
 	}
 
 	public <T> T unwrap(TypedValue value, Class<? extends T> type) {
+		Preconditions.checkArgument(value.domain == this, "Mixed domain");
 		if (value.type == type) return type.cast(value.value);
 		final RawConverter converter = getConverter(value, type);
 		final Object convertedValue = converter.convert(value.value);
@@ -113,7 +118,7 @@ public class TypeDomain {
 
 	private final Table<Class<?>, Class<?>, Coercion> coercionRules = HashBasedTable.create();
 
-	public void registerCoercionRule(Class<?> left, Class<?> right, Coercion rule) {
+	public TypeDomain registerCoercionRule(Class<?> left, Class<?> right, Coercion rule) {
 		Preconditions.checkArgument(left != right);
 		if (rule == Coercion.TO_LEFT) {
 			checkConversion(right, left);
@@ -123,17 +128,63 @@ public class TypeDomain {
 
 		final Coercion prev = coercionRules.put(left, right, rule);
 		Preconditions.checkState(prev == null || prev == rule, "Duplicate coercion rule for (%s,%s): %s -> %s", left, right, rule);
+		return this;
 	}
 
-	public void registerSymmetricCoercionRule(Class<?> left, Class<?> right, Coercion rule) {
+	public TypeDomain registerSymmetricCoercionRule(Class<?> left, Class<?> right, Coercion rule) {
 		registerCoercionRule(left, right, rule);
 		registerCoercionRule(right, left, inverses.get(rule));
+		return this;
 	}
 
 	public Coercion getCoercionRule(Class<?> left, Class<?> right) {
 		if (left == right) return Coercion.TO_LEFT;
 		final Coercion result = coercionRules.get(left, right);
 		return result != null? result : Coercion.INVALID;
+	}
+
+	public interface ITruthEvaluator<T> {
+		public boolean isTruthy(T value);
+	}
+
+	private static final TypeVariable<?> VAR_TRUTH_T;
+
+	static {
+		final TypeVariable<?>[] typeParameters = ITruthEvaluator.class.getTypeParameters();
+		VAR_TRUTH_T = typeParameters[0];
+	}
+
+	private final Map<Class<?>, ITruthEvaluator<Object>> truthEvaluators = Maps.newHashMap();
+
+	public <T> TypeDomain registerTruthEvaluator(final Class<T> cls, final ITruthEvaluator<T> evaluator) {
+		final Map<Class<?>, ITruthEvaluator<Object>> prev = truthEvaluators;
+		prev.put(cls, new ITruthEvaluator<Object>() {
+			@Override
+			public boolean isTruthy(Object value) {
+				T cast = cls.cast(value);
+				return evaluator.isTruthy(cast);
+			}
+		});
+		Preconditions.checkState(prev != null, "Duplicate truth evaluator for type: %s", cls);
+		return this;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> TypeDomain registerTruthEvaluator(ITruthEvaluator<T> evaluator) {
+		final TypeToken<?> converterType = TypeToken.of(evaluator.getClass());
+		final Class<T> sourceType = (Class<T>)converterType.resolveType(VAR_TRUTH_T).getRawType();
+		return registerTruthEvaluator(sourceType, evaluator);
+	}
+
+	private static final Optional<Boolean> UNKNOWN = Optional.absent();
+	private static final Optional<Boolean> TRUE = Optional.of(Boolean.TRUE);
+	private static final Optional<Boolean> FALSE = Optional.of(Boolean.FALSE);
+
+	public Optional<Boolean> isTruthy(TypedValue value) {
+		Preconditions.checkArgument(value.domain == this, "Mixed domain");
+		final ITruthEvaluator<Object> truthEvaluator = truthEvaluators.get(value.type);
+		if (truthEvaluator == null) return UNKNOWN;
+		return truthEvaluator.isTruthy(value.value)? TRUE : FALSE;
 	}
 
 	public <T> TypedValue create(Class<? super T> type, T value) {

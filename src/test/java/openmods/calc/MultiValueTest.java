@@ -1,8 +1,10 @@
 package openmods.calc;
 
+import com.google.common.base.Optional;
 import openmods.calc.types.multi.IConverter;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypeDomain.Coercion;
+import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedValue;
 import org.junit.Assert;
 import org.junit.Test;
@@ -68,6 +70,33 @@ public class MultiValueTest {
 	public void testSelfCoercion() {
 		final TypeDomain domain = new TypeDomain();
 		Assert.assertEquals(Coercion.TO_LEFT, domain.getCoercionRule(Float.class, Float.class));
+	}
+
+	@Test
+	public void testTruthiness() {
+		final TypeDomain domain = new TypeDomain();
+		domain.registerTruthEvaluator(new ITruthEvaluator<Boolean>() {
+			@Override
+			public boolean isTruthy(Boolean value) {
+				return value.booleanValue();
+			}
+		});
+
+		domain.registerTruthEvaluator(new ITruthEvaluator<Integer>() {
+
+			@Override
+			public boolean isTruthy(Integer value) {
+				return value != 0;
+			}
+		});
+
+		Assert.assertEquals(Optional.of(Boolean.TRUE), domain.create(Integer.class, 1).isTruthy());
+		Assert.assertEquals(Optional.of(Boolean.TRUE), domain.create(Boolean.class, Boolean.TRUE).isTruthy());
+
+		Assert.assertEquals(Optional.of(Boolean.FALSE), domain.create(Integer.class, 0).isTruthy());
+		Assert.assertEquals(Optional.of(Boolean.FALSE), domain.create(Boolean.class, Boolean.FALSE).isTruthy());
+
+		Assert.assertEquals(Optional.absent(), domain.create(Double.class, 0.0).isTruthy());
 	}
 
 }
