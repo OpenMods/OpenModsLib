@@ -4,10 +4,12 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.reflect.TypeToken;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
+import java.util.Set;
 import openmods.reflection.TypeVariableHolder;
 
 public class TypeDomain {
@@ -20,6 +22,11 @@ public class TypeDomain {
 		@TypeVariableHolder(IConverter.class)
 		public static class Converter {
 			public static TypeVariable<?> S;
+			public static TypeVariable<?> T;
+		}
+
+		@TypeVariableHolder(ITruthEvaluator.class)
+		public static class TruthEvaluator {
 			public static TypeVariable<?> T;
 		}
 	}
@@ -56,15 +63,34 @@ public class TypeDomain {
 
 	}
 
+	private final Set<Class<?>> allowedTypes = Sets.newIdentityHashSet();
+
 	private final Table<Class<?>, Class<?>, RawConverter> converters = HashBasedTable.create();
 
+	public <T> TypeDomain registerType(Class<?> type) {
+		allowedTypes.add(type);
+		return this;
+	}
+
+	public boolean isKnownType(Class<?> type) {
+		return allowedTypes.contains(type);
+	}
+
+	public void checkIsKnownType(Class<?> type) {
+		Preconditions.checkState(allowedTypes.contains(type), "Type '%s' is not allowed in domain", type);
+	}
+
 	public <T> TypeDomain registerCast(Class<? extends T> source, Class<T> target) {
+		checkIsKnownType(source);
+		checkIsKnownType(target);
 		final RawConverter prev = converters.put(source, target, new CastConverter<T>(target));
 		Preconditions.checkState(prev == null, "Duplicate registration for types (%s,%s)", source, target);
 		return this;
 	}
 
 	public <S, T> TypeDomain registerConverter(Class<? extends S> source, Class<? extends T> target, IConverter<S, T> converter) {
+		checkIsKnownType(source);
+		checkIsKnownType(target);
 		final RawConverter prev = converters.put(source, target, new WrappedConverter<S, T>(source, converter));
 		Preconditions.checkState(prev == null, "Duplicate registration for types (%s,%s)", source, target);
 		return this;
@@ -119,6 +145,8 @@ public class TypeDomain {
 	private final Table<Class<?>, Class<?>, Coercion> coercionRules = HashBasedTable.create();
 
 	public TypeDomain registerCoercionRule(Class<?> left, Class<?> right, Coercion rule) {
+		checkIsKnownType(left);
+		checkIsKnownType(right);
 		Preconditions.checkArgument(left != right);
 		if (rule == Coercion.TO_LEFT) {
 			checkConversion(right, left);
@@ -147,16 +175,10 @@ public class TypeDomain {
 		public boolean isTruthy(T value);
 	}
 
-	private static final TypeVariable<?> VAR_TRUTH_T;
-
-	static {
-		final TypeVariable<?>[] typeParameters = ITruthEvaluator.class.getTypeParameters();
-		VAR_TRUTH_T = typeParameters[0];
-	}
-
 	private final Map<Class<?>, ITruthEvaluator<Object>> truthEvaluators = Maps.newHashMap();
 
 	public <T> TypeDomain registerTruthEvaluator(final Class<T> cls, final ITruthEvaluator<T> evaluator) {
+		checkIsKnownType(cls);
 		final Map<Class<?>, ITruthEvaluator<Object>> prev = truthEvaluators;
 		prev.put(cls, new ITruthEvaluator<Object>() {
 			@Override
@@ -172,7 +194,7 @@ public class TypeDomain {
 	@SuppressWarnings("unchecked")
 	public <T> TypeDomain registerTruthEvaluator(ITruthEvaluator<T> evaluator) {
 		final TypeToken<?> converterType = TypeToken.of(evaluator.getClass());
-		final Class<T> sourceType = (Class<T>)converterType.resolveType(VAR_TRUTH_T).getRawType();
+		final Class<T> sourceType = (Class<T>)converterType.resolveType(TypeVariableHolders.TruthEvaluator.T).getRawType();
 		return registerTruthEvaluator(sourceType, evaluator);
 	}
 
@@ -188,6 +210,7 @@ public class TypeDomain {
 	}
 
 	public <T> TypedValue create(Class<? super T> type, T value) {
+		checkIsKnownType(type);
 		return new TypedValue(this, type, value);
 	}
 

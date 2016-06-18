@@ -25,6 +25,9 @@ public class MultiValueTest {
 	@Test
 	public void testConversion() {
 		final TypeDomain domain = new TypeDomain();
+		domain.registerType(Integer.class);
+		domain.registerType(String.class);
+
 		domain.registerConverter(new IConverter<Integer, String>() {
 			@Override
 			public String convert(Integer value) {
@@ -40,6 +43,7 @@ public class MultiValueTest {
 	@Test
 	public void testSelfConversion() {
 		final TypeDomain domain = new TypeDomain();
+		domain.registerType(Integer.class);
 
 		final TypedValue intValue = domain.create(Integer.class, 123);
 		final TypedValue result = intValue.cast(Integer.class);
@@ -49,6 +53,9 @@ public class MultiValueTest {
 	@Test
 	public void testCast() {
 		final TypeDomain domain = new TypeDomain();
+		domain.registerType(Integer.class);
+		domain.registerType(Number.class);
+
 		domain.registerCast(Integer.class, Number.class);
 
 		final TypedValue intValue = domain.create(Integer.class, 123);
@@ -59,6 +66,9 @@ public class MultiValueTest {
 	@Test
 	public void testCoercion() {
 		final TypeDomain domain = new TypeDomain();
+		domain.registerType(Integer.class);
+		domain.registerType(Float.class);
+
 		domain.registerConverter(new IConverter<Integer, Float>() {
 			@Override
 			public Float convert(Integer value) {
@@ -80,6 +90,10 @@ public class MultiValueTest {
 	@Test
 	public void testTruthiness() {
 		final TypeDomain domain = new TypeDomain();
+		domain.registerType(Boolean.class);
+		domain.registerType(Double.class);
+		domain.registerType(Integer.class);
+
 		domain.registerTruthEvaluator(new ITruthEvaluator<Boolean>() {
 			@Override
 			public boolean isTruthy(Boolean value) {

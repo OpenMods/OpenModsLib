@@ -33,21 +33,24 @@ public class TypedUnaryOperatorTest {
 	@Test
 	public void testTypedOperation() {
 		final TypeDomain domain = new TypeDomain();
+		domain.registerType(Integer.class);
+		domain.registerType(Number.class);
+		domain.registerType(Boolean.class);
 
-		final TypedUnaryOperator op = new TypedUnaryOperator("*");
-		op.registerOperation(new IOperation<Integer>() {
-			@Override
-			public TypedValue apply(TypeDomain domain, Integer value) {
-				return domain.create(Boolean.class, Boolean.TRUE);
-			}
-		});
-
-		op.registerOperation(new IOperation<Number>() {
-			@Override
-			public TypedValue apply(TypeDomain domain, Number value) {
-				return domain.create(Boolean.class, Boolean.FALSE);
-			}
-		});
+		final TypedUnaryOperator op = new TypedUnaryOperator.Builder("*")
+				.registerOperation(new IOperation<Integer>() {
+					@Override
+					public TypedValue apply(TypeDomain domain, Integer value) {
+						return domain.create(Boolean.class, Boolean.TRUE);
+					}
+				})
+				.registerOperation(new IOperation<Number>() {
+					@Override
+					public TypedValue apply(TypeDomain domain, Number value) {
+						return domain.create(Boolean.class, Boolean.FALSE);
+					}
+				})
+				.build(domain);
 
 		{
 			final TypedValue result = execute(op, domain.create(Integer.class, 123));
@@ -63,14 +66,17 @@ public class TypedUnaryOperatorTest {
 	@Test
 	public void testSimpleTypedOperation() {
 		final TypeDomain domain = new TypeDomain();
+		domain.registerType(Integer.class);
+		domain.registerType(Boolean.class);
 
-		final TypedUnaryOperator op = new TypedUnaryOperator("*");
-		op.registerOperation(new ISimpleOperation<Integer, Boolean>() {
-			@Override
-			public Boolean apply(Integer value) {
-				return Boolean.TRUE;
-			}
-		});
+		final TypedUnaryOperator op = new TypedUnaryOperator.Builder("*")
+				.registerOperation(new ISimpleOperation<Integer, Boolean>() {
+					@Override
+					public Boolean apply(Integer value) {
+						return Boolean.TRUE;
+					}
+				})
+				.build(domain);
 
 		final TypedValue result = execute(op, domain.create(Integer.class, 123));
 		assertValueEquals(result, domain, Boolean.class, Boolean.TRUE);
@@ -79,16 +85,20 @@ public class TypedUnaryOperatorTest {
 	@Test
 	public void testDefaultOperation() {
 		final TypeDomain domain = new TypeDomain();
-		final TypedUnaryOperator op = new TypedUnaryOperator("*");
+		domain.registerType(Integer.class);
+		domain.registerType(Boolean.class);
 
 		final TypedValue value = domain.create(Integer.class, 2);
-		op.setDefaultOperation(new IDefaultOperation() {
-			@Override
-			public Optional<TypedValue> apply(TypeDomain domain, TypedValue v) {
-				Assert.assertEquals(v, value);
-				return Optional.of(domain.create(Boolean.class, Boolean.TRUE));
-			}
-		});
+
+		final TypedUnaryOperator op = new TypedUnaryOperator.Builder("*")
+				.setDefaultOperation(new IDefaultOperation() {
+					@Override
+					public Optional<TypedValue> apply(TypeDomain domain, TypedValue v) {
+						Assert.assertEquals(v, value);
+						return Optional.of(domain.create(Boolean.class, Boolean.TRUE));
+					}
+				})
+				.build(domain);
 
 		final TypedValue result = execute(op, value);
 		assertValueEquals(result, domain, Boolean.class, Boolean.TRUE);

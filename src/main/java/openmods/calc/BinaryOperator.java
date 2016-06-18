@@ -4,6 +4,8 @@ import openmods.utils.Stack;
 
 public abstract class BinaryOperator<E> extends Operator<E> {
 
+	public static final Associativity DEFAULT_ASSOCIATIVITY = Associativity.LEFT;
+
 	public enum Associativity {
 		LEFT {
 			@Override
@@ -32,7 +34,7 @@ public abstract class BinaryOperator<E> extends Operator<E> {
 	}
 
 	public BinaryOperator(String id, int precendence) {
-		this(id, precendence, Associativity.LEFT);
+		this(id, precendence, DEFAULT_ASSOCIATIVITY);
 	}
 
 	protected abstract E execute(E left, E right);

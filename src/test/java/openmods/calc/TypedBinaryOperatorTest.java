@@ -37,16 +37,19 @@ public class TypedBinaryOperatorTest {
 	@Test
 	public void testVariantOperation() {
 		final TypeDomain domain = new TypeDomain();
+		domain.registerType(Integer.class);
+		domain.registerType(String.class);
+		domain.registerType(Boolean.class);
 
-		final TypedBinaryOperator op = new TypedBinaryOperator("+", 0);
-		op.registerOperation(new IVariantOperation<String, Integer>() {
-			@Override
-			public TypedValue apply(TypeDomain domain, String left, Integer right) {
-				Assert.assertEquals("abc", left);
-				Assert.assertEquals(Integer.valueOf(123), right);
-				return domain.create(Boolean.class, Boolean.TRUE);
-			}
-		});
+		final TypedBinaryOperator op = new TypedBinaryOperator.Builder("+", 0)
+				.registerOperation(new IVariantOperation<String, Integer>() {
+					@Override
+					public TypedValue apply(TypeDomain domain, String left, Integer right) {
+						Assert.assertEquals("abc", left);
+						Assert.assertEquals(Integer.valueOf(123), right);
+						return domain.create(Boolean.class, Boolean.TRUE);
+					}
+				}).build(domain);
 
 		final TypedValue result = execute(op, domain.create(String.class, "abc"), domain.create(Integer.class, 123));
 		assertValueEquals(result, domain, Boolean.class, Boolean.TRUE);
@@ -55,16 +58,19 @@ public class TypedBinaryOperatorTest {
 	@Test
 	public void testSimpleVariantOperation() {
 		final TypeDomain domain = new TypeDomain();
+		domain.registerType(Integer.class);
+		domain.registerType(String.class);
+		domain.registerType(Boolean.class);
 
-		final TypedBinaryOperator op = new TypedBinaryOperator("+", 0);
-		op.registerOperation(new ISimpleVariantOperation<String, Integer, Boolean>() {
-			@Override
-			public Boolean apply(String left, Integer right) {
-				Assert.assertEquals("abc", left);
-				Assert.assertEquals(Integer.valueOf(123), right);
-				return Boolean.TRUE;
-			}
-		});
+		final TypedBinaryOperator op = new TypedBinaryOperator.Builder("+", 0)
+				.registerOperation(new ISimpleVariantOperation<String, Integer, Boolean>() {
+					@Override
+					public Boolean apply(String left, Integer right) {
+						Assert.assertEquals("abc", left);
+						Assert.assertEquals(Integer.valueOf(123), right);
+						return Boolean.TRUE;
+					}
+				}).build(domain);
 
 		final TypedValue result = execute(op, domain.create(String.class, "abc"), domain.create(Integer.class, 123));
 		assertValueEquals(result, domain, Boolean.class, Boolean.TRUE);
@@ -73,16 +79,20 @@ public class TypedBinaryOperatorTest {
 	@Test
 	public void testCoercedOperator() {
 		final TypeDomain domain = new TypeDomain();
+		domain.registerType(Integer.class);
+		domain.registerType(Number.class);
+		domain.registerType(Boolean.class);
+
 		domain.registerCast(Integer.class, Number.class);
 		domain.registerCoercionRule(Integer.class, Number.class, Coercion.TO_RIGHT);
 
-		final TypedBinaryOperator op = new TypedBinaryOperator("+", 0);
-		op.registerOperation(new ICoercedOperation<Number>() {
-			@Override
-			public TypedValue apply(TypeDomain domain, Number left, Number right) {
-				return domain.create(Boolean.class, Boolean.TRUE);
-			}
-		});
+		final TypedBinaryOperator op = new TypedBinaryOperator.Builder("+", 0)
+				.registerOperation(new ICoercedOperation<Number>() {
+					@Override
+					public TypedValue apply(TypeDomain domain, Number left, Number right) {
+						return domain.create(Boolean.class, Boolean.TRUE);
+					}
+				}).build(domain);
 
 		final TypedValue result = execute(op, domain.create(Integer.class, 123), domain.create(Number.class, 567));
 		assertValueEquals(result, domain, Boolean.class, Boolean.TRUE);
@@ -91,31 +101,37 @@ public class TypedBinaryOperatorTest {
 	@Test
 	public void testSimpleCoercedOperator() {
 		final TypeDomain domain = new TypeDomain();
+		domain.registerType(Number.class);
+		domain.registerType(Integer.class);
+		domain.registerType(Boolean.class);
+
 		domain.registerCast(Integer.class, Number.class);
 		domain.registerCoercionRule(Integer.class, Number.class, Coercion.TO_RIGHT);
 
-		final TypedBinaryOperator op = new TypedBinaryOperator("+", 0);
-		op.registerOperation(new ISimpleCoercedOperation<Number>() {
-			@Override
-			public Number apply(Number left, Number right) {
-				return left.intValue() + right.intValue();
-			}
-		});
+		final TypedBinaryOperator op = new TypedBinaryOperator.Builder("+", 0)
+				.registerOperation(new ISimpleCoercedOperation<Number, Boolean>() {
+					@Override
+					public Boolean apply(Number left, Number right) {
+						return Boolean.TRUE;
+					}
+				}).build(domain);
 
 		final TypedValue result = execute(op, domain.create(Integer.class, 123), domain.create(Number.class, 567));
-		assertValueEquals(result, domain, Number.class, 690);
+		assertValueEquals(result, domain, Boolean.class, Boolean.TRUE);
 	}
 
 	@Test
 	public void testSelfCoercedOperator() {
 		final TypeDomain domain = new TypeDomain();
-		final TypedBinaryOperator op = new TypedBinaryOperator("+", 0);
-		op.registerOperation(new ISimpleCoercedOperation<Integer>() {
-			@Override
-			public Integer apply(Integer left, Integer right) {
-				return left + right;
-			}
-		});
+		domain.registerType(Integer.class);
+
+		final TypedBinaryOperator op = new TypedBinaryOperator.Builder("+", 0)
+				.registerOperation(new ISimpleCoercedOperation<Integer, Integer>() {
+					@Override
+					public Integer apply(Integer left, Integer right) {
+						return left + right;
+					}
+				}).build(domain);
 
 		final TypedValue result = execute(op, domain.create(Integer.class, 2), domain.create(Integer.class, 3));
 		assertValueEquals(result, domain, Integer.class, 5);
@@ -124,18 +140,22 @@ public class TypedBinaryOperatorTest {
 	@Test
 	public void testDefaultOperation() {
 		final TypeDomain domain = new TypeDomain();
-		final TypedBinaryOperator op = new TypedBinaryOperator("+", 0);
+		domain.registerType(Integer.class);
+		domain.registerType(String.class);
+		domain.registerType(Boolean.class);
 
 		final TypedValue l = domain.create(Integer.class, 2);
 		final TypedValue r = domain.create(String.class, "a");
-		op.setDefaultOperation(new IDefaultOperation() {
-			@Override
-			public Optional<TypedValue> apply(TypeDomain domain, TypedValue left, TypedValue right) {
-				Assert.assertEquals(l, left);
-				Assert.assertEquals(r, right);
-				return Optional.of(domain.create(Boolean.class, Boolean.TRUE));
-			}
-		});
+
+		final TypedBinaryOperator op = new TypedBinaryOperator.Builder("+", 0)
+				.setDefaultOperation(new IDefaultOperation() {
+					@Override
+					public Optional<TypedValue> apply(TypeDomain domain, TypedValue left, TypedValue right) {
+						Assert.assertEquals(l, left);
+						Assert.assertEquals(r, right);
+						return Optional.of(domain.create(Boolean.class, Boolean.TRUE));
+					}
+				}).build(domain);
 
 		final TypedValue result = execute(op, l, r);
 		assertValueEquals(result, domain, Boolean.class, Boolean.TRUE);
