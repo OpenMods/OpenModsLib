@@ -30,6 +30,7 @@ import openmods.network.rpc.targets.EntityRpcTarget;
 import openmods.network.rpc.targets.SyncRpcTarget;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.proxy.IOpenModsProxy;
+import openmods.reflection.TypeVariableHolderHandler;
 import openmods.source.ClassSourceCollector;
 import openmods.source.CommandSource;
 import openmods.sync.SyncChannelHolder;
@@ -59,6 +60,7 @@ public class OpenMods {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent evt) {
+		new TypeVariableHolderHandler().fillAllHolders(evt.getAsmData());
 		SyncChannelHolder.ensureLoaded();
 
 		NetworkEventManager.INSTANCE.startRegistration();

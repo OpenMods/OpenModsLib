@@ -6,6 +6,7 @@ import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedValue;
+import openmods.reflection.TypeVariableHolderHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,6 +16,10 @@ public class MultiValueTest {
 		Assert.assertEquals(expectedValue, value.value);
 		Assert.assertEquals(expectedType, value.type);
 		Assert.assertEquals(expectedDomain, value.domain);
+	}
+
+	static {
+		TypeVariableHolderHandler.initializeClass(TypeDomain.TypeVariableHolders.class);
 	}
 
 	@Test

@@ -10,8 +10,34 @@ import java.lang.reflect.TypeVariable;
 import java.util.Map;
 import openmods.calc.BinaryOperator;
 import openmods.calc.types.multi.TypeDomain.Coercion;
+import openmods.reflection.TypeVariableHolder;
 
 public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
+
+	public static class TypeVariableHolders {
+		@TypeVariableHolder(ICoercedOperation.class)
+		public static class CoercedOperation {
+			public static TypeVariable<?> T;
+		}
+
+		@TypeVariableHolder(ISimpleCoercedOperation.class)
+		public static class SimpleCoercedOperation {
+			public static TypeVariable<?> T;
+		}
+
+		@TypeVariableHolder(IVariantOperation.class)
+		public static class VariantOperation {
+			public static TypeVariable<?> L;
+			public static TypeVariable<?> R;
+		}
+
+		@TypeVariableHolder(ISimpleVariantOperation.class)
+		public static class SimpleVariantOperation {
+			public static TypeVariable<?> L;
+			public static TypeVariable<?> R;
+			public static TypeVariable<?> O;
+		}
+	}
 
 	public TypedBinaryOperator(String id, int precedence, openmods.calc.BinaryOperator.Associativity associativity) {
 		super(id, precedence, associativity);
@@ -65,29 +91,15 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 		});
 	}
 
-	private static final TypeVariable<?> VAR_COERCED_T;
-
-	static {
-		final TypeVariable<?>[] typeParameters = ICoercedOperation.class.getTypeParameters();
-		VAR_COERCED_T = typeParameters[0];
-	}
-
 	public <T> TypedBinaryOperator registerOperation(ICoercedOperation<T> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
-		final Class<T> type = resolveVariable(token, VAR_COERCED_T);
+		final Class<T> type = resolveVariable(token, TypeVariableHolders.CoercedOperation.T);
 		return registerOperation(type, op);
-	}
-
-	private static final TypeVariable<?> VAR_SIMPLE_COERCED_T;
-
-	static {
-		final TypeVariable<?>[] typeParameters = ISimpleCoercedOperation.class.getTypeParameters();
-		VAR_SIMPLE_COERCED_T = typeParameters[0];
 	}
 
 	public <T> TypedBinaryOperator registerOperation(ISimpleCoercedOperation<T> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
-		final Class<T> type = resolveVariable(token, VAR_SIMPLE_COERCED_T);
+		final Class<T> type = resolveVariable(token, TypeVariableHolders.SimpleCoercedOperation.T);
 		return registerOperation(type, op);
 	}
 
@@ -125,38 +137,18 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 		});
 	}
 
-	private static final TypeVariable<?> VAR_VARIANT_L;
-	private static final TypeVariable<?> VAR_VARIANT_R;
-
-	static {
-		final TypeVariable<?>[] typeParameters = IVariantOperation.class.getTypeParameters();
-		VAR_VARIANT_L = typeParameters[0];
-		VAR_VARIANT_R = typeParameters[1];
-	}
-
 	public <L, R> TypedBinaryOperator registerOperation(IVariantOperation<L, R> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
-		final Class<L> left = resolveVariable(token, VAR_VARIANT_L);
-		final Class<R> right = resolveVariable(token, VAR_VARIANT_R);
+		final Class<L> left = resolveVariable(token, TypeVariableHolders.VariantOperation.L);
+		final Class<R> right = resolveVariable(token, TypeVariableHolders.VariantOperation.R);
 		return registerOperation(left, right, op);
-	}
-
-	private static final TypeVariable<?> VAR_SIMPLE_VARIANT_L;
-	private static final TypeVariable<?> VAR_SIMPLE_VARIANT_R;
-	private static final TypeVariable<?> VAR_SIMPLE_VARIANT_O;
-
-	static {
-		final TypeVariable<?>[] typeParameters = ISimpleVariantOperation.class.getTypeParameters();
-		VAR_SIMPLE_VARIANT_L = typeParameters[0];
-		VAR_SIMPLE_VARIANT_R = typeParameters[1];
-		VAR_SIMPLE_VARIANT_O = typeParameters[2];
 	}
 
 	public <L, R, O> TypedBinaryOperator registerOperation(ISimpleVariantOperation<L, R, O> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
-		final Class<L> left = resolveVariable(token, VAR_SIMPLE_VARIANT_L);
-		final Class<R> right = resolveVariable(token, VAR_SIMPLE_VARIANT_R);
-		final Class<O> output = resolveVariable(token, VAR_SIMPLE_VARIANT_O);
+		final Class<L> left = resolveVariable(token, TypeVariableHolders.SimpleVariantOperation.L);
+		final Class<R> right = resolveVariable(token, TypeVariableHolders.SimpleVariantOperation.R);
+		final Class<O> output = resolveVariable(token, TypeVariableHolders.SimpleVariantOperation.O);
 		return registerOperation(left, right, output, op);
 	}
 

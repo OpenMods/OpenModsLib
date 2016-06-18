@@ -7,8 +7,22 @@ import com.google.common.reflect.TypeToken;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
 import openmods.calc.UnaryOperator;
+import openmods.reflection.TypeVariableHolder;
 
 public class TypedUnaryOperator extends UnaryOperator<TypedValue> {
+
+	public static class TypeVariableHolders {
+		@TypeVariableHolder(IOperation.class)
+		public static class Operation {
+			public static TypeVariable<?> A;
+		}
+
+		@TypeVariableHolder(ISimpleOperation.class)
+		public static class SimpleOperation {
+			public static TypeVariable<?> A;
+			public static TypeVariable<?> R;
+		}
+	}
 
 	public TypedUnaryOperator(String id) {
 		super(id);
@@ -55,32 +69,16 @@ public class TypedUnaryOperator extends UnaryOperator<TypedValue> {
 		});
 	}
 
-	private static final TypeVariable<?> VAR_A;
-
-	static {
-		final TypeVariable<?>[] typeParameters = IOperation.class.getTypeParameters();
-		VAR_A = typeParameters[0];
-	}
-
 	public <A> TypedUnaryOperator registerOperation(IOperation<A> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
-		final Class<A> type = resolveVariable(token, VAR_A);
+		final Class<A> type = resolveVariable(token, TypeVariableHolders.Operation.A);
 		return registerOperation(type, op);
-	}
-
-	private static final TypeVariable<?> VAR_SIMPLE_A;
-	private static final TypeVariable<?> VAR_SIMPLE_R;
-
-	static {
-		final TypeVariable<?>[] typeParameters = ISimpleOperation.class.getTypeParameters();
-		VAR_SIMPLE_A = typeParameters[0];
-		VAR_SIMPLE_R = typeParameters[1];
 	}
 
 	public <A, R> TypedUnaryOperator registerOperation(ISimpleOperation<A, R> op) {
 		final TypeToken<?> token = TypeToken.of(op.getClass());
-		final Class<A> argType = resolveVariable(token, VAR_SIMPLE_A);
-		final Class<R> resultType = resolveVariable(token, VAR_SIMPLE_R);
+		final Class<A> argType = resolveVariable(token, TypeVariableHolders.SimpleOperation.A);
+		final Class<R> resultType = resolveVariable(token, TypeVariableHolders.SimpleOperation.R);
 		return registerOperation(argType, resultType, op);
 	}
 

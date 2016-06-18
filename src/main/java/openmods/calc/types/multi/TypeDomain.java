@@ -8,6 +8,7 @@ import com.google.common.collect.Table;
 import com.google.common.reflect.TypeToken;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
+import openmods.reflection.TypeVariableHolder;
 
 public class TypeDomain {
 
@@ -15,13 +16,12 @@ public class TypeDomain {
 		public Object convert(Object value);
 	}
 
-	private static final TypeVariable<?> VAR_S;
-	private static final TypeVariable<?> VAR_T;
-
-	static {
-		final TypeVariable<?>[] typeParameters = IConverter.class.getTypeParameters();
-		VAR_S = typeParameters[0];
-		VAR_T = typeParameters[1];
+	public static class TypeVariableHolders {
+		@TypeVariableHolder(IConverter.class)
+		public static class Converter {
+			public static TypeVariable<?> S;
+			public static TypeVariable<?> T;
+		}
 	}
 
 	private static class WrappedConverter<S, T> implements RawConverter {
@@ -73,8 +73,8 @@ public class TypeDomain {
 	@SuppressWarnings("unchecked")
 	public <S, T> TypeDomain registerConverter(IConverter<S, T> converter) {
 		final TypeToken<?> converterType = TypeToken.of(converter.getClass());
-		final Class<S> sourceType = (Class<S>)converterType.resolveType(VAR_S).getRawType();
-		final Class<T> targetType = (Class<T>)converterType.resolveType(VAR_T).getRawType();
+		final Class<S> sourceType = (Class<S>)converterType.resolveType(TypeVariableHolders.Converter.S).getRawType();
+		final Class<T> targetType = (Class<T>)converterType.resolveType(TypeVariableHolders.Converter.T).getRawType();
 		return registerConverter(sourceType, targetType, converter);
 	}
 

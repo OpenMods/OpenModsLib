@@ -10,6 +10,7 @@ import openmods.calc.types.multi.TypedBinaryOperator.ISimpleCoercedOperation;
 import openmods.calc.types.multi.TypedBinaryOperator.ISimpleVariantOperation;
 import openmods.calc.types.multi.TypedBinaryOperator.IVariantOperation;
 import openmods.calc.types.multi.TypedValue;
+import openmods.reflection.TypeVariableHolderHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,6 +28,10 @@ public class TypedBinaryOperatorTest {
 		frame.stack().push(right);
 		op.execute(frame);
 		return frame.stack().pop();
+	}
+
+	static {
+		TypeVariableHolderHandler.initializeClass(TypedBinaryOperator.TypeVariableHolders.class);
 	}
 
 	@Test

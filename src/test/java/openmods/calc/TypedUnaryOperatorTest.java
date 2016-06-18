@@ -7,6 +7,7 @@ import openmods.calc.types.multi.TypedUnaryOperator.IDefaultOperation;
 import openmods.calc.types.multi.TypedUnaryOperator.IOperation;
 import openmods.calc.types.multi.TypedUnaryOperator.ISimpleOperation;
 import openmods.calc.types.multi.TypedValue;
+import openmods.reflection.TypeVariableHolderHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,6 +24,10 @@ public class TypedUnaryOperatorTest {
 		frame.stack().push(value);
 		op.execute(frame);
 		return frame.stack().pop();
+	}
+
+	static {
+		TypeVariableHolderHandler.initializeClass(TypedUnaryOperator.TypeVariableHolders.class);
 	}
 
 	@Test
