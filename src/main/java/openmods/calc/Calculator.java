@@ -65,7 +65,7 @@ public abstract class Calculator<E> {
 
 	private final ICompiler<E> infixCompiler;
 
-	protected final E nullValue;
+	private final E nullValue;
 
 	public Calculator(IValueParser<E> parser, E nullValue) {
 		this.nullValue = nullValue;
@@ -80,6 +80,10 @@ public abstract class Calculator<E> {
 		this.infixCompiler = createInfixCompiler(parser, operators);
 		setupGenericFunctions(topFrame);
 		setupGlobals(topFrame);
+	}
+
+	public E nullValue() {
+		return nullValue;
 	}
 
 	private OperatorDictionary<E> createOperatorDictionary() {

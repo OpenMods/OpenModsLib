@@ -1,0 +1,177 @@
+package openmods.calc;
+
+import java.math.BigInteger;
+import openmods.calc.CalcTestUtils.CalcCheck;
+import openmods.calc.Calculator.ExprType;
+import openmods.calc.types.multi.TypeDomain;
+import openmods.calc.types.multi.TypedBinaryOperator;
+import openmods.calc.types.multi.TypedUnaryOperator;
+import openmods.calc.types.multi.TypedValue;
+import openmods.calc.types.multi.TypedValueCalculator;
+import openmods.reflection.MethodAccess;
+import openmods.reflection.TypeVariableHolderHandler;
+import org.junit.Test;
+
+public class TypedValueCalculatorTest {
+
+	static {
+		final TypeVariableHolderHandler filler = new TypeVariableHolderHandler();
+		filler.fillHolders(TypedBinaryOperator.TypeVariableHolders.class);
+		filler.fillHolders(TypedUnaryOperator.TypeVariableHolders.class);
+		filler.fillHolders(TypeDomain.TypeVariableHolders.class);
+		filler.fillHolders(MethodAccess.TypeVariableHolders.class);
+	}
+
+	private final TypedValueCalculator sut = TypedValueCalculator.create();
+
+	public CalcCheck<TypedValue> infix(String value) {
+		final IExecutable<TypedValue> expr = sut.compile(ExprType.INFIX, value);
+		return new CalcCheck<TypedValue>(sut, expr);
+	}
+
+	public CalcCheck<TypedValue> postfix(String value) {
+		final IExecutable<TypedValue> expr = sut.compile(ExprType.POSTFIX, value);
+		return new CalcCheck<TypedValue>(sut, expr);
+	}
+
+	private final TypedValue NULL = sut.nullValue();
+
+	private final TypeDomain domain = NULL.domain;
+
+	private TypedValue s(String value) {
+		return domain.create(String.class, value);
+	}
+
+	private TypedValue i(long value) {
+		return domain.create(BigInteger.class, BigInteger.valueOf(value));
+	}
+
+	private TypedValue d(double value) {
+		return domain.create(Double.class, value);
+	}
+
+	private TypedValue b(boolean value) {
+		return domain.create(Boolean.class, value);
+	}
+
+	private final TypedValue TRUE = b(true);
+
+	private final TypedValue FALSE = b(false);
+
+	@Test
+	public void testBasicPostfix() {
+		postfix("1 2 +").expectResult(i(3)).expectEmptyStack();
+		postfix("0.5 0.5 +").expectResult(d(1)).expectEmptyStack();
+		postfix("0.25 0.25 +").expectResult(d(0.5)).expectEmptyStack();
+		postfix("2 3 *").expectResult(i(6)).expectEmptyStack();
+		postfix("10 2 /").expectResult(d(5.0)).expectEmptyStack();
+		postfix("10 2 //").expectResult(i(5)).expectEmptyStack();
+		postfix("1 2 +").expectResult(i(3)).expectEmptyStack();
+		postfix("true true &&").expectResult(TRUE).expectEmptyStack();
+		postfix("false true &&").expectResult(FALSE).expectEmptyStack();
+		postfix("'abc' 'def' +").expectResult(s("abcdef")).expectEmptyStack();
+		postfix("'abc' 'def' <=").expectResult(TRUE).expectEmptyStack();
+	}
+
+	@Test
+	public void testCoercionPostfix() {
+		postfix("0.5 1 +").expectResult(d(1.5)).expectEmptyStack();
+
+		postfix("2 5.0 **").expectResult(d(32)).expectEmptyStack();
+		postfix("2 5 **").expectResult(i(32)).expectEmptyStack();
+
+		postfix("true 2 +").expectResult(i(3)).expectEmptyStack();
+		postfix("true 2.0 +").expectResult(d(3.0)).expectEmptyStack();
+	}
+
+	@Test
+	public void testArithmeticInfix() {
+		infix("1 + 2").expectResult(i(3)).expectEmptyStack();
+		infix("2 * 3").expectResult(i(6)).expectEmptyStack();
+		infix("10 / 2").expectResult(d(5.0)).expectEmptyStack();
+
+		infix("10 // 2").expectResult(i(5)).expectEmptyStack();
+		infix("10.7 // 2").expectResult(d(5.0)).expectEmptyStack();
+		infix("-2.3 // 3").expectResult(d(-1.0)).expectEmptyStack();
+
+		infix("2 ** 5").expectResult(i(32)).expectEmptyStack();
+		infix("2 ** 0").expectResult(i(1)).expectEmptyStack();
+		infix("2 ** -5").expectResult(d(1.0 / 32.0)).expectEmptyStack();
+
+		infix("5 % 2").expectResult(i(1)).expectEmptyStack();
+		infix("5.125 % 1").expectResult(d(0.125)).expectEmptyStack();
+		infix("5 % 2.0").expectResult(d(1.0)).expectEmptyStack();
+		infix("5.125 % 1.0").expectResult(d(0.125)).expectEmptyStack();
+
+		infix("-true").expectResult(i(-1)).expectEmptyStack();
+		infix("2*true").expectResult(i(2)).expectEmptyStack();
+		infix("2*-true").expectResult(i(-2)).expectEmptyStack();
+		infix("2true").expectResult(i(2)).expectEmptyStack();
+		infix("2(true)").expectResult(i(2)).expectEmptyStack();
+
+		infix("-2*-3*10**3").expectResult(i(6000)).expectEmptyStack();
+		infix("-2*-3*10**+3").expectResult(i(6000)).expectEmptyStack();
+		infix("-2*-3*10**-3").expectResult(d(6e-3)).expectEmptyStack();
+		infix("2*10**2+3*10**3").expectResult(i(3200)).expectEmptyStack();
+		infix("2*10**2*3*10**3").expectResult(i(600000)).expectEmptyStack();
+
+		infix("0.1 + true").expectResult(d(1.1)).expectEmptyStack();
+
+		infix("'abc' * 2").expectResult(s("abcabc")).expectEmptyStack();
+	}
+
+	@Test
+	public void testLogicInfix() {
+		infix("!true").expectResult(FALSE).expectEmptyStack();
+		infix("!1").expectResult(FALSE).expectEmptyStack();
+		infix("!'hello'").expectResult(FALSE).expectEmptyStack();
+		infix("!''").expectResult(TRUE).expectEmptyStack();
+		infix("!0").expectResult(TRUE).expectEmptyStack();
+
+		infix("'abc' && 5").expectResult(i(5)).expectEmptyStack();
+		infix("0 && 'abc'").expectResult(i(0)).expectEmptyStack();
+		infix("'' && 4").expectResult(s("")).expectEmptyStack();
+
+		infix("'abc' || 5").expectResult(s("abc")).expectEmptyStack();
+		infix("'' || 5").expectResult(i(5)).expectEmptyStack();
+		infix("'' || 0").expectResult(i(0)).expectEmptyStack();
+	}
+
+	@Test
+	public void testBitwiseInfix() {
+		infix("~true").expectResult(i(0)).expectEmptyStack();
+		infix("~0b10").expectResult(i(-3)).expectEmptyStack();
+		infix("0b10110 ^ 0b101101").expectResult(i(0x3B)).expectEmptyStack();
+		infix("0b1010 << 0b10").expectResult(i(40)).expectEmptyStack();
+	}
+
+	@Test
+	public void testCompare() {
+		infix("2 < 3").expectResult(TRUE).expectEmptyStack();
+		infix("3 != 3").expectResult(FALSE).expectEmptyStack();
+		infix("3 <= 3").expectResult(TRUE).expectEmptyStack();
+
+		infix("3 <=> 3").expectResult(i(0)).expectEmptyStack();
+		infix("2 <=> 3").expectResult(i(-1)).expectEmptyStack();
+		infix("3 <=> 2").expectResult(i(+1)).expectEmptyStack();
+	}
+
+	@Test
+	public void testBasicOrdering() {
+		infix("1 + 2 - 3").expectResult(i(0)).expectEmptyStack();
+
+		infix("1 + 2 * 3").expectResult(i(7)).expectEmptyStack();
+		infix("1 + (2 * 3)").expectResult(i(7)).expectEmptyStack();
+		infix("(1 + 2) * 3").expectResult(i(9)).expectEmptyStack();
+		infix("-(1 + 2) * 3").expectResult(i(-9)).expectEmptyStack();
+		infix("(1 + 2) * -3").expectResult(i(-9)).expectEmptyStack();
+		infix("--3").expectResult(i(3)).expectEmptyStack();
+
+		infix("2 * 2 ** 2").expectResult(i(8)).expectEmptyStack();
+		infix("2 * (2 ** 2)").expectResult(i(8)).expectEmptyStack();
+		infix("(2 * 2) ** 2").expectResult(i(16)).expectEmptyStack();
+
+		infix("2 == 4 || 5 <= 6").expectResult(TRUE).expectEmptyStack();
+		infix("2 << 3 + 1").expectResult(i(32)).expectEmptyStack();
+	}
+}
