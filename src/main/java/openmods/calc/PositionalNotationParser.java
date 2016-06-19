@@ -23,9 +23,10 @@ public abstract class PositionalNotationParser<I, F> {
 
 	private static <E> E parsePart(Accumulator<E> accumulator, String input, int radix) {
 		final char[] charArray = input.toCharArray();
-		// if (reverse) ArrayUtils.reverse(charArray);
 
 		for (char ch : charArray) {
+			if (ch == '_') continue;
+
 			final int digit = Character.digit(ch, radix);
 			if (digit < 0) throw invalidDigit(input, radix, ch);
 			accumulator.add(digit);
@@ -66,6 +67,8 @@ public abstract class PositionalNotationParser<I, F> {
 			reminder = reminder.substring(1);
 
 			final int digit;
+
+			if (ch == '_') continue;
 
 			if (ch == '\'') {
 				final int nextQuote = reminder.indexOf('\'');

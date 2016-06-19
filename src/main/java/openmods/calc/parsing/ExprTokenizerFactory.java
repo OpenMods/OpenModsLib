@@ -15,15 +15,15 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class ExprTokenizerFactory {
 
-	private static final Pattern DEC_NUMBER = Pattern.compile("^([0-9]+(?:\\.[0-9]+)?)");
+	private static final Pattern DEC_NUMBER = Pattern.compile("^([0-9](?:_*[0-9]+)*(?:\\.[0-9](?:_*[0-9]+)*)?)");
 
-	private static final Pattern HEX_NUMBER = Pattern.compile("^0x([0-9A-Fa-f]+(?:\\.[0-9A-Fa-f]+)?)");
+	private static final Pattern HEX_NUMBER = Pattern.compile("^0x([0-9A-Fa-f](?:_*[0-9A-Fa-f]+)*(?:\\.[0-9A-Fa-f](?:_*[0-9A-Fa-f]+)*)?)");
 
-	private static final Pattern OCT_NUMBER = Pattern.compile("^0([0-7]+(?:\\.[0-7]+)?)");
+	private static final Pattern OCT_NUMBER = Pattern.compile("^0((?:_*[0-7]+)+(?:\\.[0-7](?:_*[0-7]+)*)?)");
 
-	private static final Pattern BIN_NUMBER = Pattern.compile("^0b([01]+(?:\\.[01]+)?)");
+	private static final Pattern BIN_NUMBER = Pattern.compile("^0b([01](?:_*[01]+)*(?:\\.[01](?:_*[01]+)*)?)");
 
-	private static final Pattern QUOTED_NUMBER = Pattern.compile("^([0-9]+#[0-9A-Za-z'\"]+(?:\\.[0-9A-Za-z'\"]+)?)");
+	private static final Pattern QUOTED_NUMBER = Pattern.compile("^([0-9]+#[0-9A-Za-z'\"](?:_*[0-9A-Za-z'\"]+)*(?:\\.[0-9A-Za-z'\"](?:_*[0-9A-Za-z'\"]+)*)?)");
 
 	private static final Pattern SYMBOL = Pattern.compile("^([_A-Za-z$][_0-9A-Za-z$]*)");
 

@@ -1,6 +1,8 @@
 package openmods.calc;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
+import java.util.Iterator;
 import openmods.calc.parsing.ExprTokenizerFactory;
 import openmods.calc.parsing.Token;
 import org.junit.Assert;
@@ -16,6 +18,16 @@ public class TokenizerTest extends CalcTestUtils {
 		Assert.assertArrayEquals(tokens, result);
 	}
 
+	private void expectFail(String input) {
+		try {
+			final Iterator<Token> it = factory.tokenize(input).iterator();
+			final String result = Joiner.on(' ').join(it); // should fail while iterating
+			Assert.fail(result);
+		} catch (Exception e) {
+			// NO-OP
+		}
+	}
+
 	@Test
 	public void testBinary() {
 		verifyTokens("0b0", bin("0"));
@@ -25,6 +37,21 @@ public class TokenizerTest extends CalcTestUtils {
 		verifyTokens("0b1.0", bin("1.0"));
 
 		verifyTokens("0b01", bin("01"));
+
+		verifyTokens("0b1_01", bin("1_01"));
+		verifyTokens("0b1__01", bin("1__01"));
+		verifyTokens("0b0_11_00", bin("0_11_00"));
+		verifyTokens("0b1.1_0", bin("1.1_0"));
+		verifyTokens("0b1.1__0", bin("1.1__0"));
+		verifyTokens("0b101.00_11", bin("101.00_11"));
+		verifyTokens("0b1_1.1_1", bin("1_1.1_1"));
+
+		verifyTokens("0b10_", bin("10"), symbol("_"));
+		verifyTokens("0b10.01_", bin("10.01"), symbol("_"));
+
+		// TODO: this is confusing, redo?
+		verifyTokens("0b_11", dec("0"), symbol("b_11"));
+		verifyTokens("0_b11", dec("0"), symbol("_b11"));
 	}
 
 	@Test
@@ -36,6 +63,19 @@ public class TokenizerTest extends CalcTestUtils {
 		verifyTokens("01.0", oct("1.0"));
 
 		verifyTokens("0123", oct("123"));
+
+		verifyTokens("01_23", oct("1_23"));
+		verifyTokens("01__23", oct("1__23"));
+		verifyTokens("01_23_45", oct("1_23_45"));
+		verifyTokens("0123.2_3", oct("123.2_3"));
+		verifyTokens("0123.2__3", oct("123.2__3"));
+		verifyTokens("0123.23_45", oct("123.23_45"));
+		verifyTokens("01_3.2_3", oct("1_3.2_3"));
+
+		verifyTokens("012_", oct("12"), symbol("_"));
+		verifyTokens("012.32_", oct("12.32"), symbol("_"));
+
+		verifyTokens("0_123", oct("_123"));
 	}
 
 	@Test
@@ -47,6 +87,20 @@ public class TokenizerTest extends CalcTestUtils {
 		verifyTokens("1.0", dec("1.0"));
 
 		verifyTokens("123", dec("123"));
+
+		verifyTokens("1_23", dec("1_23"));
+		verifyTokens("1__23", dec("1__23"));
+		verifyTokens("1_23_45", dec("1_23_45"));
+		verifyTokens("123.2_3", dec("123.2_3"));
+		verifyTokens("123.2__3", dec("123.2__3"));
+		verifyTokens("123.23_45", dec("123.23_45"));
+		verifyTokens("1_3.2_3", dec("1_3.2_3"));
+
+		verifyTokens("12_", dec("12"), symbol("_"));
+		expectFail("_12.32");
+		expectFail("12_.32");
+		expectFail("12._32");
+		verifyTokens("12.32_", dec("12.32"), symbol("_"));
 	}
 
 	@Test
@@ -62,6 +116,21 @@ public class TokenizerTest extends CalcTestUtils {
 
 		verifyTokens("0xDEAD", hex("DEAD"));
 		verifyTokens("0xf00d", hex("f00d"));
+
+		verifyTokens("0x1_B3", hex("1_B3"));
+		verifyTokens("0x1__B3", hex("1__B3"));
+		verifyTokens("0x1_2A_45", hex("1_2A_45"));
+		verifyTokens("0x1B3.A_3", hex("1B3.A_3"));
+		verifyTokens("0x1B3.A__3", hex("1B3.A__3"));
+		verifyTokens("0x123.2C_C5", hex("123.2C_C5"));
+		verifyTokens("0x1_A.2_B", hex("1_A.2_B"));
+
+		verifyTokens("0x12_", hex("12"), symbol("_"));
+		verifyTokens("0x12.32_", hex("12.32"), symbol("_"));
+
+		// TODO: this is confusing, redo?
+		verifyTokens("0x_12", dec("0"), symbol("x_12"));
+		verifyTokens("0_x12", dec("0"), symbol("_x12"));
 	}
 
 	@Test
@@ -79,6 +148,19 @@ public class TokenizerTest extends CalcTestUtils {
 		verifyTokens("12#'3\"4'", quoted("12#'3\"4'"));
 
 		verifyTokens("432#12dZsd3", quoted("432#12dZsd3"));
+
+		verifyTokens("13#1_B3", quoted("13#1_B3"));
+		verifyTokens("13#1__B3", quoted("13#1__B3"));
+		verifyTokens("13#1_2A_45", quoted("13#1_2A_45"));
+		verifyTokens("13#1B3.A_3", quoted("13#1B3.A_3"));
+		verifyTokens("13#1B3.A__3", quoted("13#1B3.A__3"));
+		verifyTokens("13#123.2C_C5", quoted("13#123.2C_C5"));
+		verifyTokens("14#1_A.2_B", quoted("14#1_A.2_B"));
+
+		verifyTokens("14#12_", quoted("14#12"), symbol("_"));
+		verifyTokens("14#12.32_", quoted("14#12.32"), symbol("_"));
+		expectFail("_14#12");
+		expectFail("14_#12");
 	}
 
 	@Test
@@ -105,6 +187,7 @@ public class TokenizerTest extends CalcTestUtils {
 		verifyTokens("$HELLO", symbol("$HELLO"));
 		verifyTokens("_", symbol("_"));
 		verifyTokens("_C", symbol("_C"));
+		verifyTokens("_123", symbol("_123"));
 		verifyTokens("HELLO", symbol("HELLO"));
 		verifyTokens("PI_2", symbol("PI_2"));
 	}
