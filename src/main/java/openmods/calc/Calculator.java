@@ -8,6 +8,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import openmods.calc.parsing.ExprTokenizerFactory;
 import openmods.calc.parsing.ICompiler;
+import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.InfixCompiler;
 import openmods.calc.parsing.PostfixCompiler;
 import openmods.calc.parsing.Token;

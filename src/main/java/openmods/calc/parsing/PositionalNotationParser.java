@@ -1,10 +1,8 @@
-package openmods.calc;
+package openmods.calc.parsing;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import java.util.Iterator;
-import openmods.calc.parsing.InvalidTokenException;
-import openmods.calc.parsing.Token;
 import org.apache.commons.lang3.tuple.Pair;
 
 public abstract class PositionalNotationParser<I, F> {

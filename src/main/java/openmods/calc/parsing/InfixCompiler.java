@@ -6,7 +6,6 @@ import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.ExecutableList;
 import openmods.calc.IExecutable;
-import openmods.calc.IValueParser;
 import openmods.calc.Operator;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryOperator;

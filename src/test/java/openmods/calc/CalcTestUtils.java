@@ -2,6 +2,7 @@ package openmods.calc;
 
 import com.google.common.collect.Lists;
 import java.util.Arrays;
+import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 import org.junit.Assert;

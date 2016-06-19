@@ -1,8 +1,8 @@
 package openmods.calc.types.multi;
 
 import java.math.BigInteger;
-import openmods.calc.IValueParser;
-import openmods.calc.PositionalNotationParser;
+import openmods.calc.parsing.IValueParser;
+import openmods.calc.parsing.PositionalNotationParser;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 import org.apache.commons.lang3.tuple.Pair;

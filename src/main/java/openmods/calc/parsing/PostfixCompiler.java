@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.ExecutableList;
 import openmods.calc.IExecutable;
-import openmods.calc.IValueParser;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SymbolReference;
 import openmods.calc.Value;

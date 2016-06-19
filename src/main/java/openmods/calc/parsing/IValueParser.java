@@ -1,6 +1,4 @@
-package openmods.calc;
-
-import openmods.calc.parsing.Token;
+package openmods.calc.parsing;
 
 public interface IValueParser<E> {
 	public E parseToken(Token token);
