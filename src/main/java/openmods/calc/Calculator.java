@@ -37,8 +37,12 @@ public abstract class Calculator<E> {
 					result = accumulate(result, value);
 				}
 
-				stack.push(result);
+				stack.push(process(result, args));
 			}
+		}
+
+		protected E process(E result, int argCount) {
+			return result;
 		}
 
 		protected abstract E accumulate(E result, E value);
@@ -61,7 +65,7 @@ public abstract class Calculator<E> {
 
 	private final ICompiler<E> infixCompiler;
 
-	private final E nullValue;
+	protected final E nullValue;
 
 	public Calculator(IValueParser<E> parser, E nullValue) {
 		this.nullValue = nullValue;

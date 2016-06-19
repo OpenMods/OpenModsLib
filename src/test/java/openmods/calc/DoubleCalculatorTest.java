@@ -61,7 +61,10 @@ public class DoubleCalculatorTest {
 		postfix("max@0").expectResult(0.0).expectEmptyStack();
 		postfix("1 max@1").expectResult(1.0).expectEmptyStack();
 		postfix("1 2 max@2").expectResult(2.0).expectEmptyStack();
-		postfix("3 2 1 max@3").expectResult(3.0).expectEmptyStack();
+
+		postfix("3 2 1 sum@3").expectResult(6.0).expectEmptyStack();
+		postfix("3 2 1 avg@3").expectResult(2.0).expectEmptyStack();
+
 		postfix("2 4 INF 1 max@4").expectResult(Double.POSITIVE_INFINITY).expectEmptyStack();
 	}
 

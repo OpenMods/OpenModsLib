@@ -237,6 +237,25 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
+		globals.setSymbol("sum", new AccumulatorFunction() {
+			@Override
+			protected Double accumulate(Double result, Double value) {
+				return result + value;
+			}
+		});
+
+		globals.setSymbol("avg", new AccumulatorFunction() {
+			@Override
+			protected Double accumulate(Double result, Double value) {
+				return result + value;
+			}
+
+			@Override
+			protected Double process(Double result, int argCount) {
+				return result / argCount;
+			}
+		});
+
 		globals.setSymbol("rad", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {

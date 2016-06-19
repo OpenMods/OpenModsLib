@@ -159,6 +159,25 @@ public class FractionCalculator extends Calculator<Fraction> {
 			}
 		});
 
+		globals.setSymbol("sum", new AccumulatorFunction() {
+			@Override
+			protected Fraction accumulate(Fraction result, Fraction value) {
+				return result.add(value);
+			}
+		});
+
+		globals.setSymbol("avg", new AccumulatorFunction() {
+			@Override
+			protected Fraction accumulate(Fraction result, Fraction value) {
+				return result.add(value);
+			}
+
+			@Override
+			protected Fraction process(Fraction result, int argCount) {
+				return result.multiplyBy(Fraction.getFraction(1, argCount));
+			}
+
+		});
 	}
 
 	@Override

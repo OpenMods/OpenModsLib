@@ -70,7 +70,9 @@ public class BigIntCalculatorTest {
 		postfix("max@0").expectResult(v(0)).expectEmptyStack();
 		postfix("1 max@1").expectResult(v(1)).expectEmptyStack();
 		postfix("1 2 max@2").expectResult(v(2)).expectEmptyStack();
-		postfix("3 2 1 max@3").expectResult(v(3)).expectEmptyStack();
+
+		postfix("3 2 1 sum@3").expectResult(v(6)).expectEmptyStack();
+		postfix("3 2 1 avg@3").expectResult(v(2)).expectEmptyStack();
 	}
 
 	@Test

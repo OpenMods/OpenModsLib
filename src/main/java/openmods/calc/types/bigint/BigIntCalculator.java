@@ -174,6 +174,26 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			}
 		});
 
+		globals.setSymbol("sum", new AccumulatorFunction() {
+			@Override
+			protected BigInteger accumulate(BigInteger result, BigInteger value) {
+				return result.add(value);
+			}
+		});
+
+		globals.setSymbol("avg", new AccumulatorFunction() {
+			@Override
+			protected BigInteger accumulate(BigInteger result, BigInteger value) {
+				return result.add(value);
+			}
+
+			@Override
+			protected BigInteger process(BigInteger result, int argCount) {
+				return result.divide(BigInteger.valueOf(argCount));
+			}
+
+		});
+
 		globals.setSymbol("gcd", new BinaryFunction<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger left, BigInteger right) {

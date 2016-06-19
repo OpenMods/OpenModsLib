@@ -69,7 +69,9 @@ public class FractionCalculatorTest {
 		postfix("max@0").expectResult(f(0)).expectEmptyStack();
 		postfix("1 max@1").expectResult(f(1)).expectEmptyStack();
 		postfix("1 2 max@2").expectResult(f(2)).expectEmptyStack();
-		postfix("3 2 1 max@3").expectResult(f(3)).expectEmptyStack();
+
+		postfix("3 2 1 sum@3").expectResult(f(6)).expectEmptyStack();
+		postfix("3 2 1 avg@3").expectResult(f(2)).expectEmptyStack();
 	}
 
 	@Test
