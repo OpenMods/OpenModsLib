@@ -214,4 +214,7 @@ public class TypeDomain {
 		return new TypedValue(this, type, value);
 	}
 
+	public <T> TypedValue castAndCreate(Class<T> type, Object value) {
+		return create(type, type.cast(value));
+	}
 }

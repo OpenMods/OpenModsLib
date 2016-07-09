@@ -27,7 +27,9 @@ public class TypedBinaryOperatorTest {
 		frame.stack().push(left);
 		frame.stack().push(right);
 		op.execute(frame);
-		return frame.stack().pop();
+		final TypedValue result = frame.stack().pop();
+		Assert.assertTrue(frame.stack().isEmpty());
+		return result;
 	}
 
 	static {

@@ -23,7 +23,9 @@ public class TypedUnaryOperatorTest {
 		final TopFrame<TypedValue> frame = new TopFrame<TypedValue>();
 		frame.stack().push(value);
 		op.execute(frame);
-		return frame.stack().pop();
+		final TypedValue result = frame.stack().pop();
+		Assert.assertTrue(frame.stack().isEmpty());
+		return result;
 	}
 
 	static {
