@@ -6,8 +6,10 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.util.List;
 import javax.annotation.Nullable;
+import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.ExprTokenizerFactory;
 import openmods.calc.parsing.ICompiler;
+import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.InfixCompiler;
 import openmods.calc.parsing.PostfixCompiler;
@@ -58,8 +60,6 @@ public abstract class Calculator<E> {
 
 	private final TopFrame<E> topFrame = new TopFrame<E>();
 
-	private final OperatorDictionary<E> operators;
-
 	private final ExprTokenizerFactory tokenizerFactory = new ExprTokenizerFactory();
 
 	private final ICompiler<E> rpnCompiler;
@@ -71,14 +71,15 @@ public abstract class Calculator<E> {
 	public Calculator(IValueParser<E> parser, E nullValue) {
 		this.nullValue = nullValue;
 
-		this.operators = createOperatorDictionary();
-		setupOperators(operators);
+		final OperatorDictionary<E> operators = createOperatorDictionary();
+		final IExprNodeFactory<E> exprNodeFactory = createExprNodeFactory();
+		setupOperators(operators, exprNodeFactory);
 
 		for (String operator : operators.allOperators())
 			tokenizerFactory.addOperator(operator);
 
 		this.rpnCompiler = createPostfixCompiler(parser, operators);
-		this.infixCompiler = createInfixCompiler(parser, operators);
+		this.infixCompiler = createInfixCompiler(parser, operators, exprNodeFactory);
 		setupGenericFunctions(topFrame);
 		setupGlobals(topFrame);
 	}
@@ -87,12 +88,18 @@ public abstract class Calculator<E> {
 		return nullValue;
 	}
 
-	private OperatorDictionary<E> createOperatorDictionary() {
+	protected IExprNodeFactory<E> createExprNodeFactory() {
+		return new DefaultExprNodeFactory<E>();
+	}
+
+	protected OperatorDictionary<E> createOperatorDictionary() {
 		return new OperatorDictionary<E>();
 	}
 
-	protected ICompiler<E> createInfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
-		return new InfixCompiler<E>(valueParser, operators);
+	protected void setupOperators(OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {}
+
+	protected ICompiler<E> createInfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators, IExprNodeFactory<E> nodeFactory) {
+		return new InfixCompiler<E>(valueParser, operators, nodeFactory);
 	}
 
 	protected ICompiler<E> createPostfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
@@ -151,8 +158,6 @@ public abstract class Calculator<E> {
 	}
 
 	public abstract String toString(E value);
-
-	protected abstract void setupOperators(OperatorDictionary<E> operators);
 
 	protected abstract void setupGlobals(TopFrame<E> globals);
 

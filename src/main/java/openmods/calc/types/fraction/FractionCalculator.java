@@ -7,9 +7,7 @@ import openmods.calc.OperatorDictionary;
 import openmods.calc.TopFrame;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
-import openmods.calc.parsing.ICompiler;
-import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.InfixCompiler;
+import openmods.calc.parsing.IExprNodeFactory;
 import openmods.config.simpler.Configurable;
 import org.apache.commons.lang3.math.Fraction;
 
@@ -27,12 +25,7 @@ public class FractionCalculator extends Calculator<Fraction> {
 	}
 
 	@Override
-	protected ICompiler<Fraction> createInfixCompiler(IValueParser<Fraction> valueParser, OperatorDictionary<Fraction> operators) {
-		return new InfixCompiler<Fraction>(valueParser, operators);
-	}
-
-	@Override
-	protected void setupOperators(OperatorDictionary<Fraction> operators) {
+	protected void setupOperators(OperatorDictionary<Fraction> operators, IExprNodeFactory<Fraction> exprNodeFactory) {
 		operators.registerUnaryOperator(new UnaryOperator<Fraction>("neg") {
 			@Override
 			protected Fraction execute(Fraction value) {

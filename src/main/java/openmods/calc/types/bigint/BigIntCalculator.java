@@ -9,9 +9,7 @@ import openmods.calc.TernaryFunction;
 import openmods.calc.TopFrame;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
-import openmods.calc.parsing.ICompiler;
-import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.InfixCompiler;
+import openmods.calc.parsing.IExprNodeFactory;
 import openmods.config.simpler.Configurable;
 
 public class BigIntCalculator extends Calculator<BigInteger> {
@@ -31,12 +29,7 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 	private static final int MAX_PRIO = 6;
 
 	@Override
-	protected ICompiler<BigInteger> createInfixCompiler(IValueParser<BigInteger> valueParser, OperatorDictionary<BigInteger> operators) {
-		return new InfixCompiler<BigInteger>(valueParser, operators);
-	}
-
-	@Override
-	protected void setupOperators(OperatorDictionary<BigInteger> operators) {
+	protected void setupOperators(OperatorDictionary<BigInteger> operators, IExprNodeFactory<BigInteger> exprNodeFactory) {
 		operators.registerUnaryOperator(new UnaryOperator<BigInteger>("~") {
 			@Override
 			protected BigInteger execute(BigInteger value) {

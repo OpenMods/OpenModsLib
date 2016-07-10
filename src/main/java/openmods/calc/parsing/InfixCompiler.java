@@ -18,9 +18,12 @@ public class InfixCompiler<E> implements ICompiler<E> {
 
 	private final OperatorDictionary<E> operators;
 
-	public InfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
+	private final IExprNodeFactory<E> exprNodeFactory;
+
+	public InfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
 		this.valueParser = valueParser;
 		this.operators = operators;
+		this.exprNodeFactory = exprNodeFactory;
 	}
 
 	private abstract static class OpStackElement<E> {
@@ -91,12 +94,12 @@ public class InfixCompiler<E> implements ICompiler<E> {
 				nodeStack.push(new ValueNode<E>(value));
 			} else if (token.type.isSymbol()) {
 				Preconditions.checkArgument(token.type != TokenType.SYMBOL_WITH_ARGS, "Symbol '%s' can't be used in infix mode", token.value);
-				nodeStack.push(createSymbolNode(token));
+				nodeStack.push(exprNodeFactory.createSymbolNode(token.value));
 			} else {
 				switch (token.type) {
 					case LEFT_BRACKET:
 						operatorStack.push(OpStackElement.<E> bracket(token.value));
-						if (lastToken == null || !lastToken.type.isSymbol()) nodeStack.push(createBracketNode(token.value));
+						if (lastToken == null || !lastToken.type.isSymbol()) nodeStack.push(exprNodeFactory.createBracketNode(token.value));
 						break;
 					case RIGHT_BRACKET: {
 						if (lastToken == null) throw new UnmatchedBracketsException(token.value);
@@ -153,14 +156,6 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		return token.type.canInsertDefaultOpOnLeft() && lastToken.type.canInsertDefaultOpOnRight();
 	}
 
-	protected SymbolNode<E> createSymbolNode(Token token) {
-		return new SymbolNode<E>(token.value);
-	}
-
-	protected IInnerNode<E> createBracketNode(String bracket) {
-		return new NullNode<E>();
-	}
-
 	private void pushOperator(Stack<IExprNode<E>> output, Stack<OpStackElement<E>> operatorStack, Operator<E> newOp) {
 		while (!operatorStack.isEmpty()) {
 			final OpStackElement<E> top = operatorStack.peek(0);
@@ -179,10 +174,9 @@ public class InfixCompiler<E> implements ICompiler<E> {
 	private void appendNodeChild(Stack<IExprNode<E>> output) {
 		if (output.size() > 1) {
 			final IExprNode<E> t = output.peek(1);
-			if (t instanceof IInnerNode) {
-				final IExprNode<E> top = output.pop();
-				((IInnerNode<E>)t).addChild(top);
-			}
+			Preconditions.checkState(t instanceof IInnerNode, "Expected inner node, got %s", t.getClass());
+			final IExprNode<E> top = output.pop();
+			((IInnerNode<E>)t).addChild(top);
 		}
 	}
 
@@ -203,10 +197,10 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		if (op instanceof BinaryOperator) {
 			final IExprNode<E> right = output.pop();
 			final IExprNode<E> left = output.pop();
-			output.push(operators.getExprNodeForOperator((BinaryOperator<E>)op, left, right));
+			output.push(exprNodeFactory.createBinaryOpNode((BinaryOperator<E>)op, left, right));
 		} else if (op instanceof UnaryOperator) {
 			final IExprNode<E> arg = output.pop();
-			output.push(operators.getExprNodeForOperator((UnaryOperator<E>)op, arg));
+			output.push(exprNodeFactory.createUnaryOpNode((UnaryOperator<E>)op, arg));
 		} else throw new IllegalStateException("Unknown type of operator: " + op.getClass());
 	}
 }

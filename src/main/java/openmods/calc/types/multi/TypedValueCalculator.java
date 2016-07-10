@@ -11,6 +11,7 @@ import openmods.calc.Constant;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.TopFrame;
 import openmods.calc.UnaryOperator;
+import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.StringEscaper;
 import openmods.calc.types.bigint.BigIntPrinter;
 import openmods.calc.types.fp.DoublePrinter;
@@ -200,7 +201,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 	}
 
 	@Override
-	protected void setupOperators(OperatorDictionary<TypedValue> operators) {
+	protected void setupOperators(OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory) {
 		final TypeDomain domain = nullValue().domain;
 
 		// arithmetic

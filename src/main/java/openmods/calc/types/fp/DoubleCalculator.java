@@ -8,9 +8,7 @@ import openmods.calc.OperatorDictionary;
 import openmods.calc.TopFrame;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
-import openmods.calc.parsing.ICompiler;
-import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.InfixCompiler;
+import openmods.calc.parsing.IExprNodeFactory;
 import openmods.config.simpler.Configurable;
 
 public class DoubleCalculator extends Calculator<Double> {
@@ -33,12 +31,7 @@ public class DoubleCalculator extends Calculator<Double> {
 	}
 
 	@Override
-	protected ICompiler<Double> createInfixCompiler(IValueParser<Double> valueParser, OperatorDictionary<Double> operators) {
-		return new InfixCompiler<Double>(valueParser, operators);
-	}
-
-	@Override
-	protected void setupOperators(OperatorDictionary<Double> operators) {
+	protected void setupOperators(OperatorDictionary<Double> operators, IExprNodeFactory<Double> exprNodeFactory) {
 		operators.registerUnaryOperator(new UnaryOperator<Double>("neg") {
 			@Override
 			protected Double execute(Double value) {

@@ -2,6 +2,8 @@ package openmods.calc;
 
 import java.util.Arrays;
 import java.util.List;
+import openmods.calc.parsing.DefaultExprNodeFactory;
+import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.InfixCompiler;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.UnmatchedBracketsException;
@@ -20,8 +22,10 @@ public class InfixCompilerTest extends CalcTestUtils {
 		operators.registerBinaryOperator(MULTIPLY).setDefault();
 	}
 
+	public final IExprNodeFactory<String> nodeFactory = new DefaultExprNodeFactory<String>();
+
 	private class ResultTester {
-		private final InfixCompiler<String> compiler = new InfixCompiler<String>(VALUE_PARSER, operators);
+		private final InfixCompiler<String> compiler = new InfixCompiler<String>(VALUE_PARSER, operators, nodeFactory);
 		private final List<IExecutable<String>> actual;
 
 		public ResultTester(Token... inputs) {
