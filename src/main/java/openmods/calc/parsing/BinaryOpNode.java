@@ -29,4 +29,9 @@ public class BinaryOpNode<E> implements IExprNode<E> {
 	public String toString() {
 		return "<op: '" + operator.id + "', l: " + left + ", r: " + right + ">";
 	}
+
+	@Override
+	public int numberOfChildren() {
+		return 2;
+	}
 }

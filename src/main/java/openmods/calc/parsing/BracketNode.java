@@ -2,24 +2,23 @@ package openmods.calc.parsing;
 
 import java.util.List;
 import openmods.calc.IExecutable;
-import openmods.calc.Value;
 
-public class ValueNode<E> implements IExprNode<E> {
+public class BracketNode<E> implements IExprNode<E> {
 
-	private final E value;
+	private final IExprNode<E> child;
 
-	public ValueNode(E value) {
-		this.value = value;
+	public BracketNode(IExprNode<E> child) {
+		this.child = child;
 	}
 
 	@Override
 	public void flatten(List<IExecutable<E>> output) {
-		output.add(Value.create(value));
+		if (child != null) child.flatten(output);
 	}
 
 	@Override
 	public String toString() {
-		return "<v: " + value + ">";
+		return "<" + child + ">";
 	}
 
 	@Override

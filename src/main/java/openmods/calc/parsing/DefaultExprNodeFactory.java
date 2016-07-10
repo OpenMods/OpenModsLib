@@ -1,18 +1,21 @@
 package openmods.calc.parsing;
 
+import com.google.common.base.Preconditions;
+import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.UnaryOperator;
 
 public class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
 
 	@Override
-	public IInnerNode<E> createSymbolNode(String value) {
-		return new SymbolNode<E>(value);
+	public IExprNode<E> createSymbolNode(String value, List<IExprNode<E>> args) {
+		return new SymbolNode<E>(value, args);
 	}
 
 	@Override
-	public IInnerNode<E> createBracketNode(String openingBracket) {
-		return new NullNode<E>();
+	public IExprNode<E> createBracketNode(String openingBracket, List<IExprNode<E>> children) {
+		Preconditions.checkState(children.size() == 1, "Invalid number of children for bracket node: %s", children);
+		return new BracketNode<E>(children.iterator().next());
 	}
 
 	@Override
