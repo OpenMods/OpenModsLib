@@ -11,6 +11,7 @@ import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryOperator;
 import openmods.utils.Stack;
 import openmods.utils.Stack.StackUnderflowException;
+import openmods.utils.Variant;
 
 public class InfixCompiler<E> implements ICompiler<E> {
 
@@ -26,56 +27,13 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		this.exprNodeFactory = exprNodeFactory;
 	}
 
-	private abstract static class OpStackElement<E> {
-		public boolean isOperator() {
-			return false;
-		}
-
-		public Operator<E> getOperator() {
-			throw new UnsupportedOperationException();
-		}
-
-		public boolean isBracket() {
-			return false;
-		}
-
-		public String getBracket() {
-			throw new UnsupportedOperationException();
-		}
-
-		public static <E> OpStackElement<E> operator(final Operator<E> op) {
-			return new OpStackElement<E>() {
-				@Override
-				public boolean isOperator() {
-					return true;
-				}
-
-				@Override
-				public Operator<E> getOperator() {
-					return op;
-				}
-			};
-		}
-
-		public static <E> OpStackElement<E> bracket(final String bracket) {
-			return new OpStackElement<E>() {
-				@Override
-				public boolean isBracket() {
-					return true;
-				}
-
-				@Override
-				public String getBracket() {
-					return bracket;
-				}
-			};
-		}
-	}
+	private final Variant.Selector<String> TYPE_BRACKET = Variant.createSelector();
+	private final Variant.Selector<Operator<E>> TYPE_OPERATOR = Variant.createSelector();
 
 	@Override
 	public IExecutable<E> compile(Iterable<Token> input) {
 		final Stack<IExprNode<E>> nodeStack = Stack.create();
-		final Stack<OpStackElement<E>> operatorStack = Stack.create();
+		final Stack<Variant> operatorStack = Stack.create();
 
 		final BinaryOperator<E> defaultOperator = operators.getDefaultOperator();
 
@@ -98,7 +56,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 			} else {
 				switch (token.type) {
 					case LEFT_BRACKET:
-						operatorStack.push(OpStackElement.<E> bracket(token.value));
+						operatorStack.push(new Variant(TYPE_BRACKET, token.value));
 						if (lastToken == null || !lastToken.type.isSymbol()) nodeStack.push(exprNodeFactory.createBracketNode(token.value));
 						break;
 					case RIGHT_BRACKET: {
@@ -113,7 +71,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 						Preconditions.checkNotNull(lastToken, "Comma on invalid postion");
 						final String startBracket = popUntilBracket(nodeStack, operatorStack);
 						appendNodeChild(nodeStack);
-						operatorStack.push(OpStackElement.<E> bracket(startBracket));
+						operatorStack.push(new Variant(TYPE_BRACKET, startBracket));
 						break;
 					}
 					case OPERATOR: {
@@ -138,9 +96,9 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		}
 
 		while (!operatorStack.isEmpty()) {
-			final OpStackElement<E> e = operatorStack.pop();
-			if (e.isOperator()) pushOperator(nodeStack, e.getOperator());
-			else if (e.isBracket()) throw new UnmatchedBracketsException(e.getBracket());
+			final Variant e = operatorStack.pop();
+			if (e.is(TYPE_OPERATOR)) pushOperator(nodeStack, e.get(TYPE_OPERATOR));
+			else if (e.is(TYPE_BRACKET)) throw new UnmatchedBracketsException(e.get(TYPE_BRACKET));
 			else throw new AssertionError("What!?");
 		}
 
@@ -156,36 +114,34 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		return token.type.canInsertDefaultOpOnLeft() && lastToken.type.canInsertDefaultOpOnRight();
 	}
 
-	private void pushOperator(Stack<IExprNode<E>> output, Stack<OpStackElement<E>> operatorStack, Operator<E> newOp) {
+	private void pushOperator(Stack<IExprNode<E>> output, Stack<Variant> operatorStack, Operator<E> newOp) {
 		while (!operatorStack.isEmpty()) {
-			final OpStackElement<E> top = operatorStack.peek(0);
-			if (!top.isOperator()) break;
+			final Variant top = operatorStack.peek(0);
+			if (!top.is(TYPE_OPERATOR)) break;
 
-			final Operator<E> topOp = top.getOperator();
+			final Operator<E> topOp = top.get(TYPE_OPERATOR);
 			if (!newOp.isLessThan(topOp)) break;
 
 			operatorStack.pop();
 			pushOperator(output, topOp);
 		}
 
-		operatorStack.push(OpStackElement.operator(newOp));
+		operatorStack.push(new Variant(TYPE_OPERATOR, newOp));
 	}
 
 	private void appendNodeChild(Stack<IExprNode<E>> output) {
-		if (output.size() > 1) {
-			final IExprNode<E> t = output.peek(1);
-			Preconditions.checkState(t instanceof IInnerNode, "Expected inner node, got %s", t.getClass());
-			final IExprNode<E> top = output.pop();
-			((IInnerNode<E>)t).addChild(top);
-		}
+		final IExprNode<E> child = output.pop();
+		final IExprNode<E> parent = output.peek(0);
+		Preconditions.checkState(parent instanceof IInnerNode, "Expected inner node, got %s", parent.getClass());
+		((IInnerNode<E>)parent).addChild(child);
 	}
 
-	private String popUntilBracket(Stack<IExprNode<E>> output, Stack<OpStackElement<E>> operatorStack) {
+	private String popUntilBracket(Stack<IExprNode<E>> output, Stack<Variant> operatorStack) {
 		try {
 			while (true) {
-				final OpStackElement<E> e = operatorStack.pop();
-				if (e.isOperator()) pushOperator(output, e.getOperator());
-				else if (e.isBracket()) return e.getBracket();
+				final Variant e = operatorStack.pop();
+				if (e.is(TYPE_OPERATOR)) pushOperator(output, e.get(TYPE_OPERATOR));
+				else if (e.is(TYPE_BRACKET)) return e.get(TYPE_BRACKET);
 				else throw new AssertionError("What!?");
 			}
 		} catch (StackUnderflowException e) {
