@@ -14,6 +14,7 @@ import java.io.File;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import openmods.block.BlockDropsStore;
+import openmods.config.ConfigChangeListener;
 import openmods.config.ConfigStorage;
 import openmods.config.properties.CommandConfig;
 import openmods.config.properties.ConfigProcessing;
@@ -74,6 +75,8 @@ public class OpenMods {
 		final File configFile = evt.getSuggestedConfigurationFile();
 		Configuration config = new Configuration(configFile);
 		ConfigProcessing.processAnnotations(MODID, config, LibConfig.class);
+		FMLCommonHandler.instance().bus().register(new ConfigChangeListener(MODID, config));
+
 		if (config.hasChanged()) config.save();
 
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);

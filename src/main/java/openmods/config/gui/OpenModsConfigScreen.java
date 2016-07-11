@@ -43,21 +43,25 @@ public class OpenModsConfigScreen extends GuiConfig {
 
 		@Override
 		protected GuiScreen buildChildScreen() {
-			return new GuiConfig(this.owningScreen, this.configElement.getChildElements(), this.owningScreen.modID,
+			return new GuiConfig(this.owningScreen,
+					this.configElement.getChildElements(),
+					this.owningScreen.modID,
 					owningScreen.allRequireWorldRestart || this.configElement.requiresWorldRestart(),
-					owningScreen.allRequireMcRestart || this.configElement.requiresMcRestart(), this.owningScreen.title,
-					I18n.format("openmodslib.config.update_warning"));
+					owningScreen.allRequireMcRestart || this.configElement.requiresMcRestart(),
+					this.owningScreen.title, I18n.format("openmodslib.config.update_warning"));
 		}
 
 	}
 
 	public OpenModsConfigScreen(GuiScreen parent, String modId, String title) {
-		super(parent, createConfigElements(modId), modId, false, true, title);
+		super(parent, createDefaultConfigElements(modId, Lists.<IConfigElement> newArrayList()), modId, false, true, title);
 	}
 
-	private static List<IConfigElement> createConfigElements(String modId) {
-		List<IConfigElement> result = Lists.newArrayList();
+	public OpenModsConfigScreen(GuiScreen parent, String modId, String title, List<IConfigElement> customElements) {
+		super(parent, createDefaultConfigElements(modId, customElements), modId, false, true, title);
+	}
 
+	private static List<IConfigElement> createDefaultConfigElements(String modId, List<IConfigElement> result) {
 		{
 			final IConfigElement<?> features = createFeatureEntries(modId);
 			if (features != null) result.add(features);
