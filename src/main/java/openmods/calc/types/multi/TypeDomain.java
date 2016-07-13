@@ -122,7 +122,7 @@ public class TypeDomain {
 		return new TypedValue(this, type, convertedValue);
 	}
 
-	public <T> T unwrap(TypedValue value, Class<? extends T> type) {
+	public <T> T unwrap(TypedValue value, Class<T> type) {
 		Preconditions.checkArgument(value.domain == this, "Mixed domain");
 		if (value.type == type) return type.cast(value.value);
 		final RawConverter converter = getConverter(value, type);
@@ -209,7 +209,7 @@ public class TypeDomain {
 		return truthEvaluator.isTruthy(value.value)? TRUE : FALSE;
 	}
 
-	public <T> TypedValue create(Class<? super T> type, T value) {
+	public <T> TypedValue create(Class<T> type, T value) {
 		checkIsKnownType(type);
 		return new TypedValue(this, type, value);
 	}

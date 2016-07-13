@@ -51,7 +51,7 @@ public class TypedValue {
 		return domain.convert(this, type);
 	}
 
-	public <T> T unwrap(Class<? extends T> type) {
+	public <T> T unwrap(Class<T> type) {
 		return domain.unwrap(this, type);
 	}
 
