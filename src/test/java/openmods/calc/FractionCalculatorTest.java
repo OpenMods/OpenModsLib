@@ -10,14 +10,16 @@ public class FractionCalculatorTest {
 
 	private final FractionCalculator sut = new FractionCalculator();
 
+	public CalcCheck<Fraction> prefix(String value) {
+		return CalcCheck.create(sut, value, ExprType.PREFIX);
+	}
+
 	public CalcCheck<Fraction> infix(String value) {
-		final IExecutable<Fraction> expr = sut.compile(ExprType.INFIX, value);
-		return new CalcCheck<Fraction>(sut, expr);
+		return CalcCheck.create(sut, value, ExprType.INFIX);
 	}
 
 	public CalcCheck<Fraction> postfix(String value) {
-		final IExecutable<Fraction> expr = sut.compile(ExprType.POSTFIX, value);
-		return new CalcCheck<Fraction>(sut, expr);
+		return CalcCheck.create(sut, value, ExprType.POSTFIX);
 	}
 
 	public static Fraction f(int value) {
@@ -26,6 +28,19 @@ public class FractionCalculatorTest {
 
 	public static Fraction f(int numerator, int denominator) {
 		return Fraction.getFraction(numerator, denominator);
+	}
+
+	@Test
+	public void testBasicPrefix() {
+		prefix("(+ 1 2)").expectResult(f(3)).expectEmptyStack();
+		prefix("(* 2 3)").expectResult(f(6)).expectEmptyStack();
+		prefix("(- 1)").expectResult(f(-1)).expectEmptyStack();
+		prefix("(* (- 1) (+ 2 3))").expectResult(f(-5)).expectEmptyStack();
+		prefix("(/ 10 2)").expectResult(f(5)).expectEmptyStack();
+
+		prefix("(max 1)").expectResult(f(1)).expectEmptyStack();
+		prefix("(max 1 2)").expectResult(f(2)).expectEmptyStack();
+		prefix("(max 1 2 3)").expectResult(f(3)).expectEmptyStack();
 	}
 
 	@Test

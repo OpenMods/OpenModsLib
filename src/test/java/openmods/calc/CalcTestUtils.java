@@ -2,6 +2,8 @@ package openmods.calc;
 
 import com.google.common.collect.Lists;
 import java.util.Arrays;
+import openmods.calc.BinaryOperator.Associativity;
+import openmods.calc.Calculator.ExprType;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
@@ -119,6 +121,10 @@ public class CalcTestUtils {
 			super(id, precendence);
 		}
 
+		public DummyBinaryOperator(int precendence, String id, Associativity associativity) {
+			super(id, precendence, associativity);
+		}
+
 		@Override
 		protected E execute(E left, E right) {
 			return null;
@@ -155,6 +161,10 @@ public class CalcTestUtils {
 	public static final BinaryOperator<String> MULTIPLY = new DummyBinaryOperator<String>(2, "*");
 
 	public static final Token OP_MULTIPLY = op("*");
+
+	public static final BinaryOperator<String> ASSIGN = new DummyBinaryOperator<String>(1, "=", Associativity.RIGHT);
+
+	public static final Token OP_ASSIGN = op("=");
 
 	public static IExecutable<String> c(String value) {
 		return new Value<String>(value);
@@ -207,6 +217,11 @@ public class CalcTestUtils {
 		public CalcCheck<E> execute() {
 			sut.execute(expr);
 			return this;
+		}
+
+		public static <E> CalcCheck<E> create(Calculator<E> sut, String value, ExprType exprType) {
+			final IExecutable<E> expr = sut.compile(exprType, value);
+			return new CalcCheck<E>(sut, expr);
 		}
 	}
 }

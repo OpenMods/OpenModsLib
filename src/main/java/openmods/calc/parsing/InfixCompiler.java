@@ -4,8 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.BinaryOperator;
-import openmods.calc.ExecutableList;
-import openmods.calc.IExecutable;
 import openmods.calc.Operator;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryOperator;
@@ -13,7 +11,7 @@ import openmods.utils.Stack;
 import openmods.utils.Stack.StackUnderflowException;
 import openmods.utils.Variant;
 
-public class InfixCompiler<E> implements ICompiler<E> {
+public class InfixCompiler<E> extends AstCompiler<E> {
 
 	private final List<IExprNode<E>> NO_ARGS = Lists.newArrayList();
 
@@ -43,7 +41,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 	private final Variant.Selector<String> TYPE_SYMBOL = Variant.createSelector();
 
 	@Override
-	public IExecutable<E> compile(Iterable<Token> input) {
+	public IExprNode<E> compileAst(Iterable<Token> input) {
 		final Stack<IExprNode<E>> nodeStack = Stack.create();
 		final Stack<Variant> operatorStack = Stack.create();
 
@@ -67,7 +65,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 
 			if (token.type.isValue()) {
 				final E value = valueParser.parseToken(token);
-				nodeStack.push(new ValueNode<E>(value));
+				nodeStack.push(exprNodeFactory.createValueNode(value));
 			} else if (token.type.isSymbol()) {
 				Preconditions.checkArgument(token.type != TokenType.SYMBOL_WITH_ARGS, "Symbol '%s' can't be used in infix mode", token.value);
 				operatorStack.push(new Variant(TYPE_SYMBOL, token.value));
@@ -79,7 +77,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 					case RIGHT_BRACKET: {
 						if (lastToken == null) throw new UnmatchedBracketsException(token.value);
 						final BracketInfo bracketInfo = popUntilBracket(nodeStack, operatorStack);
-						final String endBracket = ExprTokenizerFactory.BRACKETS.get(bracketInfo.type);
+						final String endBracket = TokenUtils.getClosingBracket(bracketInfo.type);
 						if (endBracket == null || !endBracket.equals(token.value)) throw new UnmatchedBracketsException(bracketInfo.type, token.value);
 						if (lastToken.type != TokenType.LEFT_BRACKET) bracketInfo.elementCount++;
 						createBracketNode(bracketInfo, operatorStack, nodeStack);
@@ -122,9 +120,7 @@ public class InfixCompiler<E> implements ICompiler<E> {
 		}
 
 		Preconditions.checkState(nodeStack.size() == 1, "Not valid infix expression");
-		final List<IExecutable<E>> output = Lists.newArrayList();
-		nodeStack.pop().flatten(output);
-		return new ExecutableList<E>(output);
+		return nodeStack.pop();
 	}
 
 	private void createBracketNode(BracketInfo bracketInfo, Stack<Variant> operatorStack, Stack<IExprNode<E>> nodeStack) {

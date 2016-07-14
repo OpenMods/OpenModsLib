@@ -14,4 +14,6 @@ public interface IExprNodeFactory<E> {
 
 	public IExprNode<E> createUnaryOpNode(UnaryOperator<E> op, IExprNode<E> child);
 
+	public IExprNode<E> createValueNode(E value);
+
 }

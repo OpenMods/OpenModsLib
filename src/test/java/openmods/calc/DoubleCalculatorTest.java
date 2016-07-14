@@ -9,14 +9,30 @@ public class DoubleCalculatorTest {
 
 	private final DoubleCalculator sut = new DoubleCalculator();
 
+	public CalcCheck<Double> prefix(String value) {
+		return CalcCheck.create(sut, value, ExprType.PREFIX);
+	}
+
 	public CalcCheck<Double> infix(String value) {
-		final IExecutable<Double> expr = sut.compile(ExprType.INFIX, value);
-		return new CalcCheck<Double>(sut, expr);
+		return CalcCheck.create(sut, value, ExprType.INFIX);
 	}
 
 	public CalcCheck<Double> postfix(String value) {
-		final IExecutable<Double> expr = sut.compile(ExprType.POSTFIX, value);
-		return new CalcCheck<Double>(sut, expr);
+		return CalcCheck.create(sut, value, ExprType.POSTFIX);
+	}
+
+	@Test
+	public void testBasicPrefix() {
+		prefix("(+ 1 2)").expectResult(3.0).expectEmptyStack();
+		prefix("(* 2 3)").expectResult(6.0).expectEmptyStack();
+		prefix("(- 1)").expectResult(-1.0).expectEmptyStack();
+		prefix("(* (- 1) (+ 2 3))").expectResult(-5.0).expectEmptyStack();
+		prefix("(/ 10 2)").expectResult(5.0).expectEmptyStack();
+		prefix("(^ 2 5)").expectResult(32.0).expectEmptyStack();
+
+		prefix("(max 1)").expectResult(1.0).expectEmptyStack();
+		prefix("(max 1 2)").expectResult(2.0).expectEmptyStack();
+		prefix("(max 1 2 3)").expectResult(3.0).expectEmptyStack();
 	}
 
 	@Test
@@ -131,4 +147,5 @@ public class DoubleCalculatorTest {
 	public void testTooFewParameters() {
 		infix("atan2(0)").execute();
 	}
+
 }

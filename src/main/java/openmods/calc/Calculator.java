@@ -13,6 +13,7 @@ import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.InfixCompiler;
 import openmods.calc.parsing.PostfixCompiler;
+import openmods.calc.parsing.PrefixCompiler;
 import openmods.calc.parsing.Token;
 import openmods.utils.Stack;
 
@@ -54,8 +55,16 @@ public abstract class Calculator<E> {
 	public static final String VAR_ANS = "$ans";
 
 	public enum ExprType {
-		POSTFIX,
-		INFIX
+		PREFIX(true),
+		INFIX(true),
+		POSTFIX(false);
+
+		public final boolean hasSingleResult;
+
+		private ExprType(boolean hasSingleResult) {
+			this.hasSingleResult = hasSingleResult;
+		}
+
 	}
 
 	private final TopFrame<E> topFrame = new TopFrame<E>();
@@ -65,6 +74,8 @@ public abstract class Calculator<E> {
 	private final ICompiler<E> rpnCompiler;
 
 	private final ICompiler<E> infixCompiler;
+
+	private final ICompiler<E> pnCompiler; // almostLispCompiler
 
 	private final E nullValue;
 
@@ -78,6 +89,7 @@ public abstract class Calculator<E> {
 		for (String operator : operators.allOperators())
 			tokenizerFactory.addOperator(operator);
 
+		this.pnCompiler = createPrefixCompiler(parser, operators, exprNodeFactory);
 		this.rpnCompiler = createPostfixCompiler(parser, operators);
 		this.infixCompiler = createInfixCompiler(parser, operators, exprNodeFactory);
 		setupGenericFunctions(topFrame);
@@ -97,6 +109,10 @@ public abstract class Calculator<E> {
 	}
 
 	protected void setupOperators(OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {}
+
+	protected ICompiler<E> createPrefixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
+		return new PrefixCompiler<E>(valueParser, operators, exprNodeFactory);
+	}
 
 	protected ICompiler<E> createInfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators, IExprNodeFactory<E> nodeFactory) {
 		return new InfixCompiler<E>(valueParser, operators, nodeFactory);
@@ -164,6 +180,8 @@ public abstract class Calculator<E> {
 	public IExecutable<E> compile(ExprType type, String input) {
 		Iterable<Token> tokens = tokenizerFactory.tokenize(input);
 		switch (type) {
+			case PREFIX:
+				return pnCompiler.compile(tokens);
 			case INFIX:
 				return infixCompiler.compile(tokens);
 			case POSTFIX:

@@ -1,8 +1,6 @@
 package openmods.calc.parsing;
 
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
@@ -28,8 +26,6 @@ public class ExprTokenizerFactory {
 	private static final Pattern SYMBOL = Pattern.compile("^([_A-Za-z$][_0-9A-Za-z$]*)");
 
 	private static final Pattern SYMBOL_ARGS = Pattern.compile("^(@[0-9]*,?[0-9]*)");
-
-	public static final BiMap<String, String> BRACKETS = ImmutableBiMap.of("(", ")", "{", "}", "[", "]");
 
 	private static final Set<String> STRING_STARTERS = ImmutableSet.of("\"", "'");
 
@@ -62,8 +58,8 @@ public class ExprTokenizerFactory {
 				{
 					final String nextCh = input.substring(0, 1);
 					if (STRING_STARTERS.contains(nextCh)) return consumeStringLiteral();
-					if (BRACKETS.containsKey(nextCh)) return rawToken(1, TokenType.LEFT_BRACKET);
-					if (BRACKETS.containsValue(nextCh)) return rawToken(1, TokenType.RIGHT_BRACKET);
+					if (TokenUtils.isOpeningBracket(nextCh)) return rawToken(1, TokenType.LEFT_BRACKET);
+					if (TokenUtils.isClosingBracket(nextCh)) return rawToken(1, TokenType.RIGHT_BRACKET);
 					if (nextCh.equals(",")) return rawToken(1, TokenType.SEPARATOR);
 				}
 

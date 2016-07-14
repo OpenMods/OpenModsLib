@@ -8,7 +8,6 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
-import openmods.calc.Calculator.ExprType;
 
 public class CommandCalcEvaluate extends CommandCalcBase {
 	private static final String NAME = "=eval";
@@ -31,7 +30,7 @@ public class CommandCalcEvaluate extends CommandCalcBase {
 	public void processCommand(ICommandSender sender, String[] args) {
 		final String expr = spaceJoiner.join(args);
 		try {
-			if (state.exprType == ExprType.INFIX) {
+			if (state.exprType.hasSingleResult) {
 				final String result = state.compileExecuteAndPrint(sender, expr);
 				sender.addChatMessage(new ChatComponentText(result));
 			} else {

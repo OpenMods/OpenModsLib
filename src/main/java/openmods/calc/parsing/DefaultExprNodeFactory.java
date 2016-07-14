@@ -28,4 +28,9 @@ public class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
 		return new UnaryOpNode<E>(op, child);
 	}
 
+	@Override
+	public IExprNode<E> createValueNode(E value) {
+		return new ValueNode<E>(value);
+	}
+
 }

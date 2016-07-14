@@ -10,18 +10,35 @@ public class BigIntCalculatorTest {
 
 	private final BigIntCalculator sut = new BigIntCalculator();
 
+	public CalcCheck<BigInteger> prefix(String value) {
+		return CalcCheck.create(sut, value, ExprType.PREFIX);
+	}
+
 	public CalcCheck<BigInteger> infix(String value) {
-		final IExecutable<BigInteger> expr = sut.compile(ExprType.INFIX, value);
-		return new CalcCheck<BigInteger>(sut, expr);
+		return CalcCheck.create(sut, value, ExprType.INFIX);
 	}
 
 	public CalcCheck<BigInteger> postfix(String value) {
-		final IExecutable<BigInteger> expr = sut.compile(ExprType.POSTFIX, value);
-		return new CalcCheck<BigInteger>(sut, expr);
+		return CalcCheck.create(sut, value, ExprType.POSTFIX);
 	}
 
 	public static BigInteger v(long value) {
 		return BigInteger.valueOf(value);
+	}
+
+	@Test
+	public void testBasicPrefix() {
+		prefix("(+ 1 2)").expectResult(v(3)).expectEmptyStack();
+		prefix("(* 2 3)").expectResult(v(6)).expectEmptyStack();
+		prefix("(- 1)").expectResult(v(-1)).expectEmptyStack();
+		prefix("(* (- 1) (+ 2 3))").expectResult(v(-5)).expectEmptyStack();
+		prefix("(/ 10 2)").expectResult(v(5)).expectEmptyStack();
+		prefix("(** 2 5)").expectResult(v(32)).expectEmptyStack();
+		prefix("(| 0b010 0b101)").expectResult(v(7)).expectEmptyStack();
+
+		prefix("(max 1)").expectResult(v(1)).expectEmptyStack();
+		prefix("(max 1 2)").expectResult(v(2)).expectEmptyStack();
+		prefix("(max 1 2 3)").expectResult(v(3)).expectEmptyStack();
 	}
 
 	@Test
@@ -136,4 +153,5 @@ public class BigIntCalculatorTest {
 	public void testTooFewParameters() {
 		infix("gcd(0)").execute();
 	}
+
 }

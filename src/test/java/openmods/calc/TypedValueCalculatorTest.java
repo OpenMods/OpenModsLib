@@ -24,14 +24,16 @@ public class TypedValueCalculatorTest {
 
 	private final TypedValueCalculator sut = TypedValueCalculator.create();
 
+	public CalcCheck<TypedValue> prefix(String value) {
+		return CalcCheck.create(sut, value, ExprType.PREFIX);
+	}
+
 	public CalcCheck<TypedValue> infix(String value) {
-		final IExecutable<TypedValue> expr = sut.compile(ExprType.INFIX, value);
-		return new CalcCheck<TypedValue>(sut, expr);
+		return CalcCheck.create(sut, value, ExprType.INFIX);
 	}
 
 	public CalcCheck<TypedValue> postfix(String value) {
-		final IExecutable<TypedValue> expr = sut.compile(ExprType.POSTFIX, value);
-		return new CalcCheck<TypedValue>(sut, expr);
+		return CalcCheck.create(sut, value, ExprType.POSTFIX);
 	}
 
 	private final TypedValue NULL = sut.nullValue();
@@ -57,6 +59,22 @@ public class TypedValueCalculatorTest {
 	private final TypedValue TRUE = b(true);
 
 	private final TypedValue FALSE = b(false);
+
+	@Test
+	public void testBasicPrefix() {
+		prefix("(+ 1 2)").expectResult(i(3)).expectEmptyStack();
+		prefix("(* 2 3)").expectResult(i(6)).expectEmptyStack();
+		prefix("(- 1)").expectResult(i(-1)).expectEmptyStack();
+		prefix("(* (- 1) (+ 2 3))").expectResult(i(-5)).expectEmptyStack();
+		prefix("(/ 10 2)").expectResult(d(5.0)).expectEmptyStack();
+		prefix("(** 2 5)").expectResult(i(32)).expectEmptyStack();
+		prefix("(| 0b010 0b101)").expectResult(i(7)).expectEmptyStack();
+
+		// TODO once functions are done
+		// prefix("(max 1)").expectResult(i(1)).expectEmptyStack();
+		// prefix("(max 1 2)").expectResult(i(2)).expectEmptyStack();
+		// prefix("(max 1 2 3)").expectResult(i(3)).expectEmptyStack();
+	}
 
 	@Test
 	public void testBasicPostfix() {
