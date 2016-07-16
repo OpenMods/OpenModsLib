@@ -1,15 +1,14 @@
 package openmods.calc.types.multi;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.reflect.TypeToken;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
-import java.util.Set;
 import openmods.reflection.TypeVariableHolder;
 
 public class TypeDomain {
@@ -63,21 +62,30 @@ public class TypeDomain {
 
 	}
 
-	private final Set<Class<?>> allowedTypes = Sets.newIdentityHashSet();
+	private final Map<Class<?>, String> allowedTypes = Maps.newIdentityHashMap();
 
 	private final Table<Class<?>, Class<?>, RawConverter> converters = HashBasedTable.create();
 
 	public <T> TypeDomain registerType(Class<?> type) {
-		allowedTypes.add(type);
+		allowedTypes.put(type, type.getSimpleName());
+		return this;
+	}
+
+	public <T> TypeDomain registerType(Class<?> type, String shortName) {
+		allowedTypes.put(type, shortName);
 		return this;
 	}
 
 	public boolean isKnownType(Class<?> type) {
-		return allowedTypes.contains(type);
+		return allowedTypes.containsKey(type);
 	}
 
 	public void checkIsKnownType(Class<?> type) {
-		Preconditions.checkState(allowedTypes.contains(type), "Type '%s' is not allowed in domain", type);
+		Preconditions.checkState(allowedTypes.containsKey(type), "Type '%s' is not allowed in domain", type);
+	}
+
+	public String getName(Class<?> type) {
+		return Objects.firstNonNull(allowedTypes.get(type), "<invalid>");
 	}
 
 	public <T> TypeDomain registerCast(Class<? extends T> source, Class<T> target) {

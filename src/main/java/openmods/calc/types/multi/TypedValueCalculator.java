@@ -169,11 +169,11 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 	public static TypedValueCalculator create() {
 		final TypeDomain domain = new TypeDomain();
 
-		domain.registerType(UnitType.class);
-		domain.registerType(BigInteger.class);
-		domain.registerType(Double.class);
-		domain.registerType(Boolean.class);
-		domain.registerType(String.class);
+		domain.registerType(UnitType.class, "<null>");
+		domain.registerType(BigInteger.class, "int");
+		domain.registerType(Double.class, "float");
+		domain.registerType(Boolean.class, "bool");
+		domain.registerType(String.class, "str");
 
 		domain.registerConverter(new IConverter<BigInteger, Double>() {
 			@Override

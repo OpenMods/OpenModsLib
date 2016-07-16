@@ -44,7 +44,7 @@ public class TypedValue {
 
 	@Override
 	public String toString() {
-		return "[" + type + ":" + value + "]";
+		return "[" + domain.getName(type) + ":" + value + "]";
 	}
 
 	public TypedValue cast(Class<?> type) {
