@@ -4,15 +4,20 @@ import java.math.BigInteger;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
+import openmods.calc.GenericFunctions;
+import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.TernaryFunction;
 import openmods.calc.TopFrame;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
+import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.IExprNodeFactory;
 import openmods.config.simpler.Configurable;
 
 public class BigIntCalculator extends Calculator<BigInteger> {
+
+	public static final BigInteger NULL_VALUE = BigInteger.ZERO;
 
 	@Configurable
 	public int base = 10;
@@ -22,14 +27,21 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 
 	private final BigIntPrinter printer = new BigIntPrinter();
 
-	public BigIntCalculator() {
-		super(new BigIntParser(), BigInteger.ZERO);
+	public BigIntCalculator(OperatorDictionary<BigInteger> operators, IExprNodeFactory<BigInteger> exprNodeFactory, TopFrame<BigInteger> topFrame) {
+		super(new BigIntParser(), NULL_VALUE, operators, exprNodeFactory, topFrame);
+	}
+
+	@Override
+	public String toString(BigInteger value) {
+		if (base < Character.MIN_RADIX) return "invalid radix";
+		return decorateBase(!uniformBaseNotation, base, (base <= Character.MAX_RADIX)? value.toString(base) : printer.toString(value, base));
 	}
 
 	private static final int MAX_PRIO = 6;
 
-	@Override
-	protected void setupOperators(OperatorDictionary<BigInteger> operators, IExprNodeFactory<BigInteger> exprNodeFactory) {
+	public static BigIntCalculator create() {
+		final OperatorDictionary<BigInteger> operators = new OperatorDictionary<BigInteger>();
+
 		operators.registerUnaryOperator(new UnaryOperator<BigInteger>("~") {
 			@Override
 			protected BigInteger execute(BigInteger value) {
@@ -134,10 +146,9 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 				return left.shiftRight(right.intValue());
 			}
 		});
-	}
 
-	@Override
-	protected void setupGlobals(TopFrame<BigInteger> globals) {
+		final TopFrame<BigInteger> globals = new TopFrame<BigInteger>();
+		GenericFunctions.createStackManipulationFunctions(globals);
 
 		globals.setSymbol("abs", new UnaryFunction<BigInteger>() {
 			@Override
@@ -153,28 +164,28 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			}
 		});
 
-		globals.setSymbol("min", new AccumulatorFunction() {
+		globals.setSymbol("min", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
 			@Override
 			protected BigInteger accumulate(BigInteger result, BigInteger value) {
 				return result.min(value);
 			}
 		});
 
-		globals.setSymbol("max", new AccumulatorFunction() {
+		globals.setSymbol("max", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
 			@Override
 			protected BigInteger accumulate(BigInteger result, BigInteger value) {
 				return result.max(value);
 			}
 		});
 
-		globals.setSymbol("sum", new AccumulatorFunction() {
+		globals.setSymbol("sum", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
 			@Override
 			protected BigInteger accumulate(BigInteger result, BigInteger value) {
 				return result.add(value);
 			}
 		});
 
-		globals.setSymbol("avg", new AccumulatorFunction() {
+		globals.setSymbol("avg", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
 			@Override
 			protected BigInteger accumulate(BigInteger result, BigInteger value) {
 				return result.add(value);
@@ -236,12 +247,8 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			}
 		});
 
-	}
-
-	@Override
-	public String toString(BigInteger value) {
-		if (base < Character.MIN_RADIX) return "invalid radix";
-		return decorateBase(!uniformBaseNotation, base, (base <= Character.MAX_RADIX)? value.toString(base) : printer.toString(value, base));
+		final IExprNodeFactory<BigInteger> exprNodeFactory = new DefaultExprNodeFactory<BigInteger>();
+		return new BigIntCalculator(operators, exprNodeFactory, globals);
 	}
 
 }

@@ -8,7 +8,7 @@ import org.junit.Test;
 
 public class BigIntCalculatorTest {
 
-	private final BigIntCalculator sut = new BigIntCalculator();
+	private final BigIntCalculator sut = BigIntCalculator.create();
 
 	public CalcCheck<BigInteger> prefix(String value) {
 		return CalcCheck.create(sut, value, ExprType.PREFIX);

@@ -96,7 +96,7 @@ public class CalcState {
 		DOUBLE {
 			@Override
 			public Calculator<?> newCalculator(final SenderHolder holder) {
-				final DoubleCalculator calculator = new DoubleCalculator();
+				final DoubleCalculator calculator = DoubleCalculator.create();
 
 				calculator.setGlobalSymbol("$x", new FixedSymbol<Double>(0, 1) {
 					@Override
@@ -125,7 +125,7 @@ public class CalcState {
 		FRACTION {
 			@Override
 			public Calculator<?> newCalculator(final SenderHolder holder) {
-				final FractionCalculator calculator = new FractionCalculator();
+				final FractionCalculator calculator = FractionCalculator.create();
 
 				calculator.setGlobalSymbol("$x", new FixedSymbol<Fraction>(0, 1) {
 					@Override
@@ -154,7 +154,7 @@ public class CalcState {
 		BIGINT {
 			@Override
 			public Calculator<?> newCalculator(final SenderHolder holder) {
-				final BigIntCalculator calculator = new BigIntCalculator();
+				final BigIntCalculator calculator = BigIntCalculator.create();
 
 				calculator.setGlobalSymbol("$x", new FixedSymbol<BigInteger>(0, 1) {
 					@Override

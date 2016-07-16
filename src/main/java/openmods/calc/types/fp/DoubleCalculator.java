@@ -4,16 +4,19 @@ import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Constant;
+import openmods.calc.GenericFunctions;
+import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.TopFrame;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
+import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.IExprNodeFactory;
 import openmods.config.simpler.Configurable;
 
 public class DoubleCalculator extends Calculator<Double> {
 
-	private static final int MAX_PRIO = 5;
+	private static final double NULL_VALUE = 0.0;
 
 	@Configurable
 	public int base = 10;
@@ -26,12 +29,27 @@ public class DoubleCalculator extends Calculator<Double> {
 
 	private final DoublePrinter printer = new DoublePrinter(8);
 
-	public DoubleCalculator() {
-		super(new DoubleParser(), 0.0);
+	public DoubleCalculator(OperatorDictionary<Double> operators, IExprNodeFactory<Double> exprNodeFactory, TopFrame<Double> topFrame) {
+		super(new DoubleParser(), NULL_VALUE, operators, exprNodeFactory, topFrame);
 	}
 
 	@Override
-	protected void setupOperators(OperatorDictionary<Double> operators, IExprNodeFactory<Double> exprNodeFactory) {
+	public String toString(Double value) {
+		if (base == 10 && !allowStandardPrinter && !uniformBaseNotation) {
+			return value.toString();
+		} else {
+			if (value.isNaN()) return "NaN";
+			if (value.isInfinite()) return value > 0? "+Inf" : "-Inf";
+			final String result = printer.toString(value, base);
+			return decorateBase(!uniformBaseNotation, base, result);
+		}
+	}
+
+	private static final int MAX_PRIO = 5;
+
+	public static DoubleCalculator create() {
+		final OperatorDictionary<Double> operators = new OperatorDictionary<Double>();
+
 		operators.registerUnaryOperator(new UnaryOperator<Double>("neg") {
 			@Override
 			protected Double execute(Double value) {
@@ -94,10 +112,10 @@ public class DoubleCalculator extends Calculator<Double> {
 				return Math.pow(left, right);
 			}
 		});
-	}
 
-	@Override
-	protected void setupGlobals(TopFrame<Double> globals) {
+		final TopFrame<Double> globals = new TopFrame<Double>();
+		GenericFunctions.createStackManipulationFunctions(globals);
+
 		globals.setSymbol("PI", Constant.create(Math.PI));
 		globals.setSymbol("E", Constant.create(Math.E));
 		globals.setSymbol("INF", Constant.create(Double.POSITIVE_INFINITY));
@@ -216,28 +234,28 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
-		globals.setSymbol("min", new AccumulatorFunction() {
+		globals.setSymbol("min", new AccumulatorFunction<Double>(NULL_VALUE) {
 			@Override
 			protected Double accumulate(Double result, Double value) {
 				return Math.min(result, value);
 			}
 		});
 
-		globals.setSymbol("max", new AccumulatorFunction() {
+		globals.setSymbol("max", new AccumulatorFunction<Double>(NULL_VALUE) {
 			@Override
 			protected Double accumulate(Double result, Double value) {
 				return Math.max(result, value);
 			}
 		});
 
-		globals.setSymbol("sum", new AccumulatorFunction() {
+		globals.setSymbol("sum", new AccumulatorFunction<Double>(NULL_VALUE) {
 			@Override
 			protected Double accumulate(Double result, Double value) {
 				return result + value;
 			}
 		});
 
-		globals.setSymbol("avg", new AccumulatorFunction() {
+		globals.setSymbol("avg", new AccumulatorFunction<Double>(NULL_VALUE) {
 			@Override
 			protected Double accumulate(Double result, Double value) {
 				return result + value;
@@ -263,18 +281,8 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
-	}
-
-	@Override
-	public String toString(Double value) {
-		if (base == 10 && !allowStandardPrinter && !uniformBaseNotation) {
-			return value.toString();
-		} else {
-			if (value.isNaN()) return "NaN";
-			if (value.isInfinite()) return value > 0? "+Inf" : "-Inf";
-			final String result = printer.toString(value, base);
-			return decorateBase(!uniformBaseNotation, base, result);
-		}
+		final IExprNodeFactory<Double> exprNodeFactory = new DefaultExprNodeFactory<Double>();
+		return new DoubleCalculator(operators, exprNodeFactory, globals);
 	}
 
 }

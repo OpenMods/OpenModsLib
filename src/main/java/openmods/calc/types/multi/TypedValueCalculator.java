@@ -8,9 +8,11 @@ import java.math.BigInteger;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Constant;
+import openmods.calc.GenericFunctions;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.TopFrame;
 import openmods.calc.UnaryOperator;
+import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.StringEscaper;
 import openmods.calc.types.bigint.BigIntPrinter;
@@ -62,19 +64,111 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 	private final BigIntPrinter bigIntPrinter = new BigIntPrinter();
 
-	public static TypedValueCalculator create() {
-		TypeDomain domain = new TypeDomain();
-		setupTypeDomain(domain);
-		return new TypedValueCalculator(domain);
+	public TypedValueCalculator(TypeDomain domain, TypedValue nullValue, OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory, TopFrame<TypedValue> topFrame) {
+		super(new TypedValueParser(domain), nullValue, operators, exprNodeFactory, topFrame);
 	}
 
-	private TypedValueCalculator(TypeDomain domain) {
-		super(new TypedValueParser(domain), domain.create(UnitType.class, UnitType.INSTANCE));
+	@Override
+	public String toString(TypedValue value) {
+		final String contents;
+		if (value.type == Double.class) contents = printDouble(value.unwrap(Double.class));
+		else if (value.type == BigInteger.class) contents = printBigInteger(value.unwrap(BigInteger.class));
+		else if (value.type == String.class) contents = printString(value.unwrap(String.class));
+		else if (value.type == Boolean.class) contents = printBoolean(value.unwrap(Boolean.class));
+		else contents = value.value.toString();
+
+		return printTypes? "(" + value.type + ")" + contents : contents;
+	}
+
+	private String printBoolean(boolean value) {
+		return numericBool? (value? "1" : "0") : (value? "True" : "False");
+	}
+
+	private String printString(String value) {
+		return escapeStrings? StringEscaper.escapeString(value, '"', UNESCAPED_CHARS) : value;
+	}
+
+	private String printBigInteger(BigInteger value) {
+		if (base < Character.MIN_RADIX) return "invalid radix";
+		return decorateBase(!uniformBaseNotation, base, (base <= Character.MAX_RADIX)? value.toString(base) : bigIntPrinter.toString(value, base));
+	}
+
+	private String printDouble(Double value) {
+		if (base == 10 && !allowStandardPrinter && !uniformBaseNotation) {
+			return value.toString();
+		} else {
+			if (value.isNaN()) return "NaN";
+			if (value.isInfinite()) return value > 0? "+Inf" : "-Inf";
+			final String result = doublePrinter.toString(value, base);
+			return decorateBase(!uniformBaseNotation, base, result);
+		}
 	}
 
 	private static final int MAX_PRIO = 6;
 
-	private static void setupTypeDomain(TypeDomain domain) {
+	private interface CompareResultInterpreter {
+		public boolean interpret(int value);
+	}
+
+	private static <T extends Comparable<T>> TypedBinaryOperator.ISimpleCoercedOperation<T, Boolean> createCompareOperation(final CompareResultInterpreter interpreter) {
+		return new TypedBinaryOperator.ISimpleCoercedOperation<T, Boolean>() {
+			@Override
+			public Boolean apply(T left, T right) {
+				return interpreter.interpret(left.compareTo(right));
+			}
+		};
+	}
+
+	private interface VariantCompareInterpreter {
+		public TypedValue interpret(TypeDomain domain, int value);
+	}
+
+	private static <T extends Comparable<T>> TypedBinaryOperator.ICoercedOperation<T> createCompareOperation(final VariantCompareInterpreter interpreter) {
+		return new TypedBinaryOperator.ICoercedOperation<T>() {
+			@Override
+			public TypedValue apply(TypeDomain domain, T left, T right) {
+				return interpreter.interpret(domain, left.compareTo(right));
+			}
+		};
+	}
+
+	private static TypedBinaryOperator createCompareOperator(TypeDomain domain, String id, int priority, final CompareResultInterpreter compareTranslator) {
+		return new TypedBinaryOperator.Builder(id, priority)
+				.registerOperation(BigInteger.class, Boolean.class, TypedValueCalculator.<BigInteger> createCompareOperation(compareTranslator))
+				.registerOperation(Double.class, Boolean.class, TypedValueCalculator.<Double> createCompareOperation(compareTranslator))
+				.registerOperation(String.class, Boolean.class, TypedValueCalculator.<String> createCompareOperation(compareTranslator))
+				.registerOperation(Boolean.class, Boolean.class, TypedValueCalculator.<Boolean> createCompareOperation(compareTranslator))
+				.registerOperation(UnitType.class, Boolean.class, TypedValueCalculator.<UnitType> createCompareOperation(compareTranslator))
+				.build(domain);
+	}
+
+	private static TypedUnaryOperator createUnaryNegation(String id, TypeDomain domain) {
+		return new TypedUnaryOperator.Builder(id)
+				.registerOperation(new TypedUnaryOperator.ISimpleOperation<BigInteger, BigInteger>() {
+					@Override
+					public BigInteger apply(BigInteger value) {
+						return value.negate();
+					}
+				})
+				.registerOperation(new TypedUnaryOperator.ISimpleOperation<Boolean, BigInteger>() {
+					@Override
+					public BigInteger apply(Boolean value) {
+						return value? BigInteger.valueOf(-1) : BigInteger.ZERO;
+					}
+				})
+				.registerOperation(new TypedUnaryOperator.ISimpleOperation<Double, Double>() {
+					@Override
+					public Double apply(Double value) {
+						return -value;
+					}
+
+				})
+				.build(domain);
+	}
+
+	public static TypedValueCalculator create() {
+		final TypeDomain domain = new TypeDomain();
+
 		domain.registerType(UnitType.class);
 		domain.registerType(BigInteger.class);
 		domain.registerType(Double.class);
@@ -138,71 +232,10 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 				return !value.isEmpty();
 			}
 		});
-	}
 
-	private interface CompareTranslator {
-		public boolean translate(int value);
-	}
+		final TypedValue nullValue = domain.create(UnitType.class, UnitType.INSTANCE);
 
-	private static <T extends Comparable<T>> TypedBinaryOperator.ISimpleCoercedOperation<T, Boolean> createCompareOperation(final CompareTranslator compareTranslator) {
-		return new TypedBinaryOperator.ISimpleCoercedOperation<T, Boolean>() {
-			@Override
-			public Boolean apply(T left, T right) {
-				return compareTranslator.translate(left.compareTo(right));
-			}
-		};
-	}
-
-	private static TypedBinaryOperator createCompareOperator(TypeDomain domain, String id, int priority, final CompareTranslator compareTranslator) {
-		return new TypedBinaryOperator.Builder(id, priority)
-				.registerOperation(BigInteger.class, Boolean.class, TypedValueCalculator.<BigInteger> createCompareOperation(compareTranslator))
-				.registerOperation(Double.class, Boolean.class, TypedValueCalculator.<Double> createCompareOperation(compareTranslator))
-				.registerOperation(String.class, Boolean.class, TypedValueCalculator.<String> createCompareOperation(compareTranslator))
-				.registerOperation(Boolean.class, Boolean.class, TypedValueCalculator.<Boolean> createCompareOperation(compareTranslator))
-				.registerOperation(UnitType.class, Boolean.class, TypedValueCalculator.<UnitType> createCompareOperation(compareTranslator))
-				.build(domain);
-	}
-
-	private interface VariantCompareTranslator {
-		public TypedValue translate(TypeDomain domain, int value);
-	}
-
-	private static <T extends Comparable<T>> TypedBinaryOperator.ICoercedOperation<T> createCompareOperation(final VariantCompareTranslator compareTranslator) {
-		return new TypedBinaryOperator.ICoercedOperation<T>() {
-			@Override
-			public TypedValue apply(TypeDomain domain, T left, T right) {
-				return compareTranslator.translate(domain, left.compareTo(right));
-			}
-		};
-	}
-
-	private static TypedUnaryOperator createUnaryNegation(String id, TypeDomain domain) {
-		return new TypedUnaryOperator.Builder(id)
-				.registerOperation(new TypedUnaryOperator.ISimpleOperation<BigInteger, BigInteger>() {
-					@Override
-					public BigInteger apply(BigInteger value) {
-						return value.negate();
-					}
-				})
-				.registerOperation(new TypedUnaryOperator.ISimpleOperation<Boolean, BigInteger>() {
-					@Override
-					public BigInteger apply(Boolean value) {
-						return value? BigInteger.valueOf(-1) : BigInteger.ZERO;
-					}
-				})
-				.registerOperation(new TypedUnaryOperator.ISimpleOperation<Double, Double>() {
-					@Override
-					public Double apply(Double value) {
-						return -value;
-					}
-
-				})
-				.build(domain);
-	}
-
-	@Override
-	protected void setupOperators(OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory) {
-		final TypeDomain domain = nullValue().domain;
+		final OperatorDictionary<TypedValue> operators = new OperatorDictionary<TypedValue>();
 
 		// arithmetic
 		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("+", MAX_PRIO - 2)
@@ -508,52 +541,52 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 		// comparision
 
-		operators.registerBinaryOperator(createCompareOperator(domain, "<", MAX_PRIO - 5, new CompareTranslator() {
+		operators.registerBinaryOperator(createCompareOperator(domain, "<", MAX_PRIO - 5, new CompareResultInterpreter() {
 			@Override
-			public boolean translate(int value) {
+			public boolean interpret(int value) {
 				return value < 0;
 			}
 		}));
 
-		operators.registerBinaryOperator(createCompareOperator(domain, ">", MAX_PRIO - 5, new CompareTranslator() {
+		operators.registerBinaryOperator(createCompareOperator(domain, ">", MAX_PRIO - 5, new CompareResultInterpreter() {
 			@Override
-			public boolean translate(int value) {
+			public boolean interpret(int value) {
 				return value > 0;
 			}
 		}));
 
-		operators.registerBinaryOperator(createCompareOperator(domain, "==", MAX_PRIO - 5, new CompareTranslator() {
+		operators.registerBinaryOperator(createCompareOperator(domain, "==", MAX_PRIO - 5, new CompareResultInterpreter() {
 			@Override
-			public boolean translate(int value) {
+			public boolean interpret(int value) {
 				return value == 0;
 			}
 		}));
 
-		operators.registerBinaryOperator(createCompareOperator(domain, "!=", MAX_PRIO - 5, new CompareTranslator() {
+		operators.registerBinaryOperator(createCompareOperator(domain, "!=", MAX_PRIO - 5, new CompareResultInterpreter() {
 			@Override
-			public boolean translate(int value) {
+			public boolean interpret(int value) {
 				return value != 0;
 			}
 		}));
 
-		operators.registerBinaryOperator(createCompareOperator(domain, "<=", MAX_PRIO - 5, new CompareTranslator() {
+		operators.registerBinaryOperator(createCompareOperator(domain, "<=", MAX_PRIO - 5, new CompareResultInterpreter() {
 			@Override
-			public boolean translate(int value) {
+			public boolean interpret(int value) {
 				return value <= 0;
 			}
 		}));
 
-		operators.registerBinaryOperator(createCompareOperator(domain, ">=", MAX_PRIO - 5, new CompareTranslator() {
+		operators.registerBinaryOperator(createCompareOperator(domain, ">=", MAX_PRIO - 5, new CompareResultInterpreter() {
 			@Override
-			public boolean translate(int value) {
+			public boolean interpret(int value) {
 				return value >= 0;
 			}
 		}));
 
 		{
-			final VariantCompareTranslator compareResultTranslator = new VariantCompareTranslator() {
+			final VariantCompareInterpreter compareResultTranslator = new VariantCompareInterpreter() {
 				@Override
-				public TypedValue translate(TypeDomain domain, int value) {
+				public TypedValue interpret(TypeDomain domain, int value) {
 					return domain.create(BigInteger.class, BigInteger.valueOf(value));
 				}
 			};
@@ -566,51 +599,15 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 					.registerOperation(UnitType.class, TypedValueCalculator.<UnitType> createCompareOperation(compareResultTranslator))
 					.build(domain));
 		}
-	}
 
-	@Override
-	protected void setupGlobals(TopFrame<TypedValue> globals) {
-		final TypedValue nullValue = nullValue();
-		final TypeDomain domain = nullValue.domain;
+		final TopFrame<TypedValue> globals = new TopFrame<TypedValue>();
+		GenericFunctions.createStackManipulationFunctions(globals);
 
 		globals.setSymbol("null", Constant.create(nullValue));
 		globals.setSymbol("true", Constant.create(domain.create(Boolean.class, Boolean.TRUE)));
 		globals.setSymbol("false", Constant.create(domain.create(Boolean.class, Boolean.FALSE)));
-	}
 
-	@Override
-	public String toString(TypedValue value) {
-		final String contents;
-		if (value.type == Double.class) contents = printDouble(value.unwrap(Double.class));
-		else if (value.type == BigInteger.class) contents = printBigInteger(value.unwrap(BigInteger.class));
-		else if (value.type == String.class) contents = printString(value.unwrap(String.class));
-		else if (value.type == Boolean.class) contents = printBoolean(value.unwrap(Boolean.class));
-		else contents = value.value.toString();
-
-		return printTypes? "(" + value.type + ")" + contents : contents;
-	}
-
-	private String printBoolean(boolean value) {
-		return numericBool? (value? "1" : "0") : (value? "True" : "False");
-	}
-
-	private String printString(String value) {
-		return escapeStrings? StringEscaper.escapeString(value, '"', UNESCAPED_CHARS) : value;
-	}
-
-	private String printBigInteger(BigInteger value) {
-		if (base < Character.MIN_RADIX) return "invalid radix";
-		return decorateBase(!uniformBaseNotation, base, (base <= Character.MAX_RADIX)? value.toString(base) : bigIntPrinter.toString(value, base));
-	}
-
-	private String printDouble(Double value) {
-		if (base == 10 && !allowStandardPrinter && !uniformBaseNotation) {
-			return value.toString();
-		} else {
-			if (value.isNaN()) return "NaN";
-			if (value.isInfinite()) return value > 0? "+Inf" : "-Inf";
-			final String result = doublePrinter.toString(value, base);
-			return decorateBase(!uniformBaseNotation, base, result);
-		}
+		final IExprNodeFactory<TypedValue> exprNodeFactory = new DefaultExprNodeFactory<TypedValue>();
+		return new TypedValueCalculator(domain, nullValue, operators, exprNodeFactory, globals);
 	}
 }

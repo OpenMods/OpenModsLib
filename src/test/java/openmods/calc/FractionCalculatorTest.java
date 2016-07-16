@@ -8,7 +8,7 @@ import org.junit.Test;
 
 public class FractionCalculatorTest {
 
-	private final FractionCalculator sut = new FractionCalculator();
+	private final FractionCalculator sut = FractionCalculator.create();
 
 	public CalcCheck<Fraction> prefix(String value) {
 		return CalcCheck.create(sut, value, ExprType.PREFIX);

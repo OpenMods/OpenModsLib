@@ -3,29 +3,46 @@ package openmods.calc.types.fraction;
 import com.google.common.collect.Ordering;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
+import openmods.calc.GenericFunctions;
+import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.TopFrame;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
+import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.IExprNodeFactory;
 import openmods.config.simpler.Configurable;
 import org.apache.commons.lang3.math.Fraction;
 
 public class FractionCalculator extends Calculator<Fraction> {
 
-	private static final int MAX_PRIO = 5;
+	private static final Fraction NULL_VALUE = Fraction.ZERO;
+
 	@Configurable
 	public boolean properFractions;
 
 	@Configurable
 	public boolean expand;
 
-	public FractionCalculator() {
-		super(new FractionParser(), Fraction.ZERO);
+	public FractionCalculator(OperatorDictionary<Fraction> operators, IExprNodeFactory<Fraction> exprNodeFactory, TopFrame<Fraction> topFrame) {
+		super(new FractionParser(), NULL_VALUE, operators, exprNodeFactory, topFrame);
+	}
+
+	private static Fraction createFraction(int value) {
+		return Fraction.getFraction(value, 1);
 	}
 
 	@Override
-	protected void setupOperators(OperatorDictionary<Fraction> operators, IExprNodeFactory<Fraction> exprNodeFactory) {
+	public String toString(Fraction value) {
+		if (expand) return Double.toString(value.doubleValue());
+		return properFractions? value.toProperString() : value.toString();
+	}
+
+	private static final int MAX_PRIO = 5;
+
+	public static FractionCalculator create() {
+		final OperatorDictionary<Fraction> operators = new OperatorDictionary<Fraction>();
+
 		operators.registerUnaryOperator(new UnaryOperator<Fraction>("neg") {
 			@Override
 			protected Fraction execute(Fraction value) {
@@ -74,14 +91,10 @@ public class FractionCalculator extends Calculator<Fraction> {
 				return left.divideBy(right);
 			}
 		});
-	}
 
-	private static Fraction createFraction(int value) {
-		return Fraction.getFraction(value, 1);
-	}
+		final TopFrame<Fraction> globals = new TopFrame<Fraction>();
+		GenericFunctions.createStackManipulationFunctions(globals);
 
-	@Override
-	protected void setupGlobals(TopFrame<Fraction> globals) {
 		globals.setSymbol("abs", new UnaryFunction<Fraction>() {
 			@Override
 			protected Fraction execute(Fraction value) {
@@ -138,28 +151,28 @@ public class FractionCalculator extends Calculator<Fraction> {
 			}
 		});
 
-		globals.setSymbol("min", new AccumulatorFunction() {
+		globals.setSymbol("min", new AccumulatorFunction<Fraction>(NULL_VALUE) {
 			@Override
 			protected Fraction accumulate(Fraction result, Fraction value) {
 				return Ordering.natural().min(result, value);
 			}
 		});
 
-		globals.setSymbol("max", new AccumulatorFunction() {
+		globals.setSymbol("max", new AccumulatorFunction<Fraction>(NULL_VALUE) {
 			@Override
 			protected Fraction accumulate(Fraction result, Fraction value) {
 				return Ordering.natural().max(result, value);
 			}
 		});
 
-		globals.setSymbol("sum", new AccumulatorFunction() {
+		globals.setSymbol("sum", new AccumulatorFunction<Fraction>(NULL_VALUE) {
 			@Override
 			protected Fraction accumulate(Fraction result, Fraction value) {
 				return result.add(value);
 			}
 		});
 
-		globals.setSymbol("avg", new AccumulatorFunction() {
+		globals.setSymbol("avg", new AccumulatorFunction<Fraction>(NULL_VALUE) {
 			@Override
 			protected Fraction accumulate(Fraction result, Fraction value) {
 				return result.add(value);
@@ -171,11 +184,8 @@ public class FractionCalculator extends Calculator<Fraction> {
 			}
 
 		});
-	}
 
-	@Override
-	public String toString(Fraction value) {
-		if (expand) return Double.toString(value.doubleValue());
-		return properFractions? value.toProperString() : value.toString();
+		final IExprNodeFactory<Fraction> exprNodeFactory = new DefaultExprNodeFactory<Fraction>();
+		return new FractionCalculator(operators, exprNodeFactory, globals);
 	}
 }

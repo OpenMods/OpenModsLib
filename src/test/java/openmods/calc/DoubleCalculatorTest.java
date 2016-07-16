@@ -7,7 +7,7 @@ import org.junit.Test;
 
 public class DoubleCalculatorTest {
 
-	private final DoubleCalculator sut = new DoubleCalculator();
+	private final DoubleCalculator sut = DoubleCalculator.create();
 
 	public CalcCheck<Double> prefix(String value) {
 		return CalcCheck.create(sut, value, ExprType.PREFIX);
