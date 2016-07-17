@@ -2,26 +2,42 @@ package openmods.calc.types.multi;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import gnu.trove.set.TCharSet;
 import gnu.trove.set.hash.TCharHashSet;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.Set;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Constant;
 import openmods.calc.GenericFunctions;
 import openmods.calc.OperatorDictionary;
+import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.IExprNodeFactory;
+import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.StringEscaper;
+import openmods.calc.parsing.Token;
 import openmods.calc.types.bigint.BigIntPrinter;
 import openmods.calc.types.fp.DoublePrinter;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
+import openmods.calc.types.multi.TypedFunction.DispatchArg;
+import openmods.calc.types.multi.TypedFunction.OptionalArgs;
+import openmods.calc.types.multi.TypedFunction.RawReturn;
+import openmods.calc.types.multi.TypedFunction.Variant;
 import openmods.config.simpler.Configurable;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class TypedValueCalculator extends Calculator<TypedValue> {
+
+	private static final String SYMBOL_NULL = "null";
+	private static final String SYMBOL_FALSE = "true";
+	private static final String SYMBOL_TRUE = "false";
 
 	public static class UnitType implements Comparable<UnitType> {
 		public static final UnitType INSTANCE = new UnitType();
@@ -63,8 +79,8 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 	private final BigIntPrinter bigIntPrinter = new BigIntPrinter();
 
-	public TypedValueCalculator(TypeDomain domain, TypedValue nullValue, OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory) {
-		super(new TypedValueParser(domain), nullValue, operators, exprNodeFactory);
+	public TypedValueCalculator(IValueParser<TypedValue> parser, TypedValue nullValue, OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory) {
+		super(parser, nullValue, operators, exprNodeFactory);
 	}
 
 	@Override
@@ -74,13 +90,14 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		else if (value.type == BigInteger.class) contents = printBigInteger(value.unwrap(BigInteger.class));
 		else if (value.type == String.class) contents = printString(value.unwrap(String.class));
 		else if (value.type == Boolean.class) contents = printBoolean(value.unwrap(Boolean.class));
+		else if (value.type == UnitType.class) contents = SYMBOL_NULL;
 		else contents = value.value.toString();
 
 		return printTypes? "(" + value.type + ")" + contents : contents;
 	}
 
 	private String printBoolean(boolean value) {
-		return numericBool? (value? "1" : "0") : (value? "True" : "False");
+		return numericBool? (value? "1" : "0") : (value? SYMBOL_FALSE : SYMBOL_TRUE);
 	}
 
 	private String printString(String value) {
@@ -164,6 +181,8 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 				})
 				.build(domain);
 	}
+
+	private static final Set<Class<?>> NUMBER_TYPES = ImmutableSet.<Class<?>> of(Double.class, Boolean.class, BigInteger.class);
 
 	public static TypedValueCalculator create() {
 		final TypeDomain domain = new TypeDomain();
@@ -599,14 +618,144 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 					.build(domain));
 		}
 
+		final TypedValueParser valueParser = new TypedValueParser(domain);
 		final IExprNodeFactory<TypedValue> exprNodeFactory = new DefaultExprNodeFactory<TypedValue>();
-		final TypedValueCalculator result = new TypedValueCalculator(domain, nullValue, operators, exprNodeFactory);
+		final TypedValueCalculator result = new TypedValueCalculator(valueParser, nullValue, operators, exprNodeFactory);
 
 		GenericFunctions.createStackManipulationFunctions(result);
 
-		result.setGlobalSymbol("null", Constant.create(nullValue));
-		result.setGlobalSymbol("true", Constant.create(domain.create(Boolean.class, Boolean.TRUE)));
-		result.setGlobalSymbol("false", Constant.create(domain.create(Boolean.class, Boolean.FALSE)));
+		result.setGlobalSymbol(SYMBOL_NULL, Constant.create(nullValue));
+
+		result.setGlobalSymbol(SYMBOL_FALSE, Constant.create(domain.create(Boolean.class, Boolean.TRUE)));
+		result.setGlobalSymbol(SYMBOL_TRUE, Constant.create(domain.create(Boolean.class, Boolean.FALSE)));
+
+		result.setGlobalSymbol("E", Constant.create(domain.create(Double.class, Math.E)));
+		result.setGlobalSymbol("PI", Constant.create(domain.create(Double.class, Math.PI)));
+
+		class PredicateIsType extends UnaryFunction<TypedValue> {
+			private final Class<?> cls;
+
+			public PredicateIsType(Class<?> cls) {
+				domain.checkIsKnownType(cls);
+				this.cls = cls;
+			}
+
+			@Override
+			protected TypedValue execute(TypedValue value) {
+				return value.domain.create(Boolean.class, value.is(cls));
+			}
+		}
+
+		result.setGlobalSymbol("isint", new PredicateIsType(BigInteger.class));
+		result.setGlobalSymbol("isbool", new PredicateIsType(Boolean.class));
+		result.setGlobalSymbol("isfloat", new PredicateIsType(Double.class));
+		result.setGlobalSymbol("isnull", new PredicateIsType(UnitType.class));
+		result.setGlobalSymbol("isstr", new PredicateIsType(String.class));
+
+		result.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue execute(TypedValue value) {
+				return value.domain.create(Boolean.class, NUMBER_TYPES.contains(value.type));
+			}
+		});
+
+		result.setGlobalSymbol("type", new UnaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue execute(TypedValue value) {
+				final TypeDomain domain = value.domain;
+				return domain.create(String.class, domain.getName(value.type));
+			}
+		});
+
+		result.setGlobalSymbol("bool", new UnaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue execute(TypedValue value) {
+				final Optional<Boolean> isTruthy = value.isTruthy();
+				Preconditions.checkArgument(isTruthy.isPresent(), "Cannot determine value of %s", value);
+				return value.domain.create(Boolean.class, isTruthy.get());
+			}
+		});
+
+		result.setGlobalSymbol("str", new UnaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue execute(TypedValue value) {
+				if (value.is(String.class)) return value;
+				else return value.domain.create(String.class, result.toString(value));
+			}
+		});
+
+		result.setGlobalSymbol("int", new SimpleTypedFunction(domain) {
+			@Variant
+			public BigInteger convert(@DispatchArg(extra = { Boolean.class }) BigInteger value) {
+				return value;
+			}
+
+			@Variant
+			public BigInteger convert(@DispatchArg Double value) {
+				return BigInteger.valueOf(value.longValue());
+			}
+
+			@Variant
+			public BigInteger convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
+				final int usedRadix = radix.or(BigInteger.TEN).intValue();
+				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
+				Preconditions.checkArgument(result.getRight() == null, "Fractional part in argument to 'int': %s", value);
+				return result.getLeft();
+			}
+		});
+
+		result.setGlobalSymbol("float", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double convert(@DispatchArg(extra = { BigInteger.class, Boolean.class }) Double value) {
+				return value;
+			}
+
+			@Variant
+			public Double convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
+				final int usedRadix = radix.or(BigInteger.TEN).intValue();
+				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
+				return result.getLeft().doubleValue() + result.getRight();
+			}
+		});
+
+		result.setGlobalSymbol("number", new SimpleTypedFunction(domain) {
+			@Variant
+			public Boolean convert(@DispatchArg Boolean value) {
+				return value;
+			}
+
+			@Variant
+			public BigInteger convert(@DispatchArg BigInteger value) {
+				return value;
+			}
+
+			@Variant
+			public Double convert(@DispatchArg Double value) {
+				return value;
+			}
+
+			@Variant
+			@RawReturn
+			public TypedValue convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
+				final int usedRadix = radix.or(BigInteger.TEN).intValue();
+				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
+				return TypedValueParser.mergeNumberParts(domain, result);
+			}
+		});
+
+		result.setGlobalSymbol("parse", new SimpleTypedFunction(domain) {
+			@Variant
+			@RawReturn
+			public TypedValue parse(String value) {
+				try {
+					final List<Token> tokens = Lists.newArrayList(result.tokenize(value));
+					Preconditions.checkState(tokens.size() == 1, "Expected single token from '%', got %s", value, tokens.size());
+					return valueParser.parseToken(tokens.get(0));
+				} catch (Exception e) {
+					throw new IllegalArgumentException("Failed to parse '" + value + "'", e);
+				}
+			}
+		});
 
 		return result;
 	}

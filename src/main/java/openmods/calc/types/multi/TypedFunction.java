@@ -70,6 +70,10 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 
 	@Target(ElementType.METHOD)
 	@Retention(RetentionPolicy.RUNTIME)
+	public static @interface RawReturn {}
+
+	@Target(ElementType.METHOD)
+	@Retention(RetentionPolicy.RUNTIME)
 	public @interface MultiReturn {}
 
 	@Target(ElementType.METHOD)
@@ -105,12 +109,16 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 			return this;
 		}
 
-		public <T> Builder addVariants(T target, Class<? super T> cls) {
+		public <T> Builder addVariants(T target, Class<? extends T> cls) {
 			for (Method m : cls.getMethods())
 				if (m.isAnnotationPresent(Variant.class))
 					addVariant(target, m);
 
 			return this;
+		}
+
+		public Builder addVariants(Object target) {
+			return addVariants(target, target.getClass());
 		}
 
 		public TypedFunction build() {
@@ -473,9 +481,12 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 
 		final int mandatoryArgCount = optionalArgsStart >= 0? optionalArgsStart : parameterCount;
 		final boolean isCollectionReturn = method.isAnnotationPresent(MultiReturn.class);
+		final boolean isRawReturn = method.isAnnotationPresent(RawReturn.class);
 
 		final Class<?> returnType = method.getReturnType();
 		if (MultipleReturn.class.isAssignableFrom(returnType)) {
+			Preconditions.checkState(!isRawReturn, "Method returning MultipleReturn cannot be marked as @RawReturn");
+			Preconditions.checkState(!isCollectionReturn, "Method returning MultipleReturn cannot be marked as @MultiReturn");
 			class MultipleReturnVariant extends TypeVariant {
 				public MultipleReturnVariant() {
 					super(typeDomain, target, method, argMatchers, argConverters, mandatoryArgCount);
@@ -494,6 +505,7 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 
 			return new MultipleReturnVariant();
 		} else if (isCollectionReturn) {
+			Preconditions.checkState(!isRawReturn, "Method marked as @MultiReturn cannot be marked as @RawReturn");
 			if (returnType.isArray()) {
 				final Class<?> componentType = returnType.getComponentType();
 				typeDomain.checkIsKnownType(componentType);
@@ -542,6 +554,20 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 			} else {
 				throw new IllegalArgumentException("Method " + method + " is marked with @MultiReturn, but does not return array or Iterable");
 			}
+		} else if (isRawReturn) {
+			Preconditions.checkState(TypedValue.class.isAssignableFrom(method.getReturnType()), "Method marked with @RawReturn must return TypedValue");
+			class RawSingleReturnVariant extends TypeVariant {
+
+				public RawSingleReturnVariant() {
+					super(typeDomain, target, method, argMatchers, argConverters, mandatoryArgCount);
+				}
+
+				@Override
+				protected List<TypedValue> convertResult(TypeDomain domain, Object result) {
+					return Lists.newArrayList((TypedValue)result);
+				}
+			}
+			return new RawSingleReturnVariant();
 		} else {
 			typeDomain.checkIsKnownType(returnType);
 			class SingleReturnVariant extends TypeVariant {
@@ -600,5 +626,9 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 	}
 
 	protected abstract List<TypedValue> execute(List<TypedValue> args);
+
+	public static Builder builder(TypeDomain domain) {
+		return new Builder(domain);
+	}
 
 }

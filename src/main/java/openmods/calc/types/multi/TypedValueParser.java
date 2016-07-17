@@ -9,7 +9,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class TypedValueParser implements IValueParser<TypedValue> {
 
-	private static final PositionalNotationParser<BigInteger, Double> PARSER = new PositionalNotationParser<BigInteger, Double>() {
+	public static final PositionalNotationParser<BigInteger, Double> NUMBER_PARSER = new PositionalNotationParser<BigInteger, Double>() {
 		@Override
 		public Accumulator<BigInteger> createIntegerAccumulator(int radix) {
 			final BigInteger bigRadix = BigInteger.valueOf(radix);
@@ -49,6 +49,16 @@ public class TypedValueParser implements IValueParser<TypedValue> {
 		}
 	};
 
+	public static TypedValue mergeNumberParts(TypeDomain domain, Pair<BigInteger, Double> result) {
+		final BigInteger intPart = result.getLeft();
+		final Double fractionPart = result.getRight();
+
+		if (fractionPart == null) return domain.create(BigInteger.class, intPart);
+
+		final double total = intPart.doubleValue() + fractionPart;
+		return domain.create(Double.class, total);
+	}
+
 	private final TypeDomain domain;
 
 	public TypedValueParser(TypeDomain domain) {
@@ -59,13 +69,7 @@ public class TypedValueParser implements IValueParser<TypedValue> {
 	public TypedValue parseToken(Token token) {
 		if (token.type == TokenType.STRING) return domain.create(String.class, token.value);
 
-		final Pair<BigInteger, Double> result = PARSER.parseToken(token);
-		final BigInteger intPart = result.getLeft();
-		final Double fractionPart = result.getRight();
-
-		if (fractionPart == null) return domain.create(BigInteger.class, intPart);
-
-		final double total = intPart.doubleValue() + fractionPart;
-		return domain.create(Double.class, total);
+		final Pair<BigInteger, Double> result = NUMBER_PARSER.parseToken(token);
+		return mergeNumberParts(domain, result);
 	}
 }

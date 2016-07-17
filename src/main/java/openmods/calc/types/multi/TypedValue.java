@@ -58,4 +58,8 @@ public class TypedValue {
 	public Optional<Boolean> isTruthy() {
 		return domain.isTruthy(this);
 	}
+
+	public boolean is(Class<?> type) {
+		return this.type == type;
+	}
 }

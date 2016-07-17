@@ -5,6 +5,7 @@ import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.Calculator.ExprType;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedBinaryOperator;
+import openmods.calc.types.multi.TypedFunction;
 import openmods.calc.types.multi.TypedUnaryOperator;
 import openmods.calc.types.multi.TypedValue;
 import openmods.calc.types.multi.TypedValueCalculator;
@@ -20,6 +21,7 @@ public class TypedValueCalculatorTest {
 		filler.fillHolders(TypedUnaryOperator.TypeVariableHolders.class);
 		filler.fillHolders(TypeDomain.TypeVariableHolders.class);
 		filler.fillHolders(MethodAccess.TypeVariableHolders.class);
+		filler.fillHolders(TypedFunction.class);
 	}
 
 	private final TypedValueCalculator sut = TypedValueCalculator.create();
@@ -191,5 +193,56 @@ public class TypedValueCalculatorTest {
 
 		infix("2 == 4 || 5 <= 6").expectResult(TRUE).expectEmptyStack();
 		infix("2 << 3 + 1").expectResult(i(32)).expectEmptyStack();
+	}
+
+	@Test
+	public void testTypeFunctions() {
+		infix("type(null)").expectResult(s("<null>")).expectEmptyStack();
+		infix("type(true)").expectResult(s("bool")).expectEmptyStack();
+		infix("type(5)").expectResult(s("int")).expectEmptyStack();
+		infix("type(5.0)").expectResult(s("float")).expectEmptyStack();
+		infix("type('a')").expectResult(s("str")).expectEmptyStack();
+
+		infix("isint(null)").expectResult(b(false)).expectEmptyStack();
+		infix("isint(true)").expectResult(b(false)).expectEmptyStack();
+		infix("isint(5)").expectResult(b(true)).expectEmptyStack();
+		infix("isint(5.0)").expectResult(b(false)).expectEmptyStack();
+		infix("isint('hello')").expectResult(b(false)).expectEmptyStack();
+
+		infix("isnumber(null)").expectResult(b(false)).expectEmptyStack();
+		infix("isnumber(true)").expectResult(b(true)).expectEmptyStack();
+		infix("isnumber(5)").expectResult(b(true)).expectEmptyStack();
+		infix("isnumber(5.0)").expectResult(b(true)).expectEmptyStack();
+		infix("isnumber('hello')").expectResult(b(false)).expectEmptyStack();
+
+		infix("int(true)").expectResult(i(1)).expectEmptyStack();
+		infix("int(5)").expectResult(i(5)).expectEmptyStack();
+		infix("int(5.2)").expectResult(i(5)).expectEmptyStack();
+		infix("int('6')").expectResult(i(6)).expectEmptyStack();
+		infix("int('29A', 16)").expectResult(i(666)).expectEmptyStack();
+
+		infix("float(true)").expectResult(d(1)).expectEmptyStack();
+		infix("float(5)").expectResult(d(5)).expectEmptyStack();
+		infix("float(5.2)").expectResult(d(5.2)).expectEmptyStack();
+		infix("float('6.1')").expectResult(d(6.1)).expectEmptyStack();
+		infix("float('29A.1', 16)").expectResult(d(666.0625)).expectEmptyStack();
+
+		infix("bool(true)").expectResult(b(true)).expectEmptyStack();
+		infix("bool(5)").expectResult(b(true)).expectEmptyStack();
+		infix("bool(0)").expectResult(b(false)).expectEmptyStack();
+		infix("bool('')").expectResult(b(false)).expectEmptyStack();
+		infix("bool('a')").expectResult(b(true)).expectEmptyStack();
+		infix("bool(null)").expectResult(b(false)).expectEmptyStack();
+
+		sut.printTypes = false;
+		infix("str(true)").expectResult(s("true")).expectEmptyStack();
+		infix("str(5)").expectResult(s("5")).expectEmptyStack();
+		infix("str(5.2)").expectResult(s("5.2")).expectEmptyStack();
+		infix("str('aaa')").expectResult(s("aaa")).expectEmptyStack();
+
+		infix("parse('\"aaa\"')").expectResult(s("aaa")).expectEmptyStack();
+		infix("parse('0x29A')").expectResult(i(666)).expectEmptyStack();
+		infix("parse('0x29A.1')").expectResult(d(666.0625)).expectEmptyStack();
+		infix("parse('100#10')").expectResult(i(100)).expectEmptyStack();
 	}
 }

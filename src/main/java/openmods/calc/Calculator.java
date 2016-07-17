@@ -147,4 +147,8 @@ public abstract class Calculator<E> {
 			return Integer.toString(base) + "#" + value;
 		}
 	}
+
+	protected Iterable<Token> tokenize(String input) {
+		return tokenizerFactory.tokenize(input);
+	}
 }

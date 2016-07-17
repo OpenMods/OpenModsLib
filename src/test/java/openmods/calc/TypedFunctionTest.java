@@ -19,6 +19,7 @@ import openmods.calc.types.multi.TypedFunction.MultiReturn;
 import openmods.calc.types.multi.TypedFunction.MultipleReturn;
 import openmods.calc.types.multi.TypedFunction.OptionalArgs;
 import openmods.calc.types.multi.TypedFunction.RawArg;
+import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;
 import openmods.calc.types.multi.TypedValue;
 import openmods.reflection.TypeVariableHolderHandler;
@@ -63,10 +64,14 @@ public class TypedFunctionTest {
 		return domain.create(String.class, v);
 	}
 
-	private static <T> void assertValueEquals(TypedValue value, Class<? super T> expectedType, T expectedValue) {
+	private static <T> void assertValueEquals(TypedValue value, Class<? extends T> expectedType, T expectedValue) {
 		Assert.assertEquals(expectedValue, value.value);
 		Assert.assertEquals(expectedType, value.type);
 		Assert.assertEquals(domain, value.domain);
+	}
+
+	private static void assertValueEquals(TypedValue value, TypedValue expected) {
+		assertValueEquals(value, expected.type, expected.value);
 	}
 
 	private static TypedValue execute(ISymbol<TypedValue> f, TypedValue... values) {
@@ -96,7 +101,7 @@ public class TypedFunctionTest {
 		return Lists.reverse(results);
 	}
 
-	private static <T> TypedFunction createFunction(T target, Class<? super T> cls) {
+	private static <T> TypedFunction createFunction(T target, Class<? extends T> cls) {
 		TypedFunction.Builder builder = new TypedFunction.Builder(domain);
 		builder.addVariants(target, cls);
 		return builder.build();
@@ -300,6 +305,25 @@ public class TypedFunctionTest {
 
 		assertValueEquals(execute(target, arg1, arg2, arg3a, arg3b), Integer.class, 5);
 		Mockito.verify(mock).test(false, Optional.<Number> of(5), 6, 7);
+
+		Mockito.verifyNoMoreInteractions(mock);
+	}
+
+	@Test
+	public void testSingleMethodRawReturn() {
+		abstract class Intf {
+			@Variant
+			@RawReturn
+			public abstract TypedValue test();
+		}
+
+		final Intf mock = Mockito.mock(Intf.class);
+		TypedFunction target = createFunction(mock, Intf.class);
+
+		final TypedValue ret = wrap("Hello world");
+		Mockito.when(mock.test()).thenReturn(ret);
+		assertValueEquals(execute(target, SKIP), ret);
+		Mockito.verify(mock).test();
 
 		Mockito.verifyNoMoreInteractions(mock);
 	}
