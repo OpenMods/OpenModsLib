@@ -673,4 +673,28 @@ public class TypedFunctionTest {
 		createFunction(new Intf(), Intf.class);
 	}
 
+	@Test(expected = RuntimeException.class)
+	public void testMissingConversionOnMandatoryDispatchArg() {
+		class Intf {
+			@Variant
+			public Integer test(@DispatchArg(extra = { String.class }) Integer v) {
+				return null;
+			}
+		}
+
+		createFunction(new Intf(), Intf.class);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testMissingConversionOnOptionalDispatchArg() {
+		class Intf {
+			@Variant
+			public Integer test(@OptionalArgs @DispatchArg(extra = { String.class }) Optional<Integer> v) {
+				return null;
+			}
+		}
+
+		createFunction(new Intf(), Intf.class);
+	}
+
 }

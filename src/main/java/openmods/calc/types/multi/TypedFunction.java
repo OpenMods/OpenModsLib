@@ -401,9 +401,14 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 		}
 	}
 
-	private static DispatchArgMatcher createMatcher(DispatchArg annotation, Class<?>... extraTypes) {
+	private static DispatchArgMatcher createMatcher(TypeDomain domain, Class<?> argType, DispatchArg annotation, Class<?>... extraTypes) {
 		final Set<Class<?>> dispatchArgsTypes = Sets.newHashSet(annotation.extra());
 		dispatchArgsTypes.addAll(Arrays.asList(extraTypes));
+
+		for (Class<?> cls : dispatchArgsTypes)
+			if (cls != MissingType.class) domain.checkConversion(cls, argType);
+
+		dispatchArgsTypes.add(argType);
 		return new DispatchArgMatcher(dispatchArgsTypes);
 	}
 
@@ -451,7 +456,7 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 				} else {
 					Preconditions.checkState(typeDomain.isKnownType(varType), "Argument %s is not valid in domain", varType);
 					argConverters.add(new OptionalArgConverter(varType));
-					if (dispatchAnn != null) argMatchers.put(i, createMatcher(dispatchAnn, varType, MissingType.class));
+					if (dispatchAnn != null) argMatchers.put(i, createMatcher(typeDomain, varType, dispatchAnn, MissingType.class));
 				}
 			} else {
 				final Class<?> rawType = type.getRawType();
@@ -461,7 +466,7 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 				} else {
 					Preconditions.checkState(typeDomain.isKnownType(rawType), "Argument %s is not valid in domain", type);
 					argConverters.add(new MandatoryArgConverter(rawType));
-					if (dispatchAnn != null) argMatchers.put(i, createMatcher(dispatchAnn, rawType));
+					if (dispatchAnn != null) argMatchers.put(i, createMatcher(typeDomain, rawType, dispatchAnn));
 				}
 			}
 		}

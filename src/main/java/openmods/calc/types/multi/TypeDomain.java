@@ -118,8 +118,12 @@ public class TypeDomain {
 		return converter;
 	}
 
-	private void checkConversion(Class<?> from, Class<?> to) {
-		Preconditions.checkArgument(converters.contains(from, to), "No known conversion from %s to %s", from, to);
+	public boolean hasConversion(Class<?> from, Class<?> to) {
+		return converters.contains(from, to);
+	}
+
+	public void checkConversion(Class<?> from, Class<?> to) {
+		Preconditions.checkArgument(hasConversion(from, to), "No known conversion from %s to %s", from, to);
 	}
 
 	public TypedValue convert(TypedValue value, Class<?> type) {
