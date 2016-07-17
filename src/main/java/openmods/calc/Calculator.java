@@ -34,7 +34,7 @@ public abstract class Calculator<E> {
 
 	}
 
-	private final TopFrame<E> topFrame;
+	private final TopFrame<E> topFrame = new TopFrame<E>();
 
 	private final ExprTokenizerFactory tokenizerFactory = new ExprTokenizerFactory();
 
@@ -46,9 +46,8 @@ public abstract class Calculator<E> {
 
 	private final E nullValue;
 
-	public Calculator(IValueParser<E> parser, E nullValue, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory, TopFrame<E> topFrame) {
+	public Calculator(IValueParser<E> parser, E nullValue, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
 		this.nullValue = nullValue;
-		this.topFrame = topFrame;
 
 		for (String operator : operators.allOperators())
 			tokenizerFactory.addOperator(operator);

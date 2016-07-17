@@ -42,8 +42,8 @@ public class GenericFunctions {
 		protected abstract E accumulate(E result, E value);
 	}
 
-	public static <E> void createStackManipulationFunctions(TopFrame<E> topFrame) {
-		topFrame.setSymbol("swap", new FixedSymbol<E>(2, 2) {
+	public static <E> void createStackManipulationFunctions(Calculator<E> calculator) {
+		calculator.setGlobalSymbol("swap", new FixedSymbol<E>(2, 2) {
 			@Override
 			public void execute(ICalculatorFrame<E> frame) {
 				final Stack<E> stack = frame.stack();
@@ -56,7 +56,7 @@ public class GenericFunctions {
 			}
 		});
 
-		topFrame.setSymbol("pop", new ISymbol<E>() {
+		calculator.setGlobalSymbol("pop", new ISymbol<E>() {
 			@Override
 			public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				if (returnsCount.isPresent() && returnsCount.get() != 0) throw new StackValidationException("Invalid expected return values on 'pop'");
@@ -69,7 +69,7 @@ public class GenericFunctions {
 			}
 		});
 
-		topFrame.setSymbol("dup", new ISymbol<E>() {
+		calculator.setGlobalSymbol("dup", new ISymbol<E>() {
 			@Override
 			public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				final Stack<E> stack = frame.stack();

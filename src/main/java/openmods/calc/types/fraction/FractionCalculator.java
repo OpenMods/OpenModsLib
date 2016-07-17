@@ -6,7 +6,6 @@ import openmods.calc.Calculator;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.OperatorDictionary;
-import openmods.calc.TopFrame;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.DefaultExprNodeFactory;
@@ -24,8 +23,8 @@ public class FractionCalculator extends Calculator<Fraction> {
 	@Configurable
 	public boolean expand;
 
-	public FractionCalculator(OperatorDictionary<Fraction> operators, IExprNodeFactory<Fraction> exprNodeFactory, TopFrame<Fraction> topFrame) {
-		super(new FractionParser(), NULL_VALUE, operators, exprNodeFactory, topFrame);
+	public FractionCalculator(OperatorDictionary<Fraction> operators, IExprNodeFactory<Fraction> exprNodeFactory) {
+		super(new FractionParser(), NULL_VALUE, operators, exprNodeFactory);
 	}
 
 	private static Fraction createFraction(int value) {
@@ -92,87 +91,89 @@ public class FractionCalculator extends Calculator<Fraction> {
 			}
 		});
 
-		final TopFrame<Fraction> globals = new TopFrame<Fraction>();
-		GenericFunctions.createStackManipulationFunctions(globals);
+		final IExprNodeFactory<Fraction> exprNodeFactory = new DefaultExprNodeFactory<Fraction>();
+		final FractionCalculator result = new FractionCalculator(operators, exprNodeFactory);
 
-		globals.setSymbol("abs", new UnaryFunction<Fraction>() {
+		GenericFunctions.createStackManipulationFunctions(result);
+
+		result.setGlobalSymbol("abs", new UnaryFunction<Fraction>() {
 			@Override
 			protected Fraction execute(Fraction value) {
 				return value.abs();
 			}
 		});
 
-		globals.setSymbol("sgn", new UnaryFunction<Fraction>() {
+		result.setGlobalSymbol("sgn", new UnaryFunction<Fraction>() {
 			@Override
 			protected Fraction execute(Fraction value) {
 				return createFraction(Integer.signum(value.getNumerator()));
 			}
 		});
 
-		globals.setSymbol("numerator", new UnaryFunction<Fraction>() {
+		result.setGlobalSymbol("numerator", new UnaryFunction<Fraction>() {
 			@Override
 			protected Fraction execute(Fraction value) {
 				return createFraction(value.getNumerator());
 			}
 		});
 
-		globals.setSymbol("denominator", new UnaryFunction<Fraction>() {
+		result.setGlobalSymbol("denominator", new UnaryFunction<Fraction>() {
 			@Override
 			protected Fraction execute(Fraction value) {
 				return createFraction(value.getDenominator());
 			}
 		});
 
-		globals.setSymbol("frac", new UnaryFunction<Fraction>() {
+		result.setGlobalSymbol("frac", new UnaryFunction<Fraction>() {
 			@Override
 			protected Fraction execute(Fraction value) {
 				return Fraction.getFraction(value.getProperNumerator(), value.getDenominator());
 			}
 		});
 
-		globals.setSymbol("int", new UnaryFunction<Fraction>() {
+		result.setGlobalSymbol("int", new UnaryFunction<Fraction>() {
 			@Override
 			protected Fraction execute(Fraction value) {
 				return createFraction(value.getProperWhole());
 			}
 		});
 
-		globals.setSymbol("sqrt", new UnaryFunction<Fraction>() {
+		result.setGlobalSymbol("sqrt", new UnaryFunction<Fraction>() {
 			@Override
 			protected Fraction execute(Fraction value) {
 				return Fraction.getFraction(Math.sqrt(value.doubleValue()));
 			}
 		});
 
-		globals.setSymbol("log", new UnaryFunction<Fraction>() {
+		result.setGlobalSymbol("log", new UnaryFunction<Fraction>() {
 			@Override
 			protected Fraction execute(Fraction value) {
 				return Fraction.getFraction(Math.log(value.doubleValue()));
 			}
 		});
 
-		globals.setSymbol("min", new AccumulatorFunction<Fraction>(NULL_VALUE) {
+		result.setGlobalSymbol("min", new AccumulatorFunction<Fraction>(NULL_VALUE) {
 			@Override
 			protected Fraction accumulate(Fraction result, Fraction value) {
 				return Ordering.natural().min(result, value);
 			}
 		});
 
-		globals.setSymbol("max", new AccumulatorFunction<Fraction>(NULL_VALUE) {
+		result.setGlobalSymbol("max", new AccumulatorFunction<Fraction>(NULL_VALUE) {
 			@Override
 			protected Fraction accumulate(Fraction result, Fraction value) {
 				return Ordering.natural().max(result, value);
 			}
 		});
 
-		globals.setSymbol("sum", new AccumulatorFunction<Fraction>(NULL_VALUE) {
+		result.setGlobalSymbol("sum", new AccumulatorFunction<Fraction>(NULL_VALUE) {
 			@Override
 			protected Fraction accumulate(Fraction result, Fraction value) {
 				return result.add(value);
 			}
 		});
 
-		globals.setSymbol("avg", new AccumulatorFunction<Fraction>(NULL_VALUE) {
+		result.setGlobalSymbol("avg", new AccumulatorFunction<Fraction>(NULL_VALUE) {
 			@Override
 			protected Fraction accumulate(Fraction result, Fraction value) {
 				return result.add(value);
@@ -185,7 +186,6 @@ public class FractionCalculator extends Calculator<Fraction> {
 
 		});
 
-		final IExprNodeFactory<Fraction> exprNodeFactory = new DefaultExprNodeFactory<Fraction>();
-		return new FractionCalculator(operators, exprNodeFactory, globals);
+		return result;
 	}
 }

@@ -8,7 +8,6 @@ import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.TernaryFunction;
-import openmods.calc.TopFrame;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.DefaultExprNodeFactory;
@@ -27,8 +26,8 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 
 	private final BigIntPrinter printer = new BigIntPrinter();
 
-	public BigIntCalculator(OperatorDictionary<BigInteger> operators, IExprNodeFactory<BigInteger> exprNodeFactory, TopFrame<BigInteger> topFrame) {
-		super(new BigIntParser(), NULL_VALUE, operators, exprNodeFactory, topFrame);
+	public BigIntCalculator(OperatorDictionary<BigInteger> operators, IExprNodeFactory<BigInteger> exprNodeFactory) {
+		super(new BigIntParser(), NULL_VALUE, operators, exprNodeFactory);
 	}
 
 	@Override
@@ -147,45 +146,47 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			}
 		});
 
-		final TopFrame<BigInteger> globals = new TopFrame<BigInteger>();
-		GenericFunctions.createStackManipulationFunctions(globals);
+		final IExprNodeFactory<BigInteger> exprNodeFactory = new DefaultExprNodeFactory<BigInteger>();
+		final BigIntCalculator result = new BigIntCalculator(operators, exprNodeFactory);
 
-		globals.setSymbol("abs", new UnaryFunction<BigInteger>() {
+		GenericFunctions.createStackManipulationFunctions(result);
+
+		result.setGlobalSymbol("abs", new UnaryFunction<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger value) {
 				return value.abs();
 			}
 		});
 
-		globals.setSymbol("sgn", new UnaryFunction<BigInteger>() {
+		result.setGlobalSymbol("sgn", new UnaryFunction<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger value) {
 				return BigInteger.valueOf(value.signum());
 			}
 		});
 
-		globals.setSymbol("min", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
+		result.setGlobalSymbol("min", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
 			@Override
 			protected BigInteger accumulate(BigInteger result, BigInteger value) {
 				return result.min(value);
 			}
 		});
 
-		globals.setSymbol("max", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
+		result.setGlobalSymbol("max", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
 			@Override
 			protected BigInteger accumulate(BigInteger result, BigInteger value) {
 				return result.max(value);
 			}
 		});
 
-		globals.setSymbol("sum", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
+		result.setGlobalSymbol("sum", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
 			@Override
 			protected BigInteger accumulate(BigInteger result, BigInteger value) {
 				return result.add(value);
 			}
 		});
 
-		globals.setSymbol("avg", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
+		result.setGlobalSymbol("avg", new AccumulatorFunction<BigInteger>(NULL_VALUE) {
 			@Override
 			protected BigInteger accumulate(BigInteger result, BigInteger value) {
 				return result.add(value);
@@ -198,57 +199,56 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 
 		});
 
-		globals.setSymbol("gcd", new BinaryFunction<BigInteger>() {
+		result.setGlobalSymbol("gcd", new BinaryFunction<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger left, BigInteger right) {
 				return left.gcd(right);
 			}
 		});
 
-		globals.setSymbol("gcd", new BinaryFunction<BigInteger>() {
+		result.setGlobalSymbol("gcd", new BinaryFunction<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger left, BigInteger right) {
 				return left.gcd(right);
 			}
 		});
 
-		globals.setSymbol("modpow", new TernaryFunction<BigInteger>() {
+		result.setGlobalSymbol("modpow", new TernaryFunction<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger first, BigInteger second, BigInteger third) {
 				return first.modPow(second, third);
 			}
 		});
 
-		globals.setSymbol("get", new BinaryFunction<BigInteger>() {
+		result.setGlobalSymbol("get", new BinaryFunction<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger first, BigInteger second) {
 				return first.testBit(second.intValue())? BigInteger.ONE : BigInteger.ZERO;
 			}
 		});
 
-		globals.setSymbol("set", new BinaryFunction<BigInteger>() {
+		result.setGlobalSymbol("set", new BinaryFunction<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger first, BigInteger second) {
 				return first.setBit(second.intValue());
 			}
 		});
 
-		globals.setSymbol("clear", new BinaryFunction<BigInteger>() {
+		result.setGlobalSymbol("clear", new BinaryFunction<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger first, BigInteger second) {
 				return first.clearBit(second.intValue());
 			}
 		});
 
-		globals.setSymbol("flip", new BinaryFunction<BigInteger>() {
+		result.setGlobalSymbol("flip", new BinaryFunction<BigInteger>() {
 			@Override
 			protected BigInteger execute(BigInteger first, BigInteger second) {
 				return first.flipBit(second.intValue());
 			}
 		});
 
-		final IExprNodeFactory<BigInteger> exprNodeFactory = new DefaultExprNodeFactory<BigInteger>();
-		return new BigIntCalculator(operators, exprNodeFactory, globals);
+		return result;
 	}
 
 }

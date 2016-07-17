@@ -7,7 +7,6 @@ import openmods.calc.Constant;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.OperatorDictionary;
-import openmods.calc.TopFrame;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.DefaultExprNodeFactory;
@@ -29,8 +28,8 @@ public class DoubleCalculator extends Calculator<Double> {
 
 	private final DoublePrinter printer = new DoublePrinter(8);
 
-	public DoubleCalculator(OperatorDictionary<Double> operators, IExprNodeFactory<Double> exprNodeFactory, TopFrame<Double> topFrame) {
-		super(new DoubleParser(), NULL_VALUE, operators, exprNodeFactory, topFrame);
+	public DoubleCalculator(OperatorDictionary<Double> operators, IExprNodeFactory<Double> exprNodeFactory) {
+		super(new DoubleParser(), NULL_VALUE, operators, exprNodeFactory);
 	}
 
 	@Override
@@ -113,92 +112,94 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
-		final TopFrame<Double> globals = new TopFrame<Double>();
-		GenericFunctions.createStackManipulationFunctions(globals);
+		final IExprNodeFactory<Double> exprNodeFactory = new DefaultExprNodeFactory<Double>();
+		final DoubleCalculator result = new DoubleCalculator(operators, exprNodeFactory);
 
-		globals.setSymbol("PI", Constant.create(Math.PI));
-		globals.setSymbol("E", Constant.create(Math.E));
-		globals.setSymbol("INF", Constant.create(Double.POSITIVE_INFINITY));
-		globals.setSymbol("MAX", Constant.create(Double.MIN_VALUE));
+		GenericFunctions.createStackManipulationFunctions(result);
 
-		globals.setSymbol("abs", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("PI", Constant.create(Math.PI));
+		result.setGlobalSymbol("E", Constant.create(Math.E));
+		result.setGlobalSymbol("INF", Constant.create(Double.POSITIVE_INFINITY));
+		result.setGlobalSymbol("MAX", Constant.create(Double.MIN_VALUE));
+
+		result.setGlobalSymbol("abs", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.abs(value);
 			}
 		});
 
-		globals.setSymbol("sgn", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("sgn", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.signum(value);
 			}
 		});
 
-		globals.setSymbol("sqrt", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("sqrt", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.sqrt(value);
 			}
 		});
 
-		globals.setSymbol("ceil", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("ceil", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.ceil(value);
 			}
 		});
 
-		globals.setSymbol("floor", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("floor", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.floor(value);
 			}
 		});
 
-		globals.setSymbol("cos", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("cos", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.cos(value);
 			}
 		});
 
-		globals.setSymbol("sin", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("sin", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.sin(value);
 			}
 		});
 
-		globals.setSymbol("tan", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("tan", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.tan(value);
 			}
 		});
 
-		globals.setSymbol("acos", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("acos", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.acos(value);
 			}
 		});
 
-		globals.setSymbol("asin", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("asin", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.asin(value);
 			}
 		});
 
-		globals.setSymbol("atan", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("atan", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.atan(value);
 			}
 		});
 
-		globals.setSymbol("atan2", new BinaryFunction<Double>() {
+		result.setGlobalSymbol("atan2", new BinaryFunction<Double>() {
 			@Override
 			protected Double execute(Double left, Double right) {
 				return Math.atan2(left, right);
@@ -206,56 +207,56 @@ public class DoubleCalculator extends Calculator<Double> {
 
 		});
 
-		globals.setSymbol("log10", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("log10", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.log10(value);
 			}
 		});
 
-		globals.setSymbol("ln", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("ln", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.log(value);
 			}
 		});
 
-		globals.setSymbol("log", new BinaryFunction<Double>() {
+		result.setGlobalSymbol("log", new BinaryFunction<Double>() {
 			@Override
 			protected Double execute(Double left, Double right) {
 				return Math.log(left) / Math.log(right);
 			}
 		});
 
-		globals.setSymbol("exp", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("exp", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.exp(value);
 			}
 		});
 
-		globals.setSymbol("min", new AccumulatorFunction<Double>(NULL_VALUE) {
+		result.setGlobalSymbol("min", new AccumulatorFunction<Double>(NULL_VALUE) {
 			@Override
 			protected Double accumulate(Double result, Double value) {
 				return Math.min(result, value);
 			}
 		});
 
-		globals.setSymbol("max", new AccumulatorFunction<Double>(NULL_VALUE) {
+		result.setGlobalSymbol("max", new AccumulatorFunction<Double>(NULL_VALUE) {
 			@Override
 			protected Double accumulate(Double result, Double value) {
 				return Math.max(result, value);
 			}
 		});
 
-		globals.setSymbol("sum", new AccumulatorFunction<Double>(NULL_VALUE) {
+		result.setGlobalSymbol("sum", new AccumulatorFunction<Double>(NULL_VALUE) {
 			@Override
 			protected Double accumulate(Double result, Double value) {
 				return result + value;
 			}
 		});
 
-		globals.setSymbol("avg", new AccumulatorFunction<Double>(NULL_VALUE) {
+		result.setGlobalSymbol("avg", new AccumulatorFunction<Double>(NULL_VALUE) {
 			@Override
 			protected Double accumulate(Double result, Double value) {
 				return result + value;
@@ -267,22 +268,21 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
-		globals.setSymbol("rad", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("rad", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.toRadians(value);
 			}
 		});
 
-		globals.setSymbol("deg", new UnaryFunction<Double>() {
+		result.setGlobalSymbol("deg", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.toDegrees(value);
 			}
 		});
 
-		final IExprNodeFactory<Double> exprNodeFactory = new DefaultExprNodeFactory<Double>();
-		return new DoubleCalculator(operators, exprNodeFactory, globals);
+		return result;
 	}
 
 }

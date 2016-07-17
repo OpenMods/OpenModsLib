@@ -10,7 +10,6 @@ import openmods.calc.Calculator;
 import openmods.calc.Constant;
 import openmods.calc.GenericFunctions;
 import openmods.calc.OperatorDictionary;
-import openmods.calc.TopFrame;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.IExprNodeFactory;
@@ -64,8 +63,8 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 	private final BigIntPrinter bigIntPrinter = new BigIntPrinter();
 
-	public TypedValueCalculator(TypeDomain domain, TypedValue nullValue, OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory, TopFrame<TypedValue> topFrame) {
-		super(new TypedValueParser(domain), nullValue, operators, exprNodeFactory, topFrame);
+	public TypedValueCalculator(TypeDomain domain, TypedValue nullValue, OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory) {
+		super(new TypedValueParser(domain), nullValue, operators, exprNodeFactory);
 	}
 
 	@Override
@@ -600,14 +599,15 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 					.build(domain));
 		}
 
-		final TopFrame<TypedValue> globals = new TopFrame<TypedValue>();
-		GenericFunctions.createStackManipulationFunctions(globals);
-
-		globals.setSymbol("null", Constant.create(nullValue));
-		globals.setSymbol("true", Constant.create(domain.create(Boolean.class, Boolean.TRUE)));
-		globals.setSymbol("false", Constant.create(domain.create(Boolean.class, Boolean.FALSE)));
-
 		final IExprNodeFactory<TypedValue> exprNodeFactory = new DefaultExprNodeFactory<TypedValue>();
-		return new TypedValueCalculator(domain, nullValue, operators, exprNodeFactory, globals);
+		final TypedValueCalculator result = new TypedValueCalculator(domain, nullValue, operators, exprNodeFactory);
+
+		GenericFunctions.createStackManipulationFunctions(result);
+
+		result.setGlobalSymbol("null", Constant.create(nullValue));
+		result.setGlobalSymbol("true", Constant.create(domain.create(Boolean.class, Boolean.TRUE)));
+		result.setGlobalSymbol("false", Constant.create(domain.create(Boolean.class, Boolean.FALSE)));
+
+		return result;
 	}
 }
