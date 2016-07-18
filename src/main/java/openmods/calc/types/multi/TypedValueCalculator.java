@@ -1,5 +1,6 @@
 package openmods.calc.types.multi;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
@@ -27,6 +28,7 @@ import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
 import openmods.calc.types.multi.TypedFunction.OptionalArgs;
+import openmods.calc.types.multi.TypedFunction.RawDispatchArg;
 import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;
 import openmods.config.simpler.Configurable;
@@ -119,6 +121,13 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			return decorateBase(!uniformBaseNotation, base, result);
 		}
 	}
+
+	private static final Function<BigInteger, Integer> INT_UNWRAP = new Function<BigInteger, Integer>() {
+		@Override
+		public Integer apply(BigInteger input) {
+			return input.intValue();
+		}
+	};
 
 	private static final int MAX_PRIO = 6;
 
@@ -697,7 +706,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 			@Variant
 			public BigInteger convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
-				final int usedRadix = radix.or(BigInteger.TEN).intValue();
+				final int usedRadix = radix.transform(INT_UNWRAP).or(result.base);
 				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
 				Preconditions.checkArgument(result.getRight() == null, "Fractional part in argument to 'int': %s", value);
 				return result.getLeft();
@@ -712,7 +721,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 			@Variant
 			public Double convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
-				final int usedRadix = radix.or(BigInteger.TEN).intValue();
+				final int usedRadix = radix.transform(INT_UNWRAP).or(result.base);
 				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
 				return result.getLeft().doubleValue() + result.getRight();
 			}
@@ -720,24 +729,15 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 		result.setGlobalSymbol("number", new SimpleTypedFunction(domain) {
 			@Variant
-			public Boolean convert(@DispatchArg Boolean value) {
-				return value;
-			}
-
-			@Variant
-			public BigInteger convert(@DispatchArg BigInteger value) {
-				return value;
-			}
-
-			@Variant
-			public Double convert(@DispatchArg Double value) {
+			@RawReturn
+			public TypedValue convert(@RawDispatchArg({ Boolean.class, BigInteger.class, Double.class }) TypedValue value) {
 				return value;
 			}
 
 			@Variant
 			@RawReturn
 			public TypedValue convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
-				final int usedRadix = radix.or(BigInteger.TEN).intValue();
+				final int usedRadix = radix.transform(INT_UNWRAP).or(result.base);
 				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
 				return TypedValueParser.mergeNumberParts(domain, result);
 			}

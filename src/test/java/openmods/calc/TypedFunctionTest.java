@@ -19,6 +19,7 @@ import openmods.calc.types.multi.TypedFunction.MultiReturn;
 import openmods.calc.types.multi.TypedFunction.MultipleReturn;
 import openmods.calc.types.multi.TypedFunction.OptionalArgs;
 import openmods.calc.types.multi.TypedFunction.RawArg;
+import openmods.calc.types.multi.TypedFunction.RawDispatchArg;
 import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;
 import openmods.calc.types.multi.TypedValue;
@@ -123,6 +124,25 @@ public class TypedFunctionTest {
 		Mockito.when(mock.test(anyBoolean(), anyString(), anyInt())).thenReturn(5);
 		assertValueEquals(execute(target, arg1, arg2, arg3), Integer.class, 5);
 		Mockito.verify(mock).test(true, "Hello world", 7);
+
+		Mockito.verifyNoMoreInteractions(mock);
+	}
+
+	@Test
+	public void testSingleMethodArgCast() {
+		abstract class Intf {
+			@Variant
+			public abstract Integer test(Integer a, Number b);
+		}
+
+		final Intf mock = Mockito.mock(Intf.class);
+		TypedFunction target = createFunction(mock, Intf.class);
+
+		final TypedValue arg1 = wrap(true);
+		final TypedValue arg2 = wrap(5);
+		Mockito.when(mock.test(anyInt(), any(Number.class))).thenReturn(5);
+		assertValueEquals(execute(target, arg1, arg2), Integer.class, 5);
+		Mockito.verify(mock).test(1, 5);
 
 		Mockito.verifyNoMoreInteractions(mock);
 	}
@@ -462,6 +482,34 @@ public class TypedFunctionTest {
 	}
 
 	@Test
+	public void testSingleRawArgumentDispatch() {
+		abstract class Intf {
+			@Variant
+			public abstract Integer test(@RawDispatchArg({ Integer.class, Boolean.class }) TypedValue v);
+
+			@Variant
+			public abstract String test(@DispatchArg String v);
+		}
+
+		final Intf mock = Mockito.mock(Intf.class);
+		TypedFunction target = createFunction(mock, Intf.class);
+
+		Mockito.when(mock.test(any(TypedValue.class))).thenReturn(7);
+		Mockito.when(mock.test(anyString())).thenReturn("b");
+
+		assertValueEquals(execute(target, wrap(6)), Integer.class, 7);
+		Mockito.verify(mock).test(wrap(6));
+
+		assertValueEquals(execute(target, wrap(true)), Integer.class, 7);
+		Mockito.verify(mock).test(wrap(true));
+
+		assertValueEquals(execute(target, wrap("a")), String.class, "b");
+		Mockito.verify(mock).test("a");
+
+		Mockito.verifyNoMoreInteractions(mock);
+	}
+
+	@Test
 	public void testDoubleArgumentDispatch() {
 		abstract class Intf {
 			@Variant
@@ -630,6 +678,23 @@ public class TypedFunctionTest {
 	}
 
 	@Test(expected = AmbiguousDispatchException.class)
+	public void testTwoMethodsSameDispatchOneRaw() {
+		class Intf {
+			@Variant
+			public Integer test(@DispatchArg Integer v) {
+				return null;
+			}
+
+			@Variant
+			public Integer test(@RawDispatchArg({ Integer.class }) TypedValue v) {
+				return null;
+			}
+		}
+
+		createFunction(new Intf(), Intf.class);
+	}
+
+	@Test(expected = AmbiguousDispatchException.class)
 	public void testTwoMethodsSameDispatchExtraDispatch() {
 		class Intf {
 			@Variant
@@ -714,6 +779,18 @@ public class TypedFunctionTest {
 		class Intf {
 			@Variant
 			public Integer test(@OptionalArgs @DispatchArg(extra = { String.class }) Optional<Integer> v) {
+				return null;
+			}
+		}
+
+		createFunction(new Intf(), Intf.class);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testMissingTypesOnRawDispatchArg() {
+		class Intf {
+			@Variant
+			public Integer test(@RawDispatchArg({}) TypedValue v) {
 				return null;
 			}
 		}

@@ -86,6 +86,12 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 
 	@Target(ElementType.PARAMETER)
 	@Retention(RetentionPolicy.RUNTIME)
+	public static @interface RawDispatchArg {
+		public Class<?>[] value();
+	}
+
+	@Target(ElementType.PARAMETER)
+	@Retention(RetentionPolicy.RUNTIME)
 	public @interface OptionalArgs {}
 
 	@Target(ElementType.PARAMETER)
@@ -420,6 +426,18 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 		return new DispatchArgMatcher(dispatchArgsTypes);
 	}
 
+	private static DispatchArgMatcher createMatcher(TypeDomain domain, RawDispatchArg annotation, Class<?>... extraTypes) {
+		final Set<Class<?>> dispatchArgsTypes = Sets.newHashSet(annotation.value());
+		Preconditions.checkArgument(!dispatchArgsTypes.isEmpty(), "Raw dispatch arg must specify dispatch types");
+
+		dispatchArgsTypes.addAll(Arrays.asList(extraTypes));
+
+		for (Class<?> cls : dispatchArgsTypes)
+			domain.checkIsKnownType(cls);
+
+		return new DispatchArgMatcher(dispatchArgsTypes);
+	}
+
 	public static TypeVariant createVariant(final Object target, final Method method, final TypeDomain typeDomain) {
 		final Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 		final Type[] parameterTypes = method.getGenericParameterTypes();
@@ -439,15 +457,26 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 			if (annotations.hasAnnotation(OptionalArgs.class)) optionalArgsStart = i;
 
 			final DispatchArg dispatchAnn = annotations.get(DispatchArg.class);
-			final boolean isRaw = annotations.hasAnnotation(RawArg.class);
-			Preconditions.checkArgument(!(dispatchAnn != null && isRaw), "Argument cannot be both dispatch and raw");
+			final boolean isTypedDispatch = dispatchAnn != null;
+
+			final RawDispatchArg dispatchRawAnn = annotations.get(RawDispatchArg.class);
+			final boolean isRawDispatch = dispatchRawAnn != null;
+
+			final boolean isRawNonDispatch = annotations.hasAnnotation(RawArg.class);
+
+			final boolean isRawArg = isRawNonDispatch || isRawDispatch;
+			final boolean isDispatchArg = isTypedDispatch || isRawDispatch;
 
 			final boolean isVariadicArg = isVariadic && (i == parameterCount - 1);
-			Preconditions.checkArgument(!(dispatchAnn != null && isVariadicArg), "Variadic arguments cannot be used for dispatch");
+
+			Preconditions.checkArgument(!(isTypedDispatch && isRawNonDispatch), "Argument cannot be both dispatch and raw");
+			Preconditions.checkArgument(!(isRawDispatch && isRawNonDispatch), "Argument cannot be both raw and raw dispatch");
+			Preconditions.checkArgument(!(isRawDispatch && isTypedDispatch), "Argument cannot be both raw and typed dispatch");
+			Preconditions.checkArgument(!(isVariadicArg && isDispatchArg), "Variadic arguments cannot be used for dispatch");
 
 			if (isVariadicArg) {
 				final Class<?> componentType = type.getComponentType().getRawType();
-				if (isRaw) {
+				if (isRawArg) {
 					Preconditions.checkState(TypedValue.class.isAssignableFrom(componentType), "Raw argument must have TypedValue type");
 					argConverters.add(new VariadicRawArgConverter());
 				} else {
@@ -458,23 +487,25 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 			} else if (optionalArgsStart >= 0) {
 				Preconditions.checkState(Optional.class.isAssignableFrom(type.getRawType()), "Optional argument must have Optional type");
 				final Class<?> varType = OptionalTypeHolder.resolve(type);
-				if (isRaw) {
+				if (isRawArg) {
 					Preconditions.checkState(TypedValue.class.isAssignableFrom(varType), "Raw argument must have TypedValue type");
 					argConverters.add(new OptionalRawArgConverter());
+					if (isDispatchArg) argMatchers.put(i, createMatcher(typeDomain, dispatchRawAnn, MissingType.class));
 				} else {
 					Preconditions.checkState(typeDomain.isKnownType(varType), "Argument %s is not valid in domain", varType);
 					argConverters.add(new OptionalArgConverter(varType));
-					if (dispatchAnn != null) argMatchers.put(i, createMatcher(typeDomain, varType, dispatchAnn, MissingType.class));
+					if (isDispatchArg) argMatchers.put(i, createMatcher(typeDomain, varType, dispatchAnn, MissingType.class));
 				}
 			} else {
 				final Class<?> rawType = type.getRawType();
-				if (isRaw) {
+				if (isRawArg) {
 					Preconditions.checkState(TypedValue.class.isAssignableFrom(rawType), "Raw argument must have TypedValue type");
 					argConverters.add(new MandatoryRawArgConverter());
+					if (isDispatchArg) argMatchers.put(i, createMatcher(typeDomain, dispatchRawAnn));
 				} else {
 					Preconditions.checkState(typeDomain.isKnownType(rawType), "Argument %s is not valid in domain", type);
 					argConverters.add(new MandatoryArgConverter(rawType));
-					if (dispatchAnn != null) argMatchers.put(i, createMatcher(typeDomain, rawType, dispatchAnn));
+					if (isDispatchArg) argMatchers.put(i, createMatcher(typeDomain, rawType, dispatchAnn));
 				}
 			}
 		}

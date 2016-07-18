@@ -227,6 +227,14 @@ public class TypedValueCalculatorTest {
 		infix("float('6.1')").expectResult(d(6.1)).expectEmptyStack();
 		infix("float('29A.1', 16)").expectResult(d(666.0625)).expectEmptyStack();
 
+		infix("number(true)").expectResult(b(true)).expectEmptyStack();
+		infix("number(5)").expectResult(i(5)).expectEmptyStack();
+		infix("number(5.2)").expectResult(d(5.2)).expectEmptyStack();
+		infix("number('6')").expectResult(i(6)).expectEmptyStack();
+		infix("number('6.1')").expectResult(d(6.1)).expectEmptyStack();
+		infix("number('29A', 16)").expectResult(i(666)).expectEmptyStack();
+		infix("number('29A.1', 16)").expectResult(d(666.0625)).expectEmptyStack();
+
 		infix("bool(true)").expectResult(b(true)).expectEmptyStack();
 		infix("bool(5)").expectResult(b(true)).expectEmptyStack();
 		infix("bool(0)").expectResult(b(false)).expectEmptyStack();
