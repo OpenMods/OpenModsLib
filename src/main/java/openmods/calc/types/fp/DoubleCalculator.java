@@ -164,10 +164,24 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
+		result.setGlobalSymbol("cosh", new UnaryFunction<Double>() {
+			@Override
+			protected Double execute(Double value) {
+				return Math.cosh(value);
+			}
+		});
+
 		result.setGlobalSymbol("sin", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.sin(value);
+			}
+		});
+
+		result.setGlobalSymbol("sinh", new UnaryFunction<Double>() {
+			@Override
+			protected Double execute(Double value) {
+				return Math.sinh(value);
 			}
 		});
 
@@ -178,10 +192,24 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
+		result.setGlobalSymbol("tanh", new UnaryFunction<Double>() {
+			@Override
+			protected Double execute(Double value) {
+				return Math.tanh(value);
+			}
+		});
+
 		result.setGlobalSymbol("acos", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.acos(value);
+			}
+		});
+
+		result.setGlobalSymbol("acosh", new UnaryFunction<Double>() {
+			@Override
+			protected Double execute(Double value) {
+				return Math.log(value + Math.sqrt(value * value - 1));
 			}
 		});
 
@@ -192,10 +220,24 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
+		result.setGlobalSymbol("asinh", new UnaryFunction<Double>() {
+			@Override
+			protected Double execute(Double value) {
+				return value.isInfinite()? value : Math.log(value + Math.sqrt(value * value + 1));
+			}
+		});
+
 		result.setGlobalSymbol("atan", new UnaryFunction<Double>() {
 			@Override
 			protected Double execute(Double value) {
 				return Math.atan(value);
+			}
+		});
+
+		result.setGlobalSymbol("atanh", new UnaryFunction<Double>() {
+			@Override
+			protected Double execute(Double value) {
+				return Math.log((1 + value) / (1 - value)) / 2;
 			}
 		});
 

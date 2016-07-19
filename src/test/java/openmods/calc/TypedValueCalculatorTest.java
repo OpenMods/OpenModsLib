@@ -253,4 +253,32 @@ public class TypedValueCalculatorTest {
 		infix("parse('0x29A.1')").expectResult(d(666.0625)).expectEmptyStack();
 		infix("parse('100#10')").expectResult(i(100)).expectEmptyStack();
 	}
+
+	@Test
+	public void testArithmeticFunctions() {
+		infix("isnan(NAN)").expectResult(b(true)).expectEmptyStack();
+		infix("isnan(5)").expectResult(b(false)).expectEmptyStack();
+
+		infix("isinf(INF)").expectResult(b(true)).expectEmptyStack();
+		infix("isinf(-INF)").expectResult(b(true)).expectEmptyStack();
+		infix("isnan(4)").expectResult(b(false)).expectEmptyStack();
+
+		infix("ceil(true)").expectResult(b(true)).expectEmptyStack();
+		infix("ceil(2)").expectResult(i(2)).expectEmptyStack();
+		infix("ceil(2.0)").expectResult(d(2)).expectEmptyStack();
+		infix("ceil(2.4)").expectResult(d(3)).expectEmptyStack();
+
+		infix("abs(true)").expectResult(b(true)).expectEmptyStack();
+		infix("abs(-2)").expectResult(i(2)).expectEmptyStack();
+		infix("abs(+2)").expectResult(i(2)).expectEmptyStack();
+		infix("abs(2.0)").expectResult(d(2)).expectEmptyStack();
+		infix("abs(-2.4)").expectResult(d(2.4)).expectEmptyStack();
+
+		infix("log(true)").expectResult(d(0)).expectEmptyStack();
+		infix("log(1)").expectResult(d(0)).expectEmptyStack();
+		infix("log(10)").expectResult(d(1)).expectEmptyStack();
+		infix("log(100)").expectResult(d(2)).expectEmptyStack();
+		infix("log(E, E)").expectResult(d(1)).expectEmptyStack();
+		infix("log(2, E) == ln(2)").expectResult(b(true)).expectEmptyStack();
+	}
 }

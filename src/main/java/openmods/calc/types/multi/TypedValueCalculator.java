@@ -640,6 +640,8 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 		result.setGlobalSymbol("E", Constant.create(domain.create(Double.class, Math.E)));
 		result.setGlobalSymbol("PI", Constant.create(domain.create(Double.class, Math.PI)));
+		result.setGlobalSymbol("NAN", Constant.create(domain.create(Double.class, Double.NaN)));
+		result.setGlobalSymbol("INF", Constant.create(domain.create(Double.class, Double.POSITIVE_INFINITY)));
 
 		class PredicateIsType extends UnaryFunction<TypedValue> {
 			private final Class<?> cls;
@@ -754,6 +756,219 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 				} catch (Exception e) {
 					throw new IllegalArgumentException("Failed to parse '" + value + "'", e);
 				}
+			}
+		});
+
+		result.setGlobalSymbol("isnan", new SimpleTypedFunction(domain) {
+			@Variant
+			public Boolean isNan(Double v) {
+				return v.isNaN();
+			}
+		});
+
+		result.setGlobalSymbol("isinf", new SimpleTypedFunction(domain) {
+			@Variant
+			public Boolean isInf(Double v) {
+				return v.isInfinite();
+			}
+		});
+
+		result.setGlobalSymbol("abs", new SimpleTypedFunction(domain) {
+			@Variant
+			public Boolean abs(@DispatchArg Boolean v) {
+				return v;
+			}
+
+			@Variant
+			public BigInteger abs(@DispatchArg BigInteger v) {
+				return v.abs();
+			}
+
+			@Variant
+			public Double abs(@DispatchArg Double v) {
+				return Math.abs(v);
+			}
+		});
+
+		result.setGlobalSymbol("sqrt", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double sqrt(Double v) {
+				return Math.sqrt(v);
+			}
+		});
+
+		result.setGlobalSymbol("floor", new SimpleTypedFunction(domain) {
+			@Variant
+			@RawReturn
+			public TypedValue floor(@RawDispatchArg({ BigInteger.class, Boolean.class }) TypedValue v) {
+				return v;
+			}
+
+			@Variant
+			public Double floor(@DispatchArg Double v) {
+				return Math.floor(v);
+			}
+		});
+
+		result.setGlobalSymbol("ceil", new SimpleTypedFunction(domain) {
+			@Variant
+			@RawReturn
+			public TypedValue ceil(@RawDispatchArg({ BigInteger.class, Boolean.class }) TypedValue v) {
+				return v;
+			}
+
+			@Variant
+			public Double ceil(@DispatchArg Double v) {
+				return Math.ceil(v);
+			}
+		});
+
+		result.setGlobalSymbol("cos", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double cos(Double v) {
+				return Math.cos(v);
+			}
+		});
+
+		result.setGlobalSymbol("cosh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double cosh(Double v) {
+				return Math.cosh(v);
+			}
+		});
+
+		result.setGlobalSymbol("acos", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double acos(Double v) {
+				return Math.acos(v);
+			}
+		});
+
+		result.setGlobalSymbol("acosh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double acosh(Double v) {
+				return Math.log(v + Math.sqrt(v * v - 1));
+			}
+		});
+
+		result.setGlobalSymbol("sin", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double sin(Double v) {
+				return Math.sin(v);
+			}
+		});
+
+		result.setGlobalSymbol("sinh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double sinh(Double v) {
+				return Math.sinh(v);
+			}
+		});
+
+		result.setGlobalSymbol("asin", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double asin(Double v) {
+				return Math.asin(v);
+			}
+		});
+
+		result.setGlobalSymbol("asinh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double asinh(Double v) {
+				return v.isInfinite()? v : Math.log(v + Math.sqrt(v * v + 1));
+			}
+		});
+
+		result.setGlobalSymbol("tan", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double tan(Double v) {
+				return Math.tan(v);
+			}
+		});
+
+		result.setGlobalSymbol("atan", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double atan(Double v) {
+				return Math.atan(v);
+			}
+		});
+
+		result.setGlobalSymbol("atan2", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double atan2(Double x, Double y) {
+				return Math.atan2(x, y);
+			}
+		});
+
+		result.setGlobalSymbol("tanh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double tanh(Double v) {
+				return Math.tanh(v);
+			}
+		});
+
+		result.setGlobalSymbol("atanh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double atanh(Double v) {
+				return Math.log((1 + v) / (1 - v)) / 2;
+			}
+		});
+
+		result.setGlobalSymbol("ln", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double ln(Double v) {
+				return Math.log(v);
+			}
+		});
+
+		result.setGlobalSymbol("log", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double log(Double v, @OptionalArgs Optional<Double> base) {
+				if (base.isPresent()) {
+					return Math.log(v) / Math.log(base.get());
+				} else {
+					return Math.log10(v);
+				}
+			}
+		});
+
+		result.setGlobalSymbol("sgn", new SimpleTypedFunction(domain) {
+			@Variant
+			public BigInteger sgn(@DispatchArg(extra = { Boolean.class }) BigInteger v) {
+				return BigInteger.valueOf(v.signum());
+			}
+
+			@Variant
+			public Double sgn(@DispatchArg Double v) {
+				return Math.signum(v);
+			}
+		});
+
+		result.setGlobalSymbol("rad", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double rad(Double v) {
+				return Math.toRadians(v);
+			}
+		});
+
+		result.setGlobalSymbol("deg", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double deg(Double v) {
+				return Math.toDegrees(v);
+			}
+		});
+
+		result.setGlobalSymbol("modpow", new SimpleTypedFunction(domain) {
+			@Variant
+			public BigInteger modpow(BigInteger v, BigInteger exp, BigInteger mod) {
+				return v.modPow(exp, mod);
+			}
+		});
+
+		result.setGlobalSymbol("gcd", new SimpleTypedFunction(domain) {
+			@Variant
+			public BigInteger gcd(BigInteger v1, BigInteger v2) {
+				return v1.gcd(v2);
 			}
 		});
 
