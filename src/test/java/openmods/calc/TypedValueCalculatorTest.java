@@ -367,15 +367,24 @@ public class TypedValueCalculatorTest {
 		infix("isobject(root)").expectResult(b(true)).expectEmptyStack();
 		infix("root.path").expectResult(s("")).expectEmptyStack();
 
+		prefix("(== (type root) 'object')").expectResult(b(true)).expectEmptyStack();
+		prefix("(isobject root)").expectResult(b(true)).expectEmptyStack();
+		prefix("(. root path)").expectResult(s("")).expectEmptyStack();
+
 		infix("isobject(root.a)").expectResult(b(true)).expectEmptyStack();
 		infix("root.a.path").expectResult(s("a")).expectEmptyStack();
+		prefix("(. root a path)").expectResult(s("a")).expectEmptyStack();
 
 		infix("isobject(root.a.b)").expectResult(b(true)).expectEmptyStack();
 		infix("root.a.b.path").expectResult(s("a/b")).expectEmptyStack();
 
 		infix("root.'a'.path").expectResult(s("a")).expectEmptyStack();
+		prefix("(. root 'a' path)").expectResult(s("a")).expectEmptyStack();
+
 		infix("root.('a').path").expectResult(s("a")).expectEmptyStack();
+
 		infix("(root.a).b.path").expectResult(s("a/b")).expectEmptyStack();
+		prefix("(. (. root a) b path)").expectResult(s("a/b")).expectEmptyStack();
 	}
 
 	@Test
