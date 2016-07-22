@@ -1,11 +1,13 @@
 package openmods.calc.types.multi;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import java.lang.annotation.Annotation;
@@ -19,6 +21,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +104,14 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 	}
 
 	public static class Builder {
+		// we want variants with "longer" dispatch list to be matched first
+		private static final Ordering<TypeVariant> VARIANT_ORDERING = Ordering.natural().reverse().onResultOf(new Function<TypeVariant, Integer>() {
+			@Override
+			public Integer apply(TypeVariant input) {
+				return input.lastDispatchArg;
+			}
+		});
+
 		private final TypeDomain domain;
 
 		private final List<Pair<Object, Method>> variants = Lists.newArrayList();
@@ -144,6 +155,7 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 				return createSingleFunction(variants.get(0));
 			} else {
 				verifyVariants(variants);
+				Collections.sort(variants, VARIANT_ORDERING);
 				final Optional<Integer> mandatoryArgNum = calculateMandatoryArgNum(variants);
 				return createMultiFunction(variants, mandatoryArgNum);
 			}
@@ -355,6 +367,8 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 
 		private final int mandatoryArgNum;
 
+		private final int lastDispatchArg;
+
 		public TypeVariant(TypeDomain domain, Object target, Method method, Map<Integer, DispatchArgMatcher> dispatchArgMatchers, List<ArgConverter> argConverters, int mandatoryArgNum) {
 			this.domain = domain;
 			this.target = target;
@@ -362,6 +376,7 @@ public abstract class TypedFunction implements ISymbol<TypedValue> {
 			this.dispatchArgMatchers = ImmutableMap.copyOf(dispatchArgMatchers);
 			this.argConverters = argConverters;
 			this.mandatoryArgNum = mandatoryArgNum;
+			this.lastDispatchArg = dispatchArgMatchers.isEmpty()? -1 : Ordering.natural().max(dispatchArgMatchers.keySet());
 		}
 
 		public boolean isMatchAmbigous(TypeVariant other) {
