@@ -1115,6 +1115,18 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			}
 		});
 
+		result.setGlobalSymbol("conj", new SimpleTypedFunction(domain) {
+			@Variant
+			public Complex conj(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
+				return Complex.real(v);
+			}
+
+			@Variant
+			public Complex conj(@DispatchArg Complex v) {
+				return v.conj();
+			}
+		});
+
 		return result;
 	}
 }
