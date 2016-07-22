@@ -37,7 +37,7 @@ public abstract class BinaryOperator<E> extends Operator<E> {
 		this(id, precendence, DEFAULT_ASSOCIATIVITY);
 	}
 
-	protected abstract E execute(E left, E right);
+	public abstract E execute(E left, E right);
 
 	@Override
 	public final void execute(ICalculatorFrame<E> frame) {

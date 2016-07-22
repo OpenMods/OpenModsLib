@@ -14,6 +14,7 @@ import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Constant;
 import openmods.calc.GenericFunctions;
+import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.IExecutable;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryFunction;
@@ -324,7 +325,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		final OperatorDictionary<TypedValue> operators = new OperatorDictionary<TypedValue>();
 
 		// arithmetic
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("+", MAX_PRIO - 2)
+		final BinaryOperator<TypedValue> addOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("+", MAX_PRIO - 2)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
 					@Override
 					public BigInteger apply(BigInteger left, BigInteger right) {
@@ -356,11 +357,11 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 						return BigInteger.valueOf((left? 1 : 0) + (right? 1 : 0));
 					}
 				})
-				.build(domain));
+				.build(domain)).unwrap();
 
 		operators.registerUnaryOperator(new UnaryOperator<TypedValue>("+") {
 			@Override
-			protected TypedValue execute(TypedValue value) {
+			public TypedValue execute(TypedValue value) {
 				Preconditions.checkState(NUMBER_TYPES.contains(value.type), "Not a number: %s", value);
 				return value;
 			}
@@ -431,7 +432,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 				})
 				.build(domain)).setDefault();
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("/", MAX_PRIO - 1)
+		final BinaryOperator<TypedValue> divideOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("/", MAX_PRIO - 1)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Double, Double>() {
 					@Override
 					public Double apply(Double left, Double right) {
@@ -456,7 +457,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 						return (left? 1.0 : 0.0) / (right? 1.0 : 0.0);
 					}
 				})
-				.build(domain));
+				.build(domain)).unwrap();
 
 		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("%", MAX_PRIO - 1)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
@@ -526,7 +527,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 		operators.registerUnaryOperator(new UnaryOperator<TypedValue>("!") {
 			@Override
-			protected TypedValue execute(TypedValue value) {
+			public TypedValue execute(TypedValue value) {
 				final Optional<Boolean> isTruthy = value.isTruthy();
 				Preconditions.checkState(isTruthy.isPresent(), "Can't determine truth value for %s", value);
 				return value.domain.create(Boolean.class, !isTruthy.get());
@@ -549,7 +550,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 		operators.registerBinaryOperator(new BinaryOperator<TypedValue>("^^", MAX_PRIO - 6) {
 			@Override
-			protected TypedValue execute(TypedValue left, TypedValue right) {
+			public TypedValue execute(TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
 				final Optional<Boolean> isLeftTruthy = left.isTruthy();
 				Preconditions.checkState(isLeftTruthy.isPresent(), "Can't determine truth value for %s", left);
@@ -654,19 +655,19 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 		// comparision
 
-		operators.registerBinaryOperator(createCompareOperator(domain, "<", MAX_PRIO - 5, new CompareResultInterpreter() {
+		final BinaryOperator<TypedValue> ltOperator = operators.registerBinaryOperator(createCompareOperator(domain, "<", MAX_PRIO - 5, new CompareResultInterpreter() {
 			@Override
 			public boolean interpret(int value) {
 				return value < 0;
 			}
-		}));
+		})).unwrap();
 
-		operators.registerBinaryOperator(createCompareOperator(domain, ">", MAX_PRIO - 5, new CompareResultInterpreter() {
+		final BinaryOperator<TypedValue> gtOperator = operators.registerBinaryOperator(createCompareOperator(domain, ">", MAX_PRIO - 5, new CompareResultInterpreter() {
 			@Override
 			public boolean interpret(int value) {
 				return value > 0;
 			}
-		}));
+		})).unwrap();
 
 		operators.registerBinaryOperator(createEqualsOperator(domain, "==", MAX_PRIO - 5, new EqualsResultInterpreter() {
 			@Override
@@ -1179,6 +1180,40 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			public Complex conj(@DispatchArg Complex v) {
 				return v.conj();
 			}
+		});
+
+		result.setGlobalSymbol("min", new AccumulatorFunction<TypedValue>(nullValue) {
+			@Override
+			protected TypedValue accumulate(TypedValue result, TypedValue value) {
+				return ltOperator.execute(result, value).value == Boolean.TRUE? result : value;
+			}
+		});
+
+		result.setGlobalSymbol("max", new AccumulatorFunction<TypedValue>(nullValue) {
+			@Override
+			protected TypedValue accumulate(TypedValue result, TypedValue value) {
+				return gtOperator.execute(result, value).value == Boolean.TRUE? result : value;
+			}
+		});
+
+		result.setGlobalSymbol("sum", new AccumulatorFunction<TypedValue>(nullValue) {
+			@Override
+			protected TypedValue accumulate(TypedValue result, TypedValue value) {
+				return addOperator.execute(result, value);
+			}
+		});
+
+		result.setGlobalSymbol("avg", new AccumulatorFunction<TypedValue>(nullValue) {
+			@Override
+			protected TypedValue accumulate(TypedValue result, TypedValue value) {
+				return addOperator.execute(result, value);
+			}
+
+			@Override
+			protected TypedValue process(TypedValue result, int argCount) {
+				return divideOperator.execute(result, domain.create(BigInteger.class, BigInteger.valueOf(argCount)));
+			}
+
 		});
 
 		return result;

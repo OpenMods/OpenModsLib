@@ -80,11 +80,23 @@ public class TypedValueCalculatorTest {
 		prefix("(/ 10 2)").expectResult(d(5.0)).expectEmptyStack();
 		prefix("(** 2 5)").expectResult(i(32)).expectEmptyStack();
 		prefix("(| 0b010 0b101)").expectResult(i(7)).expectEmptyStack();
+	}
 
-		// TODO once functions are done
-		// prefix("(max 1)").expectResult(i(1)).expectEmptyStack();
-		// prefix("(max 1 2)").expectResult(i(2)).expectEmptyStack();
-		// prefix("(max 1 2 3)").expectResult(i(3)).expectEmptyStack();
+	@Test
+	public void testPrefixFunctions() {
+		prefix("(max 1)").expectResult(i(1)).expectEmptyStack();
+		prefix("(max 1 2)").expectResult(i(2)).expectEmptyStack();
+		prefix("(max 1 2 3)").expectResult(i(3)).expectEmptyStack();
+
+		prefix("(max 1 2.0 3)").expectResult(i(3)).expectEmptyStack();
+		prefix("(max true 2 3.0)").expectResult(d(3)).expectEmptyStack();
+
+		prefix("(min true 2 3.0)").expectResult(b(true)).expectEmptyStack();
+
+		prefix("(sum 1 2.0 3)").expectResult(d(6.0)).expectEmptyStack();
+		prefix("(sum 'a' 'b' 'c')").expectResult(s("abc")).expectEmptyStack();
+
+		prefix("(avg 1 2 3)").expectResult(d(2.0)).expectEmptyStack();
 	}
 
 	@Test
@@ -360,10 +372,21 @@ public class TypedValueCalculatorTest {
 
 		infix("isobject(root.a.b)").expectResult(b(true)).expectEmptyStack();
 		infix("root.a.b.path").expectResult(s("a/b")).expectEmptyStack();
-		
+
 		infix("root.'a'.path").expectResult(s("a")).expectEmptyStack();
 		infix("root.('a').path").expectResult(s("a")).expectEmptyStack();
 		infix("(root.a).b.path").expectResult(s("a/b")).expectEmptyStack();
 	}
 
+	@Test
+	public void testInfixFunctions() {
+		infix("max(true, 2, 3.0)").expectResult(d(3)).expectEmptyStack();
+
+		infix("min(true, 2, 3.0)").expectResult(b(true)).expectEmptyStack();
+
+		infix("sum(1, 2.0, 3)").expectResult(d(6.0)).expectEmptyStack();
+		infix("sum('a', 'b', 'c')").expectResult(s("abc")).expectEmptyStack();
+
+		infix("avg(1, 2, 3)").expectResult(d(2.0)).expectEmptyStack();
+	}
 }

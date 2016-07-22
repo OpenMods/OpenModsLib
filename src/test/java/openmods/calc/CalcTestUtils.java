@@ -126,7 +126,7 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		protected E execute(E left, E right) {
+		public E execute(E left, E right) {
 			return null;
 		}
 	}
@@ -137,7 +137,7 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		protected E execute(E value) {
+		public E execute(E value) {
 			return null;
 		}
 	}

@@ -6,10 +6,9 @@ public abstract class UnaryOperator<E> extends Operator<E> {
 
 	public UnaryOperator(String id) {
 		super(id);
-		// TODO Auto-generated constructor stub
 	}
 
-	protected abstract E execute(E value);
+	public abstract E execute(E value);
 
 	@Override
 	public final void execute(ICalculatorFrame<E> frame) {

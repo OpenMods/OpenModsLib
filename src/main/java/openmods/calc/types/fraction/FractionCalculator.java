@@ -44,49 +44,49 @@ public class FractionCalculator extends Calculator<Fraction> {
 
 		operators.registerUnaryOperator(new UnaryOperator<Fraction>("neg") {
 			@Override
-			protected Fraction execute(Fraction value) {
+			public Fraction execute(Fraction value) {
 				return value.negate();
 			}
 		});
 
 		operators.registerBinaryOperator(new BinaryOperator<Fraction>("+", MAX_PRIO - 4) {
 			@Override
-			protected Fraction execute(Fraction left, Fraction right) {
+			public Fraction execute(Fraction left, Fraction right) {
 				return left.add(right);
 			}
 		});
 
 		operators.registerUnaryOperator(new UnaryOperator<Fraction>("+") {
 			@Override
-			protected Fraction execute(Fraction value) {
+			public Fraction execute(Fraction value) {
 				return value;
 			}
 		});
 
 		operators.registerBinaryOperator(new BinaryOperator<Fraction>("-", MAX_PRIO - 4) {
 			@Override
-			protected Fraction execute(Fraction left, Fraction right) {
+			public Fraction execute(Fraction left, Fraction right) {
 				return left.subtract(right);
 			}
 		});
 
 		operators.registerUnaryOperator(new UnaryOperator<Fraction>("-") {
 			@Override
-			protected Fraction execute(Fraction value) {
+			public Fraction execute(Fraction value) {
 				return value.negate();
 			}
 		});
 
 		operators.registerBinaryOperator(new BinaryOperator<Fraction>("*", MAX_PRIO - 3) {
 			@Override
-			protected Fraction execute(Fraction left, Fraction right) {
+			public Fraction execute(Fraction left, Fraction right) {
 				return left.multiplyBy(right);
 			}
 		}).setDefault();
 
 		operators.registerBinaryOperator(new BinaryOperator<Fraction>("/", MAX_PRIO - 3) {
 			@Override
-			protected Fraction execute(Fraction left, Fraction right) {
+			public Fraction execute(Fraction left, Fraction right) {
 				return left.divideBy(right);
 			}
 		});

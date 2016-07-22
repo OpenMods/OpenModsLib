@@ -145,7 +145,7 @@ public class TypedUnaryOperator extends UnaryOperator<TypedValue> {
 	}
 
 	@Override
-	protected TypedValue execute(TypedValue value) {
+	public TypedValue execute(TypedValue value) {
 		Preconditions.checkState(value.domain == this.domain, "Value belongs to different domain: %s", value);
 		final IGenericOperation op = operations.get(value.type);
 		if (op != null) return op.apply(value.domain, value);

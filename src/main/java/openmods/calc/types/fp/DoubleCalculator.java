@@ -51,63 +51,63 @@ public class DoubleCalculator extends Calculator<Double> {
 
 		operators.registerUnaryOperator(new UnaryOperator<Double>("neg") {
 			@Override
-			protected Double execute(Double value) {
+			public Double execute(Double value) {
 				return -value;
 			}
 		});
 
 		operators.registerBinaryOperator(new BinaryOperator<Double>("+", MAX_PRIO - 4) {
 			@Override
-			protected Double execute(Double left, Double right) {
+			public Double execute(Double left, Double right) {
 				return left + right;
 			}
 		});
 
 		operators.registerUnaryOperator(new UnaryOperator<Double>("+") {
 			@Override
-			protected Double execute(Double value) {
+			public Double execute(Double value) {
 				return +value;
 			}
 		});
 
 		operators.registerBinaryOperator(new BinaryOperator<Double>("-", MAX_PRIO - 4) {
 			@Override
-			protected Double execute(Double left, Double right) {
+			public Double execute(Double left, Double right) {
 				return left - right;
 			}
 		});
 
 		operators.registerUnaryOperator(new UnaryOperator<Double>("-") {
 			@Override
-			protected Double execute(Double value) {
+			public Double execute(Double value) {
 				return -value;
 			}
 		});
 
 		operators.registerBinaryOperator(new BinaryOperator<Double>("*", MAX_PRIO - 3) {
 			@Override
-			protected Double execute(Double left, Double right) {
+			public Double execute(Double left, Double right) {
 				return left * right;
 			}
 		}).setDefault();
 
 		operators.registerBinaryOperator(new BinaryOperator<Double>("/", MAX_PRIO - 3) {
 			@Override
-			protected Double execute(Double left, Double right) {
+			public Double execute(Double left, Double right) {
 				return left / right;
 			}
 		});
 
 		operators.registerBinaryOperator(new BinaryOperator<Double>("%", MAX_PRIO - 3) {
 			@Override
-			protected Double execute(Double left, Double right) {
+			public Double execute(Double left, Double right) {
 				return left % right;
 			}
 		});
 
 		operators.registerBinaryOperator(new BinaryOperator<Double>("^", MAX_PRIO - 2) {
 			@Override
-			protected Double execute(Double left, Double right) {
+			public Double execute(Double left, Double right) {
 				return Math.pow(left, right);
 			}
 		});

@@ -260,7 +260,7 @@ public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
 	}
 
 	@Override
-	protected TypedValue execute(TypedValue left, TypedValue right) {
+	public TypedValue execute(TypedValue left, TypedValue right) {
 		Preconditions.checkArgument(left.domain == this.domain, "Left argument belongs to different domain: %s", left);
 		Preconditions.checkArgument(right.domain == this.domain, "Right argument belongs different domain: %s", right);
 

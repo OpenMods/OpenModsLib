@@ -7,6 +7,7 @@ import openmods.utils.Stack;
 
 public class GenericFunctions {
 
+	// WARNING: this assumes 'accumulate' operation is associative!
 	public abstract static class AccumulatorFunction<E> implements ISymbol<E> {
 		private final E nullValue;
 
@@ -28,7 +29,7 @@ public class GenericFunctions {
 
 				for (int i = 1; i < args; i++) {
 					final E value = stack.pop();
-					result = accumulate(result, value);
+					result = accumulate(value, result);
 				}
 
 				stack.push(process(result, args));

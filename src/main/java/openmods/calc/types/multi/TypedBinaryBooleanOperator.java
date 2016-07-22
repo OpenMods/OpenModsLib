@@ -15,7 +15,7 @@ public abstract class TypedBinaryBooleanOperator extends BinaryOperator<TypedVal
 	}
 
 	@Override
-	protected TypedValue execute(TypedValue left, TypedValue right) {
+	public TypedValue execute(TypedValue left, TypedValue right) {
 		Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
 		final Optional<Boolean> isTruthy = left.isTruthy();
 		Preconditions.checkState(isTruthy.isPresent(), "Can't determine truth value for %s", left);
