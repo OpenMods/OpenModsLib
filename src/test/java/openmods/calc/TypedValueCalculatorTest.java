@@ -182,6 +182,17 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testEquals() {
+		infix("2 == 2").expectResult(b(true)).expectEmptyStack();
+		infix("null == null").expectResult(b(true)).expectEmptyStack();
+		infix("2 == null").expectResult(b(false)).expectEmptyStack();
+
+		infix("2 != null").expectResult(b(true)).expectEmptyStack();
+		infix("null != 2").expectResult(b(true)).expectEmptyStack();
+		infix("null != null").expectResult(b(false)).expectEmptyStack();
+	}
+
+	@Test
 	public void testBasicOrdering() {
 		infix("1 + 2 - 3").expectResult(i(0)).expectEmptyStack();
 

@@ -158,23 +158,14 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		public boolean interpret(boolean isEqual);
 	}
 
-	private static <T> TypedBinaryOperator.ISimpleCoercedOperation<T, Boolean> createEqualsOperator(final EqualsResultInterpreter interpreter) {
-		return new TypedBinaryOperator.ISimpleCoercedOperation<T, Boolean>() {
-			@Override
-			public Boolean apply(T left, T right) {
-				return interpreter.interpret(left.equals(right));
-			}
-		};
-	}
-
 	private static TypedBinaryOperator createEqualsOperator(TypeDomain domain, String id, int priority, final EqualsResultInterpreter equalsTranslator) {
 		return new TypedBinaryOperator.Builder(id, priority)
-				.registerOperation(BigInteger.class, Boolean.class, TypedValueCalculator.<BigInteger> createEqualsOperator(equalsTranslator))
-				.registerOperation(Double.class, Boolean.class, TypedValueCalculator.<Double> createEqualsOperator(equalsTranslator))
-				.registerOperation(String.class, Boolean.class, TypedValueCalculator.<String> createEqualsOperator(equalsTranslator))
-				.registerOperation(Boolean.class, Boolean.class, TypedValueCalculator.<Boolean> createEqualsOperator(equalsTranslator))
-				.registerOperation(Complex.class, Boolean.class, TypedValueCalculator.<Complex> createEqualsOperator(equalsTranslator))
-				.registerOperation(UnitType.class, Boolean.class, TypedValueCalculator.<UnitType> createEqualsOperator(equalsTranslator))
+				.setDefaultOperation(new TypedBinaryOperator.IDefaultOperation() {
+					@Override
+					public Optional<TypedValue> apply(TypeDomain domain, TypedValue left, TypedValue right) {
+						return Optional.of(domain.create(Boolean.class, equalsTranslator.interpret(left.equals(right))));
+					}
+				})
 				.build(domain);
 	}
 
