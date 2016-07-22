@@ -26,6 +26,10 @@ public class OperatorDictionary<E> {
 			defaultOperator = op;
 			return this;
 		}
+
+		public BinaryOperator<E> unwrap() {
+			return op;
+		}
 	}
 
 	public BinaryOperatorRegistration registerBinaryOperator(BinaryOperator<E> operator) {

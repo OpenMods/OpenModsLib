@@ -14,13 +14,17 @@ import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Constant;
 import openmods.calc.GenericFunctions;
+import openmods.calc.IExecutable;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
+import openmods.calc.Value;
 import openmods.calc.parsing.DefaultExprNodeFactory;
+import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.StringEscaper;
+import openmods.calc.parsing.SymbolNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.types.bigint.BigIntPrinter;
 import openmods.calc.types.fp.DoublePrinter;
@@ -89,6 +93,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		else if (value.type == String.class) contents = printString(value.unwrap(String.class));
 		else if (value.type == Boolean.class) contents = printBoolean(value.unwrap(Boolean.class));
 		else if (value.type == Complex.class) contents = printComplex(value.unwrap(Complex.class));
+		else if (value.type == IComposite.class) contents = printComposite(value.unwrap(IComposite.class));
 		else if (value.type == UnitType.class) contents = SYMBOL_NULL;
 		else contents = value.value.toString();
 
@@ -121,6 +126,10 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 	private String printComplex(Complex value) {
 		return printDouble(value.re) + "+" + printDouble(value.im) + "I";
+	}
+
+	private static String printComposite(IComposite value) {
+		return "<" + value.subtype() + ":" + System.identityHashCode(value) + " " + value.toString() + ">";
 	}
 
 	private static final Function<BigInteger, Integer> INT_UNWRAP = new Function<BigInteger, Integer>() {
@@ -211,6 +220,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		domain.registerType(Boolean.class, "bool");
 		domain.registerType(String.class, "str");
 		domain.registerType(Complex.class, "complex");
+		domain.registerType(IComposite.class, "object");
 
 		domain.registerConverter(new IConverter<Boolean, BigInteger>() {
 			@Override
@@ -299,6 +309,13 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			@Override
 			public boolean isTruthy(String value) {
 				return !value.isEmpty();
+			}
+		});
+
+		domain.registerTruthEvaluator(new ITruthEvaluator<IComposite>() {
+			@Override
+			public boolean isTruthy(IComposite value) {
+				return true;
 			}
 		});
 
@@ -679,6 +696,15 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			}
 		}));
 
+		final BinaryOperator<TypedValue> dotOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder(".", MAX_PRIO + 1)
+				.registerOperation(new TypedBinaryOperator.IVariantOperation<IComposite, String>() {
+					@Override
+					public TypedValue apply(TypeDomain domain, IComposite left, String right) {
+						return left.get(domain, right);
+					}
+				})
+				.build(domain)).unwrap();
+
 		{
 			class SpaceshipOperation<T extends Comparable<T>> implements TypedBinaryOperator.ICoercedOperation<T> {
 				@Override
@@ -696,7 +722,34 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		}
 
 		final TypedValueParser valueParser = new TypedValueParser(domain);
-		final IExprNodeFactory<TypedValue> exprNodeFactory = new DefaultExprNodeFactory<TypedValue>();
+		final IExprNodeFactory<TypedValue> exprNodeFactory = new DefaultExprNodeFactory<TypedValue>() {
+
+			@Override
+			public IExprNode<TypedValue> createBinaryOpNode(BinaryOperator<TypedValue> op, final IExprNode<TypedValue> leftChild, final IExprNode<TypedValue> rightChild) {
+				if (op == dotOperator) return new IExprNode<TypedValue>() {
+					@Override
+					public void flatten(List<IExecutable<TypedValue>> output) {
+						leftChild.flatten(output);
+						if (rightChild instanceof SymbolNode) {
+							final SymbolNode<TypedValue> symbolNode = (SymbolNode<TypedValue>)rightChild;
+							Preconditions.checkState(symbolNode.numberOfChildren() == 0); // temporary
+							output.add(Value.create(domain.create(String.class, symbolNode.symbol())));
+						} else {
+							rightChild.flatten(output);
+						}
+						output.add(dotOperator);
+					}
+
+					@Override
+					public int numberOfChildren() {
+						return 2;
+					}
+				};
+
+				return super.createBinaryOpNode(op, leftChild, rightChild);
+			}
+
+		};
 		final TypedValueCalculator result = new TypedValueCalculator(valueParser, nullValue, operators, exprNodeFactory);
 
 		GenericFunctions.createStackManipulationFunctions(result);
@@ -732,7 +785,8 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		result.setGlobalSymbol("isfloat", new PredicateIsType(Double.class));
 		result.setGlobalSymbol("isnull", new PredicateIsType(UnitType.class));
 		result.setGlobalSymbol("isstr", new PredicateIsType(String.class));
-		result.setGlobalSymbol("iscomplex", new PredicateIsType(String.class));
+		result.setGlobalSymbol("iscomplex", new PredicateIsType(Complex.class));
+		result.setGlobalSymbol("isobject", new PredicateIsType(IComposite.class));
 
 		result.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
 			@Override

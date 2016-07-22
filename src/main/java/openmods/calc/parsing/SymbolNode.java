@@ -33,6 +33,10 @@ public class SymbolNode<E> implements IExprNode<E> {
 		return "<s: " + symbol + " " + args + ">";
 	}
 
+	public String symbol() {
+		return symbol;
+	}
+
 	@Override
 	public int numberOfChildren() {
 		return args.size();

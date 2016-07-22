@@ -1,8 +1,12 @@
 package openmods.calc;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
+import java.util.List;
 import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.Calculator.ExprType;
+import openmods.calc.types.multi.IComposite;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedBinaryOperator;
 import openmods.calc.types.multi.TypedFunction;
@@ -229,6 +233,10 @@ public class TypedValueCalculatorTest {
 		infix("isint('hello')").expectResult(b(false)).expectEmptyStack();
 		infix("isint('I')").expectResult(b(false)).expectEmptyStack();
 
+		infix("iscomplex(1)").expectResult(b(false)).expectEmptyStack();
+		infix("iscomplex(I)").expectResult(b(true)).expectEmptyStack();
+		infix("iscomplex(1 + I)").expectResult(b(true)).expectEmptyStack();
+
 		infix("isnumber(null)").expectResult(b(false)).expectEmptyStack();
 		infix("isnumber(true)").expectResult(b(true)).expectEmptyStack();
 		infix("isnumber(5)").expectResult(b(true)).expectEmptyStack();
@@ -316,4 +324,46 @@ public class TypedValueCalculatorTest {
 		infix("log(E, E)").expectResult(d(1)).expectEmptyStack();
 		infix("log(2, E) == ln(2)").expectResult(b(true)).expectEmptyStack();
 	}
+
+	@Test
+	public void testDotOperator() {
+		class TestComposite implements IComposite {
+			private final List<String> path;
+
+			public TestComposite() {
+				this.path = ImmutableList.of();
+			}
+
+			public TestComposite(List<String> parentPath, String elem) {
+				this.path = ImmutableList.<String> builder().addAll(parentPath).add(elem).build();
+			}
+
+			@Override
+			public TypedValue get(TypeDomain domain, String component) {
+				if (component.equals("path")) return domain.create(String.class, Joiner.on("/").join(path));
+				else return domain.create(IComposite.class, new TestComposite(path, component));
+			}
+
+			@Override
+			public String subtype() {
+				return "nested:" + path.size();
+			}
+		}
+
+		sut.setGlobalSymbol("root", Constant.create(sut.nullValue().domain.create(IComposite.class, new TestComposite())));
+		infix("type(root)=='object'").expectResult(b(true)).expectEmptyStack();
+		infix("isobject(root)").expectResult(b(true)).expectEmptyStack();
+		infix("root.path").expectResult(s("")).expectEmptyStack();
+
+		infix("isobject(root.a)").expectResult(b(true)).expectEmptyStack();
+		infix("root.a.path").expectResult(s("a")).expectEmptyStack();
+
+		infix("isobject(root.a.b)").expectResult(b(true)).expectEmptyStack();
+		infix("root.a.b.path").expectResult(s("a/b")).expectEmptyStack();
+		
+		infix("root.'a'.path").expectResult(s("a")).expectEmptyStack();
+		infix("root.('a').path").expectResult(s("a")).expectEmptyStack();
+		infix("(root.a).b.path").expectResult(s("a/b")).expectEmptyStack();
+	}
+
 }
