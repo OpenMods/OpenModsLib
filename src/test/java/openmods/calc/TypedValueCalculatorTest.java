@@ -9,6 +9,7 @@ import openmods.calc.types.multi.TypedFunction;
 import openmods.calc.types.multi.TypedUnaryOperator;
 import openmods.calc.types.multi.TypedValue;
 import openmods.calc.types.multi.TypedValueCalculator;
+import openmods.math.Complex;
 import openmods.reflection.MethodAccess;
 import openmods.reflection.TypeVariableHolderHandler;
 import org.junit.Test;
@@ -61,6 +62,10 @@ public class TypedValueCalculatorTest {
 	private final TypedValue TRUE = b(true);
 
 	private final TypedValue FALSE = b(false);
+
+	private TypedValue c(double re, double im) {
+		return domain.create(Complex.class, Complex.cartesian(re, im));
+	}
 
 	@Test
 	public void testBasicPrefix() {
@@ -202,17 +207,23 @@ public class TypedValueCalculatorTest {
 		infix("type(5)").expectResult(s("int")).expectEmptyStack();
 		infix("type(5.0)").expectResult(s("float")).expectEmptyStack();
 		infix("type('a')").expectResult(s("str")).expectEmptyStack();
+		infix("type(I)").expectResult(s("complex")).expectEmptyStack();
+		infix("type(2 + 3I)").expectResult(s("complex")).expectEmptyStack();
+		infix("type(2 + 3*I)").expectResult(s("complex")).expectEmptyStack();
 
 		infix("isint(null)").expectResult(b(false)).expectEmptyStack();
 		infix("isint(true)").expectResult(b(false)).expectEmptyStack();
 		infix("isint(5)").expectResult(b(true)).expectEmptyStack();
 		infix("isint(5.0)").expectResult(b(false)).expectEmptyStack();
 		infix("isint('hello')").expectResult(b(false)).expectEmptyStack();
+		infix("isint('I')").expectResult(b(false)).expectEmptyStack();
 
 		infix("isnumber(null)").expectResult(b(false)).expectEmptyStack();
 		infix("isnumber(true)").expectResult(b(true)).expectEmptyStack();
 		infix("isnumber(5)").expectResult(b(true)).expectEmptyStack();
 		infix("isnumber(5.0)").expectResult(b(true)).expectEmptyStack();
+		infix("isnumber(I)").expectResult(b(true)).expectEmptyStack();
+		infix("isnumber(3 + 4I)").expectResult(b(true)).expectEmptyStack();
 		infix("isnumber('hello')").expectResult(b(false)).expectEmptyStack();
 
 		infix("int(true)").expectResult(i(1)).expectEmptyStack();
@@ -234,10 +245,14 @@ public class TypedValueCalculatorTest {
 		infix("number('6.1')").expectResult(d(6.1)).expectEmptyStack();
 		infix("number('29A', 16)").expectResult(i(666)).expectEmptyStack();
 		infix("number('29A.1', 16)").expectResult(d(666.0625)).expectEmptyStack();
+		infix("number(3I)").expectResult(c(0, 3)).expectEmptyStack();
+		infix("number(3 + 4I)").expectResult(c(3, 4)).expectEmptyStack();
 
 		infix("bool(true)").expectResult(b(true)).expectEmptyStack();
 		infix("bool(5)").expectResult(b(true)).expectEmptyStack();
 		infix("bool(0)").expectResult(b(false)).expectEmptyStack();
+		infix("bool(I)").expectResult(b(true)).expectEmptyStack();
+		infix("bool(0I)").expectResult(b(false)).expectEmptyStack();
 		infix("bool('')").expectResult(b(false)).expectEmptyStack();
 		infix("bool('a')").expectResult(b(true)).expectEmptyStack();
 		infix("bool(null)").expectResult(b(false)).expectEmptyStack();
@@ -247,6 +262,8 @@ public class TypedValueCalculatorTest {
 		infix("str(5)").expectResult(s("5")).expectEmptyStack();
 		infix("str(5.2)").expectResult(s("5.2")).expectEmptyStack();
 		infix("str('aaa')").expectResult(s("aaa")).expectEmptyStack();
+		infix("str(I)").expectResult(s("0.0+1.0I")).expectEmptyStack();
+		infix("str(3 + 4I)").expectResult(s("3.0+4.0I")).expectEmptyStack();
 
 		infix("parse('\"aaa\"')").expectResult(s("aaa")).expectEmptyStack();
 		infix("parse('0x29A')").expectResult(i(666)).expectEmptyStack();
@@ -273,9 +290,16 @@ public class TypedValueCalculatorTest {
 		infix("abs(+2)").expectResult(i(2)).expectEmptyStack();
 		infix("abs(2.0)").expectResult(d(2)).expectEmptyStack();
 		infix("abs(-2.4)").expectResult(d(2.4)).expectEmptyStack();
+		infix("abs(3+4I)").expectResult(d(5)).expectEmptyStack();
+
+		infix("exp(true)").expectResult(d(Math.E)).expectEmptyStack();
+		infix("exp(1)").expectResult(d(Math.E)).expectEmptyStack();
+
+		infix("ln(I)").expectResult(c(0, Math.PI / 2)).expectEmptyStack();
 
 		infix("log(true)").expectResult(d(0)).expectEmptyStack();
 		infix("log(1)").expectResult(d(0)).expectEmptyStack();
+		infix("log(1.0)").expectResult(d(0)).expectEmptyStack();
 		infix("log(10)").expectResult(d(1)).expectEmptyStack();
 		infix("log(100)").expectResult(d(2)).expectEmptyStack();
 		infix("log(E, E)").expectResult(d(1)).expectEmptyStack();

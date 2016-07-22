@@ -32,6 +32,7 @@ import openmods.calc.types.multi.TypedFunction.RawDispatchArg;
 import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;
 import openmods.config.simpler.Configurable;
+import openmods.math.Complex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -41,7 +42,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 	private static final String SYMBOL_FALSE = "true";
 	private static final String SYMBOL_TRUE = "false";
 
-	public static class UnitType implements Comparable<UnitType> {
+	public static class UnitType {
 		public static final UnitType INSTANCE = new UnitType();
 
 		private UnitType() {}
@@ -49,11 +50,6 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		@Override
 		public String toString() {
 			return "<null>";
-		}
-
-		@Override
-		public int compareTo(UnitType o) {
-			return 0; // always equal
 		}
 	}
 
@@ -92,6 +88,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		else if (value.type == BigInteger.class) contents = printBigInteger(value.unwrap(BigInteger.class));
 		else if (value.type == String.class) contents = printString(value.unwrap(String.class));
 		else if (value.type == Boolean.class) contents = printBoolean(value.unwrap(Boolean.class));
+		else if (value.type == Complex.class) contents = printComplex(value.unwrap(Complex.class));
 		else if (value.type == UnitType.class) contents = SYMBOL_NULL;
 		else contents = value.value.toString();
 
@@ -122,6 +119,10 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		}
 	}
 
+	private String printComplex(Complex value) {
+		return printDouble(value.re) + "+" + printDouble(value.im) + "I";
+	}
+
 	private static final Function<BigInteger, Integer> INT_UNWRAP = new Function<BigInteger, Integer>() {
 		@Override
 		public Integer apply(BigInteger input) {
@@ -144,26 +145,36 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		};
 	}
 
-	private interface VariantCompareInterpreter {
-		public TypedValue interpret(TypeDomain domain, int value);
-	}
-
-	private static <T extends Comparable<T>> TypedBinaryOperator.ICoercedOperation<T> createCompareOperation(final VariantCompareInterpreter interpreter) {
-		return new TypedBinaryOperator.ICoercedOperation<T>() {
-			@Override
-			public TypedValue apply(TypeDomain domain, T left, T right) {
-				return interpreter.interpret(domain, left.compareTo(right));
-			}
-		};
-	}
-
 	private static TypedBinaryOperator createCompareOperator(TypeDomain domain, String id, int priority, final CompareResultInterpreter compareTranslator) {
 		return new TypedBinaryOperator.Builder(id, priority)
 				.registerOperation(BigInteger.class, Boolean.class, TypedValueCalculator.<BigInteger> createCompareOperation(compareTranslator))
 				.registerOperation(Double.class, Boolean.class, TypedValueCalculator.<Double> createCompareOperation(compareTranslator))
 				.registerOperation(String.class, Boolean.class, TypedValueCalculator.<String> createCompareOperation(compareTranslator))
 				.registerOperation(Boolean.class, Boolean.class, TypedValueCalculator.<Boolean> createCompareOperation(compareTranslator))
-				.registerOperation(UnitType.class, Boolean.class, TypedValueCalculator.<UnitType> createCompareOperation(compareTranslator))
+				.build(domain);
+	}
+
+	private interface EqualsResultInterpreter {
+		public boolean interpret(boolean isEqual);
+	}
+
+	private static <T> TypedBinaryOperator.ISimpleCoercedOperation<T, Boolean> createEqualsOperator(final EqualsResultInterpreter interpreter) {
+		return new TypedBinaryOperator.ISimpleCoercedOperation<T, Boolean>() {
+			@Override
+			public Boolean apply(T left, T right) {
+				return interpreter.interpret(left.equals(right));
+			}
+		};
+	}
+
+	private static TypedBinaryOperator createEqualsOperator(TypeDomain domain, String id, int priority, final EqualsResultInterpreter equalsTranslator) {
+		return new TypedBinaryOperator.Builder(id, priority)
+				.registerOperation(BigInteger.class, Boolean.class, TypedValueCalculator.<BigInteger> createEqualsOperator(equalsTranslator))
+				.registerOperation(Double.class, Boolean.class, TypedValueCalculator.<Double> createEqualsOperator(equalsTranslator))
+				.registerOperation(String.class, Boolean.class, TypedValueCalculator.<String> createEqualsOperator(equalsTranslator))
+				.registerOperation(Boolean.class, Boolean.class, TypedValueCalculator.<Boolean> createEqualsOperator(equalsTranslator))
+				.registerOperation(Complex.class, Boolean.class, TypedValueCalculator.<Complex> createEqualsOperator(equalsTranslator))
+				.registerOperation(UnitType.class, Boolean.class, TypedValueCalculator.<UnitType> createEqualsOperator(equalsTranslator))
 				.build(domain);
 	}
 
@@ -188,10 +199,17 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 					}
 
 				})
+				.registerOperation(new TypedUnaryOperator.ISimpleOperation<Complex, Complex>() {
+					@Override
+					public Complex apply(Complex value) {
+						return value.negate();
+					}
+
+				})
 				.build(domain);
 	}
 
-	private static final Set<Class<?>> NUMBER_TYPES = ImmutableSet.<Class<?>> of(Double.class, Boolean.class, BigInteger.class);
+	private static final Set<Class<?>> NUMBER_TYPES = ImmutableSet.<Class<?>> of(Double.class, Boolean.class, BigInteger.class, Complex.class);
 
 	public static TypedValueCalculator create() {
 		final TypeDomain domain = new TypeDomain();
@@ -201,13 +219,8 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		domain.registerType(Double.class, "float");
 		domain.registerType(Boolean.class, "bool");
 		domain.registerType(String.class, "str");
+		domain.registerType(Complex.class, "complex");
 
-		domain.registerConverter(new IConverter<BigInteger, Double>() {
-			@Override
-			public Double convert(BigInteger value) {
-				return value.doubleValue();
-			}
-		});
 		domain.registerConverter(new IConverter<Boolean, BigInteger>() {
 			@Override
 			public BigInteger convert(Boolean value) {
@@ -220,10 +233,41 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 				return value? 1.0 : 0.0;
 			}
 		});
+		domain.registerConverter(new IConverter<Boolean, Complex>() {
+			@Override
+			public Complex convert(Boolean value) {
+				return value? Complex.ONE : Complex.ZERO;
+			}
+		});
+
+		domain.registerConverter(new IConverter<BigInteger, Double>() {
+			@Override
+			public Double convert(BigInteger value) {
+				return value.doubleValue();
+			}
+		});
+		domain.registerConverter(new IConverter<BigInteger, Complex>() {
+			@Override
+			public Complex convert(BigInteger value) {
+				return Complex.real(value.doubleValue());
+			}
+		});
+
+		domain.registerConverter(new IConverter<Double, Complex>() {
+			@Override
+			public Complex convert(Double value) {
+				return Complex.real(value.doubleValue());
+			}
+		});
+
+		domain.registerSymmetricCoercionRule(Boolean.class, BigInteger.class, Coercion.TO_RIGHT);
+		domain.registerSymmetricCoercionRule(Boolean.class, Double.class, Coercion.TO_RIGHT);
+		domain.registerSymmetricCoercionRule(Boolean.class, Complex.class, Coercion.TO_RIGHT);
 
 		domain.registerSymmetricCoercionRule(BigInteger.class, Double.class, Coercion.TO_RIGHT);
-		domain.registerSymmetricCoercionRule(Boolean.class, Double.class, Coercion.TO_RIGHT);
-		domain.registerSymmetricCoercionRule(Boolean.class, BigInteger.class, Coercion.TO_RIGHT);
+		domain.registerSymmetricCoercionRule(BigInteger.class, Complex.class, Coercion.TO_RIGHT);
+
+		domain.registerSymmetricCoercionRule(Double.class, Complex.class, Coercion.TO_RIGHT);
 
 		domain.registerTruthEvaluator(new ITruthEvaluator<Boolean>() {
 			@Override
@@ -243,6 +287,13 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			@Override
 			public boolean isTruthy(Double value) {
 				return value != 0;
+			}
+		});
+
+		domain.registerTruthEvaluator(new ITruthEvaluator<Complex>() {
+			@Override
+			public boolean isTruthy(Complex value) {
+				return !value.equals(Complex.ZERO);
 			}
 		});
 
@@ -271,7 +322,14 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 					public BigInteger apply(BigInteger left, BigInteger right) {
 						return left.add(right);
 					}
-				}).registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Double, Double>() {
+				})
+				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Complex, Complex>() {
+					@Override
+					public Complex apply(Complex left, Complex right) {
+						return left.add(right);
+					}
+				})
+				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Double, Double>() {
 					@Override
 					public Double apply(Double left, Double right) {
 						return left + right;
@@ -282,7 +340,8 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 					public String apply(String left, String right) {
 						return left + right;
 					}
-				}).registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
+				})
+				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -294,8 +353,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		operators.registerUnaryOperator(new UnaryOperator<TypedValue>("+") {
 			@Override
 			protected TypedValue execute(TypedValue value) {
-				Preconditions.checkState(Number.class.isAssignableFrom(value.type) || Boolean.class.isAssignableFrom(value.type),
-						"Not a number: %s", value);
+				Preconditions.checkState(NUMBER_TYPES.contains(value.type), "Not a number: %s", value);
 				return value;
 			}
 		});
@@ -306,10 +364,17 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 					public BigInteger apply(BigInteger left, BigInteger right) {
 						return left.subtract(right);
 					}
-				}).registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Double, Double>() {
+				})
+				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Double, Double>() {
 					@Override
 					public Double apply(Double left, Double right) {
 						return left - right;
+					}
+				})
+				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Complex, Complex>() {
+					@Override
+					public Complex apply(Complex left, Complex right) {
+						return left.subtract(right);
 					}
 				})
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
@@ -330,10 +395,17 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 					public BigInteger apply(BigInteger left, BigInteger right) {
 						return left.multiply(right);
 					}
-				}).registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Double, Double>() {
+				})
+				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Double, Double>() {
 					@Override
 					public Double apply(Double left, Double right) {
 						return left * right;
+					}
+				})
+				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Complex, Complex>() {
+					@Override
+					public Complex apply(Complex left, Complex right) {
+						return left.multiply(right);
 					}
 				})
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
@@ -362,6 +434,12 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 					@Override
 					public Double apply(BigInteger left, BigInteger right) {
 						return left.doubleValue() / right.doubleValue();
+					}
+				})
+				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Complex, Complex>() {
+					@Override
+					public Complex apply(Complex left, Complex right) {
+						return left.divide(right);
 					}
 				})
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, Double>() {
@@ -582,17 +660,17 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			}
 		}));
 
-		operators.registerBinaryOperator(createCompareOperator(domain, "==", MAX_PRIO - 5, new CompareResultInterpreter() {
+		operators.registerBinaryOperator(createEqualsOperator(domain, "==", MAX_PRIO - 5, new EqualsResultInterpreter() {
 			@Override
-			public boolean interpret(int value) {
-				return value == 0;
+			public boolean interpret(boolean isEqual) {
+				return isEqual;
 			}
 		}));
 
-		operators.registerBinaryOperator(createCompareOperator(domain, "!=", MAX_PRIO - 5, new CompareResultInterpreter() {
+		operators.registerBinaryOperator(createEqualsOperator(domain, "!=", MAX_PRIO - 5, new EqualsResultInterpreter() {
 			@Override
-			public boolean interpret(int value) {
-				return value != 0;
+			public boolean interpret(boolean isEqual) {
+				return !isEqual;
 			}
 		}));
 
@@ -611,19 +689,18 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		}));
 
 		{
-			final VariantCompareInterpreter compareResultTranslator = new VariantCompareInterpreter() {
+			class SpaceshipOperation<T extends Comparable<T>> implements TypedBinaryOperator.ICoercedOperation<T> {
 				@Override
-				public TypedValue interpret(TypeDomain domain, int value) {
-					return domain.create(BigInteger.class, BigInteger.valueOf(value));
+				public TypedValue apply(TypeDomain domain, T left, T right) {
+					return domain.create(BigInteger.class, BigInteger.valueOf(left.compareTo(right)));
 				}
-			};
+			}
 
 			operators.registerBinaryOperator(new TypedBinaryOperator.Builder("<=>", MAX_PRIO - 5)
-					.registerOperation(BigInteger.class, TypedValueCalculator.<BigInteger> createCompareOperation(compareResultTranslator))
-					.registerOperation(Double.class, TypedValueCalculator.<Double> createCompareOperation(compareResultTranslator))
-					.registerOperation(String.class, TypedValueCalculator.<String> createCompareOperation(compareResultTranslator))
-					.registerOperation(Boolean.class, TypedValueCalculator.<Boolean> createCompareOperation(compareResultTranslator))
-					.registerOperation(UnitType.class, TypedValueCalculator.<UnitType> createCompareOperation(compareResultTranslator))
+					.registerOperation(BigInteger.class, new SpaceshipOperation<BigInteger>())
+					.registerOperation(Double.class, new SpaceshipOperation<Double>())
+					.registerOperation(String.class, new SpaceshipOperation<String>())
+					.registerOperation(Boolean.class, new SpaceshipOperation<Boolean>())
 					.build(domain));
 		}
 
@@ -642,6 +719,8 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		result.setGlobalSymbol("PI", Constant.create(domain.create(Double.class, Math.PI)));
 		result.setGlobalSymbol("NAN", Constant.create(domain.create(Double.class, Double.NaN)));
 		result.setGlobalSymbol("INF", Constant.create(domain.create(Double.class, Double.POSITIVE_INFINITY)));
+
+		result.setGlobalSymbol("I", Constant.create(domain.create(Complex.class, Complex.I)));
 
 		class PredicateIsType extends UnaryFunction<TypedValue> {
 			private final Class<?> cls;
@@ -662,6 +741,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		result.setGlobalSymbol("isfloat", new PredicateIsType(Double.class));
 		result.setGlobalSymbol("isnull", new PredicateIsType(UnitType.class));
 		result.setGlobalSymbol("isstr", new PredicateIsType(String.class));
+		result.setGlobalSymbol("iscomplex", new PredicateIsType(String.class));
 
 		result.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
 			@Override
@@ -729,10 +809,24 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			}
 		});
 
+		result.setGlobalSymbol("complex", new SimpleTypedFunction(domain) {
+			@Variant
+			public Complex convert(Double re, Double im) {
+				return Complex.cartesian(re, im);
+			}
+		});
+
+		result.setGlobalSymbol("polar", new SimpleTypedFunction(domain) {
+			@Variant
+			public Complex convert(Double r, Double phase) {
+				return Complex.polar(r, phase);
+			}
+		});
+
 		result.setGlobalSymbol("number", new SimpleTypedFunction(domain) {
 			@Variant
 			@RawReturn
-			public TypedValue convert(@RawDispatchArg({ Boolean.class, BigInteger.class, Double.class }) TypedValue value) {
+			public TypedValue convert(@RawDispatchArg({ Boolean.class, BigInteger.class, Double.class, Complex.class }) TypedValue value) {
 				return value;
 			}
 
@@ -787,6 +881,11 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			@Variant
 			public Double abs(@DispatchArg Double v) {
 				return Math.abs(v);
+			}
+
+			@Variant
+			public Double abs(@DispatchArg Complex v) {
+				return v.abs();
 			}
 		});
 
@@ -914,10 +1013,27 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			}
 		});
 
+		result.setGlobalSymbol("exp", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double exp(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
+				return Math.exp(v);
+			}
+
+			@Variant
+			public Complex exp(@DispatchArg Complex v) {
+				return v.exp();
+			}
+		});
+
 		result.setGlobalSymbol("ln", new SimpleTypedFunction(domain) {
 			@Variant
-			public Double ln(Double v) {
+			public Double ln(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
 				return Math.log(v);
+			}
+
+			@Variant
+			public Complex ln(@DispatchArg Complex v) {
+				return v.ln();
 			}
 		});
 
@@ -969,6 +1085,42 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			@Variant
 			public BigInteger gcd(BigInteger v1, BigInteger v2) {
 				return v1.gcd(v2);
+			}
+		});
+
+		result.setGlobalSymbol("re", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double re(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
+				return v;
+			}
+
+			@Variant
+			public Double re(@DispatchArg Complex v) {
+				return v.re;
+			}
+		});
+
+		result.setGlobalSymbol("im", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double im(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
+				return 0.0;
+			}
+
+			@Variant
+			public Double im(@DispatchArg Complex v) {
+				return v.im;
+			}
+		});
+
+		result.setGlobalSymbol("phase", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double phase(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
+				return 0.0;
+			}
+
+			@Variant
+			public Double phase(@DispatchArg Complex v) {
+				return v.phase();
 			}
 		});
 

@@ -66,12 +66,12 @@ public class TypeDomain {
 
 	private final Table<Class<?>, Class<?>, RawConverter> converters = HashBasedTable.create();
 
-	public <T> TypeDomain registerType(Class<?> type) {
+	public TypeDomain registerType(Class<?> type) {
 		allowedTypes.put(type, type.getSimpleName());
 		return this;
 	}
 
-	public <T> TypeDomain registerType(Class<?> type, String shortName) {
+	public TypeDomain registerType(Class<?> type, String shortName) {
 		allowedTypes.put(type, shortName);
 		return this;
 	}
