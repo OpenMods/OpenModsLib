@@ -38,7 +38,7 @@ public class SymbolNode<E> implements IExprNode<E> {
 	}
 
 	@Override
-	public int numberOfChildren() {
-		return args.size();
+	public Iterable<IExprNode<E>> getChildren() {
+		return args;
 	}
 }

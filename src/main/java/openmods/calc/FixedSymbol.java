@@ -22,7 +22,7 @@ public abstract class FixedSymbol<E> implements ISymbol<E> {
 
 		if (returnsCount.isPresent()) {
 			final int returns = returnsCount.get();
-			if (returns != resultCount) throw new StackValidationException("Expected %s result(s) but got %s", this.resultCount, returns);
+			if (returns != resultCount) throw new StackValidationException("Has %s result(s) but expected %s", this.resultCount, returns);
 		}
 
 		execute(frame);

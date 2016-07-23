@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.util.List;
 import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.Calculator.ExprType;
+import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.IComposite;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedBinaryOperator;
@@ -61,6 +62,14 @@ public class TypedValueCalculatorTest {
 
 	private TypedValue b(boolean value) {
 		return domain.create(Boolean.class, value);
+	}
+
+	private TypedValue nil() {
+		return sut.nullValue();
+	}
+
+	private TypedValue cons(TypedValue car, TypedValue cdr) {
+		return domain.create(Cons.class, new Cons(car, cdr));
 	}
 
 	private final TypedValue TRUE = b(true);
@@ -365,6 +374,7 @@ public class TypedValueCalculatorTest {
 		sut.setGlobalSymbol("root", Constant.create(sut.nullValue().domain.create(IComposite.class, new TestComposite())));
 		infix("type(root)=='object'").expectResult(b(true)).expectEmptyStack();
 		infix("isobject(root)").expectResult(b(true)).expectEmptyStack();
+		infix("bool(root)").expectResult(b(true)).expectEmptyStack();
 		infix("root.path").expectResult(s("")).expectEmptyStack();
 
 		prefix("(== (type root) 'object')").expectResult(b(true)).expectEmptyStack();
@@ -397,5 +407,61 @@ public class TypedValueCalculatorTest {
 		infix("sum('a', 'b', 'c')").expectResult(s("abc")).expectEmptyStack();
 
 		infix("avg(1, 2, 3)").expectResult(d(2.0)).expectEmptyStack();
+	}
+
+	@Test
+	public void testPrefixQuotes() {
+		prefix("#()").expectResult(nil()).expectEmptyStack();
+		prefix("#(1)").expectResult(cons(i(1), nil())).expectEmptyStack();
+		prefix("#(1 2)").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+	}
+
+	@Test
+	public void testCommaWhitespaceInPrefixQuotes() {
+		prefix("#(1,2)").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+	}
+
+	@Test
+	public void testPrefixQuotesWithSpecialTokens() {
+		prefix("#(max)").expectResult(cons(s("max"), nil())).expectEmptyStack();
+		prefix("#(+)").expectResult(cons(s("+"), nil())).expectEmptyStack();
+		prefix("#(1 + max)").expectResult(cons(i(1), cons(s("+"), cons(s("max"), nil())))).expectEmptyStack();
+	}
+
+	@Test
+	public void testNestedPrefixQuotes() {
+		prefix("#(())").expectResult(cons(nil(), nil())).expectEmptyStack();
+		prefix("#((1))").expectResult(cons(cons(i(1), nil()), nil())).expectEmptyStack();
+		prefix("#((1), 2)").expectResult(cons(cons(i(1), nil()), cons(i(2), nil()))).expectEmptyStack();
+		prefix("#(1 (2))").expectResult(cons(i(1), cons(cons(i(2), nil()), nil()))).expectEmptyStack();
+	}
+
+	@Test
+	public void testDottedPrefixQuotes() {
+		prefix("#(3 . ())").expectResult(cons(i(3), nil())).expectEmptyStack();
+		prefix("#(3 . 2)").expectResult(cons(i(3), i(2))).expectEmptyStack();
+		prefix("#(3 . (2 . 1))").expectResult(cons(i(3), cons(i(2), i(1)))).expectEmptyStack();
+	}
+
+	@Test
+	public void testListFunctions() {
+		infix("list()").expectResult(nil()).expectEmptyStack();
+		infix("list(1,2,3)").expectResult(cons(i(1), cons(i(2), cons(i(3), nil())))).expectEmptyStack();
+		infix("iscons(list(1,2,3))").expectResult(b(true)).expectEmptyStack();
+		infix("list(1,2,3) == cons(1, cons(2, cons(3, null)))").expectResult(b(true)).expectEmptyStack();
+		prefix("(== (list 1,2,3) #(1 2 3))").expectResult(b(true));
+		infix("car(cons(1, 2))").expectResult(i(1)).expectEmptyStack();
+		infix("cdr(cons(1, 2))").expectResult(i(2)).expectEmptyStack();
+	}
+
+	@Test
+	public void testLengthFunction() {
+		infix("len('')").expectResult(i(0)).expectEmptyStack();
+		infix("len('a')").expectResult(i(1)).expectEmptyStack();
+		infix("len('ab')").expectResult(i(2)).expectEmptyStack();
+
+		infix("len(list())").expectResult(i(0)).expectEmptyStack();
+		infix("len(list(1))").expectResult(i(1)).expectEmptyStack();
+		infix("len(list(1,2))").expectResult(i(2)).expectEmptyStack();
 	}
 }

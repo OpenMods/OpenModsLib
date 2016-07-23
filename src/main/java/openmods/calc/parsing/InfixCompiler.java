@@ -28,11 +28,14 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 	}
 
 	private static class BracketInfo {
-		private final String type;
+		private final String openingBracket;
+		private final String closingBracker;
 		private int elementCount;
 
-		public BracketInfo(String type) {
-			this.type = type;
+		public BracketInfo(String openingBracket) {
+			this.openingBracket = openingBracket;
+			this.closingBracker = TokenUtils.getClosingBracket(openingBracket);
+			Preconditions.checkArgument(this.closingBracker != null, "Invalid bracket '%s': no closing", openingBracket);
 		}
 	}
 
@@ -77,8 +80,7 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 					case RIGHT_BRACKET: {
 						if (lastToken == null) throw new UnmatchedBracketsException(token.value);
 						final BracketInfo bracketInfo = popUntilBracket(nodeStack, operatorStack);
-						final String endBracket = TokenUtils.getClosingBracket(bracketInfo.type);
-						if (endBracket == null || !endBracket.equals(token.value)) throw new UnmatchedBracketsException(bracketInfo.type, token.value);
+						if (!bracketInfo.closingBracker.equals(token.value)) throw new UnmatchedBracketsException(bracketInfo.openingBracket, token.value);
 						if (lastToken.type != TokenType.LEFT_BRACKET) bracketInfo.elementCount++;
 						createBracketNode(bracketInfo, operatorStack, nodeStack);
 						break;
@@ -114,13 +116,14 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 		while (!operatorStack.isEmpty()) {
 			final Variant e = operatorStack.pop();
 			if (e.is(TYPE_OPERATOR)) pushOperator(nodeStack, e.get(TYPE_OPERATOR));
-			else if (e.is(TYPE_BRACKET)) throw new UnmatchedBracketsException(e.get(TYPE_BRACKET).type);
+			else if (e.is(TYPE_BRACKET)) throw new UnmatchedBracketsException(e.get(TYPE_BRACKET).openingBracket);
 			else if (e.is(TYPE_SYMBOL)) nodeStack.push(exprNodeFactory.createSymbolNode(e.get(TYPE_SYMBOL), NO_ARGS));
 			else throw new AssertionError("What!?");
 		}
 
 		Preconditions.checkState(nodeStack.size() == 1, "Not valid infix expression");
-		return nodeStack.pop();
+		final IExprNode<E> rootNode = nodeStack.pop();
+		return exprNodeFactory.createRootNode(rootNode);
 	}
 
 	private void createBracketNode(BracketInfo bracketInfo, Stack<Variant> operatorStack, Stack<IExprNode<E>> nodeStack) {
@@ -140,7 +143,7 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 			}
 		}
 
-		nodeStack.push(exprNodeFactory.createBracketNode(bracketInfo.type, children));
+		nodeStack.push(exprNodeFactory.createBracketNode(bracketInfo.openingBracket, bracketInfo.closingBracker, children));
 	}
 
 	protected boolean shouldInsertDefaultOperator(Token token, Token lastToken) {

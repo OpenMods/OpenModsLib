@@ -1,42 +1,39 @@
 package openmods.calc.parsing;
 
-import com.google.common.base.Preconditions;
 import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.UnaryOperator;
 
-public class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
+public class EmptyExprNodeFactory<E> implements IExprNodeFactory<E> {
 
 	@Override
-	public IExprNode<E> createSymbolNode(String value, List<IExprNode<E>> args) {
-		return new SymbolNode<E>(value, args);
+	public IExprNode<E> createSymbolNode(String value, List<IExprNode<E>> children) {
+		throw new UnsupportedOperationException("Symbol: " + value);
 	}
 
 	@Override
 	public IExprNode<E> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<E>> children) {
-		TokenUtils.checkIsValidBracketPair(openingBracket, closingBracket);
-		Preconditions.checkState(children.size() == 1, "Invalid number of children for bracket node: %s", children);
-		return new BracketNode<E>(children.iterator().next());
+		throw new UnsupportedOperationException("Bracket: " + openingBracket + closingBracket);
 	}
 
 	@Override
 	public IExprNode<E> createBinaryOpNode(BinaryOperator<E> op, IExprNode<E> leftChild, IExprNode<E> rightChild) {
-		return new BinaryOpNode<E>(op, leftChild, rightChild);
+		throw new UnsupportedOperationException("Binary op: " + op);
 	}
 
 	@Override
 	public IExprNode<E> createUnaryOpNode(UnaryOperator<E> op, IExprNode<E> child) {
-		return new UnaryOpNode<E>(op, child);
+		throw new UnsupportedOperationException("Unary op: " + op);
 	}
 
 	@Override
 	public IExprNode<E> createValueNode(E value) {
-		return new ValueNode<E>(value);
+		throw new UnsupportedOperationException("Value: " + value);
 	}
 
 	@Override
 	public IExprNode<E> createRootNode(IExprNode<E> child) {
-		return new DummyNode<E>(child);
+		throw new UnsupportedOperationException("Root: " + child);
 	}
 
 	@Override

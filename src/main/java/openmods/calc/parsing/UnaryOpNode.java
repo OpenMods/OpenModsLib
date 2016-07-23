@@ -1,5 +1,6 @@
 package openmods.calc.parsing;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.IExecutable;
 import openmods.calc.UnaryOperator;
@@ -27,7 +28,7 @@ public class UnaryOpNode<E> implements IExprNode<E> {
 	}
 
 	@Override
-	public int numberOfChildren() {
-		return 1;
+	public Iterable<IExprNode<E>> getChildren() {
+		return ImmutableList.of(argument);
 	}
 }

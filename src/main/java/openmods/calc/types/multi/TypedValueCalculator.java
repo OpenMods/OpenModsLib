@@ -3,20 +3,26 @@ package openmods.calc.types.multi;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import gnu.trove.set.TCharSet;
 import gnu.trove.set.hash.TCharHashSet;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
+import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Constant;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
+import openmods.calc.ICalculatorFrame;
 import openmods.calc.IExecutable;
+import openmods.calc.ISymbol;
 import openmods.calc.OperatorDictionary;
+import openmods.calc.StackValidationException;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.Value;
@@ -24,11 +30,13 @@ import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.IValueParser;
+import openmods.calc.parsing.PrefixCompiler;
 import openmods.calc.parsing.StringEscaper;
 import openmods.calc.parsing.SymbolNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.types.bigint.BigIntPrinter;
 import openmods.calc.types.fp.DoublePrinter;
+import openmods.calc.types.multi.Cons.Visitor;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
@@ -38,6 +46,7 @@ import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;
 import openmods.config.simpler.Configurable;
 import openmods.math.Complex;
+import openmods.utils.Stack;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -78,6 +87,12 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 	@Configurable
 	public boolean printTypes = true;
 
+	@Configurable
+	public boolean printLists = true;
+
+	@Configurable
+	public boolean printNilInLists = false;
+
 	private final DoublePrinter doublePrinter = new DoublePrinter(8);
 
 	private final BigIntPrinter bigIntPrinter = new BigIntPrinter();
@@ -95,6 +110,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		else if (value.type == Boolean.class) contents = printBoolean(value.unwrap(Boolean.class));
 		else if (value.type == Complex.class) contents = printComplex(value.unwrap(Complex.class));
 		else if (value.type == IComposite.class) contents = printComposite(value.unwrap(IComposite.class));
+		else if (value.type == Cons.class) contents = printCons(value.unwrap(Cons.class));
 		else if (value.type == UnitType.class) contents = SYMBOL_NULL;
 		else contents = value.value.toString();
 
@@ -127,6 +143,43 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 	private String printComplex(Complex value) {
 		return printDouble(value.re) + "+" + printDouble(value.im) + "I";
+	}
+
+	private String printCons(Cons cons) {
+		if (printLists) {
+			final StringBuilder result = new StringBuilder();
+			cons.visit(new Cons.Visitor() {
+				@Override
+				public void begin() {
+					result.append("(");
+				}
+
+				@Override
+				public void value(TypedValue value, boolean isLast) {
+					result.append(TypedValueCalculator.this.toString(value));
+					if (!isLast) result.append(" ");
+				}
+
+				@Override
+				public Visitor nestedValue(TypedValue value) {
+					result.append("(");
+					return this;
+				}
+
+				@Override
+				public void end(TypedValue terminator) {
+					if (terminator.value != nullValue() || printNilInLists) {
+						result.append(" . ");
+						result.append(TypedValueCalculator.this.toString(terminator));
+					}
+					result.append(")");
+				}
+			});
+
+			return result.toString();
+		} else {
+			return "(" + toString(cons.car) + " . " + toString(cons.cdr) + ")";
+		}
 	}
 
 	private static String printComposite(IComposite value) {
@@ -222,6 +275,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		domain.registerType(String.class, "str");
 		domain.registerType(Complex.class, "complex");
 		domain.registerType(IComposite.class, "object");
+		domain.registerType(Cons.class, "pair");
 
 		domain.registerConverter(new IConverter<Boolean, BigInteger>() {
 			@Override
@@ -299,13 +353,6 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			}
 		});
 
-		domain.registerTruthEvaluator(new ITruthEvaluator<UnitType>() {
-			@Override
-			public boolean isTruthy(UnitType value) {
-				return false;
-			}
-		});
-
 		domain.registerTruthEvaluator(new ITruthEvaluator<String>() {
 			@Override
 			public boolean isTruthy(String value) {
@@ -313,12 +360,9 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			}
 		});
 
-		domain.registerTruthEvaluator(new ITruthEvaluator<IComposite>() {
-			@Override
-			public boolean isTruthy(IComposite value) {
-				return true;
-			}
-		});
+		domain.registerAlwaysFalse(UnitType.class);
+		domain.registerAlwaysTrue(IComposite.class);
+		domain.registerAlwaysTrue(Cons.class);
 
 		final TypedValue nullValue = domain.create(UnitType.class, UnitType.INSTANCE);
 
@@ -724,6 +768,12 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 		final TypedValueParser valueParser = new TypedValueParser(domain);
 		final IExprNodeFactory<TypedValue> exprNodeFactory = new DefaultExprNodeFactory<TypedValue>() {
+			@Override
+			public IExprNodeFactory<TypedValue> getExprNodeFactoryForModifier(String modifier) {
+				if (modifier.equals(PrefixCompiler.MODIFIER_QUOTE))
+					return new QuotedExprNodeFactory(domain, nullValue);
+				return super.getExprNodeFactoryForModifier(modifier);
+			}
 
 			@Override
 			public IExprNode<TypedValue> createBinaryOpNode(BinaryOperator<TypedValue> op, final IExprNode<TypedValue> leftChild, final IExprNode<TypedValue> rightChild) {
@@ -733,7 +783,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 						leftChild.flatten(output);
 						if (rightChild instanceof SymbolNode) {
 							final SymbolNode<TypedValue> symbolNode = (SymbolNode<TypedValue>)rightChild;
-							Preconditions.checkState(symbolNode.numberOfChildren() == 0); // temporary
+							Preconditions.checkState(Iterables.isEmpty(symbolNode.getChildren())); // temporary
 							output.add(Value.create(domain.create(String.class, symbolNode.symbol())));
 						} else {
 							rightChild.flatten(output);
@@ -742,8 +792,8 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 					}
 
 					@Override
-					public int numberOfChildren() {
-						return 2;
+					public Iterable<IExprNode<TypedValue>> getChildren() {
+						return ImmutableList.of(leftChild, rightChild);
 					}
 				};
 
@@ -788,6 +838,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		result.setGlobalSymbol("isstr", new PredicateIsType(String.class));
 		result.setGlobalSymbol("iscomplex", new PredicateIsType(Complex.class));
 		result.setGlobalSymbol("isobject", new PredicateIsType(IComposite.class));
+		result.setGlobalSymbol("iscons", new PredicateIsType(Cons.class));
 
 		result.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
 			@Override
@@ -1213,7 +1264,66 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			protected TypedValue process(TypedValue result, int argCount) {
 				return divideOperator.execute(result, domain.create(BigInteger.class, BigInteger.valueOf(argCount)));
 			}
+		});
 
+		result.setGlobalSymbol("cons", new BinaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue execute(TypedValue left, TypedValue right) {
+				return domain.create(Cons.class, new Cons(left, right));
+			}
+		});
+
+		result.setGlobalSymbol("car", new SimpleTypedFunction(domain) {
+			@Variant
+			@RawReturn
+			public TypedValue car(Cons cons) {
+				return cons.car;
+			}
+		});
+
+		result.setGlobalSymbol("cdr", new SimpleTypedFunction(domain) {
+			@Variant
+			@RawReturn
+			public TypedValue cdr(Cons cons) {
+				return cons.cdr;
+			}
+		});
+
+		result.setGlobalSymbol("list", new ISymbol<TypedValue>() {
+			@Override
+			public void execute(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				if (returnsCount.isPresent()) {
+					final int returns = returnsCount.get();
+					if (returns != 1) throw new StackValidationException("Has one result but expected %s", returns);
+				}
+
+				final Integer args = argumentsCount.or(0);
+				final Stack<TypedValue> stack = frame.stack();
+
+				TypedValue result = nullValue;
+				for (int i = 0; i < args; i++)
+					result = domain.create(Cons.class, new Cons(stack.pop(), result));
+
+				stack.push(result);
+			}
+		});
+
+		result.setGlobalSymbol("len", new SimpleTypedFunction(domain) {
+			@Variant
+			public BigInteger len(@DispatchArg UnitType v) {
+				// since empty list == nil
+				return BigInteger.ZERO;
+			}
+
+			@Variant
+			public BigInteger len(@DispatchArg String v) {
+				return BigInteger.valueOf(v.length());
+			}
+
+			@Variant
+			public BigInteger len(@DispatchArg Cons v) {
+				return BigInteger.valueOf(v.length());
+			}
 		});
 
 		return result;

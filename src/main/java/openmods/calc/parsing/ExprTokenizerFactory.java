@@ -29,8 +29,7 @@ public class ExprTokenizerFactory {
 
 	private static final Set<String> STRING_STARTERS = ImmutableSet.of("\"", "'");
 
-	private final Set<String> operators = Sets.newTreeSet(new Comparator<String>() {
-
+	private static final Comparator<String> ORDER_BY_LENGTH = new Comparator<String>() {
 		@Override
 		public int compare(String o1, String o2) {
 			int sizes = Ints.compare(o2.length(), o1.length());
@@ -38,7 +37,11 @@ public class ExprTokenizerFactory {
 
 			return o1.compareTo(o2);
 		}
-	});
+	};
+
+	private final Set<String> operators = Sets.newTreeSet(ORDER_BY_LENGTH);
+
+	private final Set<String> modifiers = Sets.newTreeSet(ORDER_BY_LENGTH);
 
 	private class TokenIterator extends AbstractIterator<Token> {
 
@@ -66,13 +69,23 @@ public class ExprTokenizerFactory {
 				final Matcher symbolMatcher = SYMBOL.matcher(input);
 
 				if (symbolMatcher.find()) {
-					final String operator = findOperator();
-
 					final String symbol = symbolMatcher.group(1);
-					if (operator != null && operator.length() >= symbol.length()) {
-						discardInput(operator.length());
-						return new Token(TokenType.OPERATOR, operator);
-					} else {
+					{
+						final String modifier = findPrefix(modifiers);
+						if (modifier != null && modifier.length() >= symbol.length()) {
+							discardInput(modifier.length());
+							return new Token(TokenType.MODIFIER, modifier);
+						}
+					}
+					{
+						final String operator = findPrefix(operators);
+						if (operator != null && operator.length() >= symbol.length()) {
+							discardInput(operator.length());
+							return new Token(TokenType.OPERATOR, operator);
+						}
+					}
+
+					{
 						discardInput(symbolMatcher.end());
 
 						final Matcher argMatcher = SYMBOL_ARGS.matcher(input);
@@ -87,10 +100,19 @@ public class ExprTokenizerFactory {
 					}
 				}
 
-				final String operator = findOperator();
-				if (operator != null) {
-					discardInput(operator.length());
-					return new Token(TokenType.OPERATOR, operator);
+				{
+					final String modifier = findPrefix(modifiers);
+					if (modifier != null) {
+						discardInput(modifier.length());
+						return new Token(TokenType.MODIFIER, modifier);
+					}
+				}
+				{
+					final String operator = findPrefix(operators);
+					if (operator != null) {
+						discardInput(operator.length());
+						return new Token(TokenType.OPERATOR, operator);
+					}
 				}
 
 				Token result;
@@ -149,8 +171,8 @@ public class ExprTokenizerFactory {
 			return matched != null? new Token(type, matched) : null;
 		}
 
-		private String findOperator() {
-			for (String operator : operators)
+		private String findPrefix(Iterable<String> specials) {
+			for (String operator : specials)
 				if (input.startsWith(operator)) return operator;
 
 			return null;
@@ -182,6 +204,10 @@ public class ExprTokenizerFactory {
 
 	public void addOperator(String operator) {
 		operators.add(operator);
+	}
+
+	public void addModifier(String special) {
+		modifiers.add(special);
 	}
 
 	public Iterable<Token> tokenize(String input) {

@@ -38,6 +38,8 @@ public abstract class Calculator<E> {
 
 	private final ExprTokenizerFactory tokenizerFactory = new ExprTokenizerFactory();
 
+	private final ExprTokenizerFactory prefixTokenizerFactory = new ExprTokenizerFactory();
+
 	private final ICompiler<E> rpnCompiler;
 
 	private final ICompiler<E> infixCompiler;
@@ -49,8 +51,12 @@ public abstract class Calculator<E> {
 	public Calculator(IValueParser<E> parser, E nullValue, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
 		this.nullValue = nullValue;
 
-		for (String operator : operators.allOperators())
+		for (String operator : operators.allOperators()) {
 			tokenizerFactory.addOperator(operator);
+			prefixTokenizerFactory.addOperator(operator);
+		}
+
+		PrefixCompiler.setupTokenizer(prefixTokenizerFactory);
 
 		this.pnCompiler = createPrefixCompiler(parser, operators, exprNodeFactory);
 		this.rpnCompiler = createPostfixCompiler(parser, operators);
@@ -76,14 +82,19 @@ public abstract class Calculator<E> {
 	public abstract String toString(E value);
 
 	public IExecutable<E> compile(ExprType type, String input) {
-		Iterable<Token> tokens = tokenizerFactory.tokenize(input);
 		switch (type) {
-			case PREFIX:
+			case PREFIX: {
+				Iterable<Token> tokens = prefixTokenizerFactory.tokenize(input);
 				return pnCompiler.compile(tokens);
-			case INFIX:
+			}
+			case INFIX: {
+				Iterable<Token> tokens = tokenizerFactory.tokenize(input);
 				return infixCompiler.compile(tokens);
-			case POSTFIX:
+			}
+			case POSTFIX: {
+				Iterable<Token> tokens = tokenizerFactory.tokenize(input);
 				return rpnCompiler.compile(tokens);
+			}
 			default:
 				throw new IllegalArgumentException(type.name());
 		}

@@ -7,5 +7,5 @@ public interface IExprNode<E> {
 
 	public void flatten(List<IExecutable<E>> output);
 
-	public int numberOfChildren();
+	public Iterable<IExprNode<E>> getChildren();
 }

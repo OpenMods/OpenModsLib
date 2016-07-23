@@ -27,7 +27,8 @@ public enum TokenType {
 	OPERATOR(TokenProperties.NEXT_OP_UNARY),
 	LEFT_BRACKET(TokenProperties.NEXT_OP_UNARY, TokenProperties.INSERT_DEFAULT_OP_LEFT, TokenProperties.CALL_START),
 	RIGHT_BRACKET(TokenProperties.INSERT_DEFAULT_OP_RIGHT),
-	SEPARATOR(TokenProperties.NEXT_OP_UNARY);
+	SEPARATOR(TokenProperties.NEXT_OP_UNARY),
+	MODIFIER();
 
 	public boolean isValue() {
 		return properties.contains(TokenProperties.VALUE);

@@ -210,6 +210,26 @@ public class TypeDomain {
 		return registerTruthEvaluator(sourceType, evaluator);
 	}
 
+	public <T> TypeDomain registerAlwaysTrue(Class<T> cls) {
+		class AlwaysTrueEvaluator implements ITruthEvaluator<T> {
+			@Override
+			public boolean isTruthy(T value) {
+				return true;
+			}
+		}
+		return registerTruthEvaluator(cls, new AlwaysTrueEvaluator());
+	}
+
+	public <T> TypeDomain registerAlwaysFalse(Class<T> cls) {
+		class AlwaysFalseEvaluator implements ITruthEvaluator<T> {
+			@Override
+			public boolean isTruthy(T value) {
+				return false;
+			}
+		}
+		return registerTruthEvaluator(cls, new AlwaysFalseEvaluator());
+	}
+
 	private static final Optional<Boolean> UNKNOWN = Optional.absent();
 	private static final Optional<Boolean> TRUE = Optional.of(Boolean.TRUE);
 	private static final Optional<Boolean> FALSE = Optional.of(Boolean.FALSE);

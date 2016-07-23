@@ -8,7 +8,7 @@ public interface IExprNodeFactory<E> {
 
 	public IExprNode<E> createSymbolNode(String value, List<IExprNode<E>> children);
 
-	public IExprNode<E> createBracketNode(String openingBracket, List<IExprNode<E>> children);
+	public IExprNode<E> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<E>> children);
 
 	public IExprNode<E> createBinaryOpNode(BinaryOperator<E> op, IExprNode<E> leftChild, IExprNode<E> rightChild);
 
@@ -16,4 +16,9 @@ public interface IExprNodeFactory<E> {
 
 	public IExprNode<E> createValueNode(E value);
 
+	public IExprNode<E> createRawValueNode(Token token);
+
+	public IExprNode<E> createRootNode(IExprNode<E> child);
+
+	public IExprNodeFactory<E> getExprNodeFactoryForModifier(String modifier);
 }

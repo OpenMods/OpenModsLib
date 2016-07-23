@@ -1,10 +1,12 @@
 package openmods.calc;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
 import openmods.calc.BinaryOperator.Associativity;
 import openmods.calc.Calculator.ExprType;
 import openmods.calc.parsing.IValueParser;
+import openmods.calc.parsing.PrefixCompiler;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 import org.junit.Assert;
@@ -103,6 +105,10 @@ public class CalcTestUtils {
 		return t(TokenType.OPERATOR, value);
 	}
 
+	public static Token mod(String value) {
+		return t(TokenType.MODIFIER, value);
+	}
+
 	public static Token leftBracket(String value) {
 		return t(TokenType.LEFT_BRACKET, value);
 	}
@@ -114,6 +120,8 @@ public class CalcTestUtils {
 	public static final Token COMMA = t(TokenType.SEPARATOR, ",");
 	public static final Token RIGHT_BRACKET = rightBracket(")");
 	public static final Token LEFT_BRACKET = leftBracket("(");
+
+	public static final Token QUOTE = mod(PrefixCompiler.MODIFIER_QUOTE);
 
 	public static class DummyBinaryOperator<E> extends BinaryOperator<E> {
 
@@ -180,6 +188,47 @@ public class CalcTestUtils {
 
 	public static SymbolReference<String> s(String value, int args, int rets) {
 		return new SymbolReference<String>(value, args, rets);
+	}
+
+	public static class MarkerExecutable<E> implements IExecutable<E> {
+
+		public String tag;
+
+		public MarkerExecutable(String tag) {
+			this.tag = Strings.nullToEmpty(tag);
+		}
+
+		@Override
+		public void execute(ICalculatorFrame<E> frame) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public String serialize() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int hashCode() {
+			return tag.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			return obj instanceof MarkerExecutable
+					&& ((MarkerExecutable<?>)obj).tag.equals(this.tag);
+		}
+
+		@Override
+		public String toString() {
+			return "!!!" + tag;
+		}
+
+	}
+
+	public static IExecutable<String> marker(String tag) {
+		return new MarkerExecutable<String>(tag);
 	}
 
 	public static final IValueParser<String> VALUE_PARSER = new IValueParser<String>() {

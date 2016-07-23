@@ -264,9 +264,22 @@ public class TokenizerTest extends CalcTestUtils {
 	}
 
 	@Test
+	public void testModifiers() {
+		factory.addModifier("+");
+		factory.addModifier("-");
+		verifyTokens("a+b-c", symbol("a"), mod("+"), symbol("b"), mod("-"), symbol("c"));
+	}
+
+	@Test
 	public void testFullyAlphaOperator() {
 		factory.addOperator("not");
 		verifyTokens("not here", op("not"), symbol("here"));
+	}
+
+	@Test
+	public void testFullyAlphaModifier() {
+		factory.addModifier("not");
+		verifyTokens("not here", mod("not"), symbol("here"));
 	}
 
 	@Test
@@ -274,6 +287,14 @@ public class TokenizerTest extends CalcTestUtils {
 		factory.addOperator("neg");
 		verifyTokens("neg", op("neg"));
 		verifyTokens("neg negate", op("neg"), symbol("negate"));
+		verifyTokens("negate", symbol("negate"));
+	}
+
+	@Test
+	public void testFullyAlphaModifierVsSymbol() {
+		factory.addModifier("neg");
+		verifyTokens("neg", mod("neg"));
+		verifyTokens("neg negate", mod("neg"), symbol("negate"));
 		verifyTokens("negate", symbol("negate"));
 	}
 
@@ -294,12 +315,37 @@ public class TokenizerTest extends CalcTestUtils {
 	}
 
 	@Test
-	public void testPartiallyAlphaOperatorSamePrefix() {
+	public void testTwoOperatorsSamePrefix() {
 		factory.addOperator("++a");
 		factory.addOperator("++");
 		verifyTokens("++a", op("++a"));
 		verifyTokens("++abc", op("++a"), symbol("bc"));
 		verifyTokens("++ abc", op("++"), symbol("abc"));
+	}
+
+	@Test
+	public void testTwoModifiersSamePrefix() {
+		factory.addModifier("++a");
+		factory.addModifier("++");
+		verifyTokens("++a", mod("++a"));
+		verifyTokens("++abc", mod("++a"), symbol("bc"));
+		verifyTokens("++ abc", mod("++"), symbol("abc"));
+	}
+
+	@Test
+	public void testModifierOverOperator() {
+		factory.addOperator("++");
+		factory.addModifier("++");
+		verifyTokens("++", mod("++"));
+	}
+
+	@Test
+	public void testModifierOverOperatorPartialMatch() {
+		factory.addOperator("+");
+		factory.addModifier("++");
+		verifyTokens("++", mod("++"));
+		verifyTokens("+ +", op("+"), op("+"));
+		verifyTokens("+++", mod("++"), op("+"));
 	}
 
 	@Test

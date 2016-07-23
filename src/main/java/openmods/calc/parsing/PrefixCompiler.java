@@ -12,6 +12,9 @@ import openmods.calc.UnaryOperator;
 
 public class PrefixCompiler<E> extends AstCompiler<E> {
 
+	// yeah, that's pretty non-standard for lisp-clones, but my tokenizer is too stupid to work otherwise
+	public static final String MODIFIER_QUOTE = "#";
+
 	private final IValueParser<E> valueParser;
 
 	private final OperatorDictionary<E> operators;
@@ -35,10 +38,40 @@ public class PrefixCompiler<E> extends AstCompiler<E> {
 			return exprNodeFactory.createSymbolNode(token.value, emptyArgs);
 		}
 
+		if (token.type == TokenType.MODIFIER) { return parseQuotedForm(token.value, input); }
+
 		if (token.type == TokenType.LEFT_BRACKET)
 			return parseNestedNode(token.value, input);
 
 		throw new IllegalArgumentException("Unexpected token: " + token);
+	}
+
+	private IExprNode<E> parseQuotedForm(String modifier, Iterator<Token> input) {
+		final Token nextToken = input.next();
+		Preconditions.checkState(nextToken.type == TokenType.LEFT_BRACKET, "Invalid token after modifier: %s", nextToken);
+		final IExprNodeFactory<E> newNodeFactory = exprNodeFactory.getExprNodeFactoryForModifier(modifier);
+		final IExprNode<E> innerNode = parseNestedQuotedForm(newNodeFactory, nextToken.value, input);
+		return newNodeFactory.createRootNode(innerNode);
+	}
+
+	private IExprNode<E> parseNestedQuotedForm(IExprNodeFactory<E> localExprNodeFactory, String openingBracket, Iterator<Token> input) {
+		final List<IExprNode<E>> children = Lists.newArrayList();
+		while (true) {
+			final Token token = input.next();
+			if (token.type == TokenType.RIGHT_BRACKET) {
+				final String closingBracket = token.value;
+				TokenUtils.checkIsValidBracketPair(openingBracket, closingBracket);
+				return localExprNodeFactory.createBracketNode(openingBracket, closingBracket, children);
+			} else if (token.type == TokenType.LEFT_BRACKET) {
+				children.add(parseNestedQuotedForm(localExprNodeFactory, token.value, input));
+			} else if (token.type.isValue()) {
+				final E value = valueParser.parseToken(token);
+				children.add(localExprNodeFactory.createValueNode(value));
+			} else {
+				Preconditions.checkState(token.type != TokenType.MODIFIER || !token.value.equals(MODIFIER_QUOTE), "Nested quotes are not allowed");
+				children.add(localExprNodeFactory.createRawValueNode(token));
+			}
+		}
 	}
 
 	private IExprNode<E> parseNestedNode(String openingBracket, Iterator<Token> input) {
@@ -51,7 +84,8 @@ public class PrefixCompiler<E> extends AstCompiler<E> {
 			if (operationToken.type == TokenType.SYMBOL) {
 				final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input);
 				return exprNodeFactory.createSymbolNode(operationName, args);
-			} else if (operationToken.type == TokenType.OPERATOR) {
+				// no modifiers allowed on this position (yet), so assuming operator
+			} else if (operationToken.type == TokenType.OPERATOR || operationToken.type == TokenType.MODIFIER) {
 				final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input);
 				if (args.size() == 1) {
 					final UnaryOperator<E> unaryOperator = operators.getUnaryOperator(operationName);
@@ -70,7 +104,7 @@ public class PrefixCompiler<E> extends AstCompiler<E> {
 			}
 		} else {
 			final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input);
-			return exprNodeFactory.createBracketNode(openingBracket, args);
+			return exprNodeFactory.createBracketNode(openingBracket, closingBracket, args);
 		}
 	}
 
@@ -124,6 +158,11 @@ public class PrefixCompiler<E> extends AstCompiler<E> {
 		if (tokens.hasNext())
 			throw new IllegalStateException("Unconsumed tokens: " + Lists.newArrayList(tokens));
 		return result;
+	}
+
+	public static void setupTokenizer(ExprTokenizerFactory tokenizerFactory) {
+		tokenizerFactory.addModifier(MODIFIER_QUOTE);
+		tokenizerFactory.addModifier(".");
 	}
 
 }

@@ -1,12 +1,13 @@
 package openmods.calc.parsing;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.IExecutable;
 import openmods.calc.Value;
 
 public class ValueNode<E> implements IExprNode<E> {
 
-	private final E value;
+	public final E value;
 
 	public ValueNode(E value) {
 		this.value = value;
@@ -23,7 +24,7 @@ public class ValueNode<E> implements IExprNode<E> {
 	}
 
 	@Override
-	public int numberOfChildren() {
-		return 0;
+	public Iterable<IExprNode<E>> getChildren() {
+		return ImmutableList.of();
 	}
 }
