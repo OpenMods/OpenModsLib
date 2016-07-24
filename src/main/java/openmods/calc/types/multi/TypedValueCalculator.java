@@ -276,6 +276,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		domain.registerType(Complex.class, "complex");
 		domain.registerType(IComposite.class, "object");
 		domain.registerType(Cons.class, "pair");
+		domain.registerType(Symbol.class, "symbol");
 
 		domain.registerConverter(new IConverter<Boolean, BigInteger>() {
 			@Override
@@ -839,6 +840,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		result.setGlobalSymbol("iscomplex", new PredicateIsType(Complex.class));
 		result.setGlobalSymbol("isobject", new PredicateIsType(IComposite.class));
 		result.setGlobalSymbol("iscons", new PredicateIsType(Cons.class));
+		result.setGlobalSymbol("issymbol", new PredicateIsType(Symbol.class));
 
 		result.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
 			@Override
@@ -868,6 +870,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 			@Override
 			protected TypedValue execute(TypedValue value) {
 				if (value.is(String.class)) return value;
+				if (value.is(Symbol.class)) return value.domain.create(String.class, value.unwrap(Symbol.class).value);
 				else return value.domain.create(String.class, result.toString(value));
 			}
 		});

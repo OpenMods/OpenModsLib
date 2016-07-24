@@ -8,6 +8,7 @@ import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.Calculator.ExprType;
 import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.IComposite;
+import openmods.calc.types.multi.Symbol;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedBinaryOperator;
 import openmods.calc.types.multi.TypedFunction;
@@ -50,6 +51,10 @@ public class TypedValueCalculatorTest {
 
 	private TypedValue s(String value) {
 		return domain.create(String.class, value);
+	}
+
+	private TypedValue sym(String value) {
+		return domain.create(Symbol.class, Symbol.get(value));
 	}
 
 	private TypedValue i(long value) {
@@ -238,6 +243,10 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testTypeFunctions() {
+		prefix("(issymbol #test)").expectResult(b(true)).expectEmptyStack();
+		prefix("(issymbol #+)").expectResult(b(true)).expectEmptyStack();
+		prefix("(issymbol #2)").expectResult(b(false)).expectEmptyStack();
+
 		infix("type(null)").expectResult(s("<null>")).expectEmptyStack();
 		infix("type(true)").expectResult(s("bool")).expectEmptyStack();
 		infix("type(5)").expectResult(s("int")).expectEmptyStack();
@@ -253,6 +262,7 @@ public class TypedValueCalculatorTest {
 		infix("isint(5.0)").expectResult(b(false)).expectEmptyStack();
 		infix("isint('hello')").expectResult(b(false)).expectEmptyStack();
 		infix("isint('I')").expectResult(b(false)).expectEmptyStack();
+		prefix("(isint #2)").expectResult(b(true)).expectEmptyStack();
 
 		infix("iscomplex(1)").expectResult(b(false)).expectEmptyStack();
 		infix("iscomplex(I)").expectResult(b(true)).expectEmptyStack();
@@ -425,11 +435,11 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testPrefixQuotesWithSpecialTokens() {
-		prefix("#+").expectResult(s("+")).expectEmptyStack();
-		prefix("#test").expectResult(s("test")).expectEmptyStack();
-		prefix("#(max)").expectResult(cons(s("max"), nil())).expectEmptyStack();
-		prefix("#(+)").expectResult(cons(s("+"), nil())).expectEmptyStack();
-		prefix("#(1 + max)").expectResult(cons(i(1), cons(s("+"), cons(s("max"), nil())))).expectEmptyStack();
+		prefix("#+").expectResult(sym("+")).expectEmptyStack();
+		prefix("#test").expectResult(sym("test")).expectEmptyStack();
+		prefix("#(max)").expectResult(cons(sym("max"), nil())).expectEmptyStack();
+		prefix("#(+)").expectResult(cons(sym("+"), nil())).expectEmptyStack();
+		prefix("#(1 + max)").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil())))).expectEmptyStack();
 	}
 
 	@Test
@@ -467,5 +477,13 @@ public class TypedValueCalculatorTest {
 		infix("len(list())").expectResult(i(0)).expectEmptyStack();
 		infix("len(list(1))").expectResult(i(1)).expectEmptyStack();
 		infix("len(list(1,2))").expectResult(i(2)).expectEmptyStack();
+	}
+
+	@Test
+	public void testSymbols() {
+		prefix("(== #test # test)").expectResult(b(true)).expectEmptyStack();
+		prefix("(== #a # b)").expectResult(b(false)).expectEmptyStack();
+		prefix("(str #test)").expectResult(s("test")).expectEmptyStack();
+		prefix("(str #+)").expectResult(s("+")).expectEmptyStack();
 	}
 }

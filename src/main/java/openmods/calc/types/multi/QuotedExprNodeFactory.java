@@ -99,7 +99,7 @@ class QuotedExprNodeFactory extends EmptyExprNodeFactory<TypedValue> {
 		if (token.type == TokenType.MODIFIER && token.value.equals("."))
 			return QUOTED_DOT_MARKER;
 		if (token.type == TokenType.SEPARATOR) return new NullNode<TypedValue>();
-		return new ValueNode<TypedValue>(domain.create(String.class, token.value));
+		return new ValueNode<TypedValue>(domain.create(Symbol.class, Symbol.get(token.value)));
 	}
 
 	@Override
