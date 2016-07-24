@@ -122,8 +122,7 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 		}
 
 		Preconditions.checkState(nodeStack.size() == 1, "Not valid infix expression");
-		final IExprNode<E> rootNode = nodeStack.pop();
-		return exprNodeFactory.createRootNode(rootNode);
+		return nodeStack.pop();
 	}
 
 	private void createBracketNode(BracketInfo bracketInfo, Stack<Variant> operatorStack, Stack<IExprNode<E>> nodeStack) {

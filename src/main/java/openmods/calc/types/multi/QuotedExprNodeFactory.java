@@ -10,6 +10,7 @@ import openmods.calc.parsing.ContainerNode;
 import openmods.calc.parsing.EmptyExprNodeFactory;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.NullNode;
+import openmods.calc.parsing.PrefixCompiler;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 import openmods.calc.parsing.ValueNode;
@@ -37,15 +38,26 @@ class QuotedExprNodeFactory extends EmptyExprNodeFactory<TypedValue> {
 
 		@Override
 		public void flatten(List<IExecutable<TypedValue>> output) {
-			final TypedValue node = transformNode(arg);
+			final TypedValue node = unwrapNode(arg);
 			output.add(Value.create(node));
 		}
 
-		private TypedValue transformNode(IExprNode<TypedValue> arg) {
+		private TypedValue unwrapNode(IExprNode<TypedValue> arg) {
+			if (arg instanceof ValueNode) {
+				return ((ValueNode<TypedValue>)arg).value;
+			} else if (arg instanceof ContainerNode) {
+				return unwrapList(arg);
+			} else {
+				throw new IllegalStateException(arg.toString());
+			}
+		}
+
+		private TypedValue unwrapList(IExprNode<TypedValue> arg) {
 			final List<TypedValue> elements = Lists.newArrayList();
 			boolean dotFound = false;
 			boolean firstAfterDot = false;
 			for (IExprNode<TypedValue> childArg : arg.getChildren()) {
+				if (childArg instanceof NullNode) continue;
 				if (childArg == QUOTED_DOT_MARKER) {
 					Preconditions.checkState(!dotFound, "Duplicated dot in quoted statement");
 					dotFound = true;
@@ -55,11 +67,7 @@ class QuotedExprNodeFactory extends EmptyExprNodeFactory<TypedValue> {
 						firstAfterDot = true;
 					}
 
-					if (childArg instanceof ValueNode) {
-						elements.add(((ValueNode<TypedValue>)childArg).value);
-					} else if (childArg instanceof ContainerNode) {
-						elements.add(transformNode(childArg));
-					}
+					elements.add(unwrapNode(childArg));
 				}
 			}
 
@@ -105,7 +113,10 @@ class QuotedExprNodeFactory extends EmptyExprNodeFactory<TypedValue> {
 	}
 
 	@Override
-	public IExprNode<TypedValue> createRootNode(IExprNode<TypedValue> child) {
-		return new QuotedRoot(child);
+	public IExprNode<TypedValue> createModifierNode(String modifier, IExprNode<TypedValue> child) {
+		if (modifier.equals(PrefixCompiler.MODIFIER_QUOTE))
+			return new QuotedRoot(child);
+
+		return super.createModifierNode(modifier, child);
 	}
 }

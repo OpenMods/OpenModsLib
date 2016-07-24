@@ -18,7 +18,7 @@ public interface IExprNodeFactory<E> {
 
 	public IExprNode<E> createRawValueNode(Token token);
 
-	public IExprNode<E> createRootNode(IExprNode<E> child);
-
 	public IExprNodeFactory<E> getExprNodeFactoryForModifier(String modifier);
+
+	public IExprNode<E> createModifierNode(String modifier, IExprNode<E> child);
 }

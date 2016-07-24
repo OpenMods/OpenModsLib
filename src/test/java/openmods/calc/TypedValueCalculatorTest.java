@@ -412,6 +412,8 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testPrefixQuotes() {
 		prefix("#()").expectResult(nil()).expectEmptyStack();
+		prefix("#2").expectResult(i(2)).expectEmptyStack();
+		prefix("#'hello'").expectResult(s("hello")).expectEmptyStack();
 		prefix("#(1)").expectResult(cons(i(1), nil())).expectEmptyStack();
 		prefix("#(1 2)").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
 	}
@@ -423,6 +425,8 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testPrefixQuotesWithSpecialTokens() {
+		prefix("#+").expectResult(s("+")).expectEmptyStack();
+		prefix("#test").expectResult(s("test")).expectEmptyStack();
 		prefix("#(max)").expectResult(cons(s("max"), nil())).expectEmptyStack();
 		prefix("#(+)").expectResult(cons(s("+"), nil())).expectEmptyStack();
 		prefix("#(1 + max)").expectResult(cons(i(1), cons(s("+"), cons(s("max"), nil())))).expectEmptyStack();

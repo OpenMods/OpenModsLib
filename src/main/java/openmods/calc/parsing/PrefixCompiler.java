@@ -38,40 +38,12 @@ public class PrefixCompiler<E> extends AstCompiler<E> {
 			return exprNodeFactory.createSymbolNode(token.value, emptyArgs);
 		}
 
-		if (token.type == TokenType.MODIFIER) { return parseQuotedForm(token.value, input); }
+		if (token.type == TokenType.MODIFIER) return parseModifierNode(token.value, input);
 
 		if (token.type == TokenType.LEFT_BRACKET)
 			return parseNestedNode(token.value, input);
 
 		throw new IllegalArgumentException("Unexpected token: " + token);
-	}
-
-	private IExprNode<E> parseQuotedForm(String modifier, Iterator<Token> input) {
-		final Token nextToken = input.next();
-		Preconditions.checkState(nextToken.type == TokenType.LEFT_BRACKET, "Invalid token after modifier: %s", nextToken);
-		final IExprNodeFactory<E> newNodeFactory = exprNodeFactory.getExprNodeFactoryForModifier(modifier);
-		final IExprNode<E> innerNode = parseNestedQuotedForm(newNodeFactory, nextToken.value, input);
-		return newNodeFactory.createRootNode(innerNode);
-	}
-
-	private IExprNode<E> parseNestedQuotedForm(IExprNodeFactory<E> localExprNodeFactory, String openingBracket, Iterator<Token> input) {
-		final List<IExprNode<E>> children = Lists.newArrayList();
-		while (true) {
-			final Token token = input.next();
-			if (token.type == TokenType.RIGHT_BRACKET) {
-				final String closingBracket = token.value;
-				TokenUtils.checkIsValidBracketPair(openingBracket, closingBracket);
-				return localExprNodeFactory.createBracketNode(openingBracket, closingBracket, children);
-			} else if (token.type == TokenType.LEFT_BRACKET) {
-				children.add(parseNestedQuotedForm(localExprNodeFactory, token.value, input));
-			} else if (token.type.isValue()) {
-				final E value = valueParser.parseToken(token);
-				children.add(localExprNodeFactory.createValueNode(value));
-			} else {
-				Preconditions.checkState(token.type != TokenType.MODIFIER || !token.value.equals(MODIFIER_QUOTE), "Nested quotes are not allowed");
-				children.add(localExprNodeFactory.createRawValueNode(token));
-			}
-		}
 	}
 
 	private IExprNode<E> parseNestedNode(String openingBracket, Iterator<Token> input) {
@@ -105,6 +77,38 @@ public class PrefixCompiler<E> extends AstCompiler<E> {
 		} else {
 			final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input);
 			return exprNodeFactory.createBracketNode(openingBracket, closingBracket, args);
+		}
+	}
+
+	private IExprNode<E> parseModifierNode(String modifier, Iterator<Token> input) {
+		final IExprNodeFactory<E> newNodeFactory = exprNodeFactory.getExprNodeFactoryForModifier(modifier);
+		final Token startToken = input.next();
+		final IExprNode<E> innerNode = parseQuotedNode(startToken, input, newNodeFactory);
+		return newNodeFactory.createModifierNode(modifier, innerNode);
+	}
+
+	private IExprNode<E> parseQuotedNode(Token start, Iterator<Token> input, final IExprNodeFactory<E> localNodeFactory) {
+		if (start.type == TokenType.LEFT_BRACKET) {
+			return parseNestedQuotedNode(start.value, input, localNodeFactory);
+		} else if (start.type.isValue()) {
+			final E value = valueParser.parseToken(start);
+			return localNodeFactory.createValueNode(value);
+		} else {
+			Preconditions.checkState(start.type != TokenType.MODIFIER || !start.value.equals(MODIFIER_QUOTE), "Nested quotes are not allowed");
+			return localNodeFactory.createRawValueNode(start);
+		}
+	}
+
+	private IExprNode<E> parseNestedQuotedNode(String openingBracket, Iterator<Token> input, IExprNodeFactory<E> localExprNodeFactory) {
+		final List<IExprNode<E>> children = Lists.newArrayList();
+		while (true) {
+			final Token token = input.next();
+			if (token.type == TokenType.RIGHT_BRACKET) {
+				TokenUtils.checkIsValidBracketPair(openingBracket, token.value);
+				return localExprNodeFactory.createBracketNode(openingBracket, token.value, children);
+			} else {
+				children.add(parseQuotedNode(token, input, localExprNodeFactory));
+			}
 		}
 	}
 

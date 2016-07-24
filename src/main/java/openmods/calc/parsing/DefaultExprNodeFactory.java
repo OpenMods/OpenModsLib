@@ -35,17 +35,17 @@ public class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
 	}
 
 	@Override
-	public IExprNode<E> createRootNode(IExprNode<E> child) {
-		return new DummyNode<E>(child);
-	}
-
-	@Override
 	public IExprNode<E> createRawValueNode(Token token) {
 		throw new UnsupportedOperationException("Raw: " + token);
 	}
 
 	@Override
 	public IExprNodeFactory<E> getExprNodeFactoryForModifier(String modifier) {
+		throw new UnsupportedOperationException("Modifier: " + modifier);
+	}
+
+	@Override
+	public IExprNode<E> createModifierNode(String modifier, IExprNode<E> child) {
 		throw new UnsupportedOperationException("Modifier: " + modifier);
 	}
 

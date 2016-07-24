@@ -53,8 +53,8 @@ public class PrefixCompilerTest extends CalcTestUtils {
 
 	private static final IExecutable<String> CLOSE_QUOTE = rightBracketMarker(")");
 	private static final IExecutable<String> OPEN_QUOTE = leftBracketMarker("(");
-	private static final IExecutable<String> OPEN_ROOT_QUOTE = marker("<");
-	private static final IExecutable<String> CLOSE_ROOT_QUOTE = marker(">");
+	private static final IExecutable<String> OPEN_ROOT_QUOTE = marker("<<" + PrefixCompiler.MODIFIER_QUOTE);
+	private static final IExecutable<String> CLOSE_ROOT_QUOTE = marker(PrefixCompiler.MODIFIER_QUOTE + ">>");
 
 	private static IExecutable<String> leftBracketMarker(String value) {
 		return marker("<" + value);
@@ -107,14 +107,13 @@ public class PrefixCompilerTest extends CalcTestUtils {
 		}
 
 		@Override
-		public IExprNode<String> createRootNode(IExprNode<String> child) {
+		public IExprNode<String> createModifierNode(final String modifier, IExprNode<String> child) {
 			return new DummyNode<String>(child) {
-
 				@Override
 				public void flatten(List<IExecutable<String>> output) {
-					output.add(OPEN_ROOT_QUOTE);
+					output.add(marker("<<" + modifier));
 					super.flatten(output);
-					output.add(CLOSE_ROOT_QUOTE);
+					output.add(marker(modifier + ">>"));
 				}
 
 			};
@@ -266,25 +265,38 @@ public class PrefixCompilerTest extends CalcTestUtils {
 	}
 
 	@Test
-	public void testEmptyQuote() {
+	public void testValueQuote() {
+		given(QUOTE, dec("12")).expect(OPEN_ROOT_QUOTE, valueMarker("12"), CLOSE_ROOT_QUOTE);
+		given(QUOTE, string("abc")).expect(OPEN_ROOT_QUOTE, valueMarker("abc"), CLOSE_ROOT_QUOTE);
+	}
+
+	@Test
+	public void testNestedEmptyQuote() {
 		given(QUOTE, LEFT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, CLOSE_QUOTE, CLOSE_ROOT_QUOTE);
 	}
 
 	@Test
-	public void testValueQuote() {
+	public void testNestedValueQuote() {
 		given(QUOTE, LEFT_BRACKET, dec("12"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE);
 		given(QUOTE, LEFT_BRACKET, dec("12"), oct("34"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, valueMarker("12"), valueMarker("34"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE);
 	}
 
 	@Test
 	public void testRawValueQuote() {
+		given(QUOTE, symbol("12")).expect(OPEN_ROOT_QUOTE, rawValueMarker(symbol("12")), CLOSE_ROOT_QUOTE);
+		given(QUOTE, OP_PLUS).expect(OPEN_ROOT_QUOTE, rawValueMarker(OP_PLUS), CLOSE_ROOT_QUOTE);
+		given(QUOTE, mod(".")).expect(OPEN_ROOT_QUOTE, rawValueMarker(mod(".")), CLOSE_ROOT_QUOTE);
+	}
+
+	@Test
+	public void testNestedRawValueQuote() {
 		given(QUOTE, LEFT_BRACKET, symbol("12"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, rawValueMarker(symbol("12")), CLOSE_QUOTE, CLOSE_ROOT_QUOTE);
 		given(QUOTE, LEFT_BRACKET, symbol("12"), OP_PLUS, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, rawValueMarker(symbol("12")), rawValueMarker(OP_PLUS), CLOSE_QUOTE, CLOSE_ROOT_QUOTE);
 		given(QUOTE, LEFT_BRACKET, symbol("12"), mod("."), OP_PLUS, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, rawValueMarker(symbol("12")), rawValueMarker(mod(".")), rawValueMarker(OP_PLUS), CLOSE_QUOTE, CLOSE_ROOT_QUOTE);
 	}
 
 	@Test
-	public void testNestedQuote() {
+	public void testDoubleNestedQuote() {
 		given(QUOTE, LEFT_BRACKET, LEFT_BRACKET, RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, OPEN_QUOTE, CLOSE_QUOTE, CLOSE_QUOTE, CLOSE_ROOT_QUOTE);
 		given(QUOTE, LEFT_BRACKET, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_QUOTE, CLOSE_ROOT_QUOTE);
 		given(QUOTE, LEFT_BRACKET, dec("0"), LEFT_BRACKET, dec("12"), RIGHT_BRACKET, dec("3"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, valueMarker("0"), OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, valueMarker("3"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE);
@@ -292,6 +304,12 @@ public class PrefixCompilerTest extends CalcTestUtils {
 
 	@Test
 	public void testQuoteAsArg() {
+		given(LEFT_BRACKET, symbol("test"), QUOTE, dec("12"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, valueMarker("12"), CLOSE_ROOT_QUOTE, s("test", 1));
+		given(LEFT_BRACKET, symbol("test"), QUOTE, symbol("12"), dec("34"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, rawValueMarker(symbol("12")), CLOSE_ROOT_QUOTE, c("34"), s("test", 2));
+	}
+
+	@Test
+	public void testNestedQuoteAsArg() {
 		given(LEFT_BRACKET, symbol("test"), QUOTE, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE, s("test", 1));
 		given(LEFT_BRACKET, symbol("test"), QUOTE, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, dec("34"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE, c("34"), s("test", 2));
 		given(LEFT_BRACKET, symbol("test"), QUOTE, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, LEFT_BRACKET, symbol("sqrt"), dec("34"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE, c("34"), s("sqrt", 1), s("test", 2));
