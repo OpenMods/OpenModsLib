@@ -29,11 +29,13 @@ import openmods.calc.Value;
 import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IExprNodeFactory;
+import openmods.calc.parsing.IModifierExprNodeFactory;
+import openmods.calc.parsing.ISymbolExprNodeFactory;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.PrefixCompiler;
 import openmods.calc.parsing.StringEscaper;
 import openmods.calc.parsing.SymbolNode;
 import openmods.calc.parsing.Token;
+import openmods.calc.parsing.TokenUtils;
 import openmods.calc.types.bigint.BigIntPrinter;
 import openmods.calc.types.fp.DoublePrinter;
 import openmods.calc.types.multi.Cons.Visitor;
@@ -770,10 +772,19 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		final TypedValueParser valueParser = new TypedValueParser(domain);
 		final IExprNodeFactory<TypedValue> exprNodeFactory = new DefaultExprNodeFactory<TypedValue>() {
 			@Override
-			public IExprNodeFactory<TypedValue> getExprNodeFactoryForModifier(String modifier) {
-				if (modifier.equals(PrefixCompiler.MODIFIER_QUOTE))
-					return new QuotedExprNodeFactory(domain, nullValue);
-				return super.getExprNodeFactoryForModifier(modifier);
+			public IModifierExprNodeFactory<TypedValue> createModifierExprNodeFactory(String modifier) {
+				if (modifier.equals(TokenUtils.MODIFIER_QUOTE))
+					return new QuotedExprNodeFactory.ForModifier(domain, nullValue);
+
+				return super.createModifierExprNodeFactory(modifier);
+			}
+
+			@Override
+			public ISymbolExprNodeFactory<TypedValue> createSymbolExprNodeFactory(String symbol) {
+				if (symbol.equals(TokenUtils.SYMBOL_QUOTE))
+					return new QuotedExprNodeFactory.ForSymbol(domain, nullValue);
+
+				return super.createSymbolExprNodeFactory(symbol);
 			}
 
 			@Override

@@ -10,17 +10,6 @@ public class Symbol {
 		this.value = value;
 	}
 
-	@Override
-	public int hashCode() {
-		return value.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		return (obj instanceof Symbol) && ((Symbol)obj).value == this.value;
-	}
-
 	private static Map<String, Symbol> pool = Maps.newIdentityHashMap();
 
 	public static Symbol get(String value) {

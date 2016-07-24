@@ -11,6 +11,7 @@ import openmods.calc.parsing.InfixCompiler;
 import openmods.calc.parsing.PostfixCompiler;
 import openmods.calc.parsing.PrefixCompiler;
 import openmods.calc.parsing.Token;
+import openmods.calc.parsing.TokenUtils;
 import openmods.utils.Stack;
 
 public abstract class Calculator<E> {
@@ -56,7 +57,7 @@ public abstract class Calculator<E> {
 			prefixTokenizerFactory.addOperator(operator);
 		}
 
-		PrefixCompiler.setupTokenizer(prefixTokenizerFactory);
+		TokenUtils.setupTokenizerForQuoteNotation(prefixTokenizerFactory);
 
 		this.pnCompiler = createPrefixCompiler(parser, operators, exprNodeFactory);
 		this.rpnCompiler = createPostfixCompiler(parser, operators);

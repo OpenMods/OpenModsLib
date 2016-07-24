@@ -6,7 +6,11 @@ import openmods.calc.UnaryOperator;
 
 public interface IExprNodeFactory<E> {
 
-	public IExprNode<E> createSymbolNode(String value, List<IExprNode<E>> children);
+	public AstCompilerBehaviour getBehaviour();
+
+	public IModifierExprNodeFactory<E> createModifierExprNodeFactory(String modifier);
+
+	public ISymbolExprNodeFactory<E> createSymbolExprNodeFactory(String symbol);
 
 	public IExprNode<E> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<E>> children);
 
@@ -17,8 +21,4 @@ public interface IExprNodeFactory<E> {
 	public IExprNode<E> createValueNode(E value);
 
 	public IExprNode<E> createRawValueNode(Token token);
-
-	public IExprNodeFactory<E> getExprNodeFactoryForModifier(String modifier);
-
-	public IExprNode<E> createModifierNode(String modifier, IExprNode<E> child);
 }

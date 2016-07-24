@@ -19,12 +19,10 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 
 	private final OperatorDictionary<E> operators;
 
-	private final IExprNodeFactory<E> exprNodeFactory;
-
 	public InfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
+		super(exprNodeFactory);
 		this.valueParser = valueParser;
 		this.operators = operators;
-		this.exprNodeFactory = exprNodeFactory;
 	}
 
 	private static class BracketInfo {
@@ -44,7 +42,7 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 	private final Variant.Selector<String> TYPE_SYMBOL = Variant.createSelector();
 
 	@Override
-	public IExprNode<E> compileAst(Iterable<Token> input) {
+	public IExprNode<E> compileAst(Iterable<Token> input, IExprNodeFactory<E> exprNodeFactory) {
 		final Stack<IExprNode<E>> nodeStack = Stack.create();
 		final Stack<Variant> operatorStack = Stack.create();
 
@@ -56,13 +54,13 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 			// nullary symbol fix
 			if (lastToken != null && token.type != TokenType.LEFT_BRACKET && lastToken.type.isSymbol()) {
 				final String symbol = operatorStack.pop().get(TYPE_SYMBOL);
-				nodeStack.push(exprNodeFactory.createSymbolNode(symbol, NO_ARGS));
+				nodeStack.push(exprNodeFactory.createSymbolExprNodeFactory(symbol).createRootSymbolNode(NO_ARGS));
 			}
 
 			if (defaultOperator != null &&
 					lastToken != null &&
 					shouldInsertDefaultOperator(token, lastToken)) {
-				pushOperator(nodeStack, operatorStack, defaultOperator);
+				pushOperator(nodeStack, operatorStack, defaultOperator, exprNodeFactory);
 				lastToken = new Token(TokenType.OPERATOR, defaultOperator.id);
 			}
 
@@ -79,15 +77,15 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 						break;
 					case RIGHT_BRACKET: {
 						if (lastToken == null) throw new UnmatchedBracketsException(token.value);
-						final BracketInfo bracketInfo = popUntilBracket(nodeStack, operatorStack);
+						final BracketInfo bracketInfo = popUntilBracket(nodeStack, operatorStack, exprNodeFactory);
 						if (!bracketInfo.closingBracker.equals(token.value)) throw new UnmatchedBracketsException(bracketInfo.openingBracket, token.value);
 						if (lastToken.type != TokenType.LEFT_BRACKET) bracketInfo.elementCount++;
-						createBracketNode(bracketInfo, operatorStack, nodeStack);
+						createBracketNode(bracketInfo, operatorStack, nodeStack, exprNodeFactory);
 						break;
 					}
 					case SEPARATOR: {
 						Preconditions.checkNotNull(lastToken, "Comma on invalid postion");
-						final BracketInfo bracketInfo = popUntilBracket(nodeStack, operatorStack);
+						final BracketInfo bracketInfo = popUntilBracket(nodeStack, operatorStack, exprNodeFactory);
 						bracketInfo.elementCount++;
 						operatorStack.push(new Variant(TYPE_BRACKET, bracketInfo));
 						break;
@@ -102,7 +100,7 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 							Preconditions.checkArgument(op != null, "Invalid operator: %s", token.value);
 						}
 
-						pushOperator(nodeStack, operatorStack, op);
+						pushOperator(nodeStack, operatorStack, op, exprNodeFactory);
 						break;
 					}
 					default:
@@ -115,9 +113,9 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 
 		while (!operatorStack.isEmpty()) {
 			final Variant e = operatorStack.pop();
-			if (e.is(TYPE_OPERATOR)) pushOperator(nodeStack, e.get(TYPE_OPERATOR));
+			if (e.is(TYPE_OPERATOR)) pushOperator(nodeStack, e.get(TYPE_OPERATOR), exprNodeFactory);
 			else if (e.is(TYPE_BRACKET)) throw new UnmatchedBracketsException(e.get(TYPE_BRACKET).openingBracket);
-			else if (e.is(TYPE_SYMBOL)) nodeStack.push(exprNodeFactory.createSymbolNode(e.get(TYPE_SYMBOL), NO_ARGS));
+			else if (e.is(TYPE_SYMBOL)) nodeStack.push(exprNodeFactory.createSymbolExprNodeFactory(e.get(TYPE_SYMBOL)).createRootSymbolNode(NO_ARGS));
 			else throw new AssertionError("What!?");
 		}
 
@@ -125,7 +123,7 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 		return nodeStack.pop();
 	}
 
-	private void createBracketNode(BracketInfo bracketInfo, Stack<Variant> operatorStack, Stack<IExprNode<E>> nodeStack) {
+	private void createBracketNode(BracketInfo bracketInfo, Stack<Variant> operatorStack, Stack<IExprNode<E>> nodeStack, IExprNodeFactory<E> exprNodeFactory) {
 		final List<IExprNode<E>> reversedChildren = Lists.newArrayList();
 		for (int i = 0; i < bracketInfo.elementCount; i++)
 			reversedChildren.add(nodeStack.pop());
@@ -136,7 +134,7 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 			final Variant top = operatorStack.peek(0);
 			if (top.is(TYPE_SYMBOL)) {
 				operatorStack.pop();
-				final IExprNode<E> symbolNode = exprNodeFactory.createSymbolNode(top.get(TYPE_SYMBOL), children);
+				final IExprNode<E> symbolNode = exprNodeFactory.createSymbolExprNodeFactory(top.get(TYPE_SYMBOL)).createRootSymbolNode(children);
 				nodeStack.push(symbolNode);
 				return;
 			}
@@ -151,7 +149,7 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 		return token.type.canInsertDefaultOpOnLeft() && lastToken.type.canInsertDefaultOpOnRight();
 	}
 
-	private void pushOperator(Stack<IExprNode<E>> output, Stack<Variant> operatorStack, Operator<E> newOp) {
+	private void pushOperator(Stack<IExprNode<E>> output, Stack<Variant> operatorStack, Operator<E> newOp, IExprNodeFactory<E> exprNodeFactory) {
 		while (!operatorStack.isEmpty()) {
 			final Variant top = operatorStack.peek(0);
 			if (!top.is(TYPE_OPERATOR)) break;
@@ -160,17 +158,17 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 			if (!newOp.isLessThan(topOp)) break;
 
 			operatorStack.pop();
-			pushOperator(output, topOp);
+			pushOperator(output, topOp, exprNodeFactory);
 		}
 
 		operatorStack.push(new Variant(TYPE_OPERATOR, newOp));
 	}
 
-	private BracketInfo popUntilBracket(Stack<IExprNode<E>> nodeStack, Stack<Variant> operatorStack) {
+	private BracketInfo popUntilBracket(Stack<IExprNode<E>> nodeStack, Stack<Variant> operatorStack, IExprNodeFactory<E> exprNodeFactory) {
 		try {
 			while (true) {
 				final Variant e = operatorStack.pop();
-				if (e.is(TYPE_OPERATOR)) pushOperator(nodeStack, e.get(TYPE_OPERATOR));
+				if (e.is(TYPE_OPERATOR)) pushOperator(nodeStack, e.get(TYPE_OPERATOR), exprNodeFactory);
 				else if (e.is(TYPE_BRACKET)) return e.get(TYPE_BRACKET);
 				else throw new AssertionError("What!?");
 			}
@@ -179,7 +177,7 @@ public class InfixCompiler<E> extends AstCompiler<E> {
 		}
 	}
 
-	private void pushOperator(Stack<IExprNode<E>> nodeStack, Operator<E> op) {
+	private void pushOperator(Stack<IExprNode<E>> nodeStack, Operator<E> op, IExprNodeFactory<E> exprNodeFactory) {
 		if (op instanceof BinaryOperator) {
 			final IExprNode<E> right = nodeStack.pop();
 			final IExprNode<E> left = nodeStack.pop();

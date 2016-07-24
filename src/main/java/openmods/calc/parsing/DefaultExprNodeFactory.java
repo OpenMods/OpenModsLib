@@ -8,8 +8,24 @@ import openmods.calc.UnaryOperator;
 public class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
 
 	@Override
-	public IExprNode<E> createSymbolNode(String value, List<IExprNode<E>> args) {
-		return new SymbolNode<E>(value, args);
+	public AstCompilerBehaviour getBehaviour() {
+		return AstCompilerBehaviour.NORMAL;
+	}
+
+	@Override
+	public ISymbolExprNodeFactory<E> createSymbolExprNodeFactory(final String symbol) {
+		class SymbolExprNodeFactory extends DelegateExprNodeFactory<E> implements ISymbolExprNodeFactory<E> {
+			public SymbolExprNodeFactory(IExprNodeFactory<E> wrapped) {
+				super(wrapped);
+			}
+
+			@Override
+			public IExprNode<E> createRootSymbolNode(List<IExprNode<E>> children) {
+				return new SymbolNode<E>(symbol, children);
+			}
+		}
+
+		return new SymbolExprNodeFactory(this);
 	}
 
 	@Override
@@ -40,12 +56,7 @@ public class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
 	}
 
 	@Override
-	public IExprNodeFactory<E> getExprNodeFactoryForModifier(String modifier) {
-		throw new UnsupportedOperationException("Modifier: " + modifier);
-	}
-
-	@Override
-	public IExprNode<E> createModifierNode(String modifier, IExprNode<E> child) {
+	public IModifierExprNodeFactory<E> createModifierExprNodeFactory(String modifier) {
 		throw new UnsupportedOperationException("Modifier: " + modifier);
 	}
 

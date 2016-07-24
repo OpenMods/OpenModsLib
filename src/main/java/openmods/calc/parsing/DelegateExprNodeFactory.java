@@ -4,45 +4,52 @@ import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.UnaryOperator;
 
-public class EmptyExprNodeFactory<E> implements IExprNodeFactory<E> {
+public class DelegateExprNodeFactory<E> implements IExprNodeFactory<E> {
+
+	private final IExprNodeFactory<E> wrapped;
+
+	public DelegateExprNodeFactory(IExprNodeFactory<E> wrapped) {
+		this.wrapped = wrapped;
+	}
 
 	@Override
 	public AstCompilerBehaviour getBehaviour() {
-		return AstCompilerBehaviour.NORMAL;
+		return wrapped.getBehaviour();
 	}
 
 	@Override
 	public ISymbolExprNodeFactory<E> createSymbolExprNodeFactory(String symbol) {
-		throw new UnsupportedOperationException("Symbol: " + symbol);
+		return wrapped.createSymbolExprNodeFactory(symbol);
 	}
 
 	@Override
 	public IExprNode<E> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<E>> children) {
-		throw new UnsupportedOperationException("Bracket: " + openingBracket + closingBracket);
+		return wrapped.createBracketNode(openingBracket, closingBracket, children);
 	}
 
 	@Override
 	public IExprNode<E> createBinaryOpNode(BinaryOperator<E> op, IExprNode<E> leftChild, IExprNode<E> rightChild) {
-		throw new UnsupportedOperationException("Binary op: " + op);
+		return wrapped.createBinaryOpNode(op, leftChild, rightChild);
 	}
 
 	@Override
 	public IExprNode<E> createUnaryOpNode(UnaryOperator<E> op, IExprNode<E> child) {
-		throw new UnsupportedOperationException("Unary op: " + op);
+		return wrapped.createUnaryOpNode(op, child);
 	}
 
 	@Override
 	public IExprNode<E> createValueNode(E value) {
-		throw new UnsupportedOperationException("Value: " + value);
+		return wrapped.createValueNode(value);
 	}
 
 	@Override
 	public IExprNode<E> createRawValueNode(Token token) {
-		throw new UnsupportedOperationException("Raw: " + token);
+		return wrapped.createRawValueNode(token);
 	}
 
 	@Override
 	public IModifierExprNodeFactory<E> createModifierExprNodeFactory(String modifier) {
-		throw new UnsupportedOperationException("Modifier: " + modifier);
+		return wrapped.createModifierExprNodeFactory(modifier);
 	}
+
 }

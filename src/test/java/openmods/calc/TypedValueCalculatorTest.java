@@ -429,8 +429,18 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testCommaWhitespaceInPrefixQuotes() {
+	public void testSymbolQuoted() {
+		prefix("(quote ())").expectResult(nil()).expectEmptyStack();
+		prefix("(quote 2)").expectResult(i(2)).expectEmptyStack();
+		prefix("(quote 'hello')").expectResult(s("hello")).expectEmptyStack();
+		prefix("(quote (1))").expectResult(cons(i(1), nil())).expectEmptyStack();
+		prefix("(quote (1 2))").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+	}
+
+	@Test
+	public void testCommaWhitespaceInQuotes() {
 		prefix("#(1,2)").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+		prefix("(quote (1,2))").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
 	}
 
 	@Test
@@ -440,6 +450,15 @@ public class TypedValueCalculatorTest {
 		prefix("#(max)").expectResult(cons(sym("max"), nil())).expectEmptyStack();
 		prefix("#(+)").expectResult(cons(sym("+"), nil())).expectEmptyStack();
 		prefix("#(1 + max)").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil())))).expectEmptyStack();
+	}
+
+	@Test
+	public void testSymbolQuotesWithSpecialTokens() {
+		prefix("(quote +)").expectResult(sym("+")).expectEmptyStack();
+		prefix("(quote test)").expectResult(sym("test")).expectEmptyStack();
+		prefix("(quote (max))").expectResult(cons(sym("max"), nil())).expectEmptyStack();
+		prefix("(quote (+))").expectResult(cons(sym("+"), nil())).expectEmptyStack();
+		prefix("(quote (1 + max))").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil())))).expectEmptyStack();
 	}
 
 	@Test
@@ -455,6 +474,12 @@ public class TypedValueCalculatorTest {
 		prefix("#(3 . ())").expectResult(cons(i(3), nil())).expectEmptyStack();
 		prefix("#(3 . 2)").expectResult(cons(i(3), i(2))).expectEmptyStack();
 		prefix("#(3 . (2 . 1))").expectResult(cons(i(3), cons(i(2), i(1)))).expectEmptyStack();
+	}
+
+	@Test
+	public void testMixedQuotes() {
+		prefix("(quote #)").expectResult(sym("#"));
+		prefix("#(quote 2)").expectResult(cons(sym("quote"), cons(i(2), nil())));
 	}
 
 	@Test

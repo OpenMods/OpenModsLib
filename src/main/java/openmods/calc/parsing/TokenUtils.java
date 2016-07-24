@@ -24,4 +24,14 @@ public class TokenUtils {
 		Preconditions.checkState(expectedClosingBracket != null, "Unknown bracket: %s", openingBracket);
 		Preconditions.checkState(expectedClosingBracket.equals(closingBracket), "Unmatched brackets: %s and %s, expected %s", openingBracket, closingBracket, expectedClosingBracket);
 	}
+
+	// yeah, that's pretty non-standard for lisp-clones, but my tokenizer is too stupid to work otherwise
+	public static final String MODIFIER_QUOTE = "#";
+
+	public static final String SYMBOL_QUOTE = "quote";
+
+	public static void setupTokenizerForQuoteNotation(ExprTokenizerFactory tokenizerFactory) {
+		tokenizerFactory.addModifier(MODIFIER_QUOTE);
+		tokenizerFactory.addModifier(".");
+	}
 }

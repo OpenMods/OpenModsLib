@@ -6,11 +6,13 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.IExecutable;
 import openmods.calc.Value;
+import openmods.calc.parsing.AstCompilerBehaviour;
 import openmods.calc.parsing.ContainerNode;
 import openmods.calc.parsing.EmptyExprNodeFactory;
 import openmods.calc.parsing.IExprNode;
+import openmods.calc.parsing.IModifierExprNodeFactory;
+import openmods.calc.parsing.ISymbolExprNodeFactory;
 import openmods.calc.parsing.NullNode;
-import openmods.calc.parsing.PrefixCompiler;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 import openmods.calc.parsing.ValueNode;
@@ -103,6 +105,11 @@ class QuotedExprNodeFactory extends EmptyExprNodeFactory<TypedValue> {
 	}
 
 	@Override
+	public AstCompilerBehaviour getBehaviour() {
+		return AstCompilerBehaviour.QUOTED;
+	}
+
+	@Override
 	public IExprNode<TypedValue> createValueNode(TypedValue value) {
 		return new ValueNode<TypedValue>(value);
 	}
@@ -112,11 +119,28 @@ class QuotedExprNodeFactory extends EmptyExprNodeFactory<TypedValue> {
 		return new ContainerNode<TypedValue>(children);
 	}
 
-	@Override
-	public IExprNode<TypedValue> createModifierNode(String modifier, IExprNode<TypedValue> child) {
-		if (modifier.equals(PrefixCompiler.MODIFIER_QUOTE))
-			return new QuotedRoot(child);
+	public static class ForModifier extends QuotedExprNodeFactory implements IModifierExprNodeFactory<TypedValue> {
+		public ForModifier(TypeDomain domain, TypedValue terminatorValue) {
+			super(domain, terminatorValue);
+		}
 
-		return super.createModifierNode(modifier, child);
+		@Override
+		public IExprNode<TypedValue> createRootModifierNode(IExprNode<TypedValue> child) {
+			return new QuotedRoot(child);
+		}
 	}
+
+	public static class ForSymbol extends QuotedExprNodeFactory implements ISymbolExprNodeFactory<TypedValue> {
+		public ForSymbol(TypeDomain domain, TypedValue terminatorValue) {
+			super(domain, terminatorValue);
+		}
+
+		@Override
+		public IExprNode<TypedValue> createRootSymbolNode(List<IExprNode<TypedValue>> children) {
+			Preconditions.checkArgument(children.size() == 1, "Expected exactly one child for quote, got %s", children.size());
+			return new QuotedRoot(children.get(0));
+		}
+
+	}
+
 }

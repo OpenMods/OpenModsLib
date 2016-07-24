@@ -6,9 +6,9 @@ import java.util.Arrays;
 import openmods.calc.BinaryOperator.Associativity;
 import openmods.calc.Calculator.ExprType;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.PrefixCompiler;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
+import openmods.calc.parsing.TokenUtils;
 import org.junit.Assert;
 
 public class CalcTestUtils {
@@ -121,7 +121,9 @@ public class CalcTestUtils {
 	public static final Token RIGHT_BRACKET = rightBracket(")");
 	public static final Token LEFT_BRACKET = leftBracket("(");
 
-	public static final Token QUOTE = mod(PrefixCompiler.MODIFIER_QUOTE);
+	public static final Token QUOTE_MODIFIER = mod(TokenUtils.MODIFIER_QUOTE);
+
+	public static final Token QUOTE_SYMBOL = symbol(TokenUtils.SYMBOL_QUOTE);
 
 	public static class DummyBinaryOperator<E> extends BinaryOperator<E> {
 
