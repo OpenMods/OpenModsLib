@@ -7,11 +7,6 @@ import openmods.calc.UnaryOperator;
 public class EmptyExprNodeFactory<E> implements IExprNodeFactory<E> {
 
 	@Override
-	public AstCompilerBehaviour getBehaviour() {
-		return AstCompilerBehaviour.NORMAL;
-	}
-
-	@Override
 	public ISymbolExprNodeFactory<E> createSymbolExprNodeFactory(String symbol) {
 		throw new UnsupportedOperationException("Symbol: " + symbol);
 	}
@@ -44,5 +39,10 @@ public class EmptyExprNodeFactory<E> implements IExprNodeFactory<E> {
 	@Override
 	public IModifierExprNodeFactory<E> createModifierExprNodeFactory(String modifier) {
 		throw new UnsupportedOperationException("Modifier: " + modifier);
+	}
+
+	@Override
+	public IAstParser<E> getParser() {
+		throw new UnsupportedOperationException();
 	}
 }

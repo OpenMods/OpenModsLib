@@ -13,8 +13,8 @@ public class DelegateExprNodeFactory<E> implements IExprNodeFactory<E> {
 	}
 
 	@Override
-	public AstCompilerBehaviour getBehaviour() {
-		return wrapped.getBehaviour();
+	public IAstParser<E> getParser() {
+		return wrapped.getParser();
 	}
 
 	@Override

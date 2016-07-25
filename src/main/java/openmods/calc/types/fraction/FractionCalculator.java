@@ -8,8 +8,6 @@ import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
-import openmods.calc.parsing.DefaultExprNodeFactory;
-import openmods.calc.parsing.IExprNodeFactory;
 import openmods.config.simpler.Configurable;
 import org.apache.commons.lang3.math.Fraction;
 
@@ -23,8 +21,8 @@ public class FractionCalculator extends Calculator<Fraction> {
 	@Configurable
 	public boolean expand;
 
-	public FractionCalculator(OperatorDictionary<Fraction> operators, IExprNodeFactory<Fraction> exprNodeFactory) {
-		super(new FractionParser(), NULL_VALUE, operators, exprNodeFactory);
+	public FractionCalculator(OperatorDictionary<Fraction> operators) {
+		super(new FractionParser(), NULL_VALUE, operators);
 	}
 
 	private static Fraction createFraction(int value) {
@@ -91,8 +89,7 @@ public class FractionCalculator extends Calculator<Fraction> {
 			}
 		});
 
-		final IExprNodeFactory<Fraction> exprNodeFactory = new DefaultExprNodeFactory<Fraction>();
-		final FractionCalculator result = new FractionCalculator(operators, exprNodeFactory);
+		final FractionCalculator result = new FractionCalculator(operators);
 
 		GenericFunctions.createStackManipulationFunctions(result);
 

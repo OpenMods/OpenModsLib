@@ -27,6 +27,7 @@ import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.Value;
 import openmods.calc.parsing.DefaultExprNodeFactory;
+import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.IModifierExprNodeFactory;
@@ -99,8 +100,8 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 	private final BigIntPrinter bigIntPrinter = new BigIntPrinter();
 
-	public TypedValueCalculator(IValueParser<TypedValue> parser, TypedValue nullValue, OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory) {
-		super(parser, nullValue, operators, exprNodeFactory);
+	public TypedValueCalculator(IValueParser<TypedValue> parser, TypedValue nullValue, OperatorDictionary<TypedValue> operators) {
+		super(parser, nullValue, operators);
 	}
 
 	@Override
@@ -770,50 +771,62 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		}
 
 		final TypedValueParser valueParser = new TypedValueParser(domain);
-		final IExprNodeFactory<TypedValue> exprNodeFactory = new DefaultExprNodeFactory<TypedValue>() {
-			@Override
-			public IModifierExprNodeFactory<TypedValue> createModifierExprNodeFactory(String modifier) {
-				if (modifier.equals(TokenUtils.MODIFIER_QUOTE))
-					return new QuotedExprNodeFactory.ForModifier(domain, nullValue);
 
-				return super.createModifierExprNodeFactory(modifier);
-			}
+		final TypedValueCalculator result = new TypedValueCalculator(valueParser, nullValue, operators) {
 
 			@Override
-			public ISymbolExprNodeFactory<TypedValue> createSymbolExprNodeFactory(String symbol) {
-				if (symbol.equals(TokenUtils.SYMBOL_QUOTE))
-					return new QuotedExprNodeFactory.ForSymbol(domain, nullValue);
-
-				return super.createSymbolExprNodeFactory(symbol);
-			}
-
-			@Override
-			public IExprNode<TypedValue> createBinaryOpNode(BinaryOperator<TypedValue> op, final IExprNode<TypedValue> leftChild, final IExprNode<TypedValue> rightChild) {
-				if (op == dotOperator) return new IExprNode<TypedValue>() {
+			protected IExprNodeFactory<TypedValue> createNodeFactory(final IAstParserFactory<TypedValue> parserFactory) {
+				return new DefaultExprNodeFactory<TypedValue>() {
 					@Override
-					public void flatten(List<IExecutable<TypedValue>> output) {
-						leftChild.flatten(output);
-						if (rightChild instanceof SymbolNode) {
-							final SymbolNode<TypedValue> symbolNode = (SymbolNode<TypedValue>)rightChild;
-							Preconditions.checkState(Iterables.isEmpty(symbolNode.getChildren())); // temporary
-							output.add(Value.create(domain.create(String.class, symbolNode.symbol())));
-						} else {
-							rightChild.flatten(output);
-						}
-						output.add(dotOperator);
+					public IModifierExprNodeFactory<TypedValue> createModifierExprNodeFactory(String modifier) {
+						if (modifier.equals(TokenUtils.MODIFIER_QUOTE))
+							return new QuotedExprNodeFactory.ForModifier(domain, nullValue, valueParser);
+
+						return super.createModifierExprNodeFactory(modifier);
 					}
 
 					@Override
-					public Iterable<IExprNode<TypedValue>> getChildren() {
-						return ImmutableList.of(leftChild, rightChild);
+					public ISymbolExprNodeFactory<TypedValue> createSymbolExprNodeFactory(String symbol) {
+						if (symbol.equals(TokenUtils.SYMBOL_QUOTE))
+							return new QuotedExprNodeFactory.ForSymbol(domain, nullValue, valueParser);
+
+						return super.createSymbolExprNodeFactory(symbol);
 					}
+
+					@Override
+					public IExprNode<TypedValue> createBinaryOpNode(BinaryOperator<TypedValue> op, final IExprNode<TypedValue> leftChild, final IExprNode<TypedValue> rightChild) {
+						if (op == dotOperator) return new IExprNode<TypedValue>() {
+							@Override
+							public void flatten(List<IExecutable<TypedValue>> output) {
+								leftChild.flatten(output);
+								if (rightChild instanceof SymbolNode) {
+									final SymbolNode<TypedValue> symbolNode = (SymbolNode<TypedValue>)rightChild;
+									Preconditions.checkState(Iterables.isEmpty(symbolNode.getChildren())); // temporary
+									output.add(Value.create(domain.create(String.class, symbolNode.symbol())));
+								} else {
+									rightChild.flatten(output);
+								}
+								output.add(dotOperator);
+							}
+
+							@Override
+							public Iterable<IExprNode<TypedValue>> getChildren() {
+								return ImmutableList.of(leftChild, rightChild);
+							}
+						};
+
+						return super.createBinaryOpNode(op, leftChild, rightChild);
+					}
+
+					@Override
+					public IAstParser<TypedValue> getParser() {
+						return parserFactory.create(this);
+					}
+
 				};
-
-				return super.createBinaryOpNode(op, leftChild, rightChild);
 			}
 
 		};
-		final TypedValueCalculator result = new TypedValueCalculator(valueParser, nullValue, operators, exprNodeFactory);
 
 		GenericFunctions.createStackManipulationFunctions(result);
 

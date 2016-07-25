@@ -9,8 +9,6 @@ import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
-import openmods.calc.parsing.DefaultExprNodeFactory;
-import openmods.calc.parsing.IExprNodeFactory;
 import openmods.config.simpler.Configurable;
 
 public class DoubleCalculator extends Calculator<Double> {
@@ -28,8 +26,8 @@ public class DoubleCalculator extends Calculator<Double> {
 
 	private final DoublePrinter printer = new DoublePrinter(8);
 
-	public DoubleCalculator(OperatorDictionary<Double> operators, IExprNodeFactory<Double> exprNodeFactory) {
-		super(new DoubleParser(), NULL_VALUE, operators, exprNodeFactory);
+	public DoubleCalculator(OperatorDictionary<Double> operators) {
+		super(new DoubleParser(), NULL_VALUE, operators);
 	}
 
 	@Override
@@ -112,8 +110,7 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
-		final IExprNodeFactory<Double> exprNodeFactory = new DefaultExprNodeFactory<Double>();
-		final DoubleCalculator result = new DoubleCalculator(operators, exprNodeFactory);
+		final DoubleCalculator result = new DoubleCalculator(operators);
 
 		GenericFunctions.createStackManipulationFunctions(result);
 

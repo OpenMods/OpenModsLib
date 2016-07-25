@@ -1,22 +1,12 @@
 package openmods.calc;
 
-import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
 import java.util.List;
-import openmods.calc.parsing.AstCompilerBehaviour;
-import openmods.calc.parsing.ContainerNode;
-import openmods.calc.parsing.DefaultExprNodeFactory;
-import openmods.calc.parsing.DummyNode;
-import openmods.calc.parsing.EmptyExprNodeFactory;
+import openmods.calc.parsing.AstCompiler;
+import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IExprNodeFactory;
-import openmods.calc.parsing.IModifierExprNodeFactory;
-import openmods.calc.parsing.ISymbolExprNodeFactory;
-import openmods.calc.parsing.PrefixCompiler;
+import openmods.calc.parsing.PrefixParser;
 import openmods.calc.parsing.Token;
-import openmods.calc.parsing.TokenType;
-import openmods.calc.parsing.TokenUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class PrefixCompilerTest extends CalcTestUtils {
@@ -30,9 +20,12 @@ public class PrefixCompilerTest extends CalcTestUtils {
 		operators.registerUnaryOperator(UNARY_MINUS);
 	}
 
-	private static final String SYMBOL_LIST = "list";
+	private static final Token CLOSE_LIST = rightBracket("]");
+	private static final Token OPEN_LIST = leftBracket("[");
 
-	private static class TestBracketNode implements IExprNode<String> {
+	public static final String SYMBOL_LIST = "list";
+
+	public static class TestBracketNode implements IExprNode<String> {
 		private final List<IExprNode<String>> children;
 
 		public TestBracketNode(List<IExprNode<String>> children) {
@@ -53,173 +46,20 @@ public class PrefixCompilerTest extends CalcTestUtils {
 		}
 	}
 
-	private static final Token CLOSE_LIST = rightBracket("]");
-	private static final Token OPEN_LIST = leftBracket("[");
-
-	private static final IExecutable<String> CLOSE_QUOTE = rightBracketMarker(")");
-	private static final IExecutable<String> OPEN_QUOTE = leftBracketMarker("(");
-	private static final IExecutable<String> OPEN_ROOT_QUOTE_M = marker("<<" + TokenUtils.MODIFIER_QUOTE);
-	private static final IExecutable<String> CLOSE_ROOT_QUOTE_M = marker(TokenUtils.MODIFIER_QUOTE + ">>");
-
-	private static final IExecutable<String> OPEN_ROOT_QUOTE_S = marker("((" + TokenUtils.SYMBOL_QUOTE);
-	private static final IExecutable<String> CLOSE_ROOT_QUOTE_S = marker(TokenUtils.SYMBOL_QUOTE + "))");
-
-	private static IExecutable<String> leftBracketMarker(String value) {
-		return marker("<" + value);
-	}
-
-	private static IExecutable<String> rightBracketMarker(String value) {
-		return marker(value + ">");
-	}
-
-	private static IExecutable<String> valueMarker(String value) {
-		return marker("value:" + value);
-	}
-
-	private static IExecutable<String> rawValueMarker(Token token) {
-		return rawValueMarker(token.type, token.value);
-	}
-
-	private static IExecutable<String> rawValueMarker(TokenType type, String value) {
-		return marker("raw:" + type + ":" + value);
-	}
-
-	private static class MarkerNode implements IExprNode<String> {
-		private final IExecutable<String> value;
-
-		public MarkerNode(IExecutable<String> value) {
-			this.value = value;
-		}
-
-		@Override
-		public void flatten(List<IExecutable<String>> output) {
-			output.add(value);
-		}
-
-		@Override
-		public Iterable<IExprNode<String>> getChildren() {
-			return ImmutableList.of();
-		}
-
-	}
-
-	private static class QuoteNodeTestFactory extends EmptyExprNodeFactory<String> {
-		@Override
-		public AstCompilerBehaviour getBehaviour() {
-			return AstCompilerBehaviour.QUOTED;
-		}
-
-		@Override
-		public IExprNode<String> createValueNode(String value) {
-			return new MarkerNode(valueMarker(value));
-		}
-
-		@Override
-		public IExprNode<String> createRawValueNode(Token token) {
-			return new MarkerNode(rawValueMarker(token));
-		}
-
-		@Override
-		public IExprNode<String> createBracketNode(final String openingBracket, final String closingBracket, final List<IExprNode<String>> children) {
-			return new IExprNode<String>() {
-
-				@Override
-				public void flatten(List<IExecutable<String>> output) {
-					output.add(leftBracketMarker(openingBracket));
-					for (IExprNode<String> child : children)
-						child.flatten(output);
-					output.add(rightBracketMarker(closingBracket));
-				}
-
-				@Override
-				public Iterable<IExprNode<String>> getChildren() {
-					return children;
-				}
-			};
-		}
-	}
-
-	private static class ModifierQuoteNodeTestFactory extends QuoteNodeTestFactory implements IModifierExprNodeFactory<String> {
-		private final String modifier;
-
-		public ModifierQuoteNodeTestFactory(String modifier) {
-			this.modifier = modifier;
-		}
-
-		@Override
-		public IExprNode<String> createRootModifierNode(IExprNode<String> child) {
-			return new DummyNode<String>(child) {
-				@Override
-				public void flatten(List<IExecutable<String>> output) {
-					output.add(marker("<<" + modifier));
-					super.flatten(output);
-					output.add(marker(modifier + ">>"));
-				}
-			};
-		}
-	}
-
-	private static class SymbolQuoteNodeTestFactory extends QuoteNodeTestFactory implements ISymbolExprNodeFactory<String> {
-		private final String symbol;
-
-		public SymbolQuoteNodeTestFactory(String symbol) {
-			this.symbol = symbol;
-		}
-
-		@Override
-		public IExprNode<String> createRootSymbolNode(List<IExprNode<String>> children) {
-			return new ContainerNode<String>(children) {
-				@Override
-				public void flatten(List<IExecutable<String>> output) {
-					output.add(marker("((" + symbol));
-					for (IExprNode<String> child : args)
-						child.flatten(output);
-					output.add(marker(symbol + "))"));
-				}
-
-			};
-		}
-	}
-
-	public final IExprNodeFactory<String> nodeFactory = new DefaultExprNodeFactory<String>() {
+	private final IExprNodeFactory<String> testNodeFactory = new TestExprNodeFactory() {
 		@Override
 		public IExprNode<String> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<String>> children) {
 			return new TestBracketNode(children);
 		}
 
 		@Override
-		public IModifierExprNodeFactory<String> createModifierExprNodeFactory(String modifier) {
-			if (modifier.equals(QUOTE_MODIFIER.value)) return new ModifierQuoteNodeTestFactory(modifier);
-			return super.createModifierExprNodeFactory(modifier);
+		public IAstParser<String> getParser() {
+			return new PrefixParser<String>(VALUE_PARSER, operators, this);
 		}
-
-		@Override
-		public ISymbolExprNodeFactory<String> createSymbolExprNodeFactory(String symbol) {
-			if (symbol.equals(QUOTE_SYMBOL.value)) return new SymbolQuoteNodeTestFactory(symbol);
-			return super.createSymbolExprNodeFactory(symbol);
-		}
-
 	};
 
-	private class ResultTester {
-		private final PrefixCompiler<?> compiler = new PrefixCompiler<String>(VALUE_PARSER, operators, nodeFactory);
-
-		private final List<?> actual;
-
-		public ResultTester(Token... inputs) {
-			final IExecutable<?> result = compiler.compile(Arrays.asList(inputs));
-			Assert.assertTrue(result instanceof ExecutableList);
-
-			this.actual = ((ExecutableList<?>)result).getCommands();
-		}
-
-		void expect(IExecutable<?>... expected) {
-			Assert.assertEquals(Arrays.asList(expected), actual);
-		}
-	}
-
-	private ResultTester given(Token... inputs) {
-		return new ResultTester(inputs);
+	private CompilerResultTester given(Token... inputs) {
+		return new CompilerResultTester(new AstCompiler<String>(testNodeFactory), inputs);
 	}
 
 	@Test

@@ -1,10 +1,7 @@
 package openmods.calc;
 
-import java.util.Arrays;
-import java.util.List;
 import openmods.calc.parsing.PostfixCompiler;
 import openmods.calc.parsing.Token;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class PostfixCompilerTest extends CalcTestUtils {
@@ -15,25 +12,8 @@ public class PostfixCompilerTest extends CalcTestUtils {
 		operators.registerUnaryOperator(UNARY_MINUS);
 	}
 
-	private class ResultTester {
-		private final PostfixCompiler<?> compiler = new PostfixCompiler<String>(VALUE_PARSER, operators);
-
-		private final List<?> actual;
-
-		public ResultTester(Token... inputs) {
-			final IExecutable<?> result = compiler.compile(Arrays.asList(inputs));
-			Assert.assertTrue(result instanceof ExecutableList);
-
-			this.actual = ((ExecutableList<?>)result).getCommands();
-		}
-
-		void expect(IExecutable<?>... expected) {
-			Assert.assertEquals(Arrays.asList(expected), actual);
-		}
-	}
-
-	private ResultTester given(Token... inputs) {
-		return new ResultTester(inputs);
+	private CompilerResultTester given(Token... inputs) {
+		return new CompilerResultTester(new PostfixCompiler<String>(VALUE_PARSER, operators), inputs);
 	}
 
 	@Test

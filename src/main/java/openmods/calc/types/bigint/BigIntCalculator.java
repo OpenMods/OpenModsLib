@@ -10,8 +10,6 @@ import openmods.calc.OperatorDictionary;
 import openmods.calc.TernaryFunction;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
-import openmods.calc.parsing.DefaultExprNodeFactory;
-import openmods.calc.parsing.IExprNodeFactory;
 import openmods.config.simpler.Configurable;
 
 public class BigIntCalculator extends Calculator<BigInteger> {
@@ -26,8 +24,8 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 
 	private final BigIntPrinter printer = new BigIntPrinter();
 
-	public BigIntCalculator(OperatorDictionary<BigInteger> operators, IExprNodeFactory<BigInteger> exprNodeFactory) {
-		super(new BigIntParser(), NULL_VALUE, operators, exprNodeFactory);
+	public BigIntCalculator(OperatorDictionary<BigInteger> operators) {
+		super(new BigIntParser(), NULL_VALUE, operators);
 	}
 
 	@Override
@@ -146,8 +144,7 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			}
 		});
 
-		final IExprNodeFactory<BigInteger> exprNodeFactory = new DefaultExprNodeFactory<BigInteger>();
-		final BigIntCalculator result = new BigIntCalculator(operators, exprNodeFactory);
+		final BigIntCalculator result = new BigIntCalculator(operators);
 
 		GenericFunctions.createStackManipulationFunctions(result);
 

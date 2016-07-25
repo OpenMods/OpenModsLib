@@ -27,11 +27,11 @@ public class TokenUtils {
 
 	// yeah, that's pretty non-standard for lisp-clones, but my tokenizer is too stupid to work otherwise
 	public static final String MODIFIER_QUOTE = "#";
-
 	public static final String SYMBOL_QUOTE = "quote";
+	public static final String MODIFIER_CDR = "...";
 
-	public static void setupTokenizerForQuoteNotation(ExprTokenizerFactory tokenizerFactory) {
+	public static void setupTokenizerForQuoteNotation(Tokenizer tokenizerFactory) {
 		tokenizerFactory.addModifier(MODIFIER_QUOTE);
-		tokenizerFactory.addModifier(".");
+		tokenizerFactory.addModifier(MODIFIER_CDR);
 	}
 }

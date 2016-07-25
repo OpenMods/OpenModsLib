@@ -1,26 +1,29 @@
 package openmods.calc;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.PeekingIterator;
+import java.util.Collection;
 import java.util.Iterator;
-import openmods.calc.parsing.ExprTokenizerFactory;
 import openmods.calc.parsing.Token;
+import openmods.calc.parsing.Tokenizer;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class TokenizerTest extends CalcTestUtils {
 
-	private final ExprTokenizerFactory factory = new ExprTokenizerFactory();
+	private final Tokenizer factory = new Tokenizer();
 
 	private void verifyTokens(String input, Token... tokens) {
-		final Iterable<Token> it = factory.tokenize(input);
-		final Token[] result = Iterables.toArray(it, Token.class);
-		Assert.assertArrayEquals(tokens, result);
+		final PeekingIterator<Token> it = factory.tokenize(input);
+		Collection<Token> collection = Lists.newArrayList(it);
+		Token[] array = new Token[collection.size()];
+		Assert.assertArrayEquals(tokens, collection.toArray(array));
 	}
 
 	private void expectFail(String input) {
 		try {
-			final Iterator<Token> it = factory.tokenize(input).iterator();
+			final Iterator<Token> it = factory.tokenize(input);
 			final String result = Joiner.on(' ').join(it); // should fail while iterating
 			Assert.fail(result);
 		} catch (Exception e) {

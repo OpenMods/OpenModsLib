@@ -2,16 +2,21 @@ package openmods.calc;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.PeekingIterator;
 import javax.annotation.Nullable;
-import openmods.calc.parsing.ExprTokenizerFactory;
+import openmods.calc.parsing.AstCompiler;
+import openmods.calc.parsing.DefaultExprNodeFactory;
+import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.ICompiler;
 import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.InfixCompiler;
+import openmods.calc.parsing.InfixParser;
 import openmods.calc.parsing.PostfixCompiler;
-import openmods.calc.parsing.PrefixCompiler;
+import openmods.calc.parsing.PrefixParser;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenUtils;
+import openmods.calc.parsing.Tokenizer;
 import openmods.utils.Stack;
 
 public abstract class Calculator<E> {
@@ -37,9 +42,9 @@ public abstract class Calculator<E> {
 
 	private final TopFrame<E> topFrame = new TopFrame<E>();
 
-	private final ExprTokenizerFactory tokenizerFactory = new ExprTokenizerFactory();
+	private final Tokenizer tokenizer = new Tokenizer();
 
-	private final ExprTokenizerFactory prefixTokenizerFactory = new ExprTokenizerFactory();
+	private final Tokenizer extendedTokenizer = new Tokenizer();
 
 	private final ICompiler<E> rpnCompiler;
 
@@ -49,31 +54,55 @@ public abstract class Calculator<E> {
 
 	private final E nullValue;
 
-	public Calculator(IValueParser<E> parser, E nullValue, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
+	// TODO try to remove it - should be possible after prefix - infix merge
+	public interface IAstParserFactory<E> {
+		public IAstParser<E> create(IExprNodeFactory<E> exprNodeFactory);
+	}
+
+	public Calculator(final IValueParser<E> valueParser, E nullValue, final OperatorDictionary<E> operators) {
 		this.nullValue = nullValue;
 
 		for (String operator : operators.allOperators()) {
-			tokenizerFactory.addOperator(operator);
-			prefixTokenizerFactory.addOperator(operator);
+			tokenizer.addOperator(operator);
+			extendedTokenizer.addOperator(operator);
 		}
 
-		TokenUtils.setupTokenizerForQuoteNotation(prefixTokenizerFactory);
+		TokenUtils.setupTokenizerForQuoteNotation(extendedTokenizer);
 
-		this.pnCompiler = createPrefixCompiler(parser, operators, exprNodeFactory);
-		this.rpnCompiler = createPostfixCompiler(parser, operators);
-		this.infixCompiler = createInfixCompiler(parser, operators, exprNodeFactory);
+		this.pnCompiler = createPrefixCompiler(createNodeFactory(new IAstParserFactory<E>() {
+			@Override
+			public IAstParser<E> create(IExprNodeFactory<E> exprNodeFactory) {
+				return new PrefixParser<E>(valueParser, operators, exprNodeFactory);
+			}
+		}));
+		this.rpnCompiler = createPostfixCompiler(valueParser, operators);
+		this.infixCompiler = createInfixCompiler(createNodeFactory(new IAstParserFactory<E>() {
+			@Override
+			public IAstParser<E> create(IExprNodeFactory<E> exprNodeFactory) {
+				return new InfixParser<E>(valueParser, operators, exprNodeFactory);
+			}
+		}));
 	}
 
 	public E nullValue() {
 		return nullValue;
 	}
 
-	protected ICompiler<E> createPrefixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
-		return new PrefixCompiler<E>(valueParser, operators, exprNodeFactory);
+	protected IExprNodeFactory<E> createNodeFactory(final IAstParserFactory<E> parserFactory) {
+		return new DefaultExprNodeFactory<E>() {
+			@Override
+			public IAstParser<E> getParser() {
+				return parserFactory.create(this);
+			}
+		};
 	}
 
-	protected ICompiler<E> createInfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators, IExprNodeFactory<E> nodeFactory) {
-		return new InfixCompiler<E>(valueParser, operators, nodeFactory);
+	protected ICompiler<E> createPrefixCompiler(IExprNodeFactory<E> exprNodeFactory) {
+		return new AstCompiler<E>(exprNodeFactory);
+	}
+
+	protected ICompiler<E> createInfixCompiler(IExprNodeFactory<E> exprNodeFactory) {
+		return new AstCompiler<E>(exprNodeFactory);
 	}
 
 	protected ICompiler<E> createPostfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
@@ -82,19 +111,23 @@ public abstract class Calculator<E> {
 
 	public abstract String toString(E value);
 
+	private static <E> IExecutable<E> compile(Tokenizer tokenizer, ICompiler<E> compiler, String input) {
+		final PeekingIterator<Token> tokens = tokenizer.tokenize(input);
+		final IExecutable<E> result = compiler.compile(tokens);
+		if (tokens.hasNext())
+			throw new IllegalStateException("Unconsumed tokens: " + Lists.newArrayList(tokens));
+
+		return result;
+	}
+
 	public IExecutable<E> compile(ExprType type, String input) {
 		switch (type) {
-			case PREFIX: {
-				Iterable<Token> tokens = prefixTokenizerFactory.tokenize(input);
-				return pnCompiler.compile(tokens);
-			}
-			case INFIX: {
-				Iterable<Token> tokens = tokenizerFactory.tokenize(input);
-				return infixCompiler.compile(tokens);
-			}
+			case PREFIX:
+				return compile(extendedTokenizer, pnCompiler, input);
+			case INFIX:
+				return compile(extendedTokenizer, infixCompiler, input);
 			case POSTFIX: {
-				Iterable<Token> tokens = tokenizerFactory.tokenize(input);
-				return rpnCompiler.compile(tokens);
+				return compile(tokenizer, rpnCompiler, input);
 			}
 			default:
 				throw new IllegalArgumentException(type.name());
@@ -160,7 +193,7 @@ public abstract class Calculator<E> {
 		}
 	}
 
-	protected Iterable<Token> tokenize(String input) {
-		return tokenizerFactory.tokenize(input);
+	protected PeekingIterator<Token> tokenize(String input) {
+		return tokenizer.tokenize(input);
 	}
 }

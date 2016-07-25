@@ -6,15 +6,18 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.IExecutable;
 import openmods.calc.Value;
-import openmods.calc.parsing.AstCompilerBehaviour;
 import openmods.calc.parsing.ContainerNode;
 import openmods.calc.parsing.EmptyExprNodeFactory;
+import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IModifierExprNodeFactory;
 import openmods.calc.parsing.ISymbolExprNodeFactory;
+import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.NullNode;
+import openmods.calc.parsing.QuotedParser;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
+import openmods.calc.parsing.TokenUtils;
 import openmods.calc.parsing.ValueNode;
 
 class QuotedExprNodeFactory extends EmptyExprNodeFactory<TypedValue> {
@@ -90,23 +93,25 @@ class QuotedExprNodeFactory extends EmptyExprNodeFactory<TypedValue> {
 
 	private final TypeDomain domain;
 	private final TypedValue terminatorValue;
+	private final IValueParser<TypedValue> valueParser;
 
-	public QuotedExprNodeFactory(TypeDomain domain, TypedValue terminatorValue) {
+	public QuotedExprNodeFactory(TypeDomain domain, TypedValue terminatorValue, IValueParser<TypedValue> valueParser) {
 		this.domain = domain;
 		this.terminatorValue = terminatorValue;
+		this.valueParser = valueParser;
+	}
+
+	@Override
+	public IAstParser<TypedValue> getParser() {
+		return new QuotedParser<TypedValue>(valueParser, this);
 	}
 
 	@Override
 	public IExprNode<TypedValue> createRawValueNode(Token token) {
-		if (token.type == TokenType.MODIFIER && token.value.equals("."))
+		if (token.type == TokenType.MODIFIER && token.value.equals(TokenUtils.MODIFIER_CDR))
 			return QUOTED_DOT_MARKER;
 		if (token.type == TokenType.SEPARATOR) return new NullNode<TypedValue>();
 		return new ValueNode<TypedValue>(domain.create(Symbol.class, Symbol.get(token.value)));
-	}
-
-	@Override
-	public AstCompilerBehaviour getBehaviour() {
-		return AstCompilerBehaviour.QUOTED;
 	}
 
 	@Override
@@ -120,8 +125,9 @@ class QuotedExprNodeFactory extends EmptyExprNodeFactory<TypedValue> {
 	}
 
 	public static class ForModifier extends QuotedExprNodeFactory implements IModifierExprNodeFactory<TypedValue> {
-		public ForModifier(TypeDomain domain, TypedValue terminatorValue) {
-			super(domain, terminatorValue);
+
+		public ForModifier(TypeDomain domain, TypedValue terminatorValue, IValueParser<TypedValue> valueParser) {
+			super(domain, terminatorValue, valueParser);
 		}
 
 		@Override
@@ -131,8 +137,9 @@ class QuotedExprNodeFactory extends EmptyExprNodeFactory<TypedValue> {
 	}
 
 	public static class ForSymbol extends QuotedExprNodeFactory implements ISymbolExprNodeFactory<TypedValue> {
-		public ForSymbol(TypeDomain domain, TypedValue terminatorValue) {
-			super(domain, terminatorValue);
+
+		public ForSymbol(TypeDomain domain, TypedValue terminatorValue, IValueParser<TypedValue> valueParser) {
+			super(domain, terminatorValue, valueParser);
 		}
 
 		@Override

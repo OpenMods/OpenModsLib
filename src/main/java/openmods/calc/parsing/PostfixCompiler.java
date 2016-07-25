@@ -2,6 +2,7 @@ package openmods.calc.parsing;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.collect.PeekingIterator;
 import java.util.List;
 import openmods.calc.ExecutableList;
 import openmods.calc.IExecutable;
@@ -21,10 +22,10 @@ public class PostfixCompiler<E> implements ICompiler<E> {
 	}
 
 	@Override
-	public IExecutable<E> compile(Iterable<Token> input) {
-		List<IExecutable<E>> result = Lists.newArrayList();
-		for (Token token : input)
-			result.add(compileToken(token));
+	public IExecutable<E> compile(PeekingIterator<Token> input) {
+		final List<IExecutable<E>> result = Lists.newArrayList();
+		while (input.hasNext())
+			result.add(compileToken(input.next()));
 
 		return new ExecutableList<E>(result);
 	}

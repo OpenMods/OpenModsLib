@@ -3,26 +3,39 @@ package openmods.calc.parsing;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.PeekingIterator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import openmods.calc.BinaryOperator;
 import openmods.calc.BinaryOperator.Associativity;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryOperator;
 
-public class PrefixCompiler<E> extends AstCompiler<E> {
+public class PrefixParser<E> implements IAstParser<E> {
 
 	private final IValueParser<E> valueParser;
 
 	private final OperatorDictionary<E> operators;
 
-	public PrefixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
-		super(exprNodeFactory);
+	private final IExprNodeFactory<E> exprNodeFactory;
+
+	public PrefixParser(IValueParser<E> valueParser, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
 		this.valueParser = valueParser;
 		this.operators = operators;
+		this.exprNodeFactory = exprNodeFactory;
 	}
 
-	protected IExprNode<E> parseNode(Token token, Iterator<Token> input, IExprNodeFactory<E> exprNodeFactory) {
+	private static Token next(Iterator<Token> input) {
+		try {
+			return input.next();
+		} catch (NoSuchElementException e) {
+			throw new UnfinishedExpressionException();
+		}
+	}
+
+	protected IExprNode<E> parseNode(PeekingIterator<Token> input) {
+		final Token token = next(input);
 		if (token.type.isValue()) {
 			final E value = valueParser.parseToken(token);
 			return exprNodeFactory.createValueNode(value);
@@ -33,19 +46,19 @@ public class PrefixCompiler<E> extends AstCompiler<E> {
 			return exprNodeFactory.createSymbolExprNodeFactory(token.value).createRootSymbolNode(emptyArgs);
 		}
 
-		if (token.type == TokenType.MODIFIER) return parseModifierNode(token.value, input, exprNodeFactory);
+		if (token.type == TokenType.MODIFIER) return parseModifierNode(token.value, input);
 
 		if (token.type == TokenType.LEFT_BRACKET)
-			return parseNestedNode(token.value, input, exprNodeFactory);
+			return parseNestedNode(token.value, input);
 
 		throw new IllegalArgumentException("Unexpected token: " + token);
 	}
 
-	private IExprNode<E> parseNestedNode(String openingBracket, Iterator<Token> input, IExprNodeFactory<E> exprNodeFactory) {
+	private IExprNode<E> parseNestedNode(String openingBracket, PeekingIterator<Token> input) {
 		final String closingBracket = TokenUtils.getClosingBracket(openingBracket);
 
 		if (openingBracket.equals("(")) {
-			final Token operationToken = input.next();
+			final Token operationToken = next(input);
 
 			final String operationName = operationToken.value;
 			if (operationToken.type == TokenType.SYMBOL) {
@@ -62,7 +75,7 @@ public class PrefixCompiler<E> extends AstCompiler<E> {
 				} else if (args.size() > 1) {
 					final BinaryOperator<E> binaryOperator = operators.getBinaryOperator(operationName);
 					Preconditions.checkState(binaryOperator != null, "Invalid binary operator '%s'", operationName);
-					return compileBinaryOpNode(binaryOperator, args, exprNodeFactory);
+					return compileBinaryOpNode(binaryOperator, args);
 				} else {
 					throw new IllegalArgumentException("Called operator " + operationName + " without any arguments");
 				}
@@ -77,57 +90,34 @@ public class PrefixCompiler<E> extends AstCompiler<E> {
 		}
 	}
 
-	private IExprNode<E> parseAnyNode(final Token token, Iterator<Token> input, IExprNodeFactory<E> exprNodeFactory) {
-		return exprNodeFactory.getBehaviour().shouldQuote()? parseQuotedNode(token, input, exprNodeFactory) : parseNode(token, input, exprNodeFactory);
-	}
-
-	private List<IExprNode<E>> collectArgs(String openingBracket, String closingBracket, Iterator<Token> input, IExprNodeFactory<E> exprNodeFactory) {
+	private List<IExprNode<E>> collectArgs(String openingBracket, String closingBracket, PeekingIterator<Token> input, IAstParserProvider<E> argParserProvider) {
 		final List<IExprNode<E>> args = Lists.newArrayList();
 		while (true) {
-			final Token argToken = input.next();
-			if (argToken.type.equals(TokenType.SEPARATOR)) {
+			final Token argToken = input.peek();
+			if (argToken.type == TokenType.SEPARATOR) {
 				// comma is whitespace
-			} else if (argToken.type.equals(TokenType.RIGHT_BRACKET)) {
+				next(input);
+			} else if (argToken.type == TokenType.RIGHT_BRACKET) {
 				Preconditions.checkState(argToken.value.equals(closingBracket), "Unmatched brackets: '%s' and '%s'", openingBracket, argToken.value);
+				next(input);
 				break;
 			} else {
-				args.add(parseAnyNode(argToken, input, exprNodeFactory));
+				final IAstParser<E> newParser = argParserProvider.getParser();
+				final IExprNode<E> parsedNode = newParser.parse(input);
+				args.add(parsedNode);
 			}
 		}
 		return args;
 	}
 
-	private IExprNode<E> parseModifierNode(String modifier, Iterator<Token> input, IExprNodeFactory<E> exprNodeFactory) {
+	private IExprNode<E> parseModifierNode(String modifier, PeekingIterator<Token> input) {
 		final IModifierExprNodeFactory<E> newNodeFactory = exprNodeFactory.createModifierExprNodeFactory(modifier);
-		final Token startToken = input.next();
-		return newNodeFactory.createRootModifierNode(parseAnyNode(startToken, input, newNodeFactory));
+		final IAstParser<E> newParser = newNodeFactory.getParser();
+		final IExprNode<E> parsedNode = newParser.parse(input);
+		return newNodeFactory.createRootModifierNode(parsedNode);
 	}
 
-	private IExprNode<E> parseQuotedNode(Token start, Iterator<Token> input, final IExprNodeFactory<E> exprNodeFactory) {
-		if (start.type == TokenType.LEFT_BRACKET) {
-			return parseNestedQuotedNode(start.value, input, exprNodeFactory);
-		} else if (start.type.isValue()) {
-			final E value = valueParser.parseToken(start);
-			return exprNodeFactory.createValueNode(value);
-		} else {
-			return exprNodeFactory.createRawValueNode(start);
-		}
-	}
-
-	private IExprNode<E> parseNestedQuotedNode(String openingBracket, Iterator<Token> input, IExprNodeFactory<E> exprNodeFactory) {
-		final List<IExprNode<E>> children = Lists.newArrayList();
-		while (true) {
-			final Token token = input.next();
-			if (token.type == TokenType.RIGHT_BRACKET) {
-				TokenUtils.checkIsValidBracketPair(openingBracket, token.value);
-				return exprNodeFactory.createBracketNode(openingBracket, token.value, children);
-			} else {
-				children.add(parseQuotedNode(token, input, exprNodeFactory));
-			}
-		}
-	}
-
-	private IExprNode<E> compileBinaryOpNode(BinaryOperator<E> op, List<IExprNode<E>> args, IExprNodeFactory<E> exprNodeFactory) {
+	private IExprNode<E> compileBinaryOpNode(BinaryOperator<E> op, List<IExprNode<E>> args) {
 		if (op.associativity == Associativity.LEFT) {
 			IExprNode<E> left = args.get(0);
 			IExprNode<E> right = args.get(1);
@@ -154,13 +144,8 @@ public class PrefixCompiler<E> extends AstCompiler<E> {
 	}
 
 	@Override
-	public IExprNode<E> compileAst(Iterable<Token> input, IExprNodeFactory<E> exprNodeFactory) {
-		final Iterator<Token> tokens = input.iterator();
-		final Token firstToken = tokens.next();
-		final IExprNode<E> result = parseNode(firstToken, tokens, exprNodeFactory);
-		if (tokens.hasNext())
-			throw new IllegalStateException("Unconsumed tokens: " + Lists.newArrayList(tokens));
-		return result;
+	public IExprNode<E> parse(PeekingIterator<Token> input) {
+		return parseNode(input);
 	}
 
 }

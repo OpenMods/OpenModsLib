@@ -243,9 +243,9 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testTypeFunctions() {
-		prefix("(issymbol #test)").expectResult(b(true)).expectEmptyStack();
-		prefix("(issymbol #+)").expectResult(b(true)).expectEmptyStack();
-		prefix("(issymbol #2)").expectResult(b(false)).expectEmptyStack();
+		infix("issymbol(#test)").expectResult(b(true)).expectEmptyStack();
+		infix("issymbol(#+)").expectResult(b(true)).expectEmptyStack();
+		infix("issymbol(#2)").expectResult(b(false)).expectEmptyStack();
 
 		infix("type(null)").expectResult(s("<null>")).expectEmptyStack();
 		infix("type(true)").expectResult(s("bool")).expectEmptyStack();
@@ -262,7 +262,7 @@ public class TypedValueCalculatorTest {
 		infix("isint(5.0)").expectResult(b(false)).expectEmptyStack();
 		infix("isint('hello')").expectResult(b(false)).expectEmptyStack();
 		infix("isint('I')").expectResult(b(false)).expectEmptyStack();
-		prefix("(isint #2)").expectResult(b(true)).expectEmptyStack();
+		infix("isint(#2)").expectResult(b(true)).expectEmptyStack();
 
 		infix("iscomplex(1)").expectResult(b(false)).expectEmptyStack();
 		infix("iscomplex(I)").expectResult(b(true)).expectEmptyStack();
@@ -420,7 +420,7 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testPrefixQuotes() {
+	public void testPrefixModifierQuotes() {
 		prefix("#()").expectResult(nil()).expectEmptyStack();
 		prefix("#2").expectResult(i(2)).expectEmptyStack();
 		prefix("#'hello'").expectResult(s("hello")).expectEmptyStack();
@@ -429,7 +429,16 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testSymbolQuoted() {
+	public void testInfixModifierQuotes() {
+		infix("#()").expectResult(nil()).expectEmptyStack();
+		infix("#2").expectResult(i(2)).expectEmptyStack();
+		infix("#'hello'").expectResult(s("hello")).expectEmptyStack();
+		infix("#(1)").expectResult(cons(i(1), nil())).expectEmptyStack();
+		infix("#(1 2)").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+	}
+
+	@Test
+	public void testPrefixSymbolQuotes() {
 		prefix("(quote ())").expectResult(nil()).expectEmptyStack();
 		prefix("(quote 2)").expectResult(i(2)).expectEmptyStack();
 		prefix("(quote 'hello')").expectResult(s("hello")).expectEmptyStack();
@@ -438,13 +447,23 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testCommaWhitespaceInQuotes() {
-		prefix("#(1,2)").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
-		prefix("(quote (1,2))").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+	public void testInfixSymbolQuotes() {
+		infix("quote(())").expectResult(nil()).expectEmptyStack();
+		infix("quote(2)").expectResult(i(2)).expectEmptyStack();
+		infix("quote('hello')").expectResult(s("hello")).expectEmptyStack();
+		infix("quote((1))").expectResult(cons(i(1), nil())).expectEmptyStack();
+		infix("quote((1 2))").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
 	}
 
 	@Test
-	public void testPrefixQuotesWithSpecialTokens() {
+	public void testCommaWhitespaceInQuotes() {
+		prefix("#(1,2)").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+		prefix("(quote (1,2))").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+		infix("quote((1,2))").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+	}
+
+	@Test
+	public void testPrefixModifierQuotesWithSpecialTokens() {
 		prefix("#+").expectResult(sym("+")).expectEmptyStack();
 		prefix("#test").expectResult(sym("test")).expectEmptyStack();
 		prefix("#(max)").expectResult(cons(sym("max"), nil())).expectEmptyStack();
@@ -453,7 +472,16 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testSymbolQuotesWithSpecialTokens() {
+	public void testInfixModifierQuotesWithSpecialTokens() {
+		infix("#+").expectResult(sym("+")).expectEmptyStack();
+		infix("#test").expectResult(sym("test")).expectEmptyStack();
+		infix("#(max)").expectResult(cons(sym("max"), nil())).expectEmptyStack();
+		infix("#(+)").expectResult(cons(sym("+"), nil())).expectEmptyStack();
+		infix("#(1 + max)").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil())))).expectEmptyStack();
+	}
+
+	@Test
+	public void testPrefixSymbolQuotesWithSpecialTokens() {
 		prefix("(quote +)").expectResult(sym("+")).expectEmptyStack();
 		prefix("(quote test)").expectResult(sym("test")).expectEmptyStack();
 		prefix("(quote (max))").expectResult(cons(sym("max"), nil())).expectEmptyStack();
@@ -462,7 +490,16 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testNestedPrefixQuotes() {
+	public void testInfixSymbolQuotesWithSpecialTokens() {
+		infix("quote(+)").expectResult(sym("+")).expectEmptyStack();
+		infix("quote(test)").expectResult(sym("test")).expectEmptyStack();
+		infix("quote((max))").expectResult(cons(sym("max"), nil())).expectEmptyStack();
+		infix("quote((+))").expectResult(cons(sym("+"), nil())).expectEmptyStack();
+		infix("quote((1 + max))").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil())))).expectEmptyStack();
+	}
+
+	@Test
+	public void testPrefixNestedModifierQuotes() {
 		prefix("#(())").expectResult(cons(nil(), nil())).expectEmptyStack();
 		prefix("#((1))").expectResult(cons(cons(i(1), nil()), nil())).expectEmptyStack();
 		prefix("#((1), 2)").expectResult(cons(cons(i(1), nil()), cons(i(2), nil()))).expectEmptyStack();
@@ -470,16 +507,63 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testDottedPrefixQuotes() {
-		prefix("#(3 . ())").expectResult(cons(i(3), nil())).expectEmptyStack();
-		prefix("#(3 . 2)").expectResult(cons(i(3), i(2))).expectEmptyStack();
-		prefix("#(3 . (2 . 1))").expectResult(cons(i(3), cons(i(2), i(1)))).expectEmptyStack();
+	public void testInfixNestedModifierQuotes() {
+		infix("#(())").expectResult(cons(nil(), nil())).expectEmptyStack();
+		infix("#((1))").expectResult(cons(cons(i(1), nil()), nil())).expectEmptyStack();
+		infix("#((1), 2)").expectResult(cons(cons(i(1), nil()), cons(i(2), nil()))).expectEmptyStack();
+		infix("#(1 (2))").expectResult(cons(i(1), cons(cons(i(2), nil()), nil()))).expectEmptyStack();
+	}
+
+	@Test
+	public void testPrefixDottedModifierQuotes() {
+		prefix("#(3 ... ())").expectResult(cons(i(3), nil())).expectEmptyStack();
+		prefix("#(3 ... 2)").expectResult(cons(i(3), i(2))).expectEmptyStack();
+		prefix("#(3 ... (2 ... 1))").expectResult(cons(i(3), cons(i(2), i(1)))).expectEmptyStack();
+	}
+
+	@Test
+	public void testPrefixDottedSymbolQuotes() {
+		prefix("(quote (3 ... ()))").expectResult(cons(i(3), nil())).expectEmptyStack();
+		prefix("(quote (3 ... 2))").expectResult(cons(i(3), i(2))).expectEmptyStack();
+		prefix("(quote (3 ... (2 ... 1)))").expectResult(cons(i(3), cons(i(2), i(1)))).expectEmptyStack();
+	}
+
+	@Test
+	public void testInfixDottedModifierQuotes() {
+		infix("#(3 ... ())").expectResult(cons(i(3), nil())).expectEmptyStack();
+		infix("#(3 ... 2)").expectResult(cons(i(3), i(2))).expectEmptyStack();
+		infix("#(3 ... (2 ... 1))").expectResult(cons(i(3), cons(i(2), i(1)))).expectEmptyStack();
+	}
+
+	@Test
+	public void testInfixDottedSymbolQuotes() {
+		infix("quote((3 ... ()))").expectResult(cons(i(3), nil())).expectEmptyStack();
+		infix("quote((3 ... 2))").expectResult(cons(i(3), i(2))).expectEmptyStack();
+		infix("quote((3 ... (2 ... 1)))").expectResult(cons(i(3), cons(i(2), i(1)))).expectEmptyStack();
 	}
 
 	@Test
 	public void testMixedQuotes() {
 		prefix("(quote #)").expectResult(sym("#"));
 		prefix("#(quote 2)").expectResult(cons(sym("quote"), cons(i(2), nil())));
+
+		infix("quote(#)").expectResult(sym("#"));
+		infix("#(quote 2)").expectResult(cons(sym("quote"), cons(i(2), nil())));
+	}
+
+	@Test
+	public void testArgQuotes() {
+		prefix("(str (quote test))").expectResult(s("test"));
+		prefix("(len (quote (a + c)))").expectResult(i(3));
+
+		prefix("(str #test)").expectResult(s("test"));
+		prefix("(len #(a + c))").expectResult(i(3));
+
+		infix("str(quote(test))").expectResult(s("test"));
+		infix("len(quote((a + c)))").expectResult(i(3));
+
+		infix("str(#test)").expectResult(s("test"));
+		infix("len(#(a + c))").expectResult(i(3));
 	}
 
 	@Test

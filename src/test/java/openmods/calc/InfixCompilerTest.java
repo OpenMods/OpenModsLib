@@ -1,13 +1,12 @@
 package openmods.calc;
 
-import java.util.Arrays;
-import java.util.List;
-import openmods.calc.parsing.DefaultExprNodeFactory;
+import openmods.calc.parsing.AstCompiler;
+import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.IExprNodeFactory;
-import openmods.calc.parsing.InfixCompiler;
+import openmods.calc.parsing.InfixParser;
 import openmods.calc.parsing.Token;
+import openmods.calc.parsing.UnfinishedExpressionException;
 import openmods.calc.parsing.UnmatchedBracketsException;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class InfixCompilerTest extends CalcTestUtils {
@@ -22,34 +21,15 @@ public class InfixCompilerTest extends CalcTestUtils {
 		operators.registerBinaryOperator(MULTIPLY).setDefault();
 	}
 
-	public final IExprNodeFactory<String> nodeFactory = new DefaultExprNodeFactory<String>();
-
-	private class ResultTester {
-		private final InfixCompiler<String> compiler = new InfixCompiler<String>(VALUE_PARSER, operators, nodeFactory);
-		private final List<IExecutable<String>> actual;
-
-		public ResultTester(Token... inputs) {
-			final IExecutable<String> result = compiler.compile(Arrays.asList(inputs));
-			Assert.assertTrue(result instanceof ExecutableList);
-
-			this.actual = ((ExecutableList<String>)result).getCommands();
+	private final IExprNodeFactory<String> testNodeFactory = new TestExprNodeFactory() {
+		@Override
+		public IAstParser<String> getParser() {
+			return new InfixParser<String>(VALUE_PARSER, operators, this);
 		}
+	};
 
-		public ResultTester expectSameAs(Token... inputs) {
-			final IExecutable<?> result = compiler.compile(Arrays.asList(inputs));
-			Assert.assertTrue(result instanceof ExecutableList);
-			Assert.assertEquals(((ExecutableList<?>)result).getCommands(), actual);
-			return this;
-		}
-
-		public ResultTester expect(IExecutable<?>... expected) {
-			Assert.assertEquals(Arrays.asList(expected), actual);
-			return this;
-		}
-	}
-
-	private ResultTester given(Token... inputs) {
-		return new ResultTester(inputs);
+	private CompilerResultTester given(Token... inputs) {
+		return new CompilerResultTester(new AstCompiler<String>(testNodeFactory), inputs);
 	}
 
 	@Test
@@ -137,12 +117,12 @@ public class InfixCompilerTest extends CalcTestUtils {
 		given(symbol("b"), leftBracket("("), dec("2"), COMMA, dec("3"), rightBracket("]"));
 	}
 
-	@Test(expected = UnmatchedBracketsException.class)
+	@Test(expected = UnfinishedExpressionException.class)
 	public void testUnclosedBracket() {
 		given(LEFT_BRACKET, dec("2"));
 	}
 
-	@Test(expected = UnmatchedBracketsException.class)
+	@Test(expected = UnfinishedExpressionException.class)
 	public void testUnclosedBracketWithComma() {
 		given(LEFT_BRACKET, dec("2"), COMMA, dec("3"));
 	}
@@ -284,6 +264,10 @@ public class InfixCompilerTest extends CalcTestUtils {
 		given(OP_MINUS, symbol("pi"))
 				.expect(s("pi", 0), UNARY_MINUS);
 
+		// sin(-2)
+		given(symbol("sin"), LEFT_BRACKET, OP_MINUS, dec("2"), RIGHT_BRACKET)
+				.expect(c("2"), UNARY_MINUS, s("sin", 1));
+
 		// -sin(2)
 		given(OP_MINUS, symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
 				.expect(c("2"), s("sin", 1), UNARY_MINUS);
@@ -311,9 +295,9 @@ public class InfixCompilerTest extends CalcTestUtils {
 	@Test
 	public void testDefaultOperator() {
 		// 2a == 2 * a
-		given(dec("2"), symbol("a"))
-				.expect(c("2"), s("a", 0), MULTIPLY)
-				.expectSameAs(dec("2"), OP_MULTIPLY, symbol("a"));
+		// given(dec("2"), symbol("a"))
+		// .expect(c("2"), s("a", 0), MULTIPLY)
+		// .expectSameAs(dec("2"), OP_MULTIPLY, symbol("a"));
 
 		// -2a == -2 * a
 		given(OP_MINUS, dec("2"), symbol("a"))
@@ -413,5 +397,39 @@ public class InfixCompilerTest extends CalcTestUtils {
 		given(OP_MINUS, symbol("a"), symbol("b"))
 				.expect(s("a", 0), UNARY_MINUS, s("b", 0), MULTIPLY)
 				.expectSameAs(OP_MINUS, symbol("a"), OP_MULTIPLY, symbol("b"));
+	}
+
+	@Test
+	public void testValueModifierQuote() {
+		// #12
+		given(QUOTE_MODIFIER, dec("12")).expect(OPEN_ROOT_QUOTE_M, valueMarker("12"), CLOSE_ROOT_QUOTE_M);
+		// #"abc"
+		given(QUOTE_MODIFIER, string("abc")).expect(OPEN_ROOT_QUOTE_M, valueMarker("abc"), CLOSE_ROOT_QUOTE_M);
+	}
+
+	@Test
+	public void testValueSymbolQuote() {
+		// quote(12)
+		given(QUOTE_SYMBOL, LEFT_BRACKET, dec("12"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_S, valueMarker("12"), CLOSE_ROOT_QUOTE_S);
+		// quote("abc")
+		given(QUOTE_SYMBOL, LEFT_BRACKET, string("abc"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_S, valueMarker("abc"), CLOSE_ROOT_QUOTE_S);
+	}
+
+	@Test
+	public void testRawValueQuote() {
+		// #abc
+		given(QUOTE_MODIFIER, symbol("abc")).expect(OPEN_ROOT_QUOTE_M, rawValueMarker(symbol("abc")), CLOSE_ROOT_QUOTE_M);
+		// #+
+		given(QUOTE_MODIFIER, OP_PLUS).expect(OPEN_ROOT_QUOTE_M, rawValueMarker(OP_PLUS), CLOSE_ROOT_QUOTE_M);
+		// #.
+		given(QUOTE_MODIFIER, mod(".")).expect(OPEN_ROOT_QUOTE_M, rawValueMarker(mod(".")), CLOSE_ROOT_QUOTE_M);
+	}
+
+	@Test
+	public void testQuoteAndDeafultOpOrder() {
+		// #abc(12)
+		given(QUOTE_MODIFIER, symbol("abc"), LEFT_BRACKET, dec("12"), RIGHT_BRACKET)
+				.expectSameAs(QUOTE_MODIFIER, symbol("abc"), OP_MULTIPLY, LEFT_BRACKET, dec("12"), RIGHT_BRACKET)
+				.expect(OPEN_ROOT_QUOTE_M, rawValueMarker(symbol("abc")), CLOSE_ROOT_QUOTE_M, c("12"), MULTIPLY);
 	}
 }

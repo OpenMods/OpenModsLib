@@ -4,9 +4,7 @@ import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.UnaryOperator;
 
-public interface IExprNodeFactory<E> {
-
-	public AstCompilerBehaviour getBehaviour();
+public interface IExprNodeFactory<E> extends IAstParserProvider<E> {
 
 	public IModifierExprNodeFactory<E> createModifierExprNodeFactory(String modifier);
 

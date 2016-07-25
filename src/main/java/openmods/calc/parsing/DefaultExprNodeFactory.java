@@ -5,12 +5,7 @@ import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.UnaryOperator;
 
-public class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
-
-	@Override
-	public AstCompilerBehaviour getBehaviour() {
-		return AstCompilerBehaviour.NORMAL;
-	}
+public abstract class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
 
 	@Override
 	public ISymbolExprNodeFactory<E> createSymbolExprNodeFactory(final String symbol) {
