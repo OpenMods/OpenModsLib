@@ -1,18 +1,22 @@
 package openmods.calc.types.bigint;
 
 import java.math.BigInteger;
+import java.util.Map;
+import openmods.calc.BasicCalculatorFactory;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
+import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
+import openmods.calc.ICalculatorFactory;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.TernaryFunction;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.config.simpler.Configurable;
 
-public class BigIntCalculator extends Calculator<BigInteger> {
+public class BigIntCalculator<M> extends Calculator<BigInteger, M> {
 
 	public static final BigInteger NULL_VALUE = BigInteger.ZERO;
 
@@ -24,8 +28,8 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 
 	private final BigIntPrinter printer = new BigIntPrinter();
 
-	public BigIntCalculator(OperatorDictionary<BigInteger> operators) {
-		super(new BigIntParser(), NULL_VALUE, operators);
+	public BigIntCalculator(Map<M, ICompiler<BigInteger>> compilers) {
+		super(NULL_VALUE, compilers);
 	}
 
 	@Override
@@ -36,7 +40,7 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 
 	private static final int MAX_PRIO = 6;
 
-	public static BigIntCalculator create() {
+	public static <E> Calculator<BigInteger, E> create(ICalculatorFactory<BigInteger, E, ? extends Calculator<BigInteger, E>> factory) {
 		final OperatorDictionary<BigInteger> operators = new OperatorDictionary<BigInteger>();
 
 		operators.registerUnaryOperator(new UnaryOperator<BigInteger>("~") {
@@ -144,7 +148,7 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 			}
 		});
 
-		final BigIntCalculator result = new BigIntCalculator(operators);
+		final Calculator<BigInteger, E> result = factory.create(NULL_VALUE, new BigIntParser(), operators);
 
 		GenericFunctions.createStackManipulationFunctions(result);
 
@@ -246,6 +250,15 @@ public class BigIntCalculator extends Calculator<BigInteger> {
 		});
 
 		return result;
+	}
+
+	public static Calculator<BigInteger, ExprType> createDefault() {
+		return create(new BasicCalculatorFactory<BigInteger, BigIntCalculator<ExprType>>() {
+			@Override
+			protected BigIntCalculator<ExprType> createCalculator(BigInteger nullValue, Map<ExprType, ICompiler<BigInteger>> compilers) {
+				return new BigIntCalculator<ExprType>(compilers);
+			}
+		});
 	}
 
 }

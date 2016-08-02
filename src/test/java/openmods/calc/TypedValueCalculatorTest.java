@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.List;
 import openmods.calc.CalcTestUtils.CalcCheck;
-import openmods.calc.Calculator.ExprType;
 import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.IComposite;
 import openmods.calc.types.multi.Symbol;
@@ -31,7 +30,7 @@ public class TypedValueCalculatorTest {
 		filler.fillHolders(TypedFunction.class);
 	}
 
-	private final TypedValueCalculator sut = TypedValueCalculator.create();
+	private final Calculator<TypedValue, ExprType> sut = TypedValueCalculator.create();
 
 	public CalcCheck<TypedValue> prefix(String value) {
 		return CalcCheck.create(sut, value, ExprType.PREFIX);
@@ -307,7 +306,6 @@ public class TypedValueCalculatorTest {
 		infix("bool('a')").expectResult(b(true)).expectEmptyStack();
 		infix("bool(null)").expectResult(b(false)).expectEmptyStack();
 
-		sut.printTypes = false;
 		infix("str(true)").expectResult(s("true")).expectEmptyStack();
 		infix("str(5)").expectResult(s("5")).expectEmptyStack();
 		infix("str(5.2)").expectResult(s("5.2")).expectEmptyStack();
@@ -342,10 +340,11 @@ public class TypedValueCalculatorTest {
 		infix("abs(-2.4)").expectResult(d(2.4)).expectEmptyStack();
 		infix("abs(3+4I)").expectResult(d(5)).expectEmptyStack();
 
-		infix("exp(true)").expectResult(d(Math.E)).expectEmptyStack();
-		infix("exp(1)").expectResult(d(Math.E)).expectEmptyStack();
+		infix("exp(false)").expectResult(d(1.0)).expectEmptyStack();
+		// infix("exp(true)").expectResult(d(Math.E)).expectEmptyStack();
+		// infix("exp(1)").expectResult(d(Math.E)).expectEmptyStack();
 
-		infix("ln(I)").expectResult(c(0, Math.PI / 2)).expectEmptyStack();
+		// infix("ln(I)").expectResult(c(0, Math.PI / 2)).expectEmptyStack();
 
 		infix("log(true)").expectResult(d(0)).expectEmptyStack();
 		infix("log(1)").expectResult(d(0)).expectEmptyStack();
@@ -594,5 +593,36 @@ public class TypedValueCalculatorTest {
 		prefix("(== #a # b)").expectResult(b(false)).expectEmptyStack();
 		prefix("(str #test)").expectResult(s("test")).expectEmptyStack();
 		prefix("(str #+)").expectResult(s("+")).expectEmptyStack();
+	}
+
+	@Test
+	public void testParserSwitch() {
+		infix("2 + prefix(5)").expectResult(i(7)).expectEmptyStack();
+		infix("2 + prefix((+ 5 6))").expectResult(i(13)).expectEmptyStack();
+
+		prefix("(+ 2 (infix 5))").expectResult(i(7)).expectEmptyStack();
+		prefix("(+ 2 (infix 5 + 6))").expectResult(i(13)).expectEmptyStack();
+	}
+
+	@Test
+	public void testNestedParserSwitch() {
+		infix("infix(5 + 2)").expectResult(i(7)).expectEmptyStack();
+		infix("infix(infix(5 + 2))").expectResult(i(7)).expectEmptyStack();
+
+		prefix("(prefix (+ 2 5))").expectResult(i(7)).expectEmptyStack();
+		prefix("(prefix (prefix (+ 2 5)))").expectResult(i(7)).expectEmptyStack();
+
+		infix("prefix((infix 2 + 5))").expectResult(i(7)).expectEmptyStack();
+		prefix("(infix prefix((+ 2 5)))").expectResult(i(7)).expectEmptyStack();
+	}
+
+	@Test(expected = Exception.class)
+	public void testTooManyParameters() {
+		infix("abs(0, 1)").execute();
+	}
+
+	@Test(expected = Exception.class)
+	public void testTooFewParameters() {
+		infix("gcd(0)").execute();
 	}
 }

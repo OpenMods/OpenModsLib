@@ -1,17 +1,21 @@
 package openmods.calc.types.fp;
 
+import java.util.Map;
+import openmods.calc.BasicCalculatorFactory;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Constant;
+import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
+import openmods.calc.ICalculatorFactory;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.config.simpler.Configurable;
 
-public class DoubleCalculator extends Calculator<Double> {
+public class DoubleCalculator<M> extends Calculator<Double, M> {
 
 	private static final double NULL_VALUE = 0.0;
 
@@ -26,8 +30,8 @@ public class DoubleCalculator extends Calculator<Double> {
 
 	private final DoublePrinter printer = new DoublePrinter(8);
 
-	public DoubleCalculator(OperatorDictionary<Double> operators) {
-		super(new DoubleParser(), NULL_VALUE, operators);
+	public DoubleCalculator(Map<M, ICompiler<Double>> compilers) {
+		super(NULL_VALUE, compilers);
 	}
 
 	@Override
@@ -44,7 +48,7 @@ public class DoubleCalculator extends Calculator<Double> {
 
 	private static final int MAX_PRIO = 5;
 
-	public static DoubleCalculator create() {
+	public static <E> Calculator<Double, E> create(ICalculatorFactory<Double, E, ? extends Calculator<Double, E>> factory) {
 		final OperatorDictionary<Double> operators = new OperatorDictionary<Double>();
 
 		operators.registerUnaryOperator(new UnaryOperator<Double>("neg") {
@@ -110,7 +114,7 @@ public class DoubleCalculator extends Calculator<Double> {
 			}
 		});
 
-		final DoubleCalculator result = new DoubleCalculator(operators);
+		final Calculator<Double, E> result = factory.create(NULL_VALUE, new DoubleParser(), operators);
 
 		GenericFunctions.createStackManipulationFunctions(result);
 
@@ -322,6 +326,15 @@ public class DoubleCalculator extends Calculator<Double> {
 		});
 
 		return result;
+	}
+
+	public static Calculator<Double, ExprType> createDefault() {
+		return create(new BasicCalculatorFactory<Double, DoubleCalculator<ExprType>>() {
+			@Override
+			protected DoubleCalculator<ExprType> createCalculator(Double nullValue, Map<ExprType, ICompiler<Double>> compilers) {
+				return new DoubleCalculator<ExprType>(compilers);
+			}
+		});
 	}
 
 }

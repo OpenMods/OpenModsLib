@@ -11,11 +11,15 @@ import gnu.trove.set.TCharSet;
 import gnu.trove.set.hash.TCharHashSet;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import openmods.calc.BasicCalculatorFactory;
+import openmods.calc.BasicCalculatorFactory.SwitchingCompilerState;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Constant;
+import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.ICalculatorFrame;
@@ -30,13 +34,14 @@ import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IExprNodeFactory;
-import openmods.calc.parsing.IModifierExprNodeFactory;
-import openmods.calc.parsing.ISymbolExprNodeFactory;
 import openmods.calc.parsing.IValueParser;
+import openmods.calc.parsing.InfixParser;
+import openmods.calc.parsing.PrefixParser;
 import openmods.calc.parsing.StringEscaper;
 import openmods.calc.parsing.SymbolNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenUtils;
+import openmods.calc.parsing.Tokenizer;
 import openmods.calc.types.bigint.BigIntPrinter;
 import openmods.calc.types.fp.DoublePrinter;
 import openmods.calc.types.multi.Cons.Visitor;
@@ -53,7 +58,7 @@ import openmods.utils.Stack;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class TypedValueCalculator extends Calculator<TypedValue> {
+public class TypedValueCalculator<M> extends Calculator<TypedValue, M> {
 
 	private static final String SYMBOL_NULL = "null";
 	private static final String SYMBOL_FALSE = "true";
@@ -88,7 +93,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 	public boolean numericBool = false;
 
 	@Configurable
-	public boolean printTypes = true;
+	public boolean printTypes = false;
 
 	@Configurable
 	public boolean printLists = true;
@@ -100,8 +105,8 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 	private final BigIntPrinter bigIntPrinter = new BigIntPrinter();
 
-	public TypedValueCalculator(IValueParser<TypedValue> parser, TypedValue nullValue, OperatorDictionary<TypedValue> operators) {
-		super(parser, nullValue, operators);
+	public TypedValueCalculator(TypedValue nullValue, Map<M, ICompiler<TypedValue>> compilers) {
+		super(nullValue, compilers);
 	}
 
 	@Override
@@ -268,7 +273,7 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 	private static final Set<Class<?>> NUMBER_TYPES = ImmutableSet.<Class<?>> of(Double.class, Boolean.class, BigInteger.class, Complex.class);
 
-	public static TypedValueCalculator create() {
+	public static Calculator<TypedValue, ExprType> create() {
 		final TypeDomain domain = new TypeDomain();
 
 		domain.registerType(UnitType.class, "<null>");
@@ -772,27 +777,46 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 		final TypedValueParser valueParser = new TypedValueParser(domain);
 
-		final TypedValueCalculator result = new TypedValueCalculator(valueParser, nullValue, operators) {
+		class InitialParserState extends SwitchingCompilerState<TypedValue> {
+
+			public InitialParserState(IAstParser<TypedValue> parser, String currentStateSymbol, String switchStateSymbol) {
+				super(parser, currentStateSymbol, switchStateSymbol);
+			}
 
 			@Override
-			protected IExprNodeFactory<TypedValue> createNodeFactory(final IAstParserFactory<TypedValue> parserFactory) {
-				return new DefaultExprNodeFactory<TypedValue>() {
-					@Override
-					public IModifierExprNodeFactory<TypedValue> createModifierExprNodeFactory(String modifier) {
-						if (modifier.equals(TokenUtils.MODIFIER_QUOTE))
-							return new QuotedExprNodeFactory.ForModifier(domain, nullValue, valueParser);
+			public ISymbolStateTransition<TypedValue> getStateForSymbol(String symbol) {
+				if (symbol.equals(TokenUtils.SYMBOL_QUOTE))
+					return new QuoteStateTransition.ForSymbol(domain, nullValue, valueParser);
 
-						return super.createModifierExprNodeFactory(modifier);
-					}
+				return super.getStateForSymbol(symbol);
+			}
 
-					@Override
-					public ISymbolExprNodeFactory<TypedValue> createSymbolExprNodeFactory(String symbol) {
-						if (symbol.equals(TokenUtils.SYMBOL_QUOTE))
-							return new QuotedExprNodeFactory.ForSymbol(domain, nullValue, valueParser);
+			@Override
+			public IModifierStateTransition<TypedValue> getStateForModifier(String modifier) {
+				if (modifier.equals(TokenUtils.MODIFIER_QUOTE))
+					return new QuoteStateTransition.ForModifier(domain, nullValue, valueParser);
 
-						return super.createSymbolExprNodeFactory(symbol);
-					}
+				return super.getStateForModifier(modifier);
+			}
+		}
 
+		class TypedValueCalculatorFactory extends BasicCalculatorFactory<TypedValue, TypedValueCalculator<ExprType>> {
+
+			@Override
+			protected SwitchingCompilerState<TypedValue> createInfixParserState(OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory) {
+				final IAstParser<TypedValue> infixParser = new InfixParser<TypedValue>(operators, exprNodeFactory);
+				return new InitialParserState(infixParser, "infix", "prefix");
+			}
+
+			@Override
+			protected SwitchingCompilerState<TypedValue> createPrefixCompilerState(OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory) {
+				final IAstParser<TypedValue> prefixParser = new PrefixParser<TypedValue>(operators, exprNodeFactory);
+				return new InitialParserState(prefixParser, "prefix", "infix");
+			}
+
+			@Override
+			protected DefaultExprNodeFactory<TypedValue> createExprNodeFactory(IValueParser<TypedValue> valueParser) {
+				return new DefaultExprNodeFactory<TypedValue>(valueParser) {
 					@Override
 					public IExprNode<TypedValue> createBinaryOpNode(BinaryOperator<TypedValue> op, final IExprNode<TypedValue> leftChild, final IExprNode<TypedValue> rightChild) {
 						if (op == dotOperator) return new IExprNode<TypedValue>() {
@@ -817,16 +841,22 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 
 						return super.createBinaryOpNode(op, leftChild, rightChild);
 					}
-
-					@Override
-					public IAstParser<TypedValue> getParser() {
-						return parserFactory.create(this);
-					}
-
 				};
 			}
 
-		};
+			@Override
+			protected void setupExtendedTokenizer(Tokenizer extendedTokenizer) {
+				TokenUtils.setupTokenizerForQuoteNotation(extendedTokenizer);
+			}
+
+			@Override
+			protected TypedValueCalculator<ExprType> createCalculator(TypedValue nullValue, Map<ExprType, openmods.calc.Calculator.ICompiler<TypedValue>> compilers) {
+				return new TypedValueCalculator<ExprType>(nullValue, compilers);
+			}
+
+		}
+
+		final TypedValueCalculator<ExprType> result = new TypedValueCalculatorFactory().create(nullValue, valueParser, operators);
 
 		GenericFunctions.createStackManipulationFunctions(result);
 
@@ -964,11 +994,13 @@ public class TypedValueCalculator extends Calculator<TypedValue> {
 		});
 
 		result.setGlobalSymbol("parse", new SimpleTypedFunction(domain) {
+			private final Tokenizer tokenizer = new Tokenizer();
+
 			@Variant
 			@RawReturn
 			public TypedValue parse(String value) {
 				try {
-					final List<Token> tokens = Lists.newArrayList(result.tokenize(value));
+					final List<Token> tokens = Lists.newArrayList(tokenizer.tokenize(value));
 					Preconditions.checkState(tokens.size() == 1, "Expected single token from '%', got %s", value, tokens.size());
 					return valueParser.parseToken(tokens.get(0));
 				} catch (Exception e) {

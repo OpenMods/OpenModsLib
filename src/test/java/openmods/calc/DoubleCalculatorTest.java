@@ -1,13 +1,12 @@
 package openmods.calc;
 
 import openmods.calc.CalcTestUtils.CalcCheck;
-import openmods.calc.Calculator.ExprType;
 import openmods.calc.types.fp.DoubleCalculator;
 import org.junit.Test;
 
 public class DoubleCalculatorTest {
 
-	private final DoubleCalculator sut = DoubleCalculator.create();
+	private final Calculator<Double, ExprType> sut = DoubleCalculator.createDefault();
 
 	public CalcCheck<Double> prefix(String value) {
 		return CalcCheck.create(sut, value, ExprType.PREFIX);
@@ -146,6 +145,27 @@ public class DoubleCalculatorTest {
 	@Test(expected = Exception.class)
 	public void testTooFewParameters() {
 		infix("atan2(0)").execute();
+	}
+
+	@Test
+	public void testParserSwitch() {
+		infix("2 + prefix(5)").expectResult(7.0).expectEmptyStack();
+		infix("2 + prefix((+ 5 6))").expectResult(13.0).expectEmptyStack();
+
+		prefix("(+ 2 (infix 5))").expectResult(7.0).expectEmptyStack();
+		prefix("(+ 2 (infix 5 + 6))").expectResult(13.0).expectEmptyStack();
+	}
+
+	@Test
+	public void testNestedParserSwitch() {
+		infix("infix(5 + 2)").expectResult(7.0).expectEmptyStack();
+		infix("infix(infix(5 + 2))").expectResult(7.0).expectEmptyStack();
+
+		prefix("(prefix (+ 2 5))").expectResult(7.0).expectEmptyStack();
+		prefix("(prefix (prefix (+ 2 5)))").expectResult(7.0).expectEmptyStack();
+
+		infix("prefix((infix 2 + 5))").expectResult(7.0).expectEmptyStack();
+		prefix("(infix prefix((+ 2 5)))").expectResult(7.0).expectEmptyStack();
 	}
 
 }

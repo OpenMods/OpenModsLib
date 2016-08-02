@@ -7,6 +7,10 @@ import openmods.utils.Stack;
 
 public class GenericFunctions {
 
+	public interface Accumulator<E> {
+		public E accumulate(E prev, E value);
+	}
+
 	// WARNING: this assumes 'accumulate' operation is associative!
 	public abstract static class AccumulatorFunction<E> implements ISymbol<E> {
 		private final E nullValue;
@@ -43,7 +47,7 @@ public class GenericFunctions {
 		protected abstract E accumulate(E result, E value);
 	}
 
-	public static <E> void createStackManipulationFunctions(Calculator<E> calculator) {
+	public static <E, M> void createStackManipulationFunctions(Calculator<E, M> calculator) {
 		calculator.setGlobalSymbol("swap", new FixedSymbol<E>(2, 2) {
 			@Override
 			public void execute(ICalculatorFrame<E> frame) {

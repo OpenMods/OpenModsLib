@@ -1,14 +1,13 @@
 package openmods.calc;
 
 import openmods.calc.CalcTestUtils.CalcCheck;
-import openmods.calc.Calculator.ExprType;
 import openmods.calc.types.fraction.FractionCalculator;
 import org.apache.commons.lang3.math.Fraction;
 import org.junit.Test;
 
 public class FractionCalculatorTest {
 
-	private final FractionCalculator sut = FractionCalculator.create();
+	private final Calculator<Fraction, ExprType> sut = FractionCalculator.createDefault();
 
 	public CalcCheck<Fraction> prefix(String value) {
 		return CalcCheck.create(sut, value, ExprType.PREFIX);
@@ -136,5 +135,26 @@ public class FractionCalculatorTest {
 	@Test(expected = Exception.class)
 	public void testTooManyParameters() {
 		infix("abs(0, 1)").execute();
+	}
+
+	@Test
+	public void testParserSwitch() {
+		infix("2 + prefix(5)").expectResult(f(7)).expectEmptyStack();
+		infix("2 + prefix((+ 5 6))").expectResult(f(13)).expectEmptyStack();
+
+		prefix("(+ 2 (infix 5))").expectResult(f(7)).expectEmptyStack();
+		prefix("(+ 2 (infix 5 + 6))").expectResult(f(13)).expectEmptyStack();
+	}
+
+	@Test
+	public void testNestedParserSwitch() {
+		infix("infix(5 + 2)").expectResult(f(7)).expectEmptyStack();
+		infix("infix(infix(5 + 2))").expectResult(f(7)).expectEmptyStack();
+
+		prefix("(prefix (+ 2 5))").expectResult(f(7)).expectEmptyStack();
+		prefix("(prefix (prefix (+ 2 5)))").expectResult(f(7)).expectEmptyStack();
+
+		infix("prefix((infix 2 + 5))").expectResult(f(7)).expectEmptyStack();
+		prefix("(infix prefix((+ 2 5)))").expectResult(f(7)).expectEmptyStack();
 	}
 }

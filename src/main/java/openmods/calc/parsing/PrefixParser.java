@@ -11,17 +11,16 @@ import openmods.calc.BinaryOperator;
 import openmods.calc.BinaryOperator.Associativity;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryOperator;
+import openmods.calc.parsing.ICompilerState.IModifierStateTransition;
+import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
 
 public class PrefixParser<E> implements IAstParser<E> {
-
-	private final IValueParser<E> valueParser;
 
 	private final OperatorDictionary<E> operators;
 
 	private final IExprNodeFactory<E> exprNodeFactory;
 
-	public PrefixParser(IValueParser<E> valueParser, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
-		this.valueParser = valueParser;
+	public PrefixParser(OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
 		this.operators = operators;
 		this.exprNodeFactory = exprNodeFactory;
 	}
@@ -34,27 +33,23 @@ public class PrefixParser<E> implements IAstParser<E> {
 		}
 	}
 
-	protected IExprNode<E> parseNode(PeekingIterator<Token> input) {
+	private final ImmutableList<IExprNode<E>> NO_ARGS = ImmutableList.of();
+
+	protected IExprNode<E> parseNode(ICompilerState<E> state, PeekingIterator<Token> input) {
 		final Token token = next(input);
-		if (token.type.isValue()) {
-			final E value = valueParser.parseToken(token);
-			return exprNodeFactory.createValueNode(value);
-		}
+		if (token.type.isValue()) return exprNodeFactory.createValueNode(token);
 
-		if (token.type == TokenType.SYMBOL) {
-			final ImmutableList<IExprNode<E>> emptyArgs = ImmutableList.of();
-			return exprNodeFactory.createSymbolExprNodeFactory(token.value).createRootSymbolNode(emptyArgs);
-		}
+		if (token.type == TokenType.SYMBOL) return state.getStateForSymbol(token.value).createRootNode(NO_ARGS);
 
-		if (token.type == TokenType.MODIFIER) return parseModifierNode(token.value, input);
+		if (token.type == TokenType.MODIFIER) return parseModifierNode(token.value, state, input);
 
 		if (token.type == TokenType.LEFT_BRACKET)
-			return parseNestedNode(token.value, input);
+			return parseNestedNode(token.value, state, input);
 
 		throw new IllegalArgumentException("Unexpected token: " + token);
 	}
 
-	private IExprNode<E> parseNestedNode(String openingBracket, PeekingIterator<Token> input) {
+	private IExprNode<E> parseNestedNode(String openingBracket, ICompilerState<E> state, PeekingIterator<Token> input) {
 		final String closingBracket = TokenUtils.getClosingBracket(openingBracket);
 
 		if (openingBracket.equals("(")) {
@@ -62,12 +57,12 @@ public class PrefixParser<E> implements IAstParser<E> {
 
 			final String operationName = operationToken.value;
 			if (operationToken.type == TokenType.SYMBOL) {
-				final ISymbolExprNodeFactory<E> symbolNodeFactory = exprNodeFactory.createSymbolExprNodeFactory(operationName);
-				final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input, symbolNodeFactory);
-				return symbolNodeFactory.createRootSymbolNode(args);
+				final ISymbolStateTransition<E> stateTransition = state.getStateForSymbol(operationName);
+				final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input, stateTransition.getState());
+				return stateTransition.createRootNode(args);
 				// no modifiers allowed on this position (yet), so assuming operator
 			} else if (operationToken.type == TokenType.OPERATOR || operationToken.type == TokenType.MODIFIER) {
-				final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input, exprNodeFactory);
+				final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input, state);
 				if (args.size() == 1) {
 					final UnaryOperator<E> unaryOperator = operators.getUnaryOperator(operationName);
 					Preconditions.checkState(unaryOperator != null, "Invalid unary operator '%s'", operationName);
@@ -85,12 +80,12 @@ public class PrefixParser<E> implements IAstParser<E> {
 			}
 		} else {
 			// not parenthesis, so probably data structure
-			final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input, exprNodeFactory);
+			final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input, state);
 			return exprNodeFactory.createBracketNode(openingBracket, closingBracket, args);
 		}
 	}
 
-	private List<IExprNode<E>> collectArgs(String openingBracket, String closingBracket, PeekingIterator<Token> input, IAstParserProvider<E> argParserProvider) {
+	private List<IExprNode<E>> collectArgs(String openingBracket, String closingBracket, PeekingIterator<Token> input, ICompilerState<E> state) {
 		final List<IExprNode<E>> args = Lists.newArrayList();
 		while (true) {
 			final Token argToken = input.peek();
@@ -102,19 +97,20 @@ public class PrefixParser<E> implements IAstParser<E> {
 				next(input);
 				break;
 			} else {
-				final IAstParser<E> newParser = argParserProvider.getParser();
-				final IExprNode<E> parsedNode = newParser.parse(input);
+				final IAstParser<E> newParser = state.getParser();
+				final IExprNode<E> parsedNode = newParser.parse(state, input);
 				args.add(parsedNode);
 			}
 		}
 		return args;
 	}
 
-	private IExprNode<E> parseModifierNode(String modifier, PeekingIterator<Token> input) {
-		final IModifierExprNodeFactory<E> newNodeFactory = exprNodeFactory.createModifierExprNodeFactory(modifier);
-		final IAstParser<E> newParser = newNodeFactory.getParser();
-		final IExprNode<E> parsedNode = newParser.parse(input);
-		return newNodeFactory.createRootModifierNode(parsedNode);
+	private IExprNode<E> parseModifierNode(String modifier, ICompilerState<E> state, PeekingIterator<Token> input) {
+		final IModifierStateTransition<E> stateTransition = state.getStateForModifier(modifier);
+		final ICompilerState<E> newState = stateTransition.getState();
+		final IAstParser<E> newParser = newState.getParser();
+		final IExprNode<E> parsedNode = newParser.parse(newState, input);
+		return stateTransition.createRootNode(parsedNode);
 	}
 
 	private IExprNode<E> compileBinaryOpNode(BinaryOperator<E> op, List<IExprNode<E>> args) {
@@ -144,8 +140,8 @@ public class PrefixParser<E> implements IAstParser<E> {
 	}
 
 	@Override
-	public IExprNode<E> parse(PeekingIterator<Token> input) {
-		return parseNode(input);
+	public IExprNode<E> parse(ICompilerState<E> state, PeekingIterator<Token> input) {
+		return parseNode(state, input);
 	}
 
 }

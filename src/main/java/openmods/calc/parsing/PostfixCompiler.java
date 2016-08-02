@@ -10,7 +10,7 @@ import openmods.calc.OperatorDictionary;
 import openmods.calc.SymbolReference;
 import openmods.calc.Value;
 
-public class PostfixCompiler<E> implements ICompiler<E> {
+public class PostfixCompiler<E> implements ITokenStreamCompiler<E> {
 
 	private final IValueParser<E> valueParser;
 

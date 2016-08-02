@@ -15,7 +15,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
-import openmods.calc.Calculator.ExprType;
+import openmods.calc.ExprType;
 import openmods.calc.command.CalcState.CalculatorType;
 import openmods.calc.command.CalcState.NoSuchNameException;
 import openmods.config.simpler.ConfigurableClassAdapter.NoSuchPropertyException;

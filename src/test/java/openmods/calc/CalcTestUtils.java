@@ -8,18 +8,18 @@ import com.google.common.collect.PeekingIterator;
 import java.util.Arrays;
 import java.util.List;
 import openmods.calc.BinaryOperator.Associativity;
-import openmods.calc.Calculator.ExprType;
 import openmods.calc.parsing.ContainerNode;
-import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.DummyNode;
-import openmods.calc.parsing.EmptyExprNodeFactory;
 import openmods.calc.parsing.IAstParser;
-import openmods.calc.parsing.ICompiler;
+import openmods.calc.parsing.ICompilerState;
+import openmods.calc.parsing.ICompilerState.IModifierStateTransition;
+import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
 import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.IModifierExprNodeFactory;
-import openmods.calc.parsing.ISymbolExprNodeFactory;
+import openmods.calc.parsing.ITokenStreamCompiler;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.QuotedParser;
+import openmods.calc.parsing.QuotedParser.IQuotedExprNodeFactory;
+import openmods.calc.parsing.SymbolNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 import openmods.calc.parsing.TokenUtils;
@@ -255,11 +255,11 @@ public class CalcTestUtils {
 	};
 
 	public static class CalcCheck<E> {
-		private final Calculator<E> sut;
+		private final Calculator<E, ExprType> sut;
 
 		private final IExecutable<E> expr;
 
-		public CalcCheck(Calculator<E> sut, IExecutable<E> expr) {
+		public CalcCheck(Calculator<E, ExprType> sut, IExecutable<E> expr) {
 			this.expr = expr;
 			this.sut = sut;
 		}
@@ -284,7 +284,7 @@ public class CalcTestUtils {
 			return this;
 		}
 
-		public static <E> CalcCheck<E> create(Calculator<E> sut, String value, ExprType exprType) {
+		public static <E> CalcCheck<E> create(Calculator<E, ExprType> sut, String value, ExprType exprType) {
 			final IExecutable<E> expr = sut.compile(exprType, value);
 			return new CalcCheck<E>(sut, expr);
 		}
@@ -296,9 +296,9 @@ public class CalcTestUtils {
 
 	public static class CompilerResultTester {
 		private final List<IExecutable<String>> actual;
-		private final ICompiler<String> compiler;
+		private final ITokenStreamCompiler<String> compiler;
 
-		public CompilerResultTester(ICompiler<String> compiler, Token... inputs) {
+		public CompilerResultTester(ITokenStreamCompiler<String> compiler, Token... inputs) {
 			this.compiler = compiler;
 			final IExecutable<String> result = compiler.compile(tokenIterator(inputs));
 			Assert.assertTrue(result instanceof ExecutableList);
@@ -363,14 +363,9 @@ public class CalcTestUtils {
 		public Iterable<IExprNode<String>> getChildren() {
 			return ImmutableList.of();
 		}
-
 	}
 
-	public static class QuoteNodeTestFactory extends EmptyExprNodeFactory<String> {
-		@Override
-		public IAstParser<String> getParser() {
-			return new QuotedParser<String>(VALUE_PARSER, this);
-		}
+	public static class QuoteNodeTestFactory implements IQuotedExprNodeFactory<String> {
 
 		@Override
 		public IExprNode<String> createValueNode(String value) {
@@ -378,8 +373,8 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		public IExprNode<String> createRawValueNode(Token token) {
-			return new MarkerNode(rawValueMarker(token));
+		public IExprNode<String> createValueNode(Token token) {
+			return new MarkerNode(token.type.isValue()? valueMarker(token.value) : rawValueMarker(token));
 		}
 
 		@Override
@@ -402,15 +397,35 @@ public class CalcTestUtils {
 		}
 	}
 
-	public static class ModifierQuoteNodeTestFactory extends QuoteNodeTestFactory implements IModifierExprNodeFactory<String> {
+	public static class QuotedCompilerState implements ICompilerState<String> {
+		private final QuotedParser<String> quotedParser = new QuotedParser<String>(VALUE_PARSER, new QuoteNodeTestFactory());
+
+		@Override
+		public IAstParser<String> getParser() {
+			return quotedParser;
+		}
+
+		@Override
+		public ISymbolStateTransition<String> getStateForSymbol(String symbol) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public IModifierStateTransition<String> getStateForModifier(String modifier) {
+			throw new UnsupportedOperationException();
+		}
+
+	}
+
+	public static class ModifierQuoteTransition implements IModifierStateTransition<String> {
 		private final String modifier;
 
-		public ModifierQuoteNodeTestFactory(String modifier) {
+		public ModifierQuoteTransition(String modifier) {
 			this.modifier = modifier;
 		}
 
 		@Override
-		public IExprNode<String> createRootModifierNode(IExprNode<String> child) {
+		public IExprNode<String> createRootNode(IExprNode<String> child) {
 			return new DummyNode<String>(child) {
 				@Override
 				public void flatten(List<IExecutable<String>> output) {
@@ -420,17 +435,22 @@ public class CalcTestUtils {
 				}
 			};
 		}
+
+		@Override
+		public ICompilerState<String> getState() {
+			return new QuotedCompilerState();
+		}
 	}
 
-	public static class SymbolQuoteNodeTestFactory extends QuoteNodeTestFactory implements ISymbolExprNodeFactory<String> {
+	public static class SymbolQuoteTransition implements ISymbolStateTransition<String> {
 		private final String symbol;
 
-		public SymbolQuoteNodeTestFactory(String symbol) {
+		public SymbolQuoteTransition(String symbol) {
 			this.symbol = symbol;
 		}
 
 		@Override
-		public IExprNode<String> createRootSymbolNode(List<IExprNode<String>> children) {
+		public IExprNode<String> createRootNode(List<IExprNode<String>> children) {
 			return new ContainerNode<String>(children) {
 				@Override
 				public void flatten(List<IExecutable<String>> output) {
@@ -442,20 +462,35 @@ public class CalcTestUtils {
 
 			};
 		}
-	}
-
-	public abstract static class TestExprNodeFactory extends DefaultExprNodeFactory<String> {
 
 		@Override
-		public IModifierExprNodeFactory<String> createModifierExprNodeFactory(String modifier) {
-			if (modifier.equals(QUOTE_MODIFIER.value)) return new ModifierQuoteNodeTestFactory(modifier);
-			return super.createModifierExprNodeFactory(modifier);
+		public ICompilerState<String> getState() {
+			return new QuotedCompilerState();
+		}
+	}
+
+	public abstract static class TestCompilerState implements ICompilerState<String> {
+
+		@Override
+		public IModifierStateTransition<String> getStateForModifier(String modifier) {
+			if (modifier.equals(QUOTE_MODIFIER.value)) return new ModifierQuoteTransition(modifier);
+			throw new UnsupportedOperationException(modifier);
 		}
 
 		@Override
-		public ISymbolExprNodeFactory<String> createSymbolExprNodeFactory(String symbol) {
-			if (symbol.equals(QUOTE_SYMBOL.value)) return new SymbolQuoteNodeTestFactory(symbol);
-			return super.createSymbolExprNodeFactory(symbol);
+		public ISymbolStateTransition<String> getStateForSymbol(final String symbol) {
+			if (symbol.equals(QUOTE_SYMBOL.value)) return new SymbolQuoteTransition(symbol);
+			return new ISymbolStateTransition<String>() {
+				@Override
+				public ICompilerState<String> getState() {
+					return TestCompilerState.this;
+				}
+
+				@Override
+				public IExprNode<String> createRootNode(List<IExprNode<String>> children) {
+					return new SymbolNode<String>(symbol, children);
+				}
+			};
 		}
 	}
 }

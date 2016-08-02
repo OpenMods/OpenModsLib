@@ -1,8 +1,9 @@
 package openmods.calc;
 
 import openmods.calc.parsing.AstCompiler;
+import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.IAstParser;
-import openmods.calc.parsing.IExprNodeFactory;
+import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.InfixParser;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.UnfinishedExpressionException;
@@ -21,15 +22,15 @@ public class InfixCompilerTest extends CalcTestUtils {
 		operators.registerBinaryOperator(MULTIPLY).setDefault();
 	}
 
-	private final IExprNodeFactory<String> testNodeFactory = new TestExprNodeFactory() {
+	private final ICompilerState<String> testState = new TestCompilerState() {
 		@Override
 		public IAstParser<String> getParser() {
-			return new InfixParser<String>(VALUE_PARSER, operators, this);
+			return new InfixParser<String>(operators, new DefaultExprNodeFactory<String>(VALUE_PARSER));
 		}
 	};
 
 	private CompilerResultTester given(Token... inputs) {
-		return new CompilerResultTester(new AstCompiler<String>(testNodeFactory), inputs);
+		return new CompilerResultTester(new AstCompiler<String>(testState), inputs);
 	}
 
 	@Test

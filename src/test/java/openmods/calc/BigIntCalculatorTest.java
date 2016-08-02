@@ -2,13 +2,12 @@ package openmods.calc;
 
 import java.math.BigInteger;
 import openmods.calc.CalcTestUtils.CalcCheck;
-import openmods.calc.Calculator.ExprType;
 import openmods.calc.types.bigint.BigIntCalculator;
 import org.junit.Test;
 
 public class BigIntCalculatorTest {
 
-	private final BigIntCalculator sut = BigIntCalculator.create();
+	private final Calculator<BigInteger, ExprType> sut = BigIntCalculator.createDefault();
 
 	public CalcCheck<BigInteger> prefix(String value) {
 		return CalcCheck.create(sut, value, ExprType.PREFIX);
@@ -152,6 +151,27 @@ public class BigIntCalculatorTest {
 	@Test(expected = Exception.class)
 	public void testTooFewParameters() {
 		infix("gcd(0)").execute();
+	}
+
+	@Test
+	public void testParserSwitch() {
+		infix("2 + prefix(5)").expectResult(v(7)).expectEmptyStack();
+		infix("2 + prefix((+ 5 6))").expectResult(v(13)).expectEmptyStack();
+
+		prefix("(+ 2 (infix 5))").expectResult(v(7)).expectEmptyStack();
+		prefix("(+ 2 (infix 5 + 6))").expectResult(v(13)).expectEmptyStack();
+	}
+
+	@Test
+	public void testNestedParserSwitch() {
+		infix("infix(5 + 2)").expectResult(v(7)).expectEmptyStack();
+		infix("infix(infix(5 + 2))").expectResult(v(7)).expectEmptyStack();
+
+		prefix("(prefix (+ 2 5))").expectResult(v(7)).expectEmptyStack();
+		prefix("(prefix (prefix (+ 2 5)))").expectResult(v(7)).expectEmptyStack();
+
+		infix("prefix((infix 2 + 5))").expectResult(v(7)).expectEmptyStack();
+		prefix("(infix prefix((+ 2 5)))").expectResult(v(7)).expectEmptyStack();
 	}
 
 }

@@ -1,17 +1,21 @@
 package openmods.calc.types.fraction;
 
 import com.google.common.collect.Ordering;
+import java.util.Map;
+import openmods.calc.BasicCalculatorFactory;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
+import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
+import openmods.calc.ICalculatorFactory;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.config.simpler.Configurable;
 import org.apache.commons.lang3.math.Fraction;
 
-public class FractionCalculator extends Calculator<Fraction> {
+public class FractionCalculator<M> extends Calculator<Fraction, M> {
 
 	private static final Fraction NULL_VALUE = Fraction.ZERO;
 
@@ -21,8 +25,8 @@ public class FractionCalculator extends Calculator<Fraction> {
 	@Configurable
 	public boolean expand;
 
-	public FractionCalculator(OperatorDictionary<Fraction> operators) {
-		super(new FractionParser(), NULL_VALUE, operators);
+	public FractionCalculator(Map<M, ICompiler<Fraction>> compilers) {
+		super(NULL_VALUE, compilers);
 	}
 
 	private static Fraction createFraction(int value) {
@@ -37,7 +41,7 @@ public class FractionCalculator extends Calculator<Fraction> {
 
 	private static final int MAX_PRIO = 5;
 
-	public static FractionCalculator create() {
+	public static <E> Calculator<Fraction, E> create(ICalculatorFactory<Fraction, E, ? extends Calculator<Fraction, E>> factory) {
 		final OperatorDictionary<Fraction> operators = new OperatorDictionary<Fraction>();
 
 		operators.registerUnaryOperator(new UnaryOperator<Fraction>("neg") {
@@ -89,7 +93,7 @@ public class FractionCalculator extends Calculator<Fraction> {
 			}
 		});
 
-		final FractionCalculator result = new FractionCalculator(operators);
+		final Calculator<Fraction, E> result = factory.create(NULL_VALUE, new FractionParser(), operators);
 
 		GenericFunctions.createStackManipulationFunctions(result);
 
@@ -184,5 +188,14 @@ public class FractionCalculator extends Calculator<Fraction> {
 		});
 
 		return result;
+	}
+
+	public static Calculator<Fraction, ExprType> createDefault() {
+		return create(new BasicCalculatorFactory<Fraction, FractionCalculator<ExprType>>() {
+			@Override
+			protected FractionCalculator<ExprType> createCalculator(Fraction nullValue, Map<ExprType, ICompiler<Fraction>> compilers) {
+				return new FractionCalculator<ExprType>(compilers);
+			}
+		});
 	}
 }

@@ -10,21 +10,20 @@ import openmods.calc.BinaryOperator;
 import openmods.calc.Operator;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryOperator;
+import openmods.calc.parsing.ICompilerState.IModifierStateTransition;
+import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
 import openmods.utils.Stack;
 
 public class InfixParser<E> implements IAstParser<E> {
 
 	private final List<IExprNode<E>> NO_ARGS = Lists.newArrayList();
 
-	private final IValueParser<E> valueParser;
-
 	private final OperatorDictionary<E> operators;
 
 	private IExprNodeFactory<E> exprNodeFactory;
 
-	public InfixParser(IValueParser<E> valueParser, OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
+	public InfixParser(OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
 		this.exprNodeFactory = exprNodeFactory;
-		this.valueParser = valueParser;
 		this.operators = operators;
 	}
 
@@ -37,7 +36,7 @@ public class InfixParser<E> implements IAstParser<E> {
 	}
 
 	@Override
-	public IExprNode<E> parse(PeekingIterator<Token> input) {
+	public IExprNode<E> parse(ICompilerState<E> state, PeekingIterator<Token> input) {
 		final Stack<IExprNode<E>> nodeStack = Stack.create();
 		final Stack<Operator<E>> operatorStack = Stack.create();
 
@@ -56,30 +55,30 @@ public class InfixParser<E> implements IAstParser<E> {
 			next(input);
 
 			if (token.type.isValue()) {
-				final E value = valueParser.parseToken(token);
-				nodeStack.push(exprNodeFactory.createValueNode(value));
+				nodeStack.push(exprNodeFactory.createValueNode(token));
 			} else if (token.type.isSymbol()) {
 				Preconditions.checkArgument(token.type != TokenType.SYMBOL_WITH_ARGS, "Symbol '%s' can't be used in infix mode", token.value);
-				final ISymbolExprNodeFactory<E> symbolNodeExprFactory = exprNodeFactory.createSymbolExprNodeFactory(token.value);
+				final ISymbolStateTransition<E> stateTransition = state.getStateForSymbol(token.value);
 
 				if (input.hasNext() && input.peek().type == TokenType.LEFT_BRACKET) {
 					Token nextToken = next(input);
 					final String openingBracket = nextToken.value;
 					final String closingBracket = TokenUtils.getClosingBracket(openingBracket);
-					final List<IExprNode<E>> childrenNodes = collectChildren(input, openingBracket, closingBracket, symbolNodeExprFactory);
-					nodeStack.push(symbolNodeExprFactory.createRootSymbolNode(childrenNodes));
+					final List<IExprNode<E>> childrenNodes = collectChildren(input, openingBracket, closingBracket, stateTransition.getState());
+					nodeStack.push(stateTransition.createRootNode(childrenNodes));
 				} else {
-					nodeStack.push(symbolNodeExprFactory.createRootSymbolNode(NO_ARGS));
+					nodeStack.push(stateTransition.createRootNode(NO_ARGS));
 				}
 			} else if (token.type == TokenType.MODIFIER) {
-				final IModifierExprNodeFactory<E> modifierNodeExprFactory = exprNodeFactory.createModifierExprNodeFactory(token.value);
-				final IAstParser<E> newParser = modifierNodeExprFactory.getParser();
-				final IExprNode<E> parsedNode = newParser.parse(input);
-				nodeStack.push(modifierNodeExprFactory.createRootModifierNode(parsedNode));
+				final IModifierStateTransition<E> stateTransition = state.getStateForModifier(token.value);
+				final ICompilerState<E> newState = stateTransition.getState();
+				final IAstParser<E> newParser = newState.getParser();
+				final IExprNode<E> parsedNode = newParser.parse(newState, input);
+				nodeStack.push(stateTransition.createRootNode(parsedNode));
 			} else if (token.type == TokenType.LEFT_BRACKET) {
 				final String openingBracket = token.value;
 				final String closingBracket = TokenUtils.getClosingBracket(openingBracket);
-				final List<IExprNode<E>> childrenNodes = collectChildren(input, openingBracket, closingBracket, exprNodeFactory);
+				final List<IExprNode<E>> childrenNodes = collectChildren(input, openingBracket, closingBracket, state);
 				nodeStack.push(exprNodeFactory.createBracketNode(openingBracket, closingBracket, childrenNodes));
 			} else if (token.type == TokenType.OPERATOR) {
 				final Operator<E> op;
@@ -116,7 +115,7 @@ public class InfixParser<E> implements IAstParser<E> {
 		return nodeStack.pop();
 	}
 
-	private List<IExprNode<E>> collectChildren(PeekingIterator<Token> input, String openingBracket, String closingBracket, IAstParserProvider<E> argParserProvider) {
+	private List<IExprNode<E>> collectChildren(PeekingIterator<Token> input, String openingBracket, String closingBracket, ICompilerState<E> compilerState) {
 		final List<IExprNode<E>> args = Lists.newArrayList();
 
 		{
@@ -129,8 +128,8 @@ public class InfixParser<E> implements IAstParser<E> {
 		}
 
 		while (true) {
-			final IAstParser<E> newParser = argParserProvider.getParser();
-			final IExprNode<E> parsedNode = newParser.parse(input);
+			final IAstParser<E> newParser = compilerState.getParser();
+			final IExprNode<E> parsedNode = newParser.parse(compilerState, input);
 			args.add(parsedNode);
 
 			final Token token = next(input);

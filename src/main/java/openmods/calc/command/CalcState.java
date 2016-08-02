@@ -13,9 +13,9 @@ import java.util.Set;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 import openmods.calc.Calculator;
-import openmods.calc.Calculator.ExprType;
 import openmods.calc.CompiledFunction;
 import openmods.calc.Constant;
+import openmods.calc.ExprType;
 import openmods.calc.FixedSymbol;
 import openmods.calc.ICalculatorFrame;
 import openmods.calc.IExecutable;
@@ -60,7 +60,7 @@ public class CalcState {
 			return sender.getPlayerCoordinates().posZ;
 		}
 
-		public <E> Calculator<E> addPrinter(final Calculator<E> calculator) {
+		public <E> Calculator<E, ExprType> addPrinter(final Calculator<E, ExprType> calculator) {
 			calculator.setGlobalSymbol("p", new ISymbol<E>() {
 				@Override
 				public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
@@ -95,8 +95,8 @@ public class CalcState {
 	public enum CalculatorType {
 		DOUBLE {
 			@Override
-			public Calculator<?> newCalculator(final SenderHolder holder) {
-				final DoubleCalculator calculator = DoubleCalculator.create();
+			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
+				final Calculator<Double, ExprType> calculator = DoubleCalculator.createDefault();
 
 				calculator.setGlobalSymbol("$x", new FixedSymbol<Double>(0, 1) {
 					@Override
@@ -124,8 +124,8 @@ public class CalcState {
 		},
 		FRACTION {
 			@Override
-			public Calculator<?> newCalculator(final SenderHolder holder) {
-				final FractionCalculator calculator = FractionCalculator.create();
+			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
+				final Calculator<Fraction, ExprType> calculator = FractionCalculator.createDefault();
 
 				calculator.setGlobalSymbol("$x", new FixedSymbol<Fraction>(0, 1) {
 					@Override
@@ -153,8 +153,8 @@ public class CalcState {
 		},
 		BIGINT {
 			@Override
-			public Calculator<?> newCalculator(final SenderHolder holder) {
-				final BigIntCalculator calculator = BigIntCalculator.create();
+			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
+				final Calculator<BigInteger, ExprType> calculator = BigIntCalculator.createDefault();
 
 				calculator.setGlobalSymbol("$x", new FixedSymbol<BigInteger>(0, 1) {
 					@Override
@@ -181,26 +181,26 @@ public class CalcState {
 			}
 		};
 
-		public Calculator<?> createCalculator(SenderHolder holder) {
+		public Calculator<?, ExprType> createCalculator(SenderHolder holder) {
 			return holder.addPrinter(newCalculator(holder));
 		}
 
-		protected abstract Calculator<?> newCalculator(SenderHolder holder);
+		protected abstract Calculator<?, ExprType> newCalculator(SenderHolder holder);
 	}
 
 	private final SenderHolder senderHolder = new SenderHolder();
 
-	private Calculator<?> active = CalculatorType.DOUBLE.createCalculator(senderHolder);
+	private Calculator<?, ExprType> active = CalculatorType.DOUBLE.createCalculator(senderHolder);
 
-	private Calculator<?> prev;
+	private Calculator<?, ExprType> prev;
 
-	public Calculator.ExprType exprType = ExprType.INFIX;
+	public ExprType exprType = ExprType.INFIX;
 
-	private Stack<Calculator<?>> calculatorStack = Stack.create();
+	private Stack<Calculator<?, ExprType>> calculatorStack = Stack.create();
 
-	private Map<String, Calculator<?>> calculatorMap = Maps.newHashMap();
+	private Map<String, Calculator<?, ExprType>> calculatorMap = Maps.newHashMap();
 
-	public Calculator<?> getActiveCalculator() {
+	public Calculator<?, ExprType> getActiveCalculator() {
 		return active;
 	}
 
@@ -216,13 +216,13 @@ public class CalcState {
 		ConfigurableClassAdapter.getFor(active.getClass()).set(active, key, value);
 	}
 
-	private void setActiveCalculator(final Calculator<?> newCalculator) {
+	private void setActiveCalculator(final Calculator<?, ExprType> newCalculator) {
 		prev = active;
 		active = newCalculator;
 	}
 
 	public void restorePreviousCalculator() {
-		final Calculator<?> tmp = active;
+		final Calculator<?, ExprType> tmp = active;
 		active = prev;
 		prev = tmp;
 	}
@@ -250,12 +250,12 @@ public class CalcState {
 	}
 
 	public void loadCalculator(String name) {
-		final Calculator<?> newCalculator = calculatorMap.get(name);
+		final Calculator<?, ExprType> newCalculator = calculatorMap.get(name);
 		if (newCalculator == null) throw new NoSuchNameException(name);
 		setActiveCalculator(newCalculator);
 	}
 
-	private static <E> void compileAndExecute(Calculator<E> calculator, Calculator.ExprType exprType, String expr) {
+	private static <E> void compileAndExecute(Calculator<E, ExprType> calculator, ExprType exprType, String expr) {
 		final IExecutable<E> executable = calculator.compile(exprType, expr);
 		calculator.execute(executable);
 	}
@@ -270,12 +270,12 @@ public class CalcState {
 		});
 	}
 
-	private static <E> E compileExecuteAndPop(Calculator<E> calculator, Calculator.ExprType exprType, String expr) {
+	private static <E> E compileExecuteAndPop(Calculator<E, ExprType> calculator, ExprType exprType, String expr) {
 		final IExecutable<E> executable = calculator.compile(exprType, expr);
 		return calculator.executeAndPop(executable);
 	}
 
-	private static <E> String compileExecuteAndPrint(Calculator<E> calculator, Calculator.ExprType exprType, String expr) {
+	private static <E> String compileExecuteAndPrint(Calculator<E, ExprType> calculator, ExprType exprType, String expr) {
 		final E result = compileExecuteAndPop(calculator, exprType, expr);
 		return calculator.toString(result);
 	}
@@ -289,7 +289,7 @@ public class CalcState {
 		});
 	}
 
-	private static <E> E compileAndSetGlobalSymbol(Calculator<E> calculator, Calculator.ExprType exprType, String id, String expr) {
+	private static <E> E compileAndSetGlobalSymbol(Calculator<E, ExprType> calculator, ExprType exprType, String id, String expr) {
 		final E value = compileExecuteAndPop(calculator, exprType, expr);
 		calculator.setGlobalSymbol(id, Constant.create(value));
 		return value;
@@ -305,7 +305,7 @@ public class CalcState {
 	}
 
 	// TODO: multiple return functions?
-	private static <E> void compileAndDefineGlobalFunction(Calculator<E> calculator, Calculator.ExprType exprType, String id, int argCount, String bodyExpr) {
+	private static <E> void compileAndDefineGlobalFunction(Calculator<E, ExprType> calculator, ExprType exprType, String id, int argCount, String bodyExpr) {
 		final IExecutable<E> funcBody = calculator.compile(exprType, bodyExpr);
 		calculator.setGlobalSymbol(id, new CompiledFunction<E>(argCount, 1, funcBody));
 	}

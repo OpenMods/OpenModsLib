@@ -6,12 +6,18 @@ import java.util.List;
 
 public class QuotedParser<E> implements IAstParser<E> {
 
-	private final IValueParser<E> valueParser;
+	public interface IQuotedExprNodeFactory<E> {
+		public IExprNode<E> createValueNode(E value);
 
-	private final IExprNodeFactory<E> exprNodeFactory;
+		public IExprNode<E> createValueNode(Token token);
 
-	public QuotedParser(IValueParser<E> valueParser, IExprNodeFactory<E> exprNodeFactory) {
-		this.valueParser = valueParser;
+		public IExprNode<E> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<E>> children);
+
+	}
+
+	private final IQuotedExprNodeFactory<E> exprNodeFactory;
+
+	public QuotedParser(IValueParser<E> valueParser, IQuotedExprNodeFactory<E> exprNodeFactory) {
 		this.exprNodeFactory = exprNodeFactory;
 	}
 
@@ -19,15 +25,12 @@ public class QuotedParser<E> implements IAstParser<E> {
 		final Token token = input.next();
 		if (token.type == TokenType.LEFT_BRACKET) {
 			return parseNestedQuotedNode(token.value, input, exprNodeFactory);
-		} else if (token.type.isValue()) {
-			final E value = valueParser.parseToken(token);
-			return exprNodeFactory.createValueNode(value);
 		} else {
-			return exprNodeFactory.createRawValueNode(token);
+			return exprNodeFactory.createValueNode(token);
 		}
 	}
 
-	private IExprNode<E> parseNestedQuotedNode(String openingBracket, PeekingIterator<Token> input, IExprNodeFactory<E> exprNodeFactory) {
+	private IExprNode<E> parseNestedQuotedNode(String openingBracket, PeekingIterator<Token> input, IQuotedExprNodeFactory<E> exprNodeFactory) {
 		final List<IExprNode<E>> children = Lists.newArrayList();
 		while (true) {
 			final Token token = input.peek();
@@ -42,7 +45,7 @@ public class QuotedParser<E> implements IAstParser<E> {
 	}
 
 	@Override
-	public IExprNode<E> parse(PeekingIterator<Token> input) {
+	public IExprNode<E> parse(ICompilerState<E> state, PeekingIterator<Token> input) {
 		return parseQuotedNode(input);
 	}
 

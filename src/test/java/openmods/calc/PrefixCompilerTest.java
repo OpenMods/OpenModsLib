@@ -2,9 +2,10 @@ package openmods.calc;
 
 import java.util.List;
 import openmods.calc.parsing.AstCompiler;
+import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.IAstParser;
+import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.PrefixParser;
 import openmods.calc.parsing.Token;
 import org.junit.Test;
@@ -46,20 +47,20 @@ public class PrefixCompilerTest extends CalcTestUtils {
 		}
 	}
 
-	private final IExprNodeFactory<String> testNodeFactory = new TestExprNodeFactory() {
-		@Override
-		public IExprNode<String> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<String>> children) {
-			return new TestBracketNode(children);
-		}
-
+	private final ICompilerState<String> testState = new TestCompilerState() {
 		@Override
 		public IAstParser<String> getParser() {
-			return new PrefixParser<String>(VALUE_PARSER, operators, this);
+			return new PrefixParser<String>(operators, new DefaultExprNodeFactory<String>(VALUE_PARSER) {
+				@Override
+				public IExprNode<String> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<String>> children) {
+					return new TestBracketNode(children);
+				}
+			});
 		}
 	};
 
 	private CompilerResultTester given(Token... inputs) {
-		return new CompilerResultTester(new AstCompiler<String>(testNodeFactory), inputs);
+		return new CompilerResultTester(new AstCompiler<String>(testState), inputs);
 	}
 
 	@Test

@@ -5,22 +5,12 @@ import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.UnaryOperator;
 
-public abstract class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
+public class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
 
-	@Override
-	public ISymbolExprNodeFactory<E> createSymbolExprNodeFactory(final String symbol) {
-		class SymbolExprNodeFactory extends DelegateExprNodeFactory<E> implements ISymbolExprNodeFactory<E> {
-			public SymbolExprNodeFactory(IExprNodeFactory<E> wrapped) {
-				super(wrapped);
-			}
+	private final IValueParser<E> valueParser;
 
-			@Override
-			public IExprNode<E> createRootSymbolNode(List<IExprNode<E>> children) {
-				return new SymbolNode<E>(symbol, children);
-			}
-		}
-
-		return new SymbolExprNodeFactory(this);
+	public DefaultExprNodeFactory(IValueParser<E> valueParser) {
+		this.valueParser = valueParser;
 	}
 
 	@Override
@@ -46,13 +36,8 @@ public abstract class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
 	}
 
 	@Override
-	public IExprNode<E> createRawValueNode(Token token) {
-		throw new UnsupportedOperationException("Raw: " + token);
-	}
-
-	@Override
-	public IModifierExprNodeFactory<E> createModifierExprNodeFactory(String modifier) {
-		throw new UnsupportedOperationException("Modifier: " + modifier);
+	public IExprNode<E> createValueNode(Token token) {
+		return createValueNode(valueParser.parseToken(token));
 	}
 
 }

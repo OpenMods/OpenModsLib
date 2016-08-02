@@ -4,11 +4,7 @@ import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.UnaryOperator;
 
-public interface IExprNodeFactory<E> extends IAstParserProvider<E> {
-
-	public IModifierExprNodeFactory<E> createModifierExprNodeFactory(String modifier);
-
-	public ISymbolExprNodeFactory<E> createSymbolExprNodeFactory(String symbol);
+public interface IExprNodeFactory<E> {
 
 	public IExprNode<E> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<E>> children);
 
@@ -18,5 +14,5 @@ public interface IExprNodeFactory<E> extends IAstParserProvider<E> {
 
 	public IExprNode<E> createValueNode(E value);
 
-	public IExprNode<E> createRawValueNode(Token token);
+	public IExprNode<E> createValueNode(Token token);
 }
