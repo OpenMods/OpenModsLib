@@ -7,18 +7,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import gnu.trove.set.TCharSet;
-import gnu.trove.set.hash.TCharHashSet;
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import openmods.calc.BasicCalculatorFactory;
-import openmods.calc.BasicCalculatorFactory.SwitchingCompilerState;
+import openmods.calc.BasicCompilerMapFactory;
+import openmods.calc.BasicCompilerMapFactory.SwitchingCompilerState;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
+import openmods.calc.Compilers;
 import openmods.calc.Constant;
+import openmods.calc.Environment;
 import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
@@ -37,14 +36,10 @@ import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.InfixParser;
 import openmods.calc.parsing.PrefixParser;
-import openmods.calc.parsing.StringEscaper;
 import openmods.calc.parsing.SymbolNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenUtils;
 import openmods.calc.parsing.Tokenizer;
-import openmods.calc.types.bigint.BigIntPrinter;
-import openmods.calc.types.fp.DoublePrinter;
-import openmods.calc.types.multi.Cons.Visitor;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
@@ -52,147 +47,16 @@ import openmods.calc.types.multi.TypedFunction.OptionalArgs;
 import openmods.calc.types.multi.TypedFunction.RawDispatchArg;
 import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;
-import openmods.config.simpler.Configurable;
 import openmods.math.Complex;
 import openmods.utils.Stack;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class TypedValueCalculator<M> extends Calculator<TypedValue, M> {
+public class TypedValueCalculatorFactory {
 
-	private static final String SYMBOL_NULL = "null";
-	private static final String SYMBOL_FALSE = "true";
-	private static final String SYMBOL_TRUE = "false";
-
-	public static class UnitType {
-		public static final UnitType INSTANCE = new UnitType();
-
-		private UnitType() {}
-
-		@Override
-		public String toString() {
-			return "<null>";
-		}
-	}
-
-	private static final TCharSet UNESCAPED_CHARS = new TCharHashSet(new char[] { '\'' });
-
-	@Configurable
-	public int base = 10;
-
-	@Configurable
-	public boolean uniformBaseNotation = false;
-
-	@Configurable
-	public boolean allowStandardPrinter = false;
-
-	@Configurable
-	public boolean escapeStrings = true;
-
-	@Configurable
-	public boolean numericBool = false;
-
-	@Configurable
-	public boolean printTypes = false;
-
-	@Configurable
-	public boolean printLists = true;
-
-	@Configurable
-	public boolean printNilInLists = false;
-
-	private final DoublePrinter doublePrinter = new DoublePrinter(8);
-
-	private final BigIntPrinter bigIntPrinter = new BigIntPrinter();
-
-	public TypedValueCalculator(TypedValue nullValue, Map<M, ICompiler<TypedValue>> compilers) {
-		super(nullValue, compilers);
-	}
-
-	@Override
-	public String toString(TypedValue value) {
-		final String contents;
-		if (value.type == Double.class) contents = printDouble(value.unwrap(Double.class));
-		else if (value.type == BigInteger.class) contents = printBigInteger(value.unwrap(BigInteger.class));
-		else if (value.type == String.class) contents = printString(value.unwrap(String.class));
-		else if (value.type == Boolean.class) contents = printBoolean(value.unwrap(Boolean.class));
-		else if (value.type == Complex.class) contents = printComplex(value.unwrap(Complex.class));
-		else if (value.type == IComposite.class) contents = printComposite(value.unwrap(IComposite.class));
-		else if (value.type == Cons.class) contents = printCons(value.unwrap(Cons.class));
-		else if (value.type == UnitType.class) contents = SYMBOL_NULL;
-		else contents = value.value.toString();
-
-		return printTypes? "(" + value.type + ")" + contents : contents;
-	}
-
-	private String printBoolean(boolean value) {
-		return numericBool? (value? "1" : "0") : (value? SYMBOL_FALSE : SYMBOL_TRUE);
-	}
-
-	private String printString(String value) {
-		return escapeStrings? StringEscaper.escapeString(value, '"', UNESCAPED_CHARS) : value;
-	}
-
-	private String printBigInteger(BigInteger value) {
-		if (base < Character.MIN_RADIX) return "invalid radix";
-		return decorateBase(!uniformBaseNotation, base, (base <= Character.MAX_RADIX)? value.toString(base) : bigIntPrinter.toString(value, base));
-	}
-
-	private String printDouble(Double value) {
-		if (base == 10 && !allowStandardPrinter && !uniformBaseNotation) {
-			return value.toString();
-		} else {
-			if (value.isNaN()) return "NaN";
-			if (value.isInfinite()) return value > 0? "+Inf" : "-Inf";
-			final String result = doublePrinter.toString(value, base);
-			return decorateBase(!uniformBaseNotation, base, result);
-		}
-	}
-
-	private String printComplex(Complex value) {
-		return printDouble(value.re) + "+" + printDouble(value.im) + "I";
-	}
-
-	private String printCons(Cons cons) {
-		if (printLists) {
-			final StringBuilder result = new StringBuilder();
-			cons.visit(new Cons.Visitor() {
-				@Override
-				public void begin() {
-					result.append("(");
-				}
-
-				@Override
-				public void value(TypedValue value, boolean isLast) {
-					result.append(TypedValueCalculator.this.toString(value));
-					if (!isLast) result.append(" ");
-				}
-
-				@Override
-				public Visitor nestedValue(TypedValue value) {
-					result.append("(");
-					return this;
-				}
-
-				@Override
-				public void end(TypedValue terminator) {
-					if (terminator.value != nullValue() || printNilInLists) {
-						result.append(" . ");
-						result.append(TypedValueCalculator.this.toString(terminator));
-					}
-					result.append(")");
-				}
-			});
-
-			return result.toString();
-		} else {
-			return "(" + toString(cons.car) + " . " + toString(cons.cdr) + ")";
-		}
-	}
-
-	private static String printComposite(IComposite value) {
-		return "<" + value.subtype() + ":" + System.identityHashCode(value) + " " + value.toString() + ">";
-	}
+	public static final String SYMBOL_NULL = "null";
+	public static final String SYMBOL_FALSE = "true";
+	public static final String SYMBOL_TRUE = "false";
 
 	private static final Function<BigInteger, Integer> INT_UNWRAP = new Function<BigInteger, Integer>() {
 		@Override
@@ -218,10 +82,10 @@ public class TypedValueCalculator<M> extends Calculator<TypedValue, M> {
 
 	private static TypedBinaryOperator createCompareOperator(TypeDomain domain, String id, int priority, final CompareResultInterpreter compareTranslator) {
 		return new TypedBinaryOperator.Builder(id, priority)
-				.registerOperation(BigInteger.class, Boolean.class, TypedValueCalculator.<BigInteger> createCompareOperation(compareTranslator))
-				.registerOperation(Double.class, Boolean.class, TypedValueCalculator.<Double> createCompareOperation(compareTranslator))
-				.registerOperation(String.class, Boolean.class, TypedValueCalculator.<String> createCompareOperation(compareTranslator))
-				.registerOperation(Boolean.class, Boolean.class, TypedValueCalculator.<Boolean> createCompareOperation(compareTranslator))
+				.registerOperation(BigInteger.class, Boolean.class, TypedValueCalculatorFactory.<BigInteger> createCompareOperation(compareTranslator))
+				.registerOperation(Double.class, Boolean.class, TypedValueCalculatorFactory.<Double> createCompareOperation(compareTranslator))
+				.registerOperation(String.class, Boolean.class, TypedValueCalculatorFactory.<String> createCompareOperation(compareTranslator))
+				.registerOperation(Boolean.class, Boolean.class, TypedValueCalculatorFactory.<Boolean> createCompareOperation(compareTranslator))
 				.build(domain);
 	}
 
@@ -777,8 +641,538 @@ public class TypedValueCalculator<M> extends Calculator<TypedValue, M> {
 
 		final TypedValueParser valueParser = new TypedValueParser(domain);
 
-		class InitialParserState extends SwitchingCompilerState<TypedValue> {
+		final TypedValuePrinter valuePrinter = new TypedValuePrinter(nullValue);
 
+		final Environment<TypedValue> env = new Environment<TypedValue>(nullValue);
+
+		GenericFunctions.createStackManipulationFunctions(env);
+
+		env.setGlobalSymbol(SYMBOL_NULL, Constant.create(nullValue));
+
+		env.setGlobalSymbol(SYMBOL_FALSE, Constant.create(domain.create(Boolean.class, Boolean.TRUE)));
+		env.setGlobalSymbol(SYMBOL_TRUE, Constant.create(domain.create(Boolean.class, Boolean.FALSE)));
+
+		env.setGlobalSymbol("E", Constant.create(domain.create(Double.class, Math.E)));
+		env.setGlobalSymbol("PI", Constant.create(domain.create(Double.class, Math.PI)));
+		env.setGlobalSymbol("NAN", Constant.create(domain.create(Double.class, Double.NaN)));
+		env.setGlobalSymbol("INF", Constant.create(domain.create(Double.class, Double.POSITIVE_INFINITY)));
+
+		env.setGlobalSymbol("I", Constant.create(domain.create(Complex.class, Complex.I)));
+
+		class PredicateIsType extends UnaryFunction<TypedValue> {
+			private final Class<?> cls;
+
+			public PredicateIsType(Class<?> cls) {
+				domain.checkIsKnownType(cls);
+				this.cls = cls;
+			}
+
+			@Override
+			protected TypedValue execute(TypedValue value) {
+				return value.domain.create(Boolean.class, value.is(cls));
+			}
+		}
+
+		env.setGlobalSymbol("isint", new PredicateIsType(BigInteger.class));
+		env.setGlobalSymbol("isbool", new PredicateIsType(Boolean.class));
+		env.setGlobalSymbol("isfloat", new PredicateIsType(Double.class));
+		env.setGlobalSymbol("isnull", new PredicateIsType(UnitType.class));
+		env.setGlobalSymbol("isstr", new PredicateIsType(String.class));
+		env.setGlobalSymbol("iscomplex", new PredicateIsType(Complex.class));
+		env.setGlobalSymbol("isobject", new PredicateIsType(IComposite.class));
+		env.setGlobalSymbol("iscons", new PredicateIsType(Cons.class));
+		env.setGlobalSymbol("issymbol", new PredicateIsType(Symbol.class));
+
+		env.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue execute(TypedValue value) {
+				return value.domain.create(Boolean.class, NUMBER_TYPES.contains(value.type));
+			}
+		});
+
+		env.setGlobalSymbol("type", new UnaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue execute(TypedValue value) {
+				final TypeDomain domain = value.domain;
+				return domain.create(String.class, domain.getName(value.type));
+			}
+		});
+
+		env.setGlobalSymbol("bool", new UnaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue execute(TypedValue value) {
+				final Optional<Boolean> isTruthy = value.isTruthy();
+				Preconditions.checkArgument(isTruthy.isPresent(), "Cannot determine value of %s", value);
+				return value.domain.create(Boolean.class, isTruthy.get());
+			}
+		});
+
+		env.setGlobalSymbol("str", new UnaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue execute(TypedValue value) {
+				if (value.is(String.class)) return value;
+				if (value.is(Symbol.class)) return value.domain.create(String.class, value.unwrap(Symbol.class).value);
+				else return value.domain.create(String.class, valuePrinter.toString(value));
+			}
+		});
+
+		env.setGlobalSymbol("int", new SimpleTypedFunction(domain) {
+			@Variant
+			public BigInteger convert(@DispatchArg(extra = { Boolean.class }) BigInteger value) {
+				return value;
+			}
+
+			@Variant
+			public BigInteger convert(@DispatchArg Double value) {
+				return BigInteger.valueOf(value.longValue());
+			}
+
+			@Variant
+			public BigInteger convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
+				final int usedRadix = radix.transform(INT_UNWRAP).or(valuePrinter.base);
+				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
+				Preconditions.checkArgument(result.getRight() == null, "Fractional part in argument to 'int': %s", value);
+				return result.getLeft();
+			}
+		});
+
+		env.setGlobalSymbol("float", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double convert(@DispatchArg(extra = { BigInteger.class, Boolean.class }) Double value) {
+				return value;
+			}
+
+			@Variant
+			public Double convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
+				final int usedRadix = radix.transform(INT_UNWRAP).or(valuePrinter.base);
+				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
+				return result.getLeft().doubleValue() + result.getRight();
+			}
+		});
+
+		env.setGlobalSymbol("complex", new SimpleTypedFunction(domain) {
+			@Variant
+			public Complex convert(Double re, Double im) {
+				return Complex.cartesian(re, im);
+			}
+		});
+
+		env.setGlobalSymbol("polar", new SimpleTypedFunction(domain) {
+			@Variant
+			public Complex convert(Double r, Double phase) {
+				return Complex.polar(r, phase);
+			}
+		});
+
+		env.setGlobalSymbol("number", new SimpleTypedFunction(domain) {
+			@Variant
+			@RawReturn
+			public TypedValue convert(@RawDispatchArg({ Boolean.class, BigInteger.class, Double.class, Complex.class }) TypedValue value) {
+				return value;
+			}
+
+			@Variant
+			@RawReturn
+			public TypedValue convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
+				final int usedRadix = radix.transform(INT_UNWRAP).or(valuePrinter.base);
+				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
+				return TypedValueParser.mergeNumberParts(domain, result);
+			}
+		});
+
+		env.setGlobalSymbol("parse", new SimpleTypedFunction(domain) {
+			private final Tokenizer tokenizer = new Tokenizer();
+
+			@Variant
+			@RawReturn
+			public TypedValue parse(String value) {
+				try {
+					final List<Token> tokens = Lists.newArrayList(tokenizer.tokenize(value));
+					Preconditions.checkState(tokens.size() == 1, "Expected single token from '%', got %s", value, tokens.size());
+					return valueParser.parseToken(tokens.get(0));
+				} catch (Exception e) {
+					throw new IllegalArgumentException("Failed to parse '" + value + "'", e);
+				}
+			}
+		});
+
+		env.setGlobalSymbol("isnan", new SimpleTypedFunction(domain) {
+			@Variant
+			public Boolean isNan(Double v) {
+				return v.isNaN();
+			}
+		});
+
+		env.setGlobalSymbol("isinf", new SimpleTypedFunction(domain) {
+			@Variant
+			public Boolean isInf(Double v) {
+				return v.isInfinite();
+			}
+		});
+
+		env.setGlobalSymbol("abs", new SimpleTypedFunction(domain) {
+			@Variant
+			public Boolean abs(@DispatchArg Boolean v) {
+				return v;
+			}
+
+			@Variant
+			public BigInteger abs(@DispatchArg BigInteger v) {
+				return v.abs();
+			}
+
+			@Variant
+			public Double abs(@DispatchArg Double v) {
+				return Math.abs(v);
+			}
+
+			@Variant
+			public Double abs(@DispatchArg Complex v) {
+				return v.abs();
+			}
+		});
+
+		env.setGlobalSymbol("sqrt", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double sqrt(Double v) {
+				return Math.sqrt(v);
+			}
+		});
+
+		env.setGlobalSymbol("floor", new SimpleTypedFunction(domain) {
+			@Variant
+			@RawReturn
+			public TypedValue floor(@RawDispatchArg({ BigInteger.class, Boolean.class }) TypedValue v) {
+				return v;
+			}
+
+			@Variant
+			public Double floor(@DispatchArg Double v) {
+				return Math.floor(v);
+			}
+		});
+
+		env.setGlobalSymbol("ceil", new SimpleTypedFunction(domain) {
+			@Variant
+			@RawReturn
+			public TypedValue ceil(@RawDispatchArg({ BigInteger.class, Boolean.class }) TypedValue v) {
+				return v;
+			}
+
+			@Variant
+			public Double ceil(@DispatchArg Double v) {
+				return Math.ceil(v);
+			}
+		});
+
+		env.setGlobalSymbol("cos", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double cos(Double v) {
+				return Math.cos(v);
+			}
+		});
+
+		env.setGlobalSymbol("cosh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double cosh(Double v) {
+				return Math.cosh(v);
+			}
+		});
+
+		env.setGlobalSymbol("acos", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double acos(Double v) {
+				return Math.acos(v);
+			}
+		});
+
+		env.setGlobalSymbol("acosh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double acosh(Double v) {
+				return Math.log(v + Math.sqrt(v * v - 1));
+			}
+		});
+
+		env.setGlobalSymbol("sin", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double sin(Double v) {
+				return Math.sin(v);
+			}
+		});
+
+		env.setGlobalSymbol("sinh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double sinh(Double v) {
+				return Math.sinh(v);
+			}
+		});
+
+		env.setGlobalSymbol("asin", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double asin(Double v) {
+				return Math.asin(v);
+			}
+		});
+
+		env.setGlobalSymbol("asinh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double asinh(Double v) {
+				return v.isInfinite()? v : Math.log(v + Math.sqrt(v * v + 1));
+			}
+		});
+
+		env.setGlobalSymbol("tan", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double tan(Double v) {
+				return Math.tan(v);
+			}
+		});
+
+		env.setGlobalSymbol("atan", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double atan(Double v) {
+				return Math.atan(v);
+			}
+		});
+
+		env.setGlobalSymbol("atan2", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double atan2(Double x, Double y) {
+				return Math.atan2(x, y);
+			}
+		});
+
+		env.setGlobalSymbol("tanh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double tanh(Double v) {
+				return Math.tanh(v);
+			}
+		});
+
+		env.setGlobalSymbol("atanh", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double atanh(Double v) {
+				return Math.log((1 + v) / (1 - v)) / 2;
+			}
+		});
+
+		env.setGlobalSymbol("exp", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double exp(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
+				return Math.exp(v);
+			}
+
+			@Variant
+			public Complex exp(@DispatchArg Complex v) {
+				return v.exp();
+			}
+		});
+
+		env.setGlobalSymbol("ln", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double ln(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
+				return Math.log(v);
+			}
+
+			@Variant
+			public Complex ln(@DispatchArg Complex v) {
+				return v.ln();
+			}
+		});
+
+		env.setGlobalSymbol("log", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double log(Double v, @OptionalArgs Optional<Double> base) {
+				if (base.isPresent()) {
+					return Math.log(v) / Math.log(base.get());
+				} else {
+					return Math.log10(v);
+				}
+			}
+		});
+
+		env.setGlobalSymbol("sgn", new SimpleTypedFunction(domain) {
+			@Variant
+			public BigInteger sgn(@DispatchArg(extra = { Boolean.class }) BigInteger v) {
+				return BigInteger.valueOf(v.signum());
+			}
+
+			@Variant
+			public Double sgn(@DispatchArg Double v) {
+				return Math.signum(v);
+			}
+		});
+
+		env.setGlobalSymbol("rad", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double rad(Double v) {
+				return Math.toRadians(v);
+			}
+		});
+
+		env.setGlobalSymbol("deg", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double deg(Double v) {
+				return Math.toDegrees(v);
+			}
+		});
+
+		env.setGlobalSymbol("modpow", new SimpleTypedFunction(domain) {
+			@Variant
+			public BigInteger modpow(BigInteger v, BigInteger exp, BigInteger mod) {
+				return v.modPow(exp, mod);
+			}
+		});
+
+		env.setGlobalSymbol("gcd", new SimpleTypedFunction(domain) {
+			@Variant
+			public BigInteger gcd(BigInteger v1, BigInteger v2) {
+				return v1.gcd(v2);
+			}
+		});
+
+		env.setGlobalSymbol("re", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double re(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
+				return v;
+			}
+
+			@Variant
+			public Double re(@DispatchArg Complex v) {
+				return v.re;
+			}
+		});
+
+		env.setGlobalSymbol("im", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double im(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
+				return 0.0;
+			}
+
+			@Variant
+			public Double im(@DispatchArg Complex v) {
+				return v.im;
+			}
+		});
+
+		env.setGlobalSymbol("phase", new SimpleTypedFunction(domain) {
+			@Variant
+			public Double phase(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
+				return 0.0;
+			}
+
+			@Variant
+			public Double phase(@DispatchArg Complex v) {
+				return v.phase();
+			}
+		});
+
+		env.setGlobalSymbol("conj", new SimpleTypedFunction(domain) {
+			@Variant
+			public Complex conj(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
+				return Complex.real(v);
+			}
+
+			@Variant
+			public Complex conj(@DispatchArg Complex v) {
+				return v.conj();
+			}
+		});
+
+		env.setGlobalSymbol("min", new AccumulatorFunction<TypedValue>(nullValue) {
+			@Override
+			protected TypedValue accumulate(TypedValue result, TypedValue value) {
+				return ltOperator.execute(result, value).value == Boolean.TRUE? result : value;
+			}
+		});
+
+		env.setGlobalSymbol("max", new AccumulatorFunction<TypedValue>(nullValue) {
+			@Override
+			protected TypedValue accumulate(TypedValue result, TypedValue value) {
+				return gtOperator.execute(result, value).value == Boolean.TRUE? result : value;
+			}
+		});
+
+		env.setGlobalSymbol("sum", new AccumulatorFunction<TypedValue>(nullValue) {
+			@Override
+			protected TypedValue accumulate(TypedValue result, TypedValue value) {
+				return addOperator.execute(result, value);
+			}
+		});
+
+		env.setGlobalSymbol("avg", new AccumulatorFunction<TypedValue>(nullValue) {
+			@Override
+			protected TypedValue accumulate(TypedValue result, TypedValue value) {
+				return addOperator.execute(result, value);
+			}
+
+			@Override
+			protected TypedValue process(TypedValue result, int argCount) {
+				return divideOperator.execute(result, domain.create(BigInteger.class, BigInteger.valueOf(argCount)));
+			}
+		});
+
+		env.setGlobalSymbol("cons", new BinaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue execute(TypedValue left, TypedValue right) {
+				return domain.create(Cons.class, new Cons(left, right));
+			}
+		});
+
+		env.setGlobalSymbol("car", new SimpleTypedFunction(domain) {
+			@Variant
+			@RawReturn
+			public TypedValue car(Cons cons) {
+				return cons.car;
+			}
+		});
+
+		env.setGlobalSymbol("cdr", new SimpleTypedFunction(domain) {
+			@Variant
+			@RawReturn
+			public TypedValue cdr(Cons cons) {
+				return cons.cdr;
+			}
+		});
+
+		env.setGlobalSymbol("list", new ISymbol<TypedValue>() {
+			@Override
+			public void execute(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				if (returnsCount.isPresent()) {
+					final int returns = returnsCount.get();
+					if (returns != 1) throw new StackValidationException("Has one result but expected %s", returns);
+				}
+
+				final Integer args = argumentsCount.or(0);
+				final Stack<TypedValue> stack = frame.stack();
+
+				TypedValue result = nullValue;
+				for (int i = 0; i < args; i++)
+					result = domain.create(Cons.class, new Cons(stack.pop(), result));
+
+				stack.push(result);
+			}
+		});
+
+		env.setGlobalSymbol("len", new SimpleTypedFunction(domain) {
+			@Variant
+			public BigInteger len(@DispatchArg UnitType v) {
+				// since empty list == nil
+				return BigInteger.ZERO;
+			}
+
+			@Variant
+			public BigInteger len(@DispatchArg String v) {
+				return BigInteger.valueOf(v.length());
+			}
+
+			@Variant
+			public BigInteger len(@DispatchArg Cons v) {
+				return BigInteger.valueOf(v.length());
+			}
+		});
+
+		class InitialParserState extends SwitchingCompilerState<TypedValue> {
 			public InitialParserState(IAstParser<TypedValue> parser, String currentStateSymbol, String switchStateSymbol) {
 				super(parser, currentStateSymbol, switchStateSymbol);
 			}
@@ -800,7 +1194,7 @@ public class TypedValueCalculator<M> extends Calculator<TypedValue, M> {
 			}
 		}
 
-		class TypedValueCalculatorFactory extends BasicCalculatorFactory<TypedValue, TypedValueCalculator<ExprType>> {
+		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 
 			@Override
 			protected SwitchingCompilerState<TypedValue> createInfixParserState(OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory) {
@@ -848,543 +1242,9 @@ public class TypedValueCalculator<M> extends Calculator<TypedValue, M> {
 			protected void setupExtendedTokenizer(Tokenizer extendedTokenizer) {
 				TokenUtils.setupTokenizerForQuoteNotation(extendedTokenizer);
 			}
-
-			@Override
-			protected TypedValueCalculator<ExprType> createCalculator(TypedValue nullValue, Map<ExprType, openmods.calc.Calculator.ICompiler<TypedValue>> compilers) {
-				return new TypedValueCalculator<ExprType>(nullValue, compilers);
-			}
-
 		}
 
-		final TypedValueCalculator<ExprType> result = new TypedValueCalculatorFactory().create(nullValue, valueParser, operators);
-
-		GenericFunctions.createStackManipulationFunctions(result);
-
-		result.setGlobalSymbol(SYMBOL_NULL, Constant.create(nullValue));
-
-		result.setGlobalSymbol(SYMBOL_FALSE, Constant.create(domain.create(Boolean.class, Boolean.TRUE)));
-		result.setGlobalSymbol(SYMBOL_TRUE, Constant.create(domain.create(Boolean.class, Boolean.FALSE)));
-
-		result.setGlobalSymbol("E", Constant.create(domain.create(Double.class, Math.E)));
-		result.setGlobalSymbol("PI", Constant.create(domain.create(Double.class, Math.PI)));
-		result.setGlobalSymbol("NAN", Constant.create(domain.create(Double.class, Double.NaN)));
-		result.setGlobalSymbol("INF", Constant.create(domain.create(Double.class, Double.POSITIVE_INFINITY)));
-
-		result.setGlobalSymbol("I", Constant.create(domain.create(Complex.class, Complex.I)));
-
-		class PredicateIsType extends UnaryFunction<TypedValue> {
-			private final Class<?> cls;
-
-			public PredicateIsType(Class<?> cls) {
-				domain.checkIsKnownType(cls);
-				this.cls = cls;
-			}
-
-			@Override
-			protected TypedValue execute(TypedValue value) {
-				return value.domain.create(Boolean.class, value.is(cls));
-			}
-		}
-
-		result.setGlobalSymbol("isint", new PredicateIsType(BigInteger.class));
-		result.setGlobalSymbol("isbool", new PredicateIsType(Boolean.class));
-		result.setGlobalSymbol("isfloat", new PredicateIsType(Double.class));
-		result.setGlobalSymbol("isnull", new PredicateIsType(UnitType.class));
-		result.setGlobalSymbol("isstr", new PredicateIsType(String.class));
-		result.setGlobalSymbol("iscomplex", new PredicateIsType(Complex.class));
-		result.setGlobalSymbol("isobject", new PredicateIsType(IComposite.class));
-		result.setGlobalSymbol("iscons", new PredicateIsType(Cons.class));
-		result.setGlobalSymbol("issymbol", new PredicateIsType(Symbol.class));
-
-		result.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
-			@Override
-			protected TypedValue execute(TypedValue value) {
-				return value.domain.create(Boolean.class, NUMBER_TYPES.contains(value.type));
-			}
-		});
-
-		result.setGlobalSymbol("type", new UnaryFunction<TypedValue>() {
-			@Override
-			protected TypedValue execute(TypedValue value) {
-				final TypeDomain domain = value.domain;
-				return domain.create(String.class, domain.getName(value.type));
-			}
-		});
-
-		result.setGlobalSymbol("bool", new UnaryFunction<TypedValue>() {
-			@Override
-			protected TypedValue execute(TypedValue value) {
-				final Optional<Boolean> isTruthy = value.isTruthy();
-				Preconditions.checkArgument(isTruthy.isPresent(), "Cannot determine value of %s", value);
-				return value.domain.create(Boolean.class, isTruthy.get());
-			}
-		});
-
-		result.setGlobalSymbol("str", new UnaryFunction<TypedValue>() {
-			@Override
-			protected TypedValue execute(TypedValue value) {
-				if (value.is(String.class)) return value;
-				if (value.is(Symbol.class)) return value.domain.create(String.class, value.unwrap(Symbol.class).value);
-				else return value.domain.create(String.class, result.toString(value));
-			}
-		});
-
-		result.setGlobalSymbol("int", new SimpleTypedFunction(domain) {
-			@Variant
-			public BigInteger convert(@DispatchArg(extra = { Boolean.class }) BigInteger value) {
-				return value;
-			}
-
-			@Variant
-			public BigInteger convert(@DispatchArg Double value) {
-				return BigInteger.valueOf(value.longValue());
-			}
-
-			@Variant
-			public BigInteger convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
-				final int usedRadix = radix.transform(INT_UNWRAP).or(result.base);
-				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
-				Preconditions.checkArgument(result.getRight() == null, "Fractional part in argument to 'int': %s", value);
-				return result.getLeft();
-			}
-		});
-
-		result.setGlobalSymbol("float", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double convert(@DispatchArg(extra = { BigInteger.class, Boolean.class }) Double value) {
-				return value;
-			}
-
-			@Variant
-			public Double convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
-				final int usedRadix = radix.transform(INT_UNWRAP).or(result.base);
-				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
-				return result.getLeft().doubleValue() + result.getRight();
-			}
-		});
-
-		result.setGlobalSymbol("complex", new SimpleTypedFunction(domain) {
-			@Variant
-			public Complex convert(Double re, Double im) {
-				return Complex.cartesian(re, im);
-			}
-		});
-
-		result.setGlobalSymbol("polar", new SimpleTypedFunction(domain) {
-			@Variant
-			public Complex convert(Double r, Double phase) {
-				return Complex.polar(r, phase);
-			}
-		});
-
-		result.setGlobalSymbol("number", new SimpleTypedFunction(domain) {
-			@Variant
-			@RawReturn
-			public TypedValue convert(@RawDispatchArg({ Boolean.class, BigInteger.class, Double.class, Complex.class }) TypedValue value) {
-				return value;
-			}
-
-			@Variant
-			@RawReturn
-			public TypedValue convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
-				final int usedRadix = radix.transform(INT_UNWRAP).or(result.base);
-				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
-				return TypedValueParser.mergeNumberParts(domain, result);
-			}
-		});
-
-		result.setGlobalSymbol("parse", new SimpleTypedFunction(domain) {
-			private final Tokenizer tokenizer = new Tokenizer();
-
-			@Variant
-			@RawReturn
-			public TypedValue parse(String value) {
-				try {
-					final List<Token> tokens = Lists.newArrayList(tokenizer.tokenize(value));
-					Preconditions.checkState(tokens.size() == 1, "Expected single token from '%', got %s", value, tokens.size());
-					return valueParser.parseToken(tokens.get(0));
-				} catch (Exception e) {
-					throw new IllegalArgumentException("Failed to parse '" + value + "'", e);
-				}
-			}
-		});
-
-		result.setGlobalSymbol("isnan", new SimpleTypedFunction(domain) {
-			@Variant
-			public Boolean isNan(Double v) {
-				return v.isNaN();
-			}
-		});
-
-		result.setGlobalSymbol("isinf", new SimpleTypedFunction(domain) {
-			@Variant
-			public Boolean isInf(Double v) {
-				return v.isInfinite();
-			}
-		});
-
-		result.setGlobalSymbol("abs", new SimpleTypedFunction(domain) {
-			@Variant
-			public Boolean abs(@DispatchArg Boolean v) {
-				return v;
-			}
-
-			@Variant
-			public BigInteger abs(@DispatchArg BigInteger v) {
-				return v.abs();
-			}
-
-			@Variant
-			public Double abs(@DispatchArg Double v) {
-				return Math.abs(v);
-			}
-
-			@Variant
-			public Double abs(@DispatchArg Complex v) {
-				return v.abs();
-			}
-		});
-
-		result.setGlobalSymbol("sqrt", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double sqrt(Double v) {
-				return Math.sqrt(v);
-			}
-		});
-
-		result.setGlobalSymbol("floor", new SimpleTypedFunction(domain) {
-			@Variant
-			@RawReturn
-			public TypedValue floor(@RawDispatchArg({ BigInteger.class, Boolean.class }) TypedValue v) {
-				return v;
-			}
-
-			@Variant
-			public Double floor(@DispatchArg Double v) {
-				return Math.floor(v);
-			}
-		});
-
-		result.setGlobalSymbol("ceil", new SimpleTypedFunction(domain) {
-			@Variant
-			@RawReturn
-			public TypedValue ceil(@RawDispatchArg({ BigInteger.class, Boolean.class }) TypedValue v) {
-				return v;
-			}
-
-			@Variant
-			public Double ceil(@DispatchArg Double v) {
-				return Math.ceil(v);
-			}
-		});
-
-		result.setGlobalSymbol("cos", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double cos(Double v) {
-				return Math.cos(v);
-			}
-		});
-
-		result.setGlobalSymbol("cosh", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double cosh(Double v) {
-				return Math.cosh(v);
-			}
-		});
-
-		result.setGlobalSymbol("acos", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double acos(Double v) {
-				return Math.acos(v);
-			}
-		});
-
-		result.setGlobalSymbol("acosh", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double acosh(Double v) {
-				return Math.log(v + Math.sqrt(v * v - 1));
-			}
-		});
-
-		result.setGlobalSymbol("sin", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double sin(Double v) {
-				return Math.sin(v);
-			}
-		});
-
-		result.setGlobalSymbol("sinh", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double sinh(Double v) {
-				return Math.sinh(v);
-			}
-		});
-
-		result.setGlobalSymbol("asin", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double asin(Double v) {
-				return Math.asin(v);
-			}
-		});
-
-		result.setGlobalSymbol("asinh", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double asinh(Double v) {
-				return v.isInfinite()? v : Math.log(v + Math.sqrt(v * v + 1));
-			}
-		});
-
-		result.setGlobalSymbol("tan", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double tan(Double v) {
-				return Math.tan(v);
-			}
-		});
-
-		result.setGlobalSymbol("atan", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double atan(Double v) {
-				return Math.atan(v);
-			}
-		});
-
-		result.setGlobalSymbol("atan2", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double atan2(Double x, Double y) {
-				return Math.atan2(x, y);
-			}
-		});
-
-		result.setGlobalSymbol("tanh", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double tanh(Double v) {
-				return Math.tanh(v);
-			}
-		});
-
-		result.setGlobalSymbol("atanh", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double atanh(Double v) {
-				return Math.log((1 + v) / (1 - v)) / 2;
-			}
-		});
-
-		result.setGlobalSymbol("exp", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double exp(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
-				return Math.exp(v);
-			}
-
-			@Variant
-			public Complex exp(@DispatchArg Complex v) {
-				return v.exp();
-			}
-		});
-
-		result.setGlobalSymbol("ln", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double ln(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
-				return Math.log(v);
-			}
-
-			@Variant
-			public Complex ln(@DispatchArg Complex v) {
-				return v.ln();
-			}
-		});
-
-		result.setGlobalSymbol("log", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double log(Double v, @OptionalArgs Optional<Double> base) {
-				if (base.isPresent()) {
-					return Math.log(v) / Math.log(base.get());
-				} else {
-					return Math.log10(v);
-				}
-			}
-		});
-
-		result.setGlobalSymbol("sgn", new SimpleTypedFunction(domain) {
-			@Variant
-			public BigInteger sgn(@DispatchArg(extra = { Boolean.class }) BigInteger v) {
-				return BigInteger.valueOf(v.signum());
-			}
-
-			@Variant
-			public Double sgn(@DispatchArg Double v) {
-				return Math.signum(v);
-			}
-		});
-
-		result.setGlobalSymbol("rad", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double rad(Double v) {
-				return Math.toRadians(v);
-			}
-		});
-
-		result.setGlobalSymbol("deg", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double deg(Double v) {
-				return Math.toDegrees(v);
-			}
-		});
-
-		result.setGlobalSymbol("modpow", new SimpleTypedFunction(domain) {
-			@Variant
-			public BigInteger modpow(BigInteger v, BigInteger exp, BigInteger mod) {
-				return v.modPow(exp, mod);
-			}
-		});
-
-		result.setGlobalSymbol("gcd", new SimpleTypedFunction(domain) {
-			@Variant
-			public BigInteger gcd(BigInteger v1, BigInteger v2) {
-				return v1.gcd(v2);
-			}
-		});
-
-		result.setGlobalSymbol("re", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double re(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
-				return v;
-			}
-
-			@Variant
-			public Double re(@DispatchArg Complex v) {
-				return v.re;
-			}
-		});
-
-		result.setGlobalSymbol("im", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double im(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
-				return 0.0;
-			}
-
-			@Variant
-			public Double im(@DispatchArg Complex v) {
-				return v.im;
-			}
-		});
-
-		result.setGlobalSymbol("phase", new SimpleTypedFunction(domain) {
-			@Variant
-			public Double phase(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
-				return 0.0;
-			}
-
-			@Variant
-			public Double phase(@DispatchArg Complex v) {
-				return v.phase();
-			}
-		});
-
-		result.setGlobalSymbol("conj", new SimpleTypedFunction(domain) {
-			@Variant
-			public Complex conj(@DispatchArg(extra = { Boolean.class, BigInteger.class }) Double v) {
-				return Complex.real(v);
-			}
-
-			@Variant
-			public Complex conj(@DispatchArg Complex v) {
-				return v.conj();
-			}
-		});
-
-		result.setGlobalSymbol("min", new AccumulatorFunction<TypedValue>(nullValue) {
-			@Override
-			protected TypedValue accumulate(TypedValue result, TypedValue value) {
-				return ltOperator.execute(result, value).value == Boolean.TRUE? result : value;
-			}
-		});
-
-		result.setGlobalSymbol("max", new AccumulatorFunction<TypedValue>(nullValue) {
-			@Override
-			protected TypedValue accumulate(TypedValue result, TypedValue value) {
-				return gtOperator.execute(result, value).value == Boolean.TRUE? result : value;
-			}
-		});
-
-		result.setGlobalSymbol("sum", new AccumulatorFunction<TypedValue>(nullValue) {
-			@Override
-			protected TypedValue accumulate(TypedValue result, TypedValue value) {
-				return addOperator.execute(result, value);
-			}
-		});
-
-		result.setGlobalSymbol("avg", new AccumulatorFunction<TypedValue>(nullValue) {
-			@Override
-			protected TypedValue accumulate(TypedValue result, TypedValue value) {
-				return addOperator.execute(result, value);
-			}
-
-			@Override
-			protected TypedValue process(TypedValue result, int argCount) {
-				return divideOperator.execute(result, domain.create(BigInteger.class, BigInteger.valueOf(argCount)));
-			}
-		});
-
-		result.setGlobalSymbol("cons", new BinaryFunction<TypedValue>() {
-			@Override
-			protected TypedValue execute(TypedValue left, TypedValue right) {
-				return domain.create(Cons.class, new Cons(left, right));
-			}
-		});
-
-		result.setGlobalSymbol("car", new SimpleTypedFunction(domain) {
-			@Variant
-			@RawReturn
-			public TypedValue car(Cons cons) {
-				return cons.car;
-			}
-		});
-
-		result.setGlobalSymbol("cdr", new SimpleTypedFunction(domain) {
-			@Variant
-			@RawReturn
-			public TypedValue cdr(Cons cons) {
-				return cons.cdr;
-			}
-		});
-
-		result.setGlobalSymbol("list", new ISymbol<TypedValue>() {
-			@Override
-			public void execute(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-				if (returnsCount.isPresent()) {
-					final int returns = returnsCount.get();
-					if (returns != 1) throw new StackValidationException("Has one result but expected %s", returns);
-				}
-
-				final Integer args = argumentsCount.or(0);
-				final Stack<TypedValue> stack = frame.stack();
-
-				TypedValue result = nullValue;
-				for (int i = 0; i < args; i++)
-					result = domain.create(Cons.class, new Cons(stack.pop(), result));
-
-				stack.push(result);
-			}
-		});
-
-		result.setGlobalSymbol("len", new SimpleTypedFunction(domain) {
-			@Variant
-			public BigInteger len(@DispatchArg UnitType v) {
-				// since empty list == nil
-				return BigInteger.ZERO;
-			}
-
-			@Variant
-			public BigInteger len(@DispatchArg String v) {
-				return BigInteger.valueOf(v.length());
-			}
-
-			@Variant
-			public BigInteger len(@DispatchArg Cons v) {
-				return BigInteger.valueOf(v.length());
-			}
-		});
-
-		return result;
+		final Compilers<TypedValue, ExprType> compilers = new TypedValueCompilersFactory().create(nullValue, valueParser, operators);
+		return new Calculator<TypedValue, ExprType>(env, compilers, valuePrinter);
 	}
 }

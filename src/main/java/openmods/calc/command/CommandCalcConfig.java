@@ -97,7 +97,7 @@ public class CommandCalcConfig extends CommandCalcBase {
 			if (args.length < 2) throw error("openmodslib.command.calc_no_key");
 			final String key = args[1];
 			try {
-				state.getActiveProperty(key);
+				state.getActiveCalculator().getProperty(key);
 			} catch (NoSuchPropertyException e) {
 				error("openmodslib.command.calc_invalid_key");
 			}
@@ -108,7 +108,7 @@ public class CommandCalcConfig extends CommandCalcBase {
 			final String value = args[2];
 
 			try {
-				state.setActiveProperty(key, value);
+				state.getActiveCalculator().setProperty(key, value);
 			} catch (NoSuchPropertyException e) {
 				error("openmodslib.command.calc_invalid_key");
 			} catch (Exception e) {
@@ -144,7 +144,7 @@ public class CommandCalcConfig extends CommandCalcBase {
 		} else if (subCommand.equalsIgnoreCase(COMMAND_LOAD)) {
 			return filterPrefixes(args[1], state.getCalculatorsNames());
 		} else if (subCommand.equalsIgnoreCase(COMMAND_GET) || subCommand.equalsIgnoreCase(COMMAND_SET)) {
-			return filterPrefixes(args[1], state.getActiveProperties());
+			return filterPrefixes(args[1], state.getActiveCalculator().getProperties());
 		} else return null;
 	}
 

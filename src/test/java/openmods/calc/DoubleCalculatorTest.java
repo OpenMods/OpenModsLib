@@ -1,12 +1,12 @@
 package openmods.calc;
 
 import openmods.calc.CalcTestUtils.CalcCheck;
-import openmods.calc.types.fp.DoubleCalculator;
+import openmods.calc.types.fp.DoubleCalculatorFactory;
 import org.junit.Test;
 
 public class DoubleCalculatorTest {
 
-	private final Calculator<Double, ExprType> sut = DoubleCalculator.createDefault();
+	private final Calculator<Double, ExprType> sut = DoubleCalculatorFactory.createDefault();
 
 	public CalcCheck<Double> prefix(String value) {
 		return CalcCheck.create(sut, value, ExprType.PREFIX);

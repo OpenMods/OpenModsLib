@@ -1,13 +1,13 @@
 package openmods.calc;
 
 import openmods.calc.CalcTestUtils.CalcCheck;
-import openmods.calc.types.fraction.FractionCalculator;
+import openmods.calc.types.fraction.FractionCalculatorFactory;
 import org.apache.commons.lang3.math.Fraction;
 import org.junit.Test;
 
 public class FractionCalculatorTest {
 
-	private final Calculator<Fraction, ExprType> sut = FractionCalculator.createDefault();
+	private final Calculator<Fraction, ExprType> sut = FractionCalculatorFactory.createDefault();
 
 	public CalcCheck<Fraction> prefix(String value) {
 		return CalcCheck.create(sut, value, ExprType.PREFIX);

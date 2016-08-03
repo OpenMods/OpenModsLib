@@ -13,7 +13,7 @@ import openmods.calc.types.multi.TypedBinaryOperator;
 import openmods.calc.types.multi.TypedFunction;
 import openmods.calc.types.multi.TypedUnaryOperator;
 import openmods.calc.types.multi.TypedValue;
-import openmods.calc.types.multi.TypedValueCalculator;
+import openmods.calc.types.multi.TypedValueCalculatorFactory;
 import openmods.math.Complex;
 import openmods.reflection.MethodAccess;
 import openmods.reflection.TypeVariableHolderHandler;
@@ -30,7 +30,7 @@ public class TypedValueCalculatorTest {
 		filler.fillHolders(TypedFunction.class);
 	}
 
-	private final Calculator<TypedValue, ExprType> sut = TypedValueCalculator.create();
+	private final Calculator<TypedValue, ExprType> sut = TypedValueCalculatorFactory.create();
 
 	public CalcCheck<TypedValue> prefix(String value) {
 		return CalcCheck.create(sut, value, ExprType.PREFIX);
@@ -44,7 +44,7 @@ public class TypedValueCalculatorTest {
 		return CalcCheck.create(sut, value, ExprType.POSTFIX);
 	}
 
-	private final TypedValue NULL = sut.nullValue();
+	private final TypedValue NULL = sut.environment.nullValue();
 
 	private final TypeDomain domain = NULL.domain;
 
@@ -69,7 +69,7 @@ public class TypedValueCalculatorTest {
 	}
 
 	private TypedValue nil() {
-		return sut.nullValue();
+		return sut.environment.nullValue();
 	}
 
 	private TypedValue cons(TypedValue car, TypedValue cdr) {
@@ -380,7 +380,7 @@ public class TypedValueCalculatorTest {
 			}
 		}
 
-		sut.setGlobalSymbol("root", Constant.create(sut.nullValue().domain.create(IComposite.class, new TestComposite())));
+		sut.environment.setGlobalSymbol("root", Constant.create(sut.environment.nullValue().domain.create(IComposite.class, new TestComposite())));
 		infix("type(root)=='object'").expectResult(b(true)).expectEmptyStack();
 		infix("isobject(root)").expectResult(b(true)).expectEmptyStack();
 		infix("bool(root)").expectResult(b(true)).expectEmptyStack();

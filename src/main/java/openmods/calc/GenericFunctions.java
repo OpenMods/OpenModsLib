@@ -47,7 +47,7 @@ public class GenericFunctions {
 		protected abstract E accumulate(E result, E value);
 	}
 
-	public static <E, M> void createStackManipulationFunctions(Calculator<E, M> calculator) {
+	public static <E> void createStackManipulationFunctions(Environment<E> calculator) {
 		calculator.setGlobalSymbol("swap", new FixedSymbol<E>(2, 2) {
 			@Override
 			public void execute(ICalculatorFrame<E> frame) {

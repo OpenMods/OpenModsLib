@@ -13,18 +13,15 @@ import java.util.Set;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 import openmods.calc.Calculator;
-import openmods.calc.CompiledFunction;
-import openmods.calc.Constant;
 import openmods.calc.ExprType;
 import openmods.calc.FixedSymbol;
 import openmods.calc.ICalculatorFrame;
-import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
+import openmods.calc.IValuePrinter;
 import openmods.calc.StackValidationException;
-import openmods.calc.types.bigint.BigIntCalculator;
-import openmods.calc.types.fp.DoubleCalculator;
-import openmods.calc.types.fraction.FractionCalculator;
-import openmods.config.simpler.ConfigurableClassAdapter;
+import openmods.calc.types.bigint.BigIntCalculatorFactory;
+import openmods.calc.types.fp.DoubleCalculatorFactory;
+import openmods.calc.types.fraction.FractionCalculatorFactory;
 import openmods.utils.Stack;
 import org.apache.commons.lang3.math.Fraction;
 
@@ -60,8 +57,9 @@ public class CalcState {
 			return sender.getPlayerCoordinates().posZ;
 		}
 
-		public <E> Calculator<E, ExprType> addPrinter(final Calculator<E, ExprType> calculator) {
-			calculator.setGlobalSymbol("p", new ISymbol<E>() {
+		public <E> Calculator<E, ExprType> addPrinter(Calculator<E, ExprType> calculator) {
+			final IValuePrinter<E> printer = calculator.printer;
+			calculator.environment.setGlobalSymbol("p", new ISymbol<E>() {
 				@Override
 				public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 					Preconditions.checkNotNull(sender, "DERP");
@@ -74,7 +72,7 @@ public class CalcState {
 					final List<String> results = Lists.newArrayListWithExpectedSize(in);
 					for (int i = 0; i < in; i++) {
 						final E value = stack.pop();
-						results.add(calculator.toString(value));
+						results.add(printer.toString(value));
 					}
 
 					final String result = ": " + Joiner.on(" ").join(results);
@@ -84,7 +82,7 @@ public class CalcState {
 			return calculator;
 		}
 
-		public <E> E call(ICommandSender sender, IFunction<E> function) {
+		public synchronized <E> E call(ICommandSender sender, IFunction<E> function) {
 			this.sender = sender;
 			final E result = function.call();
 			this.sender = null;
@@ -96,23 +94,23 @@ public class CalcState {
 		DOUBLE {
 			@Override
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
-				final Calculator<Double, ExprType> calculator = DoubleCalculator.createDefault();
+				final Calculator<Double, ExprType> calculator = DoubleCalculatorFactory.createDefault();
 
-				calculator.setGlobalSymbol("$x", new FixedSymbol<Double>(0, 1) {
+				calculator.environment.setGlobalSymbol("$x", new FixedSymbol<Double>(0, 1) {
 					@Override
 					public void execute(ICalculatorFrame<Double> frame) {
 						frame.stack().push(Double.valueOf(holder.getX()));
 					}
 				});
 
-				calculator.setGlobalSymbol("$y", new FixedSymbol<Double>(0, 1) {
+				calculator.environment.setGlobalSymbol("$y", new FixedSymbol<Double>(0, 1) {
 					@Override
 					public void execute(ICalculatorFrame<Double> frame) {
 						frame.stack().push(Double.valueOf(holder.getY()));
 					}
 				});
 
-				calculator.setGlobalSymbol("$z", new FixedSymbol<Double>(0, 1) {
+				calculator.environment.setGlobalSymbol("$z", new FixedSymbol<Double>(0, 1) {
 					@Override
 					public void execute(ICalculatorFrame<Double> frame) {
 						frame.stack().push(Double.valueOf(holder.getZ()));
@@ -125,23 +123,23 @@ public class CalcState {
 		FRACTION {
 			@Override
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
-				final Calculator<Fraction, ExprType> calculator = FractionCalculator.createDefault();
+				final Calculator<Fraction, ExprType> calculator = FractionCalculatorFactory.createDefault();
 
-				calculator.setGlobalSymbol("$x", new FixedSymbol<Fraction>(0, 1) {
+				calculator.environment.setGlobalSymbol("$x", new FixedSymbol<Fraction>(0, 1) {
 					@Override
 					public void execute(ICalculatorFrame<Fraction> frame) {
 						frame.stack().push(Fraction.getFraction(holder.getX(), 1));
 					}
 				});
 
-				calculator.setGlobalSymbol("$y", new FixedSymbol<Fraction>(0, 1) {
+				calculator.environment.setGlobalSymbol("$y", new FixedSymbol<Fraction>(0, 1) {
 					@Override
 					public void execute(ICalculatorFrame<Fraction> frame) {
 						frame.stack().push(Fraction.getFraction(holder.getY(), 1));
 					}
 				});
 
-				calculator.setGlobalSymbol("$z", new FixedSymbol<Fraction>(0, 1) {
+				calculator.environment.setGlobalSymbol("$z", new FixedSymbol<Fraction>(0, 1) {
 					@Override
 					public void execute(ICalculatorFrame<Fraction> frame) {
 						frame.stack().push(Fraction.getFraction(holder.getZ(), 1));
@@ -154,23 +152,23 @@ public class CalcState {
 		BIGINT {
 			@Override
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
-				final Calculator<BigInteger, ExprType> calculator = BigIntCalculator.createDefault();
+				final Calculator<BigInteger, ExprType> calculator = BigIntCalculatorFactory.createDefault();
 
-				calculator.setGlobalSymbol("$x", new FixedSymbol<BigInteger>(0, 1) {
+				calculator.environment.setGlobalSymbol("$x", new FixedSymbol<BigInteger>(0, 1) {
 					@Override
 					public void execute(ICalculatorFrame<BigInteger> frame) {
 						frame.stack().push(BigInteger.valueOf(holder.getX()));
 					}
 				});
 
-				calculator.setGlobalSymbol("$y", new FixedSymbol<BigInteger>(0, 1) {
+				calculator.environment.setGlobalSymbol("$y", new FixedSymbol<BigInteger>(0, 1) {
 					@Override
 					public void execute(ICalculatorFrame<BigInteger> frame) {
 						frame.stack().push(BigInteger.valueOf(holder.getY()));
 					}
 				});
 
-				calculator.setGlobalSymbol("$z", new FixedSymbol<BigInteger>(0, 1) {
+				calculator.environment.setGlobalSymbol("$z", new FixedSymbol<BigInteger>(0, 1) {
 					@Override
 					public void execute(ICalculatorFrame<BigInteger> frame) {
 						frame.stack().push(BigInteger.valueOf(holder.getZ()));
@@ -202,18 +200,6 @@ public class CalcState {
 
 	public Calculator<?, ExprType> getActiveCalculator() {
 		return active;
-	}
-
-	public Set<String> getActiveProperties() {
-		return ConfigurableClassAdapter.getFor(active.getClass()).keys();
-	}
-
-	public String getActiveProperty(String key) {
-		return ConfigurableClassAdapter.getFor(active.getClass()).get(active, key);
-	}
-
-	public void setActiveProperty(String key, String value) {
-		ConfigurableClassAdapter.getFor(active.getClass()).set(active, key, value);
 	}
 
 	private void setActiveCalculator(final Calculator<?, ExprType> newCalculator) {
@@ -255,66 +241,39 @@ public class CalcState {
 		setActiveCalculator(newCalculator);
 	}
 
-	private static <E> void compileAndExecute(Calculator<E, ExprType> calculator, ExprType exprType, String expr) {
-		final IExecutable<E> executable = calculator.compile(exprType, expr);
-		calculator.execute(executable);
-	}
-
 	public void compileAndExecute(ICommandSender sender, final String expr) {
 		senderHolder.call(sender, new IFunction<Void>() {
 			@Override
 			public Void call() {
-				compileAndExecute(active, exprType, expr);
+				active.compileAndExecute(exprType, expr);
 				return null;
 			}
 		});
-	}
-
-	private static <E> E compileExecuteAndPop(Calculator<E, ExprType> calculator, ExprType exprType, String expr) {
-		final IExecutable<E> executable = calculator.compile(exprType, expr);
-		return calculator.executeAndPop(executable);
-	}
-
-	private static <E> String compileExecuteAndPrint(Calculator<E, ExprType> calculator, ExprType exprType, String expr) {
-		final E result = compileExecuteAndPop(calculator, exprType, expr);
-		return calculator.toString(result);
 	}
 
 	public String compileExecuteAndPrint(ICommandSender sender, final String expr) {
 		return senderHolder.call(sender, new IFunction<String>() {
 			@Override
 			public String call() {
-				return compileExecuteAndPrint(active, exprType, expr);
+				return active.compileExecuteAndPrint(exprType, expr);
 			}
 		});
-	}
-
-	private static <E> E compileAndSetGlobalSymbol(Calculator<E, ExprType> calculator, ExprType exprType, String id, String expr) {
-		final E value = compileExecuteAndPop(calculator, exprType, expr);
-		calculator.setGlobalSymbol(id, Constant.create(value));
-		return value;
 	}
 
 	public Object compileAndSetGlobalSymbol(ICommandSender sender, final String id, final String expr) {
 		return senderHolder.call(sender, new IFunction<Object>() {
 			@Override
 			public Object call() {
-				return compileAndSetGlobalSymbol(active, exprType, id, expr);
+				return active.compileAndSetGlobalSymbol(exprType, id, expr);
 			}
 		});
-	}
-
-	// TODO: multiple return functions?
-	private static <E> void compileAndDefineGlobalFunction(Calculator<E, ExprType> calculator, ExprType exprType, String id, int argCount, String bodyExpr) {
-		final IExecutable<E> funcBody = calculator.compile(exprType, bodyExpr);
-		calculator.setGlobalSymbol(id, new CompiledFunction<E>(argCount, 1, funcBody));
 	}
 
 	public void compileAndDefineGlobalFunction(ICommandSender sender, final String id, final int argCount, final String expr) {
 		senderHolder.call(sender, new IFunction<Void>() {
 			@Override
 			public Void call() {
-				compileAndDefineGlobalFunction(active, exprType, id, argCount, expr);
+				active.compileAndDefineGlobalFunction(exprType, id, argCount, expr);
 				return null;
 			}
 		});

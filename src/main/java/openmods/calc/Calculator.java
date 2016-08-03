@@ -1,101 +1,62 @@
 package openmods.calc;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import java.util.Map;
-import javax.annotation.Nullable;
-import openmods.utils.Stack;
+import java.util.Set;
+import openmods.config.simpler.ConfigurableClassAdapter;
 
-public abstract class Calculator<E, M> {
+public class Calculator<E, M> {
 
-	public interface ICompiler<E> {
-		public IExecutable<E> compile(String input);
+	public final Environment<E> environment;
+
+	public final Compilers<E, M> compilers;
+
+	public final IValuePrinter<E> printer;
+
+	@SuppressWarnings("rawtypes")
+	private final ConfigurableClassAdapter<IValuePrinter> printerConfig;
+
+	public Calculator(Environment<E> environment, Compilers<E, M> compilers, IValuePrinter<E> printer) {
+		this.environment = environment;
+		this.compilers = compilers;
+		this.printer = printer;
+		this.printerConfig = ConfigurableClassAdapter.getFor(printer.getClass());
 	}
 
-	public static final String VAR_ANS = "$ans";
-
-	private final TopFrame<E> topFrame = new TopFrame<E>();
-
-	private final E nullValue;
-
-	private final Map<M, ICompiler<E>> compilers;
-
-	public Calculator(E nullValue, Map<M, ICompiler<E>> compilers) {
-		this.nullValue = nullValue;
-		this.compilers = ImmutableMap.copyOf(compilers);
-
+	public Set<String> getProperties() {
+		return printerConfig.keys();
 	}
 
-	public E nullValue() {
-		return nullValue;
+	public String getProperty(String key) {
+		return printerConfig.get(printer, key);
 	}
 
-	public abstract String toString(E value);
-
-	public IExecutable<E> compile(M type, String input) {
-		final ICompiler<E> compiler = compilers.get(type);
-		Preconditions.checkArgument(compiler != null, "Unknown compiler: " + type);
-		return compiler.compile(input);
+	public void setProperty(String key, String value) {
+		printerConfig.set(printer, key, value);
 	}
 
-	public void setGlobalSymbol(String id, ISymbol<E> value) {
-		topFrame.setSymbol(id, value);
+	public void compileAndExecute(M exprType, String expr) {
+		final IExecutable<E> executable = compilers.compile(exprType, expr);
+		environment.execute(executable);
 	}
 
-	public int stackSize() {
-		return topFrame.stack().size();
+	public E compileExecuteAndPop(M exprType, String expr) {
+		final IExecutable<E> executable = compilers.compile(exprType, expr);
+		return environment.executeAndPop(executable);
 	}
 
-	public Iterable<E> getStack() {
-		return Iterables.unmodifiableIterable(topFrame.stack());
+	public String compileExecuteAndPrint(M exprType, String expr) {
+		final E result = compileExecuteAndPop(exprType, expr);
+		return printer.toString(result);
 	}
 
-	public Iterable<String> printStack() {
-		return Iterables.transform(topFrame.stack(), new Function<E, String>() {
-			@Override
-			@Nullable
-			public String apply(@Nullable E input) {
-				return Calculator.this.toString(input);
-			}
-		});
+	public E compileAndSetGlobalSymbol(M exprType, String id, String expr) {
+		final E value = compileExecuteAndPop(exprType, expr);
+		environment.setGlobalSymbol(id, Constant.create(value));
+		return value;
 	}
 
-	public void execute(IExecutable<E> executable) {
-		executable.execute(topFrame);
+	public void compileAndDefineGlobalFunction(M exprType, String id, int argCount, String bodyExpr) {
+		final IExecutable<E> funcBody = compilers.compile(exprType, bodyExpr);
+		environment.setGlobalSymbol(id, new CompiledFunction<E>(argCount, 1, funcBody));
 	}
 
-	public E executeAndPop(IExecutable<E> executable) {
-		executable.execute(topFrame);
-		final Stack<E> stack = topFrame.stack();
-
-		if (stack.isEmpty()) {
-			topFrame.setSymbol(VAR_ANS, Constant.create(nullValue));
-			return null;
-		} else {
-			final E result = stack.pop();
-			topFrame.setSymbol(VAR_ANS, Constant.create(result));
-			return result;
-		}
-	}
-
-	public static String decorateBase(boolean allowCustom, int base, String value) {
-		if (allowCustom) {
-			switch (base) {
-				case 2:
-					return "0b" + value;
-				case 8:
-					return "0" + value;
-				case 10:
-					return value;
-				case 16:
-					return "0x" + value;
-				default:
-					return Integer.toString(base) + "#" + value;
-			}
-		} else {
-			return Integer.toString(base) + "#" + value;
-		}
-	}
 }

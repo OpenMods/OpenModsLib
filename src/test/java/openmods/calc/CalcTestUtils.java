@@ -265,27 +265,27 @@ public class CalcTestUtils {
 		}
 
 		public CalcCheck<E> expectResult(E value) {
-			Assert.assertEquals(value, sut.executeAndPop(expr));
+			Assert.assertEquals(value, sut.environment.executeAndPop(expr));
 			return this;
 		}
 
 		public CalcCheck<E> expectEmptyStack() {
-			Assert.assertTrue(Lists.newArrayList(sut.getStack()).isEmpty());
+			Assert.assertTrue(Lists.newArrayList(sut.environment.getStack()).isEmpty());
 			return this;
 		}
 
 		public CalcCheck<E> expectStack(E... values) {
-			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(sut.getStack()));
+			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(sut.environment.getStack()));
 			return this;
 		}
 
 		public CalcCheck<E> execute() {
-			sut.execute(expr);
+			sut.environment.execute(expr);
 			return this;
 		}
 
 		public static <E> CalcCheck<E> create(Calculator<E, ExprType> sut, String value, ExprType exprType) {
-			final IExecutable<E> expr = sut.compile(exprType, value);
+			final IExecutable<E> expr = sut.compilers.compile(exprType, value);
 			return new CalcCheck<E>(sut, expr);
 		}
 	}

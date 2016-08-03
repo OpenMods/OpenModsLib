@@ -2,12 +2,12 @@ package openmods.calc;
 
 import java.math.BigInteger;
 import openmods.calc.CalcTestUtils.CalcCheck;
-import openmods.calc.types.bigint.BigIntCalculator;
+import openmods.calc.types.bigint.BigIntCalculatorFactory;
 import org.junit.Test;
 
 public class BigIntCalculatorTest {
 
-	private final Calculator<BigInteger, ExprType> sut = BigIntCalculator.createDefault();
+	private final Calculator<BigInteger, ExprType> sut = BigIntCalculatorFactory.createDefault();
 
 	public CalcCheck<BigInteger> prefix(String value) {
 		return CalcCheck.create(sut, value, ExprType.PREFIX);

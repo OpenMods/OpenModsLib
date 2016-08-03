@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.PeekingIterator;
 import java.util.List;
 import java.util.Map;
-import openmods.calc.Calculator.ICompiler;
+import openmods.calc.Compilers.ICompiler;
 import openmods.calc.parsing.AstCompiler;
 import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.DummyNode;
@@ -24,7 +24,7 @@ import openmods.calc.parsing.SymbolNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.Tokenizer;
 
-public abstract class BasicCalculatorFactory<E, C extends Calculator<E, ExprType>> implements ICalculatorFactory<E, ExprType, C> {
+public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprType> {
 
 	private static class WrappedCompiler<E> implements ICompiler<E> {
 		private final Tokenizer tokenizer;
@@ -114,7 +114,7 @@ public abstract class BasicCalculatorFactory<E, C extends Calculator<E, ExprType
 	}
 
 	@Override
-	public C create(E nullValue, IValueParser<E> valueParser, OperatorDictionary<E> operators) {
+	public Compilers<E, ExprType> create(E nullValue, IValueParser<E> valueParser, OperatorDictionary<E> operators) {
 		final Tokenizer tokenizer = new Tokenizer();
 
 		final Tokenizer extendedTokenizer = new Tokenizer();
@@ -137,7 +137,7 @@ public abstract class BasicCalculatorFactory<E, C extends Calculator<E, ExprType
 		compilers.put(ExprType.PREFIX, new WrappedCompiler<E>(extendedTokenizer, new AstCompiler<E>(prefixCompilerState)));
 		compilers.put(ExprType.INFIX, new WrappedCompiler<E>(extendedTokenizer, new AstCompiler<E>(infixCompilerState)));
 		compilers.put(ExprType.POSTFIX, new WrappedCompiler<E>(tokenizer, new PostfixCompiler<E>(valueParser, operators)));
-		return createCalculator(nullValue, compilers);
+		return new Compilers<E, ExprType>(compilers);
 	}
 
 	protected SwitchingCompilerState<E> createInfixParserState(OperatorDictionary<E> operators, final IExprNodeFactory<E> exprNodeFactory) {
@@ -155,6 +155,4 @@ public abstract class BasicCalculatorFactory<E, C extends Calculator<E, ExprType
 	}
 
 	protected void setupExtendedTokenizer(final Tokenizer extendedTokenizer) {}
-
-	protected abstract C createCalculator(E nullValue, Map<ExprType, ICompiler<E>> compilers);
 }
