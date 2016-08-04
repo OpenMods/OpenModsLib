@@ -65,7 +65,16 @@ public class TypedValueCalculatorFactory {
 		}
 	};
 
-	private static final int MAX_PRIO = 6;
+	private static final int PRIORITY_DOT = 9; // .
+	private static final int PRIORITY_EXP = 8; // **
+	private static final int PRIORITY_MULTIPLY = 7; // * / % //
+	private static final int PRIORITY_ADD = 6; // + -
+	private static final int PRIORITY_BITSHIFT = 5; // << >>
+	private static final int PRIORITY_BITWISE = 4; // & ^ |
+	private static final int PRIORITY_COMPARE = 3; // < > <= >= <=>
+	private static final int PRIORITY_SPACESHIP = 2; // <=>
+	private static final int PRIORITY_EQUALS = 1; // == !=
+	private static final int PRIORITY_LOGIC = 0; // && || ^^
 
 	private interface CompareResultInterpreter {
 		public boolean interpret(int value);
@@ -242,7 +251,7 @@ public class TypedValueCalculatorFactory {
 		final OperatorDictionary<TypedValue> operators = new OperatorDictionary<TypedValue>();
 
 		// arithmetic
-		final BinaryOperator<TypedValue> addOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("+", MAX_PRIO - 2)
+		final BinaryOperator<TypedValue> addOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("+", PRIORITY_ADD)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
 					@Override
 					public BigInteger apply(BigInteger left, BigInteger right) {
@@ -284,7 +293,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("-", MAX_PRIO - 2)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("-", PRIORITY_ADD)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
 					@Override
 					public BigInteger apply(BigInteger left, BigInteger right) {
@@ -315,7 +324,7 @@ public class TypedValueCalculatorFactory {
 
 		operators.registerUnaryOperator(createUnaryNegation("neg", domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("*", MAX_PRIO - 1)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("*", PRIORITY_MULTIPLY)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
 					@Override
 					public BigInteger apply(BigInteger left, BigInteger right) {
@@ -349,7 +358,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain)).setDefault();
 
-		final BinaryOperator<TypedValue> divideOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("/", MAX_PRIO - 1)
+		final BinaryOperator<TypedValue> divideOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("/", PRIORITY_MULTIPLY)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Double, Double>() {
 					@Override
 					public Double apply(Double left, Double right) {
@@ -376,7 +385,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain)).unwrap();
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("%", MAX_PRIO - 1)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("%", PRIORITY_MULTIPLY)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -397,7 +406,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("//", MAX_PRIO - 1)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("//", PRIORITY_MULTIPLY)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -418,7 +427,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("**", MAX_PRIO)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("**", PRIORITY_EXP)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -451,21 +460,21 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		operators.registerBinaryOperator(new TypedBinaryBooleanOperator("&&", MAX_PRIO - 6) {
+		operators.registerBinaryOperator(new TypedBinaryBooleanOperator("&&", PRIORITY_LOGIC) {
 			@Override
 			protected TypedValue execute(boolean isTruthy, TypedValue left, TypedValue right) {
 				return isTruthy? right : left;
 			}
 		});
 
-		operators.registerBinaryOperator(new TypedBinaryBooleanOperator("||", MAX_PRIO - 6) {
+		operators.registerBinaryOperator(new TypedBinaryBooleanOperator("||", PRIORITY_LOGIC) {
 			@Override
 			protected TypedValue execute(boolean isTruthy, TypedValue left, TypedValue right) {
 				return isTruthy? left : right;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<TypedValue>("^^", MAX_PRIO - 6) {
+		operators.registerBinaryOperator(new BinaryOperator<TypedValue>("^^", PRIORITY_LOGIC) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
@@ -495,7 +504,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("&", MAX_PRIO - 4)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("&", PRIORITY_BITWISE)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -510,7 +519,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("|", MAX_PRIO - 4)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("|", PRIORITY_BITWISE)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -525,7 +534,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("^", MAX_PRIO - 4)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("^", PRIORITY_BITWISE)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -540,7 +549,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("<<", MAX_PRIO - 3)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("<<", PRIORITY_BITSHIFT)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -555,7 +564,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder(">>", MAX_PRIO - 3)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder(">>", PRIORITY_BITSHIFT)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -572,49 +581,49 @@ public class TypedValueCalculatorFactory {
 
 		// comparision
 
-		final BinaryOperator<TypedValue> ltOperator = operators.registerBinaryOperator(createCompareOperator(domain, "<", MAX_PRIO - 5, new CompareResultInterpreter() {
+		final BinaryOperator<TypedValue> ltOperator = operators.registerBinaryOperator(createCompareOperator(domain, "<", PRIORITY_COMPARE, new CompareResultInterpreter() {
 			@Override
 			public boolean interpret(int value) {
 				return value < 0;
 			}
 		})).unwrap();
 
-		final BinaryOperator<TypedValue> gtOperator = operators.registerBinaryOperator(createCompareOperator(domain, ">", MAX_PRIO - 5, new CompareResultInterpreter() {
+		final BinaryOperator<TypedValue> gtOperator = operators.registerBinaryOperator(createCompareOperator(domain, ">", PRIORITY_COMPARE, new CompareResultInterpreter() {
 			@Override
 			public boolean interpret(int value) {
 				return value > 0;
 			}
 		})).unwrap();
 
-		operators.registerBinaryOperator(createEqualsOperator(domain, "==", MAX_PRIO - 5, new EqualsResultInterpreter() {
+		operators.registerBinaryOperator(createEqualsOperator(domain, "==", PRIORITY_EQUALS, new EqualsResultInterpreter() {
 			@Override
 			public boolean interpret(boolean isEqual) {
 				return isEqual;
 			}
 		}));
 
-		operators.registerBinaryOperator(createEqualsOperator(domain, "!=", MAX_PRIO - 5, new EqualsResultInterpreter() {
+		operators.registerBinaryOperator(createEqualsOperator(domain, "!=", PRIORITY_EQUALS, new EqualsResultInterpreter() {
 			@Override
 			public boolean interpret(boolean isEqual) {
 				return !isEqual;
 			}
 		}));
 
-		operators.registerBinaryOperator(createCompareOperator(domain, "<=", MAX_PRIO - 5, new CompareResultInterpreter() {
+		operators.registerBinaryOperator(createCompareOperator(domain, "<=", PRIORITY_COMPARE, new CompareResultInterpreter() {
 			@Override
 			public boolean interpret(int value) {
 				return value <= 0;
 			}
 		}));
 
-		operators.registerBinaryOperator(createCompareOperator(domain, ">=", MAX_PRIO - 5, new CompareResultInterpreter() {
+		operators.registerBinaryOperator(createCompareOperator(domain, ">=", PRIORITY_COMPARE, new CompareResultInterpreter() {
 			@Override
 			public boolean interpret(int value) {
 				return value >= 0;
 			}
 		}));
 
-		final BinaryOperator<TypedValue> dotOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder(".", MAX_PRIO + 1)
+		final BinaryOperator<TypedValue> dotOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder(".", PRIORITY_DOT)
 				.registerOperation(new TypedBinaryOperator.IVariantOperation<IComposite, String>() {
 					@Override
 					public TypedValue apply(TypeDomain domain, IComposite left, String right) {
@@ -631,7 +640,7 @@ public class TypedValueCalculatorFactory {
 				}
 			}
 
-			operators.registerBinaryOperator(new TypedBinaryOperator.Builder("<=>", MAX_PRIO - 5)
+			operators.registerBinaryOperator(new TypedBinaryOperator.Builder("<=>", PRIORITY_SPACESHIP)
 					.registerOperation(BigInteger.class, new SpaceshipOperation<BigInteger>())
 					.registerOperation(Double.class, new SpaceshipOperation<Double>())
 					.registerOperation(String.class, new SpaceshipOperation<String>())
