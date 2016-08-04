@@ -625,4 +625,17 @@ public class TypedValueCalculatorTest {
 	public void testTooFewParameters() {
 		infix("gcd(0)").execute();
 	}
+
+	@Test
+	public void testConsOperator() {
+		infix("1:2").expectResult(cons(i(1), i(2))).expectEmptyStack();
+		infix("true:'2':3").expectResult(cons(b(true), cons(s("2"), i(3)))).expectEmptyStack();
+
+		infix("1:2:3:null == list(1,2,3)").expectResult(b(true)).expectEmptyStack();
+		prefix("(== (: 1 2 3 null) (list 1 2 3))").expectResult(b(true)).expectEmptyStack();
+
+		infix("1:2:3:4 == #(1 2 3 ... 4)").expectResult(b(true)).expectEmptyStack();
+		prefix("(== (: 1 2 3 4) #(1 2 3 ... 4))").expectResult(b(true)).expectEmptyStack();
+
+	}
 }

@@ -14,6 +14,7 @@ import openmods.calc.BasicCompilerMapFactory;
 import openmods.calc.BasicCompilerMapFactory.SwitchingCompilerState;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
+import openmods.calc.BinaryOperator.Associativity;
 import openmods.calc.Calculator;
 import openmods.calc.Compilers;
 import openmods.calc.Constant;
@@ -65,7 +66,8 @@ public class TypedValueCalculatorFactory {
 		}
 	};
 
-	private static final int PRIORITY_DOT = 9; // .
+	private static final int PRIORITY_DOT = 10; // .
+	private static final int PRIORITY_CONS = 9; // :
 	private static final int PRIORITY_EXP = 8; // **
 	private static final int PRIORITY_MULTIPLY = 7; // * / % //
 	private static final int PRIORITY_ADD = 6; // + -
@@ -647,6 +649,13 @@ public class TypedValueCalculatorFactory {
 					.registerOperation(Boolean.class, new SpaceshipOperation<Boolean>())
 					.build(domain));
 		}
+
+		operators.registerBinaryOperator(new BinaryOperator<TypedValue>(":", PRIORITY_CONS, Associativity.RIGHT) {
+			@Override
+			public TypedValue execute(TypedValue left, TypedValue right) {
+				return domain.create(Cons.class, new Cons(left, right));
+			}
+		});
 
 		final TypedValueParser valueParser = new TypedValueParser(domain);
 
