@@ -51,20 +51,11 @@ public class OperatorDictionary<E> {
 		return binaryOperators.get(op);
 	}
 
-	public UnaryOperator<E> getUnaryOperator(String value) {
-		return unaryOperators.get(value);
+	public UnaryOperator<E> getUnaryOperator(String op) {
+		return unaryOperators.get(op);
 	}
 
 	public BinaryOperator<E> getDefaultOperator() {
 		return defaultOperator;
 	}
-
-	// binary first. For RPN purposes second operator must be defined ('-' -> 'neg')
-	public Operator<E> getAnyOperator(String value) {
-		final Operator<E> op = binaryOperators.get(value);
-		if (op != null) return op;
-
-		return unaryOperators.get(value);
-	}
-
 }

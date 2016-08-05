@@ -462,6 +462,17 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testPostfixQuotes() {
+		postfix("#a").expectResult(sym("a")).expectEmptyStack();
+		postfix("# a").expectResult(sym("a")).expectEmptyStack();
+		postfix("#a issymbol").expectResult(b(true)).expectEmptyStack();
+		postfix("#abc 'abc' symbol ==").expectResult(b(true)).expectEmptyStack();
+
+		postfix("#+").expectResult(sym("+")).expectEmptyStack();
+		postfix("# +").expectResult(sym("+")).expectEmptyStack();
+	}
+
+	@Test
 	public void testPrefixModifierQuotesWithSpecialTokens() {
 		prefix("#+").expectResult(sym("+")).expectEmptyStack();
 		prefix("#test").expectResult(sym("test")).expectEmptyStack();
@@ -636,6 +647,5 @@ public class TypedValueCalculatorTest {
 
 		infix("1:2:3:4 == #(1 2 3 ... 4)").expectResult(b(true)).expectEmptyStack();
 		prefix("(== (: 1 2 3 4) #(1 2 3 ... 4))").expectResult(b(true)).expectEmptyStack();
-
 	}
 }

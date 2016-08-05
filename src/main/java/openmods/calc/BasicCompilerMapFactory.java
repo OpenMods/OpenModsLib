@@ -9,6 +9,7 @@ import java.util.Map;
 import openmods.calc.Compilers.ICompiler;
 import openmods.calc.parsing.AstCompiler;
 import openmods.calc.parsing.DefaultExprNodeFactory;
+import openmods.calc.parsing.DefaultPostfixCompiler;
 import openmods.calc.parsing.DummyNode;
 import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.ICompilerState;
@@ -18,7 +19,6 @@ import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.ITokenStreamCompiler;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.InfixParser;
-import openmods.calc.parsing.PostfixCompiler;
 import openmods.calc.parsing.PrefixParser;
 import openmods.calc.parsing.SymbolNode;
 import openmods.calc.parsing.Token;
@@ -115,16 +115,21 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 
 	@Override
 	public Compilers<E, ExprType> create(E nullValue, IValueParser<E> valueParser, OperatorDictionary<E> operators) {
-		final Tokenizer tokenizer = new Tokenizer();
+		final Tokenizer prefixTokenizer = new Tokenizer();
 
-		final Tokenizer extendedTokenizer = new Tokenizer();
+		final Tokenizer infixTokenizer = new Tokenizer();
+
+		final Tokenizer postfixTokenizer = new Tokenizer();
 
 		for (String operator : operators.allOperators()) {
-			tokenizer.addOperator(operator);
-			extendedTokenizer.addOperator(operator);
+			prefixTokenizer.addOperator(operator);
+			infixTokenizer.addOperator(operator);
+			postfixTokenizer.addOperator(operator);
 		}
 
-		setupExtendedTokenizer(extendedTokenizer);
+		setupPrefixTokenizer(prefixTokenizer);
+		setupInfixTokenizer(infixTokenizer);
+		setupPostfixTokenizer(postfixTokenizer);
 
 		final IExprNodeFactory<E> exprNodeFactory = createExprNodeFactory(valueParser);
 		final SwitchingCompilerState<E> prefixCompilerState = createPrefixCompilerState(operators, exprNodeFactory);
@@ -134,25 +139,42 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 		prefixCompilerState.setSwitchState(infixCompilerState);
 
 		final Map<ExprType, ICompiler<E>> compilers = Maps.newHashMap();
-		compilers.put(ExprType.PREFIX, new WrappedCompiler<E>(extendedTokenizer, new AstCompiler<E>(prefixCompilerState)));
-		compilers.put(ExprType.INFIX, new WrappedCompiler<E>(extendedTokenizer, new AstCompiler<E>(infixCompilerState)));
-		compilers.put(ExprType.POSTFIX, new WrappedCompiler<E>(tokenizer, new PostfixCompiler<E>(valueParser, operators)));
+		compilers.put(ExprType.PREFIX, new WrappedCompiler<E>(prefixTokenizer, createPrefixParser(prefixCompilerState)));
+		compilers.put(ExprType.INFIX, new WrappedCompiler<E>(infixTokenizer, createInfixParser(infixCompilerState)));
+		compilers.put(ExprType.POSTFIX, new WrappedCompiler<E>(postfixTokenizer, createPostfixParser(valueParser, operators)));
 		return new Compilers<E, ExprType>(compilers);
 	}
 
-	protected SwitchingCompilerState<E> createInfixParserState(OperatorDictionary<E> operators, final IExprNodeFactory<E> exprNodeFactory) {
-		final IAstParser<E> infixParser = new InfixParser<E>(operators, exprNodeFactory);
-		return new SwitchingCompilerState<E>(infixParser, "infix", "prefix");
-	}
+	protected void setupPrefixTokenizer(Tokenizer tokenizer) {}
 
 	protected SwitchingCompilerState<E> createPrefixCompilerState(OperatorDictionary<E> operators, final IExprNodeFactory<E> exprNodeFactory) {
 		final IAstParser<E> prefixParser = new PrefixParser<E>(operators, exprNodeFactory);
 		return new SwitchingCompilerState<E>(prefixParser, "prefix", "infix");
 	}
 
+	protected ITokenStreamCompiler<E> createPrefixParser(ICompilerState<E> compilerState) {
+		return new AstCompiler<E>(compilerState);
+	}
+
+	protected void setupInfixTokenizer(Tokenizer tokenizer) {}
+
+	protected SwitchingCompilerState<E> createInfixParserState(OperatorDictionary<E> operators, final IExprNodeFactory<E> exprNodeFactory) {
+		final IAstParser<E> infixParser = new InfixParser<E>(operators, exprNodeFactory);
+		return new SwitchingCompilerState<E>(infixParser, "infix", "prefix");
+	}
+
+	protected ITokenStreamCompiler<E> createInfixParser(ICompilerState<E> compilerState) {
+		return new AstCompiler<E>(compilerState);
+	}
+
+	protected void setupPostfixTokenizer(Tokenizer tokenizer) {}
+
+	protected ITokenStreamCompiler<E> createPostfixParser(final IValueParser<E> valueParser, final OperatorDictionary<E> operators) {
+		return new DefaultPostfixCompiler<E>(valueParser, operators);
+	}
+
 	protected DefaultExprNodeFactory<E> createExprNodeFactory(IValueParser<E> valueParser) {
 		return new DefaultExprNodeFactory<E>(valueParser);
 	}
 
-	protected void setupExtendedTokenizer(final Tokenizer extendedTokenizer) {}
 }

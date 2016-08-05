@@ -24,14 +24,22 @@ public class SymbolReference<E> implements IExecutable<E> {
 		this.returnCount = Optional.of(returnCount);
 	}
 
+	public SymbolReference<E> setArgumentsCount(Optional<Integer> argCount) {
+		this.argCount = argCount;
+		return this;
+	}
+
 	public SymbolReference<E> setArgumentsCount(int count) {
-		this.argCount = Optional.of(count);
+		return setArgumentsCount(Optional.of(count));
+	}
+
+	public SymbolReference<E> setReturnsCount(Optional<Integer> returnCount) {
+		this.returnCount = returnCount;
 		return this;
 	}
 
 	public SymbolReference<E> setReturnsCount(int count) {
-		this.returnCount = Optional.of(count);
-		return this;
+		return setReturnsCount(Optional.of(count));
 	}
 
 	@Override

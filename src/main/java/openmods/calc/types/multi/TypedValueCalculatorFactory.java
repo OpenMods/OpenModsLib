@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.PeekingIterator;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
@@ -31,14 +32,18 @@ import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.Value;
 import openmods.calc.parsing.DefaultExprNodeFactory;
+import openmods.calc.parsing.DefaultPostfixCompiler;
 import openmods.calc.parsing.IAstParser;
+import openmods.calc.parsing.IExecutableListBuilder;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IExprNodeFactory;
+import openmods.calc.parsing.ITokenStreamCompiler;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.InfixParser;
 import openmods.calc.parsing.PrefixParser;
 import openmods.calc.parsing.SymbolNode;
 import openmods.calc.parsing.Token;
+import openmods.calc.parsing.TokenType;
 import openmods.calc.parsing.TokenUtils;
 import openmods.calc.parsing.Tokenizer;
 import openmods.calc.types.multi.TypeDomain.Coercion;
@@ -798,6 +803,13 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
+		env.setGlobalSymbol("symbol", new SimpleTypedFunction(domain) {
+			@Variant
+			public Symbol symbol(String value) {
+				return Symbol.get(value);
+			}
+		});
+
 		env.setGlobalSymbol("parse", new SimpleTypedFunction(domain) {
 			private final Tokenizer tokenizer = new Tokenizer();
 
@@ -1257,8 +1269,40 @@ public class TypedValueCalculatorFactory {
 			}
 
 			@Override
-			protected void setupExtendedTokenizer(Tokenizer extendedTokenizer) {
-				TokenUtils.setupTokenizerForQuoteNotation(extendedTokenizer);
+			protected ITokenStreamCompiler<TypedValue> createPostfixParser(IValueParser<TypedValue> valueParser, OperatorDictionary<TypedValue> operators) {
+				return new DefaultPostfixCompiler<TypedValue>(valueParser, operators) {
+					@Override
+					protected void parseModifier(String modifier, PeekingIterator<Token> input, IExecutableListBuilder<TypedValue> output) {
+						if (modifier.equals(TokenUtils.MODIFIER_QUOTE)) {
+							final Token token = input.next();
+							if (token.type.isValue()) output.appendValue(token);
+							else if (canBeRaw(token.type)) output.appendValue(domain.create(Symbol.class, Symbol.get(token.value)));
+							else super.parseModifier(modifier, input, output);
+						} else
+							super.parseModifier(modifier, input, output);
+					}
+
+					private boolean canBeRaw(TokenType type) {
+						return type == TokenType.MODIFIER || type == TokenType.OPERATOR || type == TokenType.SYMBOL;
+					}
+				};
+			}
+
+			@Override
+			protected void setupPrefixTokenizer(Tokenizer tokenizer) {
+				tokenizer.addModifier(TokenUtils.MODIFIER_QUOTE);
+				tokenizer.addModifier(TokenUtils.MODIFIER_CDR);
+			}
+
+			@Override
+			protected void setupInfixTokenizer(Tokenizer tokenizer) {
+				tokenizer.addModifier(TokenUtils.MODIFIER_QUOTE);
+				tokenizer.addModifier(TokenUtils.MODIFIER_CDR);
+			}
+
+			@Override
+			protected void setupPostfixTokenizer(Tokenizer tokenizer) {
+				tokenizer.addModifier(TokenUtils.MODIFIER_QUOTE);
 			}
 		}
 

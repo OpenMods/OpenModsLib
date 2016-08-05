@@ -1,0 +1,22 @@
+package openmods.calc.parsing;
+
+import com.google.common.base.Optional;
+import openmods.calc.ExecutableList;
+import openmods.calc.IExecutable;
+
+public interface IExecutableListBuilder<E> {
+
+	public void appendValue(E value);
+
+	public void appendValue(Token value);
+
+	public void appendOperator(String id);
+
+	public void appendSymbol(String id);
+
+	public void appendSymbol(String id, Optional<Integer> argCount, Optional<Integer> returnCount);
+
+	public void appendExecutable(IExecutable<E> executable);
+
+	public ExecutableList<E> build();
+}

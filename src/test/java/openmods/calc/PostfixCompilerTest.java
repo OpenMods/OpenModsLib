@@ -1,6 +1,8 @@
 package openmods.calc;
 
-import openmods.calc.parsing.PostfixCompiler;
+import com.google.common.collect.PeekingIterator;
+import openmods.calc.parsing.DefaultPostfixCompiler;
+import openmods.calc.parsing.IExecutableListBuilder;
 import openmods.calc.parsing.Token;
 import org.junit.Test;
 
@@ -12,8 +14,25 @@ public class PostfixCompilerTest extends CalcTestUtils {
 		operators.registerUnaryOperator(UNARY_MINUS);
 	}
 
+	private static final String TEST_MODIFIER = "!!!";
+
+	private static String rawTokenString(Token token) {
+		return TEST_MODIFIER + ":" + token.type + ":" + token.value;
+	}
+
 	private CompilerResultTester given(Token... inputs) {
-		return new CompilerResultTester(new PostfixCompiler<String>(VALUE_PARSER, operators), inputs);
+		return new CompilerResultTester(new DefaultPostfixCompiler<String>(VALUE_PARSER, operators) {
+
+			@Override
+			protected void parseModifier(String modifier, PeekingIterator<Token> input, IExecutableListBuilder<String> output) {
+				if (modifier.equals(TEST_MODIFIER)) {
+					output.appendValue(rawTokenString(input.next()));
+				} else {
+					super.parseModifier(modifier, input, output);
+				}
+			}
+
+		}, inputs);
 	}
 
 	@Test
@@ -33,6 +52,15 @@ public class PostfixCompilerTest extends CalcTestUtils {
 	@Test
 	public void testSymbol() {
 		given(symbol("a")).expect(s("a"));
+	}
+
+	@Test
+	public void testModifier() {
+		given(mod(TEST_MODIFIER), dec("3")).expect(c(rawTokenString(dec("3"))));
+		given(mod(TEST_MODIFIER), symbol("a")).expect(c(rawTokenString(symbol("a"))));
+		given(mod(TEST_MODIFIER), mod("#")).expect(c(rawTokenString(mod("#"))));
+
+		given(dec("1"), mod(TEST_MODIFIER), symbol("a"), symbol("b")).expect(c("1"), c(rawTokenString(symbol("a"))), s("b"));
 	}
 
 	@Test

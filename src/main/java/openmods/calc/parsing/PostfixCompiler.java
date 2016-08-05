@@ -1,64 +1,40 @@
 package openmods.calc.parsing;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
-import java.util.List;
-import openmods.calc.ExecutableList;
 import openmods.calc.IExecutable;
-import openmods.calc.OperatorDictionary;
-import openmods.calc.SymbolReference;
-import openmods.calc.Value;
 
-public class PostfixCompiler<E> implements ITokenStreamCompiler<E> {
+public abstract class PostfixCompiler<E> implements ITokenStreamCompiler<E> {
 
-	private final IValueParser<E> valueParser;
-
-	private final OperatorDictionary<E> operators;
-
-	public PostfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
-		this.valueParser = valueParser;
-		this.operators = operators;
-	}
+	protected abstract IExecutableListBuilder<E> createExecutableBuilder();
 
 	@Override
 	public IExecutable<E> compile(PeekingIterator<Token> input) {
-		final List<IExecutable<E>> result = Lists.newArrayList();
-		while (input.hasNext())
-			result.add(compileToken(input.next()));
+		final IExecutableListBuilder<E> builder = createExecutableBuilder();
 
-		return new ExecutableList<E>(result);
-	}
-
-	private IExecutable<E> compileToken(Token token) {
-		final String value = token.value;
-		if (token.type == TokenType.OPERATOR) {
-			final IExecutable<E> operator = operators.getAnyOperator(value);
-			Preconditions.checkArgument(operator != null, "Invalid operator: " + token);
-			return operator;
+		while (input.hasNext()) {
+			final Token token = input.next();
+			if (token.type == TokenType.OPERATOR) builder.appendOperator(token.value);
+			else if (token.type == TokenType.SYMBOL) builder.appendSymbol(token.value);
+			else if (token.type == TokenType.SYMBOL_WITH_ARGS) parseSymbolWithArgs(token.value, builder);
+			else if (token.type == TokenType.MODIFIER) parseModifier(token.value, input, builder); // TODO
+			else if (token.type.isValue()) builder.appendValue(token);
 		}
 
-		if (token.type == TokenType.SYMBOL) return new SymbolReference<E>(value);
-
-		if (token.type == TokenType.SYMBOL_WITH_ARGS) return parseSymbolWithArgs(value);
-
-		if (token.type.isValue()) {
-			try {
-				final E parsedValue = valueParser.parseToken(token);
-				return Value.create(parsedValue);
-			} catch (Throwable t) {
-				throw new InvalidTokenException(token, t);
-			}
-		}
-
-		throw new InvalidTokenException(token);
+		return builder.build();
 	}
 
-	private static <E> IExecutable<E> parseSymbolWithArgs(final String value) {
+	protected void parseModifier(String modifier, PeekingIterator<Token> input, IExecutableListBuilder<E> output) {
+		throw new UnsupportedOperationException(modifier);
+	}
+
+	private static <E> void parseSymbolWithArgs(String value, IExecutableListBuilder<E> output) {
 		final int argsStart = value.indexOf('@');
 		Preconditions.checkArgument(argsStart >= 0, "No args in token '%s'", value);
 		final String id = value.substring(0, argsStart);
-		final SymbolReference<E> ref = new SymbolReference<E>(id);
+		Optional<Integer> argCount = Optional.absent();
+		Optional<Integer> retCount = Optional.absent();
 
 		try {
 			final String args = value.substring(argsStart + 1, value.length());
@@ -67,28 +43,23 @@ public class PostfixCompiler<E> implements ITokenStreamCompiler<E> {
 			if (argsSeparator >= 0) {
 				{
 					final String argCountStr = args.substring(0, argsSeparator);
-					if (!argCountStr.isEmpty()) {
-						final int argCount = Integer.parseInt(argCountStr);
-						ref.setArgumentsCount(argCount);
-					}
+					if (!argCountStr.isEmpty())
+						argCount = Optional.of(Integer.parseInt(argCountStr));
 				}
 
 				{
 					final String retCountStr = args.substring(argsSeparator + 1, args.length());
-					if (!retCountStr.isEmpty()) {
-						final int retCount = Integer.parseInt(retCountStr);
-						ref.setReturnsCount(retCount);
-					}
+					if (!retCountStr.isEmpty())
+						retCount = Optional.of(Integer.parseInt(retCountStr));
 				}
 			} else {
-				final int argCount = Integer.parseInt(args);
-				ref.setArgumentsCount(argCount);
+				argCount = Optional.of(Integer.parseInt(args));
 
 			}
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Can't parse args on token '" + value + "'", e);
 		}
 
-		return ref;
+		output.appendSymbol(id, argCount, retCount);
 	}
 }
