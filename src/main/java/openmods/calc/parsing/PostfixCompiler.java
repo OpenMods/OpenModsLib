@@ -1,65 +1,72 @@
 package openmods.calc.parsing;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.PeekingIterator;
 import openmods.calc.IExecutable;
+import openmods.calc.parsing.IPostfixCompilerState.Result;
+import openmods.utils.Stack;
 
 public abstract class PostfixCompiler<E> implements ITokenStreamCompiler<E> {
 
-	protected abstract IExecutableListBuilder<E> createExecutableBuilder();
-
 	@Override
 	public IExecutable<E> compile(PeekingIterator<Token> input) {
-		final IExecutableListBuilder<E> builder = createExecutableBuilder();
+		final Stack<IPostfixCompilerState<E>> stateStack = Stack.create();
+		stateStack.push(createInitialState());
 
 		while (input.hasNext()) {
 			final Token token = input.next();
-			if (token.type == TokenType.OPERATOR) builder.appendOperator(token.value);
-			else if (token.type == TokenType.SYMBOL) builder.appendSymbol(token.value);
-			else if (token.type == TokenType.SYMBOL_WITH_ARGS) parseSymbolWithArgs(token.value, builder);
-			else if (token.type == TokenType.MODIFIER) parseModifier(token.value, input, builder); // TODO
-			else if (token.type.isValue()) builder.appendValue(token);
+			if (token.type == TokenType.MODIFIER) {
+				stateStack.push(createStateForModifier(token.value));
+			} else if (token.type == TokenType.LEFT_BRACKET) {
+				stateStack.push(createStateForBracket(token.value));
+			} else {
+				final IPostfixCompilerState<E> currentState = stateStack.peek(0);
+				final Result result = currentState.acceptToken(token);
+				switch (result) {
+					case ACCEPTED_AND_FINISHED:
+						unwindStack(stateStack);
+						// fall-through
+					case ACCEPTED:
+						// NO-OP
+						break;
+					case REJECTED:
+					default:
+						throw new IllegalStateException("Token  " + token + " not accepted in state " + currentState);
+				}
+			}
 		}
 
-		return builder.build();
+		Preconditions.checkState(stateStack.size() == 1, "Invalid compiler stack state, got %s entries", stateStack.size());
+		final IPostfixCompilerState<E> finalState = stateStack.pop();
+		return finalState.exit();
 	}
 
-	protected void parseModifier(String modifier, PeekingIterator<Token> input, IExecutableListBuilder<E> output) {
+	private void unwindStack(Stack<IPostfixCompilerState<E>> stateStack) {
+		IPostfixCompilerState<E> currentState = stateStack.pop();
+		UNWIND: while (true) {
+			final IExecutable<E> exitResult = currentState.exit();
+			currentState = stateStack.peek(0);
+			final Result acceptResult = currentState.acceptExecutable(exitResult);
+			switch (acceptResult) {
+				case ACCEPTED_AND_FINISHED:
+					stateStack.pop();
+					continue UNWIND;
+				case ACCEPTED:
+					break UNWIND;
+				case REJECTED:
+				default:
+					throw new IllegalStateException("Executable  " + exitResult + " not accepted in state " + currentState);
+			}
+		}
+	}
+
+	protected abstract IPostfixCompilerState<E> createInitialState();
+
+	protected IPostfixCompilerState<E> createStateForModifier(String modifier) {
 		throw new UnsupportedOperationException(modifier);
 	}
 
-	private static <E> void parseSymbolWithArgs(String value, IExecutableListBuilder<E> output) {
-		final int argsStart = value.indexOf('@');
-		Preconditions.checkArgument(argsStart >= 0, "No args in token '%s'", value);
-		final String id = value.substring(0, argsStart);
-		Optional<Integer> argCount = Optional.absent();
-		Optional<Integer> retCount = Optional.absent();
-
-		try {
-			final String args = value.substring(argsStart + 1, value.length());
-			final int argsSeparator = args.indexOf(',');
-
-			if (argsSeparator >= 0) {
-				{
-					final String argCountStr = args.substring(0, argsSeparator);
-					if (!argCountStr.isEmpty())
-						argCount = Optional.of(Integer.parseInt(argCountStr));
-				}
-
-				{
-					final String retCountStr = args.substring(argsSeparator + 1, args.length());
-					if (!retCountStr.isEmpty())
-						retCount = Optional.of(Integer.parseInt(retCountStr));
-				}
-			} else {
-				argCount = Optional.of(Integer.parseInt(args));
-
-			}
-		} catch (Exception e) {
-			throw new IllegalArgumentException("Can't parse args on token '" + value + "'", e);
-		}
-
-		output.appendSymbol(id, argCount, retCount);
+	protected IPostfixCompilerState<E> createStateForBracket(String modifier) {
+		throw new UnsupportedOperationException(modifier);
 	}
 }

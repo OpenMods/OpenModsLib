@@ -1,9 +1,12 @@
 package openmods.calc;
 
-import com.google.common.collect.PeekingIterator;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import java.util.List;
 import openmods.calc.parsing.DefaultPostfixCompiler;
-import openmods.calc.parsing.IExecutableListBuilder;
+import openmods.calc.parsing.IPostfixCompilerState;
 import openmods.calc.parsing.Token;
+import openmods.calc.parsing.TokenType;
 import org.junit.Test;
 
 public class PostfixCompilerTest extends CalcTestUtils {
@@ -20,18 +23,66 @@ public class PostfixCompilerTest extends CalcTestUtils {
 		return TEST_MODIFIER + ":" + token.type + ":" + token.value;
 	}
 
+	private static class TestModifierState implements IPostfixCompilerState<String> {
+		private IExecutable<String> result;
+
+		@Override
+		public Result acceptToken(Token token) {
+			Preconditions.checkState(result == null);
+			result = Value.create(rawTokenString(token));
+			return Result.ACCEPTED_AND_FINISHED;
+		}
+
+		@Override
+		public Result acceptExecutable(IExecutable<String> executable) {
+			return Result.REJECTED;
+		}
+
+		@Override
+		public IExecutable<String> exit() {
+			Preconditions.checkState(result != null);
+			return result;
+		}
+	}
+
+	private static class TestBracketState implements IPostfixCompilerState<String> {
+		private final List<IExecutable<String>> result = Lists.newArrayList();
+
+		@Override
+		public Result acceptToken(Token token) {
+			if (token.type == TokenType.RIGHT_BRACKET) return Result.ACCEPTED_AND_FINISHED;
+			result.add(Value.create(token.value));
+			return Result.ACCEPTED;
+		}
+
+		@Override
+		public Result acceptExecutable(IExecutable<String> executable) {
+			result.add(executable);
+			return Result.ACCEPTED;
+		}
+
+		@Override
+		public IExecutable<String> exit() {
+			return new ExecutableList<String>(result);
+		}
+
+	}
+
 	private CompilerResultTester given(Token... inputs) {
 		return new CompilerResultTester(new DefaultPostfixCompiler<String>(VALUE_PARSER, operators) {
 
 			@Override
-			protected void parseModifier(String modifier, PeekingIterator<Token> input, IExecutableListBuilder<String> output) {
-				if (modifier.equals(TEST_MODIFIER)) {
-					output.appendValue(rawTokenString(input.next()));
-				} else {
-					super.parseModifier(modifier, input, output);
-				}
+			protected IPostfixCompilerState<String> createStateForModifier(String modifier) {
+				if (modifier.equals(TEST_MODIFIER))
+					return new TestModifierState();
+				else
+					return super.createStateForModifier(modifier);
 			}
 
+			@Override
+			protected IPostfixCompilerState<String> createStateForBracket(String modifier) {
+				return new TestBracketState();
+			}
 		}, inputs);
 	}
 
@@ -58,9 +109,22 @@ public class PostfixCompilerTest extends CalcTestUtils {
 	public void testModifier() {
 		given(mod(TEST_MODIFIER), dec("3")).expect(c(rawTokenString(dec("3"))));
 		given(mod(TEST_MODIFIER), symbol("a")).expect(c(rawTokenString(symbol("a"))));
-		given(mod(TEST_MODIFIER), mod("#")).expect(c(rawTokenString(mod("#"))));
 
 		given(dec("1"), mod(TEST_MODIFIER), symbol("a"), symbol("b")).expect(c("1"), c(rawTokenString(symbol("a"))), s("b"));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testBrackets() {
+		given(LEFT_BRACKET, dec("3"), RIGHT_BRACKET).expect(list(c("3")));
+		given(LEFT_BRACKET, dec("3"), dec("4"), RIGHT_BRACKET).expect(list(c("3"), c("4")));
+
+		given(dec("1"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET, dec("3")).expect(c("1"), list(c("2")), c("3"));
+		given(dec("1"), LEFT_BRACKET, dec("2"), dec("3"), RIGHT_BRACKET, dec("4")).expect(c("1"), list(c("2"), c("3")), c("4"));
+
+		given(LEFT_BRACKET, LEFT_BRACKET, dec("4"), RIGHT_BRACKET, RIGHT_BRACKET).expect(list(list(c("4"))));
+		given(LEFT_BRACKET, dec("3"), LEFT_BRACKET, dec("4"), RIGHT_BRACKET, RIGHT_BRACKET).expect(list(c("3"), list(c("4"))));
+
 	}
 
 	@Test

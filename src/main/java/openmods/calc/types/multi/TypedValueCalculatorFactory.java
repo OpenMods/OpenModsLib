@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.PeekingIterator;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
@@ -34,9 +33,9 @@ import openmods.calc.Value;
 import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.DefaultPostfixCompiler;
 import openmods.calc.parsing.IAstParser;
-import openmods.calc.parsing.IExecutableListBuilder;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IExprNodeFactory;
+import openmods.calc.parsing.IPostfixCompilerState;
 import openmods.calc.parsing.ITokenStreamCompiler;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.InfixParser;
@@ -1224,6 +1223,38 @@ public class TypedValueCalculatorFactory {
 			}
 		}
 
+		class QuotePostfixCompilerState implements IPostfixCompilerState<TypedValue> {
+			private IExecutable<TypedValue> result;
+
+			private boolean canBeRaw(TokenType type) {
+				return type == TokenType.MODIFIER || type == TokenType.OPERATOR || type == TokenType.SYMBOL;
+			}
+
+			@Override
+			public Result acceptToken(Token token) {
+				Preconditions.checkState(result == null);
+
+				final TypedValue resultValue;
+				if (token.type.isValue()) resultValue = valueParser.parseToken(token);
+				else if (canBeRaw(token.type)) resultValue = domain.create(Symbol.class, Symbol.get(token.value));
+				else return Result.REJECTED;
+				result = Value.create(resultValue);
+
+				return Result.ACCEPTED_AND_FINISHED;
+			}
+
+			@Override
+			public Result acceptExecutable(IExecutable<TypedValue> executable) {
+				return Result.REJECTED;
+			}
+
+			@Override
+			public IExecutable<TypedValue> exit() {
+				Preconditions.checkState(result != null);
+				return result;
+			}
+		}
+
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 
 			@Override
@@ -1272,18 +1303,9 @@ public class TypedValueCalculatorFactory {
 			protected ITokenStreamCompiler<TypedValue> createPostfixParser(IValueParser<TypedValue> valueParser, OperatorDictionary<TypedValue> operators) {
 				return new DefaultPostfixCompiler<TypedValue>(valueParser, operators) {
 					@Override
-					protected void parseModifier(String modifier, PeekingIterator<Token> input, IExecutableListBuilder<TypedValue> output) {
-						if (modifier.equals(TokenUtils.MODIFIER_QUOTE)) {
-							final Token token = input.next();
-							if (token.type.isValue()) output.appendValue(token);
-							else if (canBeRaw(token.type)) output.appendValue(domain.create(Symbol.class, Symbol.get(token.value)));
-							else super.parseModifier(modifier, input, output);
-						} else
-							super.parseModifier(modifier, input, output);
-					}
-
-					private boolean canBeRaw(TokenType type) {
-						return type == TokenType.MODIFIER || type == TokenType.OPERATOR || type == TokenType.SYMBOL;
+					protected IPostfixCompilerState<TypedValue> createStateForModifier(String modifier) {
+						if (modifier.equals(TokenUtils.MODIFIER_QUOTE)) return new QuotePostfixCompilerState();
+						return super.createStateForModifier(modifier);
 					}
 				};
 			}

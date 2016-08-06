@@ -12,7 +12,7 @@ public class DefaultPostfixCompiler<E> extends PostfixCompiler<E> {
 	}
 
 	@Override
-	protected IExecutableListBuilder<E> createExecutableBuilder() {
-		return new DefaultExecutableListBuilder<E>(valueParser, operators);
+	protected IPostfixCompilerState<E> createInitialState() {
+		return new SimplePostfixCompilerState<E>(new DefaultExecutableListBuilder<E>(valueParser, operators));
 	}
 }

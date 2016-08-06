@@ -206,6 +206,10 @@ public class CalcTestUtils {
 		return new SymbolReference<String>(value, args, rets);
 	}
 
+	public static ExecutableList<String> list(IExecutable<String>... elements) {
+		return new ExecutableList<String>(elements);
+	}
+
 	public static class MarkerExecutable<E> implements IExecutable<E> {
 
 		public String tag;

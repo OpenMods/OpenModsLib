@@ -40,4 +40,20 @@ public class ExecutableList<E> implements IExecutable<E> {
 		return Joiner.on(' ').join(Iterables.transform(commands, SERIALIZER));
 	}
 
+	@Override
+	public String toString() {
+		return "{" + Joiner.on(' ').join(commands) + "}";
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 + commands.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return this == obj ||
+				((obj instanceof ExecutableList) && ((ExecutableList<?>)obj).commands.equals(this.commands));
+	}
+
 }
