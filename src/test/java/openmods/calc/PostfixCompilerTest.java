@@ -45,8 +45,15 @@ public class PostfixCompilerTest extends CalcTestUtils {
 		}
 	}
 
+	private static final IExecutable<String> OPEN_BRACKET = marker("((");
+	private static final IExecutable<String> CLOSE_BRACKET = marker("))");
+
 	private static class TestBracketState implements IPostfixCompilerState<String> {
 		private final List<IExecutable<String>> result = Lists.newArrayList();
+
+		{
+			result.add(OPEN_BRACKET);
+		}
 
 		@Override
 		public Result acceptToken(Token token) {
@@ -63,6 +70,7 @@ public class PostfixCompilerTest extends CalcTestUtils {
 
 		@Override
 		public IExecutable<String> exit() {
+			result.add(CLOSE_BRACKET);
 			return new ExecutableList<String>(result);
 		}
 
@@ -114,17 +122,25 @@ public class PostfixCompilerTest extends CalcTestUtils {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void testBrackets() {
-		given(LEFT_BRACKET, dec("3"), RIGHT_BRACKET).expect(list(c("3")));
-		given(LEFT_BRACKET, dec("3"), dec("4"), RIGHT_BRACKET).expect(list(c("3"), c("4")));
+		given(LEFT_BRACKET, dec("3"), RIGHT_BRACKET).expect(OPEN_BRACKET, c("3"), CLOSE_BRACKET);
+		given(LEFT_BRACKET, dec("3"), dec("4"), RIGHT_BRACKET).expect(OPEN_BRACKET, c("3"), c("4"), CLOSE_BRACKET);
 
-		given(dec("1"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET, dec("3")).expect(c("1"), list(c("2")), c("3"));
-		given(dec("1"), LEFT_BRACKET, dec("2"), dec("3"), RIGHT_BRACKET, dec("4")).expect(c("1"), list(c("2"), c("3")), c("4"));
+		given(dec("1"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET, dec("3")).expect(c("1"), OPEN_BRACKET, c("2"), CLOSE_BRACKET, c("3"));
+		given(dec("1"), LEFT_BRACKET, dec("2"), dec("3"), RIGHT_BRACKET, dec("4")).expect(c("1"), OPEN_BRACKET, c("2"), c("3"), CLOSE_BRACKET, c("4"));
+	}
 
-		given(LEFT_BRACKET, LEFT_BRACKET, dec("4"), RIGHT_BRACKET, RIGHT_BRACKET).expect(list(list(c("4"))));
-		given(LEFT_BRACKET, dec("3"), LEFT_BRACKET, dec("4"), RIGHT_BRACKET, RIGHT_BRACKET).expect(list(c("3"), list(c("4"))));
+	@Test
+	public void testNestedBracketFlattening() {
+		given(LEFT_BRACKET, LEFT_BRACKET, dec("4"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_BRACKET, OPEN_BRACKET, c("4"), CLOSE_BRACKET, CLOSE_BRACKET);
+		given(LEFT_BRACKET, LEFT_BRACKET, LEFT_BRACKET, dec("4"), RIGHT_BRACKET, RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_BRACKET, OPEN_BRACKET, OPEN_BRACKET, c("4"), CLOSE_BRACKET, CLOSE_BRACKET, CLOSE_BRACKET);
 
+		given(LEFT_BRACKET, dec("3"), LEFT_BRACKET, dec("4"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_BRACKET, c("3"), OPEN_BRACKET, c("4"), CLOSE_BRACKET, CLOSE_BRACKET);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testUnclosedBrackers() {
+		given(LEFT_BRACKET, dec("4"));
 	}
 
 	@Test

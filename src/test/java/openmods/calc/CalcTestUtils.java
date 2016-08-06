@@ -307,12 +307,15 @@ public class CalcTestUtils {
 		private final List<IExecutable<String>> actual;
 		private final ITokenStreamCompiler<String> compiler;
 
+		@SuppressWarnings("unchecked")
 		public CompilerResultTester(ITokenStreamCompiler<String> compiler, Token... inputs) {
 			this.compiler = compiler;
 			final IExecutable<String> result = compiler.compile(tokenIterator(inputs));
-			Assert.assertTrue(result instanceof ExecutableList);
-
-			this.actual = ((ExecutableList<String>)result).getCommands();
+			if (result instanceof ExecutableList) {
+				this.actual = ((ExecutableList<String>)result).getCommands();
+			} else {
+				this.actual = Arrays.asList(result);
+			}
 		}
 
 		public CompilerResultTester expectSameAs(Token... inputs) {

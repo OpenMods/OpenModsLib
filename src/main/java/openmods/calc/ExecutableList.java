@@ -56,4 +56,13 @@ public class ExecutableList<E> implements IExecutable<E> {
 				((obj instanceof ExecutableList) && ((ExecutableList<?>)obj).commands.equals(this.commands));
 	}
 
+	public void deepFlatten(List<IExecutable<E>> output) {
+		for (IExecutable<E> e : commands) {
+			if (e instanceof ExecutableList) {
+				((ExecutableList<E>)e).deepFlatten(output);
+			} else {
+				output.add(e);
+			}
+		}
+	}
 }
