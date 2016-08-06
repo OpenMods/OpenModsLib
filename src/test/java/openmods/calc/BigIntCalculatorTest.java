@@ -2,6 +2,7 @@ package openmods.calc;
 
 import java.math.BigInteger;
 import openmods.calc.CalcTestUtils.CalcCheck;
+import openmods.calc.CalcTestUtils.SymbolStub;
 import openmods.calc.types.bigint.BigIntCalculatorFactory;
 import org.junit.Test;
 
@@ -19,6 +20,10 @@ public class BigIntCalculatorTest {
 
 	public CalcCheck<BigInteger> postfix(String value) {
 		return CalcCheck.create(sut, value, ExprType.POSTFIX);
+	}
+
+	public CalcCheck<BigInteger> compiled(IExecutable<BigInteger> expr) {
+		return CalcCheck.create(sut, expr);
 	}
 
 	public static BigInteger v(long value) {
@@ -174,4 +179,18 @@ public class BigIntCalculatorTest {
 		prefix("(infix prefix((+ 2 5)))").expectResult(v(7)).expectEmptyStack();
 	}
 
+	@Test
+	public void testConstantEvaluatingBrackets() {
+		final SymbolStub<BigInteger> stub = new SymbolStub<BigInteger>()
+				.expectArgs(v(1), v(2))
+				.checkArgCount()
+				.setReturns(v(5), v(6), v(7))
+				.checkReturnCount();
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<BigInteger> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
+		stub.checkCallCount(1);
+		compiled(expr).execute().expectStack(v(5), v(6), v(7));
+		stub.checkCallCount(1);
+	}
 }

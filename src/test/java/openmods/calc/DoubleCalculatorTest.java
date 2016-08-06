@@ -1,6 +1,7 @@
 package openmods.calc;
 
 import openmods.calc.CalcTestUtils.CalcCheck;
+import openmods.calc.CalcTestUtils.SymbolStub;
 import openmods.calc.types.fp.DoubleCalculatorFactory;
 import org.junit.Test;
 
@@ -18,6 +19,10 @@ public class DoubleCalculatorTest {
 
 	public CalcCheck<Double> postfix(String value) {
 		return CalcCheck.create(sut, value, ExprType.POSTFIX);
+	}
+
+	public CalcCheck<Double> compiled(IExecutable<Double> expr) {
+		return CalcCheck.create(sut, expr);
 	}
 
 	@Test
@@ -168,4 +173,18 @@ public class DoubleCalculatorTest {
 		prefix("(infix prefix((+ 2 5)))").expectResult(7.0).expectEmptyStack();
 	}
 
+	@Test
+	public void testConstantEvaluatingBrackets() {
+		final SymbolStub<Double> stub = new SymbolStub<Double>()
+				.expectArgs(1.0, 2.0)
+				.checkArgCount()
+				.setReturns(5.0, 6.0, 7.0)
+				.checkReturnCount();
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<Double> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
+		stub.checkCallCount(1);
+		compiled(expr).execute().expectStack(5.0, 6.0, 7.0);
+		stub.checkCallCount(1);
+	}
 }

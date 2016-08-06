@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.List;
 import openmods.calc.CalcTestUtils.CalcCheck;
+import openmods.calc.CalcTestUtils.SymbolStub;
 import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.IComposite;
 import openmods.calc.types.multi.Symbol;
@@ -42,6 +43,10 @@ public class TypedValueCalculatorTest {
 
 	public CalcCheck<TypedValue> postfix(String value) {
 		return CalcCheck.create(sut, value, ExprType.POSTFIX);
+	}
+
+	public CalcCheck<TypedValue> compiled(IExecutable<TypedValue> expr) {
+		return CalcCheck.create(sut, expr);
 	}
 
 	private final TypedValue NULL = sut.environment.nullValue();
@@ -647,5 +652,20 @@ public class TypedValueCalculatorTest {
 
 		infix("1:2:3:4 == #(1 2 3 ... 4)").expectResult(b(true)).expectEmptyStack();
 		prefix("(== (: 1 2 3 4) #(1 2 3 ... 4))").expectResult(b(true)).expectEmptyStack();
+	}
+
+	@Test
+	public void testConstantEvaluatingBrackets() {
+		final SymbolStub<TypedValue> stub = new SymbolStub<TypedValue>()
+				.expectArgs(i(1), i(2))
+				.checkArgCount()
+				.setReturns(i(5), i(6), i(7))
+				.checkReturnCount();
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<TypedValue> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
+		stub.checkCallCount(1);
+		compiled(expr).execute().expectStack(i(5), i(6), i(7));
+		stub.checkCallCount(1);
 	}
 }

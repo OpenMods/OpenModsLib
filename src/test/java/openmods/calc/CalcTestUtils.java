@@ -1,5 +1,6 @@
 package openmods.calc;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -292,6 +293,10 @@ public class CalcTestUtils {
 			final IExecutable<E> expr = sut.compilers.compile(exprType, value);
 			return new CalcCheck<E>(sut, expr);
 		}
+
+		public static <E> CalcCheck<E> create(Calculator<E, ExprType> sut, IExecutable<E> expr) {
+			return new CalcCheck<E>(sut, expr);
+		}
 	}
 
 	public static PeekingIterator<Token> tokenIterator(Token... inputs) {
@@ -495,6 +500,52 @@ public class CalcTestUtils {
 					return new SymbolNode<String>(symbol, children);
 				}
 			};
+		}
+	}
+
+	public static class SymbolStub<E> implements ISymbol<E> {
+		private int callCount;
+
+		private List<E> expectedArgs = Lists.newArrayList();
+		private boolean exactArgCount = false;
+		private List<E> returns = Lists.newArrayList();
+		private boolean exactReturnCount = false;
+
+		public SymbolStub<E> expectArgs(E... args) {
+			expectedArgs = Lists.reverse(Arrays.asList(args));
+			return this;
+		}
+
+		public SymbolStub<E> checkArgCount() {
+			this.exactArgCount = true;
+			return this;
+		}
+
+		public SymbolStub<E> setReturns(E... rets) {
+			returns = Arrays.asList(rets);
+			return this;
+		}
+
+		public SymbolStub<E> checkReturnCount() {
+			this.exactReturnCount = true;
+			return this;
+		}
+
+		@Override
+		public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			if (exactArgCount) Assert.assertEquals(Optional.of(expectedArgs.size()), argumentsCount);
+			if (exactReturnCount) Assert.assertEquals(Optional.of(returns.size()), returnsCount);
+
+			for (E expectedArg : expectedArgs)
+				Assert.assertEquals(frame.stack().pop(), expectedArg);
+
+			for (E ret : returns)
+				frame.stack().push(ret);
+			callCount++;
+		}
+
+		public void checkCallCount(int expectedCallCount) {
+			Assert.assertEquals(expectedCallCount, this.callCount);
 		}
 	}
 }

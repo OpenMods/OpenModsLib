@@ -1,6 +1,7 @@
 package openmods.calc;
 
 import openmods.calc.CalcTestUtils.CalcCheck;
+import openmods.calc.CalcTestUtils.SymbolStub;
 import openmods.calc.types.fraction.FractionCalculatorFactory;
 import org.apache.commons.lang3.math.Fraction;
 import org.junit.Test;
@@ -19,6 +20,10 @@ public class FractionCalculatorTest {
 
 	public CalcCheck<Fraction> postfix(String value) {
 		return CalcCheck.create(sut, value, ExprType.POSTFIX);
+	}
+
+	public CalcCheck<Fraction> compiled(IExecutable<Fraction> expr) {
+		return CalcCheck.create(sut, expr);
 	}
 
 	public static Fraction f(int value) {
@@ -156,5 +161,20 @@ public class FractionCalculatorTest {
 
 		infix("prefix((infix 2 + 5))").expectResult(f(7)).expectEmptyStack();
 		prefix("(infix prefix((+ 2 5)))").expectResult(f(7)).expectEmptyStack();
+	}
+
+	@Test
+	public void testConstantEvaluatingBrackets() {
+		final SymbolStub<Fraction> stub = new SymbolStub<Fraction>()
+				.expectArgs(f(1), f(2))
+				.checkArgCount()
+				.setReturns(f(5), f(6), f(7))
+				.checkReturnCount();
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<Fraction> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
+		stub.checkCallCount(1);
+		compiled(expr).execute().expectStack(f(5), f(6), f(7));
+		stub.checkCallCount(1);
 	}
 }

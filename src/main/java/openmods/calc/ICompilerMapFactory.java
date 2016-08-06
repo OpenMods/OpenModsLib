@@ -3,5 +3,5 @@ package openmods.calc;
 import openmods.calc.parsing.IValueParser;
 
 public interface ICompilerMapFactory<E, M> {
-	public Compilers<E, M> create(E nullValue, IValueParser<E> valueParser, OperatorDictionary<E> operators);
+	public Compilers<E, M> create(E nullValue, IValueParser<E> valueParser, OperatorDictionary<E> operators, Environment<E> environment);
 }

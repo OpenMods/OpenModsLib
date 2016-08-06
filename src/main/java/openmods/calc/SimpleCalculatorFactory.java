@@ -24,7 +24,7 @@ public abstract class SimpleCalculatorFactory<E, M> {
 		final Environment<E> env = createEnvironment();
 		GenericFunctions.createStackManipulationFunctions(env);
 		configureEnvironment(env);
-		final Compilers<E, M> compilers = compilersFactory.create(getNullValue(), getValueParser(), operators);
+		final Compilers<E, M> compilers = compilersFactory.create(getNullValue(), getValueParser(), operators, env);
 		final IValuePrinter<E> printer = createValuePrinter();
 		return new Calculator<E, M>(env, compilers, printer);
 	}

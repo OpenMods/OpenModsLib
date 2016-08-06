@@ -1300,14 +1300,14 @@ public class TypedValueCalculatorFactory {
 			}
 
 			@Override
-			protected ITokenStreamCompiler<TypedValue> createPostfixParser(IValueParser<TypedValue> valueParser, OperatorDictionary<TypedValue> operators) {
-				return new DefaultPostfixCompiler<TypedValue>(valueParser, operators) {
+			protected ITokenStreamCompiler<TypedValue> createPostfixParser(IValueParser<TypedValue> valueParser, OperatorDictionary<TypedValue> operators, Environment<TypedValue> env) {
+				return addConstantEvaluatorState(valueParser, operators, env, new DefaultPostfixCompiler<TypedValue>(valueParser, operators) {
 					@Override
 					protected IPostfixCompilerState<TypedValue> createStateForModifier(String modifier) {
 						if (modifier.equals(TokenUtils.MODIFIER_QUOTE)) return new QuotePostfixCompilerState();
 						return super.createStateForModifier(modifier);
 					}
-				};
+				});
 			}
 
 			@Override
@@ -1328,7 +1328,7 @@ public class TypedValueCalculatorFactory {
 			}
 		}
 
-		final Compilers<TypedValue, ExprType> compilers = new TypedValueCompilersFactory().create(nullValue, valueParser, operators);
+		final Compilers<TypedValue, ExprType> compilers = new TypedValueCompilersFactory().create(nullValue, valueParser, operators, env);
 		return new Calculator<TypedValue, ExprType>(env, compilers, valuePrinter);
 	}
 }

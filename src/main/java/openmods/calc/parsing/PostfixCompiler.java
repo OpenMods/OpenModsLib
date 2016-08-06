@@ -66,7 +66,7 @@ public abstract class PostfixCompiler<E> implements ITokenStreamCompiler<E> {
 		throw new UnsupportedOperationException(modifier);
 	}
 
-	protected IPostfixCompilerState<E> createStateForBracket(String modifier) {
-		throw new UnsupportedOperationException(modifier);
+	protected IPostfixCompilerState<E> createStateForBracket(String bracket) {
+		throw new UnsupportedOperationException(bracket);
 	}
 }
