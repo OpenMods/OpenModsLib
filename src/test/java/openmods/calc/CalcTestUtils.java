@@ -1,6 +1,7 @@
 package openmods.calc;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -259,6 +260,10 @@ public class CalcTestUtils {
 		}
 	};
 
+	public interface Acceptor<E> {
+		public void accept(E value);
+	}
+
 	public static class CalcCheck<E> {
 		private final Calculator<E, ExprType> sut;
 
@@ -281,6 +286,24 @@ public class CalcTestUtils {
 
 		public CalcCheck<E> expectStack(E... values) {
 			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(sut.environment.getStack()));
+			return this;
+		}
+
+		public CalcCheck<E> expectResults(E... values) {
+			final ICalculatorFrame<E> frame = sut.environment.executeIsolated(expr);
+			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(frame.stack()));
+			return this;
+		}
+
+		public CalcCheck<E> executeAndMatch(Predicate<E> matcher) {
+			final E result = sut.environment.executeAndPop(expr);
+			Assert.assertTrue(matcher.apply(result));
+			return this;
+		}
+
+		public CalcCheck<E> executeAndCall(Acceptor<E> acceptor) {
+			final E result = sut.environment.executeAndPop(expr);
+			acceptor.accept(result);
 			return this;
 		}
 
@@ -549,8 +572,15 @@ public class CalcTestUtils {
 			callCount++;
 		}
 
-		public void checkCallCount(int expectedCallCount) {
+		public SymbolStub<E> checkCallCount(int expectedCallCount) {
 			Assert.assertEquals(expectedCallCount, this.callCount);
+			return this;
 		}
+
+		public SymbolStub<E> resetCallCount() {
+			this.callCount = 0;
+			return this;
+		}
+
 	}
 }

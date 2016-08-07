@@ -65,22 +65,22 @@ public class FractionCalculatorTest {
 
 	@Test
 	public void testPostfixDupWithArgs() {
-		postfix("0 1 2 dup@2").execute().expectStack(f(0), f(1), f(2), f(1), f(2));
+		postfix("0 1 2 dup@2").expectResults(f(0), f(1), f(2), f(1), f(2));
 	}
 
 	@Test
 	public void testPostfixDupWithReturns() {
-		postfix("1 2 dup@,4").execute().expectStack(f(1), f(2), f(2), f(2), f(2));
+		postfix("1 2 dup@,4").expectResults(f(1), f(2), f(2), f(2), f(2));
 	}
 
 	@Test
 	public void testPostfixDupWithArgsAndReturns() {
-		postfix("1 2 3 4 dup@3,5").execute().expectStack(f(1), f(2), f(3), f(4), f(2), f(3));
+		postfix("1 2 3 4 dup@3,5").expectResults(f(1), f(2), f(3), f(4), f(2), f(3));
 	}
 
 	@Test
 	public void testPostfixPopWithArgs() {
-		postfix("1 2 3 4 pop@3").execute().expectStack(f(1));
+		postfix("1 2 3 4 pop@3").expectResults(f(1));
 	}
 
 	@Test
@@ -174,7 +174,7 @@ public class FractionCalculatorTest {
 
 		final IExecutable<Fraction> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
 		stub.checkCallCount(1);
-		compiled(expr).execute().expectStack(f(5), f(6), f(7));
+		compiled(expr).expectResults(f(5), f(6), f(7));
 		stub.checkCallCount(1);
 	}
 }

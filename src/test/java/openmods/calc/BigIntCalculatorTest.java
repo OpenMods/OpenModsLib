@@ -68,22 +68,22 @@ public class BigIntCalculatorTest {
 
 	@Test
 	public void testPostfixDupWithArgs() {
-		postfix("0 1 2 dup@2").execute().expectStack(v(0), v(1), v(2), v(1), v(2));
+		postfix("0 1 2 dup@2").expectResults(v(0), v(1), v(2), v(1), v(2));
 	}
 
 	@Test
 	public void testPostfixDupWithReturns() {
-		postfix("1 2 dup@,4").execute().expectStack(v(1), v(2), v(2), v(2), v(2));
+		postfix("1 2 dup@,4").expectResults(v(1), v(2), v(2), v(2), v(2));
 	}
 
 	@Test
 	public void testPostfixDupWithArgsAndReturns() {
-		postfix("1 2 3 4 dup@3,5").execute().expectStack(v(1), v(2), v(3), v(4), v(2), v(3));
+		postfix("1 2 3 4 dup@3,5").expectResults(v(1), v(2), v(3), v(4), v(2), v(3));
 	}
 
 	@Test
 	public void testPostfixPopWithArgs() {
-		postfix("1 2 3 4 pop@3").execute().expectStack(v(1));
+		postfix("1 2 3 4 pop@3").expectResults(v(1));
 	}
 
 	@Test
@@ -190,7 +190,7 @@ public class BigIntCalculatorTest {
 
 		final IExecutable<BigInteger> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
 		stub.checkCallCount(1);
-		compiled(expr).execute().expectStack(v(5), v(6), v(7));
+		compiled(expr).expectResults(v(5), v(6), v(7));
 		stub.checkCallCount(1);
 	}
 }

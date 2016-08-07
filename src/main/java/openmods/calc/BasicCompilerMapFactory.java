@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import openmods.calc.Compilers.ICompiler;
 import openmods.calc.parsing.AstCompiler;
+import openmods.calc.parsing.BracketPostfixCompilerStateBase;
 import openmods.calc.parsing.DefaultExecutableListBuilder;
 import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.DefaultPostfixCompiler;
@@ -16,6 +17,7 @@ import openmods.calc.parsing.DummyNode;
 import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
+import openmods.calc.parsing.IExecutableListBuilder;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.IPostfixCompilerState;
@@ -23,11 +25,8 @@ import openmods.calc.parsing.ITokenStreamCompiler;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.InfixParser;
 import openmods.calc.parsing.PrefixParser;
-import openmods.calc.parsing.SimplePostfixCompilerState;
 import openmods.calc.parsing.SymbolNode;
 import openmods.calc.parsing.Token;
-import openmods.calc.parsing.TokenType;
-import openmods.calc.parsing.TokenUtils;
 import openmods.calc.parsing.Tokenizer;
 
 public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprType> {
@@ -35,49 +34,6 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 	public static final String BRACKET_CONSTANT_EVALUATE = "[";
 	public static final String SYMBOL_PREFIX = "prefix";
 	public static final String SYMBOL_INFIX = "infix";
-
-	public static class ConstantEvaluatingCompilerState<E> implements IStateProvider<E> {
-		private final IValueParser<E> valueParser;
-		private final OperatorDictionary<E> operators;
-		private final Environment<E> env;
-		private final String openingBracket;
-		private boolean isFinished;
-
-		public ConstantEvaluatingCompilerState(IValueParser<E> valueParser, OperatorDictionary<E> operators, Environment<E> env, String openingBracket) {
-			this.valueParser = valueParser;
-			this.operators = operators;
-			this.env = env;
-			this.openingBracket = openingBracket;
-		}
-
-		@Override
-		public IPostfixCompilerState<E> createState() {
-			return new SimplePostfixCompilerState<E>(new DefaultExecutableListBuilder<E>(valueParser, operators)) {
-
-				@Override
-				public Result acceptToken(Token token) {
-					if (token.type == TokenType.RIGHT_BRACKET) {
-						TokenUtils.checkIsValidBracketPair(openingBracket, token.value);
-						isFinished = true;
-						return Result.ACCEPTED_AND_FINISHED;
-					}
-					return super.acceptToken(token);
-				}
-
-				@Override
-				public IExecutable<E> exit() {
-					Preconditions.checkState(isFinished, "Missing closing bracket");
-					final IExecutable<E> compiledExpr = super.exit();
-					final TopFrame<E> resultFrame = env.executeIsolated(compiledExpr);
-					final List<IExecutable<E>> computedValues = Lists.newArrayList();
-					for (E value : resultFrame.stack())
-						computedValues.add(Value.create(value));
-					return ExecutableList.wrap(computedValues);
-				}
-
-			};
-		}
-	}
 
 	private static class WrappedCompiler<E> implements ICompiler<E> {
 		private final Tokenizer tokenizer;
@@ -222,13 +178,41 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 
 	protected void setupPostfixTokenizer(Tokenizer tokenizer) {}
 
-	protected ITokenStreamCompiler<E> createPostfixParser(final IValueParser<E> valueParser, final OperatorDictionary<E> operators, final Environment<E> env) {
+	protected ITokenStreamCompiler<E> createPostfixParser(IValueParser<E> valueParser, OperatorDictionary<E> operators, final Environment<E> env) {
 		final DefaultPostfixCompiler<E> compiler = new DefaultPostfixCompiler<E>(valueParser, operators);
 		return addConstantEvaluatorState(valueParser, operators, env, compiler);
 	}
 
-	public static <E> DefaultPostfixCompiler<E> addConstantEvaluatorState(final IValueParser<E> valueParser, final OperatorDictionary<E> operators, final Environment<E> env, final DefaultPostfixCompiler<E> compiler) {
-		return compiler.addBracketStateProvider(BRACKET_CONSTANT_EVALUATE, new ConstantEvaluatingCompilerState<E>(valueParser, operators, env, BRACKET_CONSTANT_EVALUATE));
+	public static <E> DefaultPostfixCompiler<E> addConstantEvaluatorState(IValueParser<E> valueParser, OperatorDictionary<E> operators, Environment<E> env, DefaultPostfixCompiler<E> compiler) {
+		return compiler.addBracketStateProvider(BRACKET_CONSTANT_EVALUATE, createConstantEvaluatorStateProvider(valueParser, operators, env, BRACKET_CONSTANT_EVALUATE));
+	}
+
+	public static <E> IStateProvider<E> createConstantEvaluatorStateProvider(final IValueParser<E> valueParser, final OperatorDictionary<E> operators, final Environment<E> env, final String openingBracket) {
+		return new IStateProvider<E>() {
+			@Override
+			public IPostfixCompilerState<E> createState() {
+				final IExecutableListBuilder<E> listBuilder = new DefaultExecutableListBuilder<E>(valueParser, operators);
+
+				class ConstantEvaluatorState extends BracketPostfixCompilerStateBase<E> {
+					ConstantEvaluatorState() {
+						super(listBuilder, openingBracket);
+					}
+
+					@Override
+					protected IExecutable<E> processCompiledBracket(final IExecutable<E> compiledExpr) {
+						final ICalculatorFrame<E> resultFrame = env.executeIsolated(compiledExpr);
+						final List<IExecutable<E>> computedValues = Lists.newArrayList();
+						for (E value : resultFrame.stack())
+							computedValues.add(Value.create(value));
+						return ExecutableList.wrap(computedValues);
+					}
+				}
+
+				return new ConstantEvaluatorState();
+			}
+
+		};
+
 	}
 
 	protected DefaultExprNodeFactory<E> createExprNodeFactory(IValueParser<E> valueParser) {

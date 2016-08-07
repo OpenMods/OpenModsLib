@@ -31,10 +31,10 @@ public class Environment<E> {
 		return Iterables.unmodifiableIterable(topFrame.stack());
 	}
 
-	public TopFrame<E> executeIsolated(IExecutable<E> executable) {
-		final TopFrame<E> freshTopFrame = topFrame.cloneWithSymbols();
-		executable.execute(freshTopFrame);
-		return freshTopFrame;
+	public ICalculatorFrame<E> executeIsolated(IExecutable<E> executable) {
+		final ICalculatorFrame<E> freshFrame = new LocalFrame<E>(topFrame);
+		executable.execute(freshFrame);
+		return freshFrame;
 	}
 
 	public void execute(IExecutable<E> executable) {

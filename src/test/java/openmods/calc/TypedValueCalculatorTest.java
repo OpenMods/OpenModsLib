@@ -4,8 +4,10 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.List;
+import openmods.calc.CalcTestUtils.Acceptor;
 import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.CalcTestUtils.SymbolStub;
+import openmods.calc.types.multi.Code;
 import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.IComposite;
 import openmods.calc.types.multi.Symbol;
@@ -18,6 +20,7 @@ import openmods.calc.types.multi.TypedValueCalculatorFactory;
 import openmods.math.Complex;
 import openmods.reflection.MethodAccess;
 import openmods.reflection.TypeVariableHolderHandler;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TypedValueCalculatorTest {
@@ -665,7 +668,70 @@ public class TypedValueCalculatorTest {
 
 		final IExecutable<TypedValue> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
 		stub.checkCallCount(1);
-		compiled(expr).execute().expectStack(i(5), i(6), i(7));
+		compiled(expr).expectResults(i(5), i(6), i(7));
 		stub.checkCallCount(1);
+	}
+
+	private static final Acceptor<TypedValue> CHECK_IS_CODE = new Acceptor<TypedValue>() {
+		@Override
+		public void accept(TypedValue value) {
+			Assert.assertTrue(value.is(Code.class));
+		}
+	};
+
+	@Test
+	public void testCodeParsingInPostfixParser() {
+		postfix("{ 1 2 +} iscode").expectResult(b(true)).expectEmptyStack();
+		postfix("{ 1 2 +}").executeAndCall(CHECK_IS_CODE).expectEmptyStack();
+
+		postfix("{ 1 2 +} execute").expectResult(i(3)).expectEmptyStack();
+		postfix("{ 1 2 +} execute@1,1").expectResult(i(3)).expectEmptyStack();
+
+		postfix("{ 1 2 + 3 4 -} execute").expectResults(i(3), i(-1));
+		postfix("{ 1 2 + 3 4 -} execute@1,2").expectResults(i(3), i(-1));
+	}
+
+	@Test
+	public void testCodeSymbol() {
+		infix("code(2 + 3)").executeAndCall(CHECK_IS_CODE).expectEmptyStack();
+		infix("iscode(code(2 + 3))").expectResult(b(true)).expectEmptyStack();
+
+		prefix("(code (+ 2 3))").executeAndCall(CHECK_IS_CODE).expectEmptyStack();
+		infix("(iscode (code (+ 2 3)))").expectResult(b(true)).expectEmptyStack();
+
+		infix("execute(code(2 + 3))").expectResult(i(5));
+		prefix("(execute (code (+ 2 3)))").expectResult(i(5));
+	}
+
+	@Test
+	public void testIfExpression() {
+		infix("if(true, 2, 3)").expectResult(i(2)).expectEmptyStack();
+		infix("if(false, 2, 3)").expectResult(i(3)).expectEmptyStack();
+
+		prefix("(if true 2 3)").expectResult(i(2)).expectEmptyStack();
+		prefix("(if false 2 3)").expectResult(i(3)).expectEmptyStack();
+
+		infix("if(2 == 2, 2 + 3, 2 + 2)").expectResult(i(5)).expectEmptyStack();
+		infix("if(2 == 3, 2 + 3, 2 + 2)").expectResult(i(4)).expectEmptyStack();
+
+		prefix("(if (== 2 2) (+ 2 3) (+ 2 2))").expectResult(i(5)).expectEmptyStack();
+		prefix("(if (== 2 3), (+ 2 3), (+ 2 2))").expectResult(i(4)).expectEmptyStack();
+	}
+
+	@Test
+	public void testIfExpressionEvaluation() {
+		final SymbolStub<TypedValue> leftStub = new SymbolStub<TypedValue>().setReturns(i(2));
+		final SymbolStub<TypedValue> rightStub = new SymbolStub<TypedValue>().setReturns(i(3));
+
+		sut.environment.setGlobalSymbol("left", leftStub);
+		sut.environment.setGlobalSymbol("right", rightStub);
+
+		infix("if(2 == 2, left, right)").expectResult(i(2)).expectEmptyStack();
+		rightStub.checkCallCount(0).resetCallCount();
+		leftStub.checkCallCount(1).resetCallCount();
+
+		infix("if(2 != 2, left, right)").expectResult(i(3)).expectEmptyStack();
+		rightStub.checkCallCount(1).resetCallCount();
+		leftStub.checkCallCount(0).resetCallCount();
 	}
 }

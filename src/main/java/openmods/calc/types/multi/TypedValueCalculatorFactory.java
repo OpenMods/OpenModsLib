@@ -25,14 +25,18 @@ import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.ICalculatorFrame;
 import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
+import openmods.calc.LocalFrame;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.StackValidationException;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.Value;
+import openmods.calc.parsing.DefaultExecutableListBuilder;
 import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.DefaultPostfixCompiler;
+import openmods.calc.parsing.DefaultPostfixCompiler.IStateProvider;
 import openmods.calc.parsing.IAstParser;
+import openmods.calc.parsing.IExecutableListBuilder;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.IPostfixCompilerState;
@@ -42,7 +46,6 @@ import openmods.calc.parsing.InfixParser;
 import openmods.calc.parsing.PrefixParser;
 import openmods.calc.parsing.SymbolNode;
 import openmods.calc.parsing.Token;
-import openmods.calc.parsing.TokenType;
 import openmods.calc.parsing.TokenUtils;
 import openmods.calc.parsing.Tokenizer;
 import openmods.calc.types.multi.TypeDomain.Coercion;
@@ -62,6 +65,11 @@ public class TypedValueCalculatorFactory {
 	public static final String SYMBOL_NULL = "null";
 	public static final String SYMBOL_FALSE = "true";
 	public static final String SYMBOL_TRUE = "false";
+
+	public static final String SYMBOL_IF = "if";
+
+	public static final String SYMBOL_CODE = "code";
+	public static final String BRACKET_CODE = "{";
 
 	private static final Function<BigInteger, Integer> INT_UNWRAP = new Function<BigInteger, Integer>() {
 		@Override
@@ -164,6 +172,7 @@ public class TypedValueCalculatorFactory {
 		domain.registerType(IComposite.class, "object");
 		domain.registerType(Cons.class, "pair");
 		domain.registerType(Symbol.class, "symbol");
+		domain.registerType(Code.class, "code");
 
 		domain.registerConverter(new IConverter<Boolean, BigInteger>() {
 			@Override
@@ -251,6 +260,7 @@ public class TypedValueCalculatorFactory {
 		domain.registerAlwaysFalse(UnitType.class);
 		domain.registerAlwaysTrue(IComposite.class);
 		domain.registerAlwaysTrue(Cons.class);
+		domain.registerAlwaysTrue(Code.class);
 
 		final TypedValue nullValue = domain.create(UnitType.class, UnitType.INSTANCE);
 
@@ -704,6 +714,7 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("isobject", new PredicateIsType(IComposite.class));
 		env.setGlobalSymbol("iscons", new PredicateIsType(Cons.class));
 		env.setGlobalSymbol("issymbol", new PredicateIsType(Symbol.class));
+		env.setGlobalSymbol("iscode", new PredicateIsType(Code.class));
 
 		env.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
 			@Override
@@ -1201,7 +1212,39 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
+		env.setGlobalSymbol("execute", new ISymbol<TypedValue>() {
+
+			@Override
+			public void execute(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				if (argumentsCount.isPresent()) {
+					final int args = argumentsCount.get();
+					if (args != 1) throw new StackValidationException("Expected one argument but got %s", args);
+				}
+
+				final TypedValue top = frame.stack().pop();
+				Preconditions.checkState(top.is(Code.class), "Expected 'code', got %s", top);
+
+				final ICalculatorFrame<TypedValue> sandboxFrame = new LocalFrame<TypedValue>(frame);
+				top.unwrap(Code.class).execute(sandboxFrame);
+
+				final List<TypedValue> results = Lists.newArrayList(sandboxFrame.stack());
+
+				if (returnsCount.isPresent()) {
+					final int returns = returnsCount.get();
+					if (returns != results.size()) throw new StackValidationException("Has %s result(s) but expected %s", results.size(), returns);
+				}
+
+				for (TypedValue result : results)
+					frame.stack().push(result);
+			}
+
+		});
+
+		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain, SYMBOL_IF);
+		env.setGlobalSymbol(SYMBOL_IF, ifFactory.createSymbol());
+
 		class InitialParserState extends SwitchingCompilerState<TypedValue> {
+
 			public InitialParserState(IAstParser<TypedValue> parser, String currentStateSymbol, String switchStateSymbol) {
 				super(parser, currentStateSymbol, switchStateSymbol);
 			}
@@ -1210,6 +1253,10 @@ public class TypedValueCalculatorFactory {
 			public ISymbolStateTransition<TypedValue> getStateForSymbol(String symbol) {
 				if (symbol.equals(TokenUtils.SYMBOL_QUOTE))
 					return new QuoteStateTransition.ForSymbol(domain, nullValue, valueParser);
+				if (symbol.equals(SYMBOL_CODE))
+					return new CodeStateTransition(domain, this);
+				if (symbol.equals(SYMBOL_IF))
+					return ifFactory.createStateTransition(this);
 
 				return super.getStateForSymbol(symbol);
 			}
@@ -1220,38 +1267,6 @@ public class TypedValueCalculatorFactory {
 					return new QuoteStateTransition.ForModifier(domain, nullValue, valueParser);
 
 				return super.getStateForModifier(modifier);
-			}
-		}
-
-		class QuotePostfixCompilerState implements IPostfixCompilerState<TypedValue> {
-			private IExecutable<TypedValue> result;
-
-			private boolean canBeRaw(TokenType type) {
-				return type == TokenType.MODIFIER || type == TokenType.OPERATOR || type == TokenType.SYMBOL;
-			}
-
-			@Override
-			public Result acceptToken(Token token) {
-				Preconditions.checkState(result == null);
-
-				final TypedValue resultValue;
-				if (token.type.isValue()) resultValue = valueParser.parseToken(token);
-				else if (canBeRaw(token.type)) resultValue = domain.create(Symbol.class, Symbol.get(token.value));
-				else return Result.REJECTED;
-				result = Value.create(resultValue);
-
-				return Result.ACCEPTED_AND_FINISHED;
-			}
-
-			@Override
-			public Result acceptExecutable(IExecutable<TypedValue> executable) {
-				return Result.REJECTED;
-			}
-
-			@Override
-			public IExecutable<TypedValue> exit() {
-				Preconditions.checkState(result != null);
-				return result;
 			}
 		}
 
@@ -1300,14 +1315,21 @@ public class TypedValueCalculatorFactory {
 			}
 
 			@Override
-			protected ITokenStreamCompiler<TypedValue> createPostfixParser(IValueParser<TypedValue> valueParser, OperatorDictionary<TypedValue> operators, Environment<TypedValue> env) {
+			protected ITokenStreamCompiler<TypedValue> createPostfixParser(final IValueParser<TypedValue> valueParser, final OperatorDictionary<TypedValue> operators, Environment<TypedValue> env) {
 				return addConstantEvaluatorState(valueParser, operators, env, new DefaultPostfixCompiler<TypedValue>(valueParser, operators) {
 					@Override
 					protected IPostfixCompilerState<TypedValue> createStateForModifier(String modifier) {
-						if (modifier.equals(TokenUtils.MODIFIER_QUOTE)) return new QuotePostfixCompilerState();
+						if (modifier.equals(TokenUtils.MODIFIER_QUOTE)) return new QuotePostfixCompilerState(valueParser, domain);
 						return super.createStateForModifier(modifier);
 					}
-				});
+				})
+						.addBracketStateProvider(BRACKET_CODE, new IStateProvider<TypedValue>() {
+							@Override
+							public IPostfixCompilerState<TypedValue> createState() {
+								final IExecutableListBuilder<TypedValue> listBuilder = new DefaultExecutableListBuilder<TypedValue>(valueParser, operators);
+								return new CodePostfixCompilerState(domain, listBuilder, BRACKET_CODE);
+							}
+						});
 			}
 
 			@Override

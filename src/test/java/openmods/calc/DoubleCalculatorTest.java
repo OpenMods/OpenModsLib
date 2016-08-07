@@ -58,22 +58,22 @@ public class DoubleCalculatorTest {
 
 	@Test
 	public void testPostfixDupWithArgs() {
-		postfix("0 1 2 dup@2").execute().expectStack(0.0, 1.0, 2.0, 1.0, 2.0);
+		postfix("0 1 2 dup@2").expectResults(0.0, 1.0, 2.0, 1.0, 2.0);
 	}
 
 	@Test
 	public void testPostfixDupWithReturns() {
-		postfix("1 2 dup@,4").execute().expectStack(1.0, 2.0, 2.0, 2.0, 2.0);
+		postfix("1 2 dup@,4").expectResults(1.0, 2.0, 2.0, 2.0, 2.0);
 	}
 
 	@Test
 	public void testPostfixDupWithArgsAndReturns() {
-		postfix("1 2 3 4 dup@3,5").execute().expectStack(1.0, 2.0, 3.0, 4.0, 2.0, 3.0);
+		postfix("1 2 3 4 dup@3,5").expectResults(1.0, 2.0, 3.0, 4.0, 2.0, 3.0);
 	}
 
 	@Test
 	public void testPostfixPopWithArgs() {
-		postfix("1 2 3 4 pop@3").execute().expectStack(1.0);
+		postfix("1 2 3 4 pop@3").expectResults(1.0);
 	}
 
 	@Test
@@ -184,7 +184,7 @@ public class DoubleCalculatorTest {
 
 		final IExecutable<Double> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
 		stub.checkCallCount(1);
-		compiled(expr).execute().expectStack(5.0, 6.0, 7.0);
+		compiled(expr).expectResults(5.0, 6.0, 7.0);
 		stub.checkCallCount(1);
 	}
 }
