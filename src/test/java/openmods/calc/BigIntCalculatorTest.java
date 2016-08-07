@@ -32,38 +32,38 @@ public class BigIntCalculatorTest {
 
 	@Test
 	public void testBasicPrefix() {
-		prefix("(+ 1 2)").expectResult(v(3)).expectEmptyStack();
-		prefix("(* 2 3)").expectResult(v(6)).expectEmptyStack();
-		prefix("(- 1)").expectResult(v(-1)).expectEmptyStack();
-		prefix("(* (- 1) (+ 2 3))").expectResult(v(-5)).expectEmptyStack();
-		prefix("(/ 10 2)").expectResult(v(5)).expectEmptyStack();
-		prefix("(** 2 5)").expectResult(v(32)).expectEmptyStack();
-		prefix("(| 0b010 0b101)").expectResult(v(7)).expectEmptyStack();
+		prefix("(+ 1 2)").expectResult(v(3));
+		prefix("(* 2 3)").expectResult(v(6));
+		prefix("(- 1)").expectResult(v(-1));
+		prefix("(* (- 1) (+ 2 3))").expectResult(v(-5));
+		prefix("(/ 10 2)").expectResult(v(5));
+		prefix("(** 2 5)").expectResult(v(32));
+		prefix("(| 0b010 0b101)").expectResult(v(7));
 
-		prefix("(max 1)").expectResult(v(1)).expectEmptyStack();
-		prefix("(max 1 2)").expectResult(v(2)).expectEmptyStack();
-		prefix("(max 1 2 3)").expectResult(v(3)).expectEmptyStack();
+		prefix("(max 1)").expectResult(v(1));
+		prefix("(max 1 2)").expectResult(v(2));
+		prefix("(max 1 2 3)").expectResult(v(3));
 	}
 
 	@Test
 	public void testBasicPostfix() {
-		postfix("1 2 +").expectResult(v(3)).expectEmptyStack();
-		postfix("2 3 *").expectResult(v(6)).expectEmptyStack();
-		postfix("10 2 /").expectResult(v(5)).expectEmptyStack();
-		postfix("2 5 **").expectResult(v(32)).expectEmptyStack();
-		postfix("0b010 0b101 |").expectResult(v(7)).expectEmptyStack();
-		postfix("0b100 0b101 &").expectResult(v(4)).expectEmptyStack();
-		postfix("0b110 0b101 ^").expectResult(v(3)).expectEmptyStack();
-		postfix("0b100 2 <<").expectResult(v(16)).expectEmptyStack();
-		postfix("0b100 2 >>").expectResult(v(1)).expectEmptyStack();
-		postfix("45 4 %").expectResult(v(1)).expectEmptyStack();
+		postfix("1 2 +").expectResult(v(3));
+		postfix("2 3 *").expectResult(v(6));
+		postfix("10 2 /").expectResult(v(5));
+		postfix("2 5 **").expectResult(v(32));
+		postfix("0b010 0b101 |").expectResult(v(7));
+		postfix("0b100 0b101 &").expectResult(v(4));
+		postfix("0b110 0b101 ^").expectResult(v(3));
+		postfix("0b100 2 <<").expectResult(v(16));
+		postfix("0b100 2 >>").expectResult(v(1));
+		postfix("45 4 %").expectResult(v(1));
 	}
 
 	@Test
 	public void testPostfixStackOperations() {
-		postfix("2 dup +").expectResult(v(4)).expectEmptyStack();
-		postfix("1 2 3 pop +").expectResult(v(3)).expectEmptyStack();
-		postfix("2 3 swap -").expectResult(v(1)).expectEmptyStack();
+		postfix("2 dup +").expectResult(v(4));
+		postfix("1 2 3 pop +").expectResult(v(3));
+		postfix("2 3 swap -").expectResult(v(1));
 	}
 
 	@Test
@@ -88,64 +88,64 @@ public class BigIntCalculatorTest {
 
 	@Test
 	public void testVariadicPostfixFunctions() {
-		postfix("max@0").expectResult(v(0)).expectEmptyStack();
-		postfix("1 max@1").expectResult(v(1)).expectEmptyStack();
-		postfix("1 2 max@2").expectResult(v(2)).expectEmptyStack();
+		postfix("max@0").expectResult(v(0));
+		postfix("1 max@1").expectResult(v(1));
+		postfix("1 2 max@2").expectResult(v(2));
 
-		postfix("3 2 1 sum@3").expectResult(v(6)).expectEmptyStack();
-		postfix("3 2 1 avg@3").expectResult(v(2)).expectEmptyStack();
+		postfix("3 2 1 sum@3").expectResult(v(6));
+		postfix("3 2 1 avg@3").expectResult(v(2));
 	}
 
 	@Test
 	public void testBasicInfix() {
-		infix("1+2").expectResult(v(3)).expectEmptyStack();
-		infix("2*3").expectResult(v(6)).expectEmptyStack();
-		infix("10/2").expectResult(v(5)).expectEmptyStack();
-		infix("2**5").expectResult(v(32)).expectEmptyStack();
-		infix("2(5)").expectResult(v(10)).expectEmptyStack();
-		infix("0b010|0b101").expectResult(v(7)).expectEmptyStack();
-		infix("0b100&0b101").expectResult(v(4)).expectEmptyStack();
-		infix("0b110^0b101").expectResult(v(3)).expectEmptyStack();
-		infix("0b100<<2").expectResult(v(16)).expectEmptyStack();
-		infix("0b100>>2").expectResult(v(1)).expectEmptyStack();
-		infix("45 % 4").expectResult(v(1)).expectEmptyStack();
+		infix("1+2").expectResult(v(3));
+		infix("2*3").expectResult(v(6));
+		infix("10/2").expectResult(v(5));
+		infix("2**5").expectResult(v(32));
+		infix("2(5)").expectResult(v(10));
+		infix("0b010|0b101").expectResult(v(7));
+		infix("0b100&0b101").expectResult(v(4));
+		infix("0b110^0b101").expectResult(v(3));
+		infix("0b100<<2").expectResult(v(16));
+		infix("0b100>>2").expectResult(v(1));
+		infix("45 % 4").expectResult(v(1));
 	}
 
 	@Test
 	public void testBasicOrdering() {
-		infix("1 + 2 - 3").expectResult(v(0)).expectEmptyStack();
+		infix("1 + 2 - 3").expectResult(v(0));
 
-		infix("1 + 2 * 3").expectResult(v(7)).expectEmptyStack();
-		infix("1 + (2 * 3)").expectResult(v(7)).expectEmptyStack();
-		infix("(1 + 2) * 3").expectResult(v(9)).expectEmptyStack();
-		infix("-(1 + 2) * 3").expectResult(v(-9)).expectEmptyStack();
-		infix("(1 + 2) * -3").expectResult(v(-9)).expectEmptyStack();
+		infix("1 + 2 * 3").expectResult(v(7));
+		infix("1 + (2 * 3)").expectResult(v(7));
+		infix("(1 + 2) * 3").expectResult(v(9));
+		infix("-(1 + 2) * 3").expectResult(v(-9));
+		infix("(1 + 2) * -3").expectResult(v(-9));
 
-		infix("--3").expectResult(v(3)).expectEmptyStack();
-		infix("-~2").expectResult(v(3)).expectEmptyStack();
+		infix("--3").expectResult(v(3));
+		infix("-~2").expectResult(v(3));
 
-		infix("2 * 2 ** 2").expectResult(v(8)).expectEmptyStack();
-		infix("2 * (2 ** 2)").expectResult(v(8)).expectEmptyStack();
-		infix("(2 * 2) ** 2").expectResult(v(16)).expectEmptyStack();
+		infix("2 * 2 ** 2").expectResult(v(8));
+		infix("2 * (2 ** 2)").expectResult(v(8));
+		infix("(2 * 2) ** 2").expectResult(v(16));
 	}
 
 	@Test
 	public void testBasicInfixFunctions() {
-		infix("gcd(6, 8)").expectResult(v(2)).expectEmptyStack();
-		infix("abs(-2)").expectResult(v(2)).expectEmptyStack();
-		infix("5*abs(-2)").expectResult(v(10)).expectEmptyStack();
-		infix("1+abs(-2)").expectResult(v(3)).expectEmptyStack();
-		infix("min(2,3)").expectResult(v(2)).expectEmptyStack();
-		infix("max(2,3)").expectResult(v(3)).expectEmptyStack();
-		infix("2-max(2,3)").expectResult(v(-1)).expectEmptyStack();
+		infix("gcd(6, 8)").expectResult(v(2));
+		infix("abs(-2)").expectResult(v(2));
+		infix("5*abs(-2)").expectResult(v(10));
+		infix("1+abs(-2)").expectResult(v(3));
+		infix("min(2,3)").expectResult(v(2));
+		infix("max(2,3)").expectResult(v(3));
+		infix("2-max(2,3)").expectResult(v(-1));
 	}
 
 	@Test
 	public void testVariadicInfixFunctions() {
-		infix("max()").expectResult(v(0)).expectEmptyStack();
-		infix("max(1)").expectResult(v(1)).expectEmptyStack();
-		infix("max(1,2)").expectResult(v(2)).expectEmptyStack();
-		infix("max(3,2,1)").expectResult(v(3)).expectEmptyStack();
+		infix("max()").expectResult(v(0));
+		infix("max(1)").expectResult(v(1));
+		infix("max(1,2)").expectResult(v(2));
+		infix("max(3,2,1)").expectResult(v(3));
 	}
 
 	@Test(expected = Exception.class)
@@ -160,23 +160,23 @@ public class BigIntCalculatorTest {
 
 	@Test
 	public void testParserSwitch() {
-		infix("2 + prefix(5)").expectResult(v(7)).expectEmptyStack();
-		infix("2 + prefix((+ 5 6))").expectResult(v(13)).expectEmptyStack();
+		infix("2 + prefix(5)").expectResult(v(7));
+		infix("2 + prefix((+ 5 6))").expectResult(v(13));
 
-		prefix("(+ 2 (infix 5))").expectResult(v(7)).expectEmptyStack();
-		prefix("(+ 2 (infix 5 + 6))").expectResult(v(13)).expectEmptyStack();
+		prefix("(+ 2 (infix 5))").expectResult(v(7));
+		prefix("(+ 2 (infix 5 + 6))").expectResult(v(13));
 	}
 
 	@Test
 	public void testNestedParserSwitch() {
-		infix("infix(5 + 2)").expectResult(v(7)).expectEmptyStack();
-		infix("infix(infix(5 + 2))").expectResult(v(7)).expectEmptyStack();
+		infix("infix(5 + 2)").expectResult(v(7));
+		infix("infix(infix(5 + 2))").expectResult(v(7));
 
-		prefix("(prefix (+ 2 5))").expectResult(v(7)).expectEmptyStack();
-		prefix("(prefix (prefix (+ 2 5)))").expectResult(v(7)).expectEmptyStack();
+		prefix("(prefix (+ 2 5))").expectResult(v(7));
+		prefix("(prefix (prefix (+ 2 5)))").expectResult(v(7));
 
-		infix("prefix((infix 2 + 5))").expectResult(v(7)).expectEmptyStack();
-		prefix("(infix prefix((+ 2 5)))").expectResult(v(7)).expectEmptyStack();
+		infix("prefix((infix 2 + 5))").expectResult(v(7));
+		prefix("(infix prefix((+ 2 5)))").expectResult(v(7));
 	}
 
 	@Test

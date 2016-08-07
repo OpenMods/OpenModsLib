@@ -36,31 +36,31 @@ public class FractionCalculatorTest {
 
 	@Test
 	public void testBasicPrefix() {
-		prefix("(+ 1 2)").expectResult(f(3)).expectEmptyStack();
-		prefix("(* 2 3)").expectResult(f(6)).expectEmptyStack();
-		prefix("(- 1)").expectResult(f(-1)).expectEmptyStack();
-		prefix("(* (- 1) (+ 2 3))").expectResult(f(-5)).expectEmptyStack();
-		prefix("(/ 10 2)").expectResult(f(5)).expectEmptyStack();
+		prefix("(+ 1 2)").expectResult(f(3));
+		prefix("(* 2 3)").expectResult(f(6));
+		prefix("(- 1)").expectResult(f(-1));
+		prefix("(* (- 1) (+ 2 3))").expectResult(f(-5));
+		prefix("(/ 10 2)").expectResult(f(5));
 
-		prefix("(max 1)").expectResult(f(1)).expectEmptyStack();
-		prefix("(max 1 2)").expectResult(f(2)).expectEmptyStack();
-		prefix("(max 1 2 3)").expectResult(f(3)).expectEmptyStack();
+		prefix("(max 1)").expectResult(f(1));
+		prefix("(max 1 2)").expectResult(f(2));
+		prefix("(max 1 2 3)").expectResult(f(3));
 	}
 
 	@Test
 	public void testBasicPostfix() {
-		postfix("1 2 +").expectResult(f(3)).expectEmptyStack();
-		postfix("2 3 *").expectResult(f(6)).expectEmptyStack();
-		postfix("10 2 /").expectResult(f(5)).expectEmptyStack();
-		postfix("1 2 / 1 2 / +").expectResult(f(1)).expectEmptyStack();
-		postfix("1 2 / 1 +").expectResult(f(3, 2)).expectEmptyStack();
+		postfix("1 2 +").expectResult(f(3));
+		postfix("2 3 *").expectResult(f(6));
+		postfix("10 2 /").expectResult(f(5));
+		postfix("1 2 / 1 2 / +").expectResult(f(1));
+		postfix("1 2 / 1 +").expectResult(f(3, 2));
 	}
 
 	@Test
 	public void testPostfixStackOperations() {
-		postfix("2 dup +").expectResult(f(4)).expectEmptyStack();
-		postfix("1 2 3 pop +").expectResult(f(3)).expectEmptyStack();
-		postfix("2 3 swap -").expectResult(f(1)).expectEmptyStack();
+		postfix("2 dup +").expectResult(f(4));
+		postfix("1 2 3 pop +").expectResult(f(3));
+		postfix("2 3 swap -").expectResult(f(1));
 	}
 
 	@Test
@@ -85,56 +85,56 @@ public class FractionCalculatorTest {
 
 	@Test
 	public void testVariadicPostfixFunctions() {
-		postfix("max@0").expectResult(f(0)).expectEmptyStack();
-		postfix("1 max@1").expectResult(f(1)).expectEmptyStack();
-		postfix("1 2 max@2").expectResult(f(2)).expectEmptyStack();
+		postfix("max@0").expectResult(f(0));
+		postfix("1 max@1").expectResult(f(1));
+		postfix("1 2 max@2").expectResult(f(2));
 
-		postfix("3 2 1 sum@3").expectResult(f(6)).expectEmptyStack();
-		postfix("3 2 1 avg@3").expectResult(f(2)).expectEmptyStack();
+		postfix("3 2 1 sum@3").expectResult(f(6));
+		postfix("3 2 1 avg@3").expectResult(f(2));
 	}
 
 	@Test
 	public void testBasicInfix() {
-		infix("1 + 2").expectResult(f(3)).expectEmptyStack();
-		infix("2 * 3").expectResult(f(6)).expectEmptyStack();
-		infix("10(2)").expectResult(f(20)).expectEmptyStack();
-		infix("10 / 2").expectResult(f(5)).expectEmptyStack();
-		infix("1/2 + 1/2").expectResult(f(1)).expectEmptyStack();
-		infix("0.5 + 1/2").expectResult(f(1)).expectEmptyStack();
-		infix("-3/2").expectResult(f(-3, 2)).expectEmptyStack();
+		infix("1 + 2").expectResult(f(3));
+		infix("2 * 3").expectResult(f(6));
+		infix("10(2)").expectResult(f(20));
+		infix("10 / 2").expectResult(f(5));
+		infix("1/2 + 1/2").expectResult(f(1));
+		infix("0.5 + 1/2").expectResult(f(1));
+		infix("-3/2").expectResult(f(-3, 2));
 	}
 
 	@Test
 	public void testBasicOrdering() {
-		infix("1 + 2 - 3").expectResult(f(0)).expectEmptyStack();
+		infix("1 + 2 - 3").expectResult(f(0));
 
-		infix("1 + 2 * 3").expectResult(f(7)).expectEmptyStack();
-		infix("1 + (2 * 3)").expectResult(f(7)).expectEmptyStack();
-		infix("(1 + 2) * 3").expectResult(f(9)).expectEmptyStack();
-		infix("-(1 + 2) * 3").expectResult(f(-9)).expectEmptyStack();
-		infix("(1 + 2) * -3").expectResult(f(-9)).expectEmptyStack();
-		infix("--3").expectResult(f(3)).expectEmptyStack();
+		infix("1 + 2 * 3").expectResult(f(7));
+		infix("1 + (2 * 3)").expectResult(f(7));
+		infix("(1 + 2) * 3").expectResult(f(9));
+		infix("-(1 + 2) * 3").expectResult(f(-9));
+		infix("(1 + 2) * -3").expectResult(f(-9));
+		infix("--3").expectResult(f(3));
 	}
 
 	@Test
 	public void testBasicInfixFunctions() {
-		infix("min(2,3)").expectResult(f(2)).expectEmptyStack();
-		infix("max(2,3)").expectResult(f(3)).expectEmptyStack();
-		infix("5max(2,3)").expectResult(f(15)).expectEmptyStack();
-		infix("sqrt(9/4)").expectResult(f(3, 2)).expectEmptyStack();
-		infix("2-max(2,3)").expectResult(f(-1)).expectEmptyStack();
-		infix("int(7/3)").expectResult(f(2)).expectEmptyStack();
-		infix("frac(7/3)").expectResult(f(1, 3)).expectEmptyStack();
-		infix("numerator(7/3)").expectResult(f(7)).expectEmptyStack();
-		infix("denominator(7/3)").expectResult(f(3)).expectEmptyStack();
+		infix("min(2,3)").expectResult(f(2));
+		infix("max(2,3)").expectResult(f(3));
+		infix("5max(2,3)").expectResult(f(15));
+		infix("sqrt(9/4)").expectResult(f(3, 2));
+		infix("2-max(2,3)").expectResult(f(-1));
+		infix("int(7/3)").expectResult(f(2));
+		infix("frac(7/3)").expectResult(f(1, 3));
+		infix("numerator(7/3)").expectResult(f(7));
+		infix("denominator(7/3)").expectResult(f(3));
 	}
 
 	@Test
 	public void testVariadicInfixFunctions() {
-		infix("max()").expectResult(f(0)).expectEmptyStack();
-		infix("max(1)").expectResult(f(1)).expectEmptyStack();
-		infix("max(1,2)").expectResult(f(2)).expectEmptyStack();
-		infix("max(3,2,1)").expectResult(f(3)).expectEmptyStack();
+		infix("max()").expectResult(f(0));
+		infix("max(1)").expectResult(f(1));
+		infix("max(1,2)").expectResult(f(2));
+		infix("max(3,2,1)").expectResult(f(3));
 	}
 
 	@Test(expected = Exception.class)
@@ -144,23 +144,23 @@ public class FractionCalculatorTest {
 
 	@Test
 	public void testParserSwitch() {
-		infix("2 + prefix(5)").expectResult(f(7)).expectEmptyStack();
-		infix("2 + prefix((+ 5 6))").expectResult(f(13)).expectEmptyStack();
+		infix("2 + prefix(5)").expectResult(f(7));
+		infix("2 + prefix((+ 5 6))").expectResult(f(13));
 
-		prefix("(+ 2 (infix 5))").expectResult(f(7)).expectEmptyStack();
-		prefix("(+ 2 (infix 5 + 6))").expectResult(f(13)).expectEmptyStack();
+		prefix("(+ 2 (infix 5))").expectResult(f(7));
+		prefix("(+ 2 (infix 5 + 6))").expectResult(f(13));
 	}
 
 	@Test
 	public void testNestedParserSwitch() {
-		infix("infix(5 + 2)").expectResult(f(7)).expectEmptyStack();
-		infix("infix(infix(5 + 2))").expectResult(f(7)).expectEmptyStack();
+		infix("infix(5 + 2)").expectResult(f(7));
+		infix("infix(infix(5 + 2))").expectResult(f(7));
 
-		prefix("(prefix (+ 2 5))").expectResult(f(7)).expectEmptyStack();
-		prefix("(prefix (prefix (+ 2 5)))").expectResult(f(7)).expectEmptyStack();
+		prefix("(prefix (+ 2 5))").expectResult(f(7));
+		prefix("(prefix (prefix (+ 2 5)))").expectResult(f(7));
 
-		infix("prefix((infix 2 + 5))").expectResult(f(7)).expectEmptyStack();
-		prefix("(infix prefix((+ 2 5)))").expectResult(f(7)).expectEmptyStack();
+		infix("prefix((infix 2 + 5))").expectResult(f(7));
+		prefix("(infix prefix((+ 2 5)))").expectResult(f(7));
 	}
 
 	@Test

@@ -1,7 +1,6 @@
 package openmods.calc;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -264,6 +263,24 @@ public class CalcTestUtils {
 		public void accept(E value);
 	}
 
+	public static class StackCheck<E> {
+		private final Calculator<E, ExprType> sut;
+
+		public StackCheck(Calculator<E, ExprType> sut) {
+			this.sut = sut;
+		}
+
+		public StackCheck<E> expectStack(E... values) {
+			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(sut.environment.getStack()));
+			return this;
+		}
+
+		public StackCheck<E> expectEmptyStack() {
+			Assert.assertTrue(Lists.newArrayList(sut.environment.getStack()).isEmpty());
+			return this;
+		}
+	}
+
 	public static class CalcCheck<E> {
 		private final Calculator<E, ExprType> sut;
 
@@ -275,17 +292,12 @@ public class CalcTestUtils {
 		}
 
 		public CalcCheck<E> expectResult(E value) {
-			Assert.assertEquals(value, sut.environment.executeAndPop(expr));
-			return this;
-		}
+			final ICalculatorFrame<E> frame = sut.environment.executeIsolated(expr);
+			final E top = frame.stack().pop();
+			Assert.assertEquals(value, top);
+			if (!frame.stack().isEmpty())
+				Assert.fail("Extra values on stack: " + Lists.newArrayList(frame.stack()));
 
-		public CalcCheck<E> expectEmptyStack() {
-			Assert.assertTrue(Lists.newArrayList(sut.environment.getStack()).isEmpty());
-			return this;
-		}
-
-		public CalcCheck<E> expectStack(E... values) {
-			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(sut.environment.getStack()));
 			return this;
 		}
 
@@ -295,21 +307,9 @@ public class CalcTestUtils {
 			return this;
 		}
 
-		public CalcCheck<E> executeAndMatch(Predicate<E> matcher) {
-			final E result = sut.environment.executeAndPop(expr);
-			Assert.assertTrue(matcher.apply(result));
-			return this;
-		}
-
-		public CalcCheck<E> executeAndCall(Acceptor<E> acceptor) {
-			final E result = sut.environment.executeAndPop(expr);
-			acceptor.accept(result);
-			return this;
-		}
-
-		public CalcCheck<E> execute() {
+		public StackCheck<E> execute() {
 			sut.environment.execute(expr);
-			return this;
+			return new StackCheck<E>(sut);
 		}
 
 		public static <E> CalcCheck<E> create(Calculator<E, ExprType> sut, String value, ExprType exprType) {

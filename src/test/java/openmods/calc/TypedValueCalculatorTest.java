@@ -4,10 +4,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.List;
-import openmods.calc.CalcTestUtils.Acceptor;
 import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.CalcTestUtils.SymbolStub;
-import openmods.calc.types.multi.Code;
 import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.IComposite;
 import openmods.calc.types.multi.Symbol;
@@ -20,7 +18,6 @@ import openmods.calc.types.multi.TypedValueCalculatorFactory;
 import openmods.math.Complex;
 import openmods.reflection.MethodAccess;
 import openmods.reflection.TypeVariableHolderHandler;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class TypedValueCalculatorTest {
@@ -94,273 +91,273 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testBasicPrefix() {
-		prefix("(+ 1 2)").expectResult(i(3)).expectEmptyStack();
-		prefix("(* 2 3)").expectResult(i(6)).expectEmptyStack();
-		prefix("(- 1)").expectResult(i(-1)).expectEmptyStack();
-		prefix("(* (- 1) (+ 2 3))").expectResult(i(-5)).expectEmptyStack();
-		prefix("(/ 10 2)").expectResult(d(5.0)).expectEmptyStack();
-		prefix("(** 2 5)").expectResult(i(32)).expectEmptyStack();
-		prefix("(| 0b010 0b101)").expectResult(i(7)).expectEmptyStack();
+		prefix("(+ 1 2)").expectResult(i(3));
+		prefix("(* 2 3)").expectResult(i(6));
+		prefix("(- 1)").expectResult(i(-1));
+		prefix("(* (- 1) (+ 2 3))").expectResult(i(-5));
+		prefix("(/ 10 2)").expectResult(d(5.0));
+		prefix("(** 2 5)").expectResult(i(32));
+		prefix("(| 0b010 0b101)").expectResult(i(7));
 	}
 
 	@Test
 	public void testPrefixFunctions() {
-		prefix("(max 1)").expectResult(i(1)).expectEmptyStack();
-		prefix("(max 1 2)").expectResult(i(2)).expectEmptyStack();
-		prefix("(max 1 2 3)").expectResult(i(3)).expectEmptyStack();
+		prefix("(max 1)").expectResult(i(1));
+		prefix("(max 1 2)").expectResult(i(2));
+		prefix("(max 1 2 3)").expectResult(i(3));
 
-		prefix("(max 1 2.0 3)").expectResult(i(3)).expectEmptyStack();
-		prefix("(max true 2 3.0)").expectResult(d(3)).expectEmptyStack();
+		prefix("(max 1 2.0 3)").expectResult(i(3));
+		prefix("(max true 2 3.0)").expectResult(d(3));
 
-		prefix("(min true 2 3.0)").expectResult(b(true)).expectEmptyStack();
+		prefix("(min true 2 3.0)").expectResult(b(true));
 
-		prefix("(sum 1 2.0 3)").expectResult(d(6.0)).expectEmptyStack();
-		prefix("(sum 'a' 'b' 'c')").expectResult(s("abc")).expectEmptyStack();
+		prefix("(sum 1 2.0 3)").expectResult(d(6.0));
+		prefix("(sum 'a' 'b' 'c')").expectResult(s("abc"));
 
-		prefix("(avg 1 2 3)").expectResult(d(2.0)).expectEmptyStack();
+		prefix("(avg 1 2 3)").expectResult(d(2.0));
 	}
 
 	@Test
 	public void testBasicPostfix() {
-		postfix("1 2 +").expectResult(i(3)).expectEmptyStack();
-		postfix("0.5 0.5 +").expectResult(d(1)).expectEmptyStack();
-		postfix("0.25 0.25 +").expectResult(d(0.5)).expectEmptyStack();
-		postfix("2 3 *").expectResult(i(6)).expectEmptyStack();
-		postfix("10 2 /").expectResult(d(5.0)).expectEmptyStack();
-		postfix("10 2 //").expectResult(i(5)).expectEmptyStack();
-		postfix("1 2 +").expectResult(i(3)).expectEmptyStack();
-		postfix("true true &&").expectResult(TRUE).expectEmptyStack();
-		postfix("false true &&").expectResult(FALSE).expectEmptyStack();
-		postfix("'abc' 'def' +").expectResult(s("abcdef")).expectEmptyStack();
-		postfix("'abc' 'def' <=").expectResult(TRUE).expectEmptyStack();
+		postfix("1 2 +").expectResult(i(3));
+		postfix("0.5 0.5 +").expectResult(d(1));
+		postfix("0.25 0.25 +").expectResult(d(0.5));
+		postfix("2 3 *").expectResult(i(6));
+		postfix("10 2 /").expectResult(d(5.0));
+		postfix("10 2 //").expectResult(i(5));
+		postfix("1 2 +").expectResult(i(3));
+		postfix("true true &&").expectResult(TRUE);
+		postfix("false true &&").expectResult(FALSE);
+		postfix("'abc' 'def' +").expectResult(s("abcdef"));
+		postfix("'abc' 'def' <=").expectResult(TRUE);
 	}
 
 	@Test
 	public void testCoercionPostfix() {
-		postfix("0.5 1 +").expectResult(d(1.5)).expectEmptyStack();
+		postfix("0.5 1 +").expectResult(d(1.5));
 
-		postfix("2 5.0 **").expectResult(d(32)).expectEmptyStack();
-		postfix("2 5 **").expectResult(i(32)).expectEmptyStack();
+		postfix("2 5.0 **").expectResult(d(32));
+		postfix("2 5 **").expectResult(i(32));
 
-		postfix("true 2 +").expectResult(i(3)).expectEmptyStack();
-		postfix("true 2.0 +").expectResult(d(3.0)).expectEmptyStack();
+		postfix("true 2 +").expectResult(i(3));
+		postfix("true 2.0 +").expectResult(d(3.0));
 	}
 
 	@Test
 	public void testArithmeticInfix() {
-		infix("1 + 2").expectResult(i(3)).expectEmptyStack();
-		infix("2 * 3").expectResult(i(6)).expectEmptyStack();
-		infix("10 / 2").expectResult(d(5.0)).expectEmptyStack();
+		infix("1 + 2").expectResult(i(3));
+		infix("2 * 3").expectResult(i(6));
+		infix("10 / 2").expectResult(d(5.0));
 
-		infix("10 // 2").expectResult(i(5)).expectEmptyStack();
-		infix("10.7 // 2").expectResult(d(5.0)).expectEmptyStack();
-		infix("-2.3 // 3").expectResult(d(-1.0)).expectEmptyStack();
+		infix("10 // 2").expectResult(i(5));
+		infix("10.7 // 2").expectResult(d(5.0));
+		infix("-2.3 // 3").expectResult(d(-1.0));
 
-		infix("2 ** 5").expectResult(i(32)).expectEmptyStack();
-		infix("2 ** 0").expectResult(i(1)).expectEmptyStack();
-		infix("2 ** -5").expectResult(d(1.0 / 32.0)).expectEmptyStack();
+		infix("2 ** 5").expectResult(i(32));
+		infix("2 ** 0").expectResult(i(1));
+		infix("2 ** -5").expectResult(d(1.0 / 32.0));
 
-		infix("5 % 2").expectResult(i(1)).expectEmptyStack();
-		infix("5.125 % 1").expectResult(d(0.125)).expectEmptyStack();
-		infix("5 % 2.0").expectResult(d(1.0)).expectEmptyStack();
-		infix("5.125 % 1.0").expectResult(d(0.125)).expectEmptyStack();
+		infix("5 % 2").expectResult(i(1));
+		infix("5.125 % 1").expectResult(d(0.125));
+		infix("5 % 2.0").expectResult(d(1.0));
+		infix("5.125 % 1.0").expectResult(d(0.125));
 
-		infix("-true").expectResult(i(-1)).expectEmptyStack();
-		infix("2*true").expectResult(i(2)).expectEmptyStack();
-		infix("2*-true").expectResult(i(-2)).expectEmptyStack();
-		infix("2true").expectResult(i(2)).expectEmptyStack();
-		infix("2(true)").expectResult(i(2)).expectEmptyStack();
+		infix("-true").expectResult(i(-1));
+		infix("2*true").expectResult(i(2));
+		infix("2*-true").expectResult(i(-2));
+		infix("2true").expectResult(i(2));
+		infix("2(true)").expectResult(i(2));
 
-		infix("-2*-3*10**3").expectResult(i(6000)).expectEmptyStack();
-		infix("-2*-3*10**+3").expectResult(i(6000)).expectEmptyStack();
-		infix("-2*-3*10**-3").expectResult(d(6e-3)).expectEmptyStack();
-		infix("2*10**2+3*10**3").expectResult(i(3200)).expectEmptyStack();
-		infix("2*10**2*3*10**3").expectResult(i(600000)).expectEmptyStack();
+		infix("-2*-3*10**3").expectResult(i(6000));
+		infix("-2*-3*10**+3").expectResult(i(6000));
+		infix("-2*-3*10**-3").expectResult(d(6e-3));
+		infix("2*10**2+3*10**3").expectResult(i(3200));
+		infix("2*10**2*3*10**3").expectResult(i(600000));
 
-		infix("0.1 + true").expectResult(d(1.1)).expectEmptyStack();
+		infix("0.1 + true").expectResult(d(1.1));
 
-		infix("'abc' * 2").expectResult(s("abcabc")).expectEmptyStack();
+		infix("'abc' * 2").expectResult(s("abcabc"));
 	}
 
 	@Test
 	public void testLogicInfix() {
-		infix("!true").expectResult(FALSE).expectEmptyStack();
-		infix("!1").expectResult(FALSE).expectEmptyStack();
-		infix("!'hello'").expectResult(FALSE).expectEmptyStack();
-		infix("!''").expectResult(TRUE).expectEmptyStack();
-		infix("!0").expectResult(TRUE).expectEmptyStack();
+		infix("!true").expectResult(FALSE);
+		infix("!1").expectResult(FALSE);
+		infix("!'hello'").expectResult(FALSE);
+		infix("!''").expectResult(TRUE);
+		infix("!0").expectResult(TRUE);
 
-		infix("'abc' && 5").expectResult(i(5)).expectEmptyStack();
-		infix("0 && 'abc'").expectResult(i(0)).expectEmptyStack();
-		infix("'' && 4").expectResult(s("")).expectEmptyStack();
+		infix("'abc' && 5").expectResult(i(5));
+		infix("0 && 'abc'").expectResult(i(0));
+		infix("'' && 4").expectResult(s(""));
 
-		infix("'abc' || 5").expectResult(s("abc")).expectEmptyStack();
-		infix("'' || 5").expectResult(i(5)).expectEmptyStack();
-		infix("'' || 0").expectResult(i(0)).expectEmptyStack();
+		infix("'abc' || 5").expectResult(s("abc"));
+		infix("'' || 5").expectResult(i(5));
+		infix("'' || 0").expectResult(i(0));
 	}
 
 	@Test
 	public void testBitwiseInfix() {
-		infix("~true").expectResult(i(0)).expectEmptyStack();
-		infix("~0b10").expectResult(i(-3)).expectEmptyStack();
-		infix("0b10110 ^ 0b101101").expectResult(i(0x3B)).expectEmptyStack();
-		infix("0b1010 << 0b10").expectResult(i(40)).expectEmptyStack();
+		infix("~true").expectResult(i(0));
+		infix("~0b10").expectResult(i(-3));
+		infix("0b10110 ^ 0b101101").expectResult(i(0x3B));
+		infix("0b1010 << 0b10").expectResult(i(40));
 	}
 
 	@Test
 	public void testCompare() {
-		infix("2 < 3").expectResult(TRUE).expectEmptyStack();
-		infix("3 != 3").expectResult(FALSE).expectEmptyStack();
-		infix("3 <= 3").expectResult(TRUE).expectEmptyStack();
+		infix("2 < 3").expectResult(TRUE);
+		infix("3 != 3").expectResult(FALSE);
+		infix("3 <= 3").expectResult(TRUE);
 
-		infix("3 <=> 3").expectResult(i(0)).expectEmptyStack();
-		infix("2 <=> 3").expectResult(i(-1)).expectEmptyStack();
-		infix("3 <=> 2").expectResult(i(+1)).expectEmptyStack();
+		infix("3 <=> 3").expectResult(i(0));
+		infix("2 <=> 3").expectResult(i(-1));
+		infix("3 <=> 2").expectResult(i(+1));
 	}
 
 	@Test
 	public void testEquals() {
-		infix("2 == 2").expectResult(b(true)).expectEmptyStack();
-		infix("null == null").expectResult(b(true)).expectEmptyStack();
-		infix("2 == null").expectResult(b(false)).expectEmptyStack();
+		infix("2 == 2").expectResult(b(true));
+		infix("null == null").expectResult(b(true));
+		infix("2 == null").expectResult(b(false));
 
-		infix("2 != null").expectResult(b(true)).expectEmptyStack();
-		infix("null != 2").expectResult(b(true)).expectEmptyStack();
-		infix("null != null").expectResult(b(false)).expectEmptyStack();
+		infix("2 != null").expectResult(b(true));
+		infix("null != 2").expectResult(b(true));
+		infix("null != null").expectResult(b(false));
 	}
 
 	@Test
 	public void testBasicOrdering() {
-		infix("1 + 2 - 3").expectResult(i(0)).expectEmptyStack();
+		infix("1 + 2 - 3").expectResult(i(0));
 
-		infix("1 + 2 * 3").expectResult(i(7)).expectEmptyStack();
-		infix("1 + (2 * 3)").expectResult(i(7)).expectEmptyStack();
-		infix("(1 + 2) * 3").expectResult(i(9)).expectEmptyStack();
-		infix("-(1 + 2) * 3").expectResult(i(-9)).expectEmptyStack();
-		infix("(1 + 2) * -3").expectResult(i(-9)).expectEmptyStack();
-		infix("--3").expectResult(i(3)).expectEmptyStack();
+		infix("1 + 2 * 3").expectResult(i(7));
+		infix("1 + (2 * 3)").expectResult(i(7));
+		infix("(1 + 2) * 3").expectResult(i(9));
+		infix("-(1 + 2) * 3").expectResult(i(-9));
+		infix("(1 + 2) * -3").expectResult(i(-9));
+		infix("--3").expectResult(i(3));
 
-		infix("2 * 2 ** 2").expectResult(i(8)).expectEmptyStack();
-		infix("2 * (2 ** 2)").expectResult(i(8)).expectEmptyStack();
-		infix("(2 * 2) ** 2").expectResult(i(16)).expectEmptyStack();
+		infix("2 * 2 ** 2").expectResult(i(8));
+		infix("2 * (2 ** 2)").expectResult(i(8));
+		infix("(2 * 2) ** 2").expectResult(i(16));
 
-		infix("2 == 4 || 5 <= 6").expectResult(TRUE).expectEmptyStack();
-		infix("2 << 3 + 1").expectResult(i(32)).expectEmptyStack();
+		infix("2 == 4 || 5 <= 6").expectResult(TRUE);
+		infix("2 << 3 + 1").expectResult(i(32));
 	}
 
 	@Test
 	public void testTypeFunctions() {
-		infix("issymbol(#test)").expectResult(b(true)).expectEmptyStack();
-		infix("issymbol(#+)").expectResult(b(true)).expectEmptyStack();
-		infix("issymbol(#2)").expectResult(b(false)).expectEmptyStack();
+		infix("issymbol(#test)").expectResult(b(true));
+		infix("issymbol(#+)").expectResult(b(true));
+		infix("issymbol(#2)").expectResult(b(false));
 
-		infix("type(null)").expectResult(s("<null>")).expectEmptyStack();
-		infix("type(true)").expectResult(s("bool")).expectEmptyStack();
-		infix("type(5)").expectResult(s("int")).expectEmptyStack();
-		infix("type(5.0)").expectResult(s("float")).expectEmptyStack();
-		infix("type('a')").expectResult(s("str")).expectEmptyStack();
-		infix("type(I)").expectResult(s("complex")).expectEmptyStack();
-		infix("type(2 + 3I)").expectResult(s("complex")).expectEmptyStack();
-		infix("type(2 + 3*I)").expectResult(s("complex")).expectEmptyStack();
+		infix("type(null)").expectResult(s("<null>"));
+		infix("type(true)").expectResult(s("bool"));
+		infix("type(5)").expectResult(s("int"));
+		infix("type(5.0)").expectResult(s("float"));
+		infix("type('a')").expectResult(s("str"));
+		infix("type(I)").expectResult(s("complex"));
+		infix("type(2 + 3I)").expectResult(s("complex"));
+		infix("type(2 + 3*I)").expectResult(s("complex"));
 
-		infix("isint(null)").expectResult(b(false)).expectEmptyStack();
-		infix("isint(true)").expectResult(b(false)).expectEmptyStack();
-		infix("isint(5)").expectResult(b(true)).expectEmptyStack();
-		infix("isint(5.0)").expectResult(b(false)).expectEmptyStack();
-		infix("isint('hello')").expectResult(b(false)).expectEmptyStack();
-		infix("isint('I')").expectResult(b(false)).expectEmptyStack();
-		infix("isint(#2)").expectResult(b(true)).expectEmptyStack();
+		infix("isint(null)").expectResult(b(false));
+		infix("isint(true)").expectResult(b(false));
+		infix("isint(5)").expectResult(b(true));
+		infix("isint(5.0)").expectResult(b(false));
+		infix("isint('hello')").expectResult(b(false));
+		infix("isint('I')").expectResult(b(false));
+		infix("isint(#2)").expectResult(b(true));
 
-		infix("iscomplex(1)").expectResult(b(false)).expectEmptyStack();
-		infix("iscomplex(I)").expectResult(b(true)).expectEmptyStack();
-		infix("iscomplex(1 + I)").expectResult(b(true)).expectEmptyStack();
+		infix("iscomplex(1)").expectResult(b(false));
+		infix("iscomplex(I)").expectResult(b(true));
+		infix("iscomplex(1 + I)").expectResult(b(true));
 
-		infix("isnumber(null)").expectResult(b(false)).expectEmptyStack();
-		infix("isnumber(true)").expectResult(b(true)).expectEmptyStack();
-		infix("isnumber(5)").expectResult(b(true)).expectEmptyStack();
-		infix("isnumber(5.0)").expectResult(b(true)).expectEmptyStack();
-		infix("isnumber(I)").expectResult(b(true)).expectEmptyStack();
-		infix("isnumber(3 + 4I)").expectResult(b(true)).expectEmptyStack();
-		infix("isnumber('hello')").expectResult(b(false)).expectEmptyStack();
+		infix("isnumber(null)").expectResult(b(false));
+		infix("isnumber(true)").expectResult(b(true));
+		infix("isnumber(5)").expectResult(b(true));
+		infix("isnumber(5.0)").expectResult(b(true));
+		infix("isnumber(I)").expectResult(b(true));
+		infix("isnumber(3 + 4I)").expectResult(b(true));
+		infix("isnumber('hello')").expectResult(b(false));
 
-		infix("int(true)").expectResult(i(1)).expectEmptyStack();
-		infix("int(5)").expectResult(i(5)).expectEmptyStack();
-		infix("int(5.2)").expectResult(i(5)).expectEmptyStack();
-		infix("int('6')").expectResult(i(6)).expectEmptyStack();
-		infix("int('29A', 16)").expectResult(i(666)).expectEmptyStack();
+		infix("int(true)").expectResult(i(1));
+		infix("int(5)").expectResult(i(5));
+		infix("int(5.2)").expectResult(i(5));
+		infix("int('6')").expectResult(i(6));
+		infix("int('29A', 16)").expectResult(i(666));
 
-		infix("float(true)").expectResult(d(1)).expectEmptyStack();
-		infix("float(5)").expectResult(d(5)).expectEmptyStack();
-		infix("float(5.2)").expectResult(d(5.2)).expectEmptyStack();
-		infix("float('6.1')").expectResult(d(6.1)).expectEmptyStack();
-		infix("float('29A.1', 16)").expectResult(d(666.0625)).expectEmptyStack();
+		infix("float(true)").expectResult(d(1));
+		infix("float(5)").expectResult(d(5));
+		infix("float(5.2)").expectResult(d(5.2));
+		infix("float('6.1')").expectResult(d(6.1));
+		infix("float('29A.1', 16)").expectResult(d(666.0625));
 
-		infix("number(true)").expectResult(b(true)).expectEmptyStack();
-		infix("number(5)").expectResult(i(5)).expectEmptyStack();
-		infix("number(5.2)").expectResult(d(5.2)).expectEmptyStack();
-		infix("number('6')").expectResult(i(6)).expectEmptyStack();
-		infix("number('6.1')").expectResult(d(6.1)).expectEmptyStack();
-		infix("number('29A', 16)").expectResult(i(666)).expectEmptyStack();
-		infix("number('29A.1', 16)").expectResult(d(666.0625)).expectEmptyStack();
-		infix("number(3I)").expectResult(c(0, 3)).expectEmptyStack();
-		infix("number(3 + 4I)").expectResult(c(3, 4)).expectEmptyStack();
+		infix("number(true)").expectResult(b(true));
+		infix("number(5)").expectResult(i(5));
+		infix("number(5.2)").expectResult(d(5.2));
+		infix("number('6')").expectResult(i(6));
+		infix("number('6.1')").expectResult(d(6.1));
+		infix("number('29A', 16)").expectResult(i(666));
+		infix("number('29A.1', 16)").expectResult(d(666.0625));
+		infix("number(3I)").expectResult(c(0, 3));
+		infix("number(3 + 4I)").expectResult(c(3, 4));
 
-		infix("bool(true)").expectResult(b(true)).expectEmptyStack();
-		infix("bool(5)").expectResult(b(true)).expectEmptyStack();
-		infix("bool(0)").expectResult(b(false)).expectEmptyStack();
-		infix("bool(I)").expectResult(b(true)).expectEmptyStack();
-		infix("bool(0I)").expectResult(b(false)).expectEmptyStack();
-		infix("bool('')").expectResult(b(false)).expectEmptyStack();
-		infix("bool('a')").expectResult(b(true)).expectEmptyStack();
-		infix("bool(null)").expectResult(b(false)).expectEmptyStack();
+		infix("bool(true)").expectResult(b(true));
+		infix("bool(5)").expectResult(b(true));
+		infix("bool(0)").expectResult(b(false));
+		infix("bool(I)").expectResult(b(true));
+		infix("bool(0I)").expectResult(b(false));
+		infix("bool('')").expectResult(b(false));
+		infix("bool('a')").expectResult(b(true));
+		infix("bool(null)").expectResult(b(false));
 
-		infix("str(true)").expectResult(s("true")).expectEmptyStack();
-		infix("str(5)").expectResult(s("5")).expectEmptyStack();
-		infix("str(5.2)").expectResult(s("5.2")).expectEmptyStack();
-		infix("str('aaa')").expectResult(s("aaa")).expectEmptyStack();
-		infix("str(I)").expectResult(s("0.0+1.0I")).expectEmptyStack();
-		infix("str(3 + 4I)").expectResult(s("3.0+4.0I")).expectEmptyStack();
+		infix("str(true)").expectResult(s("true"));
+		infix("str(5)").expectResult(s("5"));
+		infix("str(5.2)").expectResult(s("5.2"));
+		infix("str('aaa')").expectResult(s("aaa"));
+		infix("str(I)").expectResult(s("0.0+1.0I"));
+		infix("str(3 + 4I)").expectResult(s("3.0+4.0I"));
 
-		infix("parse('\"aaa\"')").expectResult(s("aaa")).expectEmptyStack();
-		infix("parse('0x29A')").expectResult(i(666)).expectEmptyStack();
-		infix("parse('0x29A.1')").expectResult(d(666.0625)).expectEmptyStack();
-		infix("parse('100#10')").expectResult(i(100)).expectEmptyStack();
+		infix("parse('\"aaa\"')").expectResult(s("aaa"));
+		infix("parse('0x29A')").expectResult(i(666));
+		infix("parse('0x29A.1')").expectResult(d(666.0625));
+		infix("parse('100#10')").expectResult(i(100));
 	}
 
 	@Test
 	public void testArithmeticFunctions() {
-		infix("isnan(NAN)").expectResult(b(true)).expectEmptyStack();
-		infix("isnan(5)").expectResult(b(false)).expectEmptyStack();
+		infix("isnan(NAN)").expectResult(b(true));
+		infix("isnan(5)").expectResult(b(false));
 
-		infix("isinf(INF)").expectResult(b(true)).expectEmptyStack();
-		infix("isinf(-INF)").expectResult(b(true)).expectEmptyStack();
-		infix("isnan(4)").expectResult(b(false)).expectEmptyStack();
+		infix("isinf(INF)").expectResult(b(true));
+		infix("isinf(-INF)").expectResult(b(true));
+		infix("isnan(4)").expectResult(b(false));
 
-		infix("ceil(true)").expectResult(b(true)).expectEmptyStack();
-		infix("ceil(2)").expectResult(i(2)).expectEmptyStack();
-		infix("ceil(2.0)").expectResult(d(2)).expectEmptyStack();
-		infix("ceil(2.4)").expectResult(d(3)).expectEmptyStack();
+		infix("ceil(true)").expectResult(b(true));
+		infix("ceil(2)").expectResult(i(2));
+		infix("ceil(2.0)").expectResult(d(2));
+		infix("ceil(2.4)").expectResult(d(3));
 
-		infix("abs(true)").expectResult(b(true)).expectEmptyStack();
-		infix("abs(-2)").expectResult(i(2)).expectEmptyStack();
-		infix("abs(+2)").expectResult(i(2)).expectEmptyStack();
-		infix("abs(2.0)").expectResult(d(2)).expectEmptyStack();
-		infix("abs(-2.4)").expectResult(d(2.4)).expectEmptyStack();
-		infix("abs(3+4I)").expectResult(d(5)).expectEmptyStack();
+		infix("abs(true)").expectResult(b(true));
+		infix("abs(-2)").expectResult(i(2));
+		infix("abs(+2)").expectResult(i(2));
+		infix("abs(2.0)").expectResult(d(2));
+		infix("abs(-2.4)").expectResult(d(2.4));
+		infix("abs(3+4I)").expectResult(d(5));
 
-		infix("exp(false)").expectResult(d(1.0)).expectEmptyStack();
-		// infix("exp(true)").expectResult(d(Math.E)).expectEmptyStack();
-		// infix("exp(1)").expectResult(d(Math.E)).expectEmptyStack();
+		infix("exp(false)").expectResult(d(1.0));
+		// infix("exp(true)").expectResult(d(Math.E));
+		// infix("exp(1)").expectResult(d(Math.E));
 
-		// infix("ln(I)").expectResult(c(0, Math.PI / 2)).expectEmptyStack();
+		// infix("ln(I)").expectResult(c(0, Math.PI / 2));
 
-		infix("log(true)").expectResult(d(0)).expectEmptyStack();
-		infix("log(1)").expectResult(d(0)).expectEmptyStack();
-		infix("log(1.0)").expectResult(d(0)).expectEmptyStack();
-		infix("log(10)").expectResult(d(1)).expectEmptyStack();
-		infix("log(100)").expectResult(d(2)).expectEmptyStack();
-		infix("log(E, E)").expectResult(d(1)).expectEmptyStack();
-		infix("log(2, E) == ln(2)").expectResult(b(true)).expectEmptyStack();
+		infix("log(true)").expectResult(d(0));
+		infix("log(1)").expectResult(d(0));
+		infix("log(1.0)").expectResult(d(0));
+		infix("log(10)").expectResult(d(1));
+		infix("log(100)").expectResult(d(2));
+		infix("log(E, E)").expectResult(d(1));
+		infix("log(2, E) == ln(2)").expectResult(b(true));
 	}
 
 	@Test
@@ -389,175 +386,175 @@ public class TypedValueCalculatorTest {
 		}
 
 		sut.environment.setGlobalSymbol("root", Constant.create(sut.environment.nullValue().domain.create(IComposite.class, new TestComposite())));
-		infix("type(root)=='object'").expectResult(b(true)).expectEmptyStack();
-		infix("isobject(root)").expectResult(b(true)).expectEmptyStack();
-		infix("bool(root)").expectResult(b(true)).expectEmptyStack();
-		infix("root.path").expectResult(s("")).expectEmptyStack();
+		infix("type(root)=='object'").expectResult(b(true));
+		infix("isobject(root)").expectResult(b(true));
+		infix("bool(root)").expectResult(b(true));
+		infix("root.path").expectResult(s(""));
 
-		prefix("(== (type root) 'object')").expectResult(b(true)).expectEmptyStack();
-		prefix("(isobject root)").expectResult(b(true)).expectEmptyStack();
-		prefix("(. root path)").expectResult(s("")).expectEmptyStack();
+		prefix("(== (type root) 'object')").expectResult(b(true));
+		prefix("(isobject root)").expectResult(b(true));
+		prefix("(. root path)").expectResult(s(""));
 
-		infix("isobject(root.a)").expectResult(b(true)).expectEmptyStack();
-		infix("root.a.path").expectResult(s("a")).expectEmptyStack();
-		prefix("(. root a path)").expectResult(s("a")).expectEmptyStack();
+		infix("isobject(root.a)").expectResult(b(true));
+		infix("root.a.path").expectResult(s("a"));
+		prefix("(. root a path)").expectResult(s("a"));
 
-		infix("isobject(root.a.b)").expectResult(b(true)).expectEmptyStack();
-		infix("root.a.b.path").expectResult(s("a/b")).expectEmptyStack();
+		infix("isobject(root.a.b)").expectResult(b(true));
+		infix("root.a.b.path").expectResult(s("a/b"));
 
-		infix("root.'a'.path").expectResult(s("a")).expectEmptyStack();
-		prefix("(. root 'a' path)").expectResult(s("a")).expectEmptyStack();
+		infix("root.'a'.path").expectResult(s("a"));
+		prefix("(. root 'a' path)").expectResult(s("a"));
 
-		infix("root.('a').path").expectResult(s("a")).expectEmptyStack();
+		infix("root.('a').path").expectResult(s("a"));
 
-		infix("(root.a).b.path").expectResult(s("a/b")).expectEmptyStack();
-		prefix("(. (. root a) b path)").expectResult(s("a/b")).expectEmptyStack();
+		infix("(root.a).b.path").expectResult(s("a/b"));
+		prefix("(. (. root a) b path)").expectResult(s("a/b"));
 	}
 
 	@Test
 	public void testInfixFunctions() {
-		infix("max(true, 2, 3.0)").expectResult(d(3)).expectEmptyStack();
+		infix("max(true, 2, 3.0)").expectResult(d(3));
 
-		infix("min(true, 2, 3.0)").expectResult(b(true)).expectEmptyStack();
+		infix("min(true, 2, 3.0)").expectResult(b(true));
 
-		infix("sum(1, 2.0, 3)").expectResult(d(6.0)).expectEmptyStack();
-		infix("sum('a', 'b', 'c')").expectResult(s("abc")).expectEmptyStack();
+		infix("sum(1, 2.0, 3)").expectResult(d(6.0));
+		infix("sum('a', 'b', 'c')").expectResult(s("abc"));
 
-		infix("avg(1, 2, 3)").expectResult(d(2.0)).expectEmptyStack();
+		infix("avg(1, 2, 3)").expectResult(d(2.0));
 	}
 
 	@Test
 	public void testPrefixModifierQuotes() {
-		prefix("#()").expectResult(nil()).expectEmptyStack();
-		prefix("#2").expectResult(i(2)).expectEmptyStack();
-		prefix("#'hello'").expectResult(s("hello")).expectEmptyStack();
-		prefix("#(1)").expectResult(cons(i(1), nil())).expectEmptyStack();
-		prefix("#(1 2)").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+		prefix("#()").expectResult(nil());
+		prefix("#2").expectResult(i(2));
+		prefix("#'hello'").expectResult(s("hello"));
+		prefix("#(1)").expectResult(cons(i(1), nil()));
+		prefix("#(1 2)").expectResult(cons(i(1), cons(i(2), nil())));
 	}
 
 	@Test
 	public void testInfixModifierQuotes() {
-		infix("#()").expectResult(nil()).expectEmptyStack();
-		infix("#2").expectResult(i(2)).expectEmptyStack();
-		infix("#'hello'").expectResult(s("hello")).expectEmptyStack();
-		infix("#(1)").expectResult(cons(i(1), nil())).expectEmptyStack();
-		infix("#(1 2)").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+		infix("#()").expectResult(nil());
+		infix("#2").expectResult(i(2));
+		infix("#'hello'").expectResult(s("hello"));
+		infix("#(1)").expectResult(cons(i(1), nil()));
+		infix("#(1 2)").expectResult(cons(i(1), cons(i(2), nil())));
 	}
 
 	@Test
 	public void testPrefixSymbolQuotes() {
-		prefix("(quote ())").expectResult(nil()).expectEmptyStack();
-		prefix("(quote 2)").expectResult(i(2)).expectEmptyStack();
-		prefix("(quote 'hello')").expectResult(s("hello")).expectEmptyStack();
-		prefix("(quote (1))").expectResult(cons(i(1), nil())).expectEmptyStack();
-		prefix("(quote (1 2))").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+		prefix("(quote ())").expectResult(nil());
+		prefix("(quote 2)").expectResult(i(2));
+		prefix("(quote 'hello')").expectResult(s("hello"));
+		prefix("(quote (1))").expectResult(cons(i(1), nil()));
+		prefix("(quote (1 2))").expectResult(cons(i(1), cons(i(2), nil())));
 	}
 
 	@Test
 	public void testInfixSymbolQuotes() {
-		infix("quote(())").expectResult(nil()).expectEmptyStack();
-		infix("quote(2)").expectResult(i(2)).expectEmptyStack();
-		infix("quote('hello')").expectResult(s("hello")).expectEmptyStack();
-		infix("quote((1))").expectResult(cons(i(1), nil())).expectEmptyStack();
-		infix("quote((1 2))").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+		infix("quote(())").expectResult(nil());
+		infix("quote(2)").expectResult(i(2));
+		infix("quote('hello')").expectResult(s("hello"));
+		infix("quote((1))").expectResult(cons(i(1), nil()));
+		infix("quote((1 2))").expectResult(cons(i(1), cons(i(2), nil())));
 	}
 
 	@Test
 	public void testCommaWhitespaceInQuotes() {
-		prefix("#(1,2)").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
-		prefix("(quote (1,2))").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
-		infix("quote((1,2))").expectResult(cons(i(1), cons(i(2), nil()))).expectEmptyStack();
+		prefix("#(1,2)").expectResult(cons(i(1), cons(i(2), nil())));
+		prefix("(quote (1,2))").expectResult(cons(i(1), cons(i(2), nil())));
+		infix("quote((1,2))").expectResult(cons(i(1), cons(i(2), nil())));
 	}
 
 	@Test
 	public void testPostfixQuotes() {
-		postfix("#a").expectResult(sym("a")).expectEmptyStack();
-		postfix("# a").expectResult(sym("a")).expectEmptyStack();
-		postfix("#a issymbol").expectResult(b(true)).expectEmptyStack();
-		postfix("#abc 'abc' symbol ==").expectResult(b(true)).expectEmptyStack();
+		postfix("#a").expectResult(sym("a"));
+		postfix("# a").expectResult(sym("a"));
+		postfix("#a issymbol").expectResult(b(true));
+		postfix("#abc 'abc' symbol ==").expectResult(b(true));
 
-		postfix("#+").expectResult(sym("+")).expectEmptyStack();
-		postfix("# +").expectResult(sym("+")).expectEmptyStack();
+		postfix("#+").expectResult(sym("+"));
+		postfix("# +").expectResult(sym("+"));
 	}
 
 	@Test
 	public void testPrefixModifierQuotesWithSpecialTokens() {
-		prefix("#+").expectResult(sym("+")).expectEmptyStack();
-		prefix("#test").expectResult(sym("test")).expectEmptyStack();
-		prefix("#(max)").expectResult(cons(sym("max"), nil())).expectEmptyStack();
-		prefix("#(+)").expectResult(cons(sym("+"), nil())).expectEmptyStack();
-		prefix("#(1 + max)").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil())))).expectEmptyStack();
+		prefix("#+").expectResult(sym("+"));
+		prefix("#test").expectResult(sym("test"));
+		prefix("#(max)").expectResult(cons(sym("max"), nil()));
+		prefix("#(+)").expectResult(cons(sym("+"), nil()));
+		prefix("#(1 + max)").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil()))));
 	}
 
 	@Test
 	public void testInfixModifierQuotesWithSpecialTokens() {
-		infix("#+").expectResult(sym("+")).expectEmptyStack();
-		infix("#test").expectResult(sym("test")).expectEmptyStack();
-		infix("#(max)").expectResult(cons(sym("max"), nil())).expectEmptyStack();
-		infix("#(+)").expectResult(cons(sym("+"), nil())).expectEmptyStack();
-		infix("#(1 + max)").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil())))).expectEmptyStack();
+		infix("#+").expectResult(sym("+"));
+		infix("#test").expectResult(sym("test"));
+		infix("#(max)").expectResult(cons(sym("max"), nil()));
+		infix("#(+)").expectResult(cons(sym("+"), nil()));
+		infix("#(1 + max)").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil()))));
 	}
 
 	@Test
 	public void testPrefixSymbolQuotesWithSpecialTokens() {
-		prefix("(quote +)").expectResult(sym("+")).expectEmptyStack();
-		prefix("(quote test)").expectResult(sym("test")).expectEmptyStack();
-		prefix("(quote (max))").expectResult(cons(sym("max"), nil())).expectEmptyStack();
-		prefix("(quote (+))").expectResult(cons(sym("+"), nil())).expectEmptyStack();
-		prefix("(quote (1 + max))").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil())))).expectEmptyStack();
+		prefix("(quote +)").expectResult(sym("+"));
+		prefix("(quote test)").expectResult(sym("test"));
+		prefix("(quote (max))").expectResult(cons(sym("max"), nil()));
+		prefix("(quote (+))").expectResult(cons(sym("+"), nil()));
+		prefix("(quote (1 + max))").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil()))));
 	}
 
 	@Test
 	public void testInfixSymbolQuotesWithSpecialTokens() {
-		infix("quote(+)").expectResult(sym("+")).expectEmptyStack();
-		infix("quote(test)").expectResult(sym("test")).expectEmptyStack();
-		infix("quote((max))").expectResult(cons(sym("max"), nil())).expectEmptyStack();
-		infix("quote((+))").expectResult(cons(sym("+"), nil())).expectEmptyStack();
-		infix("quote((1 + max))").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil())))).expectEmptyStack();
+		infix("quote(+)").expectResult(sym("+"));
+		infix("quote(test)").expectResult(sym("test"));
+		infix("quote((max))").expectResult(cons(sym("max"), nil()));
+		infix("quote((+))").expectResult(cons(sym("+"), nil()));
+		infix("quote((1 + max))").expectResult(cons(i(1), cons(sym("+"), cons(sym("max"), nil()))));
 	}
 
 	@Test
 	public void testPrefixNestedModifierQuotes() {
-		prefix("#(())").expectResult(cons(nil(), nil())).expectEmptyStack();
-		prefix("#((1))").expectResult(cons(cons(i(1), nil()), nil())).expectEmptyStack();
-		prefix("#((1), 2)").expectResult(cons(cons(i(1), nil()), cons(i(2), nil()))).expectEmptyStack();
-		prefix("#(1 (2))").expectResult(cons(i(1), cons(cons(i(2), nil()), nil()))).expectEmptyStack();
+		prefix("#(())").expectResult(cons(nil(), nil()));
+		prefix("#((1))").expectResult(cons(cons(i(1), nil()), nil()));
+		prefix("#((1), 2)").expectResult(cons(cons(i(1), nil()), cons(i(2), nil())));
+		prefix("#(1 (2))").expectResult(cons(i(1), cons(cons(i(2), nil()), nil())));
 	}
 
 	@Test
 	public void testInfixNestedModifierQuotes() {
-		infix("#(())").expectResult(cons(nil(), nil())).expectEmptyStack();
-		infix("#((1))").expectResult(cons(cons(i(1), nil()), nil())).expectEmptyStack();
-		infix("#((1), 2)").expectResult(cons(cons(i(1), nil()), cons(i(2), nil()))).expectEmptyStack();
-		infix("#(1 (2))").expectResult(cons(i(1), cons(cons(i(2), nil()), nil()))).expectEmptyStack();
+		infix("#(())").expectResult(cons(nil(), nil()));
+		infix("#((1))").expectResult(cons(cons(i(1), nil()), nil()));
+		infix("#((1), 2)").expectResult(cons(cons(i(1), nil()), cons(i(2), nil())));
+		infix("#(1 (2))").expectResult(cons(i(1), cons(cons(i(2), nil()), nil())));
 	}
 
 	@Test
 	public void testPrefixDottedModifierQuotes() {
-		prefix("#(3 ... ())").expectResult(cons(i(3), nil())).expectEmptyStack();
-		prefix("#(3 ... 2)").expectResult(cons(i(3), i(2))).expectEmptyStack();
-		prefix("#(3 ... (2 ... 1))").expectResult(cons(i(3), cons(i(2), i(1)))).expectEmptyStack();
+		prefix("#(3 ... ())").expectResult(cons(i(3), nil()));
+		prefix("#(3 ... 2)").expectResult(cons(i(3), i(2)));
+		prefix("#(3 ... (2 ... 1))").expectResult(cons(i(3), cons(i(2), i(1))));
 	}
 
 	@Test
 	public void testPrefixDottedSymbolQuotes() {
-		prefix("(quote (3 ... ()))").expectResult(cons(i(3), nil())).expectEmptyStack();
-		prefix("(quote (3 ... 2))").expectResult(cons(i(3), i(2))).expectEmptyStack();
-		prefix("(quote (3 ... (2 ... 1)))").expectResult(cons(i(3), cons(i(2), i(1)))).expectEmptyStack();
+		prefix("(quote (3 ... ()))").expectResult(cons(i(3), nil()));
+		prefix("(quote (3 ... 2))").expectResult(cons(i(3), i(2)));
+		prefix("(quote (3 ... (2 ... 1)))").expectResult(cons(i(3), cons(i(2), i(1))));
 	}
 
 	@Test
 	public void testInfixDottedModifierQuotes() {
-		infix("#(3 ... ())").expectResult(cons(i(3), nil())).expectEmptyStack();
-		infix("#(3 ... 2)").expectResult(cons(i(3), i(2))).expectEmptyStack();
-		infix("#(3 ... (2 ... 1))").expectResult(cons(i(3), cons(i(2), i(1)))).expectEmptyStack();
+		infix("#(3 ... ())").expectResult(cons(i(3), nil()));
+		infix("#(3 ... 2)").expectResult(cons(i(3), i(2)));
+		infix("#(3 ... (2 ... 1))").expectResult(cons(i(3), cons(i(2), i(1))));
 	}
 
 	@Test
 	public void testInfixDottedSymbolQuotes() {
-		infix("quote((3 ... ()))").expectResult(cons(i(3), nil())).expectEmptyStack();
-		infix("quote((3 ... 2))").expectResult(cons(i(3), i(2))).expectEmptyStack();
-		infix("quote((3 ... (2 ... 1)))").expectResult(cons(i(3), cons(i(2), i(1)))).expectEmptyStack();
+		infix("quote((3 ... ()))").expectResult(cons(i(3), nil()));
+		infix("quote((3 ... 2))").expectResult(cons(i(3), i(2)));
+		infix("quote((3 ... (2 ... 1)))").expectResult(cons(i(3), cons(i(2), i(1))));
 	}
 
 	@Test
@@ -586,53 +583,53 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testListFunctions() {
-		infix("list()").expectResult(nil()).expectEmptyStack();
-		infix("list(1,2,3)").expectResult(cons(i(1), cons(i(2), cons(i(3), nil())))).expectEmptyStack();
-		infix("iscons(list(1,2,3))").expectResult(b(true)).expectEmptyStack();
-		infix("list(1,2,3) == cons(1, cons(2, cons(3, null)))").expectResult(b(true)).expectEmptyStack();
+		infix("list()").expectResult(nil());
+		infix("list(1,2,3)").expectResult(cons(i(1), cons(i(2), cons(i(3), nil()))));
+		infix("iscons(list(1,2,3))").expectResult(b(true));
+		infix("list(1,2,3) == cons(1, cons(2, cons(3, null)))").expectResult(b(true));
 		prefix("(== (list 1,2,3) #(1 2 3))").expectResult(b(true));
-		infix("car(cons(1, 2))").expectResult(i(1)).expectEmptyStack();
-		infix("cdr(cons(1, 2))").expectResult(i(2)).expectEmptyStack();
+		infix("car(cons(1, 2))").expectResult(i(1));
+		infix("cdr(cons(1, 2))").expectResult(i(2));
 	}
 
 	@Test
 	public void testLengthFunction() {
-		infix("len('')").expectResult(i(0)).expectEmptyStack();
-		infix("len('a')").expectResult(i(1)).expectEmptyStack();
-		infix("len('ab')").expectResult(i(2)).expectEmptyStack();
+		infix("len('')").expectResult(i(0));
+		infix("len('a')").expectResult(i(1));
+		infix("len('ab')").expectResult(i(2));
 
-		infix("len(list())").expectResult(i(0)).expectEmptyStack();
-		infix("len(list(1))").expectResult(i(1)).expectEmptyStack();
-		infix("len(list(1,2))").expectResult(i(2)).expectEmptyStack();
+		infix("len(list())").expectResult(i(0));
+		infix("len(list(1))").expectResult(i(1));
+		infix("len(list(1,2))").expectResult(i(2));
 	}
 
 	@Test
 	public void testSymbols() {
-		prefix("(== #test # test)").expectResult(b(true)).expectEmptyStack();
-		prefix("(== #a # b)").expectResult(b(false)).expectEmptyStack();
-		prefix("(str #test)").expectResult(s("test")).expectEmptyStack();
-		prefix("(str #+)").expectResult(s("+")).expectEmptyStack();
+		prefix("(== #test # test)").expectResult(b(true));
+		prefix("(== #a # b)").expectResult(b(false));
+		prefix("(str #test)").expectResult(s("test"));
+		prefix("(str #+)").expectResult(s("+"));
 	}
 
 	@Test
 	public void testParserSwitch() {
-		infix("2 + prefix(5)").expectResult(i(7)).expectEmptyStack();
-		infix("2 + prefix((+ 5 6))").expectResult(i(13)).expectEmptyStack();
+		infix("2 + prefix(5)").expectResult(i(7));
+		infix("2 + prefix((+ 5 6))").expectResult(i(13));
 
-		prefix("(+ 2 (infix 5))").expectResult(i(7)).expectEmptyStack();
-		prefix("(+ 2 (infix 5 + 6))").expectResult(i(13)).expectEmptyStack();
+		prefix("(+ 2 (infix 5))").expectResult(i(7));
+		prefix("(+ 2 (infix 5 + 6))").expectResult(i(13));
 	}
 
 	@Test
 	public void testNestedParserSwitch() {
-		infix("infix(5 + 2)").expectResult(i(7)).expectEmptyStack();
-		infix("infix(infix(5 + 2))").expectResult(i(7)).expectEmptyStack();
+		infix("infix(5 + 2)").expectResult(i(7));
+		infix("infix(infix(5 + 2))").expectResult(i(7));
 
-		prefix("(prefix (+ 2 5))").expectResult(i(7)).expectEmptyStack();
-		prefix("(prefix (prefix (+ 2 5)))").expectResult(i(7)).expectEmptyStack();
+		prefix("(prefix (+ 2 5))").expectResult(i(7));
+		prefix("(prefix (prefix (+ 2 5)))").expectResult(i(7));
 
-		infix("prefix((infix 2 + 5))").expectResult(i(7)).expectEmptyStack();
-		prefix("(infix prefix((+ 2 5)))").expectResult(i(7)).expectEmptyStack();
+		infix("prefix((infix 2 + 5))").expectResult(i(7));
+		prefix("(infix prefix((+ 2 5)))").expectResult(i(7));
 	}
 
 	@Test(expected = Exception.class)
@@ -647,14 +644,14 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testConsOperator() {
-		infix("1:2").expectResult(cons(i(1), i(2))).expectEmptyStack();
-		infix("true:'2':3").expectResult(cons(b(true), cons(s("2"), i(3)))).expectEmptyStack();
+		infix("1:2").expectResult(cons(i(1), i(2)));
+		infix("true:'2':3").expectResult(cons(b(true), cons(s("2"), i(3))));
 
-		infix("1:2:3:null == list(1,2,3)").expectResult(b(true)).expectEmptyStack();
-		prefix("(== (: 1 2 3 null) (list 1 2 3))").expectResult(b(true)).expectEmptyStack();
+		infix("1:2:3:null == list(1,2,3)").expectResult(b(true));
+		prefix("(== (: 1 2 3 null) (list 1 2 3))").expectResult(b(true));
 
-		infix("1:2:3:4 == #(1 2 3 ... 4)").expectResult(b(true)).expectEmptyStack();
-		prefix("(== (: 1 2 3 4) #(1 2 3 ... 4))").expectResult(b(true)).expectEmptyStack();
+		infix("1:2:3:4 == #(1 2 3 ... 4)").expectResult(b(true));
+		prefix("(== (: 1 2 3 4) #(1 2 3 ... 4))").expectResult(b(true));
 	}
 
 	@Test
@@ -672,20 +669,12 @@ public class TypedValueCalculatorTest {
 		stub.checkCallCount(1);
 	}
 
-	private static final Acceptor<TypedValue> CHECK_IS_CODE = new Acceptor<TypedValue>() {
-		@Override
-		public void accept(TypedValue value) {
-			Assert.assertTrue(value.is(Code.class));
-		}
-	};
-
 	@Test
 	public void testCodeParsingInPostfixParser() {
-		postfix("{ 1 2 +} iscode").expectResult(b(true)).expectEmptyStack();
-		postfix("{ 1 2 +}").executeAndCall(CHECK_IS_CODE).expectEmptyStack();
+		postfix("{ 1 2 +} iscode").expectResult(b(true));
 
-		postfix("{ 1 2 +} execute").expectResult(i(3)).expectEmptyStack();
-		postfix("{ 1 2 +} execute@1,1").expectResult(i(3)).expectEmptyStack();
+		postfix("{ 1 2 +} execute").expectResult(i(3));
+		postfix("{ 1 2 +} execute@1,1").expectResult(i(3));
 
 		postfix("{ 1 2 + 3 4 -} execute").expectResults(i(3), i(-1));
 		postfix("{ 1 2 + 3 4 -} execute@1,2").expectResults(i(3), i(-1));
@@ -693,11 +682,8 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testCodeSymbol() {
-		infix("code(2 + 3)").executeAndCall(CHECK_IS_CODE).expectEmptyStack();
-		infix("iscode(code(2 + 3))").expectResult(b(true)).expectEmptyStack();
-
-		prefix("(code (+ 2 3))").executeAndCall(CHECK_IS_CODE).expectEmptyStack();
-		infix("(iscode (code (+ 2 3)))").expectResult(b(true)).expectEmptyStack();
+		infix("iscode(code(2 + 3))").expectResult(b(true));
+		infix("(iscode (code (+ 2 3)))").expectResult(b(true));
 
 		infix("execute(code(2 + 3))").expectResult(i(5));
 		prefix("(execute (code (+ 2 3)))").expectResult(i(5));
@@ -705,17 +691,17 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testIfExpression() {
-		infix("if(true, 2, 3)").expectResult(i(2)).expectEmptyStack();
-		infix("if(false, 2, 3)").expectResult(i(3)).expectEmptyStack();
+		infix("if(true, 2, 3)").expectResult(i(2));
+		infix("if(false, 2, 3)").expectResult(i(3));
 
-		prefix("(if true 2 3)").expectResult(i(2)).expectEmptyStack();
-		prefix("(if false 2 3)").expectResult(i(3)).expectEmptyStack();
+		prefix("(if true 2 3)").expectResult(i(2));
+		prefix("(if false 2 3)").expectResult(i(3));
 
-		infix("if(2 == 2, 2 + 3, 2 + 2)").expectResult(i(5)).expectEmptyStack();
-		infix("if(2 == 3, 2 + 3, 2 + 2)").expectResult(i(4)).expectEmptyStack();
+		infix("if(2 == 2, 2 + 3, 2 + 2)").expectResult(i(5));
+		infix("if(2 == 3, 2 + 3, 2 + 2)").expectResult(i(4));
 
-		prefix("(if (== 2 2) (+ 2 3) (+ 2 2))").expectResult(i(5)).expectEmptyStack();
-		prefix("(if (== 2 3), (+ 2 3), (+ 2 2))").expectResult(i(4)).expectEmptyStack();
+		prefix("(if (== 2 2) (+ 2 3) (+ 2 2))").expectResult(i(5));
+		prefix("(if (== 2 3), (+ 2 3), (+ 2 2))").expectResult(i(4));
 	}
 
 	@Test
@@ -726,11 +712,11 @@ public class TypedValueCalculatorTest {
 		sut.environment.setGlobalSymbol("left", leftStub);
 		sut.environment.setGlobalSymbol("right", rightStub);
 
-		infix("if(2 == 2, left, right)").expectResult(i(2)).expectEmptyStack();
+		infix("if(2 == 2, left, right)").expectResult(i(2));
 		rightStub.checkCallCount(0).resetCallCount();
 		leftStub.checkCallCount(1).resetCallCount();
 
-		infix("if(2 != 2, left, right)").expectResult(i(3)).expectEmptyStack();
+		infix("if(2 != 2, left, right)").expectResult(i(3));
 		rightStub.checkCallCount(1).resetCallCount();
 		leftStub.checkCallCount(0).resetCallCount();
 	}
