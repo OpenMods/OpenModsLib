@@ -4,26 +4,14 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.ExecutableList;
-import openmods.calc.ICalculatorFrame;
 import openmods.calc.IExecutable;
+import openmods.calc.NoopExecutable;
 import openmods.calc.Operator;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SymbolReference;
 import openmods.calc.Value;
 
 public class DefaultExecutableListBuilder<E> implements IExecutableListBuilder<E> {
-
-	private static class Nop<E> implements IExecutable<E> {
-
-		@Override
-		public void execute(ICalculatorFrame<E> frame) {}
-
-		@Override
-		public String serialize() {
-			return "<nop>";
-		}
-
-	}
 
 	private final IValueParser<E> valueParser;
 	private final OperatorDictionary<E> operators;
@@ -79,7 +67,7 @@ public class DefaultExecutableListBuilder<E> implements IExecutableListBuilder<E
 
 	@Override
 	public void appendExecutable(IExecutable<E> executable) {
-		if (executable instanceof Nop) {
+		if (executable instanceof NoopExecutable) {
 			// well, no-op
 		} else if (executable instanceof ExecutableList) {
 			List<IExecutable<E>> flattenedList = Lists.newArrayList();
@@ -94,9 +82,7 @@ public class DefaultExecutableListBuilder<E> implements IExecutableListBuilder<E
 
 	@Override
 	public IExecutable<E> build() {
-		if (buffer.size() == 0) return new Nop<E>();
-		if (buffer.size() == 1) return buffer.get(0);
-		return new ExecutableList<E>(buffer);
+		return ExecutableList.wrap(buffer);
 	}
 
 }

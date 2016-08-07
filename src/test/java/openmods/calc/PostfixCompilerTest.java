@@ -123,6 +123,7 @@ public class PostfixCompilerTest extends CalcTestUtils {
 
 	@Test
 	public void testBrackets() {
+		given(LEFT_BRACKET, RIGHT_BRACKET).expect(OPEN_BRACKET, CLOSE_BRACKET);
 		given(LEFT_BRACKET, dec("3"), RIGHT_BRACKET).expect(OPEN_BRACKET, c("3"), CLOSE_BRACKET);
 		given(LEFT_BRACKET, dec("3"), dec("4"), RIGHT_BRACKET).expect(OPEN_BRACKET, c("3"), c("4"), CLOSE_BRACKET);
 

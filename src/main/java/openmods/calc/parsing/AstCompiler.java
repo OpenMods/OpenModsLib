@@ -21,7 +21,7 @@ public class AstCompiler<E> implements ITokenStreamCompiler<E> {
 
 		final List<IExecutable<E>> output = Lists.newArrayList();
 		rootNode.flatten(output);
-		return new ExecutableList<E>(output);
+		return ExecutableList.wrap(output);
 	}
 
 }

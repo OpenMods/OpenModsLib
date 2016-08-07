@@ -65,4 +65,10 @@ public class ExecutableList<E> implements IExecutable<E> {
 			}
 		}
 	}
+
+	public static <E> IExecutable<E> wrap(List<IExecutable<E>> exprs) {
+		if (exprs.size() == 0) return new NoopExecutable<E>();
+		if (exprs.size() == 1) return exprs.get(0);
+		return new ExecutableList<E>(exprs);
+	}
 }

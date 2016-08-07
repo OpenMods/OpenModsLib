@@ -72,7 +72,7 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 					final List<IExecutable<E>> computedValues = Lists.newArrayList();
 					for (E value : resultFrame.stack())
 						computedValues.add(Value.create(value));
-					return new ExecutableList<E>(computedValues);
+					return ExecutableList.wrap(computedValues);
 				}
 
 			};

@@ -311,7 +311,9 @@ public class CalcTestUtils {
 		public CompilerResultTester(ITokenStreamCompiler<String> compiler, Token... inputs) {
 			this.compiler = compiler;
 			final IExecutable<String> result = compiler.compile(tokenIterator(inputs));
-			if (result instanceof ExecutableList) {
+			if (result instanceof NoopExecutable) {
+				this.actual = Lists.newArrayList();
+			} else if (result instanceof ExecutableList) {
 				this.actual = ((ExecutableList<String>)result).getCommands();
 			} else {
 				this.actual = Arrays.asList(result);
