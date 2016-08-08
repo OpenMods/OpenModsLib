@@ -16,6 +16,8 @@ import openmods.utils.Stack;
 
 public class InfixParser<E> implements IAstParser<E> {
 
+	private static final String CALL_OPENING_BRACKET = "(";
+
 	private final List<IExprNode<E>> NO_ARGS = Lists.newArrayList();
 
 	private final OperatorDictionary<E> operators;
@@ -60,12 +62,17 @@ public class InfixParser<E> implements IAstParser<E> {
 				Preconditions.checkArgument(token.type != TokenType.SYMBOL_WITH_ARGS, "Symbol '%s' can't be used in infix mode", token.value);
 				final ISymbolStateTransition<E> stateTransition = state.getStateForSymbol(token.value);
 
-				if (input.hasNext() && input.peek().type == TokenType.LEFT_BRACKET) {
-					Token nextToken = next(input);
-					final String openingBracket = nextToken.value;
-					final String closingBracket = TokenUtils.getClosingBracket(openingBracket);
-					final List<IExprNode<E>> childrenNodes = collectChildren(input, openingBracket, closingBracket, stateTransition.getState());
-					nodeStack.push(stateTransition.createRootNode(childrenNodes));
+				if (input.hasNext()) {
+					final Token nextToken = input.peek();
+					if (nextToken.type == TokenType.LEFT_BRACKET && nextToken.value.equals(CALL_OPENING_BRACKET)) {
+						input.next();
+						final String openingBracket = nextToken.value;
+						final String closingBracket = TokenUtils.getClosingBracket(openingBracket);
+						final List<IExprNode<E>> childrenNodes = collectChildren(input, openingBracket, closingBracket, stateTransition.getState());
+						nodeStack.push(stateTransition.createRootNode(childrenNodes));
+					} else {
+						nodeStack.push(stateTransition.createRootNode(NO_ARGS));
+					}
 				} else {
 					nodeStack.push(stateTransition.createRootNode(NO_ARGS));
 				}

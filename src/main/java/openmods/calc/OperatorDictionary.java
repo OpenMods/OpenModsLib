@@ -38,9 +38,16 @@ public class OperatorDictionary<E> {
 		return new BinaryOperatorRegistration(operator);
 	}
 
-	public void registerUnaryOperator(UnaryOperator<E> operator) {
+	public UnaryOperator<E> registerUnaryOperator(UnaryOperator<E> operator) {
 		final IExecutable<E> prev = unaryOperators.put(operator.id, operator);
 		Preconditions.checkState(prev == null, "Duplicate operator '%s': %s -> %s", prev, operator);
+		return operator;
+	}
+
+	public BinaryOperator<E> registerDefaultOperator(BinaryOperator<E> operator) {
+		Preconditions.checkState(defaultOperator == null, "Trying to replace default operator: %s -> %s", defaultOperator, operator);
+		defaultOperator = operator;
+		return operator;
 	}
 
 	public Set<String> allOperators() {

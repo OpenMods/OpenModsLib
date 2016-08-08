@@ -165,11 +165,6 @@ public class InfixCompilerTest extends CalcTestUtils {
 		given(symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
 				.expect(c("2"), s("sin", 1));
 
-		// NOTE: this is default meaning of alternative brackets, may be changed by user
-		// sin{2}
-		given(symbol("sin"), leftBracket("{"), dec("2"), rightBracket("}"))
-				.expect(c("2"), s("sin", 1));
-
 		// sin((2))
 		given(symbol("sin"), LEFT_BRACKET, LEFT_BRACKET, dec("2"), RIGHT_BRACKET, RIGHT_BRACKET)
 				.expect(c("2"), s("sin", 1));
@@ -187,10 +182,6 @@ public class InfixCompilerTest extends CalcTestUtils {
 	public void testBinaryFunction() {
 		// exp(2, 3)
 		given(symbol("exp"), LEFT_BRACKET, dec("2"), COMMA, dec("3"), RIGHT_BRACKET)
-				.expect(c("2"), c("3"), s("exp", 2));
-
-		// exp(2, 3)
-		given(symbol("exp"), leftBracket("["), dec("2"), COMMA, dec("3"), rightBracket("]"))
 				.expect(c("2"), c("3"), s("exp", 2));
 
 		// exp(2 + 3, 3 - 4)
@@ -383,6 +374,11 @@ public class InfixCompilerTest extends CalcTestUtils {
 		given(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
 				.expect(c("3"), s("a", 1), c("2"), MULTIPLY)
 				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, OP_MULTIPLY, dec("2"));
+
+		// a[3] = a * [3]
+		given(symbol("a"), leftBracket("["), dec("3"), rightBracket("]"))
+				.expect(s("a", 0), c("3"), MULTIPLY)
+				.expectSameAs(symbol("a"), OP_MULTIPLY, dec("3"));
 
 		// a 3 = a * 3
 		given(symbol("a"), dec("3"))

@@ -31,6 +31,7 @@ import openmods.calc.StackValidationException;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.Value;
+import openmods.calc.parsing.BracketContainerNode;
 import openmods.calc.parsing.DefaultExecutableListBuilder;
 import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.DefaultPostfixCompiler;
@@ -71,6 +72,9 @@ public class TypedValueCalculatorFactory {
 	public static final String SYMBOL_CODE = "code";
 	public static final String BRACKET_CODE = "{";
 
+	public static final String BRACKET_INDEX = "[";
+	public static final String SYMBOL_SLICE = "slice";
+
 	private static final Function<BigInteger, Integer> INT_UNWRAP = new Function<BigInteger, Integer>() {
 		@Override
 		public Integer apply(BigInteger input) {
@@ -78,6 +82,7 @@ public class TypedValueCalculatorFactory {
 		}
 	};
 
+	private static final int PRIORITY_MAX = 11; // basically magic
 	private static final int PRIORITY_DOT = 10; // .
 	private static final int PRIORITY_CONS = 9; // :
 	private static final int PRIORITY_EXP = 8; // **
@@ -340,7 +345,7 @@ public class TypedValueCalculatorFactory {
 
 		operators.registerUnaryOperator(createUnaryNegation("neg", domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("*", PRIORITY_MULTIPLY)
+		final BinaryOperator<TypedValue> multiplyOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("*", PRIORITY_MULTIPLY)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
 					@Override
 					public BigInteger apply(BigInteger left, BigInteger right) {
@@ -372,7 +377,7 @@ public class TypedValueCalculatorFactory {
 						return StringUtils.repeat(left, right.intValue());
 					}
 				})
-				.build(domain)).setDefault();
+				.build(domain)).unwrap();
 
 		final BinaryOperator<TypedValue> divideOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("/", PRIORITY_MULTIPLY)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Double, Double>() {
@@ -639,6 +644,8 @@ public class TypedValueCalculatorFactory {
 			}
 		}));
 
+		// magic
+
 		final BinaryOperator<TypedValue> dotOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder(".", PRIORITY_DOT)
 				.registerOperation(new TypedBinaryOperator.IVariantOperation<IComposite, String>() {
 					@Override
@@ -668,6 +675,14 @@ public class TypedValueCalculatorFactory {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				return domain.create(Cons.class, new Cons(left, right));
+			}
+		});
+
+		// NOTE: this operator won't be available in prefix and postfix
+		final BinaryOperator<TypedValue> defaultOperator = operators.registerDefaultOperator(new BinaryOperator<TypedValue>("<?>", PRIORITY_MAX) {
+			@Override
+			public TypedValue execute(TypedValue left, TypedValue right) {
+				throw new UnsupportedOperationException(); // should be replaced in AST tree modification
 			}
 		});
 
@@ -1213,7 +1228,6 @@ public class TypedValueCalculatorFactory {
 		});
 
 		env.setGlobalSymbol("execute", new ISymbol<TypedValue>() {
-
 			@Override
 			public void execute(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				if (argumentsCount.isPresent()) {
@@ -1237,7 +1251,27 @@ public class TypedValueCalculatorFactory {
 				for (TypedValue result : results)
 					frame.stack().push(result);
 			}
+		});
 
+		env.setGlobalSymbol(SYMBOL_SLICE, new SimpleTypedFunction(domain) {
+			@Variant
+			public String charAt(@DispatchArg String str, @DispatchArg(extra = { Boolean.class }) BigInteger index) {
+				int i = index.intValue();
+				if (i < 0) i = str.length() + i;
+				return String.valueOf(str.charAt(i));
+			}
+
+			@Variant
+			public String substr(@DispatchArg String str, @DispatchArg Cons range) {
+				final int left = calculateBoundary(range.car, str.length());
+				final int right = calculateBoundary(range.cdr, str.length());
+				return str.substring(left, right);
+			}
+
+			private int calculateBoundary(TypedValue v, int length) {
+				final int i = v.unwrap(BigInteger.class).intValue();
+				return i >= 0? i : (length + i);
+			}
 		});
 
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain, SYMBOL_IF);
@@ -1309,8 +1343,35 @@ public class TypedValueCalculatorFactory {
 							}
 						};
 
+						if (op == defaultOperator) {
+							if (rightChild instanceof BracketContainerNode) {
+								final BracketContainerNode<TypedValue> bracketNode = ((BracketContainerNode<TypedValue>)rightChild);
+								if (bracketNode.openingBracket.equals(BRACKET_INDEX)) {
+									final List<IExprNode<TypedValue>> args = Lists.newArrayList();
+									args.add(leftChild);
+									Iterables.addAll(args, bracketNode.getChildren());
+									return new SymbolNode<TypedValue>(SYMBOL_SLICE, args);
+								} else {
+									throw new AssertionError("Unknown bracket: " + bracketNode.openingBracket); // should be limited to ones used in createBracketNode
+								}
+							} else {
+								return super.createBinaryOpNode(multiplyOperator, leftChild, rightChild);
+							}
+						}
+
 						return super.createBinaryOpNode(op, leftChild, rightChild);
 					}
+
+					@Override
+					public IExprNode<TypedValue> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<TypedValue>> children) {
+						if (openingBracket.equals(BRACKET_INDEX)) {
+							TokenUtils.checkIsValidBracketPair(openingBracket, closingBracket);
+							return new BracketContainerNode<TypedValue>(children, openingBracket, closingBracket);
+						} else {
+							return super.createBracketNode(openingBracket, closingBracket, children);
+						}
+					}
+
 				};
 			}
 

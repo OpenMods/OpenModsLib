@@ -720,4 +720,38 @@ public class TypedValueCalculatorTest {
 		rightStub.checkCallCount(1).resetCallCount();
 		leftStub.checkCallCount(0).resetCallCount();
 	}
+
+	@Test
+	public void testStringSlice() {
+		infix("'abc'[0]").expectResult(s("a"));
+		infix("'abc'[1]").expectResult(s("b"));
+		infix("'abc'[2]").expectResult(s("c"));
+
+		infix("'abc'[-1]").expectResult(s("c"));
+		infix("'abc'[-2]").expectResult(s("b"));
+		infix("'abc'[-3]").expectResult(s("a"));
+
+		infix("'abc'[0:0]").expectResult(s(""));
+		infix("'abc'[0:1]").expectResult(s("a"));
+		infix("'abc'[0:2]").expectResult(s("ab"));
+		infix("'abc'[0:3]").expectResult(s("abc"));
+
+		infix("'abc'[0:-1]").expectResult(s("ab"));
+		infix("'abc'[0:-2]").expectResult(s("a"));
+		infix("'abc'[0:-3]").expectResult(s(""));
+
+		infix("'abc'[-2:-1]").expectResult(s("b"));
+		infix("'abc'[-3:-1]").expectResult(s("ab"));
+	}
+
+	@Test
+	public void testStringSliceInExpressions() {
+		sut.environment.setGlobalSymbol("test", Constant.create(s("abc")));
+
+		infix("test[-1]").expectResult(s("c"));
+		infix("test[-3] + test[-2] + test[-1]").expectResult(s("abc"));
+
+		infix("('a' + 'b' + 'c')[0:3]").expectResult(s("abc"));
+		infix("str(123)[2]").expectResult(s("3"));
+	}
 }
