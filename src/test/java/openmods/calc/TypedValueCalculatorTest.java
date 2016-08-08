@@ -682,11 +682,23 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testCodeSymbol() {
-		infix("iscode(code(2 + 3))").expectResult(b(true));
-		infix("(iscode (code (+ 2 3)))").expectResult(b(true));
+		infix("iscode(code(2 + 3))").expectResult(TRUE);
+		infix("(iscode (code (+ 2 3)))").expectResult(TRUE);
 
 		infix("execute(code(2 + 3))").expectResult(i(5));
 		prefix("(execute (code (+ 2 3)))").expectResult(i(5));
+	}
+
+	@Test
+	public void testCodeBrackets() {
+		infix("iscode({2 + 3})").expectResult(TRUE);
+		infix("execute({2 + 3})").expectResult(i(5));
+
+		prefix("(iscode {6})").expectResult(TRUE);
+		prefix("(execute {6})").expectResult(i(6));
+
+		prefix("(iscode {(+ 2 3)})").expectResult(TRUE);
+		prefix("(execute {(+ 2 3)})").expectResult(i(5));
 	}
 
 	@Test

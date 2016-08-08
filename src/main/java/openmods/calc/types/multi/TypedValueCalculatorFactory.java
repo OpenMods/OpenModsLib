@@ -1363,10 +1363,13 @@ public class TypedValueCalculatorFactory {
 					}
 
 					@Override
-					public IExprNode<TypedValue> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<TypedValue>> children) {
+					public IExprNode<TypedValue> createBracketNode(String openingBracket, String closingBracket, final List<IExprNode<TypedValue>> children) {
 						if (openingBracket.equals(BRACKET_INDEX)) {
 							TokenUtils.checkIsValidBracketPair(openingBracket, closingBracket);
 							return new BracketContainerNode<TypedValue>(children, openingBracket, closingBracket);
+						} else if (openingBracket.equals(BRACKET_CODE)) {
+							TokenUtils.checkIsValidBracketPair(openingBracket, closingBracket);
+							return new RawCodeExprNode(domain, children);
 						} else {
 							return super.createBracketNode(openingBracket, closingBracket, children);
 						}
