@@ -17,6 +17,14 @@ public class Cons {
 		this.cdr = cdr;
 	}
 
+	public TypedValue first() {
+		return car;
+	}
+
+	public TypedValue second() {
+		return cdr;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -54,34 +62,54 @@ public class Cons {
 		return result;
 	}
 
-	public interface Visitor {
+	public interface BranchingVisitor {
 		public void begin();
 
 		public void value(TypedValue value, boolean isLast);
 
-		public Visitor nestedValue(TypedValue value);
+		public BranchingVisitor nestedValue(TypedValue value);
 
 		public void end(TypedValue terminator);
 	}
 
-	public void visit(Visitor visitor) {
+	public interface LinearVisitor {
+		public void begin();
+
+		public void value(TypedValue value, boolean isLast);
+
+		public void end(TypedValue terminator);
+	}
+
+	public void visit(BranchingVisitor visitor) {
 		visitor.begin();
 
 		Cons e = this;
 		while (true) {
 			final boolean hasNext = e.cdr.is(Cons.class);
 			if (e.car.is(Cons.class)) {
-				final Visitor nestedVisitor = visitor.nestedValue(car);
+				BranchingVisitor nestedVisitor = visitor.nestedValue(car);
 				e.car.unwrap(Cons.class).visit(nestedVisitor);
 			} else {
 				visitor.value(e.car, !hasNext);
 			}
 
-			if (hasNext) {
-				e = e.cdr.unwrap(Cons.class);
-			} else {
-				break;
-			}
+			if (!hasNext) break;
+			e = e.cdr.unwrap(Cons.class);
+		}
+
+		visitor.end(e.cdr);
+	}
+
+	public void visit(LinearVisitor visitor) {
+		visitor.begin();
+
+		Cons e = this;
+		while (true) {
+			final boolean hasNext = e.cdr.is(Cons.class);
+			visitor.value(e.car, !hasNext);
+
+			if (!hasNext) break;
+			e = e.cdr.unwrap(Cons.class);
 		}
 
 		visitor.end(e.cdr);
@@ -89,7 +117,7 @@ public class Cons {
 
 	public String prettyPrint() {
 		final StringBuilder result = new StringBuilder();
-		visit(new Visitor() {
+		visit(new BranchingVisitor() {
 			@Override
 			public void begin() {
 				result.append("(");
@@ -102,7 +130,7 @@ public class Cons {
 			}
 
 			@Override
-			public Visitor nestedValue(TypedValue value) {
+			public BranchingVisitor nestedValue(TypedValue value) {
 				result.append("(");
 				return this;
 			}
@@ -111,6 +139,7 @@ public class Cons {
 			public void end(TypedValue terminator) {
 				result.append(" . ");
 				result.append(terminator);
+				result.append(")");
 			}
 		});
 

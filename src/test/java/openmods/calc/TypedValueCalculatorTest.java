@@ -647,10 +647,10 @@ public class TypedValueCalculatorTest {
 		infix("1:2").expectResult(cons(i(1), i(2)));
 		infix("true:'2':3").expectResult(cons(b(true), cons(s("2"), i(3))));
 
-		infix("1:2:3:null == list(1,2,3)").expectResult(b(true));
+		infix("(1:2:3:null) == list(1,2,3)").expectResult(b(true));
 		prefix("(== (: 1 2 3 null) (list 1 2 3))").expectResult(b(true));
 
-		infix("1:2:3:4 == #(1 2 3 ... 4)").expectResult(b(true));
+		infix("(1:2:3:4) == #(1 2 3 ... 4)").expectResult(b(true));
 		prefix("(== (: 1 2 3 4) #(1 2 3 ... 4))").expectResult(b(true));
 	}
 
@@ -765,5 +765,36 @@ public class TypedValueCalculatorTest {
 
 		infix("('a' + 'b' + 'c')[0:3]").expectResult(s("abc"));
 		infix("str(123)[2]").expectResult(s("3"));
+	}
+
+	@Test
+	public void testLetExpressionBasicForm() {
+		infix("let([x:2,y:3], x + y)").expectResult(i(5));
+		infix("let([x:1+2,y:3], x + y)").expectResult(i(6));
+		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(i(5));
+		prefix("(let [(:x (+ 1 2)) (:y 3)] (+ x y))").expectResult(i(6));
+	}
+
+	@Test
+	public void testLetExplicitSymbolVariableNames() {
+		infix("let([#x:2,#y:3], x + y)").expectResult(i(5));
+		infix("let([symbol('x'):2,symbol('y'):3], x + y)").expectResult(i(5));
+	}
+
+	@Test
+	public void testNestedLet() {
+		infix("let([x:2], let([y:x+2], x + y))").expectResult(i(6));
+		infix("let([x:#y], let([(x):2], y + 1))").expectResult(i(3));
+	}
+
+	@Test
+	public void testLetWithExplicitList() {
+		infix("let(list(#x:2, #y:1+2), x+y)").expectResult(i(5));
+		infix("let([l:list(#x:2, #y:(1+2))], let(l, x+y))").expectResult(i(5));
+	}
+
+	@Test
+	public void testLetInPostfix() {
+		postfix("#x 1 : #y 2 : list@2 {x y +} let").expectResult(i(3));
 	}
 }

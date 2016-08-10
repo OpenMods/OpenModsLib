@@ -3,6 +3,8 @@ package openmods.calc.types.multi;
 import com.google.common.base.Preconditions;
 import openmods.calc.ICalculatorFrame;
 import openmods.calc.IExecutable;
+import openmods.calc.parsing.ExprUtils;
+import openmods.calc.parsing.IExprNode;
 
 public class Code {
 	private final IExecutable<TypedValue> code;
@@ -27,4 +29,7 @@ public class Code {
 				|| (obj instanceof Code && ((Code)obj).equals(this.code));
 	}
 
+	public static TypedValue flattenAndWrap(TypeDomain domain, IExprNode<TypedValue> expr) {
+		return domain.create(Code.class, new Code(ExprUtils.flattenNode(expr)));
+	}
 }

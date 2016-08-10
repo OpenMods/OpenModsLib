@@ -67,8 +67,9 @@ public class TypedValueCalculatorFactory {
 	public static final String SYMBOL_FALSE = "true";
 	public static final String SYMBOL_TRUE = "false";
 
+	public static final String SYMBOL_LIST = "list";
 	public static final String SYMBOL_IF = "if";
-
+	public static final String SYMBOL_LET = "let";
 	public static final String SYMBOL_CODE = "code";
 	public static final String BRACKET_CODE = "{";
 
@@ -84,16 +85,16 @@ public class TypedValueCalculatorFactory {
 
 	private static final int PRIORITY_MAX = 11; // basically magic
 	private static final int PRIORITY_DOT = 10; // .
-	private static final int PRIORITY_CONS = 9; // :
-	private static final int PRIORITY_EXP = 8; // **
-	private static final int PRIORITY_MULTIPLY = 7; // * / % //
-	private static final int PRIORITY_ADD = 6; // + -
-	private static final int PRIORITY_BITSHIFT = 5; // << >>
-	private static final int PRIORITY_BITWISE = 4; // & ^ |
-	private static final int PRIORITY_COMPARE = 3; // < > <= >= <=>
-	private static final int PRIORITY_SPACESHIP = 2; // <=>
-	private static final int PRIORITY_EQUALS = 1; // == !=
-	private static final int PRIORITY_LOGIC = 0; // && || ^^
+	private static final int PRIORITY_EXP = 9; // **
+	private static final int PRIORITY_MULTIPLY = 8; // * / % //
+	private static final int PRIORITY_ADD = 7; // + -
+	private static final int PRIORITY_BITSHIFT = 6; // << >>
+	private static final int PRIORITY_BITWISE = 5; // & ^ |
+	private static final int PRIORITY_COMPARE = 4; // < > <= >= <=>
+	private static final int PRIORITY_SPACESHIP = 3; // <=>
+	private static final int PRIORITY_EQUALS = 2; // == !=
+	private static final int PRIORITY_LOGIC = 1; // && || ^^
+	private static final int PRIORITY_CONS = 0; // :
 
 	private interface CompareResultInterpreter {
 		public boolean interpret(int value);
@@ -671,12 +672,12 @@ public class TypedValueCalculatorFactory {
 					.build(domain));
 		}
 
-		operators.registerBinaryOperator(new BinaryOperator<TypedValue>(":", PRIORITY_CONS, Associativity.RIGHT) {
+		final BinaryOperator<TypedValue> colonOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>(":", PRIORITY_CONS, Associativity.RIGHT) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				return domain.create(Cons.class, new Cons(left, right));
 			}
-		});
+		}).unwrap();
 
 		// NOTE: this operator won't be available in prefix and postfix
 		final BinaryOperator<TypedValue> defaultOperator = operators.registerDefaultOperator(new BinaryOperator<TypedValue>("<?>", PRIORITY_MAX) {
@@ -1190,7 +1191,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("list", new ISymbol<TypedValue>() {
+		env.setGlobalSymbol(SYMBOL_LIST, new ISymbol<TypedValue>() {
 			@Override
 			public void execute(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				if (returnsCount.isPresent()) {
@@ -1277,6 +1278,9 @@ public class TypedValueCalculatorFactory {
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain, SYMBOL_IF);
 		env.setGlobalSymbol(SYMBOL_IF, ifFactory.createSymbol());
 
+		final LetExpressionFactory letFactory = new LetExpressionFactory(domain, SYMBOL_LET, SYMBOL_LIST, colonOperator);
+		env.setGlobalSymbol(SYMBOL_LET, letFactory.createSymbol());
+
 		class InitialParserState extends SwitchingCompilerState<TypedValue> {
 
 			public InitialParserState(IAstParser<TypedValue> parser, String currentStateSymbol, String switchStateSymbol) {
@@ -1291,6 +1295,8 @@ public class TypedValueCalculatorFactory {
 					return new CodeStateTransition(domain, this);
 				if (symbol.equals(SYMBOL_IF))
 					return ifFactory.createStateTransition(this);
+				if (symbol.equals(SYMBOL_LET))
+					return letFactory.createStateTransition(this);
 
 				return super.getStateForSymbol(symbol);
 			}

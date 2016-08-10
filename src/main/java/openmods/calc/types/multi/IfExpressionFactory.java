@@ -10,10 +10,10 @@ import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
 import openmods.calc.SymbolReference;
 import openmods.calc.Value;
-import openmods.calc.parsing.ExprUtils;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
 import openmods.calc.parsing.IExprNode;
+import openmods.calc.parsing.SameStateSymbolTransition;
 
 public class IfExpressionFactory {
 
@@ -26,7 +26,6 @@ public class IfExpressionFactory {
 	}
 
 	private class IfNode implements IExprNode<TypedValue> {
-
 		private final IExprNode<TypedValue> condition;
 		private final IExprNode<TypedValue> ifTrue;
 		private final IExprNode<TypedValue> ifFalse;
@@ -40,9 +39,9 @@ public class IfExpressionFactory {
 		@Override
 		public void flatten(List<IExecutable<TypedValue>> output) {
 			condition.flatten(output);
-			output.add(Value.create(domain.create(Code.class, new Code(ExprUtils.flattenNode(ifTrue)))));
-			output.add(Value.create(domain.create(Code.class, new Code(ExprUtils.flattenNode(ifFalse)))));
-			output.add(new SymbolReference<TypedValue>(ifSymbolName));
+			output.add(Value.create(Code.flattenAndWrap(domain, ifTrue)));
+			output.add(Value.create(Code.flattenAndWrap(domain, ifFalse)));
+			output.add(new SymbolReference<TypedValue>(ifSymbolName, 3, 1));
 		}
 
 		@Override
@@ -53,17 +52,9 @@ public class IfExpressionFactory {
 
 	}
 
-	private class IfStateTransition implements ISymbolStateTransition<TypedValue> {
-
-		private final ICompilerState<TypedValue> parentState;
-
+	private class IfStateTransition extends SameStateSymbolTransition<TypedValue> {
 		public IfStateTransition(ICompilerState<TypedValue> parentState) {
-			this.parentState = parentState;
-		}
-
-		@Override
-		public ICompilerState<TypedValue> getState() {
-			return parentState;
+			super(parentState);
 		}
 
 		@Override
@@ -87,7 +78,7 @@ public class IfExpressionFactory {
 		@Override
 		public void execute(ICalculatorFrame<TypedValue> frame) {
 			final TypedValue ifFalse = frame.stack().pop();
-			Preconditions.checkState(ifFalse.is(Code.class), "Expected code on this 'if' parameter, got %s", ifFalse);
+			Preconditions.checkState(ifFalse.is(Code.class), "Expected code on first 'if' parameter, got %s", ifFalse);
 
 			final TypedValue ifTrue = frame.stack().pop();
 			Preconditions.checkState(ifTrue.is(Code.class), "Expected code on second 'if' parameter, got %s", ifTrue);

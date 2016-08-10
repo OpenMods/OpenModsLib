@@ -9,7 +9,6 @@ import openmods.calc.PrinterUtils;
 import openmods.calc.parsing.StringEscaper;
 import openmods.calc.types.bigint.BigIntPrinter;
 import openmods.calc.types.fp.DoublePrinter;
-import openmods.calc.types.multi.Cons.Visitor;
 import openmods.config.simpler.Configurable;
 import openmods.math.Complex;
 
@@ -98,7 +97,7 @@ public class TypedValuePrinter implements IValuePrinter<TypedValue> {
 	private String printCons(Cons cons) {
 		if (printLists) {
 			final StringBuilder result = new StringBuilder();
-			cons.visit(new Cons.Visitor() {
+			cons.visit(new Cons.BranchingVisitor() {
 				@Override
 				public void begin() {
 					result.append("(");
@@ -111,7 +110,7 @@ public class TypedValuePrinter implements IValuePrinter<TypedValue> {
 				}
 
 				@Override
-				public Visitor nestedValue(TypedValue value) {
+				public Cons.BranchingVisitor nestedValue(TypedValue value) {
 					result.append("(");
 					return this;
 				}

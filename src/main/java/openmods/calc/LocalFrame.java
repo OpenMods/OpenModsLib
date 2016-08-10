@@ -13,8 +13,7 @@ public class LocalFrame<E> implements ICalculatorFrame<E> {
 	private final Stack<E> stack = new Stack<E>();
 
 	public LocalFrame(ICalculatorFrame<E> parent) {
-		if (parent instanceof LocalFrame) this.parent = ((LocalFrame<E>)parent).parent;
-		else this.parent = parent;
+		this.parent = parent;
 	}
 
 	public void setLocalSymbol(String symbol, ISymbol<E> value) {

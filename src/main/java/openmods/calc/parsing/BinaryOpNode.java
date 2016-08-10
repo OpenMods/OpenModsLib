@@ -7,11 +7,11 @@ import openmods.calc.IExecutable;
 
 public class BinaryOpNode<E> implements IExprNode<E> {
 
-	private final BinaryOperator<E> operator;
+	public final BinaryOperator<E> operator;
 
-	private final IExprNode<E> left;
+	public final IExprNode<E> left;
 
-	private final IExprNode<E> right;
+	public final IExprNode<E> right;
 
 	public BinaryOpNode(BinaryOperator<E> operator, IExprNode<E> left, IExprNode<E> right) {
 		this.operator = operator;
