@@ -3,7 +3,6 @@ package openmods.calc.types.multi;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -23,14 +22,12 @@ import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.ICalculatorFrame;
-import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
 import openmods.calc.LocalFrame;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.StackValidationException;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
-import openmods.calc.Value;
 import openmods.calc.parsing.BracketContainerNode;
 import openmods.calc.parsing.DefaultExecutableListBuilder;
 import openmods.calc.parsing.DefaultExprNodeFactory;
@@ -1329,25 +1326,7 @@ public class TypedValueCalculatorFactory {
 				return new DefaultExprNodeFactory<TypedValue>(valueParser) {
 					@Override
 					public IExprNode<TypedValue> createBinaryOpNode(BinaryOperator<TypedValue> op, final IExprNode<TypedValue> leftChild, final IExprNode<TypedValue> rightChild) {
-						if (op == dotOperator) return new IExprNode<TypedValue>() {
-							@Override
-							public void flatten(List<IExecutable<TypedValue>> output) {
-								leftChild.flatten(output);
-								if (rightChild instanceof SymbolNode) {
-									final SymbolNode<TypedValue> symbolNode = (SymbolNode<TypedValue>)rightChild;
-									Preconditions.checkState(Iterables.isEmpty(symbolNode.getChildren())); // temporary
-									output.add(Value.create(domain.create(String.class, symbolNode.symbol())));
-								} else {
-									rightChild.flatten(output);
-								}
-								output.add(dotOperator);
-							}
-
-							@Override
-							public Iterable<IExprNode<TypedValue>> getChildren() {
-								return ImmutableList.of(leftChild, rightChild);
-							}
-						};
+						if (op == dotOperator) return new DotExprNode(rightChild, leftChild, dotOperator, domain);
 
 						if (op == defaultOperator) {
 							if (rightChild instanceof BracketContainerNode) {
