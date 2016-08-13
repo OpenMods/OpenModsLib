@@ -1,7 +1,5 @@
 package openmods.calc.parsing;
 
-import openmods.calc.parsing.ICompilerState.IModifierStateTransition;
-
 public abstract class SameStateModifierTransition<E> implements IModifierStateTransition<E> {
 
 	private final ICompilerState<E> parentState;

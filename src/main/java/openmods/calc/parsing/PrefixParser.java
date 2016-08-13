@@ -10,8 +10,6 @@ import openmods.calc.BinaryOperator;
 import openmods.calc.BinaryOperator.Associativity;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryOperator;
-import openmods.calc.parsing.ICompilerState.IModifierStateTransition;
-import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 
 public class PrefixParser<E> implements IAstParser<E> {
 

@@ -11,8 +11,8 @@ import openmods.calc.ISymbol;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
 import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 import openmods.calc.parsing.IExprNode;
+import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
 
 public class IfExpressionFactory {

@@ -15,8 +15,8 @@ import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.BracketContainerNode;
 import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 import openmods.calc.parsing.IExprNode;
+import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
 import openmods.calc.parsing.SymbolGetNode;
 

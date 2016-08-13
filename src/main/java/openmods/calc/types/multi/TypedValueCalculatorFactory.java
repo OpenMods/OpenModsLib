@@ -32,20 +32,16 @@ import openmods.calc.parsing.DefaultExecutableListBuilder;
 import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.DefaultPostfixCompiler;
 import openmods.calc.parsing.DefaultPostfixCompiler.IStateProvider;
-import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.IExecutableListBuilder;
 import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.IExprNodeFactory;
 import openmods.calc.parsing.IPostfixCompilerState;
 import openmods.calc.parsing.ITokenStreamCompiler;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.InfixParser;
-import openmods.calc.parsing.PrefixParser;
+import openmods.calc.parsing.MappedCompilerState;
 import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenUtils;
 import openmods.calc.parsing.Tokenizer;
-import openmods.calc.parsing.BasicCompilerMapFactory.SwitchingCompilerState;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
@@ -1278,47 +1274,16 @@ public class TypedValueCalculatorFactory {
 		final LetExpressionFactory letFactory = new LetExpressionFactory(domain, SYMBOL_LET, SYMBOL_LIST, colonOperator);
 		env.setGlobalSymbol(SYMBOL_LET, letFactory.createSymbol());
 
-		class InitialParserState extends SwitchingCompilerState<TypedValue> {
-
-			public InitialParserState(IAstParser<TypedValue> parser, String currentStateSymbol, String switchStateSymbol) {
-				super(parser, currentStateSymbol, switchStateSymbol);
-			}
-
-			@Override
-			public ISymbolCallStateTransition<TypedValue> getStateForSymbolCall(String symbol) {
-				if (symbol.equals(TokenUtils.SYMBOL_QUOTE))
-					return new QuoteStateTransition.ForSymbol(domain, nullValue, valueParser);
-				if (symbol.equals(SYMBOL_CODE))
-					return new CodeStateTransition(domain, this);
-				if (symbol.equals(SYMBOL_IF))
-					return ifFactory.createStateTransition(this);
-				if (symbol.equals(SYMBOL_LET))
-					return letFactory.createStateTransition(this);
-
-				return super.getStateForSymbolCall(symbol);
-			}
-
-			@Override
-			public IModifierStateTransition<TypedValue> getStateForModifier(String modifier) {
-				if (modifier.equals(TokenUtils.MODIFIER_QUOTE))
-					return new QuoteStateTransition.ForModifier(domain, nullValue, valueParser);
-
-				return super.getStateForModifier(modifier);
-			}
-		}
-
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 
 			@Override
-			protected SwitchingCompilerState<TypedValue> createInfixParserState(OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory) {
-				final IAstParser<TypedValue> infixParser = new InfixParser<TypedValue>(operators, exprNodeFactory);
-				return new InitialParserState(infixParser, "infix", "prefix");
-			}
+			protected void configureCompilerStateCommon(MappedCompilerState<TypedValue> compilerState) {
+				compilerState.addStateTransition(TokenUtils.SYMBOL_QUOTE, new QuoteStateTransition.ForSymbol(domain, nullValue, valueParser));
+				compilerState.addStateTransition(SYMBOL_CODE, new CodeStateTransition(domain, compilerState));
+				compilerState.addStateTransition(SYMBOL_IF, ifFactory.createStateTransition(compilerState));
+				compilerState.addStateTransition(SYMBOL_LET, letFactory.createStateTransition(compilerState));
 
-			@Override
-			protected SwitchingCompilerState<TypedValue> createPrefixCompilerState(OperatorDictionary<TypedValue> operators, IExprNodeFactory<TypedValue> exprNodeFactory) {
-				final IAstParser<TypedValue> prefixParser = new PrefixParser<TypedValue>(operators, exprNodeFactory);
-				return new InitialParserState(prefixParser, "prefix", "infix");
+				compilerState.addStateTransition(TokenUtils.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
 			}
 
 			@Override

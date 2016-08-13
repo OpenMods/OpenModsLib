@@ -1,7 +1,5 @@
 package openmods.calc.parsing;
 
-import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
-
 public abstract class SameStateSymbolTransition<E> implements ISymbolCallStateTransition<E> {
 
 	private final ICompilerState<E> parentState;

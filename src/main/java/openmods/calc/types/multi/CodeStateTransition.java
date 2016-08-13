@@ -5,8 +5,8 @@ import java.util.List;
 import openmods.calc.IExecutable;
 import openmods.calc.parsing.ExprUtils;
 import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 import openmods.calc.parsing.IExprNode;
+import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.ValueNode;
 
 public class CodeStateTransition implements ISymbolCallStateTransition<TypedValue> {

@@ -19,7 +19,6 @@ import openmods.calc.OperatorDictionary;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
 import openmods.calc.parsing.DefaultPostfixCompiler.IStateProvider;
-import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 
 public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprType> {
 
@@ -67,54 +66,6 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 		}
 	}
 
-	public static class SwitchingCompilerState<E> implements ICompilerState<E> {
-
-		private final IAstParser<E> parser;
-
-		private final String currentStateSymbol;
-		private final String switchStateSymbol;
-		private ICompilerState<E> switchState;
-
-		public SwitchingCompilerState(IAstParser<E> parser, String currentStateSymbol, String switchStateSymbol) {
-			this.parser = parser;
-			this.currentStateSymbol = currentStateSymbol;
-			this.switchStateSymbol = switchStateSymbol;
-		}
-
-		public SwitchingCompilerState<E> setSwitchState(ICompilerState<E> switchState) {
-			this.switchState = switchState;
-			return this;
-		}
-
-		@Override
-		public ISymbolCallStateTransition<E> getStateForSymbolCall(final String symbol) {
-			if (symbol.equals(switchStateSymbol)) return new ParserSwitchTransition<E>(switchState);
-			if (symbol.equals(currentStateSymbol)) return new ParserSwitchTransition<E>(this);
-
-			return new ISymbolCallStateTransition<E>() {
-				@Override
-				public ICompilerState<E> getState() {
-					return SwitchingCompilerState.this;
-				}
-
-				@Override
-				public IExprNode<E> createRootNode(List<IExprNode<E>> children) {
-					return new SymbolCallNode<E>(symbol, children);
-				}
-			};
-		}
-
-		@Override
-		public IModifierStateTransition<E> getStateForModifier(String modifier) {
-			throw new UnsupportedOperationException(modifier);
-		}
-
-		@Override
-		public IAstParser<E> getParser() {
-			return parser;
-		}
-	}
-
 	@Override
 	public Compilers<E, ExprType> create(E nullValue, IValueParser<E> valueParser, OperatorDictionary<E> operators, Environment<E> environment) {
 		final Tokenizer prefixTokenizer = new Tokenizer();
@@ -134,11 +85,17 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 		setupPostfixTokenizer(postfixTokenizer);
 
 		final IExprNodeFactory<E> exprNodeFactory = createExprNodeFactory(valueParser);
-		final SwitchingCompilerState<E> prefixCompilerState = createPrefixCompilerState(operators, exprNodeFactory);
-		final SwitchingCompilerState<E> infixCompilerState = createInfixParserState(operators, exprNodeFactory);
+		final MappedCompilerState<E> prefixCompilerState = createPrefixCompilerState(operators, exprNodeFactory);
+		final MappedCompilerState<E> infixCompilerState = createInfixCompilerState(operators, exprNodeFactory);
 
-		infixCompilerState.setSwitchState(prefixCompilerState);
-		prefixCompilerState.setSwitchState(infixCompilerState);
+		prefixCompilerState.addStateTransition(SYMBOL_INFIX, new ParserSwitchTransition<E>(infixCompilerState));
+		prefixCompilerState.addStateTransition(SYMBOL_PREFIX, new ParserSwitchTransition<E>(prefixCompilerState));
+
+		infixCompilerState.addStateTransition(SYMBOL_INFIX, new ParserSwitchTransition<E>(infixCompilerState));
+		infixCompilerState.addStateTransition(SYMBOL_PREFIX, new ParserSwitchTransition<E>(prefixCompilerState));
+
+		configureCompilerStateCommon(prefixCompilerState);
+		configureCompilerStateCommon(infixCompilerState);
 
 		final Map<ExprType, ICompiler<E>> compilers = Maps.newHashMap();
 		compilers.put(ExprType.PREFIX, new WrappedCompiler<E>(prefixTokenizer, createPrefixParser(prefixCompilerState)));
@@ -149,9 +106,9 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 
 	protected void setupPrefixTokenizer(Tokenizer tokenizer) {}
 
-	protected SwitchingCompilerState<E> createPrefixCompilerState(OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
+	protected MappedCompilerState<E> createPrefixCompilerState(OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
 		final IAstParser<E> prefixParser = new PrefixParser<E>(operators, exprNodeFactory);
-		return new SwitchingCompilerState<E>(prefixParser, SYMBOL_PREFIX, SYMBOL_INFIX);
+		return new MappedCompilerState<E>(prefixParser);
 	}
 
 	protected ITokenStreamCompiler<E> createPrefixParser(ICompilerState<E> compilerState) {
@@ -160,9 +117,9 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 
 	protected void setupInfixTokenizer(Tokenizer tokenizer) {}
 
-	protected SwitchingCompilerState<E> createInfixParserState(OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
+	protected MappedCompilerState<E> createInfixCompilerState(OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
 		final IAstParser<E> infixParser = new InfixParser<E>(operators, exprNodeFactory);
-		return new SwitchingCompilerState<E>(infixParser, SYMBOL_INFIX, SYMBOL_PREFIX);
+		return new MappedCompilerState<E>(infixParser);
 	}
 
 	protected ITokenStreamCompiler<E> createInfixParser(ICompilerState<E> compilerState) {
@@ -232,4 +189,5 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 		return new DefaultExprNodeFactory<E>(valueParser);
 	}
 
+	protected void configureCompilerStateCommon(MappedCompilerState<E> compilerState) {}
 }
