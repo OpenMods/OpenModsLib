@@ -1,4 +1,4 @@
-package openmods.calc;
+package openmods.calc.parsing;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -7,30 +7,19 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.PeekingIterator;
 import java.util.List;
 import java.util.Map;
+import openmods.calc.Compilers;
 import openmods.calc.Compilers.ICompiler;
-import openmods.calc.parsing.AstCompiler;
-import openmods.calc.parsing.BracketPostfixCompilerStateBase;
-import openmods.calc.parsing.DefaultExecutableListBuilder;
-import openmods.calc.parsing.DefaultExprNodeFactory;
-import openmods.calc.parsing.DefaultPostfixCompiler;
+import openmods.calc.Environment;
+import openmods.calc.ExecutableList;
+import openmods.calc.ExprType;
+import openmods.calc.ICalculatorFrame;
+import openmods.calc.ICompilerMapFactory;
+import openmods.calc.IExecutable;
+import openmods.calc.OperatorDictionary;
+import openmods.calc.SymbolCall;
+import openmods.calc.Value;
 import openmods.calc.parsing.DefaultPostfixCompiler.IStateProvider;
-import openmods.calc.parsing.DummyNode;
-import openmods.calc.parsing.IAstParser;
-import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
-import openmods.calc.parsing.IExecutableListBuilder;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.IExprNodeFactory;
-import openmods.calc.parsing.IPostfixCompilerState;
-import openmods.calc.parsing.ITokenStreamCompiler;
-import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.InfixParser;
-import openmods.calc.parsing.PrefixParser;
-import openmods.calc.parsing.SingleTokenPostfixCompilerState;
-import openmods.calc.parsing.SymbolCallNode;
-import openmods.calc.parsing.Token;
-import openmods.calc.parsing.TokenType;
-import openmods.calc.parsing.Tokenizer;
 
 public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprType> {
 

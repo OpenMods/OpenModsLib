@@ -1,6 +1,5 @@
 package openmods.calc.types.fp;
 
-import openmods.calc.BasicCompilerMapFactory;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
@@ -13,6 +12,7 @@ import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
+import openmods.calc.parsing.BasicCompilerMapFactory;
 import openmods.calc.parsing.IValueParser;
 
 public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, M> {

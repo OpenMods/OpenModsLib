@@ -1,7 +1,6 @@
 package openmods.calc.types.bigint;
 
 import java.math.BigInteger;
-import openmods.calc.BasicCompilerMapFactory;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
@@ -14,6 +13,7 @@ import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.TernaryFunction;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
+import openmods.calc.parsing.BasicCompilerMapFactory;
 import openmods.calc.parsing.IValueParser;
 
 public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteger, M> {

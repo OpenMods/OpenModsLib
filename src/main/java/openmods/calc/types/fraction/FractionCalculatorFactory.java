@@ -1,7 +1,6 @@
 package openmods.calc.types.fraction;
 
 import com.google.common.collect.Ordering;
-import openmods.calc.BasicCompilerMapFactory;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Environment;
@@ -12,6 +11,7 @@ import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
+import openmods.calc.parsing.BasicCompilerMapFactory;
 import openmods.calc.parsing.IValueParser;
 import org.apache.commons.lang3.math.Fraction;
 
