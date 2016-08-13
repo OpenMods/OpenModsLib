@@ -41,56 +41,56 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 	protected void configureEnvironment(Environment<Fraction> env) {
 		env.setGlobalSymbol("abs", new UnaryFunction<Fraction>() {
 			@Override
-			protected Fraction execute(Fraction value) {
+			protected Fraction call(Fraction value) {
 				return value.abs();
 			}
 		});
 
 		env.setGlobalSymbol("sgn", new UnaryFunction<Fraction>() {
 			@Override
-			protected Fraction execute(Fraction value) {
+			protected Fraction call(Fraction value) {
 				return createFraction(Integer.signum(value.getNumerator()));
 			}
 		});
 
 		env.setGlobalSymbol("numerator", new UnaryFunction<Fraction>() {
 			@Override
-			protected Fraction execute(Fraction value) {
+			protected Fraction call(Fraction value) {
 				return createFraction(value.getNumerator());
 			}
 		});
 
 		env.setGlobalSymbol("denominator", new UnaryFunction<Fraction>() {
 			@Override
-			protected Fraction execute(Fraction value) {
+			protected Fraction call(Fraction value) {
 				return createFraction(value.getDenominator());
 			}
 		});
 
 		env.setGlobalSymbol("frac", new UnaryFunction<Fraction>() {
 			@Override
-			protected Fraction execute(Fraction value) {
+			protected Fraction call(Fraction value) {
 				return Fraction.getFraction(value.getProperNumerator(), value.getDenominator());
 			}
 		});
 
 		env.setGlobalSymbol("int", new UnaryFunction<Fraction>() {
 			@Override
-			protected Fraction execute(Fraction value) {
+			protected Fraction call(Fraction value) {
 				return createFraction(value.getProperWhole());
 			}
 		});
 
 		env.setGlobalSymbol("sqrt", new UnaryFunction<Fraction>() {
 			@Override
-			protected Fraction execute(Fraction value) {
+			protected Fraction call(Fraction value) {
 				return Fraction.getFraction(Math.sqrt(value.doubleValue()));
 			}
 		});
 
 		env.setGlobalSymbol("log", new UnaryFunction<Fraction>() {
 			@Override
-			protected Fraction execute(Fraction value) {
+			protected Fraction call(Fraction value) {
 				return Fraction.getFraction(Math.log(value.doubleValue()));
 			}
 		});

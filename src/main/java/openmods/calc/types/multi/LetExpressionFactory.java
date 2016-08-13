@@ -2,24 +2,23 @@ package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Constant;
-import openmods.calc.FixedSymbol;
+import openmods.calc.FixedFunctionSymbol;
 import openmods.calc.ICalculatorFrame;
 import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
 import openmods.calc.LocalFrame;
-import openmods.calc.SymbolReference;
+import openmods.calc.SymbolCall;
 import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.BracketContainerNode;
 import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
+import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.SameStateSymbolTransition;
-import openmods.calc.parsing.SymbolNode;
+import openmods.calc.parsing.SymbolGetNode;
 
 public class LetExpressionFactory {
 
@@ -61,13 +60,13 @@ public class LetExpressionFactory {
 
 				Preconditions.checkState(argumentCount > 0, "'let' expects at least one argument");
 				// slighly inefficient, but compatible with hand-called instruction
-				output.add(new SymbolReference<TypedValue>(listSymbolName, argumentCount, 1));
+				output.add(new SymbolCall<TypedValue>(listSymbolName, argumentCount, 1));
 			} else { // assume list of arg pairs
 				argsNode.flatten(output);
 			}
 
 			output.add(Value.create(Code.flattenAndWrap(domain, codeNode)));
-			output.add(new SymbolReference<TypedValue>(letSymbolName, 2, 1));
+			output.add(new SymbolCall<TypedValue>(letSymbolName, 2, 1));
 		}
 
 		private void flattenArgNode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> argNode) {
@@ -84,16 +83,14 @@ public class LetExpressionFactory {
 		}
 
 		private void flattenArgNameNode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> argNameNode) {
-			if (argNameNode instanceof SymbolNode) {
-				final SymbolNode<TypedValue> argSymbolNode = (SymbolNode<TypedValue>)argNameNode;
-				if (Iterables.isEmpty(argSymbolNode.getChildren())) {
-					final String symbolId = argSymbolNode.symbol();
-					output.add(Value.create(domain.create(Symbol.class, Symbol.get(symbolId))));
-					return;
-				}
+			if (argNameNode instanceof SymbolGetNode) {
+				final SymbolGetNode<TypedValue> argSymbolNode = (SymbolGetNode<TypedValue>)argNameNode;
+				final String symbolId = argSymbolNode.symbol();
+				output.add(Value.create(domain.create(Symbol.class, Symbol.get(symbolId))));
+			} else {
+				// either something we have to call or expression resulting in symbol
+				argNameNode.flatten(output);
 			}
-			// either something we have to call or expression resulting in symbol
-			argNameNode.flatten(output);
 		}
 
 		@Override
@@ -115,18 +112,18 @@ public class LetExpressionFactory {
 		}
 	}
 
-	public ISymbolStateTransition<TypedValue> createStateTransition(ICompilerState<TypedValue> parentState) {
+	public ISymbolCallStateTransition<TypedValue> createStateTransition(ICompilerState<TypedValue> parentState) {
 		return new LetStateTransition(parentState);
 	}
 
-	private class LetSymbol extends FixedSymbol<TypedValue> {
+	private class LetSymbol extends FixedFunctionSymbol<TypedValue> {
 
 		public LetSymbol() {
 			super(2, 1);
 		}
 
 		@Override
-		public void execute(ICalculatorFrame<TypedValue> currentFrame) {
+		public void call(ICalculatorFrame<TypedValue> currentFrame) {
 			final TypedValue code = currentFrame.stack().pop();
 			Preconditions.checkState(code.is(Code.class), "Expected code on second 'if' parameter, got %s", code);
 

@@ -60,6 +60,16 @@ public class BigIntCalculatorTest {
 	}
 
 	@Test
+	public void testPostfixSymbols() {
+		sut.environment.setGlobalSymbol("a", Constant.create(v(5)));
+		postfix("a").expectResult(v(5));
+		postfix("a@0").expectResult(v(5));
+		postfix("a@,1").expectResult(v(5));
+		postfix("a@0,1").expectResult(v(5));
+		postfix("@a").expectResult(v(5));
+	}
+
+	@Test
 	public void testPostfixStackOperations() {
 		postfix("2 dup +").expectResult(v(4));
 		postfix("1 2 3 pop +").expectResult(v(3));
@@ -182,6 +192,7 @@ public class BigIntCalculatorTest {
 	@Test
 	public void testConstantEvaluatingBrackets() {
 		final SymbolStub<BigInteger> stub = new SymbolStub<BigInteger>()
+				.blockGets()
 				.expectArgs(v(1), v(2))
 				.checkArgCount()
 				.setReturns(v(5), v(6), v(7))

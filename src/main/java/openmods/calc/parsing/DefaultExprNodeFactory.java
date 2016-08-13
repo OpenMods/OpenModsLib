@@ -40,4 +40,9 @@ public class DefaultExprNodeFactory<E> implements IExprNodeFactory<E> {
 		return createValueNode(valueParser.parseToken(token));
 	}
 
+	@Override
+	public IExprNode<E> createSymbolGetNode(String id) {
+		return new SymbolGetNode<E>(id);
+	}
+
 }

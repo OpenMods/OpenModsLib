@@ -10,7 +10,7 @@ public interface ICompilerState<E> {
 		public IExprNode<E> createRootNode(IExprNode<E> child);
 	}
 
-	public interface ISymbolStateTransition<E> {
+	public interface ISymbolCallStateTransition<E> {
 		public ICompilerState<E> getState();
 
 		public IExprNode<E> createRootNode(List<IExprNode<E>> children);
@@ -18,7 +18,7 @@ public interface ICompilerState<E> {
 
 	public IAstParser<E> getParser();
 
-	public ISymbolStateTransition<E> getStateForSymbol(String symbol);
+	public ISymbolCallStateTransition<E> getStateForSymbolCall(String symbol);
 
 	public IModifierStateTransition<E> getStateForModifier(String modifier);
 }

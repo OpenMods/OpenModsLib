@@ -1,15 +1,13 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Preconditions;
-import openmods.calc.IExecutable;
+import com.google.common.base.Optional;
 import openmods.calc.Value;
-import openmods.calc.parsing.IPostfixCompilerState;
 import openmods.calc.parsing.IValueParser;
+import openmods.calc.parsing.SingleTokenPostfixCompilerState;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 
-public class QuotePostfixCompilerState implements IPostfixCompilerState<TypedValue> {
-	private IExecutable<TypedValue> result;
+public class QuotePostfixCompilerState extends SingleTokenPostfixCompilerState<TypedValue> {
 
 	private final IValueParser<TypedValue> valueParser;
 	private final TypeDomain domain;
@@ -24,26 +22,12 @@ public class QuotePostfixCompilerState implements IPostfixCompilerState<TypedVal
 	}
 
 	@Override
-	public Result acceptToken(Token token) {
-		Preconditions.checkState(result == null);
-
+	protected Optional<Value<TypedValue>> parseToken(Token token) {
 		final TypedValue resultValue;
 		if (token.type.isValue()) resultValue = valueParser.parseToken(token);
 		else if (canBeRaw(token.type)) resultValue = domain.create(Symbol.class, Symbol.get(token.value));
-		else return Result.REJECTED;
-		result = Value.create(resultValue);
-
-		return Result.ACCEPTED_AND_FINISHED;
+		else return Optional.absent();
+		return Optional.of(Value.create(resultValue));
 	}
 
-	@Override
-	public Result acceptExecutable(IExecutable<TypedValue> executable) {
-		return Result.REJECTED;
-	}
-
-	@Override
-	public IExecutable<TypedValue> exit() {
-		Preconditions.checkState(result != null);
-		return result;
-	}
 }

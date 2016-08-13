@@ -1,5 +1,6 @@
 package openmods.calc;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -16,7 +17,7 @@ import openmods.calc.parsing.DefaultPostfixCompiler.IStateProvider;
 import openmods.calc.parsing.DummyNode;
 import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
+import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 import openmods.calc.parsing.IExecutableListBuilder;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IExprNodeFactory;
@@ -25,13 +26,16 @@ import openmods.calc.parsing.ITokenStreamCompiler;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.InfixParser;
 import openmods.calc.parsing.PrefixParser;
-import openmods.calc.parsing.SymbolNode;
+import openmods.calc.parsing.SingleTokenPostfixCompilerState;
+import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.Token;
+import openmods.calc.parsing.TokenType;
 import openmods.calc.parsing.Tokenizer;
 
 public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprType> {
 
 	public static final String BRACKET_CONSTANT_EVALUATE = "[";
+	public static final String MODIFIER_SYMBOL_GET = "@";
 	public static final String SYMBOL_PREFIX = "prefix";
 	public static final String SYMBOL_INFIX = "infix";
 
@@ -55,7 +59,7 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 		}
 	}
 
-	public static class ParserSwitchTransition<E> implements ISymbolStateTransition<E> {
+	public static class ParserSwitchTransition<E> implements ISymbolCallStateTransition<E> {
 		private ICompilerState<E> switchState;
 
 		public ParserSwitchTransition(ICompilerState<E> switchState) {
@@ -94,11 +98,11 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 		}
 
 		@Override
-		public ISymbolStateTransition<E> getStateForSymbol(final String symbol) {
+		public ISymbolCallStateTransition<E> getStateForSymbolCall(final String symbol) {
 			if (symbol.equals(switchStateSymbol)) return new ParserSwitchTransition<E>(switchState);
 			if (symbol.equals(currentStateSymbol)) return new ParserSwitchTransition<E>(this);
 
-			return new ISymbolStateTransition<E>() {
+			return new ISymbolCallStateTransition<E>() {
 				@Override
 				public ICompilerState<E> getState() {
 					return SwitchingCompilerState.this;
@@ -106,7 +110,7 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 
 				@Override
 				public IExprNode<E> createRootNode(List<IExprNode<E>> children) {
-					return new SymbolNode<E>(symbol, children);
+					return new SymbolCallNode<E>(symbol, children);
 				}
 			};
 		}
@@ -176,11 +180,13 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 		return new AstCompiler<E>(compilerState);
 	}
 
-	protected void setupPostfixTokenizer(Tokenizer tokenizer) {}
+	protected void setupPostfixTokenizer(Tokenizer tokenizer) {
+		tokenizer.addModifier(MODIFIER_SYMBOL_GET);
+	}
 
 	protected ITokenStreamCompiler<E> createPostfixParser(IValueParser<E> valueParser, OperatorDictionary<E> operators, final Environment<E> env) {
 		final DefaultPostfixCompiler<E> compiler = new DefaultPostfixCompiler<E>(valueParser, operators);
-		return addConstantEvaluatorState(valueParser, operators, env, compiler);
+		return addSymbolGetState(addConstantEvaluatorState(valueParser, operators, env, compiler));
 	}
 
 	public static <E> DefaultPostfixCompiler<E> addConstantEvaluatorState(IValueParser<E> valueParser, OperatorDictionary<E> operators, Environment<E> env, DefaultPostfixCompiler<E> compiler) {
@@ -207,12 +213,30 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 						return ExecutableList.wrap(computedValues);
 					}
 				}
-
 				return new ConstantEvaluatorState();
 			}
-
 		};
+	}
 
+	public static <E> DefaultPostfixCompiler<E> addSymbolGetState(DefaultPostfixCompiler<E> compiler) {
+		return compiler.addModifierStateProvider(MODIFIER_SYMBOL_GET, BasicCompilerMapFactory.<E> createSymbolGetStateProvider());
+	}
+
+	private static <E> IStateProvider<E> createSymbolGetStateProvider() {
+		return new IStateProvider<E>() {
+			@Override
+			public IPostfixCompilerState<E> createState() {
+				return new SingleTokenPostfixCompilerState<E>() {
+					@Override
+					protected Optional<SymbolCall<E>> parseToken(Token token) {
+						if (token.type == TokenType.SYMBOL)
+							return Optional.of(new SymbolCall<E>(token.value));
+						else
+							return Optional.absent();
+					}
+				};
+			}
+		};
 	}
 
 	protected DefaultExprNodeFactory<E> createExprNodeFactory(IValueParser<E> valueParser) {

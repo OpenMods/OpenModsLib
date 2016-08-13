@@ -11,14 +11,12 @@ import openmods.calc.Operator;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.ICompilerState.IModifierStateTransition;
-import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
+import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 import openmods.utils.Stack;
 
 public class InfixParser<E> implements IAstParser<E> {
 
 	private static final String CALL_OPENING_BRACKET = "(";
-
-	private final List<IExprNode<E>> NO_ARGS = Lists.newArrayList();
 
 	private final OperatorDictionary<E> operators;
 
@@ -60,7 +58,6 @@ public class InfixParser<E> implements IAstParser<E> {
 				nodeStack.push(exprNodeFactory.createValueNode(token));
 			} else if (token.type.isSymbol()) {
 				Preconditions.checkArgument(token.type != TokenType.SYMBOL_WITH_ARGS, "Symbol '%s' can't be used in infix mode", token.value);
-				final ISymbolStateTransition<E> stateTransition = state.getStateForSymbol(token.value);
 
 				if (input.hasNext()) {
 					final Token nextToken = input.peek();
@@ -68,13 +65,14 @@ public class InfixParser<E> implements IAstParser<E> {
 						input.next();
 						final String openingBracket = nextToken.value;
 						final String closingBracket = TokenUtils.getClosingBracket(openingBracket);
+						final ISymbolCallStateTransition<E> stateTransition = state.getStateForSymbolCall(token.value);
 						final List<IExprNode<E>> childrenNodes = collectChildren(input, openingBracket, closingBracket, stateTransition.getState());
 						nodeStack.push(stateTransition.createRootNode(childrenNodes));
 					} else {
-						nodeStack.push(stateTransition.createRootNode(NO_ARGS));
+						nodeStack.push(exprNodeFactory.createSymbolGetNode(token.value));
 					}
 				} else {
-					nodeStack.push(stateTransition.createRootNode(NO_ARGS));
+					nodeStack.push(exprNodeFactory.createSymbolGetNode(token.value));
 				}
 			} else if (token.type == TokenType.MODIFIER) {
 				final IModifierStateTransition<E> stateTransition = state.getStateForModifier(token.value);

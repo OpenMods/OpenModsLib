@@ -38,7 +38,7 @@ public class PrefixCompilerTest extends CalcTestUtils {
 			for (IExprNode<String> child : children)
 				child.flatten(output);
 
-			output.add(s(SYMBOL_LIST, children.size()));
+			output.add(call(SYMBOL_LIST, children.size()));
 		}
 
 		@Override
@@ -67,56 +67,56 @@ public class PrefixCompilerTest extends CalcTestUtils {
 	public void testSingleExpressions() {
 		given(dec("12")).expect(c("12"));
 		given(string("a")).expect(c("a"));
-		given(symbol("a")).expect(s("a", 0));
+		given(symbol("a")).expect(get("a"));
 	}
 
 	@Test
 	public void testSymbolCall() {
-		given(LEFT_BRACKET, symbol("a"), RIGHT_BRACKET).expect(s("a", 0));
-		given(LEFT_BRACKET, symbol("a"), dec("12"), RIGHT_BRACKET).expect(c("12"), s("a", 1));
-		given(LEFT_BRACKET, symbol("a"), dec("12"), dec("34"), RIGHT_BRACKET).expect(c("12"), c("34"), s("a", 2));
+		given(LEFT_BRACKET, symbol("a"), RIGHT_BRACKET).expect(call("a", 0));
+		given(LEFT_BRACKET, symbol("a"), dec("12"), RIGHT_BRACKET).expect(c("12"), call("a", 1));
+		given(LEFT_BRACKET, symbol("a"), dec("12"), dec("34"), RIGHT_BRACKET).expect(c("12"), c("34"), call("a", 2));
 	}
 
 	@Test
 	public void testSymbolAsArg() {
-		given(LEFT_BRACKET, symbol("a"), symbol("b"), RIGHT_BRACKET).expect(s("b", 0), s("a", 1));
-		given(LEFT_BRACKET, symbol("a"), dec("12"), symbol("b"), RIGHT_BRACKET).expect(c("12"), s("b", 0), s("a", 2));
-		given(LEFT_BRACKET, symbol("a"), symbol("b"), dec("12"), RIGHT_BRACKET).expect(s("b", 0), c("12"), s("a", 2));
+		given(LEFT_BRACKET, symbol("a"), symbol("b"), RIGHT_BRACKET).expect(get("b"), call("a", 1));
+		given(LEFT_BRACKET, symbol("a"), dec("12"), symbol("b"), RIGHT_BRACKET).expect(c("12"), get("b"), call("a", 2));
+		given(LEFT_BRACKET, symbol("a"), symbol("b"), dec("12"), RIGHT_BRACKET).expect(get("b"), c("12"), call("a", 2));
 	}
 
 	@Test
 	public void testNestedSymbolCall() {
-		given(LEFT_BRACKET, symbol("a"), dec("12"), LEFT_BRACKET, symbol("b"), dec("34"), RIGHT_BRACKET, RIGHT_BRACKET).expect(c("12"), c("34"), s("b", 1), s("a", 2));
-		given(LEFT_BRACKET, symbol("a"), LEFT_BRACKET, symbol("b"), dec("12"), RIGHT_BRACKET, dec("34"), RIGHT_BRACKET).expect(c("12"), s("b", 1), c("34"), s("a", 2));
+		given(LEFT_BRACKET, symbol("a"), dec("12"), LEFT_BRACKET, symbol("b"), dec("34"), RIGHT_BRACKET, RIGHT_BRACKET).expect(c("12"), c("34"), call("b", 1), call("a", 2));
+		given(LEFT_BRACKET, symbol("a"), LEFT_BRACKET, symbol("b"), dec("12"), RIGHT_BRACKET, dec("34"), RIGHT_BRACKET).expect(c("12"), call("b", 1), c("34"), call("a", 2));
 	}
 
 	@Test
 	public void testSquareBrackets() {
-		given(OPEN_LIST, CLOSE_LIST).expect(s(SYMBOL_LIST, 0));
-		given(OPEN_LIST, dec("12"), CLOSE_LIST).expect(c("12"), s(SYMBOL_LIST, 1));
-		given(OPEN_LIST, dec("12"), dec("34"), CLOSE_LIST).expect(c("12"), c("34"), s(SYMBOL_LIST, 2));
+		given(OPEN_LIST, CLOSE_LIST).expect(call(SYMBOL_LIST, 0));
+		given(OPEN_LIST, dec("12"), CLOSE_LIST).expect(c("12"), call(SYMBOL_LIST, 1));
+		given(OPEN_LIST, dec("12"), dec("34"), CLOSE_LIST).expect(c("12"), c("34"), call(SYMBOL_LIST, 2));
 	}
 
 	@Test
 	public void testSymbolInSquareBrackets() {
-		given(OPEN_LIST, symbol("a"), CLOSE_LIST).expect(s("a", 0), s(SYMBOL_LIST, 1));
-		given(OPEN_LIST, dec("12"), symbol("a"), CLOSE_LIST).expect(c("12"), s("a", 0), s(SYMBOL_LIST, 2));
-		given(OPEN_LIST, symbol("a"), dec("12"), CLOSE_LIST).expect(s("a", 0), c("12"), s(SYMBOL_LIST, 2));
+		given(OPEN_LIST, symbol("a"), CLOSE_LIST).expect(get("a"), call(SYMBOL_LIST, 1));
+		given(OPEN_LIST, dec("12"), symbol("a"), CLOSE_LIST).expect(c("12"), get("a"), call(SYMBOL_LIST, 2));
+		given(OPEN_LIST, symbol("a"), dec("12"), CLOSE_LIST).expect(get("a"), c("12"), call(SYMBOL_LIST, 2));
 	}
 
 	@Test
 	public void testMixedBrackets() {
-		given(LEFT_BRACKET, symbol("print"), OPEN_LIST, dec("12"), CLOSE_LIST, RIGHT_BRACKET).expect(c("12"), s(SYMBOL_LIST, 1), s("print", 1));
-		given(OPEN_LIST, LEFT_BRACKET, symbol("print"), dec("12"), RIGHT_BRACKET, CLOSE_LIST).expect(c("12"), s("print", 1), s(SYMBOL_LIST, 1));
+		given(LEFT_BRACKET, symbol("print"), OPEN_LIST, dec("12"), CLOSE_LIST, RIGHT_BRACKET).expect(c("12"), call(SYMBOL_LIST, 1), call("print", 1));
+		given(OPEN_LIST, LEFT_BRACKET, symbol("print"), dec("12"), RIGHT_BRACKET, CLOSE_LIST).expect(c("12"), call("print", 1), call(SYMBOL_LIST, 1));
 	}
 
 	@Test
 	public void testCommaWhitespace() {
-		given(LEFT_BRACKET, symbol("a"), dec("12"), dec("34"), RIGHT_BRACKET).expect(c("12"), c("34"), s("a", 2));
-		given(LEFT_BRACKET, symbol("a"), COMMA, dec("12"), dec("34"), RIGHT_BRACKET).expect(c("12"), c("34"), s("a", 2));
-		given(LEFT_BRACKET, symbol("a"), dec("12"), COMMA, dec("34"), RIGHT_BRACKET).expect(c("12"), c("34"), s("a", 2));
+		given(LEFT_BRACKET, symbol("a"), dec("12"), dec("34"), RIGHT_BRACKET).expect(c("12"), c("34"), call("a", 2));
+		given(LEFT_BRACKET, symbol("a"), COMMA, dec("12"), dec("34"), RIGHT_BRACKET).expect(c("12"), c("34"), call("a", 2));
+		given(LEFT_BRACKET, symbol("a"), dec("12"), COMMA, dec("34"), RIGHT_BRACKET).expect(c("12"), c("34"), call("a", 2));
 
-		given(OPEN_LIST, symbol("a"), COMMA, dec("12"), COMMA, dec("34"), CLOSE_LIST).expect(s("a", 0), c("12"), c("34"), s(SYMBOL_LIST, 3));
+		given(OPEN_LIST, symbol("a"), COMMA, dec("12"), COMMA, dec("34"), CLOSE_LIST).expect(get("a"), c("12"), c("34"), call(SYMBOL_LIST, 3));
 
 		given(LEFT_BRACKET, OP_PLUS, dec("12"), COMMA, dec("34"), RIGHT_BRACKET).expect(c("12"), c("34"), PLUS);
 	}
@@ -130,13 +130,13 @@ public class PrefixCompilerTest extends CalcTestUtils {
 	@Test
 	public void testUnaryOperatorWithNestedArgs() {
 		given(LEFT_BRACKET, OP_MINUS, LEFT_BRACKET, OP_MINUS, dec("12"), RIGHT_BRACKET, RIGHT_BRACKET).expect(c("12"), UNARY_MINUS, UNARY_MINUS);
-		given(LEFT_BRACKET, OP_MINUS, OPEN_LIST, dec("12"), dec("34"), CLOSE_LIST, RIGHT_BRACKET).expect(c("12"), c("34"), s(SYMBOL_LIST, 2), UNARY_MINUS);
+		given(LEFT_BRACKET, OP_MINUS, OPEN_LIST, dec("12"), dec("34"), CLOSE_LIST, RIGHT_BRACKET).expect(c("12"), c("34"), call(SYMBOL_LIST, 2), UNARY_MINUS);
 	}
 
 	@Test
 	public void testBinaryOperatorWithNestedArgs() {
 		given(LEFT_BRACKET, OP_MINUS, LEFT_BRACKET, OP_MINUS, dec("12"), RIGHT_BRACKET, dec("34"), RIGHT_BRACKET).expect(c("12"), UNARY_MINUS, c("34"), MINUS);
-		given(LEFT_BRACKET, OP_MINUS, LEFT_BRACKET, symbol("a"), dec("34"), RIGHT_BRACKET, OPEN_LIST, dec("56"), CLOSE_LIST, RIGHT_BRACKET).expect(c("34"), s("a", 1), c("56"), s(SYMBOL_LIST, 1), MINUS);
+		given(LEFT_BRACKET, OP_MINUS, LEFT_BRACKET, symbol("a"), dec("34"), RIGHT_BRACKET, OPEN_LIST, dec("56"), CLOSE_LIST, RIGHT_BRACKET).expect(c("34"), call("a", 1), c("56"), call(SYMBOL_LIST, 1), MINUS);
 	}
 
 	@Test
@@ -210,20 +210,20 @@ public class PrefixCompilerTest extends CalcTestUtils {
 
 	@Test
 	public void testModifierQuoteAsArg() {
-		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, dec("12"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, valueMarker("12"), CLOSE_ROOT_QUOTE_M, s("test", 1));
-		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, symbol("12"), dec("34"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, rawValueMarker(symbol("12")), CLOSE_ROOT_QUOTE_M, c("34"), s("test", 2));
+		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, dec("12"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, valueMarker("12"), CLOSE_ROOT_QUOTE_M, call("test", 1));
+		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, symbol("12"), dec("34"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, rawValueMarker(symbol("12")), CLOSE_ROOT_QUOTE_M, c("34"), call("test", 2));
 	}
 
 	@Test
 	public void testSymboQuoteAsArg() {
-		given(LEFT_BRACKET, symbol("test"), LEFT_BRACKET, QUOTE_SYMBOL, dec("12"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_S, valueMarker("12"), CLOSE_ROOT_QUOTE_S, s("test", 1));
-		given(LEFT_BRACKET, symbol("test"), LEFT_BRACKET, QUOTE_SYMBOL, symbol("12"), RIGHT_BRACKET, dec("34"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_S, rawValueMarker(symbol("12")), CLOSE_ROOT_QUOTE_S, c("34"), s("test", 2));
+		given(LEFT_BRACKET, symbol("test"), LEFT_BRACKET, QUOTE_SYMBOL, dec("12"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_S, valueMarker("12"), CLOSE_ROOT_QUOTE_S, call("test", 1));
+		given(LEFT_BRACKET, symbol("test"), LEFT_BRACKET, QUOTE_SYMBOL, symbol("12"), RIGHT_BRACKET, dec("34"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_S, rawValueMarker(symbol("12")), CLOSE_ROOT_QUOTE_S, c("34"), call("test", 2));
 	}
 
 	@Test
 	public void testNestedQuoteAsArg() {
-		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE_M, s("test", 1));
-		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, dec("34"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE_M, c("34"), s("test", 2));
-		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, LEFT_BRACKET, symbol("sqrt"), dec("34"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE_M, c("34"), s("sqrt", 1), s("test", 2));
+		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE_M, call("test", 1));
+		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, dec("34"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE_M, c("34"), call("test", 2));
+		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, LEFT_BRACKET, symbol("sqrt"), dec("34"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE_M, c("34"), call("sqrt", 1), call("test", 2));
 	}
 }

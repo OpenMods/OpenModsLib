@@ -1,5 +1,6 @@
 package openmods.calc;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.junit.Test;
 
 public class PostfixCompilerTest extends CalcTestUtils {
 
+	private static final Optional<Integer> ABSENT = Optional.<Integer> absent();
 	public final OperatorDictionary<String> operators = new OperatorDictionary<String>();
 	{
 		operators.registerBinaryOperator(PLUS);
@@ -110,7 +112,7 @@ public class PostfixCompilerTest extends CalcTestUtils {
 
 	@Test
 	public void testSymbol() {
-		given(symbol("a")).expect(s("a"));
+		given(symbol("a")).expect(call("a"));
 	}
 
 	@Test
@@ -118,7 +120,7 @@ public class PostfixCompilerTest extends CalcTestUtils {
 		given(mod(TEST_MODIFIER), dec("3")).expect(c(rawTokenString(dec("3"))));
 		given(mod(TEST_MODIFIER), symbol("a")).expect(c(rawTokenString(symbol("a"))));
 
-		given(dec("1"), mod(TEST_MODIFIER), symbol("a"), symbol("b")).expect(c("1"), c(rawTokenString(symbol("a"))), s("b"));
+		given(dec("1"), mod(TEST_MODIFIER), symbol("a"), symbol("b")).expect(c("1"), c(rawTokenString(symbol("a"))), call("b"));
 	}
 
 	@Test
@@ -146,17 +148,17 @@ public class PostfixCompilerTest extends CalcTestUtils {
 
 	@Test
 	public void testSingleExpr() {
-		given(symbol("a"), dec("3"), OP_PLUS).expect(s("a"), c("3"), PLUS);
+		given(symbol("a"), dec("3"), OP_PLUS).expect(call("a"), c("3"), PLUS);
 	}
 
 	@Test
 	public void testSymbolWithArgs() {
-		given(symbol_args("a@2")).expect(s("a").setArgumentsCount(2));
-		given(symbol_args("a@2,")).expect(s("a").setArgumentsCount(2));
-		given(symbol_args("a@,3")).expect(s("a").setReturnsCount(3));
-		given(symbol_args("a@,")).expect(s("a"));
-		given(symbol_args("b@3,4")).expect(s("b").setArgumentsCount(3).setReturnsCount(4));
-		given(symbol_args("b@35,45")).expect(s("b").setArgumentsCount(35).setReturnsCount(45));
+		given(symbol_args("a@2")).expect(call("a", Optional.of(2), ABSENT));
+		given(symbol_args("a@2,")).expect(call("a", Optional.of(2), ABSENT));
+		given(symbol_args("a@,3")).expect(call("a", ABSENT, Optional.of(3)));
+		given(symbol_args("a@,")).expect(call("a", ABSENT, ABSENT));
+		given(symbol_args("b@3,4")).expect(call("b", Optional.of(3), Optional.of(4)));
+		given(symbol_args("b@35,45")).expect(call("b", Optional.of(35), Optional.of(45)));
 	}
 
 }

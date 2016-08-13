@@ -1,7 +1,6 @@
 package openmods.calc.parsing;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
 import java.util.Iterator;
@@ -12,7 +11,7 @@ import openmods.calc.BinaryOperator.Associativity;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.ICompilerState.IModifierStateTransition;
-import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
+import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 
 public class PrefixParser<E> implements IAstParser<E> {
 
@@ -33,13 +32,11 @@ public class PrefixParser<E> implements IAstParser<E> {
 		}
 	}
 
-	private final ImmutableList<IExprNode<E>> NO_ARGS = ImmutableList.of();
-
 	protected IExprNode<E> parseNode(ICompilerState<E> state, PeekingIterator<Token> input) {
 		final Token token = next(input);
 		if (token.type.isValue()) return exprNodeFactory.createValueNode(token);
 
-		if (token.type == TokenType.SYMBOL) return state.getStateForSymbol(token.value).createRootNode(NO_ARGS);
+		if (token.type == TokenType.SYMBOL) return exprNodeFactory.createSymbolGetNode(token.value);
 
 		if (token.type == TokenType.MODIFIER) return parseModifierNode(token.value, state, input);
 
@@ -57,7 +54,7 @@ public class PrefixParser<E> implements IAstParser<E> {
 
 			final String operationName = operationToken.value;
 			if (operationToken.type == TokenType.SYMBOL) {
-				final ISymbolStateTransition<E> stateTransition = state.getStateForSymbol(operationName);
+				final ISymbolCallStateTransition<E> stateTransition = state.getStateForSymbolCall(operationName);
 				final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input, stateTransition.getState());
 				return stateTransition.createRootNode(args);
 				// no modifiers allowed on this position (yet), so assuming operator

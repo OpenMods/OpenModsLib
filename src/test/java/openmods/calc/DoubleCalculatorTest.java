@@ -50,6 +50,16 @@ public class DoubleCalculatorTest {
 	}
 
 	@Test
+	public void testPostfixSymbols() {
+		sut.environment.setGlobalSymbol("a", Constant.create(5.0));
+		postfix("a").expectResult(5.0);
+		postfix("a@0").expectResult(5.0);
+		postfix("a@,1").expectResult(5.0);
+		postfix("a@0,1").expectResult(5.0);
+		postfix("@a").expectResult(5.0);
+	}
+
+	@Test
 	public void testPostfixStackOperations() {
 		postfix("2 dup +").expectResult(4.0);
 		postfix("1 2 3 pop +").expectResult(3.0);
@@ -176,6 +186,7 @@ public class DoubleCalculatorTest {
 	@Test
 	public void testConstantEvaluatingBrackets() {
 		final SymbolStub<Double> stub = new SymbolStub<Double>()
+				.blockGets()
 				.expectArgs(1.0, 2.0)
 				.checkArgCount()
 				.setReturns(5.0, 6.0, 7.0)

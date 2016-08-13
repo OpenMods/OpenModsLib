@@ -5,11 +5,11 @@ import java.util.List;
 import openmods.calc.IExecutable;
 import openmods.calc.parsing.ExprUtils;
 import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
+import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ValueNode;
 
-public class CodeStateTransition implements ISymbolStateTransition<TypedValue> {
+public class CodeStateTransition implements ISymbolCallStateTransition<TypedValue> {
 
 	private TypeDomain domain;
 	private ICompilerState<TypedValue> parentParserState;

@@ -2,7 +2,7 @@ package openmods.calc;
 
 import openmods.utils.Stack;
 
-public class CompiledFunction<E> extends FixedSymbol<E> {
+public class CompiledFunction<E> extends FixedFunctionSymbol<E> {
 
 	private final IExecutable<E> body;
 
@@ -12,7 +12,7 @@ public class CompiledFunction<E> extends FixedSymbol<E> {
 	}
 
 	@Override
-	public void execute(ICalculatorFrame<E> frame) {
+	public void call(ICalculatorFrame<E> frame) {
 		final LocalFrame<E> newFrame = new LocalFrame<E>(frame);
 		final Stack<E> argumentStack = frame.stack();
 

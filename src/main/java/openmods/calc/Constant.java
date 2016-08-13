@@ -2,17 +2,16 @@ package openmods.calc;
 
 import com.google.common.base.Objects;
 
-public class Constant<E> extends FixedSymbol<E> {
+public class Constant<E> extends ValueSymbol<E> {
 
 	private final E value;
 
 	public Constant(E value) {
-		super(0, 1);
 		this.value = value;
 	}
 
 	@Override
-	public void execute(ICalculatorFrame<E> frame) {
+	public void get(ICalculatorFrame<E> frame) {
 		frame.stack().push(value);
 	}
 

@@ -14,7 +14,7 @@ public abstract class FixedSymbol<E> implements ISymbol<E> {
 	}
 
 	@Override
-	public final void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+	public final void call(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 		if (argumentsCount.isPresent()) {
 			final int args = argumentsCount.get();
 			if (args != argCount) throw new StackValidationException("Expected %s argument(s) but got %s", this.argCount, args);
@@ -25,8 +25,8 @@ public abstract class FixedSymbol<E> implements ISymbol<E> {
 			if (returns != resultCount) throw new StackValidationException("Has %s result(s) but expected %s", this.resultCount, returns);
 		}
 
-		execute(frame);
+		call(frame);
 	}
 
-	public abstract void execute(ICalculatorFrame<E> frame);
+	public abstract void call(ICalculatorFrame<E> frame);
 }

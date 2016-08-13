@@ -129,93 +129,97 @@ public class InfixCompilerTest extends CalcTestUtils {
 	}
 
 	@Test
-	public void testNullaryFunction() {
+	public void testSymbolGet() {
 		// pi
 		given(symbol("pi"))
-				.expect(s("pi", 0));
+				.expect(get("pi"));
 
 		// pi + 2
 		given(symbol("pi"), OP_PLUS, dec("2"))
-				.expect(s("pi", 0), c("2"), PLUS);
+				.expect(get("pi"), c("2"), PLUS);
 
 		// 2 + pi
 		given(dec("2"), OP_PLUS, symbol("pi"))
-				.expect(c("2"), s("pi", 0), PLUS);
+				.expect(c("2"), get("pi"), PLUS);
 
 		// a + b
 		given(symbol("a"), OP_PLUS, symbol("b"))
-				.expect(s("a", 0), s("b", 0), PLUS);
-
-		// pi()
-		given(symbol("pi"), LEFT_BRACKET, RIGHT_BRACKET)
-				.expect(s("pi", 0));
-
-		// p() + e()
-		given(symbol("pi"), LEFT_BRACKET, RIGHT_BRACKET, OP_PLUS, symbol("e"), LEFT_BRACKET, RIGHT_BRACKET)
-				.expect(s("pi", 0), s("e", 0), PLUS);
+				.expect(get("a"), get("b"), PLUS);
 
 		// sin(a)
 		given(symbol("sin"), LEFT_BRACKET, symbol("a"), RIGHT_BRACKET)
-				.expect(s("a", 0), s("sin", 1));
+				.expect(get("a"), call("sin", 1));
+	}
+
+	@Test
+	public void testNullaryFunction() {
+		// test()
+		given(symbol("test"), LEFT_BRACKET, RIGHT_BRACKET)
+				.expect(call("test", 0));
+
+		// p() + e()
+		given(symbol("pi"), LEFT_BRACKET, RIGHT_BRACKET, OP_PLUS, symbol("e"), LEFT_BRACKET, RIGHT_BRACKET)
+				.expect(call("pi", 0), call("e", 0), PLUS);
+
 	}
 
 	@Test
 	public void testUnaryFunction() {
 		// sin(2)
 		given(symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
-				.expect(c("2"), s("sin", 1));
+				.expect(c("2"), call("sin", 1));
 
 		// sin((2))
 		given(symbol("sin"), LEFT_BRACKET, LEFT_BRACKET, dec("2"), RIGHT_BRACKET, RIGHT_BRACKET)
-				.expect(c("2"), s("sin", 1));
+				.expect(c("2"), call("sin", 1));
 
 		// sin(2 + 3)
 		given(symbol("sin"), LEFT_BRACKET, dec("2"), OP_PLUS, dec("3"), RIGHT_BRACKET)
-				.expect(c("2"), c("3"), PLUS, s("sin", 1));
+				.expect(c("2"), c("3"), PLUS, call("sin", 1));
 
 		// sin((1))
 		given(symbol("sin"), LEFT_BRACKET, LEFT_BRACKET, dec("1"), RIGHT_BRACKET, RIGHT_BRACKET)
-				.expect(c("1"), s("sin", 1));
+				.expect(c("1"), call("sin", 1));
 	}
 
 	@Test
 	public void testBinaryFunction() {
 		// exp(2, 3)
 		given(symbol("exp"), LEFT_BRACKET, dec("2"), COMMA, dec("3"), RIGHT_BRACKET)
-				.expect(c("2"), c("3"), s("exp", 2));
+				.expect(c("2"), c("3"), call("exp", 2));
 
 		// exp(2 + 3, 3 - 4)
 		given(symbol("exp"), LEFT_BRACKET, dec("2"), OP_PLUS, dec("3"), COMMA, dec("4"), OP_MINUS, dec("5"), RIGHT_BRACKET)
-				.expect(c("2"), c("3"), PLUS, c("4"), c("5"), MINUS, s("exp", 2));
+				.expect(c("2"), c("3"), PLUS, c("4"), c("5"), MINUS, call("exp", 2));
 
 		// exp((2), 3)
 		given(symbol("exp"), LEFT_BRACKET, LEFT_BRACKET, dec("2"), RIGHT_BRACKET, COMMA, dec("3"), RIGHT_BRACKET)
-				.expect(c("2"), c("3"), s("exp", 2));
+				.expect(c("2"), c("3"), call("exp", 2));
 	}
 
 	@Test
 	public void testFunctionSum() {
 		// sin(2) + cos(3)
 		given(symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET, OP_PLUS, symbol("cos"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET)
-				.expect(c("2"), s("sin", 1), c("3"), s("cos", 1), PLUS);
+				.expect(c("2"), call("sin", 1), c("3"), call("cos", 1), PLUS);
 
 		// sin(2) + exp(3, 4)
 		given(symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET, OP_PLUS, symbol("exp"), LEFT_BRACKET, dec("3"), COMMA, dec("4"), RIGHT_BRACKET)
-				.expect(c("2"), s("sin", 1), c("3"), c("4"), s("exp", 2), PLUS);
+				.expect(c("2"), call("sin", 1), c("3"), c("4"), call("exp", 2), PLUS);
 	}
 
 	@Test
 	public void testNestedFunctions() {
 		// exp(pi, e)
 		given(symbol("exp"), LEFT_BRACKET, symbol("pi"), COMMA, symbol("e"), RIGHT_BRACKET)
-				.expect(s("pi", 0), s("e", 0), s("exp", 2));
+				.expect(get("pi"), get("e"), call("exp", 2));
 		// sin(cos(3))
 		given(symbol("sin"), LEFT_BRACKET, symbol("cos"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, RIGHT_BRACKET)
-				.expect(c("3"), s("cos", 1), s("sin", 1));
+				.expect(c("3"), call("cos", 1), call("sin", 1));
 
 		// exp(sin(3), 4 + cos(2))
 		given(symbol("exp"), LEFT_BRACKET, symbol("sin"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, COMMA, dec("4"), OP_PLUS, symbol("cos"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET, RIGHT_BRACKET)
-				.expect(c("3"), s("sin", 1), c("4"), c("2"), s("cos", 1), PLUS, s("exp", 2));
+				.expect(c("3"), call("sin", 1), c("4"), c("2"), call("cos", 1), PLUS, call("exp", 2));
 	}
 
 	@Test
@@ -254,15 +258,15 @@ public class InfixCompilerTest extends CalcTestUtils {
 
 		// -pi
 		given(OP_MINUS, symbol("pi"))
-				.expect(s("pi", 0), UNARY_MINUS);
+				.expect(get("pi"), UNARY_MINUS);
 
 		// sin(-2)
 		given(symbol("sin"), LEFT_BRACKET, OP_MINUS, dec("2"), RIGHT_BRACKET)
-				.expect(c("2"), UNARY_MINUS, s("sin", 1));
+				.expect(c("2"), UNARY_MINUS, call("sin", 1));
 
 		// -sin(2)
 		given(OP_MINUS, symbol("sin"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
-				.expect(c("2"), s("sin", 1), UNARY_MINUS);
+				.expect(c("2"), call("sin", 1), UNARY_MINUS);
 	}
 
 	@Test
@@ -287,32 +291,37 @@ public class InfixCompilerTest extends CalcTestUtils {
 	@Test
 	public void testDefaultOperator() {
 		// 2a == 2 * a
-		// given(dec("2"), symbol("a"))
-		// .expect(c("2"), s("a", 0), MULTIPLY)
-		// .expectSameAs(dec("2"), OP_MULTIPLY, symbol("a"));
+		given(dec("2"), symbol("a"))
+				.expect(c("2"), get("a"), MULTIPLY)
+				.expectSameAs(dec("2"), OP_MULTIPLY, symbol("a"));
 
 		// -2a == -2 * a
 		given(OP_MINUS, dec("2"), symbol("a"))
-				.expect(c("2"), UNARY_MINUS, s("a", 0), MULTIPLY)
+				.expect(c("2"), UNARY_MINUS, get("a"), MULTIPLY)
 				.expectSameAs(OP_MINUS, dec("2"), OP_MULTIPLY, symbol("a"));
+
+		// -2a() == -2 * a()
+		given(OP_MINUS, dec("2"), symbol("a"), LEFT_BRACKET, RIGHT_BRACKET)
+				.expect(c("2"), UNARY_MINUS, call("a", 0), MULTIPLY)
+				.expectSameAs(OP_MINUS, dec("2"), OP_MULTIPLY, symbol("a"), LEFT_BRACKET, RIGHT_BRACKET);
 
 		// 2(a) = 2 * (a)
 		given(dec("2"), LEFT_BRACKET, symbol("a"), RIGHT_BRACKET)
-				.expect(c("2"), s("a", 0), MULTIPLY)
+				.expect(c("2"), get("a"), MULTIPLY)
 				.expectSameAs(dec("2"), OP_MULTIPLY, symbol("a"));
 
 		// 3 a + 2 = 3 * a + 2
 		given(dec("3"), symbol("a"), OP_PLUS, dec("2"))
-				.expect(c("3"), s("a", 0), MULTIPLY, c("2"), PLUS);
+				.expect(c("3"), get("a"), MULTIPLY, c("2"), PLUS);
 
 		// 3 + 2a == 3 + 2 * a
 		given(dec("3"), OP_PLUS, dec("2"), symbol("a"))
-				.expect(c("3"), c("2"), s("a", 0), MULTIPLY, PLUS)
+				.expect(c("3"), c("2"), get("a"), MULTIPLY, PLUS)
 				.expectSameAs(dec("3"), OP_PLUS, dec("2"), OP_MULTIPLY, symbol("a"));
 
 		// 3a(2) == 3 * a(2)
 		given(dec("3"), symbol("a"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
-				.expect(c("3"), c("2"), s("a", 1), MULTIPLY)
+				.expect(c("3"), c("2"), call("a", 1), MULTIPLY)
 				.expectSameAs(dec("3"), OP_MULTIPLY, symbol("a"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET);
 
 		// 2 3 = 2 * 3 (weird edge condition, but whatever)
@@ -332,17 +341,17 @@ public class InfixCompilerTest extends CalcTestUtils {
 
 		// (2) i == 2 * i
 		given(LEFT_BRACKET, dec("2"), RIGHT_BRACKET, symbol("i"))
-				.expect(c("2"), s("i", 0), MULTIPLY)
+				.expect(c("2"), get("i"), MULTIPLY)
 				.expectSameAs(dec("2"), OP_MULTIPLY, symbol("i"));
 
 		// -(2) i == -2 * i
 		given(OP_MINUS, LEFT_BRACKET, dec("2"), RIGHT_BRACKET, symbol("i"))
-				.expect(c("2"), UNARY_MINUS, s("i", 0), MULTIPLY)
+				.expect(c("2"), UNARY_MINUS, get("i"), MULTIPLY)
 				.expectSameAs(OP_MINUS, dec("2"), OP_MULTIPLY, symbol("i"));
 
 		// a(2i, 4) == a(2*i, 4)
 		given(symbol("a"), LEFT_BRACKET, dec("2"), symbol("i"), COMMA, dec("4"), RIGHT_BRACKET)
-				.expect(c("2"), s("i", 0), MULTIPLY, c("4"), s("a", 2))
+				.expect(c("2"), get("i"), MULTIPLY, c("4"), call("a", 2))
 				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("2"), OP_MULTIPLY, symbol("i"), COMMA, dec("4"), RIGHT_BRACKET);
 
 		// (2)(3) == 2 * 3
@@ -357,42 +366,42 @@ public class InfixCompilerTest extends CalcTestUtils {
 
 		// (2)a(3) = 2 * a(3)
 		given(LEFT_BRACKET, dec("2"), RIGHT_BRACKET, symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET)
-				.expect(c("2"), c("3"), s("a", 1), MULTIPLY)
+				.expect(c("2"), c("3"), call("a", 1), MULTIPLY)
 				.expectSameAs(dec("2"), OP_MULTIPLY, symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET);
 
 		// a(3)2 = a(3) * 2
 		given(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, dec("2"))
-				.expect(c("3"), s("a", 1), c("2"), MULTIPLY)
+				.expect(c("3"), call("a", 1), c("2"), MULTIPLY)
 				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, OP_MULTIPLY, dec("2"));
 
 		// a(3)j = a(3) * j
 		given(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, symbol("j"))
-				.expect(c("3"), s("a", 1), s("j", 0), MULTIPLY)
+				.expect(c("3"), call("a", 1), get("j"), MULTIPLY)
 				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, OP_MULTIPLY, symbol("j"));
 
 		// a(3)(2) = a(3) * 2
 		given(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
-				.expect(c("3"), s("a", 1), c("2"), MULTIPLY)
+				.expect(c("3"), call("a", 1), c("2"), MULTIPLY)
 				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, OP_MULTIPLY, dec("2"));
 
 		// a[3] = a * [3]
 		given(symbol("a"), leftBracket("["), dec("3"), rightBracket("]"))
-				.expect(s("a", 0), c("3"), MULTIPLY)
+				.expect(get("a"), c("3"), MULTIPLY)
 				.expectSameAs(symbol("a"), OP_MULTIPLY, dec("3"));
 
 		// a 3 = a * 3
 		given(symbol("a"), dec("3"))
-				.expect(s("a", 0), c("3"), MULTIPLY)
+				.expect(get("a"), c("3"), MULTIPLY)
 				.expectSameAs(symbol("a"), OP_MULTIPLY, dec("3"));
 
 		// a b = a * b
 		given(symbol("a"), symbol("b"))
-				.expect(s("a", 0), s("b", 0), MULTIPLY)
+				.expect(get("a"), get("b"), MULTIPLY)
 				.expectSameAs(symbol("a"), OP_MULTIPLY, symbol("b"));
 
 		// -a b = -a * b
 		given(OP_MINUS, symbol("a"), symbol("b"))
-				.expect(s("a", 0), UNARY_MINUS, s("b", 0), MULTIPLY)
+				.expect(get("a"), UNARY_MINUS, get("b"), MULTIPLY)
 				.expectSameAs(OP_MINUS, symbol("a"), OP_MULTIPLY, symbol("b"));
 	}
 

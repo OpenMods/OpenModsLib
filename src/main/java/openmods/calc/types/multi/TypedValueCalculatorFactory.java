@@ -19,10 +19,10 @@ import openmods.calc.Compilers;
 import openmods.calc.Constant;
 import openmods.calc.Environment;
 import openmods.calc.ExprType;
+import openmods.calc.FunctionSymbol;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.ICalculatorFrame;
-import openmods.calc.ISymbol;
 import openmods.calc.LocalFrame;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.StackValidationException;
@@ -42,7 +42,7 @@ import openmods.calc.parsing.ITokenStreamCompiler;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.InfixParser;
 import openmods.calc.parsing.PrefixParser;
-import openmods.calc.parsing.SymbolNode;
+import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenUtils;
 import openmods.calc.parsing.Tokenizer;
@@ -713,7 +713,7 @@ public class TypedValueCalculatorFactory {
 			}
 
 			@Override
-			protected TypedValue execute(TypedValue value) {
+			protected TypedValue call(TypedValue value) {
 				return value.domain.create(Boolean.class, value.is(cls));
 			}
 		}
@@ -731,14 +731,14 @@ public class TypedValueCalculatorFactory {
 
 		env.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
 			@Override
-			protected TypedValue execute(TypedValue value) {
+			protected TypedValue call(TypedValue value) {
 				return value.domain.create(Boolean.class, NUMBER_TYPES.contains(value.type));
 			}
 		});
 
 		env.setGlobalSymbol("type", new UnaryFunction<TypedValue>() {
 			@Override
-			protected TypedValue execute(TypedValue value) {
+			protected TypedValue call(TypedValue value) {
 				final TypeDomain domain = value.domain;
 				return domain.create(String.class, domain.getName(value.type));
 			}
@@ -746,7 +746,7 @@ public class TypedValueCalculatorFactory {
 
 		env.setGlobalSymbol("bool", new UnaryFunction<TypedValue>() {
 			@Override
-			protected TypedValue execute(TypedValue value) {
+			protected TypedValue call(TypedValue value) {
 				final Optional<Boolean> isTruthy = value.isTruthy();
 				Preconditions.checkArgument(isTruthy.isPresent(), "Cannot determine value of %s", value);
 				return value.domain.create(Boolean.class, isTruthy.get());
@@ -755,7 +755,7 @@ public class TypedValueCalculatorFactory {
 
 		env.setGlobalSymbol("str", new UnaryFunction<TypedValue>() {
 			@Override
-			protected TypedValue execute(TypedValue value) {
+			protected TypedValue call(TypedValue value) {
 				if (value.is(String.class)) return value;
 				if (value.is(Symbol.class)) return value.domain.create(String.class, value.unwrap(Symbol.class).value);
 				else return value.domain.create(String.class, valuePrinter.toString(value));
@@ -1167,7 +1167,7 @@ public class TypedValueCalculatorFactory {
 
 		env.setGlobalSymbol("cons", new BinaryFunction<TypedValue>() {
 			@Override
-			protected TypedValue execute(TypedValue left, TypedValue right) {
+			protected TypedValue call(TypedValue left, TypedValue right) {
 				return domain.create(Cons.class, new Cons(left, right));
 			}
 		});
@@ -1188,9 +1188,9 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol(SYMBOL_LIST, new ISymbol<TypedValue>() {
+		env.setGlobalSymbol(SYMBOL_LIST, new FunctionSymbol<TypedValue>() {
 			@Override
-			public void execute(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			public void call(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				if (returnsCount.isPresent()) {
 					final int returns = returnsCount.get();
 					if (returns != 1) throw new StackValidationException("Has one result but expected %s", returns);
@@ -1225,9 +1225,9 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("execute", new ISymbol<TypedValue>() {
+		env.setGlobalSymbol("execute", new FunctionSymbol<TypedValue>() {
 			@Override
-			public void execute(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			public void call(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				if (argumentsCount.isPresent()) {
 					final int args = argumentsCount.get();
 					if (args != 1) throw new StackValidationException("Expected one argument but got %s", args);
@@ -1285,7 +1285,7 @@ public class TypedValueCalculatorFactory {
 			}
 
 			@Override
-			public ISymbolStateTransition<TypedValue> getStateForSymbol(String symbol) {
+			public ISymbolCallStateTransition<TypedValue> getStateForSymbolCall(String symbol) {
 				if (symbol.equals(TokenUtils.SYMBOL_QUOTE))
 					return new QuoteStateTransition.ForSymbol(domain, nullValue, valueParser);
 				if (symbol.equals(SYMBOL_CODE))
@@ -1295,7 +1295,7 @@ public class TypedValueCalculatorFactory {
 				if (symbol.equals(SYMBOL_LET))
 					return letFactory.createStateTransition(this);
 
-				return super.getStateForSymbol(symbol);
+				return super.getStateForSymbolCall(symbol);
 			}
 
 			@Override
@@ -1335,7 +1335,7 @@ public class TypedValueCalculatorFactory {
 									final List<IExprNode<TypedValue>> args = Lists.newArrayList();
 									args.add(leftChild);
 									Iterables.addAll(args, bracketNode.getChildren());
-									return new SymbolNode<TypedValue>(SYMBOL_SLICE, args);
+									return new SymbolCallNode<TypedValue>(SYMBOL_SLICE, args);
 								} else {
 									throw new AssertionError("Unknown bracket: " + bracketNode.openingBracket); // should be limited to ones used in createBracketNode
 								}
@@ -1365,36 +1365,40 @@ public class TypedValueCalculatorFactory {
 
 			@Override
 			protected ITokenStreamCompiler<TypedValue> createPostfixParser(final IValueParser<TypedValue> valueParser, final OperatorDictionary<TypedValue> operators, Environment<TypedValue> env) {
-				return addConstantEvaluatorState(valueParser, operators, env, new DefaultPostfixCompiler<TypedValue>(valueParser, operators) {
-					@Override
-					protected IPostfixCompilerState<TypedValue> createStateForModifier(String modifier) {
-						if (modifier.equals(TokenUtils.MODIFIER_QUOTE)) return new QuotePostfixCompilerState(valueParser, domain);
-						return super.createStateForModifier(modifier);
-					}
-				})
-						.addBracketStateProvider(BRACKET_CODE, new IStateProvider<TypedValue>() {
-							@Override
-							public IPostfixCompilerState<TypedValue> createState() {
-								final IExecutableListBuilder<TypedValue> listBuilder = new DefaultExecutableListBuilder<TypedValue>(valueParser, operators);
-								return new CodePostfixCompilerState(domain, listBuilder, BRACKET_CODE);
-							}
-						});
+				return addSymbolGetState(addConstantEvaluatorState(valueParser, operators, env,
+						new DefaultPostfixCompiler<TypedValue>(valueParser, operators)))
+								.addModifierStateProvider(TokenUtils.MODIFIER_QUOTE, new IStateProvider<TypedValue>() {
+									@Override
+									public IPostfixCompilerState<TypedValue> createState() {
+										return new QuotePostfixCompilerState(valueParser, domain);
+									}
+								})
+								.addBracketStateProvider(BRACKET_CODE, new IStateProvider<TypedValue>() {
+									@Override
+									public IPostfixCompilerState<TypedValue> createState() {
+										final IExecutableListBuilder<TypedValue> listBuilder = new DefaultExecutableListBuilder<TypedValue>(valueParser, operators);
+										return new CodePostfixCompilerState(domain, listBuilder, BRACKET_CODE);
+									}
+								});
 			}
 
 			@Override
 			protected void setupPrefixTokenizer(Tokenizer tokenizer) {
+				super.setupPrefixTokenizer(tokenizer);
 				tokenizer.addModifier(TokenUtils.MODIFIER_QUOTE);
 				tokenizer.addModifier(TokenUtils.MODIFIER_CDR);
 			}
 
 			@Override
 			protected void setupInfixTokenizer(Tokenizer tokenizer) {
+				super.setupInfixTokenizer(tokenizer);
 				tokenizer.addModifier(TokenUtils.MODIFIER_QUOTE);
 				tokenizer.addModifier(TokenUtils.MODIFIER_CDR);
 			}
 
 			@Override
 			protected void setupPostfixTokenizer(Tokenizer tokenizer) {
+				super.setupPostfixTokenizer(tokenizer);
 				tokenizer.addModifier(TokenUtils.MODIFIER_QUOTE);
 			}
 		}

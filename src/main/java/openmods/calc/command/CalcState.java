@@ -14,11 +14,11 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 import openmods.calc.Calculator;
 import openmods.calc.ExprType;
-import openmods.calc.FixedSymbol;
+import openmods.calc.FunctionSymbol;
 import openmods.calc.ICalculatorFrame;
-import openmods.calc.ISymbol;
 import openmods.calc.IValuePrinter;
 import openmods.calc.StackValidationException;
+import openmods.calc.ValueSymbol;
 import openmods.calc.types.bigint.BigIntCalculatorFactory;
 import openmods.calc.types.fp.DoubleCalculatorFactory;
 import openmods.calc.types.fraction.FractionCalculatorFactory;
@@ -59,9 +59,9 @@ public class CalcState {
 
 		public <E> Calculator<E, ExprType> addPrinter(Calculator<E, ExprType> calculator) {
 			final IValuePrinter<E> printer = calculator.printer;
-			calculator.environment.setGlobalSymbol("p", new ISymbol<E>() {
+			calculator.environment.setGlobalSymbol("p", new FunctionSymbol<E>() {
 				@Override
-				public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				public void call(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 					Preconditions.checkNotNull(sender, "DERP");
 
 					if (returnsCount.isPresent() && returnsCount.get() != 0) throw new StackValidationException("This function does not return any values");
@@ -96,23 +96,23 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<Double, ExprType> calculator = DoubleCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("$x", new FixedSymbol<Double>(0, 1) {
+				calculator.environment.setGlobalSymbol("$x", new ValueSymbol<Double>() {
 					@Override
-					public void execute(ICalculatorFrame<Double> frame) {
+					public void get(ICalculatorFrame<Double> frame) {
 						frame.stack().push(Double.valueOf(holder.getX()));
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$y", new FixedSymbol<Double>(0, 1) {
+				calculator.environment.setGlobalSymbol("$y", new ValueSymbol<Double>() {
 					@Override
-					public void execute(ICalculatorFrame<Double> frame) {
+					public void get(ICalculatorFrame<Double> frame) {
 						frame.stack().push(Double.valueOf(holder.getY()));
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$z", new FixedSymbol<Double>(0, 1) {
+				calculator.environment.setGlobalSymbol("$z", new ValueSymbol<Double>() {
 					@Override
-					public void execute(ICalculatorFrame<Double> frame) {
+					public void get(ICalculatorFrame<Double> frame) {
 						frame.stack().push(Double.valueOf(holder.getZ()));
 					}
 				});
@@ -125,23 +125,23 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<Fraction, ExprType> calculator = FractionCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("$x", new FixedSymbol<Fraction>(0, 1) {
+				calculator.environment.setGlobalSymbol("$x", new ValueSymbol<Fraction>() {
 					@Override
-					public void execute(ICalculatorFrame<Fraction> frame) {
+					public void get(ICalculatorFrame<Fraction> frame) {
 						frame.stack().push(Fraction.getFraction(holder.getX(), 1));
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$y", new FixedSymbol<Fraction>(0, 1) {
+				calculator.environment.setGlobalSymbol("$y", new ValueSymbol<Fraction>() {
 					@Override
-					public void execute(ICalculatorFrame<Fraction> frame) {
+					public void get(ICalculatorFrame<Fraction> frame) {
 						frame.stack().push(Fraction.getFraction(holder.getY(), 1));
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$z", new FixedSymbol<Fraction>(0, 1) {
+				calculator.environment.setGlobalSymbol("$z", new ValueSymbol<Fraction>() {
 					@Override
-					public void execute(ICalculatorFrame<Fraction> frame) {
+					public void get(ICalculatorFrame<Fraction> frame) {
 						frame.stack().push(Fraction.getFraction(holder.getZ(), 1));
 					}
 				});
@@ -154,23 +154,23 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<BigInteger, ExprType> calculator = BigIntCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("$x", new FixedSymbol<BigInteger>(0, 1) {
+				calculator.environment.setGlobalSymbol("$x", new ValueSymbol<BigInteger>() {
 					@Override
-					public void execute(ICalculatorFrame<BigInteger> frame) {
+					public void get(ICalculatorFrame<BigInteger> frame) {
 						frame.stack().push(BigInteger.valueOf(holder.getX()));
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$y", new FixedSymbol<BigInteger>(0, 1) {
+				calculator.environment.setGlobalSymbol("$y", new ValueSymbol<BigInteger>() {
 					@Override
-					public void execute(ICalculatorFrame<BigInteger> frame) {
+					public void get(ICalculatorFrame<BigInteger> frame) {
 						frame.stack().push(BigInteger.valueOf(holder.getY()));
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$z", new FixedSymbol<BigInteger>(0, 1) {
+				calculator.environment.setGlobalSymbol("$z", new ValueSymbol<BigInteger>() {
 					@Override
-					public void execute(ICalculatorFrame<BigInteger> frame) {
+					public void get(ICalculatorFrame<BigInteger> frame) {
 						frame.stack().push(BigInteger.valueOf(holder.getZ()));
 					}
 				});

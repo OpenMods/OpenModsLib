@@ -10,7 +10,7 @@ import openmods.calc.parsing.ContainerNode;
 import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.ICompilerState.IModifierStateTransition;
-import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
+import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.NullNode;
@@ -127,7 +127,7 @@ public class QuoteStateTransition {
 		}
 
 		@Override
-		public ISymbolStateTransition<TypedValue> getStateForSymbol(String symbol) {
+		public ISymbolCallStateTransition<TypedValue> getStateForSymbolCall(String symbol) {
 			throw new UnsupportedOperationException(symbol);
 		}
 
@@ -148,7 +148,7 @@ public class QuoteStateTransition {
 		this.valueParser = valueParser;
 	}
 
-	public static class ForSymbol extends QuoteStateTransition implements ISymbolStateTransition<TypedValue> {
+	public static class ForSymbol extends QuoteStateTransition implements ISymbolCallStateTransition<TypedValue> {
 		public ForSymbol(TypeDomain domain, TypedValue terminatorValue, IValueParser<TypedValue> valueParser) {
 			super(domain, terminatorValue, valueParser);
 		}

@@ -15,4 +15,6 @@ public interface IExprNodeFactory<E> {
 	public IExprNode<E> createValueNode(E value);
 
 	public IExprNode<E> createValueNode(Token token);
+
+	public IExprNode<E> createSymbolGetNode(String id);
 }

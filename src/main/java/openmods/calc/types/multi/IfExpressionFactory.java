@@ -4,14 +4,14 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;
-import openmods.calc.FixedSymbol;
+import openmods.calc.FixedFunctionSymbol;
 import openmods.calc.ICalculatorFrame;
 import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
-import openmods.calc.SymbolReference;
+import openmods.calc.SymbolCall;
 import openmods.calc.Value;
 import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
+import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.SameStateSymbolTransition;
 
@@ -41,7 +41,7 @@ public class IfExpressionFactory {
 			condition.flatten(output);
 			output.add(Value.create(Code.flattenAndWrap(domain, ifTrue)));
 			output.add(Value.create(Code.flattenAndWrap(domain, ifFalse)));
-			output.add(new SymbolReference<TypedValue>(ifSymbolName, 3, 1));
+			output.add(new SymbolCall<TypedValue>(ifSymbolName, 3, 1));
 		}
 
 		@Override
@@ -65,18 +65,18 @@ public class IfExpressionFactory {
 		}
 	}
 
-	public ISymbolStateTransition<TypedValue> createStateTransition(ICompilerState<TypedValue> parentState) {
+	public ISymbolCallStateTransition<TypedValue> createStateTransition(ICompilerState<TypedValue> parentState) {
 		return new IfStateTransition(parentState);
 	}
 
-	private class IfSymbol extends FixedSymbol<TypedValue> {
+	private class IfSymbol extends FixedFunctionSymbol<TypedValue> {
 
 		public IfSymbol() {
 			super(3, 1);
 		}
 
 		@Override
-		public void execute(ICalculatorFrame<TypedValue> frame) {
+		public void call(ICalculatorFrame<TypedValue> frame) {
 			final TypedValue ifFalse = frame.stack().pop();
 			Preconditions.checkState(ifFalse.is(Code.class), "Expected code on first 'if' parameter, got %s", ifFalse);
 

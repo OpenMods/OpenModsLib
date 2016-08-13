@@ -11,9 +11,9 @@ public interface IExecutableListBuilder<E> {
 
 	public void appendOperator(String id);
 
-	public void appendSymbol(String id);
+	public void appendSymbolGet(String id);
 
-	public void appendSymbol(String id, Optional<Integer> argCount, Optional<Integer> returnCount);
+	public void appendSymbolCall(String id, Optional<Integer> argCount, Optional<Integer> returnCount);
 
 	public void appendExecutable(IExecutable<E> executable);
 

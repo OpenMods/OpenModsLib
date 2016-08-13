@@ -43,126 +43,126 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 
 		env.setGlobalSymbol("abs", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.abs(value);
 			}
 		});
 
 		env.setGlobalSymbol("sgn", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.signum(value);
 			}
 		});
 
 		env.setGlobalSymbol("sqrt", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.sqrt(value);
 			}
 		});
 
 		env.setGlobalSymbol("ceil", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.ceil(value);
 			}
 		});
 
 		env.setGlobalSymbol("floor", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.floor(value);
 			}
 		});
 
 		env.setGlobalSymbol("cos", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.cos(value);
 			}
 		});
 
 		env.setGlobalSymbol("cosh", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.cosh(value);
 			}
 		});
 
 		env.setGlobalSymbol("sin", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.sin(value);
 			}
 		});
 
 		env.setGlobalSymbol("sinh", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.sinh(value);
 			}
 		});
 
 		env.setGlobalSymbol("tan", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.tan(value);
 			}
 		});
 
 		env.setGlobalSymbol("tanh", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.tanh(value);
 			}
 		});
 
 		env.setGlobalSymbol("acos", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.acos(value);
 			}
 		});
 
 		env.setGlobalSymbol("acosh", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.log(value + Math.sqrt(value * value - 1));
 			}
 		});
 
 		env.setGlobalSymbol("asin", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.asin(value);
 			}
 		});
 
 		env.setGlobalSymbol("asinh", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return value.isInfinite()? value : Math.log(value + Math.sqrt(value * value + 1));
 			}
 		});
 
 		env.setGlobalSymbol("atan", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.atan(value);
 			}
 		});
 
 		env.setGlobalSymbol("atanh", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.log((1 + value) / (1 - value)) / 2;
 			}
 		});
 
 		env.setGlobalSymbol("atan2", new BinaryFunction<Double>() {
 			@Override
-			protected Double execute(Double left, Double right) {
+			protected Double call(Double left, Double right) {
 				return Math.atan2(left, right);
 			}
 
@@ -170,28 +170,28 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 
 		env.setGlobalSymbol("log10", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.log10(value);
 			}
 		});
 
 		env.setGlobalSymbol("ln", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.log(value);
 			}
 		});
 
 		env.setGlobalSymbol("log", new BinaryFunction<Double>() {
 			@Override
-			protected Double execute(Double left, Double right) {
+			protected Double call(Double left, Double right) {
 				return Math.log(left) / Math.log(right);
 			}
 		});
 
 		env.setGlobalSymbol("exp", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.exp(value);
 			}
 		});
@@ -231,14 +231,14 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 
 		env.setGlobalSymbol("rad", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.toRadians(value);
 			}
 		});
 
 		env.setGlobalSymbol("deg", new UnaryFunction<Double>() {
 			@Override
-			protected Double execute(Double value) {
+			protected Double call(Double value) {
 				return Math.toDegrees(value);
 			}
 		});

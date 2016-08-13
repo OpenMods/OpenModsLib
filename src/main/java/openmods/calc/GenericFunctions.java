@@ -12,7 +12,7 @@ public class GenericFunctions {
 	}
 
 	// WARNING: this assumes 'accumulate' operation is associative!
-	public abstract static class AccumulatorFunction<E> implements ISymbol<E> {
+	public abstract static class AccumulatorFunction<E> extends FunctionSymbol<E> {
 		private final E nullValue;
 
 		public AccumulatorFunction(E nullValue) {
@@ -20,7 +20,7 @@ public class GenericFunctions {
 		}
 
 		@Override
-		public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+		public void call(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 			if (returnsCount.isPresent() && returnsCount.get() != 1) throw new StackValidationException("Invalid expected return values count");
 
 			final Stack<E> stack = frame.stack();
@@ -48,9 +48,9 @@ public class GenericFunctions {
 	}
 
 	public static <E> void createStackManipulationFunctions(Environment<E> calculator) {
-		calculator.setGlobalSymbol("swap", new FixedSymbol<E>(2, 2) {
+		calculator.setGlobalSymbol("swap", new FixedFunctionSymbol<E>(2, 2) {
 			@Override
-			public void execute(ICalculatorFrame<E> frame) {
+			public void call(ICalculatorFrame<E> frame) {
 				final Stack<E> stack = frame.stack();
 
 				final E first = stack.pop();
@@ -61,9 +61,9 @@ public class GenericFunctions {
 			}
 		});
 
-		calculator.setGlobalSymbol("pop", new ISymbol<E>() {
+		calculator.setGlobalSymbol("pop", new FunctionSymbol<E>() {
 			@Override
-			public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			public void call(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				if (returnsCount.isPresent() && returnsCount.get() != 0) throw new StackValidationException("Invalid expected return values on 'pop'");
 
 				final Stack<E> stack = frame.stack();
@@ -74,9 +74,9 @@ public class GenericFunctions {
 			}
 		});
 
-		calculator.setGlobalSymbol("dup", new ISymbol<E>() {
+		calculator.setGlobalSymbol("dup", new FunctionSymbol<E>() {
 			@Override
-			public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			public void call(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				final Stack<E> stack = frame.stack();
 
 				List<E> values = Lists.newArrayList();

@@ -8,7 +8,8 @@ import openmods.calc.IExecutable;
 import openmods.calc.NoopExecutable;
 import openmods.calc.Operator;
 import openmods.calc.OperatorDictionary;
-import openmods.calc.SymbolReference;
+import openmods.calc.SymbolCall;
+import openmods.calc.SymbolGet;
 import openmods.calc.Value;
 
 public class DefaultExecutableListBuilder<E> implements IExecutableListBuilder<E> {
@@ -56,13 +57,13 @@ public class DefaultExecutableListBuilder<E> implements IExecutableListBuilder<E
 	}
 
 	@Override
-	public void appendSymbol(String id) {
-		addToBuffer(new SymbolReference<E>(id));
+	public void appendSymbolGet(String id) {
+		addToBuffer(new SymbolGet<E>(id));
 	}
 
 	@Override
-	public void appendSymbol(String id, Optional<Integer> argCount, Optional<Integer> returnCount) {
-		addToBuffer(new SymbolReference<E>(id).setArgumentsCount(argCount).setReturnsCount(returnCount));
+	public void appendSymbolCall(String id, Optional<Integer> argCount, Optional<Integer> returnCount) {
+		addToBuffer(new SymbolCall<E>(id, argCount, returnCount));
 	}
 
 	@Override

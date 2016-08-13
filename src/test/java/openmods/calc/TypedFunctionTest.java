@@ -83,7 +83,7 @@ public class TypedFunctionTest {
 		final TopFrame<TypedValue> frame = new TopFrame<TypedValue>();
 		for (TypedValue v : values)
 			frame.stack().push(v);
-		f.execute(frame, argCount, SKIP);
+		f.call(frame, argCount, SKIP);
 		final TypedValue result = frame.stack().pop();
 		Assert.assertTrue(frame.stack().isEmpty());
 		return result;
@@ -93,7 +93,7 @@ public class TypedFunctionTest {
 		final TopFrame<TypedValue> frame = new TopFrame<TypedValue>();
 		for (TypedValue v : values)
 			frame.stack().push(v);
-		f.execute(frame, argCount, Optional.of(rets));
+		f.call(frame, argCount, Optional.of(rets));
 		List<TypedValue> results = Lists.newArrayList();
 		for (int i = 0; i < rets; i++)
 			results.add(frame.stack().pop());

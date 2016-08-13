@@ -3,6 +3,7 @@ package openmods.calc.parsing;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import openmods.calc.IExecutable;
+import openmods.calc.SymbolCall;
 
 public class SimplePostfixCompilerState<E> implements IPostfixCompilerState<E> {
 
@@ -15,7 +16,7 @@ public class SimplePostfixCompilerState<E> implements IPostfixCompilerState<E> {
 	@Override
 	public Result acceptToken(Token token) {
 		if (token.type == TokenType.OPERATOR) builder.appendOperator(token.value);
-		else if (token.type == TokenType.SYMBOL) builder.appendSymbol(token.value);
+		else if (token.type == TokenType.SYMBOL) builder.appendSymbolCall(token.value, SymbolCall.DEFAULT_ARG_COUNT, SymbolCall.DEFAULT_RET_COUNT);
 		else if (token.type == TokenType.SYMBOL_WITH_ARGS) parseSymbolWithArgs(token.value, builder);
 		else if (token.type.isValue()) builder.appendValue(token);
 		else return Result.REJECTED;
@@ -54,7 +55,7 @@ public class SimplePostfixCompilerState<E> implements IPostfixCompilerState<E> {
 			throw new IllegalArgumentException("Can't parse args on token '" + value + "'", e);
 		}
 
-		output.appendSymbol(id, argCount, retCount);
+		output.appendSymbolCall(id, argCount, retCount);
 	}
 
 	@Override

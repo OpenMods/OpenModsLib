@@ -14,13 +14,13 @@ import openmods.calc.parsing.DummyNode;
 import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.ICompilerState.IModifierStateTransition;
-import openmods.calc.parsing.ICompilerState.ISymbolStateTransition;
+import openmods.calc.parsing.ICompilerState.ISymbolCallStateTransition;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ITokenStreamCompiler;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.QuotedParser;
 import openmods.calc.parsing.QuotedParser.IQuotedExprNodeFactory;
-import openmods.calc.parsing.SymbolNode;
+import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 import openmods.calc.parsing.TokenUtils;
@@ -195,16 +195,24 @@ public class CalcTestUtils {
 		return new Value<String>(value);
 	}
 
-	public static SymbolReference<String> s(String value) {
-		return new SymbolReference<String>(value);
+	public static SymbolGet<String> get(String value) {
+		return new SymbolGet<String>(value);
 	}
 
-	public static SymbolReference<String> s(String value, int args) {
-		return new SymbolReference<String>(value, args, 1);
+	public static SymbolCall<String> call(String value) {
+		return new SymbolCall<String>(value);
 	}
 
-	public static SymbolReference<String> s(String value, int args, int rets) {
-		return new SymbolReference<String>(value, args, rets);
+	public static SymbolCall<String> call(String value, int args) {
+		return new SymbolCall<String>(value, args, 1);
+	}
+
+	public static SymbolCall<String> call(String value, int args, int rets) {
+		return new SymbolCall<String>(value, args, rets);
+	}
+
+	public static SymbolCall<String> call(String value, Optional<Integer> args, Optional<Integer> rets) {
+		return new SymbolCall<String>(value, args, rets);
 	}
 
 	public static ExecutableList<String> list(IExecutable<String>... elements) {
@@ -443,7 +451,7 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		public ISymbolStateTransition<String> getStateForSymbol(String symbol) {
+		public ISymbolCallStateTransition<String> getStateForSymbolCall(String symbol) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -479,7 +487,7 @@ public class CalcTestUtils {
 		}
 	}
 
-	public static class SymbolQuoteTransition implements ISymbolStateTransition<String> {
+	public static class SymbolQuoteTransition implements ISymbolCallStateTransition<String> {
 		private final String symbol;
 
 		public SymbolQuoteTransition(String symbol) {
@@ -515,9 +523,9 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		public ISymbolStateTransition<String> getStateForSymbol(final String symbol) {
+		public ISymbolCallStateTransition<String> getStateForSymbolCall(final String symbol) {
 			if (symbol.equals(QUOTE_SYMBOL.value)) return new SymbolQuoteTransition(symbol);
-			return new ISymbolStateTransition<String>() {
+			return new ISymbolCallStateTransition<String>() {
 				@Override
 				public ICompilerState<String> getState() {
 					return TestCompilerState.this;
@@ -525,7 +533,7 @@ public class CalcTestUtils {
 
 				@Override
 				public IExprNode<String> createRootNode(List<IExprNode<String>> children) {
-					return new SymbolNode<String>(symbol, children);
+					return new SymbolCallNode<String>(symbol, children);
 				}
 			};
 		}
@@ -533,11 +541,16 @@ public class CalcTestUtils {
 
 	public static class SymbolStub<E> implements ISymbol<E> {
 		private int callCount;
+		private int getCount;
 
 		private List<E> expectedArgs = Lists.newArrayList();
 		private boolean exactArgCount = false;
 		private List<E> returns = Lists.newArrayList();
 		private boolean exactReturnCount = false;
+
+		private boolean blockCalls = false;
+
+		private boolean blockGets = false;
 
 		public SymbolStub<E> expectArgs(E... args) {
 			expectedArgs = Lists.reverse(Arrays.asList(args));
@@ -560,7 +573,8 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+		public void call(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			Assert.assertFalse(blockCalls);
 			if (exactArgCount) Assert.assertEquals(Optional.of(expectedArgs.size()), argumentsCount);
 			if (exactReturnCount) Assert.assertEquals(Optional.of(returns.size()), returnsCount);
 
@@ -572,6 +586,16 @@ public class CalcTestUtils {
 			callCount++;
 		}
 
+		@Override
+		public void get(ICalculatorFrame<E> frame) {
+			Assert.assertFalse(blockGets);
+
+			for (E ret : returns)
+				frame.stack().push(ret);
+
+			getCount++;
+		}
+
 		public SymbolStub<E> checkCallCount(int expectedCallCount) {
 			Assert.assertEquals(expectedCallCount, this.callCount);
 			return this;
@@ -579,6 +603,26 @@ public class CalcTestUtils {
 
 		public SymbolStub<E> resetCallCount() {
 			this.callCount = 0;
+			return this;
+		}
+
+		public SymbolStub<E> blockCalls() {
+			this.blockCalls = true;
+			return this;
+		}
+
+		public SymbolStub<E> checkGetCount(int expectedGetCount) {
+			Assert.assertEquals(expectedGetCount, this.getCount);
+			return this;
+		}
+
+		public SymbolStub<E> resetGetCount() {
+			this.getCount = 0;
+			return this;
+		}
+
+		public SymbolStub<E> blockGets() {
+			this.blockGets = true;
 			return this;
 		}
 

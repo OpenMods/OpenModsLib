@@ -1,10 +1,10 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Optional;
+import openmods.calc.FunctionSymbol;
 import openmods.calc.ICalculatorFrame;
-import openmods.calc.ISymbol;
 
-public abstract class SimpleTypedFunction implements ISymbol<TypedValue> {
+public abstract class SimpleTypedFunction extends FunctionSymbol<TypedValue> {
 
 	private final TypedFunction handler;
 
@@ -13,8 +13,8 @@ public abstract class SimpleTypedFunction implements ISymbol<TypedValue> {
 	}
 
 	@Override
-	public void execute(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-		handler.execute(frame, argumentsCount, returnsCount);
+	public void call(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+		handler.call(frame, argumentsCount, returnsCount);
 	}
 
 }

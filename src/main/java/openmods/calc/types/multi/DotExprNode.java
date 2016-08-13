@@ -1,14 +1,12 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.IExecutable;
 import openmods.calc.Value;
 import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.SymbolNode;
+import openmods.calc.parsing.SymbolGetNode;
 
 class DotExprNode implements IExprNode<TypedValue> {
 	private final IExprNode<TypedValue> rightChild;
@@ -26,9 +24,8 @@ class DotExprNode implements IExprNode<TypedValue> {
 	@Override
 	public void flatten(List<IExecutable<TypedValue>> output) {
 		leftChild.flatten(output);
-		if (rightChild instanceof SymbolNode) {
-			final SymbolNode<TypedValue> symbolNode = (SymbolNode<TypedValue>)rightChild;
-			Preconditions.checkState(Iterables.isEmpty(symbolNode.getChildren())); // temporary
+		if (rightChild instanceof SymbolGetNode) {
+			final SymbolGetNode<TypedValue> symbolNode = (SymbolGetNode<TypedValue>)rightChild;
 			output.add(Value.create(domain.create(String.class, symbolNode.symbol())));
 		} else {
 			rightChild.flatten(output);

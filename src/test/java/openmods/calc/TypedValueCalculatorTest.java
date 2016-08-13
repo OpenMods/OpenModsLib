@@ -133,6 +133,16 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testPostfixSymbols() {
+		sut.environment.setGlobalSymbol("a", Constant.create(i(5)));
+		postfix("a").expectResult(i(5));
+		postfix("a@0").expectResult(i(5));
+		postfix("a@,1").expectResult(i(5));
+		postfix("a@0,1").expectResult(i(5));
+		postfix("@a").expectResult(i(5));
+	}
+
+	@Test
 	public void testCoercionPostfix() {
 		postfix("0.5 1 +").expectResult(d(1.5));
 
@@ -657,6 +667,7 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testConstantEvaluatingBrackets() {
 		final SymbolStub<TypedValue> stub = new SymbolStub<TypedValue>()
+				.blockGets()
 				.expectArgs(i(1), i(2))
 				.checkArgCount()
 				.setReturns(i(5), i(6), i(7))
@@ -718,19 +729,19 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testIfExpressionEvaluation() {
-		final SymbolStub<TypedValue> leftStub = new SymbolStub<TypedValue>().setReturns(i(2));
-		final SymbolStub<TypedValue> rightStub = new SymbolStub<TypedValue>().setReturns(i(3));
+		final SymbolStub<TypedValue> leftStub = new SymbolStub<TypedValue>().setReturns(i(2)).blockCalls();
+		final SymbolStub<TypedValue> rightStub = new SymbolStub<TypedValue>().setReturns(i(3)).blockCalls();
 
 		sut.environment.setGlobalSymbol("left", leftStub);
 		sut.environment.setGlobalSymbol("right", rightStub);
 
 		infix("if(2 == 2, left, right)").expectResult(i(2));
-		rightStub.checkCallCount(0).resetCallCount();
-		leftStub.checkCallCount(1).resetCallCount();
+		rightStub.checkGetCount(0).resetGetCount();
+		leftStub.checkGetCount(1).resetGetCount();
 
 		infix("if(2 != 2, left, right)").expectResult(i(3));
-		rightStub.checkCallCount(1).resetCallCount();
-		leftStub.checkCallCount(0).resetCallCount();
+		rightStub.checkGetCount(1).resetGetCount();
+		leftStub.checkGetCount(0).resetGetCount();
 	}
 
 	@Test
@@ -779,6 +790,15 @@ public class TypedValueCalculatorTest {
 	public void testLetExplicitSymbolVariableNames() {
 		infix("let([#x:2,#y:3], x + y)").expectResult(i(5));
 		infix("let([symbol('x'):2,symbol('y'):3], x + y)").expectResult(i(5));
+	}
+
+	@Test
+	public void testLetSymbolVariableNamesFromCall() {
+		sut.environment.setGlobalSymbol("x", new Constant<TypedValue>(domain.create(Symbol.class, Symbol.get("a"))));
+		sut.environment.setGlobalSymbol("y", new Constant<TypedValue>(domain.create(Symbol.class, Symbol.get("b"))));
+
+		infix("let([x():2,y():3], a + b)").expectResult(i(5));
+		prefix("(let [(:(x) 2), (:(y) 3)] (+ a b))").expectResult(i(5));
 	}
 
 	@Test

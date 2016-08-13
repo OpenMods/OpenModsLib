@@ -57,6 +57,16 @@ public class FractionCalculatorTest {
 	}
 
 	@Test
+	public void testPostfixSymbols() {
+		sut.environment.setGlobalSymbol("a", Constant.create(f(5)));
+		postfix("a").expectResult(f(5));
+		postfix("a@0").expectResult(f(5));
+		postfix("a@,1").expectResult(f(5));
+		postfix("a@0,1").expectResult(f(5));
+		postfix("@a").expectResult(f(5));
+	}
+
+	@Test
 	public void testPostfixStackOperations() {
 		postfix("2 dup +").expectResult(f(4));
 		postfix("1 2 3 pop +").expectResult(f(3));
@@ -166,6 +176,7 @@ public class FractionCalculatorTest {
 	@Test
 	public void testConstantEvaluatingBrackets() {
 		final SymbolStub<Fraction> stub = new SymbolStub<Fraction>()
+				.blockGets()
 				.expectArgs(f(1), f(2))
 				.checkArgCount()
 				.setReturns(f(5), f(6), f(7))
