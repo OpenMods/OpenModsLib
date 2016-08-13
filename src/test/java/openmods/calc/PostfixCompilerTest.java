@@ -153,12 +153,12 @@ public class PostfixCompilerTest extends CalcTestUtils {
 
 	@Test
 	public void testSymbolWithArgs() {
-		given(symbol_args("a@2")).expect(call("a", Optional.of(2), ABSENT));
-		given(symbol_args("a@2,")).expect(call("a", Optional.of(2), ABSENT));
-		given(symbol_args("a@,3")).expect(call("a", ABSENT, Optional.of(3)));
-		given(symbol_args("a@,")).expect(call("a", ABSENT, ABSENT));
-		given(symbol_args("b@3,4")).expect(call("b", Optional.of(3), Optional.of(4)));
-		given(symbol_args("b@35,45")).expect(call("b", Optional.of(35), Optional.of(45)));
+		given(symbol_args("a$2")).expect(call("a", Optional.of(2), ABSENT));
+		given(symbol_args("a$2,")).expect(call("a", Optional.of(2), ABSENT));
+		given(symbol_args("a$,3")).expect(call("a", ABSENT, Optional.of(3)));
+		given(symbol_args("a$,")).expect(call("a", ABSENT, ABSENT));
+		given(symbol_args("b$3,4")).expect(call("b", Optional.of(3), Optional.of(4)));
+		given(symbol_args("b$35,45")).expect(call("b", Optional.of(35), Optional.of(45)));
 	}
 
 }

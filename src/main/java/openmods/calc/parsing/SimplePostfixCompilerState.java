@@ -25,7 +25,7 @@ public class SimplePostfixCompilerState<E> implements IPostfixCompilerState<E> {
 	}
 
 	private static <E> void parseSymbolWithArgs(String value, IExecutableListBuilder<E> output) {
-		final int argsStart = value.indexOf('@');
+		final int argsStart = value.lastIndexOf('$');
 		Preconditions.checkArgument(argsStart >= 0, "No args in token '%s'", value);
 		final String id = value.substring(0, argsStart);
 		Optional<Integer> argCount = Optional.absent();

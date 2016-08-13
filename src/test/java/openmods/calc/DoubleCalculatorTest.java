@@ -53,9 +53,9 @@ public class DoubleCalculatorTest {
 	public void testPostfixSymbols() {
 		sut.environment.setGlobalSymbol("a", Constant.create(5.0));
 		postfix("a").expectResult(5.0);
-		postfix("a@0").expectResult(5.0);
-		postfix("a@,1").expectResult(5.0);
-		postfix("a@0,1").expectResult(5.0);
+		postfix("a$0").expectResult(5.0);
+		postfix("a$,1").expectResult(5.0);
+		postfix("a$0,1").expectResult(5.0);
 		postfix("@a").expectResult(5.0);
 	}
 
@@ -68,34 +68,34 @@ public class DoubleCalculatorTest {
 
 	@Test
 	public void testPostfixDupWithArgs() {
-		postfix("0 1 2 dup@2").expectResults(0.0, 1.0, 2.0, 1.0, 2.0);
+		postfix("0 1 2 dup$2").expectResults(0.0, 1.0, 2.0, 1.0, 2.0);
 	}
 
 	@Test
 	public void testPostfixDupWithReturns() {
-		postfix("1 2 dup@,4").expectResults(1.0, 2.0, 2.0, 2.0, 2.0);
+		postfix("1 2 dup$,4").expectResults(1.0, 2.0, 2.0, 2.0, 2.0);
 	}
 
 	@Test
 	public void testPostfixDupWithArgsAndReturns() {
-		postfix("1 2 3 4 dup@3,5").expectResults(1.0, 2.0, 3.0, 4.0, 2.0, 3.0);
+		postfix("1 2 3 4 dup$3,5").expectResults(1.0, 2.0, 3.0, 4.0, 2.0, 3.0);
 	}
 
 	@Test
 	public void testPostfixPopWithArgs() {
-		postfix("1 2 3 4 pop@3").expectResults(1.0);
+		postfix("1 2 3 4 pop$3").expectResults(1.0);
 	}
 
 	@Test
 	public void testVariadicPostfixFunctions() {
-		postfix("max@0").expectResult(0.0);
-		postfix("1 max@1").expectResult(1.0);
-		postfix("1 2 max@2").expectResult(2.0);
+		postfix("max$0").expectResult(0.0);
+		postfix("1 max$1").expectResult(1.0);
+		postfix("1 2 max$2").expectResult(2.0);
 
-		postfix("3 2 1 sum@3").expectResult(6.0);
-		postfix("3 2 1 avg@3").expectResult(2.0);
+		postfix("3 2 1 sum$3").expectResult(6.0);
+		postfix("3 2 1 avg$3").expectResult(2.0);
 
-		postfix("2 4 INF 1 max@4").expectResult(Double.POSITIVE_INFINITY);
+		postfix("2 4 INF 1 max$4").expectResult(Double.POSITIVE_INFINITY);
 	}
 
 	@Test
@@ -193,7 +193,7 @@ public class DoubleCalculatorTest {
 				.checkReturnCount();
 		sut.environment.setGlobalSymbol("dummy", stub);
 
-		final IExecutable<Double> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
+		final IExecutable<Double> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy$2,3]");
 		stub.checkCallCount(1);
 		compiled(expr).expectResults(5.0, 6.0, 7.0);
 		stub.checkCallCount(1);

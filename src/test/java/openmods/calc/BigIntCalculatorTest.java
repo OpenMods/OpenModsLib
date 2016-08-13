@@ -63,9 +63,9 @@ public class BigIntCalculatorTest {
 	public void testPostfixSymbols() {
 		sut.environment.setGlobalSymbol("a", Constant.create(v(5)));
 		postfix("a").expectResult(v(5));
-		postfix("a@0").expectResult(v(5));
-		postfix("a@,1").expectResult(v(5));
-		postfix("a@0,1").expectResult(v(5));
+		postfix("a$0").expectResult(v(5));
+		postfix("a$,1").expectResult(v(5));
+		postfix("a$0,1").expectResult(v(5));
 		postfix("@a").expectResult(v(5));
 	}
 
@@ -78,32 +78,32 @@ public class BigIntCalculatorTest {
 
 	@Test
 	public void testPostfixDupWithArgs() {
-		postfix("0 1 2 dup@2").expectResults(v(0), v(1), v(2), v(1), v(2));
+		postfix("0 1 2 dup$2").expectResults(v(0), v(1), v(2), v(1), v(2));
 	}
 
 	@Test
 	public void testPostfixDupWithReturns() {
-		postfix("1 2 dup@,4").expectResults(v(1), v(2), v(2), v(2), v(2));
+		postfix("1 2 dup$,4").expectResults(v(1), v(2), v(2), v(2), v(2));
 	}
 
 	@Test
 	public void testPostfixDupWithArgsAndReturns() {
-		postfix("1 2 3 4 dup@3,5").expectResults(v(1), v(2), v(3), v(4), v(2), v(3));
+		postfix("1 2 3 4 dup$3,5").expectResults(v(1), v(2), v(3), v(4), v(2), v(3));
 	}
 
 	@Test
 	public void testPostfixPopWithArgs() {
-		postfix("1 2 3 4 pop@3").expectResults(v(1));
+		postfix("1 2 3 4 pop$3").expectResults(v(1));
 	}
 
 	@Test
 	public void testVariadicPostfixFunctions() {
-		postfix("max@0").expectResult(v(0));
-		postfix("1 max@1").expectResult(v(1));
-		postfix("1 2 max@2").expectResult(v(2));
+		postfix("max$0").expectResult(v(0));
+		postfix("1 max$1").expectResult(v(1));
+		postfix("1 2 max$2").expectResult(v(2));
 
-		postfix("3 2 1 sum@3").expectResult(v(6));
-		postfix("3 2 1 avg@3").expectResult(v(2));
+		postfix("3 2 1 sum$3").expectResult(v(6));
+		postfix("3 2 1 avg$3").expectResult(v(2));
 	}
 
 	@Test
@@ -199,7 +199,7 @@ public class BigIntCalculatorTest {
 				.checkReturnCount();
 		sut.environment.setGlobalSymbol("dummy", stub);
 
-		final IExecutable<BigInteger> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
+		final IExecutable<BigInteger> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy$2,3]");
 		stub.checkCallCount(1);
 		compiled(expr).expectResults(v(5), v(6), v(7));
 		stub.checkCallCount(1);

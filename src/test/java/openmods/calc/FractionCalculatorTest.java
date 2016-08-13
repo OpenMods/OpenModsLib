@@ -60,9 +60,9 @@ public class FractionCalculatorTest {
 	public void testPostfixSymbols() {
 		sut.environment.setGlobalSymbol("a", Constant.create(f(5)));
 		postfix("a").expectResult(f(5));
-		postfix("a@0").expectResult(f(5));
-		postfix("a@,1").expectResult(f(5));
-		postfix("a@0,1").expectResult(f(5));
+		postfix("a$0").expectResult(f(5));
+		postfix("a$,1").expectResult(f(5));
+		postfix("a$0,1").expectResult(f(5));
 		postfix("@a").expectResult(f(5));
 	}
 
@@ -75,32 +75,32 @@ public class FractionCalculatorTest {
 
 	@Test
 	public void testPostfixDupWithArgs() {
-		postfix("0 1 2 dup@2").expectResults(f(0), f(1), f(2), f(1), f(2));
+		postfix("0 1 2 dup$2").expectResults(f(0), f(1), f(2), f(1), f(2));
 	}
 
 	@Test
 	public void testPostfixDupWithReturns() {
-		postfix("1 2 dup@,4").expectResults(f(1), f(2), f(2), f(2), f(2));
+		postfix("1 2 dup$,4").expectResults(f(1), f(2), f(2), f(2), f(2));
 	}
 
 	@Test
 	public void testPostfixDupWithArgsAndReturns() {
-		postfix("1 2 3 4 dup@3,5").expectResults(f(1), f(2), f(3), f(4), f(2), f(3));
+		postfix("1 2 3 4 dup$3,5").expectResults(f(1), f(2), f(3), f(4), f(2), f(3));
 	}
 
 	@Test
 	public void testPostfixPopWithArgs() {
-		postfix("1 2 3 4 pop@3").expectResults(f(1));
+		postfix("1 2 3 4 pop$3").expectResults(f(1));
 	}
 
 	@Test
 	public void testVariadicPostfixFunctions() {
-		postfix("max@0").expectResult(f(0));
-		postfix("1 max@1").expectResult(f(1));
-		postfix("1 2 max@2").expectResult(f(2));
+		postfix("max$0").expectResult(f(0));
+		postfix("1 max$1").expectResult(f(1));
+		postfix("1 2 max$2").expectResult(f(2));
 
-		postfix("3 2 1 sum@3").expectResult(f(6));
-		postfix("3 2 1 avg@3").expectResult(f(2));
+		postfix("3 2 1 sum$3").expectResult(f(6));
+		postfix("3 2 1 avg$3").expectResult(f(2));
 	}
 
 	@Test
@@ -183,7 +183,7 @@ public class FractionCalculatorTest {
 				.checkReturnCount();
 		sut.environment.setGlobalSymbol("dummy", stub);
 
-		final IExecutable<Fraction> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
+		final IExecutable<Fraction> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy$2,3]");
 		stub.checkCallCount(1);
 		compiled(expr).expectResults(f(5), f(6), f(7));
 		stub.checkCallCount(1);

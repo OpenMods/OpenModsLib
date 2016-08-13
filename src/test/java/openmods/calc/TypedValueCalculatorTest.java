@@ -136,9 +136,9 @@ public class TypedValueCalculatorTest {
 	public void testPostfixSymbols() {
 		sut.environment.setGlobalSymbol("a", Constant.create(i(5)));
 		postfix("a").expectResult(i(5));
-		postfix("a@0").expectResult(i(5));
-		postfix("a@,1").expectResult(i(5));
-		postfix("a@0,1").expectResult(i(5));
+		postfix("a$0").expectResult(i(5));
+		postfix("a$,1").expectResult(i(5));
+		postfix("a$0,1").expectResult(i(5));
 		postfix("@a").expectResult(i(5));
 	}
 
@@ -674,7 +674,7 @@ public class TypedValueCalculatorTest {
 				.checkReturnCount();
 		sut.environment.setGlobalSymbol("dummy", stub);
 
-		final IExecutable<TypedValue> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy@2,3]");
+		final IExecutable<TypedValue> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy$2,3]");
 		stub.checkCallCount(1);
 		compiled(expr).expectResults(i(5), i(6), i(7));
 		stub.checkCallCount(1);
@@ -685,10 +685,10 @@ public class TypedValueCalculatorTest {
 		postfix("{ 1 2 +} iscode").expectResult(b(true));
 
 		postfix("{ 1 2 +} execute").expectResult(i(3));
-		postfix("{ 1 2 +} execute@1,1").expectResult(i(3));
+		postfix("{ 1 2 +} execute$1,1").expectResult(i(3));
 
 		postfix("{ 1 2 + 3 4 -} execute").expectResults(i(3), i(-1));
-		postfix("{ 1 2 + 3 4 -} execute@1,2").expectResults(i(3), i(-1));
+		postfix("{ 1 2 + 3 4 -} execute$1,2").expectResults(i(3), i(-1));
 	}
 
 	@Test
@@ -815,6 +815,6 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testLetInPostfix() {
-		postfix("#x 1 : #y 2 : list@2 {x y +} let").expectResult(i(3));
+		postfix("#x 1 : #y 2 : list$2 {x y +} let").expectResult(i(3));
 	}
 }
