@@ -156,4 +156,9 @@ public class CollectionUtils {
 
 		return (B[])result;
 	}
+
+	public static <K, V> void putOnce(Map<K, V> map, K key, V value) {
+		final V prev = map.put(key, value);
+		Preconditions.checkState(prev == null, "Duplicate value on key %s: %s -> %s", key, prev, value);
+	}
 }

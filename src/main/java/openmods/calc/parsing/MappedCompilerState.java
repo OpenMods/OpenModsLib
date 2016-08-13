@@ -1,9 +1,9 @@
 package openmods.calc.parsing;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
+import openmods.utils.CollectionUtils;
 
 public class MappedCompilerState<E> implements ICompilerState<E> {
 
@@ -52,18 +52,13 @@ public class MappedCompilerState<E> implements ICompilerState<E> {
 		throw new UnsupportedOperationException(modifier);
 	}
 
-	private static <K, V> void insertOnce(Map<K, V> map, K key, V value) {
-		final V prev = map.put(key, value);
-		Preconditions.checkState(prev == null, "Duplicate value on key %s: %s -> %s", key, prev, value);
-	}
-
 	public MappedCompilerState<E> addStateTransition(String symbol, ISymbolCallStateTransition<E> transition) {
-		insertOnce(symbolTransitions, symbol, transition);
+		CollectionUtils.putOnce(symbolTransitions, symbol, transition);
 		return this;
 	}
 
 	public MappedCompilerState<E> addStateTransition(String symbol, IModifierStateTransition<E> transition) {
-		insertOnce(modifierTransitions, symbol, transition);
+		CollectionUtils.putOnce(modifierTransitions, symbol, transition);
 		return this;
 	}
 }

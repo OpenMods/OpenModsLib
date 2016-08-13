@@ -27,6 +27,7 @@ import openmods.calc.StackValidationException;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
+import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.BracketContainerNode;
 import openmods.calc.parsing.DefaultExecutableListBuilder;
 import openmods.calc.parsing.DefaultExprNodeFactory;
@@ -38,6 +39,9 @@ import openmods.calc.parsing.IPostfixCompilerState;
 import openmods.calc.parsing.ITokenStreamCompiler;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.MappedCompilerState;
+import openmods.calc.parsing.MappedExprNodeFactory;
+import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
+import openmods.calc.parsing.MappedExprNodeFactory.IBracketExprNodeFactory;
 import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenUtils;
@@ -1288,44 +1292,44 @@ public class TypedValueCalculatorFactory {
 
 			@Override
 			protected DefaultExprNodeFactory<TypedValue> createExprNodeFactory(IValueParser<TypedValue> valueParser) {
-				return new DefaultExprNodeFactory<TypedValue>(valueParser) {
-					@Override
-					public IExprNode<TypedValue> createBinaryOpNode(BinaryOperator<TypedValue> op, final IExprNode<TypedValue> leftChild, final IExprNode<TypedValue> rightChild) {
-						if (op == dotOperator) return new DotExprNode(rightChild, leftChild, dotOperator, domain);
+				return new MappedExprNodeFactory<TypedValue>(valueParser)
+						.addFactory(dotOperator, new IBinaryExprNodeFactory<TypedValue>() {
+							@Override
+							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
+								return new DotExprNode(rightChild, leftChild, dotOperator, domain);
 
-						if (op == defaultOperator) {
-							if (rightChild instanceof BracketContainerNode) {
-								final BracketContainerNode<TypedValue> bracketNode = ((BracketContainerNode<TypedValue>)rightChild);
-								if (bracketNode.openingBracket.equals(BRACKET_INDEX)) {
-									final List<IExprNode<TypedValue>> args = Lists.newArrayList();
-									args.add(leftChild);
-									Iterables.addAll(args, bracketNode.getChildren());
-									return new SymbolCallNode<TypedValue>(SYMBOL_SLICE, args);
-								} else {
-									throw new AssertionError("Unknown bracket: " + bracketNode.openingBracket); // should be limited to ones used in createBracketNode
-								}
-							} else {
-								return super.createBinaryOpNode(multiplyOperator, leftChild, rightChild);
 							}
-						}
-
-						return super.createBinaryOpNode(op, leftChild, rightChild);
-					}
-
-					@Override
-					public IExprNode<TypedValue> createBracketNode(String openingBracket, String closingBracket, final List<IExprNode<TypedValue>> children) {
-						if (openingBracket.equals(BRACKET_INDEX)) {
-							TokenUtils.checkIsValidBracketPair(openingBracket, closingBracket);
-							return new BracketContainerNode<TypedValue>(children, openingBracket, closingBracket);
-						} else if (openingBracket.equals(BRACKET_CODE)) {
-							TokenUtils.checkIsValidBracketPair(openingBracket, closingBracket);
-							return new RawCodeExprNode(domain, children);
-						} else {
-							return super.createBracketNode(openingBracket, closingBracket, children);
-						}
-					}
-
-				};
+						})
+						.addFactory(defaultOperator, new IBinaryExprNodeFactory<TypedValue>() {
+							@Override
+							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
+								if (rightChild instanceof BracketContainerNode) {
+									final BracketContainerNode<TypedValue> bracketNode = ((BracketContainerNode<TypedValue>)rightChild);
+									if (bracketNode.openingBracket.equals(BRACKET_INDEX)) {
+										final List<IExprNode<TypedValue>> args = Lists.newArrayList();
+										args.add(leftChild);
+										Iterables.addAll(args, bracketNode.getChildren());
+										return new SymbolCallNode<TypedValue>(SYMBOL_SLICE, args);
+									} else {
+										throw new AssertionError("Unknown bracket: " + bracketNode.openingBracket); // should be limited to ones used in createBracketNode
+									}
+								} else {
+									return new BinaryOpNode<TypedValue>(multiplyOperator, leftChild, rightChild);
+								}
+							}
+						})
+						.addFactory(BRACKET_INDEX, new IBracketExprNodeFactory<TypedValue>() {
+							@Override
+							public IExprNode<TypedValue> create(List<IExprNode<TypedValue>> children) {
+								return new BracketContainerNode<TypedValue>(children, BRACKET_INDEX, TokenUtils.getClosingBracket(BRACKET_INDEX));
+							}
+						})
+						.addFactory(BRACKET_CODE, new IBracketExprNodeFactory<TypedValue>() {
+							@Override
+							public IExprNode<TypedValue> create(List<IExprNode<TypedValue>> children) {
+								return new RawCodeExprNode(domain, children);
+							}
+						});
 			}
 
 			@Override
