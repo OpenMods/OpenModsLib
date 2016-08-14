@@ -198,4 +198,22 @@ public class DoubleCalculatorTest {
 		compiled(expr).expectResults(5.0, 6.0, 7.0);
 		stub.checkCallCount(1);
 	}
+
+	@Test
+	public void testSimpleLet() {
+		infix("let([x:2,y:3], x + y)").expectResult(5.0);
+		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(5.0);
+	}
+
+	@Test
+	public void testLetWithExpression() {
+		infix("let([x:1 + 2,y:3 + 4], x + y)").expectResult(10.0);
+		prefix("(let [(:x (+ 1 2)) (:y (+ 3 4))] (+ x y))").expectResult(10.0);
+	}
+
+	@Test
+	public void testNestedLet() {
+		infix("let([x:2,y:3], let([w:x+y,z:x-y], w + z))").expectResult(4.0);
+		prefix("(let [(:x 2) (:y 3)] (let [(:w (+ x y)) (:z (- x y))] (+ w z)))").expectResult(4.0);
+	}
 }

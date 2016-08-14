@@ -13,11 +13,11 @@ import openmods.calc.LocalFrame;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
-import openmods.calc.parsing.BracketContainerNode;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
+import openmods.calc.parsing.SquareBracketContainerNode;
 import openmods.calc.parsing.SymbolGetNode;
 
 public class LetExpressionFactory {
@@ -35,8 +35,6 @@ public class LetExpressionFactory {
 	}
 
 	private class LetNode implements IExprNode<TypedValue> {
-
-		private static final String BRACKET_ARG_LIST = "[";
 		private final IExprNode<TypedValue> argsNode;
 		private final IExprNode<TypedValue> codeNode;
 
@@ -48,9 +46,8 @@ public class LetExpressionFactory {
 		@Override
 		public void flatten(List<IExecutable<TypedValue>> output) {
 			// expecting [a:b:,c:1+2]. If correctly formed, arg name (symbol) will be transformed into symbol atom
-			if (argsNode instanceof BracketContainerNode) {
-				final BracketContainerNode<TypedValue> bracketNode = (BracketContainerNode<TypedValue>)argsNode;
-				Preconditions.checkState(bracketNode.openingBracket.equals(BRACKET_ARG_LIST), "Expected list of arguments in square brackets on first argument of 'let'");
+			if (argsNode instanceof SquareBracketContainerNode) {
+				final SquareBracketContainerNode<TypedValue> bracketNode = (SquareBracketContainerNode<TypedValue>)argsNode;
 
 				int argumentCount = 0;
 				for (IExprNode<TypedValue> argNode : bracketNode.getChildren()) {
@@ -107,7 +104,7 @@ public class LetExpressionFactory {
 
 		@Override
 		public IExprNode<TypedValue> createRootNode(List<IExprNode<TypedValue>> children) {
-			Preconditions.checkState(children.size() == 2, "Expected two arg for 'let' expression");
+			Preconditions.checkState(children.size() == 2, "Expected two args for 'let' expression");
 			return new LetNode(children.get(0), children.get(1));
 		}
 	}

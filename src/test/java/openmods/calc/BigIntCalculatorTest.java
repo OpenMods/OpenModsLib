@@ -204,4 +204,22 @@ public class BigIntCalculatorTest {
 		compiled(expr).expectResults(v(5), v(6), v(7));
 		stub.checkCallCount(1);
 	}
+
+	@Test
+	public void testSimpleLet() {
+		infix("let([x:2,y:3], x + y)").expectResult(v(5));
+		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(v(5));
+	}
+
+	@Test
+	public void testLetWithExpression() {
+		infix("let([x:1 + 2,y:3 + 4], x + y)").expectResult(v(10));
+		prefix("(let [(:x (+ 1 2)) (:y (+ 3 4))] (+ x y))").expectResult(v(10));
+	}
+
+	@Test
+	public void testNestedLet() {
+		infix("let([x:2,y:3], let([w:x+y,z:x-y], w + z))").expectResult(v(4));
+		prefix("(let [(:x 2) (:y 3)] (let [(:w (+ x y)) (:z (- x y))] (+ w z)))").expectResult(v(4));
+	}
 }

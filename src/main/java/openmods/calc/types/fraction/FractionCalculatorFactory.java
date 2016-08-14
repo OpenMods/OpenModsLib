@@ -13,6 +13,7 @@ import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
 import openmods.calc.parsing.IValueParser;
+import openmods.calc.parsing.SimpleLetSymbolFactory;
 import org.apache.commons.lang3.math.Fraction;
 
 public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fraction, M> {
@@ -130,7 +131,9 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 		});
 	}
 
-	private static final int MAX_PRIO = 5;
+	private static final int PRIORITY_MULTIPLY = 2;
+	private static final int PRIORITY_ADD = 1;
+	private static final int PRIORITY_COLON = 0;
 
 	@Override
 	protected void configureOperators(OperatorDictionary<Fraction> operators) {
@@ -141,7 +144,7 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Fraction>("+", MAX_PRIO - 4) {
+		operators.registerBinaryOperator(new BinaryOperator<Fraction>("+", PRIORITY_ADD) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.add(right);
@@ -155,7 +158,7 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Fraction>("-", MAX_PRIO - 4) {
+		operators.registerBinaryOperator(new BinaryOperator<Fraction>("-", PRIORITY_ADD) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.subtract(right);
@@ -169,14 +172,14 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Fraction>("*", MAX_PRIO - 3) {
+		operators.registerBinaryOperator(new BinaryOperator<Fraction>("*", PRIORITY_MULTIPLY) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.multiplyBy(right);
 			}
 		}).setDefault();
 
-		operators.registerBinaryOperator(new BinaryOperator<Fraction>("/", MAX_PRIO - 3) {
+		operators.registerBinaryOperator(new BinaryOperator<Fraction>("/", PRIORITY_MULTIPLY) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.divideBy(right);
@@ -184,7 +187,19 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 		});
 	}
 
-	public static Calculator<Fraction, ExprType> createDefault() {
+	public static Calculator<Fraction, ExprType> createSimple() {
 		return new FractionCalculatorFactory<ExprType>().create(new BasicCompilerMapFactory<Fraction>());
+	}
+
+	public static Calculator<Fraction, ExprType> createDefault() {
+		final SimpleLetSymbolFactory<Fraction> letFactory = new SimpleLetSymbolFactory<Fraction>(":", PRIORITY_COLON);
+
+		return new FractionCalculatorFactory<ExprType>() {
+			@Override
+			protected void configureOperators(OperatorDictionary<Fraction> operators) {
+				super.configureOperators(operators);
+				operators.registerBinaryOperator(letFactory.getKeyValueSeparator());
+			}
+		}.create(letFactory.createCompilerFactory());
 	}
 }

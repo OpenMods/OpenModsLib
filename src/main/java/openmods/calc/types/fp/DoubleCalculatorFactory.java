@@ -14,9 +14,9 @@ import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
 import openmods.calc.parsing.IValueParser;
+import openmods.calc.parsing.SimpleLetSymbolFactory;
 
 public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, M> {
-
 	public static final double NULL_VALUE = 0.0;
 
 	@Override
@@ -244,7 +244,10 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 		});
 	}
 
-	private static final int MAX_PRIO = 5;
+	private static final int PRIORITY_POWER = 4;
+	private static final int PRIORITY_MULTIPLY = 3;
+	private static final int PRIORITY_ADD = 2;
+	private static final int PRIORITY_COLON = 1;
 
 	@Override
 	protected void configureOperators(OperatorDictionary<Double> operators) {
@@ -255,7 +258,7 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("+", MAX_PRIO - 4) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("+", PRIORITY_ADD) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left + right;
@@ -269,7 +272,7 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("-", MAX_PRIO - 4) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("-", PRIORITY_ADD) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left - right;
@@ -283,28 +286,35 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("*", MAX_PRIO - 3) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("*", PRIORITY_MULTIPLY) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left * right;
 			}
 		}).setDefault();
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("/", MAX_PRIO - 3) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("/", PRIORITY_MULTIPLY) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left / right;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("%", MAX_PRIO - 3) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("%", PRIORITY_MULTIPLY) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left % right;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("^", MAX_PRIO - 2) {
+		operators.registerBinaryOperator(new BinaryOperator<Double>("^", PRIORITY_POWER) {
+			@Override
+			public Double execute(Double left, Double right) {
+				return Math.pow(left, right);
+			}
+		});
+
+		operators.registerBinaryOperator(new BinaryOperator<Double>("**", PRIORITY_POWER) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return Math.pow(left, right);
@@ -312,7 +322,19 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 		});
 	}
 
-	public static Calculator<Double, ExprType> createDefault() {
+	public static Calculator<Double, ExprType> createSimple() {
 		return new DoubleCalculatorFactory<ExprType>().create(new BasicCompilerMapFactory<Double>());
+	}
+
+	public static Calculator<Double, ExprType> createDefault() {
+		final SimpleLetSymbolFactory<Double> letFactory = new SimpleLetSymbolFactory<Double>(":", PRIORITY_COLON);
+
+		return new DoubleCalculatorFactory<ExprType>() {
+			@Override
+			protected void configureOperators(OperatorDictionary<Double> operators) {
+				super.configureOperators(operators);
+				operators.registerBinaryOperator(letFactory.getKeyValueSeparator());
+			}
+		}.create(letFactory.createCompilerFactory());
 	}
 }

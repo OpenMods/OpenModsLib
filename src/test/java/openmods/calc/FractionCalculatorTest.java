@@ -188,4 +188,22 @@ public class FractionCalculatorTest {
 		compiled(expr).expectResults(f(5), f(6), f(7));
 		stub.checkCallCount(1);
 	}
+
+	@Test
+	public void testSimpleLet() {
+		infix("let([x:2,y:3], x + y)").expectResult(f(5));
+		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(f(5));
+	}
+
+	@Test
+	public void testLetWithExpression() {
+		infix("let([x:1 + 2,y:3 + 4], x + y)").expectResult(f(10));
+		prefix("(let [(:x (+ 1 2)) (:y (+ 3 4))] (+ x y))").expectResult(f(10));
+	}
+
+	@Test
+	public void testNestedLet() {
+		infix("let([x:2,y:3], let([w:x+y,z:x-y], w + z))").expectResult(f(4));
+		prefix("(let [(:x 2) (:y 3)] (let [(:w (+ x y)) (:z (- x y))] (+ w z)))").expectResult(f(4));
+	}
 }
