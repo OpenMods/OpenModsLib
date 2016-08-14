@@ -817,4 +817,9 @@ public class TypedValueCalculatorTest {
 	public void testLetInPostfix() {
 		postfix("#x 1 : #y 2 : list$2 {x y +} let").expectResult(i(3));
 	}
+
+	@Test
+	public void testLetScoping() {
+		infix("let([x:2], let([y:x], let([x:3], y)))").expectResult(i(2));
+	}
 }
