@@ -206,4 +206,19 @@ public class FractionCalculatorTest {
 		infix("let([x:2,y:3], let([w:x+y,z:x-y], w + z))").expectResult(f(4));
 		prefix("(let [(:x 2) (:y 3)] (let [(:w (+ x y)) (:z (- x y))] (+ w z)))").expectResult(f(4));
 	}
+
+	@Test
+	public void testFunctionLet() {
+		infix("let([x():2], x())").expectResult(f(2));
+		prefix("(let [(:(x) 2)] (x))").expectResult(f(2));
+
+		infix("let([x(a,b):a+b], x(1,2))").expectResult(f(3));
+		prefix("(let [(: (x a b) (+ a b))], (x 1 2))").expectResult(f(3));
+	}
+
+	@Test
+	public void testLetScoping() {
+		infix("let([x:2], let([y:x], let([x:3], y)))").expectResult(f(2));
+		infix("let([x:2], let([f(a):a+x], let([x:3], f(4))))").expectResult(f(6));
+	}
 }

@@ -216,4 +216,19 @@ public class DoubleCalculatorTest {
 		infix("let([x:2,y:3], let([w:x+y,z:x-y], w + z))").expectResult(4.0);
 		prefix("(let [(:x 2) (:y 3)] (let [(:w (+ x y)) (:z (- x y))] (+ w z)))").expectResult(4.0);
 	}
+
+	@Test
+	public void testFunctionLet() {
+		infix("let([x():2], x())").expectResult(2.0);
+		prefix("(let [(:(x) 2)] (x))").expectResult(2.0);
+
+		infix("let([x(a,b):a+b], x(1,2))").expectResult(3.0);
+		prefix("(let [(: (x a b) (+ a b))], (x 1 2))").expectResult(3.0);
+	}
+
+	@Test
+	public void testLetScoping() {
+		infix("let([x:2], let([y:x], let([x:3], y)))").expectResult(2.0);
+		infix("let([x:2], let([f(a):a+x], let([x:3], f(4))))").expectResult(6.0);
+	}
 }
