@@ -9,28 +9,47 @@ public class Stack<E> implements Iterable<E> {
 	public static class StackUnderflowException extends RuntimeException {
 		private static final long serialVersionUID = 360455673552034663L;
 
+		public StackUnderflowException(String message) {
+			super(message);
+		}
+
 		public StackUnderflowException() {
 			super("stack underflow");
 		}
 	}
 
 	private final List<E> data;
+	private final int bottomElement;
 
 	public Stack() {
 		this.data = Lists.newArrayList();
+		this.bottomElement = 0;
 	}
 
 	public Stack(int initialCapacity) {
 		this.data = Lists.newArrayListWithCapacity(initialCapacity);
+		this.bottomElement = 0;
+	}
+
+	private Stack(List<E> data, int bottomElement) {
+		this.data = data;
+		this.bottomElement = bottomElement;
 	}
 
 	public void push(E value) {
 		data.add(value);
 	}
 
-	public E pop() {
-		if (data.isEmpty()) throw new StackUnderflowException();
+	private void checkNonEmpty() {
+		if (isEmpty()) throw new StackUnderflowException();
+	}
 
+	private void checkIndex(int index) {
+		if (index < bottomElement) throw new StackUnderflowException();
+	}
+
+	public E pop() {
+		checkNonEmpty();
 		try {
 			return data.remove(data.size() - 1);
 		} catch (IndexOutOfBoundsException e) {
@@ -39,20 +58,23 @@ public class Stack<E> implements Iterable<E> {
 	}
 
 	public E peek(int index) {
-		return data.get(data.size() - 1 - index);
+		final int peekIndex = data.size() - 1 - index;
+		checkIndex(peekIndex);
+		return data.get(peekIndex);
 	}
 
 	public void dup() {
+		checkNonEmpty();
 		E last = data.get(data.size() - 1);
 		data.add(last);
 	}
 
 	public int size() {
-		return data.size();
+		return data.size() - bottomElement;
 	}
 
 	public boolean isEmpty() {
-		return data.isEmpty();
+		return size() == 0;
 	}
 
 	public static <T> Stack<T> create() {
@@ -61,6 +83,12 @@ public class Stack<E> implements Iterable<E> {
 
 	@Override
 	public Iterator<E> iterator() {
-		return data.iterator();
+		return data.listIterator(bottomElement);
+	}
+
+	public Stack<E> substack(int depth) {
+		final int newBottom = size() - depth;
+		if (newBottom < 0) throw new StackUnderflowException(String.format("Not enough elements to create substack: required ds, size %d", depth, size()));
+		return newBottom == 0? this : new Stack<E>(data, newBottom);
 	}
 }
