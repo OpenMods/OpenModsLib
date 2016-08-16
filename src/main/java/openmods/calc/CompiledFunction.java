@@ -5,15 +5,17 @@ import openmods.utils.Stack;
 public class CompiledFunction<E> extends FixedFunctionSymbol<E> {
 
 	private final IExecutable<E> body;
+	private final ICalculatorFrame<E> scope;
 
-	public CompiledFunction(int argCount, int resultCount, IExecutable<E> body) {
+	public CompiledFunction(int argCount, int resultCount, IExecutable<E> body, ICalculatorFrame<E> scope) {
 		super(argCount, resultCount);
 		this.body = body;
+		this.scope = scope;
 	}
 
 	@Override
 	public void call(ICalculatorFrame<E> frame) {
-		final LocalFrame<E> newFrame = new LocalFrame<E>(frame);
+		final LocalFrame<E> newFrame = new LocalFrame<E>(scope);
 		final Stack<E> argumentStack = frame.stack();
 
 		for (int i = 1; i <= argCount; i++) {

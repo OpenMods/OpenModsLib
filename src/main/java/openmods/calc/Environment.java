@@ -31,6 +31,10 @@ public class Environment<E> {
 		return Iterables.unmodifiableIterable(topFrame.stack());
 	}
 
+	public ICalculatorFrame<E> getTopFrame() {
+		return topFrame;
+	}
+
 	public ICalculatorFrame<E> executeIsolated(IExecutable<E> executable) {
 		final ICalculatorFrame<E> freshFrame = new LocalFrame<E>(topFrame);
 		executable.execute(freshFrame);

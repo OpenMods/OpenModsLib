@@ -56,7 +56,7 @@ public class Calculator<E, M> {
 
 	public void compileAndDefineGlobalFunction(M exprType, String id, int argCount, String bodyExpr) {
 		final IExecutable<E> funcBody = compilers.compile(exprType, bodyExpr);
-		environment.setGlobalSymbol(id, new CompiledFunction<E>(argCount, 1, funcBody));
+		environment.setGlobalSymbol(id, new CompiledFunction<E>(argCount, 1, funcBody, environment.getTopFrame()));
 	}
 
 }
