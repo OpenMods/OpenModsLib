@@ -17,6 +17,7 @@ import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
 import openmods.calc.LocalFrame;
 import openmods.calc.StackValidationException;
+import openmods.calc.SubFrame;
 import openmods.calc.ValueSymbol;
 import openmods.utils.Stack;
 
@@ -108,26 +109,25 @@ public class SimpleLetSymbolFactory<E> {
 
 					@Override
 					public void call(ICalculatorFrame<E> callSiteFrame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+						final int expectedArgCount = reversedArgs.size();
+
 						if (argumentsCount.isPresent()) {
 							final int givenArgCount = argumentsCount.get();
-							final int expectedArgCount = reversedArgs.size();
 							if (givenArgCount != expectedArgCount) throw new StackValidationException("Expected %s argument(s) but got %s", expectedArgCount, givenArgCount);
 						}
 
-						final LocalFrame<E> executionFrame = new LocalFrame<E>(bindSiteFrame);
+						final SubFrame<E> executionFrame = new SubFrame<E>(bindSiteFrame, expectedArgCount);
+						final Stack<E> argStack = executionFrame.stack();
 						for (String arg : reversedArgs)
-							executionFrame.setLocalSymbol(arg, Constant.create(callSiteFrame.stack().pop()));
+							executionFrame.setLocalSymbol(arg, Constant.create(argStack.pop()));
 
 						exprExecutable.execute(executionFrame);
 
 						if (returnsCount.isPresent()) {
 							final int expectedReturns = returnsCount.get();
-							final int actualReturns = executionFrame.stack().size();
+							final int actualReturns = argStack.size();
 							if (expectedReturns != actualReturns) throw new StackValidationException("Has %s result(s) but expected %s", actualReturns, expectedReturns);
 						}
-
-						for (E ret : executionFrame.stack())
-							callSiteFrame.stack().push(ret);
 					}
 
 				}
@@ -151,15 +151,12 @@ public class SimpleLetSymbolFactory<E> {
 
 		@Override
 		public void execute(ICalculatorFrame<E> frame) {
-			final LocalFrame<E> letFrame = new LocalFrame<E>(frame);
+			final SubFrame<E> letFrame = new SubFrame<E>(frame, 0);
 
 			for (Map.Entry<String, ISymbolBinder<E>> e : variables.entrySet())
 				letFrame.setLocalSymbol(e.getKey(), e.getValue().bind(frame));
 
 			expr.execute(letFrame);
-
-			for (E result : letFrame.stack())
-				frame.stack().push(result);
 		}
 
 		@Override

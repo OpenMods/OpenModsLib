@@ -9,7 +9,7 @@ import openmods.calc.FixedFunctionSymbol;
 import openmods.calc.ICalculatorFrame;
 import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
-import openmods.calc.LocalFrame;
+import openmods.calc.SubFrame;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
@@ -124,10 +124,9 @@ public class LetExpressionFactory {
 			final TypedValue code = currentFrame.stack().pop();
 			Preconditions.checkState(code.is(Code.class), "Expected code on second 'if' parameter, got %s", code);
 
-			final TypedValue paramPairs = currentFrame.stack().pop();
+			final SubFrame<TypedValue> letFrame = new SubFrame<TypedValue>(currentFrame, 1);
+			final TypedValue paramPairs = letFrame.stack().pop();
 			Preconditions.checkState(paramPairs.is(Cons.class), "Expected list or args on first 'if' parameter, got %s", paramPairs);
-
-			final LocalFrame<TypedValue> letFrame = new LocalFrame<TypedValue>(currentFrame);
 
 			paramPairs.unwrap(Cons.class).visit(new Cons.LinearVisitor() {
 
@@ -146,8 +145,6 @@ public class LetExpressionFactory {
 			});
 
 			code.unwrap(Code.class).execute(letFrame);
-			for (TypedValue ret : letFrame.stack())
-				currentFrame.stack().push(ret);
 		}
 	}
 

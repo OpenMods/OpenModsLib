@@ -15,22 +15,15 @@ public class CompiledFunction<E> extends FixedFunctionSymbol<E> {
 
 	@Override
 	public void call(ICalculatorFrame<E> frame) {
-		final LocalFrame<E> newFrame = new LocalFrame<E>(scope);
-		final Stack<E> argumentStack = frame.stack();
+		final SubFrame<E> newFrame = new SubFrame<E>(scope, argCount);
 
+		final Stack<E> resultStack = newFrame.stack();
 		for (int i = 1; i <= argCount; i++) {
-			E arg = argumentStack.pop();
+			E arg = resultStack.pop();
 			newFrame.setLocalSymbol("$" + i, Constant.create(arg));
 		}
 
 		body.execute(newFrame);
-
-		final Stack<E> resultStack = newFrame.stack();
-
-		for (int i = 0; i < resultCount; i++) {
-			final E result = resultStack.pop();
-			argumentStack.push(result);
-		}
 
 		final int left = resultStack.size();
 		if (left != 0) throw new StackValidationException("Stack not empty after execution (expected %s, left %s)", this.resultCount, left);

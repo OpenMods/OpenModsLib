@@ -21,9 +21,9 @@ import openmods.calc.FunctionSymbol;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.ICalculatorFrame;
-import openmods.calc.LocalFrame;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.StackValidationException;
+import openmods.calc.SubFrame;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
@@ -1232,21 +1232,17 @@ public class TypedValueCalculatorFactory {
 					if (args != 1) throw new StackValidationException("Expected one argument but got %s", args);
 				}
 
-				final TypedValue top = frame.stack().pop();
+				final ICalculatorFrame<TypedValue> sandboxFrame = new SubFrame<TypedValue>(frame, 1);
+				final TypedValue top = sandboxFrame.stack().pop();
 				Preconditions.checkState(top.is(Code.class), "Expected 'code', got %s", top);
 
-				final ICalculatorFrame<TypedValue> sandboxFrame = new LocalFrame<TypedValue>(frame);
 				top.unwrap(Code.class).execute(sandboxFrame);
 
-				final List<TypedValue> results = Lists.newArrayList(sandboxFrame.stack());
-
 				if (returnsCount.isPresent()) {
-					final int returns = returnsCount.get();
-					if (returns != results.size()) throw new StackValidationException("Has %s result(s) but expected %s", results.size(), returns);
+					final int expectedReturns = returnsCount.get();
+					final int actualReturns = sandboxFrame.stack().size();
+					if (expectedReturns != actualReturns) throw new StackValidationException("Has %s result(s) but expected %s", actualReturns, expectedReturns);
 				}
-
-				for (TypedValue result : results)
-					frame.stack().push(result);
 			}
 		});
 
