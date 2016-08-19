@@ -7,7 +7,7 @@ public class MappedType {
 	private final String clsName;
 
 	public static MappedType of(Class<?> cls) {
-		return new MappedType(cls.getName().replace('.', '/'));
+		return new MappedType(cls.getName());
 	}
 
 	public static MappedType of(String clsName) {
@@ -15,7 +15,7 @@ public class MappedType {
 	}
 
 	private MappedType(String clsName) {
-		this.clsName = VisitorHelper.getMappedName(clsName);
+		this.clsName = VisitorHelper.getMappedName(clsName.replace('.', '/'));
 	}
 
 	public String name() {

@@ -20,6 +20,7 @@ import openmods.asm.VisitorHelper;
 import openmods.asm.VisitorHelper.TransformProvider;
 import openmods.config.simple.ConfigProcessor;
 import openmods.config.simple.ConfigProcessor.UpdateListener;
+import openmods.entity.PlayerDamageEventInjector;
 import openmods.include.IncludingClassVisitor;
 import openmods.injector.InjectedClassesManager;
 import openmods.movement.MovementPatcher;
@@ -183,6 +184,24 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				"Modified class: net.minecraft.client.renderer.OpenGlHelper",
 				"Known users: OpenBlocks skyblocks",
 				"When disabled: no stencil buffer available unless unlocked with Forge flag. Mods may not use some graphic features");
+
+		config.addEntry("activate_player_damage_hook", 0, "true", new ConfigOption("player_damage_hook") {
+			@Override
+			protected void onActivate(final StateUpdater<TransformerState> state) {
+				vanillaPatches.put("net.minecraft.entity.player.EntityPlayer", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
+					@Override
+					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
+						Log.debug("Trying to patch EntityPlayer (class: %s)", name);
+						state.update(TransformerState.ACTIVATED);
+						return new PlayerDamageEventInjector(name, cv, createResultListener(state));
+					}
+				});
+			}
+		},
+				"Purpose: hook for capturing damage to player (after armor and potion calculations)",
+				"Modified class: net.minecraft.entity.player.EntityPlayer",
+				"Known users: Last Stand enchantment",
+				"When disabled: Last Stand enchantment will not work");
 	}
 
 	private final static TransformProvider INCLUDING_CV = new TransformProvider(0) {
