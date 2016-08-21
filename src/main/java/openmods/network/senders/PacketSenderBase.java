@@ -14,6 +14,8 @@ public class PacketSenderBase implements IPacketSender {
 
 	protected void configureChannel(Channel channel) {}
 
+	protected void cleanupChannel(Channel channel) {}
+
 	@Override
 	public void sendMessage(Object msg) {
 		configureChannel(channel);
@@ -28,5 +30,7 @@ public class PacketSenderBase implements IPacketSender {
 			channel.write(msg).addListener(NetUtils.LOGGING_LISTENER);
 
 		channel.flush();
+
+		cleanupChannel(channel);
 	}
 }

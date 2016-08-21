@@ -8,6 +8,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 
 public abstract class NetworkEvent extends Event {
@@ -40,6 +41,10 @@ public abstract class NetworkEvent extends Event {
 
 	public void sendToPlayer(EntityPlayer player) {
 		NetworkEventManager.INSTANCE.dispatcher().senders.player.sendMessage(this, player);
+	}
+
+	public void sendToEntity(Entity entity) {
+		NetworkEventManager.INSTANCE.dispatcher().senders.entity.sendMessage(this, entity);
 	}
 
 	public List<Object> serialize() {

@@ -1,6 +1,5 @@
 package openmods.network.targets;
 
-import com.google.common.base.Preconditions;
 import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
 import cpw.mods.fml.relauncher.Side;
 import java.util.Collection;
@@ -12,9 +11,9 @@ import openmods.network.DimCoord;
 import openmods.network.IPacketTargetSelector;
 import openmods.utils.NetUtils;
 
-public class SelectChunkWatchers implements IPacketTargetSelector {
+public class SelectChunkWatchers implements IPacketTargetSelector<DimCoord> {
 
-	public static final IPacketTargetSelector INSTANCE = new SelectChunkWatchers();
+	public static final IPacketTargetSelector<DimCoord> INSTANCE = new SelectChunkWatchers();
 
 	@Override
 	public boolean isAllowedOnSide(Side side) {
@@ -22,10 +21,7 @@ public class SelectChunkWatchers implements IPacketTargetSelector {
 	}
 
 	@Override
-	public void listDispatchers(Object arg, Collection<NetworkDispatcher> result) {
-		Preconditions.checkArgument(arg instanceof DimCoord, "Argument must be DimCoord");
-		DimCoord coord = (DimCoord)arg;
-
+	public void listDispatchers(DimCoord coord, Collection<NetworkDispatcher> result) {
 		WorldServer server = DimensionManager.getWorld(coord.dimension);
 
 		Set<EntityPlayerMP> players = NetUtils.getPlayersWatchingBlock(server, coord.x, coord.z);
@@ -34,6 +30,11 @@ public class SelectChunkWatchers implements IPacketTargetSelector {
 			NetworkDispatcher dispatcher = NetUtils.getPlayerDispatcher(player);
 			result.add(dispatcher);
 		}
+	}
+
+	@Override
+	public DimCoord castArg(Object arg) {
+		return (DimCoord)arg;
 	}
 
 }

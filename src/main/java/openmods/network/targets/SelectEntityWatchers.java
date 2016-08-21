@@ -11,9 +11,9 @@ import net.minecraft.world.WorldServer;
 import openmods.network.IPacketTargetSelector;
 import openmods.utils.NetUtils;
 
-public class SelectEntityWatchers implements IPacketTargetSelector {
+public class SelectEntityWatchers implements IPacketTargetSelector<Entity> {
 
-	public static final IPacketTargetSelector INSTANCE = new SelectEntityWatchers();
+	public static final IPacketTargetSelector<Entity> INSTANCE = new SelectEntityWatchers();
 
 	@Override
 	public boolean isAllowedOnSide(Side side) {
@@ -21,10 +21,7 @@ public class SelectEntityWatchers implements IPacketTargetSelector {
 	}
 
 	@Override
-	public void listDispatchers(Object arg, Collection<NetworkDispatcher> result) {
-		Preconditions.checkArgument(arg instanceof Entity, "Arg must be Entity");
-		Entity entity = (Entity)arg;
-
+	public void listDispatchers(Entity entity, Collection<NetworkDispatcher> result) {
 		Preconditions.checkArgument(entity.worldObj instanceof WorldServer, "Invalid side");
 		WorldServer server = (WorldServer)entity.worldObj;
 		Set<EntityPlayerMP> players = NetUtils.getPlayersWatchingEntity(server, entity.getEntityId());
@@ -33,6 +30,11 @@ public class SelectEntityWatchers implements IPacketTargetSelector {
 			NetworkDispatcher dispatcher = NetUtils.getPlayerDispatcher(player);
 			result.add(dispatcher);
 		}
+	}
+
+	@Override
+	public Entity castArg(Object arg) {
+		return (Entity)arg;
 	}
 
 }

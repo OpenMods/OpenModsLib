@@ -12,13 +12,18 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.util.AttributeKey;
 import java.util.Collection;
 import java.util.Map;
 
 public class ExtendedOutboundHandler extends ChannelOutboundHandlerAdapter {
-	public static final AttributeKey<IPacketTargetSelector> MESSAGETARGET = new AttributeKey<IPacketTargetSelector>("om:outboundTarget");
+	public static final AttributeKey<IPacketTargetSelector<?>> MESSAGETARGET = new AttributeKey<IPacketTargetSelector<?>>("om:outboundTarget");
+
+	private static <T> Collection<NetworkDispatcher> getDispatchers(IPacketTargetSelector<T> target, Object arg) {
+		final Collection<NetworkDispatcher> output = Lists.newArrayList();
+		target.listDispatchers(target.castArg(arg), output);
+		return output;
+	}
 
 	@Override
 	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
@@ -29,7 +34,7 @@ public class ExtendedOutboundHandler extends ChannelOutboundHandlerAdapter {
 
 		final Channel channel = ctx.channel();
 
-		final IPacketTargetSelector target = channel.attr(MESSAGETARGET).get();
+		final IPacketTargetSelector<?> target = channel.attr(MESSAGETARGET).get();
 		if (target == null) {
 			ctx.write(msg);
 			return;
@@ -46,9 +51,7 @@ public class ExtendedOutboundHandler extends ChannelOutboundHandlerAdapter {
 		Object arg = channel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).get();
 
 		try {
-			Collection<NetworkDispatcher> dispatchers = Lists.newArrayList();
-			target.listDispatchers(arg, dispatchers);
-
+			final Collection<NetworkDispatcher> dispatchers = getDispatchers(target, arg);
 			for (NetworkDispatcher dispatcher : dispatchers)
 				dispatcher.sendProxy(pkt);
 
@@ -68,11 +71,6 @@ public class ExtendedOutboundHandler extends ChannelOutboundHandlerAdapter {
 
 	public static void install(FMLEmbeddedChannel fmlEmbeddedChannel) {
 		fmlEmbeddedChannel.pipeline().addAfter("fml:outbound", "om:outbound", new ExtendedOutboundHandler());
-	}
-
-	public static void selectTargets(EmbeddedChannel channel, IPacketTargetSelector selector, Object arg) {
-		channel.attr(MESSAGETARGET).set(selector);
-		if (arg != null) channel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(arg);
 	}
 
 }
