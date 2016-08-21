@@ -3,22 +3,18 @@ package openmods.calc.parsing;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.util.List;
-import java.util.Map;
 import openmods.calc.BinaryOperator;
-import openmods.calc.Constant;
 import openmods.calc.ExprType;
-import openmods.calc.FunctionSymbol;
-import openmods.calc.ICalculatorFrame;
+import openmods.calc.Frame;
+import openmods.calc.FrameFactory;
+import openmods.calc.ICallable;
 import openmods.calc.ICompilerMapFactory;
 import openmods.calc.IExecutable;
-import openmods.calc.ISymbol;
-import openmods.calc.LocalFrame;
+import openmods.calc.IGettable;
 import openmods.calc.StackValidationException;
-import openmods.calc.SubFrame;
-import openmods.calc.ValueSymbol;
+import openmods.calc.SymbolMap;
 import openmods.utils.Stack;
 
 public class SimpleLetSymbolFactory<E> {
@@ -60,23 +56,23 @@ public class SimpleLetSymbolFactory<E> {
 	}
 
 	private interface ISymbolBinder<E> {
-		public ISymbol<E> bind(ICalculatorFrame<E> frame);
+		public void bind(SymbolMap<E> localSymbols, Frame<E> enclosingFrame);
 	}
 
-	private static <E> ISymbolBinder<E> createLetLazyConstant(IExprNode<E> valueNode) {
+	private static <E> ISymbolBinder<E> createLetLazyConstant(final String name, IExprNode<E> valueNode) {
 		final IExecutable<E> exprExecutable = ExprUtils.flattenNode(valueNode);
 
 		return new ISymbolBinder<E>() {
 			@Override
-			public ISymbol<E> bind(final ICalculatorFrame<E> bindSiteFrame) {
-				class LazyConstant extends ValueSymbol<E> {
+			public void bind(SymbolMap<E> localSymbols, final Frame<E> enclosingFrame) {
+				class LazyConstant implements IGettable<E> {
 					private boolean isEvaluated;
 					private E value;
 
 					@Override
-					public void get(ICalculatorFrame<E> callSiteFrame) {
+					public void get(Frame<E> callSiteFrame) {
 						if (!isEvaluated) {
-							final ICalculatorFrame<E> executionFrame = new LocalFrame<E>(bindSiteFrame);
+							final Frame<E> executionFrame = FrameFactory.newLocalFrame(enclosingFrame);
 							exprExecutable.execute(executionFrame);
 							final Stack<E> resultStack = executionFrame.stack();
 							Preconditions.checkState(resultStack.size() == 1, "Expected one value from let expression, got %s", resultStack.size());
@@ -87,12 +83,12 @@ public class SimpleLetSymbolFactory<E> {
 					}
 				}
 
-				return new LazyConstant();
+				localSymbols.put(name, new LazyConstant());
 			}
 		};
 	}
 
-	private static <E> ISymbolBinder<E> createLetFunction(SymbolCallNode<E> symbolCallNode, IExprNode<E> valueNode) {
+	private static <E> ISymbolBinder<E> createLetFunction(final String name, SymbolCallNode<E> symbolCallNode, IExprNode<E> valueNode) {
 		List<String> args = Lists.newArrayList();
 		for (IExprNode<E> arg : symbolCallNode.getChildren()) {
 			Preconditions.checkState(arg instanceof SymbolGetNode, "Expected symbol, got %s", arg);
@@ -104,11 +100,11 @@ public class SimpleLetSymbolFactory<E> {
 
 		return new ISymbolBinder<E>() {
 			@Override
-			public ISymbol<E> bind(final ICalculatorFrame<E> bindSiteFrame) {
-				class LetFunction extends FunctionSymbol<E> {
+			public void bind(SymbolMap<E> localSymbols, final Frame<E> enclosingFrame) {
+				class LetFunction implements ICallable<E> {
 
 					@Override
-					public void call(ICalculatorFrame<E> callSiteFrame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+					public void call(Frame<E> callSiteFrame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 						final int expectedArgCount = reversedArgs.size();
 
 						if (argumentsCount.isPresent()) {
@@ -116,10 +112,10 @@ public class SimpleLetSymbolFactory<E> {
 							if (givenArgCount != expectedArgCount) throw new StackValidationException("Expected %s argument(s) but got %s", expectedArgCount, givenArgCount);
 						}
 
-						final SubFrame<E> executionFrame = new SubFrame<E>(bindSiteFrame, expectedArgCount);
+						final Frame<E> executionFrame = FrameFactory.newLocalFrameWithSubstack(enclosingFrame, expectedArgCount);
 						final Stack<E> argStack = executionFrame.stack();
 						for (String arg : reversedArgs)
-							executionFrame.setLocalSymbol(arg, Constant.create(argStack.pop()));
+							executionFrame.symbols().put(arg, argStack.pop());
 
 						exprExecutable.execute(executionFrame);
 
@@ -132,7 +128,7 @@ public class SimpleLetSymbolFactory<E> {
 
 				}
 
-				return new LetFunction();
+				localSymbols.put(name, new LetFunction());
 			}
 		};
 
@@ -140,21 +136,21 @@ public class SimpleLetSymbolFactory<E> {
 
 	private class LetExecutable implements IExecutable<E> {
 
-		private final Map<String, ISymbolBinder<E>> variables;
+		private final List<ISymbolBinder<E>> variables;
 
 		private final IExecutable<E> expr;
 
-		public LetExecutable(Map<String, ISymbolBinder<E>> variables, IExecutable<E> expr) {
+		public LetExecutable(List<ISymbolBinder<E>> variables, IExecutable<E> expr) {
 			this.variables = variables;
 			this.expr = expr;
 		}
 
 		@Override
-		public void execute(ICalculatorFrame<E> frame) {
-			final SubFrame<E> letFrame = new SubFrame<E>(frame, 0);
+		public void execute(Frame<E> frame) {
+			final Frame<E> letFrame = FrameFactory.newLocalFrameWithSubstack(frame, 0);
 
-			for (Map.Entry<String, ISymbolBinder<E>> e : variables.entrySet())
-				letFrame.setLocalSymbol(e.getKey(), e.getValue().bind(frame));
+			for (ISymbolBinder<E> e : variables)
+				e.bind(letFrame.symbols(), frame);
 
 			expr.execute(letFrame);
 		}
@@ -180,19 +176,19 @@ public class SimpleLetSymbolFactory<E> {
 			// expecting [a:b:,c:1+2]. If correctly formed, arg name (symbol) will be transformed into symbol atom
 			Preconditions.checkState(argsNode instanceof SquareBracketContainerNode, "Malformed 'let' expressions: expected brackets, got %s", argsNode);
 			final SquareBracketContainerNode<E> bracketNode = (SquareBracketContainerNode<E>)argsNode;
-			final ImmutableMap<String, ISymbolBinder<E>> vars = collectVars(bracketNode);
+			final ImmutableList<ISymbolBinder<E>> vars = collectVars(bracketNode);
 			final IExecutable<E> code = ExprUtils.flattenNode(codeNode);
 			output.add(new LetExecutable(vars, code));
 		}
 
-		private ImmutableMap<String, ISymbolBinder<E>> collectVars(final SquareBracketContainerNode<E> bracketNode) {
-			final ImmutableMap.Builder<String, ISymbolBinder<E>> varsBuilder = ImmutableMap.builder();
+		private ImmutableList<ISymbolBinder<E>> collectVars(final SquareBracketContainerNode<E> bracketNode) {
+			final ImmutableList.Builder<ISymbolBinder<E>> varsBuilder = ImmutableList.builder();
 			for (IExprNode<E> argNode : bracketNode.getChildren())
 				flattenArgNode(varsBuilder, argNode);
 			return varsBuilder.build();
 		}
 
-		private void flattenArgNode(ImmutableMap.Builder<String, ISymbolBinder<E>> output, IExprNode<E> argNode) {
+		private void flattenArgNode(ImmutableList.Builder<ISymbolBinder<E>> output, IExprNode<E> argNode) {
 			Preconditions.checkState(argNode instanceof BinaryOpNode, "Expected expression in from <name>:<expr>, got %s", argNode);
 			final BinaryOpNode<E> opNode = (BinaryOpNode<E>)argNode;
 			Preconditions.checkState(opNode.operator == keyValueSeparator, "Expected operator %s as separator, got %s", keyValueSeparator.id, opNode.operator.id);
@@ -201,10 +197,10 @@ public class SimpleLetSymbolFactory<E> {
 			final IExprNode<E> valueExprNode = opNode.right;
 			if (nameNode instanceof SymbolGetNode) {
 				final SymbolGetNode<E> symbolGetNode = (SymbolGetNode<E>)nameNode;
-				output.put(symbolGetNode.symbol(), createLetLazyConstant(valueExprNode));
+				output.add(createLetLazyConstant(symbolGetNode.symbol(), valueExprNode));
 			} else if (nameNode instanceof SymbolCallNode) {
 				final SymbolCallNode<E> symbolCallNode = (SymbolCallNode<E>)nameNode;
-				output.put(symbolCallNode.symbol(), createLetFunction(symbolCallNode, valueExprNode));
+				output.add(createLetFunction(symbolCallNode.symbol(), symbolCallNode, valueExprNode));
 			} else {
 				throw new IllegalStateException("Expected symbol, got " + nameNode);
 			}

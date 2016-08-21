@@ -35,7 +35,7 @@ public class CommandCalcEvaluate extends CommandCalcBase {
 				sender.addChatMessage(new ChatComponentText(result));
 			} else {
 				state.compileAndExecute(sender, expr);
-				sender.addChatMessage(new ChatComponentTranslation("openmodslib.command.calc_stack_size", state.getActiveCalculator().environment.stackSize()));
+				sender.addChatMessage(new ChatComponentTranslation("openmodslib.command.calc_stack_size", state.getActiveCalculator().environment.topFrame().stack().size()));
 			}
 		} catch (Exception e) {
 			final List<String> causes = Lists.newArrayList();

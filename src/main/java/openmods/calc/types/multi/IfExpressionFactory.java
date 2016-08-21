@@ -4,10 +4,10 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;
-import openmods.calc.FixedFunctionSymbol;
-import openmods.calc.ICalculatorFrame;
+import openmods.calc.FixedCallable;
+import openmods.calc.Frame;
+import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
-import openmods.calc.ISymbol;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
 import openmods.calc.parsing.ICompilerState;
@@ -69,14 +69,14 @@ public class IfExpressionFactory {
 		return new IfStateTransition(parentState);
 	}
 
-	private class IfSymbol extends FixedFunctionSymbol<TypedValue> {
+	private class IfSymbol extends FixedCallable<TypedValue> {
 
 		public IfSymbol() {
 			super(3, 1);
 		}
 
 		@Override
-		public void call(ICalculatorFrame<TypedValue> frame) {
+		public void call(Frame<TypedValue> frame) {
 			final TypedValue ifFalse = frame.stack().pop();
 			Preconditions.checkState(ifFalse.is(Code.class), "Expected code on first 'if' parameter, got %s", ifFalse);
 
@@ -91,7 +91,7 @@ public class IfExpressionFactory {
 		}
 	}
 
-	public ISymbol<TypedValue> createSymbol() {
+	public ICallable<TypedValue> createSymbol() {
 		return new IfSymbol();
 	}
 }

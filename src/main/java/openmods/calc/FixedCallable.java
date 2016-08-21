@@ -2,19 +2,19 @@ package openmods.calc;
 
 import com.google.common.base.Optional;
 
-public abstract class FixedSymbol<E> implements ISymbol<E> {
+public abstract class FixedCallable<E> implements ICallable<E> {
 
 	protected final int argCount;
 
 	protected final int resultCount;
 
-	public FixedSymbol(int argCount, int resultCount) {
+	public FixedCallable(int argCount, int resultCount) {
 		this.argCount = argCount;
 		this.resultCount = resultCount;
 	}
 
 	@Override
-	public final void call(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+	public final void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 		if (argumentsCount.isPresent()) {
 			final int args = argumentsCount.get();
 			if (args != argCount) throw new StackValidationException("Expected %s argument(s) but got %s", this.argCount, args);
@@ -28,5 +28,6 @@ public abstract class FixedSymbol<E> implements ISymbol<E> {
 		call(frame);
 	}
 
-	public abstract void call(ICalculatorFrame<E> frame);
+	public abstract void call(Frame<E> frame);
+
 }

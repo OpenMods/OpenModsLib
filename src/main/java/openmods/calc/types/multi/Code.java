@@ -1,7 +1,7 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
-import openmods.calc.ICalculatorFrame;
+import openmods.calc.Frame;
 import openmods.calc.IExecutable;
 import openmods.calc.parsing.ExprUtils;
 import openmods.calc.parsing.IExprNode;
@@ -14,7 +14,7 @@ public class Code {
 		this.code = code;
 	}
 
-	public void execute(ICalculatorFrame<TypedValue> frame) {
+	public void execute(Frame<TypedValue> frame) {
 		this.code.execute(frame);
 	}
 

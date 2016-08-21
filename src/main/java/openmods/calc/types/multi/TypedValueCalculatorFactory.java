@@ -14,16 +14,17 @@ import openmods.calc.BinaryOperator;
 import openmods.calc.BinaryOperator.Associativity;
 import openmods.calc.Calculator;
 import openmods.calc.Compilers;
-import openmods.calc.Constant;
 import openmods.calc.Environment;
 import openmods.calc.ExprType;
-import openmods.calc.FunctionSymbol;
+import openmods.calc.Frame;
+import openmods.calc.FrameFactory;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
-import openmods.calc.ICalculatorFrame;
+import openmods.calc.ICallable;
+import openmods.calc.ISymbol;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.StackValidationException;
-import openmods.calc.SubFrame;
+import openmods.calc.TopSymbolMap;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
@@ -46,6 +47,7 @@ import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenUtils;
 import openmods.calc.parsing.Tokenizer;
+import openmods.calc.parsing.ValueNode;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
@@ -68,9 +70,11 @@ public class TypedValueCalculatorFactory {
 	public static final String SYMBOL_IF = "if";
 	public static final String SYMBOL_LET = "let";
 	public static final String SYMBOL_CODE = "code";
-	public static final String BRACKET_CODE = "{";
-
+	public static final String SYMBOL_APPLY = "apply";
 	public static final String SYMBOL_SLICE = "slice";
+
+	public static final String BRACKET_CODE = "{";
+	public static final String BRACKET_ARG_PACK = "(";
 
 	private static final Function<BigInteger, Integer> INT_UNWRAP = new Function<BigInteger, Integer>() {
 		@Override
@@ -175,6 +179,7 @@ public class TypedValueCalculatorFactory {
 		domain.registerType(Cons.class, "pair");
 		domain.registerType(Symbol.class, "symbol");
 		domain.registerType(Code.class, "code");
+		domain.registerType(ICallable.class, "callable");
 
 		domain.registerConverter(new IConverter<Boolean, BigInteger>() {
 			@Override
@@ -263,6 +268,7 @@ public class TypedValueCalculatorFactory {
 		domain.registerAlwaysTrue(IComposite.class);
 		domain.registerAlwaysTrue(Cons.class);
 		domain.registerAlwaysTrue(Code.class);
+		domain.registerAlwaysTrue(ICallable.class);
 
 		final TypedValue nullValue = domain.create(UnitType.class, UnitType.INSTANCE);
 
@@ -687,27 +693,38 @@ public class TypedValueCalculatorFactory {
 
 		final TypedValuePrinter valuePrinter = new TypedValuePrinter(nullValue);
 
-		final Environment<TypedValue> env = new Environment<TypedValue>(nullValue);
+		final Environment<TypedValue> env = new Environment<TypedValue>(nullValue) {
+			@Override
+			protected Frame<TypedValue> createTopMap() {
+				class TypedValueSymbolMap extends TopSymbolMap<TypedValue> {
+					@Override
+					protected ISymbol<TypedValue> createSymbol(ICallable<TypedValue> callable) {
+						return new CallableWithValue(domain, callable);
+					}
+				}
+
+				return new Frame<TypedValue>(new TypedValueSymbolMap(), new Stack<TypedValue>());
+			}
+		};
 
 		GenericFunctions.createStackManipulationFunctions(env);
 
-		env.setGlobalSymbol(SYMBOL_NULL, Constant.create(nullValue));
+		env.setGlobalSymbol(SYMBOL_NULL, nullValue);
 
-		env.setGlobalSymbol(SYMBOL_FALSE, Constant.create(domain.create(Boolean.class, Boolean.TRUE)));
-		env.setGlobalSymbol(SYMBOL_TRUE, Constant.create(domain.create(Boolean.class, Boolean.FALSE)));
+		env.setGlobalSymbol(SYMBOL_FALSE, domain.create(Boolean.class, Boolean.TRUE));
+		env.setGlobalSymbol(SYMBOL_TRUE, domain.create(Boolean.class, Boolean.FALSE));
 
-		env.setGlobalSymbol("E", Constant.create(domain.create(Double.class, Math.E)));
-		env.setGlobalSymbol("PI", Constant.create(domain.create(Double.class, Math.PI)));
-		env.setGlobalSymbol("NAN", Constant.create(domain.create(Double.class, Double.NaN)));
-		env.setGlobalSymbol("INF", Constant.create(domain.create(Double.class, Double.POSITIVE_INFINITY)));
+		env.setGlobalSymbol("E", domain.create(Double.class, Math.E));
+		env.setGlobalSymbol("PI", domain.create(Double.class, Math.PI));
+		env.setGlobalSymbol("NAN", domain.create(Double.class, Double.NaN));
+		env.setGlobalSymbol("INF", domain.create(Double.class, Double.POSITIVE_INFINITY));
 
-		env.setGlobalSymbol("I", Constant.create(domain.create(Complex.class, Complex.I)));
+		env.setGlobalSymbol("I", domain.create(Complex.class, Complex.I));
 
 		class PredicateIsType extends UnaryFunction<TypedValue> {
 			private final Class<?> cls;
 
 			public PredicateIsType(Class<?> cls) {
-				domain.checkIsKnownType(cls);
 				this.cls = cls;
 			}
 
@@ -715,6 +732,7 @@ public class TypedValueCalculatorFactory {
 			protected TypedValue call(TypedValue value) {
 				return value.domain.create(Boolean.class, value.is(cls));
 			}
+
 		}
 
 		env.setGlobalSymbol("isint", new PredicateIsType(BigInteger.class));
@@ -727,6 +745,7 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("iscons", new PredicateIsType(Cons.class));
 		env.setGlobalSymbol("issymbol", new PredicateIsType(Symbol.class));
 		env.setGlobalSymbol("iscode", new PredicateIsType(Code.class));
+		env.setGlobalSymbol("iscallable", new PredicateIsType(ICallable.class));
 
 		env.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
 			@Override
@@ -1187,9 +1206,9 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol(SYMBOL_LIST, new FunctionSymbol<TypedValue>() {
+		env.setGlobalSymbol(SYMBOL_LIST, new ICallable<TypedValue>() {
 			@Override
-			public void call(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				if (returnsCount.isPresent()) {
 					final int returns = returnsCount.get();
 					if (returns != 1) throw new StackValidationException("Has one result but expected %s", returns);
@@ -1224,15 +1243,15 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("execute", new FunctionSymbol<TypedValue>() {
+		env.setGlobalSymbol("execute", new ICallable<TypedValue>() {
 			@Override
-			public void call(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				if (argumentsCount.isPresent()) {
 					final int args = argumentsCount.get();
 					if (args != 1) throw new StackValidationException("Expected one argument but got %s", args);
 				}
 
-				final ICalculatorFrame<TypedValue> sandboxFrame = new SubFrame<TypedValue>(frame, 1);
+				final Frame<TypedValue> sandboxFrame = FrameFactory.newProtectionFrameWithSubstack(frame, 1);
 				final TypedValue top = sandboxFrame.stack().pop();
 				Preconditions.checkState(top.is(Code.class), "Expected 'code', got %s", top);
 
@@ -1264,6 +1283,20 @@ public class TypedValueCalculatorFactory {
 			private int calculateBoundary(TypedValue v, int length) {
 				final int i = v.unwrap(BigInteger.class).intValue();
 				return i >= 0? i : (length + i);
+			}
+		});
+
+		env.setGlobalSymbol(SYMBOL_APPLY, new ICallable<TypedValue>() {
+			@Override
+			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				Preconditions.checkArgument(argumentsCount.isPresent(), "'apply' cannot be called without argument count");
+				int args = argumentsCount.get();
+
+				TypedValue targetValue = frame.stack().drop(args - 1);
+				Preconditions.checkState(targetValue.value instanceof ICallable, "Expected callable, got %s", targetValue);
+				@SuppressWarnings("unchecked")
+				final ICallable<TypedValue> targetCallable = (ICallable<TypedValue>)targetValue.value;
+				targetCallable.call(frame, Optional.of(args - 1), returnsCount);
 			}
 		});
 
@@ -1299,17 +1332,29 @@ public class TypedValueCalculatorFactory {
 							@Override
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
 								if (rightChild instanceof SquareBracketContainerNode) {
+									// a[...]
 									final SquareBracketContainerNode<TypedValue> bracketNode = ((SquareBracketContainerNode<TypedValue>)rightChild);
 									final List<IExprNode<TypedValue>> args = Lists.newArrayList();
 									args.add(leftChild);
 									Iterables.addAll(args, bracketNode.getChildren());
 									return new SymbolCallNode<TypedValue>(SYMBOL_SLICE, args);
+								} else if (rightChild instanceof ArgBracketNode && !(leftChild instanceof ValueNode)) {
+									// (a)(...), a(...)(...)
+									final ArgBracketNode args = (ArgBracketNode)rightChild;
+									return new ApplyExprNode(leftChild, args);
 								} else {
+									// 5I
 									return new BinaryOpNode<TypedValue>(multiplyOperator, leftChild, rightChild);
 								}
 							}
 						})
 						.addFactory(SquareBracketContainerNode.BRACKET_OPEN, SquareBracketContainerNode.<TypedValue> createNodeFactory())
+						.addFactory(BRACKET_ARG_PACK, new IBracketExprNodeFactory<TypedValue>() {
+							@Override
+							public IExprNode<TypedValue> create(List<IExprNode<TypedValue>> children) {
+								return new ArgBracketNode(children);
+							}
+						})
 						.addFactory(BRACKET_CODE, new IBracketExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(List<IExprNode<TypedValue>> children) {

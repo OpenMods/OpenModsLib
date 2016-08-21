@@ -4,13 +4,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.BinaryOperator;
-import openmods.calc.Constant;
-import openmods.calc.FixedFunctionSymbol;
-import openmods.calc.ICalculatorFrame;
+import openmods.calc.FixedCallable;
+import openmods.calc.Frame;
+import openmods.calc.FrameFactory;
+import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
-import openmods.calc.ISymbol;
-import openmods.calc.SubFrame;
 import openmods.calc.SymbolCall;
+import openmods.calc.SymbolMap;
 import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.ICompilerState;
@@ -113,18 +113,18 @@ public class LetExpressionFactory {
 		return new LetStateTransition(parentState);
 	}
 
-	private class LetSymbol extends FixedFunctionSymbol<TypedValue> {
+	private class LetSymbol extends FixedCallable<TypedValue> {
 
 		public LetSymbol() {
 			super(2, 1);
 		}
 
 		@Override
-		public void call(ICalculatorFrame<TypedValue> currentFrame) {
+		public void call(Frame<TypedValue> currentFrame) {
 			final TypedValue code = currentFrame.stack().pop();
 			Preconditions.checkState(code.is(Code.class), "Expected code on second 'if' parameter, got %s", code);
 
-			final SubFrame<TypedValue> letFrame = new SubFrame<TypedValue>(currentFrame, 1);
+			final Frame<TypedValue> letFrame = FrameFactory.newLocalFrameWithSubstack(currentFrame, 1);
 			final TypedValue paramPairs = letFrame.stack().pop();
 			Preconditions.checkState(paramPairs.is(Cons.class), "Expected list or args on first 'if' parameter, got %s", paramPairs);
 
@@ -134,7 +134,15 @@ public class LetExpressionFactory {
 				public void value(TypedValue value, boolean isLast) {
 					final Cons pair = value.unwrap(Cons.class);
 					final Symbol name = pair.car.unwrap(Symbol.class);
-					letFrame.setLocalSymbol(name.value, Constant.create(pair.cdr));
+					wrapValueForFrame(letFrame.symbols(), name.value, pair.cdr);
+				}
+
+				@SuppressWarnings("unchecked")
+				private void wrapValueForFrame(SymbolMap<TypedValue> symbols, String name, TypedValue value) {
+					if (value.value instanceof ICallable)
+						symbols.put(name, (ICallable<TypedValue>)value.value);
+					else
+						symbols.put(name, value);
 				}
 
 				@Override
@@ -148,7 +156,7 @@ public class LetExpressionFactory {
 		}
 	}
 
-	public ISymbol<TypedValue> createSymbol() {
+	public ICallable<TypedValue> createSymbol() {
 		return new LetSymbol();
 	}
 }

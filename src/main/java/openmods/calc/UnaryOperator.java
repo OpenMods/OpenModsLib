@@ -11,7 +11,7 @@ public abstract class UnaryOperator<E> extends Operator<E> {
 	public abstract E execute(E value);
 
 	@Override
-	public final void execute(ICalculatorFrame<E> frame) {
+	public final void execute(Frame<E> frame) {
 		final Stack<E> stack = frame.stack();
 
 		final E value = stack.pop();

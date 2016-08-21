@@ -3,7 +3,6 @@ package openmods.calc.types.fp;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
-import openmods.calc.Constant;
 import openmods.calc.Environment;
 import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
@@ -36,10 +35,10 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 
 	@Override
 	protected void configureEnvironment(Environment<Double> env) {
-		env.setGlobalSymbol("PI", Constant.create(Math.PI));
-		env.setGlobalSymbol("E", Constant.create(Math.E));
-		env.setGlobalSymbol("INF", Constant.create(Double.POSITIVE_INFINITY));
-		env.setGlobalSymbol("MAX", Constant.create(Double.MIN_VALUE));
+		env.setGlobalSymbol("PI", Math.PI);
+		env.setGlobalSymbol("E", Math.E);
+		env.setGlobalSymbol("INF", Double.POSITIVE_INFINITY);
+		env.setGlobalSymbol("MAX", Double.MIN_VALUE);
 
 		env.setGlobalSymbol("abs", new UnaryFunction<Double>() {
 			@Override

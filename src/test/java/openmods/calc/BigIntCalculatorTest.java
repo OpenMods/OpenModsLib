@@ -61,12 +61,17 @@ public class BigIntCalculatorTest {
 
 	@Test
 	public void testPostfixSymbols() {
-		sut.environment.setGlobalSymbol("a", Constant.create(v(5)));
+		sut.environment.setGlobalSymbol("a", v(5));
 		postfix("a").expectResult(v(5));
 		postfix("a$0").expectResult(v(5));
 		postfix("a$,1").expectResult(v(5));
 		postfix("a$0,1").expectResult(v(5));
 		postfix("@a").expectResult(v(5));
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testPostfixFunctionGet() {
+		postfix("@abs").execute();
 	}
 
 	@Test
@@ -192,11 +197,11 @@ public class BigIntCalculatorTest {
 	@Test
 	public void testConstantEvaluatingBrackets() {
 		final SymbolStub<BigInteger> stub = new SymbolStub<BigInteger>()
-				.blockGets()
+				.allowCalls()
 				.expectArgs(v(1), v(2))
-				.checkArgCount()
+				.verifyArgCount()
 				.setReturns(v(5), v(6), v(7))
-				.checkReturnCount();
+				.verifyReturnCount();
 		sut.environment.setGlobalSymbol("dummy", stub);
 
 		final IExecutable<BigInteger> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy$2,3]");

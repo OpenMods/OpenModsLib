@@ -23,7 +23,7 @@ public class TypedBinaryOperatorTest {
 	}
 
 	private static TypedValue execute(BinaryOperator<TypedValue> op, TypedValue left, TypedValue right) {
-		final TopFrame<TypedValue> frame = new TopFrame<TypedValue>();
+		final Frame<TypedValue> frame = FrameFactory.createTopFrame();
 		frame.stack().push(left);
 		frame.stack().push(right);
 		op.execute(frame);

@@ -57,8 +57,12 @@ public class Stack<E> implements Iterable<E> {
 		}
 	}
 
+	private int indexFromTop(int index) {
+		return data.size() - 1 - index;
+	}
+
 	public E peek(int index) {
-		final int peekIndex = data.size() - 1 - index;
+		final int peekIndex = indexFromTop(index);
 		checkIndex(peekIndex);
 		return data.get(peekIndex);
 	}
@@ -67,6 +71,12 @@ public class Stack<E> implements Iterable<E> {
 		checkNonEmpty();
 		E last = data.get(data.size() - 1);
 		data.add(last);
+	}
+
+	public E drop(int index) {
+		final int dropIndex = indexFromTop(index);
+		checkIndex(dropIndex);
+		return data.remove(dropIndex);
 	}
 
 	public int size() {

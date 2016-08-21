@@ -51,12 +51,17 @@ public class DoubleCalculatorTest {
 
 	@Test
 	public void testPostfixSymbols() {
-		sut.environment.setGlobalSymbol("a", Constant.create(5.0));
+		sut.environment.setGlobalSymbol("a", 5.0);
 		postfix("a").expectResult(5.0);
 		postfix("a$0").expectResult(5.0);
 		postfix("a$,1").expectResult(5.0);
 		postfix("a$0,1").expectResult(5.0);
 		postfix("@a").expectResult(5.0);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testPostfixFunctionGet() {
+		postfix("@abs").execute();
 	}
 
 	@Test
@@ -114,6 +119,11 @@ public class DoubleCalculatorTest {
 		infix("-2*-3*10^-3").expectResult(6e-3);
 		infix("2*10^2+3*10^3").expectResult(3200.0);
 		infix("2*10^2*3*10^3").expectResult(6e5);
+	}
+
+	@Test
+	public void testCallOfGetterSymbol() {
+		infix("PI()").expectResult(Math.PI);
 	}
 
 	@Test
@@ -186,11 +196,11 @@ public class DoubleCalculatorTest {
 	@Test
 	public void testConstantEvaluatingBrackets() {
 		final SymbolStub<Double> stub = new SymbolStub<Double>()
-				.blockGets()
+				.allowCalls()
 				.expectArgs(1.0, 2.0)
-				.checkArgCount()
+				.verifyArgCount()
 				.setReturns(5.0, 6.0, 7.0)
-				.checkReturnCount();
+				.verifyReturnCount();
 		sut.environment.setGlobalSymbol("dummy", stub);
 
 		final IExecutable<Double> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy$2,3]");

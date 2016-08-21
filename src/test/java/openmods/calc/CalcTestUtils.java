@@ -228,7 +228,7 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		public void execute(ICalculatorFrame<E> frame) {
+		public void execute(Frame<E> frame) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -279,12 +279,12 @@ public class CalcTestUtils {
 		}
 
 		public StackCheck<E> expectStack(E... values) {
-			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(sut.environment.getStack()));
+			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(sut.environment.topFrame().stack()));
 			return this;
 		}
 
 		public StackCheck<E> expectEmptyStack() {
-			Assert.assertTrue(Lists.newArrayList(sut.environment.getStack()).isEmpty());
+			Assert.assertTrue(sut.environment.topFrame().stack().isEmpty());
 			return this;
 		}
 	}
@@ -300,7 +300,7 @@ public class CalcTestUtils {
 		}
 
 		public CalcCheck<E> expectResult(E value) {
-			final ICalculatorFrame<E> frame = sut.environment.executeIsolated(expr);
+			final Frame<E> frame = sut.environment.executeIsolated(expr);
 			final E top = frame.stack().pop();
 			Assert.assertEquals(value, top);
 			if (!frame.stack().isEmpty())
@@ -310,7 +310,7 @@ public class CalcTestUtils {
 		}
 
 		public CalcCheck<E> expectResults(E... values) {
-			final ICalculatorFrame<E> frame = sut.environment.executeIsolated(expr);
+			final Frame<E> frame = sut.environment.executeIsolated(expr);
 			Assert.assertEquals(Arrays.asList(values), Lists.newArrayList(frame.stack()));
 			return this;
 		}
@@ -548,16 +548,16 @@ public class CalcTestUtils {
 		private List<E> returns = Lists.newArrayList();
 		private boolean exactReturnCount = false;
 
-		private boolean blockCalls = false;
+		private boolean allowCalls = false;
 
-		private boolean blockGets = false;
+		private boolean allowGets = false;
 
 		public SymbolStub<E> expectArgs(E... args) {
 			expectedArgs = Lists.reverse(Arrays.asList(args));
 			return this;
 		}
 
-		public SymbolStub<E> checkArgCount() {
+		public SymbolStub<E> verifyArgCount() {
 			this.exactArgCount = true;
 			return this;
 		}
@@ -567,14 +567,14 @@ public class CalcTestUtils {
 			return this;
 		}
 
-		public SymbolStub<E> checkReturnCount() {
+		public SymbolStub<E> verifyReturnCount() {
 			this.exactReturnCount = true;
 			return this;
 		}
 
 		@Override
-		public void call(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-			Assert.assertFalse(blockCalls);
+		public void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			Assert.assertTrue(allowCalls);
 			if (exactArgCount) Assert.assertEquals(Optional.of(expectedArgs.size()), argumentsCount);
 			if (exactReturnCount) Assert.assertEquals(Optional.of(returns.size()), returnsCount);
 
@@ -587,8 +587,8 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		public void get(ICalculatorFrame<E> frame) {
-			Assert.assertFalse(blockGets);
+		public void get(Frame<E> frame) {
+			Assert.assertTrue(allowGets);
 
 			for (E ret : returns)
 				frame.stack().push(ret);
@@ -606,8 +606,8 @@ public class CalcTestUtils {
 			return this;
 		}
 
-		public SymbolStub<E> blockCalls() {
-			this.blockCalls = true;
+		public SymbolStub<E> allowCalls() {
+			this.allowCalls = true;
 			return this;
 		}
 
@@ -621,8 +621,8 @@ public class CalcTestUtils {
 			return this;
 		}
 
-		public SymbolStub<E> blockGets() {
-			this.blockGets = true;
+		public SymbolStub<E> allowGets() {
+			this.allowGets = true;
 			return this;
 		}
 

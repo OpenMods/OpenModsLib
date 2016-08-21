@@ -33,19 +33,31 @@ public class MappedExprNodeFactory<E> extends DefaultExprNodeFactory<E> {
 	public IExprNode<E> createBracketNode(String openingBracket, String closingBracket, List<IExprNode<E>> children) {
 		TokenUtils.checkIsValidBracketPair(openingBracket, closingBracket);
 		final IBracketExprNodeFactory<E> nodeFactory = bracketFactories.get(openingBracket);
-		return nodeFactory != null? nodeFactory.create(children) : super.createBracketNode(openingBracket, closingBracket, children);
+		return nodeFactory != null? nodeFactory.create(children) : createDefaultBracketNode(openingBracket, closingBracket, children);
+	}
+
+	protected IExprNode<E> createDefaultBracketNode(String openingBracket, String closingBracket, List<IExprNode<E>> children) {
+		return super.createBracketNode(openingBracket, closingBracket, children);
 	}
 
 	@Override
 	public IExprNode<E> createBinaryOpNode(BinaryOperator<E> op, IExprNode<E> leftChild, IExprNode<E> rightChild) {
 		final IBinaryExprNodeFactory<E> nodeFactory = binaryOpFactories.get(op);
-		return nodeFactory != null? nodeFactory.create(leftChild, rightChild) : super.createBinaryOpNode(op, leftChild, rightChild);
+		return nodeFactory != null? nodeFactory.create(leftChild, rightChild) : createDefaultBinaryOpNode(op, leftChild, rightChild);
+	}
+
+	protected IExprNode<E> createDefaultBinaryOpNode(BinaryOperator<E> op, IExprNode<E> leftChild, IExprNode<E> rightChild) {
+		return super.createBinaryOpNode(op, leftChild, rightChild);
 	}
 
 	@Override
 	public IExprNode<E> createUnaryOpNode(UnaryOperator<E> op, IExprNode<E> child) {
 		final IUnaryExprNodeFactory<E> nodeFactory = unaryOpFactories.get(op);
-		return nodeFactory != null? nodeFactory.create(child) : super.createUnaryOpNode(op, child);
+		return nodeFactory != null? nodeFactory.create(child) : createDefaultUnaryOpNode(op, child);
+	}
+
+	protected IExprNode<E> createDefaultUnaryOpNode(UnaryOperator<E> op, IExprNode<E> child) {
+		return super.createUnaryOpNode(op, child);
 	}
 
 	public MappedExprNodeFactory<E> addFactory(String openingBracket, IBracketExprNodeFactory<E> factory) {

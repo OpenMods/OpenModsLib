@@ -23,7 +23,7 @@ public class ExecutableList<E> implements IExecutable<E> {
 	}
 
 	@Override
-	public void execute(ICalculatorFrame<E> frame) {
+	public void execute(Frame<E> frame) {
 		for (IExecutable<E> e : commands)
 			e.execute(frame);
 	}

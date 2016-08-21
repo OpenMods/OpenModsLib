@@ -2,7 +2,7 @@ package openmods.calc;
 
 import openmods.utils.Stack;
 
-public abstract class TernaryFunction<E> extends FixedFunctionSymbol<E> {
+public abstract class TernaryFunction<E> extends FixedCallable<E> {
 
 	public TernaryFunction() {
 		super(3, 1);
@@ -11,7 +11,7 @@ public abstract class TernaryFunction<E> extends FixedFunctionSymbol<E> {
 	protected abstract E call(E first, E second, E third);
 
 	@Override
-	public final void call(ICalculatorFrame<E> frame) {
+	public final void call(Frame<E> frame) {
 		final Stack<E> stack = frame.stack();
 
 		final E first = stack.pop();

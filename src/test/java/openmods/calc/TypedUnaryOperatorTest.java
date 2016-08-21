@@ -20,7 +20,7 @@ public class TypedUnaryOperatorTest {
 	}
 
 	private static TypedValue execute(UnaryOperator<TypedValue> op, TypedValue value) {
-		final TopFrame<TypedValue> frame = new TopFrame<TypedValue>();
+		final Frame<TypedValue> frame = FrameFactory.createTopFrame();
 		frame.stack().push(value);
 		op.execute(frame);
 		final TypedValue result = frame.stack().pop();

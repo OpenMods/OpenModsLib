@@ -10,9 +10,19 @@ public class StackTest {
 
 	public Stack<Integer> stack = Stack.create();
 
-	protected void checkStackEmpty() {
+	private void checkStackEmpty() {
 		Assert.assertTrue(stack.isEmpty());
 		Assert.assertEquals(0, stack.size());
+	}
+
+	private static void assertValuesOnStack(Stack<Integer> stack, Integer... values) {
+		Assert.assertEquals(values.length, stack.size());
+		Assert.assertEquals(ImmutableList.copyOf(stack), ImmutableList.copyOf(values));
+	}
+
+	private static void assertEquals(final Stack<Integer> expected, Stack<Integer> actual) {
+		Assert.assertEquals(expected.size(), actual.size());
+		Assert.assertEquals(ImmutableList.copyOf(expected), ImmutableList.copyOf(actual));
 	}
 
 	@Test
@@ -88,7 +98,7 @@ public class StackTest {
 		Assert.assertEquals(4, stack.size());
 		Assert.assertEquals(testValue, substack.peek(0));
 		Assert.assertEquals(testValue, stack.peek(0));
-		Assert.assertTrue(Iterables.elementsEqual(substack, ImmutableList.of(testValue)));
+		assertValuesOnStack(substack, testValue);
 
 		Assert.assertEquals(testValue, stack.pop());
 
@@ -128,8 +138,7 @@ public class StackTest {
 		stack.push(3);
 
 		final Stack<Integer> substack = stack.substack(2);
-		Assert.assertEquals(2, substack.size());
-		Assert.assertTrue(Iterables.elementsEqual(substack, ImmutableList.of(2, 3)));
+		assertValuesOnStack(substack, 2, 3);
 	}
 
 	@Test
@@ -141,7 +150,7 @@ public class StackTest {
 		final Stack<Integer> substack = stack.substack(3);
 
 		Assert.assertEquals(3, substack.size());
-		Assert.assertTrue(Iterables.elementsEqual(stack, substack));
+		assertEquals(stack, substack);
 	}
 
 	@Test
@@ -157,7 +166,7 @@ public class StackTest {
 
 		Assert.assertEquals(3, substack.size());
 		Assert.assertEquals(3, stack.size());
-		Assert.assertTrue(Iterables.elementsEqual(stack, substack));
+		assertEquals(stack, substack);
 	}
 
 	@Test(expected = StackUnderflowException.class)
@@ -169,5 +178,40 @@ public class StackTest {
 	public void nonZeroLengthSubstackUnderflow() {
 		stack.push(1);
 		stack.substack(2);
+	}
+
+	@Test
+	public void testDropFromTop() {
+		stack.push(1);
+		stack.push(2);
+		stack.push(3);
+
+		Assert.assertEquals(Integer.valueOf(3), stack.drop(0));
+		assertValuesOnStack(stack, 1, 2);
+	}
+
+	@Test
+	public void testDropFromMiddle() {
+		stack.push(1);
+		stack.push(2);
+		stack.push(3);
+
+		Assert.assertEquals(Integer.valueOf(2), stack.drop(1));
+		assertValuesOnStack(stack, 1, 3);
+	}
+
+	@Test
+	public void testDropFromBottom() {
+		stack.push(1);
+		stack.push(2);
+		stack.push(3);
+
+		Assert.assertEquals(Integer.valueOf(1), stack.drop(2));
+		assertValuesOnStack(stack, 2, 3);
+	}
+
+	@Test(expected = StackUnderflowException.class)
+	public void testInvalidDrop() {
+		stack.drop(0);
 	}
 }

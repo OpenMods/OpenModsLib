@@ -1,13 +1,12 @@
 package openmods.calc;
 
-import com.google.common.collect.Iterables;
 import openmods.utils.Stack;
 
 public class Environment<E> {
 
 	public static final String VAR_ANS = "$ans";
 
-	private final TopFrame<E> topFrame = new TopFrame<E>();
+	private final Frame<E> topFrame = createTopMap();
 
 	private final E nullValue;
 
@@ -15,28 +14,36 @@ public class Environment<E> {
 		this.nullValue = nullValue;
 	}
 
+	protected Frame<E> createTopMap() {
+		return FrameFactory.createTopFrame();
+	}
+
 	public E nullValue() {
 		return nullValue;
 	}
 
-	public void setGlobalSymbol(String id, ISymbol<E> value) {
-		topFrame.setSymbol(id, value);
+	public void setGlobalSymbol(String name, ISymbol<E> symbol) {
+		topFrame.symbols().put(name, symbol);
 	}
 
-	public int stackSize() {
-		return topFrame.stack().size();
+	public void setGlobalSymbol(String name, ICallable<E> callable) {
+		topFrame.symbols().put(name, callable);
 	}
 
-	public Iterable<E> getStack() {
-		return Iterables.unmodifiableIterable(topFrame.stack());
+	public void setGlobalSymbol(String name, IGettable<E> gettable) {
+		topFrame.symbols().put(name, gettable);
 	}
 
-	public ICalculatorFrame<E> getTopFrame() {
+	public void setGlobalSymbol(String name, E value) {
+		topFrame.symbols().put(name, value);
+	}
+
+	public Frame<E> topFrame() {
 		return topFrame;
 	}
 
-	public ICalculatorFrame<E> executeIsolated(IExecutable<E> executable) {
-		final ICalculatorFrame<E> freshFrame = new LocalFrame<E>(topFrame);
+	public Frame<E> executeIsolated(IExecutable<E> executable) {
+		final Frame<E> freshFrame = FrameFactory.newLocalFrame(topFrame);
 		executable.execute(freshFrame);
 		return freshFrame;
 	}
@@ -50,11 +57,11 @@ public class Environment<E> {
 		final Stack<E> stack = topFrame.stack();
 
 		if (stack.isEmpty()) {
-			topFrame.setSymbol(VAR_ANS, Constant.create(nullValue));
+			topFrame.symbols().put(VAR_ANS, nullValue);
 			return null;
 		} else {
 			final E result = stack.pop();
-			topFrame.setSymbol(VAR_ANS, Constant.create(result));
+			topFrame.symbols().put(VAR_ANS, result);
 			return result;
 		}
 	}

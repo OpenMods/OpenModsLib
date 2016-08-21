@@ -58,12 +58,17 @@ public class FractionCalculatorTest {
 
 	@Test
 	public void testPostfixSymbols() {
-		sut.environment.setGlobalSymbol("a", Constant.create(f(5)));
+		sut.environment.setGlobalSymbol("a", f(5));
 		postfix("a").expectResult(f(5));
 		postfix("a$0").expectResult(f(5));
 		postfix("a$,1").expectResult(f(5));
 		postfix("a$0,1").expectResult(f(5));
 		postfix("@a").expectResult(f(5));
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testPostfixFunctionGet() {
+		postfix("@abs").execute();
 	}
 
 	@Test
@@ -176,11 +181,11 @@ public class FractionCalculatorTest {
 	@Test
 	public void testConstantEvaluatingBrackets() {
 		final SymbolStub<Fraction> stub = new SymbolStub<Fraction>()
-				.blockGets()
+				.allowCalls()
 				.expectArgs(f(1), f(2))
-				.checkArgCount()
+				.verifyArgCount()
 				.setReturns(f(5), f(6), f(7))
-				.checkReturnCount();
+				.verifyReturnCount();
 		sut.environment.setGlobalSymbol("dummy", stub);
 
 		final IExecutable<Fraction> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy$2,3]");

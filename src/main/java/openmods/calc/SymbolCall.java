@@ -32,8 +32,8 @@ public class SymbolCall<E> implements IExecutable<E> {
 	}
 
 	@Override
-	public void execute(ICalculatorFrame<E> frame) {
-		final ISymbol<E> symbol = frame.getSymbol(id);
+	public void execute(Frame<E> frame) {
+		final ISymbol<E> symbol = frame.symbols().get(id);
 		Preconditions.checkNotNull(symbol, "Unknown symbol: %s", id);
 
 		try {

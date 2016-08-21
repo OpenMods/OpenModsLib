@@ -18,6 +18,7 @@ import openmods.calc.types.multi.TypedValueCalculatorFactory;
 import openmods.math.Complex;
 import openmods.reflection.MethodAccess;
 import openmods.reflection.TypeVariableHolderHandler;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TypedValueCalculatorTest {
@@ -81,6 +82,14 @@ public class TypedValueCalculatorTest {
 		return domain.create(Cons.class, new Cons(car, cdr));
 	}
 
+	private TypedValue list(TypedValue... values) {
+		TypedValue res = nil();
+		for (int i = values.length - 1; i >= 0; i--)
+			res = domain.create(Cons.class, new Cons(values[i], res));
+
+		return res;
+	}
+
 	private final TypedValue TRUE = b(true);
 
 	private final TypedValue FALSE = b(false);
@@ -134,7 +143,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testPostfixSymbols() {
-		sut.environment.setGlobalSymbol("a", Constant.create(i(5)));
+		sut.environment.setGlobalSymbol("a", i(5));
 		postfix("a").expectResult(i(5));
 		postfix("a$0").expectResult(i(5));
 		postfix("a$,1").expectResult(i(5));
@@ -395,7 +404,7 @@ public class TypedValueCalculatorTest {
 			}
 		}
 
-		sut.environment.setGlobalSymbol("root", Constant.create(sut.environment.nullValue().domain.create(IComposite.class, new TestComposite())));
+		sut.environment.setGlobalSymbol("root", sut.environment.nullValue().domain.create(IComposite.class, new TestComposite()));
 		infix("type(root)=='object'").expectResult(b(true));
 		infix("isobject(root)").expectResult(b(true));
 		infix("bool(root)").expectResult(b(true));
@@ -667,11 +676,11 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testConstantEvaluatingBrackets() {
 		final SymbolStub<TypedValue> stub = new SymbolStub<TypedValue>()
-				.blockGets()
+				.allowCalls()
 				.expectArgs(i(1), i(2))
-				.checkArgCount()
+				.verifyArgCount()
 				.setReturns(i(5), i(6), i(7))
-				.checkReturnCount();
+				.verifyReturnCount();
 		sut.environment.setGlobalSymbol("dummy", stub);
 
 		final IExecutable<TypedValue> expr = sut.compilers.compile(ExprType.POSTFIX, "[1 2 dummy$2,3]");
@@ -729,8 +738,8 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testIfExpressionEvaluation() {
-		final SymbolStub<TypedValue> leftStub = new SymbolStub<TypedValue>().setReturns(i(2)).blockCalls();
-		final SymbolStub<TypedValue> rightStub = new SymbolStub<TypedValue>().setReturns(i(3)).blockCalls();
+		final SymbolStub<TypedValue> leftStub = new SymbolStub<TypedValue>().setReturns(i(2)).allowGets();
+		final SymbolStub<TypedValue> rightStub = new SymbolStub<TypedValue>().setReturns(i(3)).allowGets();
 
 		sut.environment.setGlobalSymbol("left", leftStub);
 		sut.environment.setGlobalSymbol("right", rightStub);
@@ -769,7 +778,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testStringSliceInExpressions() {
-		sut.environment.setGlobalSymbol("test", Constant.create(s("abc")));
+		sut.environment.setGlobalSymbol("test", s("abc"));
 
 		infix("test[-1]").expectResult(s("c"));
 		infix("test[-3] + test[-2] + test[-1]").expectResult(s("abc"));
@@ -787,6 +796,13 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testValueSymbolCall() {
+		infix("let([x:2], x())").expectResult(i(2));
+		infix("let([x:2], x)").expectResult(i(2));
+		infix("let([x:2], x() == x)").expectResult(b(true));
+	}
+
+	@Test
 	public void testLetExplicitSymbolVariableNames() {
 		infix("let([#x:2,#y:3], x + y)").expectResult(i(5));
 		infix("let([symbol('x'):2,symbol('y'):3], x + y)").expectResult(i(5));
@@ -794,8 +810,8 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testLetSymbolVariableNamesFromCall() {
-		sut.environment.setGlobalSymbol("x", new Constant<TypedValue>(domain.create(Symbol.class, Symbol.get("a"))));
-		sut.environment.setGlobalSymbol("y", new Constant<TypedValue>(domain.create(Symbol.class, Symbol.get("b"))));
+		sut.environment.setGlobalSymbol("x", domain.create(Symbol.class, Symbol.get("a")));
+		sut.environment.setGlobalSymbol("y", domain.create(Symbol.class, Symbol.get("b")));
 
 		infix("let([x():2,y():3], a + b)").expectResult(i(5));
 		prefix("(let [(:(x) 2), (:(y) 3)] (+ a b))").expectResult(i(5));
@@ -821,5 +837,53 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testLetScoping() {
 		infix("let([x:2], let([y:x], let([x:3], y)))").expectResult(i(2));
+	}
+
+	@Test
+	public void testCallableLetVariables() {
+		infix("let([f:symbol],f('test1'))").expectResult(sym("test1"));
+		infix("let([f:symbol],let([g:f], g('test2')))").expectResult(sym("test2"));
+	}
+
+	@Test
+	public void testCallableApply() {
+		infix("apply(symbol, 'test')").expectResult(sym("test"));
+		infix("apply(max, 1, 3, 2)").expectResult(i(3));
+	}
+
+	@Test
+	public void testCallableDefaultOpApply() {
+		infix("(symbol)('test')").expectResult(sym("test"));
+		infix("(max)(1, 3, 2)").expectResult(i(3));
+	}
+
+	@Test
+	public void testHighOrderCallable() {
+		sut.environment.setGlobalSymbol("test", new BinaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue call(TypedValue left, TypedValue right) {
+				Assert.assertTrue(left.is(BigInteger.class));
+				Assert.assertTrue(right.is(BigInteger.class));
+				final BigInteger closure = left.unwrap(BigInteger.class).subtract(right.unwrap(BigInteger.class));
+				return domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
+					@Override
+					protected TypedValue call(TypedValue value) {
+						Assert.assertTrue(value.is(BigInteger.class));
+						final BigInteger arg = value.unwrap(BigInteger.class);
+						return domain.create(BigInteger.class, closure.multiply(arg));
+					}
+
+				});
+			}
+		});
+
+		infix("test(1,2)(3)").expectResult(i(-3));
+		infix("(test)(1,2)(3)").expectResult(i(-3));
+		infix("let([f:test(1,2)], list(f(3), f(4), f(5)))").expectResult(list(i(-3), i(-4), i(-5)));
+	}
+
+	@Test
+	public void testCallableApplyInPostfix() {
+		postfix("@symbol 'test' apply$2,1").expectResult(sym("test"));
 	}
 }

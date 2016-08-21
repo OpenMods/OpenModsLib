@@ -11,7 +11,7 @@ public class Value<E> implements IExecutable<E> {
 	}
 
 	@Override
-	public void execute(ICalculatorFrame<E> frame) {
+	public void execute(Frame<E> frame) {
 		frame.stack().push(value);
 	}
 

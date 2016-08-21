@@ -75,12 +75,12 @@ public class TypedFunctionTest {
 		assertValueEquals(value, expected.type, expected.value);
 	}
 
-	private static TypedValue execute(ISymbol<TypedValue> f, TypedValue... values) {
+	private static TypedValue execute(ICallable<TypedValue> f, TypedValue... values) {
 		return execute(f, Optional.of(values.length), values);
 	}
 
-	private static TypedValue execute(ISymbol<TypedValue> f, Optional<Integer> argCount, TypedValue... values) {
-		final TopFrame<TypedValue> frame = new TopFrame<TypedValue>();
+	private static TypedValue execute(ICallable<TypedValue> f, Optional<Integer> argCount, TypedValue... values) {
+		final Frame<TypedValue> frame = FrameFactory.createTopFrame();
 		for (TypedValue v : values)
 			frame.stack().push(v);
 		f.call(frame, argCount, SKIP);
@@ -89,8 +89,8 @@ public class TypedFunctionTest {
 		return result;
 	}
 
-	private static List<TypedValue> execute(ISymbol<TypedValue> f, Optional<Integer> argCount, int rets, TypedValue... values) {
-		final TopFrame<TypedValue> frame = new TopFrame<TypedValue>();
+	private static List<TypedValue> execute(ICallable<TypedValue> f, Optional<Integer> argCount, int rets, TypedValue... values) {
+		final Frame<TypedValue> frame = FrameFactory.createTopFrame();
 		for (TypedValue v : values)
 			frame.stack().push(v);
 		f.call(frame, argCount, Optional.of(rets));

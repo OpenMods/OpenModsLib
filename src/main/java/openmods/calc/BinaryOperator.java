@@ -40,7 +40,7 @@ public abstract class BinaryOperator<E> extends Operator<E> {
 	public abstract E execute(E left, E right);
 
 	@Override
-	public final void execute(ICalculatorFrame<E> frame) {
+	public final void execute(Frame<E> frame) {
 		final Stack<E> stack = frame.stack();
 
 		final E right = stack.pop();

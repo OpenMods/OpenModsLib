@@ -12,11 +12,11 @@ import openmods.calc.Compilers.ICompiler;
 import openmods.calc.Environment;
 import openmods.calc.ExecutableList;
 import openmods.calc.ExprType;
-import openmods.calc.ICalculatorFrame;
+import openmods.calc.Frame;
 import openmods.calc.ICompilerMapFactory;
 import openmods.calc.IExecutable;
 import openmods.calc.OperatorDictionary;
-import openmods.calc.SymbolCall;
+import openmods.calc.SymbolGet;
 import openmods.calc.Value;
 import openmods.calc.parsing.DefaultPostfixCompiler.IStateProvider;
 
@@ -152,7 +152,7 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 
 					@Override
 					protected IExecutable<E> processCompiledBracket(final IExecutable<E> compiledExpr) {
-						final ICalculatorFrame<E> resultFrame = env.executeIsolated(compiledExpr);
+						final Frame<E> resultFrame = env.executeIsolated(compiledExpr);
 						final List<IExecutable<E>> computedValues = Lists.newArrayList();
 						for (E value : resultFrame.stack())
 							computedValues.add(Value.create(value));
@@ -174,9 +174,9 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 			public IPostfixCompilerState<E> createState() {
 				return new SingleTokenPostfixCompilerState<E>() {
 					@Override
-					protected Optional<SymbolCall<E>> parseToken(Token token) {
+					protected Optional<? extends IExecutable<E>> parseToken(Token token) {
 						if (token.type == TokenType.SYMBOL)
-							return Optional.of(new SymbolCall<E>(token.value));
+							return Optional.of(new SymbolGet<E>(token.value));
 						else
 							return Optional.absent();
 					}

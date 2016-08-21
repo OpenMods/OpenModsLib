@@ -50,13 +50,13 @@ public class Calculator<E, M> {
 
 	public E compileAndSetGlobalSymbol(M exprType, String id, String expr) {
 		final E value = compileExecuteAndPop(exprType, expr);
-		environment.setGlobalSymbol(id, Constant.create(value));
+		environment.setGlobalSymbol(id, value);
 		return value;
 	}
 
 	public void compileAndDefineGlobalFunction(M exprType, String id, int argCount, String bodyExpr) {
 		final IExecutable<E> funcBody = compilers.compile(exprType, bodyExpr);
-		environment.setGlobalSymbol(id, new CompiledFunction<E>(argCount, 1, funcBody, environment.getTopFrame()));
+		environment.setGlobalSymbol(id, new CompiledFunction<E>(argCount, 1, funcBody, environment.topFrame()));
 	}
 
 }

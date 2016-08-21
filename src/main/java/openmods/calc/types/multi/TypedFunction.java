@@ -26,14 +26,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import openmods.calc.FunctionSymbol;
-import openmods.calc.ICalculatorFrame;
+import openmods.calc.Frame;
+import openmods.calc.ICallable;
 import openmods.reflection.TypeVariableHolder;
 import openmods.utils.AnnotationMap;
 import openmods.utils.Stack;
 import org.apache.commons.lang3.tuple.Pair;
 
-public abstract class TypedFunction extends FunctionSymbol<TypedValue> {
+public abstract class TypedFunction implements ICallable<TypedValue> {
 
 	public static class DispatchException extends RuntimeException {
 		private static final long serialVersionUID = 8096730015947971477L;
@@ -643,7 +643,7 @@ public abstract class TypedFunction extends FunctionSymbol<TypedValue> {
 	}
 
 	@Override
-	public void call(ICalculatorFrame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+	public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 		final int argCount;
 
 		if (argumentsCount.isPresent()) {
