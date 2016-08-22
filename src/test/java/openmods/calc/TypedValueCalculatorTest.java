@@ -379,35 +379,40 @@ public class TypedValueCalculatorTest {
 		infix("log(2, E) == ln(2)").expectResult(b(true));
 	}
 
-	@Test
-	public void testDotOperator() {
-		class TestComposite implements IComposite {
-			private final List<String> path;
+	private static class TestComposite implements IComposite {
+		private final List<String> path;
 
-			public TestComposite() {
-				this.path = ImmutableList.of();
-			}
-
-			public TestComposite(List<String> parentPath, String elem) {
-				this.path = ImmutableList.<String> builder().addAll(parentPath).add(elem).build();
-			}
-
-			@Override
-			public TypedValue get(TypeDomain domain, String component) {
-				if (component.equals("path")) return domain.create(String.class, Joiner.on("/").join(path));
-				else return domain.create(IComposite.class, new TestComposite(path, component));
-			}
-
-			@Override
-			public String subtype() {
-				return "nested:" + path.size();
-			}
+		public TestComposite() {
+			this.path = ImmutableList.of();
 		}
 
-		sut.environment.setGlobalSymbol("root", sut.environment.nullValue().domain.create(IComposite.class, new TestComposite()));
+		public TestComposite(List<String> parentPath, String elem) {
+			this.path = ImmutableList.<String> builder().addAll(parentPath).add(elem).build();
+		}
+
+		@Override
+		public TypedValue get(TypeDomain domain, String component) {
+			if (component.equals("path")) return domain.create(String.class, Joiner.on("/").join(path));
+			else return domain.create(IComposite.class, new TestComposite(path, component));
+		}
+
+		@Override
+		public String subtype() {
+			return "nested:" + path.size();
+		}
+	}
+
+	@Test
+	public void testCompositeObjects() {
+		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new TestComposite()));
 		infix("type(root)=='object'").expectResult(b(true));
 		infix("isobject(root)").expectResult(b(true));
 		infix("bool(root)").expectResult(b(true));
+	}
+
+	@Test
+	public void testDotOperator() {
+		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new TestComposite()));
 		infix("root.path").expectResult(s(""));
 
 		prefix("(== (type root) 'object')").expectResult(b(true));
@@ -428,6 +433,26 @@ public class TypedValueCalculatorTest {
 
 		infix("(root.a).b.path").expectResult(s("a/b"));
 		prefix("(. (. root a) b path)").expectResult(s("a/b"));
+	}
+
+	@Test
+	public void testObjectIndexingWithBrackets() {
+		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestComposite()));
+		infix("test['path']").expectResult(s(""));
+		infix("isobject(test['a'])").expectResult(TRUE);
+
+		infix("test['a']['b']['path']").expectResult(s("a/b"));
+
+		infix("test.a['b']['path']").expectResult(s("a/b"));
+		infix("test['a'].b['path']").expectResult(s("a/b"));
+		infix("test['a']['b'].path").expectResult(s("a/b"));
+
+		infix("test.a['b'].path").expectResult(s("a/b"));
+		infix("test.a.b['path']").expectResult(s("a/b"));
+		infix("test['a'].b.path").expectResult(s("a/b"));
+
+		sut.environment.setGlobalSymbol("key", s("a"));
+		infix("test.(key)['b'].path").expectResult(s("a/b"));
 	}
 
 	@Test
@@ -774,6 +799,13 @@ public class TypedValueCalculatorTest {
 
 		infix("'abc'[-2:-1]").expectResult(s("b"));
 		infix("'abc'[-3:-1]").expectResult(s("ab"));
+
+		infix("'abc'[1][0]").expectResult(s("b"));
+		infix("'abc'[2][0][0]").expectResult(s("c"));
+
+		infix("'abc'[0:3][0]").expectResult(s("a"));
+		infix("'abc'[1:3][0]").expectResult(s("b"));
+		infix("'abc'[2:3][0]").expectResult(s("c"));
 	}
 
 	@Test

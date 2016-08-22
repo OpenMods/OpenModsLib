@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.math.BigInteger;
 import java.util.List;
@@ -43,7 +42,6 @@ import openmods.calc.parsing.MappedExprNodeFactory;
 import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
 import openmods.calc.parsing.MappedExprNodeFactory.IBracketExprNodeFactory;
 import openmods.calc.parsing.SquareBracketContainerNode;
-import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenUtils;
 import openmods.calc.parsing.Tokenizer;
@@ -70,6 +68,7 @@ public class TypedValueCalculatorFactory {
 	public static final String SYMBOL_IF = "if";
 	public static final String SYMBOL_LET = "let";
 	public static final String SYMBOL_CODE = "code";
+
 	public static final String SYMBOL_APPLY = "apply";
 	public static final String SYMBOL_SLICE = "slice";
 
@@ -1284,6 +1283,12 @@ public class TypedValueCalculatorFactory {
 				final int i = v.unwrap(BigInteger.class).intValue();
 				return i >= 0? i : (length + i);
 			}
+
+			@Variant
+			@RawReturn
+			public TypedValue substr(@DispatchArg IComposite obj, String index) {
+				return obj.get(domain, index);
+			}
 		});
 
 		env.setGlobalSymbol(SYMBOL_APPLY, new ICallable<TypedValue>() {
@@ -1325,7 +1330,6 @@ public class TypedValueCalculatorFactory {
 							@Override
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
 								return new DotExprNode(rightChild, leftChild, dotOperator, domain);
-
 							}
 						})
 						.addFactory(defaultOperator, new IBinaryExprNodeFactory<TypedValue>() {
@@ -1333,15 +1337,10 @@ public class TypedValueCalculatorFactory {
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
 								if (rightChild instanceof SquareBracketContainerNode) {
 									// a[...]
-									final SquareBracketContainerNode<TypedValue> bracketNode = ((SquareBracketContainerNode<TypedValue>)rightChild);
-									final List<IExprNode<TypedValue>> args = Lists.newArrayList();
-									args.add(leftChild);
-									Iterables.addAll(args, bracketNode.getChildren());
-									return new SymbolCallNode<TypedValue>(SYMBOL_SLICE, args);
+									return new MethodCallNode(SYMBOL_SLICE, leftChild, rightChild);
 								} else if (rightChild instanceof ArgBracketNode && !(leftChild instanceof ValueNode)) {
 									// (a)(...), a(...)(...)
-									final ArgBracketNode args = (ArgBracketNode)rightChild;
-									return new ApplyExprNode(leftChild, args);
+									return new MethodCallNode(SYMBOL_APPLY, leftChild, rightChild);
 								} else {
 									// 5I
 									return new BinaryOpNode<TypedValue>(multiplyOperator, leftChild, rightChild);

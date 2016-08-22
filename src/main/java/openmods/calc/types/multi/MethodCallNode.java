@@ -6,32 +6,38 @@ import openmods.calc.IExecutable;
 import openmods.calc.SymbolCall;
 import openmods.calc.parsing.IExprNode;
 
-public class ApplyExprNode implements IExprNode<TypedValue> {
+public class MethodCallNode implements IExprNode<TypedValue> {
 
-	private final IExprNode<TypedValue> callable;
-	private final ArgBracketNode args;
+	public final String symbol;
+	public final IExprNode<TypedValue> target;
+	public final IExprNode<TypedValue> args;
 
-	public ApplyExprNode(IExprNode<TypedValue> callable, ArgBracketNode args) {
-		this.callable = callable;
+	public MethodCallNode(String symbol, IExprNode<TypedValue> target, IExprNode<TypedValue> args) {
+		this.symbol = symbol;
+		this.target = target;
 		this.args = args;
 	}
 
 	@Override
 	public void flatten(List<IExecutable<TypedValue>> output) {
-		callable.flatten(output);
+		target.flatten(output);
+		flattenArgsAndCall(output);
+	}
+
+	public void flattenArgsAndCall(List<IExecutable<TypedValue>> output) {
 		int argCount = 0;
 		for (IExprNode<TypedValue> arg : args.getChildren()) {
 			arg.flatten(output);
 			argCount++;
 		}
 
-		output.add(new SymbolCall<TypedValue>(TypedValueCalculatorFactory.SYMBOL_APPLY, argCount + 1, 1));
+		output.add(new SymbolCall<TypedValue>(symbol, argCount + 1, 1));
 	}
 
 	@Override
 	public Iterable<IExprNode<TypedValue>> getChildren() {
 		final ImmutableList.Builder<IExprNode<TypedValue>> builder = ImmutableList.builder();
-		builder.add(callable);
+		builder.add(target);
 		builder.addAll(args.getChildren());
 		return builder.build();
 	}
