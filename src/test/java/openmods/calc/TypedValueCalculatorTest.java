@@ -451,8 +451,89 @@ public class TypedValueCalculatorTest {
 		infix("test.a.b['path']").expectResult(s("a/b"));
 		infix("test['a'].b.path").expectResult(s("a/b"));
 
+		infix("test.'a'['b'].path").expectResult(s("a/b"));
+		infix("test.('a')['b'].path").expectResult(s("a/b"));
 		sut.environment.setGlobalSymbol("key", s("a"));
 		infix("test.(key)['b'].path").expectResult(s("a/b"));
+	}
+
+	private class TestCallableComposite implements IComposite {
+		@Override
+		public TypedValue get(final TypeDomain domain, final String component) {
+			return domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
+				@Override
+				protected TypedValue call(TypedValue value) {
+					final String result = component + ":" + value.unwrap(String.class);
+					return domain.create(String.class, result);
+				}
+			});
+		}
+
+		@Override
+		public String subtype() {
+			return "callable_composite";
+		}
+	}
+
+	@Test
+	public void testDotOperatorResultCall() {
+		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestCallableComposite()));
+		infix("test.a('b')").expectResult(s("a:b"));
+		infix("test.a('c')").expectResult(s("a:c"));
+		infix("test.a('c')[0:-1]").expectResult(s("a:"));
+
+		infix("test.'b'('c')").expectResult(s("b:c"));
+		infix("test.('b')('c')").expectResult(s("b:c"));
+
+		infix("test['c']('d')").expectResult(s("c:d"));
+		infix("test['c']('d')[0:-1]").expectResult(s("c:")); // last bracket is totally unrelated, but... meh
+
+		sut.environment.setGlobalSymbol("key", s("a"));
+		infix("test.(key)('b')").expectResult(s("a:b"));
+	}
+
+	private class TestCallableCompositeWithCompositeReturn implements IComposite {
+		@Override
+		public TypedValue get(final TypeDomain domain, final String component) {
+			return domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
+				@Override
+				protected TypedValue call(TypedValue value) {
+					final String path = component + ":" + value.unwrap(String.class);
+					final IComposite result = new IComposite() {
+						@Override
+						public String subtype() {
+							return "whatever";
+						}
+
+						@Override
+						public TypedValue get(TypeDomain domain, String component) {
+							return domain.create(String.class, path + ":" + component);
+						}
+					};
+					return domain.create(IComposite.class, result);
+				}
+			});
+		}
+
+		@Override
+		public String subtype() {
+			return "callable_composite";
+		}
+	}
+
+	@Test
+	public void testNestedDotOperatorOnDotResultCall() {
+		// just some crazy brackets
+		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestCallableCompositeWithCompositeReturn()));
+		infix("test.b('c').d").expectResult(s("b:c:d"));
+
+		infix("test.'b'('c').d").expectResult(s("b:c:d"));
+		infix("test.'b'('c').('d')").expectResult(s("b:c:d"));
+		infix("test.'b'('c')['d']").expectResult(s("b:c:d"));
+
+		infix("test['b']('c').d").expectResult(s("b:c:d"));
+		infix("test['b']('c').('d')").expectResult(s("b:c:d"));
+		infix("test['b']('c')['d']").expectResult(s("b:c:d"));
 	}
 
 	@Test

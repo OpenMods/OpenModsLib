@@ -165,6 +165,15 @@ public class TypedValueCalculatorFactory {
 
 	private static final Set<Class<?>> NUMBER_TYPES = ImmutableSet.<Class<?>> of(Double.class, Boolean.class, BigInteger.class, Complex.class);
 
+	private static boolean isNumericValueNode(IExprNode<TypedValue> node) {
+		if (node instanceof ValueNode) {
+			final ValueNode<TypedValue> valueNode = (ValueNode<TypedValue>)node;
+			return NUMBER_TYPES.contains(valueNode.value.type);
+		}
+
+		return false;
+	}
+
 	public static Calculator<TypedValue, ExprType> create() {
 		final TypeDomain domain = new TypeDomain();
 
@@ -1338,7 +1347,7 @@ public class TypedValueCalculatorFactory {
 								if (rightChild instanceof SquareBracketContainerNode) {
 									// a[...]
 									return new MethodCallNode(SYMBOL_SLICE, leftChild, rightChild);
-								} else if (rightChild instanceof ArgBracketNode && !(leftChild instanceof ValueNode)) {
+								} else if (rightChild instanceof ArgBracketNode && !isNumericValueNode(leftChild)) {
 									// (a)(...), a(...)(...)
 									return new MethodCallNode(SYMBOL_APPLY, leftChild, rightChild);
 								} else {

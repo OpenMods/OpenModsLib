@@ -5,14 +5,12 @@ import java.util.List;
 import openmods.calc.IExecutable;
 import openmods.calc.SymbolCall;
 
-public class SymbolCallNode<E> implements IExprNode<E> {
-
-	private final String symbol;
+public class SymbolCallNode<E> extends SymbolOpNode<E> {
 
 	private final List<IExprNode<E>> args;
 
 	public SymbolCallNode(String symbol, List<IExprNode<E>> args) {
-		this.symbol = symbol;
+		super(symbol);
 		this.args = ImmutableList.copyOf(args);
 	}
 
@@ -27,10 +25,6 @@ public class SymbolCallNode<E> implements IExprNode<E> {
 	@Override
 	public String toString() {
 		return "<call: " + symbol + " " + args + ">";
-	}
-
-	public String symbol() {
-		return symbol;
 	}
 
 	@Override

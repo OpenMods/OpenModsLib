@@ -5,12 +5,10 @@ import java.util.List;
 import openmods.calc.IExecutable;
 import openmods.calc.SymbolGet;
 
-public class SymbolGetNode<E> implements IExprNode<E> {
-
-	private final String symbol;
+public class SymbolGetNode<E> extends SymbolOpNode<E> {
 
 	public SymbolGetNode(String symbol) {
-		this.symbol = symbol;
+		super(symbol);
 	}
 
 	@Override
@@ -26,9 +24,5 @@ public class SymbolGetNode<E> implements IExprNode<E> {
 	@Override
 	public String toString() {
 		return "<get: " + symbol + ">";
-	}
-
-	public String symbol() {
-		return symbol;
 	}
 }
