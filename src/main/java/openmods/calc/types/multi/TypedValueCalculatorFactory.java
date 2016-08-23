@@ -1373,8 +1373,8 @@ public class TypedValueCalculatorFactory {
 
 			@Override
 			protected ITokenStreamCompiler<TypedValue> createPostfixParser(final IValueParser<TypedValue> valueParser, final OperatorDictionary<TypedValue> operators, Environment<TypedValue> env) {
-				return addSymbolGetState(addConstantEvaluatorState(valueParser, operators, env,
-						new DefaultPostfixCompiler<TypedValue>(valueParser, operators)))
+				return addConstantEvaluatorState(valueParser, operators, env,
+						new DefaultPostfixCompiler<TypedValue>(valueParser, operators))
 								.addModifierStateProvider(TokenUtils.MODIFIER_QUOTE, new IStateProvider<TypedValue>() {
 									@Override
 									public IPostfixCompilerState<TypedValue> createState() {
@@ -1386,6 +1386,12 @@ public class TypedValueCalculatorFactory {
 									public IPostfixCompilerState<TypedValue> createState() {
 										final IExecutableListBuilder<TypedValue> listBuilder = new DefaultExecutableListBuilder<TypedValue>(valueParser, operators);
 										return new CodePostfixCompilerState(domain, listBuilder, BRACKET_CODE);
+									}
+								})
+								.addModifierStateProvider(BasicCompilerMapFactory.MODIFIER_SYMBOL_GET, new IStateProvider<TypedValue>() {
+									@Override
+									public IPostfixCompilerState<TypedValue> createState() {
+										return new CallableGetPostfixCompilerState(operators, domain);
 									}
 								});
 			}

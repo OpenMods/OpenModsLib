@@ -1,6 +1,5 @@
 package openmods.calc.parsing;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -16,7 +15,6 @@ import openmods.calc.Frame;
 import openmods.calc.ICompilerMapFactory;
 import openmods.calc.IExecutable;
 import openmods.calc.OperatorDictionary;
-import openmods.calc.SymbolGet;
 import openmods.calc.Value;
 import openmods.calc.parsing.DefaultPostfixCompiler.IStateProvider;
 
@@ -165,24 +163,12 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 	}
 
 	public static <E> DefaultPostfixCompiler<E> addSymbolGetState(DefaultPostfixCompiler<E> compiler) {
-		return compiler.addModifierStateProvider(MODIFIER_SYMBOL_GET, BasicCompilerMapFactory.<E> createSymbolGetStateProvider());
-	}
-
-	private static <E> IStateProvider<E> createSymbolGetStateProvider() {
-		return new IStateProvider<E>() {
+		return compiler.addModifierStateProvider(MODIFIER_SYMBOL_GET, new IStateProvider<E>() {
 			@Override
 			public IPostfixCompilerState<E> createState() {
-				return new SingleTokenPostfixCompilerState<E>() {
-					@Override
-					protected Optional<? extends IExecutable<E>> parseToken(Token token) {
-						if (token.type == TokenType.SYMBOL)
-							return Optional.of(new SymbolGet<E>(token.value));
-						else
-							return Optional.absent();
-					}
-				};
+				return new SymbolGetPostfixCompilerState<E>();
 			}
-		};
+		});
 	}
 
 	protected DefaultExprNodeFactory<E> createExprNodeFactory(IValueParser<E> valueParser) {

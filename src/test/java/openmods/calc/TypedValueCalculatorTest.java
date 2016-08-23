@@ -999,4 +999,13 @@ public class TypedValueCalculatorTest {
 	public void testCallableApplyInPostfix() {
 		postfix("@symbol 'test' apply$2,1").expectResult(sym("test"));
 	}
+
+	@Test
+	public void testCallableOperatorWrappers() {
+		postfix("@! iscallable").expectResult(TRUE);
+		postfix("@! false apply$2").expectResult(TRUE);
+
+		postfix("@+ iscallable").expectResult(TRUE);
+		postfix("@+ 1 2 apply$3").expectResult(i(3));
+	}
 }
