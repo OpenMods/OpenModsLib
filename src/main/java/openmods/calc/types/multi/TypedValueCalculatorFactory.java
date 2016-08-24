@@ -1330,6 +1330,7 @@ public class TypedValueCalculatorFactory {
 				compilerState.addStateTransition(SYMBOL_LET, letFactory.createStateTransition(compilerState));
 
 				compilerState.addStateTransition(TokenUtils.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
+				compilerState.addStateTransition(TokenUtils.MODIFIER_OPERATOR_WRAP, new CallableOperatorWrapperModifierTransition(domain, operators));
 			}
 
 			@Override
@@ -1401,6 +1402,7 @@ public class TypedValueCalculatorFactory {
 				super.setupPrefixTokenizer(tokenizer);
 				tokenizer.addModifier(TokenUtils.MODIFIER_QUOTE);
 				tokenizer.addModifier(TokenUtils.MODIFIER_CDR);
+				tokenizer.addModifier(TokenUtils.MODIFIER_OPERATOR_WRAP);
 			}
 
 			@Override
@@ -1408,6 +1410,7 @@ public class TypedValueCalculatorFactory {
 				super.setupInfixTokenizer(tokenizer);
 				tokenizer.addModifier(TokenUtils.MODIFIER_QUOTE);
 				tokenizer.addModifier(TokenUtils.MODIFIER_CDR);
+				tokenizer.addModifier(TokenUtils.MODIFIER_OPERATOR_WRAP);
 			}
 
 			@Override

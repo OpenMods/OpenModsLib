@@ -1001,11 +1001,26 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testCallableOperatorWrappers() {
+	public void testCallableOperatorWrappersInPostfix() {
 		postfix("@! iscallable").expectResult(TRUE);
 		postfix("@! false apply$2").expectResult(TRUE);
 
 		postfix("@+ iscallable").expectResult(TRUE);
 		postfix("@+ 1 2 apply$3").expectResult(i(3));
+	}
+
+	@Test
+	public void testCallableOperatorWrappersInAstParsers() {
+		infix("iscallable(@!)").expectResult(TRUE);
+		prefix("(iscallable @&&)").expectResult(TRUE);
+
+		infix("apply(@!, false)").expectResult(TRUE);
+		prefix("(apply @neg 2)").expectResult(i(-2));
+
+		infix("apply(@+, 1, 2)").expectResult(i(3));
+		prefix("(apply @** 2 5)").expectResult(i(32));
+
+		infix("let([plus:@+], plus(12,34))").expectResult(i(46));
+		prefix("(let [(:minus @-)] (minus 12 34))").expectResult(i(-22));
 	}
 }

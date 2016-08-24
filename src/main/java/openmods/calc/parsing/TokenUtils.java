@@ -30,8 +30,6 @@ public class TokenUtils {
 	public static final String SYMBOL_QUOTE = "quote";
 	public static final String MODIFIER_CDR = "...";
 
-	public static void setupTokenizerForQuoteNotation(Tokenizer tokenizerFactory) {
-		tokenizerFactory.addModifier(MODIFIER_QUOTE);
-		tokenizerFactory.addModifier(MODIFIER_CDR);
-	}
+	public static final String MODIFIER_OPERATOR_WRAP = "@";
+
 }
