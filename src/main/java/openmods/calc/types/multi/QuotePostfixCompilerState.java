@@ -1,6 +1,6 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Optional;
+import openmods.calc.IExecutable;
 import openmods.calc.Value;
 import openmods.calc.parsing.IValueParser;
 import openmods.calc.parsing.SingleTokenPostfixCompilerState;
@@ -22,12 +22,11 @@ public class QuotePostfixCompilerState extends SingleTokenPostfixCompilerState<T
 	}
 
 	@Override
-	protected Optional<Value<TypedValue>> parseToken(Token token) {
-		final TypedValue resultValue;
-		if (token.type.isValue()) resultValue = valueParser.parseToken(token);
-		else if (canBeRaw(token.type)) resultValue = domain.create(Symbol.class, Symbol.get(token.value));
-		else return Optional.absent();
-		return Optional.of(Value.create(resultValue));
+	protected IExecutable<TypedValue> parseToken(Token token) {
+		if (token.type.isValue()) return Value.create(valueParser.parseToken(token));
+		if (canBeRaw(token.type)) return Value.create(domain.create(Symbol.class, Symbol.get(token.value)));
+
+		return rejectToken();
 	}
 
 }
