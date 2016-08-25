@@ -12,10 +12,9 @@ public class RawCodeExprNode implements IExprNode<TypedValue> {
 	private final TypeDomain domain;
 	private final IExprNode<TypedValue> arg;
 
-	RawCodeExprNode(TypeDomain domain, List<IExprNode<TypedValue>> children) {
+	public RawCodeExprNode(TypeDomain domain, List<IExprNode<TypedValue>> children) {
 		Preconditions.checkState(children.size() == 1, "Expected only one expression in curly brackets");
 		this.arg = children.get(0);
-
 		this.domain = domain;
 	}
 

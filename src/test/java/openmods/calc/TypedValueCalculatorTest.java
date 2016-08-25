@@ -1023,4 +1023,66 @@ public class TypedValueCalculatorTest {
 		infix("let([plus:@+], plus(12,34))").expectResult(i(46));
 		prefix("(let [(:minus @-)] (minus 12 34))").expectResult(i(-22));
 	}
+
+	@Test
+	public void testNullaryLambdaOperator() {
+		infix("iscallable(()->2)").expectResult(TRUE);
+		infix("iscallable([]->2)").expectResult(TRUE);
+
+		infix("(()->2)()").expectResult(i(2));
+		infix("([]->2)()").expectResult(i(2));
+		infix("(()->{2})()").expectResult(i(2));
+		prefix("(apply (-> [] 2))").expectResult(i(2));
+	}
+
+	@Test
+	public void testUnaryLambdaOperator() {
+		infix("iscallable(a->a+2)").expectResult(TRUE);
+
+		infix("(a->a+2)(2)").expectResult(i(4));
+		infix("(a->{a+2})(2)").expectResult(i(4));
+		infix("((a)->a+2)(3)").expectResult(i(5));
+		infix("([a]->a+2)(3)").expectResult(i(5));
+		infix("('a'->a+2)(5)").expectResult(i(7));
+
+		prefix("(apply (-> a (+ a 2)) 2)").expectResult(i(4));
+		prefix("(apply (-> a {(+ a 2)}) 2)").expectResult(i(4));
+		prefix("(apply (->[a] (+ a 2)) 2)").expectResult(i(4));
+	}
+
+	@Test
+	public void testBinaryArgLambdaOperator() {
+		infix("iscallable((a, b) -> a + b)").expectResult(TRUE);
+
+		infix("((a, b)->a+b)(1, 2)").expectResult(i(3));
+		infix("(('a', b)->a+b)(1, 3)").expectResult(i(4));
+
+		prefix("(apply (-> [a, b] (+ a b)) 2 3)").expectResult(i(5));
+		prefix("(apply (-> ['a', b] (+ a b)) 3 4)").expectResult(i(7));
+	}
+
+	@Test
+	public void testLambdaOperatorInLetScope() {
+		infix("let([f:(a,b)->a+b], f(3, 4))").expectResult(i(7));
+		prefix("(let [(:f (-> [a,b] (+ a b)))] (f 4 5))").expectResult(i(9));
+	}
+
+	@Test
+	public void testNestedLambdaOperator() {
+		infix("iscallable(a->b->a+b)").expectResult(TRUE);
+		infix("iscallable((a->b->a+b)(5))").expectResult(TRUE);
+		infix("(a->b->a+b)(5)(6)").expectResult(i(11));
+	}
+
+	@Test
+	public void testLambdaScoping() {
+		infix("let([a:2], let([f:()->a], let([a:3], f())))").expectResult(i(2));
+		infix("let([f:a->b->a+b], let([f1:f(3)], let([a:4], f1(10))))").expectResult(i(13));
+	}
+
+	@Test
+	public void testHighOrderLambda() {
+		infix("(a->a(1)+2)(a->a-4)").expectResult(i(-1));
+		infix("let([f:a->a(3)+2], f(a->a-4))").expectResult(i(1));
+	}
 }

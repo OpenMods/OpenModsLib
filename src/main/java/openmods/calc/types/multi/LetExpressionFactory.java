@@ -10,7 +10,6 @@ import openmods.calc.FrameFactory;
 import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
 import openmods.calc.SymbolCall;
-import openmods.calc.SymbolMap;
 import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.ICompilerState;
@@ -134,15 +133,7 @@ public class LetExpressionFactory {
 				public void value(TypedValue value, boolean isLast) {
 					final Cons pair = value.unwrap(Cons.class);
 					final Symbol name = pair.car.unwrap(Symbol.class);
-					wrapValueForFrame(letFrame.symbols(), name.value, pair.cdr);
-				}
-
-				@SuppressWarnings("unchecked")
-				private void wrapValueForFrame(SymbolMap<TypedValue> symbols, String name, TypedValue value) {
-					if (value.value instanceof ICallable)
-						symbols.put(name, (ICallable<TypedValue>)value.value);
-					else
-						symbols.put(name, value);
+					letFrame.symbols().put(name.value, pair.cdr);
 				}
 
 				@Override

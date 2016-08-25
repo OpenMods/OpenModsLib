@@ -68,6 +68,7 @@ public class TypedValueCalculatorFactory {
 	public static final String SYMBOL_IF = "if";
 	public static final String SYMBOL_LET = "let";
 	public static final String SYMBOL_CODE = "code";
+	public static final String SYMBOL_CLOSURE = "closure";
 
 	public static final String SYMBOL_APPLY = "apply";
 	public static final String SYMBOL_SLICE = "slice";
@@ -82,18 +83,34 @@ public class TypedValueCalculatorFactory {
 		}
 	};
 
-	private static final int PRIORITY_MAX = 11; // basically magic
-	private static final int PRIORITY_DOT = 10; // .
-	private static final int PRIORITY_EXP = 9; // **
-	private static final int PRIORITY_MULTIPLY = 8; // * / % //
-	private static final int PRIORITY_ADD = 7; // + -
-	private static final int PRIORITY_BITSHIFT = 6; // << >>
-	private static final int PRIORITY_BITWISE = 5; // & ^ |
-	private static final int PRIORITY_COMPARE = 4; // < > <= >= <=>
-	private static final int PRIORITY_SPACESHIP = 3; // <=>
-	private static final int PRIORITY_EQUALS = 2; // == !=
-	private static final int PRIORITY_LOGIC = 1; // && || ^^
+	private static final int PRIORITY_MAX = 12; // basically magic
+	private static final int PRIORITY_DOT = 11; // .
+	private static final int PRIORITY_EXP = 10; // **
+	private static final int PRIORITY_MULTIPLY = 9; // * / % //
+	private static final int PRIORITY_ADD = 8; // + -
+	private static final int PRIORITY_BITSHIFT = 7; // << >>
+	private static final int PRIORITY_BITWISE = 6; // & ^ |
+	private static final int PRIORITY_COMPARE = 5; // < > <= >= <=>
+	private static final int PRIORITY_SPACESHIP = 4; // <=>
+	private static final int PRIORITY_EQUALS = 3; // == !=
+	private static final int PRIORITY_LOGIC = 2; // && || ^^
+	private static final int PRIORITY_LAMBDA = 1; // ->
 	private static final int PRIORITY_CONS = 0; // :
+
+	private static class MarkerBinaryOperator extends BinaryOperator<TypedValue> {
+		private MarkerBinaryOperator(String id, int precendence) {
+			super(id, precendence);
+		}
+
+		public MarkerBinaryOperator(String id, int precedence, Associativity associativity) {
+			super(id, precedence, associativity);
+		}
+
+		@Override
+		public TypedValue execute(TypedValue left, TypedValue right) {
+			throw new UnsupportedOperationException(); // should be replaced in AST tree modification
+		}
+	}
 
 	private interface CompareResultInterpreter {
 		public boolean interpret(int value);
@@ -682,6 +699,8 @@ public class TypedValueCalculatorFactory {
 					.build(domain));
 		}
 
+		final BinaryOperator<TypedValue> lambdaOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("->", PRIORITY_LAMBDA, Associativity.RIGHT)).unwrap();
+
 		final BinaryOperator<TypedValue> colonOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>(":", PRIORITY_CONS, Associativity.RIGHT) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
@@ -690,12 +709,7 @@ public class TypedValueCalculatorFactory {
 		}).unwrap();
 
 		// NOTE: this operator won't be available in prefix and postfix
-		final BinaryOperator<TypedValue> defaultOperator = operators.registerDefaultOperator(new BinaryOperator<TypedValue>("<?>", PRIORITY_MAX) {
-			@Override
-			public TypedValue execute(TypedValue left, TypedValue right) {
-				throw new UnsupportedOperationException(); // should be replaced in AST tree modification
-			}
-		});
+		final BinaryOperator<TypedValue> defaultOperator = operators.registerDefaultOperator(new MarkerBinaryOperator("<?>", PRIORITY_MAX));
 
 		final TypedValueParser valueParser = new TypedValueParser(domain);
 
@@ -709,6 +723,16 @@ public class TypedValueCalculatorFactory {
 					protected ISymbol<TypedValue> createSymbol(ICallable<TypedValue> callable) {
 						return new CallableWithValue(domain, callable);
 					}
+
+					@Override
+					@SuppressWarnings("unchecked")
+					protected ISymbol<TypedValue> createSymbol(TypedValue value) {
+						if (value.value instanceof ICallable)
+							return createSymbol((ICallable<TypedValue>)value.value);
+						else
+							return super.createSymbol(value);
+					}
+
 				}
 
 				return new Frame<TypedValue>(new TypedValueSymbolMap(), new Stack<TypedValue>());
@@ -1320,6 +1344,9 @@ public class TypedValueCalculatorFactory {
 		final LetExpressionFactory letFactory = new LetExpressionFactory(domain, SYMBOL_LET, SYMBOL_LIST, colonOperator);
 		env.setGlobalSymbol(SYMBOL_LET, letFactory.createSymbol());
 
+		final LambdaExpressionFactory lambdaFactory = new LambdaExpressionFactory(domain, nullValue, SYMBOL_CLOSURE);
+		env.setGlobalSymbol(SYMBOL_CLOSURE, lambdaFactory.createSymbol());
+
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 
 			@Override
@@ -1342,6 +1369,7 @@ public class TypedValueCalculatorFactory {
 								return new DotExprNode(rightChild, leftChild, dotOperator, domain);
 							}
 						})
+						.addFactory(lambdaOperator, lambdaFactory.createLambdaExprNodeFactory())
 						.addFactory(defaultOperator, new IBinaryExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
