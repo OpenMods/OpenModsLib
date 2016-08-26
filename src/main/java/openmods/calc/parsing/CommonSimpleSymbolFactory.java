@@ -4,8 +4,10 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.PeekingIterator;
 import java.util.List;
 import openmods.calc.BinaryOperator;
+import openmods.calc.ExecutionErrorException;
 import openmods.calc.ExprType;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
@@ -17,9 +19,49 @@ import openmods.calc.StackValidationException;
 import openmods.calc.SymbolMap;
 import openmods.utils.Stack;
 
-public class SimpleLetSymbolFactory<E> {
+public class CommonSimpleSymbolFactory<E> {
 
 	public static final String SYMBOL_LET = "let";
+	public static final String SYMBOL_FAIL = "fail";
+
+	private class FailStateTransition extends SingleStateTransition.ForSymbol<E> {
+		@Override
+		public IExprNode<E> createRootNode(List<IExprNode<E>> children) {
+			Preconditions.checkState(children.size() <= 1, "'fail' expects at most single argument, got %s", children.size());
+			if (children.isEmpty()) {
+				return new SingleExecutableNode<E>(new IExecutable<E>() {
+					@Override
+					public void execute(Frame<E> frame) {
+						throw new ExecutionErrorException();
+					}
+
+					@Override
+					public String serialize() {
+						return "<fail>";
+					}
+				});
+			} else {
+				return children.get(0);
+			}
+		}
+
+		@Override
+		public IExprNode<E> parseSymbol(ICompilerState<E> state, PeekingIterator<Token> input) {
+			final Token arg = input.next();
+			final String failCause = arg.value;
+			return new SingleExecutableNode<E>(new IExecutable<E>() {
+				@Override
+				public void execute(Frame<E> frame) {
+					throw new ExecutionErrorException(failCause);
+				}
+
+				@Override
+				public String serialize() {
+					return "<fail>";
+				}
+			});
+		}
+	}
 
 	public class ExtendedCompilerMapFactory extends BasicCompilerMapFactory<E> {
 		@Override
@@ -31,6 +73,7 @@ public class SimpleLetSymbolFactory<E> {
 		protected void configureCompilerStateCommon(MappedCompilerState<E> compilerState) {
 			super.configureCompilerStateCommon(compilerState);
 			compilerState.addStateTransition(SYMBOL_LET, createParserTransition(compilerState));
+			compilerState.addStateTransition(SYMBOL_FAIL, new FailStateTransition());
 		}
 	}
 
@@ -47,7 +90,7 @@ public class SimpleLetSymbolFactory<E> {
 
 	private final BinaryOperator<E> keyValueSeparator;
 
-	public SimpleLetSymbolFactory(String keyValueSeparatorId, int keyValueSeparatorPriority) {
+	public CommonSimpleSymbolFactory(String keyValueSeparatorId, int keyValueSeparatorPriority) {
 		this.keyValueSeparator = new KeyValueSeparator<E>(keyValueSeparatorId, keyValueSeparatorPriority);
 	}
 
@@ -231,4 +274,5 @@ public class SimpleLetSymbolFactory<E> {
 	public ICompilerMapFactory<E, ExprType> createCompilerFactory() {
 		return new ExtendedCompilerMapFactory();
 	}
+
 }

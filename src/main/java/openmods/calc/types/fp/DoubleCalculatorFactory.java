@@ -12,8 +12,8 @@ import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
+import openmods.calc.parsing.CommonSimpleSymbolFactory;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.SimpleLetSymbolFactory;
 
 public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, M> {
 	public static final double NULL_VALUE = 0.0;
@@ -326,7 +326,7 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 	}
 
 	public static Calculator<Double, ExprType> createDefault() {
-		final SimpleLetSymbolFactory<Double> letFactory = new SimpleLetSymbolFactory<Double>(":", PRIORITY_COLON);
+		final CommonSimpleSymbolFactory<Double> letFactory = new CommonSimpleSymbolFactory<Double>(":", PRIORITY_COLON);
 
 		return new DoubleCalculatorFactory<ExprType>() {
 			@Override

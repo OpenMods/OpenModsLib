@@ -14,8 +14,8 @@ import openmods.calc.TernaryFunction;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
+import openmods.calc.parsing.CommonSimpleSymbolFactory;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.SimpleLetSymbolFactory;
 
 public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteger, M> {
 
@@ -256,7 +256,7 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 	}
 
 	public static Calculator<BigInteger, ExprType> createDefault() {
-		final SimpleLetSymbolFactory<BigInteger> letFactory = new SimpleLetSymbolFactory<BigInteger>(":", PRIORITY_COLON);
+		final CommonSimpleSymbolFactory<BigInteger> letFactory = new CommonSimpleSymbolFactory<BigInteger>(":", PRIORITY_COLON);
 
 		return new BigIntCalculatorFactory<ExprType>() {
 			@Override
@@ -266,4 +266,5 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 			}
 		}.create(letFactory.createCompilerFactory());
 	}
+
 }

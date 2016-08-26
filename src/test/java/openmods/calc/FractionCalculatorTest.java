@@ -226,4 +226,10 @@ public class FractionCalculatorTest {
 		infix("let([x:2], let([y:x], let([x:3], y)))").expectResult(f(2));
 		infix("let([x:2], let([f(a):a+x], let([x:3], f(4))))").expectResult(f(6));
 	}
+
+	@Test
+	public void testFailSymbol() {
+		infix("fail('welp')").expectThrow(ExecutionErrorException.class, "welp");
+		infix("fail()").expectThrow(ExecutionErrorException.class, null);
+	}
 }

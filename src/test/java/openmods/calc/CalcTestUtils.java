@@ -320,6 +320,29 @@ public class CalcTestUtils {
 			return new StackCheck<E>(sut);
 		}
 
+		public void expectThrow(Class<? extends Throwable> cls) {
+			try {
+				sut.environment.execute(expr);
+			} catch (Throwable t) {
+				Assert.assertTrue("Expected " + cls + " got " + t, cls.isInstance(t));
+				return;
+			}
+
+			throw new AssertionError("Expected exception " + cls + ", got nothing");
+		}
+
+		public void expectThrow(Class<? extends Throwable> cls, String message) {
+			try {
+				sut.environment.execute(expr);
+			} catch (Throwable t) {
+				Assert.assertTrue("Expected " + cls + " got " + t, cls.isInstance(t));
+				Assert.assertEquals(message, t.getMessage());
+				return;
+			}
+
+			throw new AssertionError("Expected exception " + cls + ", got nothing");
+		}
+
 		public static <E> CalcCheck<E> create(Calculator<E, ExprType> sut, String value, ExprType exprType) {
 			final IExecutable<E> expr = sut.compilers.compile(exprType, value);
 			return new CalcCheck<E>(sut, expr);

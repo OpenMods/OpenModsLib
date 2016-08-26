@@ -12,8 +12,8 @@ import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
+import openmods.calc.parsing.CommonSimpleSymbolFactory;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.SimpleLetSymbolFactory;
 import org.apache.commons.lang3.math.Fraction;
 
 public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fraction, M> {
@@ -192,7 +192,7 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 	}
 
 	public static Calculator<Fraction, ExprType> createDefault() {
-		final SimpleLetSymbolFactory<Fraction> letFactory = new SimpleLetSymbolFactory<Fraction>(":", PRIORITY_COLON);
+		final CommonSimpleSymbolFactory<Fraction> letFactory = new CommonSimpleSymbolFactory<Fraction>(":", PRIORITY_COLON);
 
 		return new FractionCalculatorFactory<ExprType>() {
 			@Override

@@ -14,6 +14,7 @@ import openmods.calc.BinaryOperator.Associativity;
 import openmods.calc.Calculator;
 import openmods.calc.Compilers;
 import openmods.calc.Environment;
+import openmods.calc.ExecutionErrorException;
 import openmods.calc.ExprType;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
@@ -1336,6 +1337,25 @@ public class TypedValueCalculatorFactory {
 				final ICallable<TypedValue> targetCallable = (ICallable<TypedValue>)targetValue.value;
 				targetCallable.call(frame, Optional.of(args - 1), returnsCount);
 			}
+		});
+
+		env.setGlobalSymbol("fail", new ICallable<TypedValue>() {
+
+			@Override
+			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				if (argumentsCount.isPresent()) {
+					final Integer gotArgs = argumentsCount.get();
+					if (gotArgs == 1) {
+						final TypedValue cause = frame.stack().pop();
+						throw new ExecutionErrorException(valuePrinter.toString(cause));
+					}
+
+					Preconditions.checkArgument(gotArgs == 0, "'fail' expects at most single argument, got %s", gotArgs);
+				}
+
+				throw new ExecutionErrorException();
+			}
+
 		});
 
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain, SYMBOL_IF);

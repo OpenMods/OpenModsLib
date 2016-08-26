@@ -241,4 +241,10 @@ public class DoubleCalculatorTest {
 		infix("let([x:2], let([y:x], let([x:3], y)))").expectResult(2.0);
 		infix("let([x:2], let([f(a):a+x], let([x:3], f(4))))").expectResult(6.0);
 	}
+
+	@Test
+	public void testFailSymbol() {
+		infix("fail('welp')").expectThrow(ExecutionErrorException.class, "welp");
+		infix("fail()").expectThrow(ExecutionErrorException.class, null);
+	}
 }

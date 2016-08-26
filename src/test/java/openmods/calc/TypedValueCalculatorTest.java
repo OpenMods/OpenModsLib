@@ -1085,4 +1085,11 @@ public class TypedValueCalculatorTest {
 		infix("(a->a(1)+2)(a->a-4)").expectResult(i(-1));
 		infix("let([f:a->a(3)+2], f(a->a-4))").expectResult(i(1));
 	}
+
+	@Test
+	public void testFailSymbol() {
+		infix("if(false, fail('welp'), 'ok')").expectResult(s("ok"));
+		infix("if(true, fail('welp'), 'ok')").expectThrow(ExecutionErrorException.class, "\"welp\"");
+		infix("if(true, fail(), 'ok')").expectThrow(ExecutionErrorException.class, null);
+	}
 }

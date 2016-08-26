@@ -38,6 +38,8 @@ public class SymbolCall<E> implements IExecutable<E> {
 
 		try {
 			symbol.call(frame, argCount, returnCount);
+		} catch (ExecutionErrorException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to execute symbol '" + id + "'", e);
 		}
