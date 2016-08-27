@@ -18,7 +18,6 @@ import openmods.calc.types.multi.TypedValueCalculatorFactory;
 import openmods.math.Complex;
 import openmods.reflection.MethodAccess;
 import openmods.reflection.TypeVariableHolderHandler;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class TypedValueCalculatorTest {
@@ -463,7 +462,7 @@ public class TypedValueCalculatorTest {
 			return domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue value) {
-					final String result = component + ":" + value.unwrap(String.class);
+					final String result = component + ":" + value.as(String.class);
 					return domain.create(String.class, result);
 				}
 			});
@@ -498,7 +497,7 @@ public class TypedValueCalculatorTest {
 			return domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue value) {
-					final String path = component + ":" + value.unwrap(String.class);
+					final String path = component + ":" + value.as(String.class);
 					final IComposite result = new IComposite() {
 						@Override
 						public String subtype() {
@@ -976,14 +975,11 @@ public class TypedValueCalculatorTest {
 		sut.environment.setGlobalSymbol("test", new BinaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue left, TypedValue right) {
-				Assert.assertTrue(left.is(BigInteger.class));
-				Assert.assertTrue(right.is(BigInteger.class));
-				final BigInteger closure = left.unwrap(BigInteger.class).subtract(right.unwrap(BigInteger.class));
+				final BigInteger closure = left.as(BigInteger.class).subtract(right.as(BigInteger.class));
 				return domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
 					@Override
 					protected TypedValue call(TypedValue value) {
-						Assert.assertTrue(value.is(BigInteger.class));
-						final BigInteger arg = value.unwrap(BigInteger.class);
+						final BigInteger arg = value.as(BigInteger.class);
 						return domain.create(BigInteger.class, closure.multiply(arg));
 					}
 

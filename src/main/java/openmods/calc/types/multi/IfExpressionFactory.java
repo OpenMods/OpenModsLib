@@ -78,16 +78,16 @@ public class IfExpressionFactory {
 		@Override
 		public void call(Frame<TypedValue> frame) {
 			final TypedValue ifFalse = frame.stack().pop();
-			Preconditions.checkState(ifFalse.is(Code.class), "Expected code on first 'if' parameter, got %s", ifFalse);
+			ifFalse.checkType(Code.class, "third (false branch) 'if' parameter");
 
 			final TypedValue ifTrue = frame.stack().pop();
-			Preconditions.checkState(ifTrue.is(Code.class), "Expected code on second 'if' parameter, got %s", ifTrue);
+			ifTrue.checkType(Code.class, "second (true branch) 'if' parameter");
 
 			final TypedValue condition = frame.stack().pop();
 			final Optional<Boolean> isTruthy = condition.isTruthy();
 			Preconditions.checkState(isTruthy.isPresent(), "%s is neither true or false", condition);
 
-			(isTruthy.get()? ifTrue : ifFalse).unwrap(Code.class).execute(frame);
+			(isTruthy.get()? ifTrue : ifFalse).as(Code.class).execute(frame);
 		}
 	}
 

@@ -44,7 +44,7 @@ public class LetExpressionFactory {
 
 		@Override
 		public void flatten(List<IExecutable<TypedValue>> output) {
-			// expecting [a:b:,c:1+2]. If correctly formed, arg name (symbol) will be transformed into symbol atom
+			// expecting [a:b,c:1+2]. If correctly formed, arg name (symbol) will be transformed into symbol atom
 			if (argsNode instanceof SquareBracketContainerNode) {
 				final SquareBracketContainerNode<TypedValue> bracketNode = (SquareBracketContainerNode<TypedValue>)argsNode;
 
@@ -121,18 +121,17 @@ public class LetExpressionFactory {
 		@Override
 		public void call(Frame<TypedValue> currentFrame) {
 			final TypedValue code = currentFrame.stack().pop();
-			Preconditions.checkState(code.is(Code.class), "Expected code on second 'if' parameter, got %s", code);
 
 			final Frame<TypedValue> letFrame = FrameFactory.newLocalFrameWithSubstack(currentFrame, 1);
 			final TypedValue paramPairs = letFrame.stack().pop();
-			Preconditions.checkState(paramPairs.is(Cons.class), "Expected list or args on first 'if' parameter, got %s", paramPairs);
+			Preconditions.checkState(paramPairs.is(Cons.class), "Expected list of name:value pairs on first 'let' parameter, got %s", paramPairs);
 
-			paramPairs.unwrap(Cons.class).visit(new Cons.LinearVisitor() {
-
+			paramPairs.as(Cons.class).visit(new Cons.LinearVisitor() {
 				@Override
 				public void value(TypedValue value, boolean isLast) {
-					final Cons pair = value.unwrap(Cons.class);
-					final Symbol name = pair.car.unwrap(Symbol.class);
+					Preconditions.checkState(value.is(Cons.class), "Expected list of name:value pairs on first 'let' parameter, got %s", paramPairs);
+					final Cons pair = value.as(Cons.class);
+					final Symbol name = pair.car.as(Symbol.class);
 					letFrame.symbols().put(name.value, pair.cdr);
 				}
 
@@ -143,7 +142,7 @@ public class LetExpressionFactory {
 				public void begin() {}
 			});
 
-			code.unwrap(Code.class).execute(letFrame);
+			code.as(Code.class, "second 'let' parameter").execute(letFrame);
 		}
 	}
 

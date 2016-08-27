@@ -53,14 +53,14 @@ public class TypedValuePrinter implements IValuePrinter<TypedValue> {
 	@Override
 	public String toString(TypedValue value) {
 		final String contents;
-		if (value.type == Double.class) contents = printDouble(value.unwrap(Double.class));
-		else if (value.type == BigInteger.class) contents = printBigInteger(value.unwrap(BigInteger.class));
-		else if (value.type == String.class) contents = printString(value.unwrap(String.class));
-		else if (value.type == Boolean.class) contents = printBoolean(value.unwrap(Boolean.class));
-		else if (value.type == Complex.class) contents = printComplex(value.unwrap(Complex.class));
-		else if (value.type == IComposite.class) contents = printComposite(value.unwrap(IComposite.class));
-		else if (value.type == Cons.class) contents = printCons(value.unwrap(Cons.class));
-		else if (value.type == UnitType.class) contents = TypedValueCalculatorFactory.SYMBOL_NULL;
+		if (value.is(Double.class)) contents = printDouble(value.as(Double.class));
+		else if (value.is(BigInteger.class)) contents = printBigInteger(value.as(BigInteger.class));
+		else if (value.is(String.class)) contents = printString(value.as(String.class));
+		else if (value.is(Boolean.class)) contents = printBoolean(value.as(Boolean.class));
+		else if (value.is(Complex.class)) contents = printComplex(value.as(Complex.class));
+		else if (value.is(IComposite.class)) contents = printComposite(value.as(IComposite.class));
+		else if (value.is(Cons.class)) contents = printCons(value.as(Cons.class));
+		else if (value.is(UnitType.class)) contents = TypedValueCalculatorFactory.SYMBOL_NULL;
 		else contents = value.value.toString();
 
 		return printTypes? "(" + value.type + ")" + contents : contents;

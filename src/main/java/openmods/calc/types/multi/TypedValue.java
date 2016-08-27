@@ -55,6 +55,43 @@ public class TypedValue {
 		return domain.unwrap(this, type);
 	}
 
+	private String getClassName(Class<?> cls) {
+		final Optional<String> name = domain.tryGetName(cls);
+		return name.isPresent()? name.get() : cls.getSimpleName();
+	}
+
+	private ClassCastException castException(Class<?> expectedType) {
+		return new ClassCastException(String.format("Expected '%s', got %s", getClassName(expectedType), this));
+	}
+
+	private ClassCastException castException(Class<?> expectedType, String location) {
+		return new ClassCastException(String.format("Expected '%s' on %s, got %s", getClassName(expectedType), location, this));
+	}
+
+	public <T> T as(Class<T> expectedType) {
+		try {
+			return expectedType.cast(value);
+		} catch (ClassCastException e) {
+			throw castException(expectedType);
+		}
+	}
+
+	public <T> T as(Class<T> expectedType, String location) {
+		try {
+			return expectedType.cast(value);
+		} catch (ClassCastException e) {
+			throw castException(expectedType, location);
+		}
+	}
+
+	public void checkType(Class<?> expectedType) {
+		if (!expectedType.isInstance(value)) throw castException(expectedType);
+	}
+
+	public void checkType(Class<?> expectedType, String location) {
+		if (!expectedType.isInstance(value)) throw castException(expectedType, location);
+	}
+
 	public Optional<Boolean> isTruthy() {
 		return domain.isTruthy(this);
 	}

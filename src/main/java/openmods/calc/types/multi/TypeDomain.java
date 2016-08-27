@@ -85,7 +85,11 @@ public class TypeDomain {
 	}
 
 	public String getName(Class<?> type) {
-		return Objects.firstNonNull(allowedTypes.get(type), "<invalid>");
+		return Objects.firstNonNull(allowedTypes.get(type), "<unknown>");
+	}
+
+	public Optional<String> tryGetName(Class<?> type) {
+		return Optional.fromNullable(allowedTypes.get(type));
 	}
 
 	public <T> TypeDomain registerCast(Class<? extends T> source, Class<T> target) {

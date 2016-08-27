@@ -38,20 +38,18 @@ public class LambdaExpressionFactory {
 		@Override
 		public void call(Frame<TypedValue> frame) {
 			final TypedValue right = frame.stack().pop();
-			Preconditions.checkState(right.is(Code.class), "Expected code as second argument of 'closure', got %s", right);
-			final Code code = right.unwrap(Code.class);
+			final Code code = right.as(Code.class, "second argument of 'closure'");
 
 			final TypedValue left = frame.stack().pop();
 
 			final List<String> args = Lists.newArrayList();
 			if (left.is(Cons.class)) {
-				final Cons argsList = left.unwrap(Cons.class);
+				final Cons argsList = left.as(Cons.class);
 
 				argsList.visit(new Cons.LinearVisitor() {
 					@Override
 					public void value(TypedValue value, boolean isLast) {
-						Preconditions.checkState(value.is(Symbol.class), "Expected symbol in lambda args list, got %s", value);
-						args.add(value.unwrap(Symbol.class).value);
+						args.add(value.as(Symbol.class, "lambda args list").value);
 					}
 
 					@Override
@@ -125,9 +123,9 @@ public class LambdaExpressionFactory {
 			if (arg instanceof ValueNode) {
 				final TypedValue value = ((ValueNode<TypedValue>)arg).value;
 				if (value.is(Symbol.class))
-					return Optional.of(value.unwrap(Symbol.class).value);
+					return Optional.of(value.as(Symbol.class).value);
 				if (value.is(String.class))
-					return Optional.of(value.unwrap(String.class));
+					return Optional.of(value.as(String.class));
 			}
 
 			return Optional.absent();

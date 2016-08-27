@@ -88,13 +88,13 @@ public class Cons {
 			final boolean hasNext = e.cdr.is(Cons.class);
 			if (e.car.is(Cons.class)) {
 				BranchingVisitor nestedVisitor = visitor.nestedValue(car);
-				e.car.unwrap(Cons.class).visit(nestedVisitor);
+				e.car.as(Cons.class).visit(nestedVisitor);
 			} else {
 				visitor.value(e.car, !hasNext);
 			}
 
 			if (!hasNext) break;
-			e = e.cdr.unwrap(Cons.class);
+			e = e.cdr.as(Cons.class);
 		}
 
 		visitor.end(e.cdr);
@@ -109,7 +109,7 @@ public class Cons {
 			visitor.value(e.car, !hasNext);
 
 			if (!hasNext) break;
-			e = e.cdr.unwrap(Cons.class);
+			e = e.cdr.as(Cons.class);
 		}
 
 		visitor.end(e.cdr);
@@ -150,7 +150,7 @@ public class Cons {
 		int result = 1;
 		TypedValue c = cdr;
 		while (c.is(Cons.class)) {
-			c = c.unwrap(Cons.class).cdr;
+			c = c.as(Cons.class).cdr;
 			result++;
 		}
 

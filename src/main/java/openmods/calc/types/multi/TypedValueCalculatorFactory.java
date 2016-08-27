@@ -808,7 +808,7 @@ public class TypedValueCalculatorFactory {
 			@Override
 			protected TypedValue call(TypedValue value) {
 				if (value.is(String.class)) return value;
-				if (value.is(Symbol.class)) return value.domain.create(String.class, value.unwrap(Symbol.class).value);
+				if (value.is(Symbol.class)) return value.domain.create(String.class, value.as(Symbol.class).value);
 				else return value.domain.create(String.class, valuePrinter.toString(value));
 			}
 		});
@@ -1286,9 +1286,7 @@ public class TypedValueCalculatorFactory {
 
 				final Frame<TypedValue> sandboxFrame = FrameFactory.newProtectionFrameWithSubstack(frame, 1);
 				final TypedValue top = sandboxFrame.stack().pop();
-				Preconditions.checkState(top.is(Code.class), "Expected 'code', got %s", top);
-
-				top.unwrap(Code.class).execute(sandboxFrame);
+				top.as(Code.class, "first argument").execute(sandboxFrame);
 
 				if (returnsCount.isPresent()) {
 					final int expectedReturns = returnsCount.get();
