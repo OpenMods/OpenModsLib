@@ -903,8 +903,10 @@ public class TypedValueCalculatorTest {
 	public void testLetExpressionBasicForm() {
 		infix("let([x:2,y:3], x + y)").expectResult(i(5));
 		infix("let([x:1+2,y:3], x + y)").expectResult(i(6));
+		infix("let([x:1:2], x)").expectResult(cons(i(1), i(2)));
 		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(i(5));
 		prefix("(let [(:x (+ 1 2)) (:y 3)] (+ x y))").expectResult(i(6));
+		prefix("(let [(:x (: 1 2))] x)").expectResult(cons(i(1), i(2)));
 	}
 
 	@Test
