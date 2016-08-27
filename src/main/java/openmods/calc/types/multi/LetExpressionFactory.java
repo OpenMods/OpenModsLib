@@ -86,7 +86,7 @@ public class LetExpressionFactory {
 			if (argNameNode instanceof SymbolGetNode) {
 				final SymbolGetNode<TypedValue> argSymbolNode = (SymbolGetNode<TypedValue>)argNameNode;
 				final String symbolId = argSymbolNode.symbol();
-				output.add(Value.create(domain.create(Symbol.class, Symbol.get(symbolId))));
+				output.add(Value.create(Symbol.get(domain, symbolId)));
 			} else {
 				// either something we have to call or expression resulting in symbol
 				argNameNode.flatten(output);

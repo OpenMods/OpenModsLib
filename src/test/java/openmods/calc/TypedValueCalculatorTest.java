@@ -1051,11 +1051,11 @@ public class TypedValueCalculatorTest {
 	public void testBinaryArgLambdaOperator() {
 		infix("iscallable((a, b) -> a + b)").expectResult(TRUE);
 
-		infix("((a, b)->a+b)(1, 2)").expectResult(i(3));
-		infix("(('a', b)->a+b)(1, 3)").expectResult(i(4));
+		infix("((a, b)->a-b)(1, 2)").expectResult(i(-1));
+		infix("(('a', b)->a-b)(1, 3)").expectResult(i(-2));
 
-		prefix("(apply (-> [a, b] (+ a b)) 2 3)").expectResult(i(5));
-		prefix("(apply (-> ['a', b] (+ a b)) 3 4)").expectResult(i(7));
+		prefix("(apply (-> [a, b] (- a b)) 2 3)").expectResult(i(-1));
+		prefix("(apply (-> ['a', b] (- a b)) 3 5)").expectResult(i(-2));
 	}
 
 	@Test

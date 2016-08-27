@@ -23,6 +23,10 @@ public class Symbol {
 		return result;
 	}
 
+	public static TypedValue get(TypeDomain domain, String value) {
+		return domain.create(Symbol.class, get(value));
+	}
+
 	@Override
 	public String toString() {
 		return "#" + value;

@@ -24,7 +24,7 @@ public class QuotePostfixCompilerState extends SingleTokenPostfixCompilerState<T
 	@Override
 	protected IExecutable<TypedValue> parseToken(Token token) {
 		if (token.type.isValue()) return Value.create(valueParser.parseToken(token));
-		if (canBeRaw(token.type)) return Value.create(domain.create(Symbol.class, Symbol.get(token.value)));
+		if (canBeRaw(token.type)) return Value.create(Symbol.get(domain, token.value));
 
 		return rejectToken();
 	}

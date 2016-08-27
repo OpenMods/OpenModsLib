@@ -103,7 +103,7 @@ public class QuoteStateTransition {
 				final TypedValue value = valueParser.parseToken(token);
 				return createValueNode(value);
 			}
-			return new ValueNode<TypedValue>(domain.create(Symbol.class, Symbol.get(token.value)));
+			return new ValueNode<TypedValue>(Symbol.get(domain, token.value));
 		}
 
 		@Override

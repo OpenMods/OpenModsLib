@@ -1,6 +1,5 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -96,43 +95,31 @@ public class LambdaExpressionFactory {
 		}
 
 		private TypedValue extractArgNamesList() {
-			TypedValue argSymbols = nullValue;
+			final List<TypedValue> args = Lists.newArrayList();
 			// yup, any bracket. I prefer (), but [] are only option in prefix
 			if (argNames instanceof BracketContainerNode) {
 				for (IExprNode<TypedValue> arg : argNames.getChildren())
-					argSymbols = tryAppendArgSymbol(argSymbols, arg);
+					args.add(extractArgName(arg));
 			} else {
-				argSymbols = tryAppendArgSymbol(argSymbols, argNames);
+				args.add(extractArgName(argNames));
 			}
 
-			return argSymbols;
+			return Cons.createList(args, nullValue);
 		}
 
-		private TypedValue tryAppendArgSymbol(TypedValue argSymbols, IExprNode<TypedValue> node) {
-			final Optional<String> argName = tryExtractArgName(node);
-			if (argName.isPresent()) {
-				argSymbols = appendArgSymbol(argName.get(), argSymbols);
-			} else {
-				throw new IllegalStateException("Expected single symbol or list of symbols on left side of lambda operator, got " + argNames);
-			}
-			return argSymbols;
-		}
+		private TypedValue extractArgName(IExprNode<TypedValue> arg) {
+			if (arg instanceof SymbolGetNode)
+				return Symbol.get(domain, ((SymbolGetNode<TypedValue>)arg).symbol());
 
-		private Optional<String> tryExtractArgName(IExprNode<TypedValue> arg) {
-			if (arg instanceof SymbolGetNode) return Optional.of(((SymbolGetNode<TypedValue>)arg).symbol());
 			if (arg instanceof ValueNode) {
 				final TypedValue value = ((ValueNode<TypedValue>)arg).value;
 				if (value.is(Symbol.class))
-					return Optional.of(value.as(Symbol.class).value);
+					return value;
 				if (value.is(String.class))
-					return Optional.of(value.as(String.class));
+					return Symbol.get(domain, value.as(String.class));
 			}
 
-			return Optional.absent();
-		}
-
-		private TypedValue appendArgSymbol(String head, TypedValue tail) {
-			return domain.create(Cons.class, new Cons(domain.create(Symbol.class, Symbol.get(head)), tail));
+			throw new IllegalStateException("Expected single symbol or list of symbols on left side of lambda operator, got " + arg);
 		}
 
 		@Override
