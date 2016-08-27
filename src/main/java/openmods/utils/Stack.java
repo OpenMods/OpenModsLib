@@ -97,7 +97,7 @@ public class Stack<E> implements Iterable<E> {
 	}
 
 	public Stack<E> substack(int depth) {
-		final int newBottom = size() - depth;
+		final int newBottom = data.size() - depth;
 		if (newBottom < 0) throw new StackUnderflowException(String.format("Not enough elements to create substack: required ds, size %d", depth, size()));
 		return newBottom == 0? this : new Stack<E>(data, newBottom);
 	}

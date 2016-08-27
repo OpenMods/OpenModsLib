@@ -16,8 +16,8 @@ public class StackTest {
 	}
 
 	private static void assertValuesOnStack(Stack<Integer> stack, Integer... values) {
-		Assert.assertEquals(values.length, stack.size());
-		Assert.assertEquals(ImmutableList.copyOf(stack), ImmutableList.copyOf(values));
+		Assert.assertEquals("length", values.length, stack.size());
+		Assert.assertEquals("values", ImmutableList.copyOf(stack), ImmutableList.copyOf(values));
 	}
 
 	private static void assertEquals(final Stack<Integer> expected, Stack<Integer> actual) {
@@ -178,6 +178,37 @@ public class StackTest {
 	public void nonZeroLengthSubstackUnderflow() {
 		stack.push(1);
 		stack.substack(2);
+	}
+
+	@Test
+	public void twoMultipleSubstackOperations() {
+		stack.push(1);
+		stack.push(2);
+		stack.push(3);
+		stack.push(4);
+
+		final Stack<Integer> substack = stack.substack(3);
+		assertValuesOnStack(substack, 2, 3, 4);
+
+		{
+			final Stack<Integer> subsubstack = substack.substack(3);
+			assertValuesOnStack(subsubstack, 2, 3, 4);
+		}
+
+		{
+			final Stack<Integer> subsubstack = substack.substack(2);
+			assertValuesOnStack(subsubstack, 3, 4);
+		}
+
+		{
+			final Stack<Integer> subsubstack = substack.substack(1);
+			assertValuesOnStack(subsubstack, 4);
+		}
+
+		{
+			final Stack<Integer> subsubstack = substack.substack(0);
+			assertValuesOnStack(subsubstack);
+		}
 	}
 
 	@Test
