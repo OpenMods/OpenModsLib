@@ -31,7 +31,7 @@ public class Value<E> implements IExecutable<E> {
 
 	@Override
 	public String toString() {
-		return "Value [value=" + value + "]";
+		return "Value[" + value + "]";
 	}
 
 }

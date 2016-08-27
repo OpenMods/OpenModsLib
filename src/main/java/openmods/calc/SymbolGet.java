@@ -17,6 +17,8 @@ public class SymbolGet<E> implements IExecutable<E> {
 
 		try {
 			symbol.get(frame);
+		} catch (ExecutionErrorException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to execute symbol '" + id + "'", e);
 		}

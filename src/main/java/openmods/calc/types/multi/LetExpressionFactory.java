@@ -1,14 +1,17 @@
 package openmods.calc.types.multi;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.BinaryOperator;
+import openmods.calc.ExecutionErrorException;
 import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
 import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
+import openmods.calc.ISymbol;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
@@ -18,6 +21,7 @@ import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
 import openmods.calc.parsing.SquareBracketContainerNode;
 import openmods.calc.parsing.SymbolGetNode;
+import openmods.utils.Stack;
 
 public class LetExpressionFactory {
 
@@ -70,7 +74,7 @@ public class LetExpressionFactory {
 				final BinaryOpNode<TypedValue> opNode = (BinaryOpNode<TypedValue>)argNode;
 				if (opNode.operator == colonOperator) {
 					flattenArgNameNode(output, opNode.left);
-					opNode.right.flatten(output);
+					output.add(Value.create(Code.flattenAndWrap(domain, opNode.right)));
 					output.add(colonOperator);
 					return;
 				}
@@ -112,6 +116,31 @@ public class LetExpressionFactory {
 		return new LetStateTransition(parentState);
 	}
 
+	private static TypedValue calculateBindValue(final Frame<TypedValue> currentFrame, final Symbol name, final Code expr) {
+		class PlaceholderSymbol implements ISymbol<TypedValue> {
+			@Override
+			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				throw new ExecutionErrorException("Cannot call " + name.value + " symbol during definition");
+			}
+
+			@Override
+			public void get(Frame<TypedValue> frame) {
+				throw new ExecutionErrorException("Cannot reference " + name.value + " symbol during definition");
+			}
+		}
+
+		final Frame<TypedValue> overlayFrame = FrameFactory.newLocalFrameWithSubstack(currentFrame, 0);
+		overlayFrame.symbols().put(name.value, new PlaceholderSymbol());
+
+		expr.execute(overlayFrame);
+
+		final Stack<TypedValue> resultStack = overlayFrame.stack();
+		Preconditions.checkState(resultStack.size() == 1, "Expected single result from 'let' expression, got %s", resultStack.size());
+		final TypedValue result = resultStack.pop();
+		overlayFrame.symbols().put(name.value, result); // replace placeholder with actual value
+		return result;
+	}
+
 	private class LetSymbol extends FixedCallable<TypedValue> {
 
 		public LetSymbol() {
@@ -119,7 +148,7 @@ public class LetExpressionFactory {
 		}
 
 		@Override
-		public void call(Frame<TypedValue> currentFrame) {
+		public void call(final Frame<TypedValue> currentFrame) {
 			final TypedValue code = currentFrame.stack().pop();
 
 			final Frame<TypedValue> letFrame = FrameFactory.newLocalFrameWithSubstack(currentFrame, 1);
@@ -131,8 +160,15 @@ public class LetExpressionFactory {
 				public void value(TypedValue value, boolean isLast) {
 					Preconditions.checkState(value.is(Cons.class), "Expected list of name:value pairs on first 'let' parameter, got %s", paramPairs);
 					final Cons pair = value.as(Cons.class);
+
+					Preconditions.checkState(pair.car.is(Symbol.class), "Expected list of name:value pairs on first 'let' parameter, got %s", paramPairs);
 					final Symbol name = pair.car.as(Symbol.class);
-					letFrame.symbols().put(name.value, pair.cdr);
+
+					Preconditions.checkState(pair.cdr.is(Code.class), "Expected list of name:value pairs on first 'let' parameter, got %s", paramPairs);
+					final Code valueExpr = pair.cdr.as(Code.class);
+
+					final TypedValue bindValue = calculateBindValue(currentFrame, name, valueExpr);
+					letFrame.symbols().put(name.value, bindValue);
 				}
 
 				@Override

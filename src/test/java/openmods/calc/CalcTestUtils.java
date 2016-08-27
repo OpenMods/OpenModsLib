@@ -319,7 +319,11 @@ public class CalcTestUtils {
 			try {
 				sut.environment.execute(expr);
 			} catch (Throwable t) {
-				Assert.assertTrue("Expected " + cls + " got " + t, cls.isInstance(t));
+				if (!cls.isInstance(t)) {
+					final AssertionError assertionError = new AssertionError("Expected " + cls);
+					assertionError.initCause(t);
+					throw assertionError;
+				}
 				return;
 			}
 

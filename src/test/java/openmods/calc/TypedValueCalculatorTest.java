@@ -937,13 +937,13 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testLetWithExplicitList() {
-		infix("let(list(#x:2, #y:1+2), x+y)").expectResult(i(5));
-		infix("let([l:list(#x:2, #y:(1+2))], let(l, x+y))").expectResult(i(5));
+		infix("let(list(#x:{2}, #y:{1+2}), x+y)").expectResult(i(5));
+		infix("let([l:list(#x:{2}, #y:{1+2})], let(l, x+y))").expectResult(i(5));
 	}
 
 	@Test
 	public void testLetInPostfix() {
-		postfix("#x 1 : #y 2 : list$2 {x y +} let").expectResult(i(3));
+		postfix("#x {1} : #y {2} : list$2 {x y +} let").expectResult(i(3));
 	}
 
 	@Test
@@ -1088,5 +1088,21 @@ public class TypedValueCalculatorTest {
 		infix("if(false, fail('welp'), 'ok')").expectResult(s("ok"));
 		infix("if(true, fail('welp'), 'ok')").expectThrow(ExecutionErrorException.class, "\"welp\"");
 		infix("if(true, fail(), 'ok')").expectThrow(ExecutionErrorException.class, null);
+	}
+
+	@Test
+	public void testLambdaRecursion() {
+		infix("let([f:n->if(n<=0,1,f(n-1)*n)], f(5))").expectResult(i(120));
+		infix("let([f:n->if(n<=2,1,f(n-1)+f(n-2))], f(9))").expectResult(i(34));
+	}
+
+	@Test
+	public void testGettingSymbolInDefinition() {
+		infix("let([f:f], f)").expectThrow(ExecutionErrorException.class);
+	}
+
+	@Test
+	public void testCallingSymbolInDefinition() {
+		infix("let([f:f()], f)").expectThrow(ExecutionErrorException.class);
 	}
 }

@@ -32,4 +32,10 @@ public class Code {
 	public static TypedValue flattenAndWrap(TypeDomain domain, IExprNode<TypedValue> expr) {
 		return domain.create(Code.class, new Code(ExprUtils.flattenNode(expr)));
 	}
+
+	@Override
+	public String toString() {
+		return "Code{" + code + "}";
+	}
+
 }
