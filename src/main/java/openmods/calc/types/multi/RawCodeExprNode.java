@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.IExecutable;
 import openmods.calc.Value;
-import openmods.calc.parsing.ExprUtils;
 import openmods.calc.parsing.IExprNode;
 
 public class RawCodeExprNode implements IExprNode<TypedValue> {
@@ -20,8 +19,7 @@ public class RawCodeExprNode implements IExprNode<TypedValue> {
 
 	@Override
 	public void flatten(List<IExecutable<TypedValue>> output) {
-		final IExecutable<TypedValue> flattenChild = ExprUtils.flattenNode(arg);
-		output.add(Value.create(domain.create(Code.class, new Code(flattenChild))));
+		output.add(Value.create(Code.flattenAndWrap(domain, arg)));
 	}
 
 	@Override

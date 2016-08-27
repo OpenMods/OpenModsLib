@@ -12,7 +12,6 @@ import openmods.calc.IExecutable;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
 import openmods.calc.parsing.BracketContainerNode;
-import openmods.calc.parsing.ExprUtils;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
 import openmods.calc.parsing.SymbolGetNode;
@@ -94,8 +93,7 @@ public class LambdaExpressionFactory {
 			if (code instanceof RawCodeExprNode) {
 				code.flatten(output);
 			} else {
-				final IExecutable<TypedValue> flattenedCode = ExprUtils.flattenNode(code);
-				output.add(Value.create(domain.create(Code.class, new Code(flattenedCode))));
+				output.add(Value.create(Code.flattenAndWrap(domain, code)));
 			}
 		}
 
