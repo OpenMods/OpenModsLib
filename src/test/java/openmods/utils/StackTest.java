@@ -212,6 +212,20 @@ public class StackTest {
 	}
 
 	@Test
+	public void twoSubstackUnderflow() {
+		stack.push(1);
+		stack.push(2);
+		stack.push(3);
+
+		final Stack<Integer> substack = stack.substack(1);
+
+		try {
+			substack.substack(2);
+			Assert.fail();
+		} catch (StackUnderflowException e) {}
+	}
+
+	@Test
 	public void testDropFromTop() {
 		stack.push(1);
 		stack.push(2);
