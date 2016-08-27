@@ -69,22 +69,4 @@ public class SymbolCall<E> implements IExecutable<E> {
 	public String toString() {
 		return id + "[-" + printOptional(argCount) + "+" + printOptional(returnCount) + "]";
 	}
-
-	@Override
-	public String serialize() {
-		if (argCount.isPresent()) {
-			final int a = argCount.get();
-			if (returnCount.isPresent()) {
-				final int r = returnCount.get();
-				return id + "@" + a + "," + r;
-			} else {
-				return id + "@" + a;
-			}
-		} else if (returnCount.isPresent()) {
-			final int r = returnCount.get();
-			return id + "@," + r;
-		} else {
-			return id;
-		}
-	}
 }

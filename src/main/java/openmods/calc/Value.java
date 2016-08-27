@@ -34,9 +34,4 @@ public class Value<E> implements IExecutable<E> {
 		return "Value [value=" + value + "]";
 	}
 
-	@Override
-	public String serialize() {
-		// TODO perhaps printer?
-		return value.toString();
-	}
 }

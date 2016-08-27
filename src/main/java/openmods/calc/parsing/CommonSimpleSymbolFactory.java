@@ -34,11 +34,6 @@ public class CommonSimpleSymbolFactory<E> {
 					public void execute(Frame<E> frame) {
 						throw new ExecutionErrorException();
 					}
-
-					@Override
-					public String serialize() {
-						return "<fail>";
-					}
 				});
 			} else {
 				return children.get(0);
@@ -53,11 +48,6 @@ public class CommonSimpleSymbolFactory<E> {
 				@Override
 				public void execute(Frame<E> frame) {
 					throw new ExecutionErrorException(failCause);
-				}
-
-				@Override
-				public String serialize() {
-					return "<fail>";
 				}
 			});
 		}
@@ -197,12 +187,6 @@ public class CommonSimpleSymbolFactory<E> {
 
 			expr.execute(letFrame);
 		}
-
-		@Override
-		public String serialize() {
-			return "<let>"; // unserializable in most calculators
-		}
-
 	}
 
 	private class LetNode implements IExprNode<E> {

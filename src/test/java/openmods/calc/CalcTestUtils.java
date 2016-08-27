@@ -233,11 +233,6 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		public String serialize() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
 		public int hashCode() {
 			return tag.hashCode();
 		}

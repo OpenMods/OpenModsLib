@@ -40,9 +40,4 @@ public class SymbolGet<E> implements IExecutable<E> {
 	public String toString() {
 		return "@" + id;
 	}
-
-	@Override
-	public String serialize() {
-		return "@" + id;
-	}
 }

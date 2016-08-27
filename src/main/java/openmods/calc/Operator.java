@@ -10,9 +10,4 @@ public abstract class Operator<E> implements IExecutable<E> {
 
 	public abstract boolean isLessThan(Operator<E> other);
 
-	@Override
-	public String serialize() {
-		return id;
-	}
-
 }
