@@ -240,6 +240,7 @@ public class DoubleCalculatorTest {
 	public void testLetScoping() {
 		infix("let([x:2], let([y:x], let([x:3], y)))").expectResult(2.0);
 		infix("let([x:2], let([f(a):a+x], let([x:3], f(4))))").expectResult(6.0);
+		infix("let([x:5], let([x:2, y:x], x + y))").expectResult(7.0);
 	}
 
 	@Test

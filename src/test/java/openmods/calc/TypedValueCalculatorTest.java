@@ -950,6 +950,7 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testLetScoping() {
 		infix("let([x:2], let([y:x], let([x:3], y)))").expectResult(i(2));
+		infix("let([x:5], let([x:2, y:x], cons(x, y)))").expectResult(cons(i(2), i(5)));
 	}
 
 	@Test

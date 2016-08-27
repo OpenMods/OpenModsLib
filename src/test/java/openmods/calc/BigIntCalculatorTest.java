@@ -241,6 +241,7 @@ public class BigIntCalculatorTest {
 	public void testLetScoping() {
 		infix("let([x:2], let([y:x], let([x:3], y)))").expectResult(v(2));
 		infix("let([x:2], let([f(a):a+x], let([x:3], f(4))))").expectResult(v(6));
+		infix("let([x:5], let([x:2, y:x], x + y))").expectResult(v(7));
 	}
 
 	@Test
