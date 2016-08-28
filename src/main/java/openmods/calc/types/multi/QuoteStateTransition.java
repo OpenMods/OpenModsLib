@@ -18,7 +18,6 @@ import openmods.calc.parsing.QuotedParser;
 import openmods.calc.parsing.QuotedParser.IQuotedExprNodeFactory;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
-import openmods.calc.parsing.TokenUtils;
 import openmods.calc.parsing.ValueNode;
 
 public class QuoteStateTransition {
@@ -96,7 +95,7 @@ public class QuoteStateTransition {
 
 		@Override
 		public IExprNode<TypedValue> createValueNode(Token token) {
-			if (token.type == TokenType.MODIFIER && token.value.equals(TokenUtils.MODIFIER_CDR))
+			if (token.type == TokenType.MODIFIER && token.value.equals(TypedCalcConstants.MODIFIER_CDR))
 				return QUOTED_DOT_MARKER;
 			if (token.type == TokenType.SEPARATOR) return new NullNode<TypedValue>();
 			if (token.type.isValue()) {

@@ -23,7 +23,7 @@ import openmods.calc.parsing.QuotedParser.IQuotedExprNodeFactory;
 import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
-import openmods.calc.parsing.TokenUtils;
+import openmods.calc.types.multi.TypedCalcConstants;
 import org.junit.Assert;
 
 public class CalcTestUtils {
@@ -136,9 +136,9 @@ public class CalcTestUtils {
 	public static final Token RIGHT_BRACKET = rightBracket(")");
 	public static final Token LEFT_BRACKET = leftBracket("(");
 
-	public static final Token QUOTE_MODIFIER = mod(TokenUtils.MODIFIER_QUOTE);
+	public static final Token QUOTE_MODIFIER = mod(TypedCalcConstants.MODIFIER_QUOTE);
 
-	public static final Token QUOTE_SYMBOL = symbol(TokenUtils.SYMBOL_QUOTE);
+	public static final Token QUOTE_SYMBOL = symbol(TypedCalcConstants.SYMBOL_QUOTE);
 
 	public static class DummyBinaryOperator<E> extends BinaryOperator<E> {
 
@@ -388,11 +388,11 @@ public class CalcTestUtils {
 
 	public static final IExecutable<String> CLOSE_QUOTE = rightBracketMarker(")");
 	public static final IExecutable<String> OPEN_QUOTE = leftBracketMarker("(");
-	public static final IExecutable<String> OPEN_ROOT_QUOTE_M = marker("<<" + TokenUtils.MODIFIER_QUOTE);
-	public static final IExecutable<String> CLOSE_ROOT_QUOTE_M = marker(TokenUtils.MODIFIER_QUOTE + ">>");
+	public static final IExecutable<String> OPEN_ROOT_QUOTE_M = marker("<<" + TypedCalcConstants.MODIFIER_QUOTE);
+	public static final IExecutable<String> CLOSE_ROOT_QUOTE_M = marker(TypedCalcConstants.MODIFIER_QUOTE + ">>");
 
-	public static final IExecutable<String> OPEN_ROOT_QUOTE_S = marker("((" + TokenUtils.SYMBOL_QUOTE);
-	public static final IExecutable<String> CLOSE_ROOT_QUOTE_S = marker(TokenUtils.SYMBOL_QUOTE + "))");
+	public static final IExecutable<String> OPEN_ROOT_QUOTE_S = marker("((" + TypedCalcConstants.SYMBOL_QUOTE);
+	public static final IExecutable<String> CLOSE_ROOT_QUOTE_S = marker(TypedCalcConstants.SYMBOL_QUOTE + "))");
 
 	public static IExecutable<String> leftBracketMarker(String value) {
 		return marker("<" + value);

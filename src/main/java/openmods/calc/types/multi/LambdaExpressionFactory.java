@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
+import openmods.calc.Environment;
 import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.ICallable;
@@ -20,12 +21,10 @@ public class LambdaExpressionFactory {
 
 	private final TypeDomain domain;
 	private final TypedValue nullValue;
-	private final String symbolClosureId;
 
-	public LambdaExpressionFactory(TypeDomain domain, TypedValue nullValue, String symbolClosureId) {
+	public LambdaExpressionFactory(TypeDomain domain, TypedValue nullValue) {
 		this.domain = domain;
 		this.nullValue = nullValue;
-		this.symbolClosureId = symbolClosureId;
 	}
 
 	private class ClosureSymbol extends FixedCallable<TypedValue> {
@@ -66,10 +65,6 @@ public class LambdaExpressionFactory {
 		}
 	}
 
-	public ICallable<TypedValue> createSymbol() {
-		return new ClosureSymbol();
-	}
-
 	private class LambdaExpr implements IExprNode<TypedValue> {
 		private final IExprNode<TypedValue> argNames;
 		private final IExprNode<TypedValue> code;
@@ -83,7 +78,7 @@ public class LambdaExpressionFactory {
 		public void flatten(List<IExecutable<TypedValue>> output) {
 			output.add(Value.create(extractArgNamesList()));
 			flattenClosureCode(output);
-			output.add(new SymbolCall<TypedValue>(symbolClosureId, 2, 1));
+			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_CLOSURE, 2, 1));
 		}
 
 		private void flattenClosureCode(List<IExecutable<TypedValue>> output) {
@@ -137,6 +132,10 @@ public class LambdaExpressionFactory {
 				return new LambdaExpr(leftChild, rightChild);
 			}
 		};
+	}
+
+	public void registerSymbol(Environment<TypedValue> env) {
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_CLOSURE, new ClosureSymbol());
 	}
 
 }

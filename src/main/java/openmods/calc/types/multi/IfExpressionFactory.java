@@ -4,9 +4,9 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;
+import openmods.calc.Environment;
 import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
-import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
@@ -18,11 +18,9 @@ import openmods.calc.parsing.SameStateSymbolTransition;
 public class IfExpressionFactory {
 
 	private final TypeDomain domain;
-	private final String ifSymbolName;
 
-	public IfExpressionFactory(TypeDomain domain, String ifSymbolName) {
+	public IfExpressionFactory(TypeDomain domain) {
 		this.domain = domain;
-		this.ifSymbolName = ifSymbolName;
 	}
 
 	private class IfNode implements IExprNode<TypedValue> {
@@ -41,7 +39,7 @@ public class IfExpressionFactory {
 			condition.flatten(output);
 			output.add(Value.create(Code.flattenAndWrap(domain, ifTrue)));
 			output.add(Value.create(Code.flattenAndWrap(domain, ifFalse)));
-			output.add(new SymbolCall<TypedValue>(ifSymbolName, 3, 1));
+			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_IF, 3, 1));
 		}
 
 		@Override
@@ -91,7 +89,7 @@ public class IfExpressionFactory {
 		}
 	}
 
-	public ICallable<TypedValue> createSymbol() {
-		return new IfSymbol();
+	public void registerSymbol(Environment<TypedValue> env) {
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_IF, new IfSymbol());
 	}
 }

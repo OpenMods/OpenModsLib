@@ -44,7 +44,6 @@ import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
 import openmods.calc.parsing.MappedExprNodeFactory.IBracketExprNodeFactory;
 import openmods.calc.parsing.SquareBracketContainerNode;
 import openmods.calc.parsing.Token;
-import openmods.calc.parsing.TokenUtils;
 import openmods.calc.parsing.Tokenizer;
 import openmods.calc.parsing.ValueNode;
 import openmods.calc.types.multi.TypeDomain.Coercion;
@@ -60,23 +59,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class TypedValueCalculatorFactory {
-
-	public static final String SYMBOL_NULL = "null";
-	public static final String SYMBOL_FALSE = "true";
-	public static final String SYMBOL_TRUE = "false";
-
-	public static final String SYMBOL_LIST = "list";
-	public static final String SYMBOL_IF = "if";
-	public static final String SYMBOL_LET = "let";
-	public static final String SYMBOL_CODE = "code";
-	public static final String SYMBOL_CLOSURE = "closure";
-
-	public static final String SYMBOL_APPLY = "apply";
-	public static final String SYMBOL_SLICE = "slice";
-
-	public static final String BRACKET_CODE = "{";
-	public static final String BRACKET_ARG_PACK = "(";
-
 	private static final Function<BigInteger, Integer> INT_UNWRAP = new Function<BigInteger, Integer>() {
 		@Override
 		public Integer apply(BigInteger input) {
@@ -742,10 +724,10 @@ public class TypedValueCalculatorFactory {
 
 		GenericFunctions.createStackManipulationFunctions(env);
 
-		env.setGlobalSymbol(SYMBOL_NULL, nullValue);
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_NULL, nullValue);
 
-		env.setGlobalSymbol(SYMBOL_FALSE, domain.create(Boolean.class, Boolean.TRUE));
-		env.setGlobalSymbol(SYMBOL_TRUE, domain.create(Boolean.class, Boolean.FALSE));
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_FALSE, domain.create(Boolean.class, Boolean.TRUE));
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_TRUE, domain.create(Boolean.class, Boolean.FALSE));
 
 		env.setGlobalSymbol("E", domain.create(Double.class, Math.E));
 		env.setGlobalSymbol("PI", domain.create(Double.class, Math.PI));
@@ -1239,7 +1221,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol(SYMBOL_LIST, new ICallable<TypedValue>() {
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_LIST, new ICallable<TypedValue>() {
 			@Override
 			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				if (returnsCount.isPresent()) {
@@ -1296,7 +1278,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol(SYMBOL_SLICE, new SimpleTypedFunction(domain) {
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_SLICE, new SimpleTypedFunction(domain) {
 			@Variant
 			public String charAt(@DispatchArg String str, @DispatchArg(extra = { Boolean.class }) BigInteger index) {
 				int i = index.intValue();
@@ -1323,7 +1305,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol(SYMBOL_APPLY, new ICallable<TypedValue>() {
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_APPLY, new ICallable<TypedValue>() {
 			@Override
 			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				Preconditions.checkArgument(argumentsCount.isPresent(), "'apply' cannot be called without argument count");
@@ -1356,26 +1338,26 @@ public class TypedValueCalculatorFactory {
 
 		});
 
-		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain, SYMBOL_IF);
-		env.setGlobalSymbol(SYMBOL_IF, ifFactory.createSymbol());
+		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
+		ifFactory.registerSymbol(env);
 
-		final LetExpressionFactory letFactory = new LetExpressionFactory(domain, SYMBOL_LET, SYMBOL_LIST, colonOperator);
-		env.setGlobalSymbol(SYMBOL_LET, letFactory.createSymbol());
+		final LetExpressionFactory letFactory = new LetExpressionFactory(domain, colonOperator);
+		letFactory.registerSymbol(env);
 
-		final LambdaExpressionFactory lambdaFactory = new LambdaExpressionFactory(domain, nullValue, SYMBOL_CLOSURE);
-		env.setGlobalSymbol(SYMBOL_CLOSURE, lambdaFactory.createSymbol());
+		final LambdaExpressionFactory lambdaFactory = new LambdaExpressionFactory(domain, nullValue);
+		lambdaFactory.registerSymbol(env);
 
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 
 			@Override
 			protected void configureCompilerStateCommon(MappedCompilerState<TypedValue> compilerState) {
-				compilerState.addStateTransition(TokenUtils.SYMBOL_QUOTE, new QuoteStateTransition.ForSymbol(domain, nullValue, valueParser));
-				compilerState.addStateTransition(SYMBOL_CODE, new CodeStateTransition(domain, compilerState));
-				compilerState.addStateTransition(SYMBOL_IF, ifFactory.createStateTransition(compilerState));
-				compilerState.addStateTransition(SYMBOL_LET, letFactory.createStateTransition(compilerState));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_QUOTE, new QuoteStateTransition.ForSymbol(domain, nullValue, valueParser));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_CODE, new CodeStateTransition(domain, compilerState));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_IF, ifFactory.createStateTransition(compilerState));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_LET, letFactory.createStateTransition(compilerState));
 
-				compilerState.addStateTransition(TokenUtils.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
-				compilerState.addStateTransition(TokenUtils.MODIFIER_OPERATOR_WRAP, new CallableOperatorWrapperModifierTransition(domain, operators));
+				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
+				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_OPERATOR_WRAP, new CallableOperatorWrapperModifierTransition(domain, operators));
 			}
 
 			@Override
@@ -1393,10 +1375,10 @@ public class TypedValueCalculatorFactory {
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
 								if (rightChild instanceof SquareBracketContainerNode) {
 									// a[...]
-									return new MethodCallNode(SYMBOL_SLICE, leftChild, rightChild);
+									return new MethodCallNode(TypedCalcConstants.SYMBOL_SLICE, leftChild, rightChild);
 								} else if (rightChild instanceof ArgBracketNode && !isNumericValueNode(leftChild)) {
 									// (a)(...), a(...)(...)
-									return new MethodCallNode(SYMBOL_APPLY, leftChild, rightChild);
+									return new MethodCallNode(TypedCalcConstants.SYMBOL_APPLY, leftChild, rightChild);
 								} else {
 									// 5I
 									return new BinaryOpNode<TypedValue>(multiplyOperator, leftChild, rightChild);
@@ -1404,13 +1386,13 @@ public class TypedValueCalculatorFactory {
 							}
 						})
 						.addFactory(SquareBracketContainerNode.BRACKET_OPEN, SquareBracketContainerNode.<TypedValue> createNodeFactory())
-						.addFactory(BRACKET_ARG_PACK, new IBracketExprNodeFactory<TypedValue>() {
+						.addFactory(TypedCalcConstants.BRACKET_ARG_PACK, new IBracketExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(List<IExprNode<TypedValue>> children) {
 								return new ArgBracketNode(children);
 							}
 						})
-						.addFactory(BRACKET_CODE, new IBracketExprNodeFactory<TypedValue>() {
+						.addFactory(TypedCalcConstants.BRACKET_CODE, new IBracketExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(List<IExprNode<TypedValue>> children) {
 								return new RawCodeExprNode(domain, children);
@@ -1422,17 +1404,17 @@ public class TypedValueCalculatorFactory {
 			protected ITokenStreamCompiler<TypedValue> createPostfixParser(final IValueParser<TypedValue> valueParser, final OperatorDictionary<TypedValue> operators, Environment<TypedValue> env) {
 				return addConstantEvaluatorState(valueParser, operators, env,
 						new DefaultPostfixCompiler<TypedValue>(valueParser, operators))
-								.addModifierStateProvider(TokenUtils.MODIFIER_QUOTE, new IStateProvider<TypedValue>() {
+								.addModifierStateProvider(TypedCalcConstants.MODIFIER_QUOTE, new IStateProvider<TypedValue>() {
 									@Override
 									public IPostfixCompilerState<TypedValue> createState() {
 										return new QuotePostfixCompilerState(valueParser, domain);
 									}
 								})
-								.addBracketStateProvider(BRACKET_CODE, new IStateProvider<TypedValue>() {
+								.addBracketStateProvider(TypedCalcConstants.BRACKET_CODE, new IStateProvider<TypedValue>() {
 									@Override
 									public IPostfixCompilerState<TypedValue> createState() {
 										final IExecutableListBuilder<TypedValue> listBuilder = new DefaultExecutableListBuilder<TypedValue>(valueParser, operators);
-										return new CodePostfixCompilerState(domain, listBuilder, BRACKET_CODE);
+										return new CodePostfixCompilerState(domain, listBuilder, TypedCalcConstants.BRACKET_CODE);
 									}
 								})
 								.addModifierStateProvider(BasicCompilerMapFactory.MODIFIER_SYMBOL_GET, new IStateProvider<TypedValue>() {
@@ -1446,23 +1428,23 @@ public class TypedValueCalculatorFactory {
 			@Override
 			protected void setupPrefixTokenizer(Tokenizer tokenizer) {
 				super.setupPrefixTokenizer(tokenizer);
-				tokenizer.addModifier(TokenUtils.MODIFIER_QUOTE);
-				tokenizer.addModifier(TokenUtils.MODIFIER_CDR);
-				tokenizer.addModifier(TokenUtils.MODIFIER_OPERATOR_WRAP);
+				tokenizer.addModifier(TypedCalcConstants.MODIFIER_QUOTE);
+				tokenizer.addModifier(TypedCalcConstants.MODIFIER_CDR);
+				tokenizer.addModifier(TypedCalcConstants.MODIFIER_OPERATOR_WRAP);
 			}
 
 			@Override
 			protected void setupInfixTokenizer(Tokenizer tokenizer) {
 				super.setupInfixTokenizer(tokenizer);
-				tokenizer.addModifier(TokenUtils.MODIFIER_QUOTE);
-				tokenizer.addModifier(TokenUtils.MODIFIER_CDR);
-				tokenizer.addModifier(TokenUtils.MODIFIER_OPERATOR_WRAP);
+				tokenizer.addModifier(TypedCalcConstants.MODIFIER_QUOTE);
+				tokenizer.addModifier(TypedCalcConstants.MODIFIER_CDR);
+				tokenizer.addModifier(TypedCalcConstants.MODIFIER_OPERATOR_WRAP);
 			}
 
 			@Override
 			protected void setupPostfixTokenizer(Tokenizer tokenizer) {
 				super.setupPostfixTokenizer(tokenizer);
-				tokenizer.addModifier(TokenUtils.MODIFIER_QUOTE);
+				tokenizer.addModifier(TypedCalcConstants.MODIFIER_QUOTE);
 			}
 		}
 

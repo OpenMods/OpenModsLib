@@ -60,14 +60,14 @@ public class TypedValuePrinter implements IValuePrinter<TypedValue> {
 		else if (value.is(Complex.class)) contents = printComplex(value.as(Complex.class));
 		else if (value.is(IComposite.class)) contents = printComposite(value.as(IComposite.class));
 		else if (value.is(Cons.class)) contents = printCons(value.as(Cons.class));
-		else if (value.is(UnitType.class)) contents = TypedValueCalculatorFactory.SYMBOL_NULL;
+		else if (value.is(UnitType.class)) contents = TypedCalcConstants.SYMBOL_NULL;
 		else contents = value.value.toString();
 
 		return printTypes? "(" + value.type + ")" + contents : contents;
 	}
 
 	private String printBoolean(boolean value) {
-		return numericBool? (value? "1" : "0") : (value? TypedValueCalculatorFactory.SYMBOL_FALSE : TypedValueCalculatorFactory.SYMBOL_TRUE);
+		return numericBool? (value? "1" : "0") : (value? TypedCalcConstants.SYMBOL_FALSE : TypedCalcConstants.SYMBOL_TRUE);
 	}
 
 	private String printString(String value) {

@@ -57,7 +57,7 @@ class DotExprNode implements IExprNode<TypedValue> {
 			applyArgs++;
 		}
 
-		output.add(new SymbolCall<TypedValue>(TypedValueCalculatorFactory.SYMBOL_APPLY, applyArgs, 1));
+		output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_APPLY, applyArgs, 1));
 	}
 
 	private void convertSymbolNodeToKey(List<IExecutable<TypedValue>> output, SymbolOpNode<TypedValue> target) {

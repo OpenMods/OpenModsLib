@@ -5,11 +5,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.BinaryOperator;
+import openmods.calc.Environment;
 import openmods.calc.ExecutionErrorException;
 import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
-import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
 import openmods.calc.SymbolCall;
@@ -26,14 +26,10 @@ import openmods.utils.Stack;
 public class LetExpressionFactory {
 
 	private final TypeDomain domain;
-	private final String letSymbolName;
-	private final String listSymbolName;
 	private final BinaryOperator<TypedValue> colonOperator;
 
-	public LetExpressionFactory(TypeDomain domain, String letSymbolName, String listSymbolName, BinaryOperator<TypedValue> colonOperator) {
+	public LetExpressionFactory(TypeDomain domain, BinaryOperator<TypedValue> colonOperator) {
 		this.domain = domain;
-		this.letSymbolName = letSymbolName;
-		this.listSymbolName = listSymbolName;
 		this.colonOperator = colonOperator;
 	}
 
@@ -60,13 +56,13 @@ public class LetExpressionFactory {
 
 				Preconditions.checkState(argumentCount > 0, "'let' expects at least one argument");
 				// slighly inefficient, but compatible with hand-called instruction
-				output.add(new SymbolCall<TypedValue>(listSymbolName, argumentCount, 1));
+				output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, argumentCount, 1));
 			} else { // assume list of arg pairs
 				argsNode.flatten(output);
 			}
 
 			output.add(Value.create(Code.flattenAndWrap(domain, codeNode)));
-			output.add(new SymbolCall<TypedValue>(letSymbolName, 2, 1));
+			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LET, 2, 1));
 		}
 
 		private void flattenArgNode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> argNode) {
@@ -182,7 +178,7 @@ public class LetExpressionFactory {
 		}
 	}
 
-	public ICallable<TypedValue> createSymbol() {
-		return new LetSymbol();
+	public void registerSymbol(Environment<TypedValue> env) {
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_LET, new LetSymbol());
 	}
 }
