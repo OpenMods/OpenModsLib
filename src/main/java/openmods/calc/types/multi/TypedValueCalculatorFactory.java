@@ -1341,7 +1341,7 @@ public class TypedValueCalculatorFactory {
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
 
-		final LetExpressionFactory letFactory = new LetExpressionFactory(domain, colonOperator);
+		final LetExpressionFactory letFactory = new LetExpressionFactory(domain, nullValue, colonOperator);
 		letFactory.registerSymbol(env);
 
 		final LambdaExpressionFactory lambdaFactory = new LambdaExpressionFactory(domain, nullValue);

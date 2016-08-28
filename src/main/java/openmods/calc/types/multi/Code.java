@@ -1,6 +1,8 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
+import java.util.List;
+import openmods.calc.ExecutableList;
 import openmods.calc.Frame;
 import openmods.calc.IExecutable;
 import openmods.calc.parsing.ExprUtils;
@@ -31,6 +33,14 @@ public class Code {
 
 	public static TypedValue flattenAndWrap(TypeDomain domain, IExprNode<TypedValue> expr) {
 		return domain.create(Code.class, new Code(ExprUtils.flattenNode(expr)));
+	}
+
+	public static TypedValue wrap(TypeDomain domain, IExecutable<TypedValue> executable) {
+		return domain.create(Code.class, new Code(executable));
+	}
+
+	public static TypedValue wrap(TypeDomain domain, List<IExecutable<TypedValue>> executables) {
+		return wrap(domain, ExecutableList.wrap(executables));
 	}
 
 	@Override

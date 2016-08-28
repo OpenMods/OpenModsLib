@@ -918,8 +918,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testLetExplicitSymbolVariableNames() {
-		infix("let([#x:2,#y:3], x + y)").expectResult(i(5));
-		infix("let([symbol('x'):2,symbol('y'):3], x + y)").expectResult(i(5));
+		infix("let([#x:2, #y:3], x + y)").expectResult(i(5));
 	}
 
 	@Test
@@ -927,8 +926,13 @@ public class TypedValueCalculatorTest {
 		sut.environment.setGlobalSymbol("x", domain.create(Symbol.class, Symbol.get("a")));
 		sut.environment.setGlobalSymbol("y", domain.create(Symbol.class, Symbol.get("b")));
 
-		infix("let([x():2,y():3], a + b)").expectResult(i(5));
-		prefix("(let [(:(x) 2), (:(y) 3)] (+ a b))").expectResult(i(5));
+		infix("let([(x()):2,(y()):3], a + b)").expectResult(i(5));
+	}
+
+	@Test
+	public void testLetSymbolStringVariableNames() {
+		infix("let(['x':2,'y':3], x + y)").expectResult(i(5));
+		prefix("(let [(:'x' 2), (:'y' 3)] (+ x y))").expectResult(i(5));
 	}
 
 	@Test
@@ -1106,5 +1110,11 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testCallingSymbolInDefinition() {
 		infix("let([f:f()], f)").expectThrow(ExecutionErrorException.class);
+	}
+
+	@Test
+	public void testLetFunctionDefinition() {
+		infix("let([a(b,c):b-c], a(1,2))").expectResult(i(-1));
+		infix("let([f(n):if(n<=0,1,f(n-1)*n)], f(6))").expectResult(i(720));
 	}
 }

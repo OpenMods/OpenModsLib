@@ -3,6 +3,7 @@ package openmods.calc.types.multi;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Environment;
@@ -20,16 +21,18 @@ import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
 import openmods.calc.parsing.SquareBracketContainerNode;
-import openmods.calc.parsing.SymbolGetNode;
+import openmods.calc.parsing.SymbolCallNode;
 import openmods.utils.Stack;
 
 public class LetExpressionFactory {
 
 	private final TypeDomain domain;
+	private final TypedValue nullValue;
 	private final BinaryOperator<TypedValue> colonOperator;
 
-	public LetExpressionFactory(TypeDomain domain, BinaryOperator<TypedValue> colonOperator) {
+	public LetExpressionFactory(TypeDomain domain, TypedValue nullValue, BinaryOperator<TypedValue> colonOperator) {
 		this.domain = domain;
+		this.nullValue = nullValue;
 		this.colonOperator = colonOperator;
 	}
 
@@ -69,8 +72,7 @@ public class LetExpressionFactory {
 			if (argNode instanceof BinaryOpNode) {
 				final BinaryOpNode<TypedValue> opNode = (BinaryOpNode<TypedValue>)argNode;
 				if (opNode.operator == colonOperator) {
-					flattenArgNameNode(output, opNode.left);
-					output.add(Value.create(Code.flattenAndWrap(domain, opNode.right)));
+					flattenNameAndValue(output, opNode.left, opNode.right);
 					output.add(colonOperator);
 					return;
 				}
@@ -78,15 +80,49 @@ public class LetExpressionFactory {
 			argNode.flatten(output); // not directly arg pair, but may still produce valid one
 		}
 
-		private void flattenArgNameNode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> argNameNode) {
-			if (argNameNode instanceof SymbolGetNode) {
-				final SymbolGetNode<TypedValue> argSymbolNode = (SymbolGetNode<TypedValue>)argNameNode;
-				final String symbolId = argSymbolNode.symbol();
-				output.add(Value.create(Symbol.get(domain, symbolId)));
+		private void flattenNameAndValue(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> name, IExprNode<TypedValue> value) {
+			if (name instanceof SymbolCallNode) {
+				// f(x, y):<some code> -> f:(x,y)-><some code>
+				final SymbolCallNode<TypedValue> callNode = (SymbolCallNode<TypedValue>)name;
+				output.add(Value.create(Symbol.get(domain, callNode.symbol())));
+				output.add(Value.create(createLambdaWrapperCode(callNode, value)));
 			} else {
-				// either something we have to call or expression resulting in symbol
-				argNameNode.flatten(output);
+				try {
+					// f:<some code>, 'f':<some code>, #f:<some code>
+					output.add(Value.create(TypedCalcUtils.extractNameFromNode(domain, name)));
+				} catch (IllegalArgumentException e) {
+					// hopefully something that evaluates to symbol
+					// TODO no valid syntax in prefix
+					name.flatten(output);
+				}
+				output.add(flattenExprToCodeConstant(value));
 			}
+		}
+
+		private TypedValue createLambdaWrapperCode(SymbolCallNode<TypedValue> callNode, IExprNode<TypedValue> value) {
+			final List<IExecutable<TypedValue>> result = Lists.newArrayList();
+
+			final List<TypedValue> argNames;
+			try {
+				argNames = extractArgNames(callNode.getChildren());
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException("Cannot extract lambda arg names from " + callNode);
+			}
+			result.add(Value.create(Cons.createList(argNames, nullValue)));
+			result.add(flattenExprToCodeConstant(value));
+			result.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_CLOSURE, 2, 1));
+			return Code.wrap(domain, result);
+		}
+
+		private List<TypedValue> extractArgNames(Iterable<IExprNode<TypedValue>> children) {
+			final List<TypedValue> result = Lists.newArrayList();
+			for (IExprNode<TypedValue> child : children)
+				result.add(TypedCalcUtils.extractNameFromNode(domain, child));
+			return result;
+		}
+
+		private IExecutable<TypedValue> flattenExprToCodeConstant(IExprNode<TypedValue> code) {
+			return Value.create(Code.flattenAndWrap(domain, code));
 		}
 
 		@Override

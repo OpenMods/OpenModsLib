@@ -16,7 +16,7 @@ public class CodePostfixCompilerState extends BracketPostfixCompilerStateBase<Ty
 
 	@Override
 	protected IExecutable<TypedValue> processCompiledBracket(IExecutable<TypedValue> compiledExpr) {
-		return Value.create(domain.create(Code.class, new Code(compiledExpr)));
+		return Value.create(Code.wrap(domain, compiledExpr));
 	}
 
 }
