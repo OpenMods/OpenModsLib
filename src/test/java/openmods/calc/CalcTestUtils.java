@@ -24,6 +24,7 @@ import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 import openmods.calc.types.multi.TypedCalcConstants;
+import openmods.utils.Stack;
 import org.junit.Assert;
 
 public class CalcTestUtils {
@@ -313,6 +314,11 @@ public class CalcTestUtils {
 		public StackCheck<E> execute() {
 			sut.environment.execute(expr);
 			return new StackCheck<E>(sut);
+		}
+
+		public Stack<E> executeAndGetStack() {
+			final Frame<E> frame = sut.environment.executeIsolated(expr);
+			return frame.stack();
 		}
 
 		public void expectThrow(Class<? extends Throwable> cls) {

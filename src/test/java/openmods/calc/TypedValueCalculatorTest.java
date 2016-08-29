@@ -18,6 +18,8 @@ import openmods.calc.types.multi.TypedValueCalculatorFactory;
 import openmods.math.Complex;
 import openmods.reflection.MethodAccess;
 import openmods.reflection.TypeVariableHolderHandler;
+import openmods.utils.Stack;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TypedValueCalculatorTest {
@@ -1116,5 +1118,36 @@ public class TypedValueCalculatorTest {
 	public void testLetFunctionDefinition() {
 		infix("let([a(b,c):b-c], a(1,2))").expectResult(i(-1));
 		infix("let([f(n):if(n<=0,1,f(n-1)*n)], f(6))").expectResult(i(720));
+	}
+
+	@Test
+	public void testPromiseSyntax() {
+		infix("let([p:delay(2)], ispromise(p))").expectResult(TRUE);
+		infix("let([p:delay(2)], iscallable(p))").expectResult(TRUE);
+
+		infix("let([p:delay(1 + 2)], force(p))").expectResult(i(3));
+		infix("let([p:delay(1 + 2)], p())").expectResult(i(3));
+	}
+
+	@Test
+	public void testPromiseScoping() {
+		infix("let([a:1], let([p:delay(a + 2)], let([a:3], force(p))))").expectResult(i(3));
+	}
+
+	@Test
+	public void testPromiseContact() {
+		final SymbolStub<TypedValue> stub = new SymbolStub<TypedValue>().setReturns(i(2)).allowGets();
+		sut.environment.setGlobalSymbol("test", stub);
+
+		final Stack<TypedValue> resultStack = infix("let([p:delay(test + 1)], p)").executeAndGetStack();
+		Assert.assertEquals(1, resultStack.size());
+		stub.checkGetCount(0);
+
+		sut.environment.setGlobalSymbol("promise", resultStack.pop());
+		infix("force(promise)").expectResult(i(3));
+		stub.checkGetCount(1);
+
+		infix("force(promise)").expectResult(i(3));
+		stub.checkGetCount(1);
 	}
 }

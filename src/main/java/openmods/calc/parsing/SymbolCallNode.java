@@ -9,7 +9,7 @@ public class SymbolCallNode<E> extends SymbolOpNode<E> {
 
 	private final List<IExprNode<E>> args;
 
-	public SymbolCallNode(String symbol, List<IExprNode<E>> args) {
+	public SymbolCallNode(String symbol, List<? extends IExprNode<E>> args) {
 		super(symbol);
 		this.args = ImmutableList.copyOf(args);
 	}

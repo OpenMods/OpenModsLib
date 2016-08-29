@@ -4,22 +4,16 @@ import com.google.common.base.Preconditions;
 import java.util.List;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.ISymbolCallStateTransition;
+import openmods.calc.parsing.SameStateSymbolTransition;
 import openmods.calc.parsing.ValueNode;
 
-public class CodeStateTransition implements ISymbolCallStateTransition<TypedValue> {
+public class CodeStateTransition extends SameStateSymbolTransition<TypedValue> {
 
 	private TypeDomain domain;
-	private ICompilerState<TypedValue> parentParserState;
 
 	public CodeStateTransition(TypeDomain domain, ICompilerState<TypedValue> parentParserState) {
+		super(parentParserState);
 		this.domain = domain;
-		this.parentParserState = parentParserState;
-	}
-
-	@Override
-	public ICompilerState<TypedValue> getState() {
-		return parentParserState;
 	}
 
 	@Override

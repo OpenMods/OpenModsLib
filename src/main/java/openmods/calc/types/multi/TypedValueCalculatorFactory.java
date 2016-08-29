@@ -174,6 +174,19 @@ public class TypedValueCalculatorFactory {
 		return false;
 	}
 
+	private static class PredicateIsType extends UnaryFunction<TypedValue> {
+		private final Class<?> cls;
+
+		public PredicateIsType(Class<?> cls) {
+			this.cls = cls;
+		}
+
+		@Override
+		protected TypedValue call(TypedValue value) {
+			return value.domain.create(Boolean.class, value.is(cls));
+		}
+	}
+
 	public static Calculator<TypedValue, ExprType> create() {
 		final TypeDomain domain = new TypeDomain();
 
@@ -735,20 +748,6 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("INF", domain.create(Double.class, Double.POSITIVE_INFINITY));
 
 		env.setGlobalSymbol("I", domain.create(Complex.class, Complex.I));
-
-		class PredicateIsType extends UnaryFunction<TypedValue> {
-			private final Class<?> cls;
-
-			public PredicateIsType(Class<?> cls) {
-				this.cls = cls;
-			}
-
-			@Override
-			protected TypedValue call(TypedValue value) {
-				return value.domain.create(Boolean.class, value.is(cls));
-			}
-
-		}
 
 		env.setGlobalSymbol("isint", new PredicateIsType(BigInteger.class));
 		env.setGlobalSymbol("isbool", new PredicateIsType(Boolean.class));
@@ -1347,6 +1346,9 @@ public class TypedValueCalculatorFactory {
 		final LambdaExpressionFactory lambdaFactory = new LambdaExpressionFactory(domain, nullValue);
 		lambdaFactory.registerSymbol(env);
 
+		final PromiseExpressionFactory delayFactory = new PromiseExpressionFactory(domain);
+		delayFactory.registerSymbols(env);
+
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 
 			@Override
@@ -1355,6 +1357,7 @@ public class TypedValueCalculatorFactory {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_CODE, new CodeStateTransition(domain, compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_IF, ifFactory.createStateTransition(compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_LET, letFactory.createStateTransition(compilerState));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_DELAY, delayFactory.createStateTransition(compilerState));
 
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_OPERATOR_WRAP, new CallableOperatorWrapperModifierTransition(domain, operators));
