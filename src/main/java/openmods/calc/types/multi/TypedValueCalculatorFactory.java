@@ -1356,7 +1356,9 @@ public class TypedValueCalculatorFactory {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_QUOTE, new QuoteStateTransition.ForSymbol(domain, nullValue, valueParser));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_CODE, new CodeStateTransition(domain, compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_IF, ifFactory.createStateTransition(compilerState));
-				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_LET, letFactory.createStateTransition(compilerState));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_LET, letFactory.createLetStateTransition(compilerState));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_LETSEQ, letFactory.createLetSeqStateTransition(compilerState));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_LETREC, letFactory.createLetRecStateTransition(compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_DELAY, delayFactory.createStateTransition(compilerState));
 
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));

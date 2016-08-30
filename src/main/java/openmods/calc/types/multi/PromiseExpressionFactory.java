@@ -7,6 +7,7 @@ import java.util.List;
 import openmods.calc.Environment;
 import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
+import openmods.calc.FrameFactory;
 import openmods.calc.ICallable;
 import openmods.calc.SymbolMap;
 import openmods.calc.UnaryFunction;
@@ -62,8 +63,11 @@ public class PromiseExpressionFactory {
 		@Override
 		public void call(Frame<TypedValue> frame) {
 			if (!value.isPresent()) {
-				final Stack<TypedValue> resultStack = new Stack<TypedValue>();
-				code.execute(new Frame<TypedValue>(scope, resultStack));
+				final Frame<TypedValue> executionFrame = FrameFactory.newLocalFrame(scope);
+
+				code.execute(executionFrame);
+
+				final Stack<TypedValue> resultStack = executionFrame.stack();
 				Preconditions.checkState(resultStack.size() == 1, "Expected single result from promise execution, got %s", resultStack.size());
 				value = Optional.of(resultStack.pop());
 			}

@@ -961,6 +961,49 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testLetSeq() {
+		infix("letseq([x:2, y:x+3], y)").expectResult(i(5));
+
+		infix("letseq([x:2, y():x+3], y())").expectResult(i(5));
+		infix("letseq([x():2, y:x()+3], y)").expectResult(i(5));
+
+		infix("let([z:9], letseq([x:2, y:x+z], y))").expectResult(i(11));
+		infix("let([x:5], letseq([x:2, y:x+3], y))").expectResult(i(5));
+		infix("let([x:5], letseq([y:x+3, x:2], y))").expectResult(i(8));
+		infix("let([x:5], letseq([y:x+3, x:2, y:x+3], y))").expectResult(i(5));
+	}
+
+	@Test(expected = ExecutionErrorException.class)
+	public void testLetSeqSelfSymbolCall() {
+		infix("letseq([x:2], letseq([x:x], x))").expectResult(i(2));
+	}
+
+	@Test
+	public void testLetRec() {
+		infix("letrec([odd(v):if(v==0,false,even(v-1)), even(v):if(v==0,true,odd(v-1))], even(6))").expectResult(TRUE);
+		infix("letrec([odd(v):if(v==0,false,even(v-1)), even(v):if(v==0,true,odd(v-1))], odd(5))").expectResult(TRUE);
+		infix("letrec([odd(v):if(v==0,false,even(v-1)), even(v):if(v==0,true,odd(v-1))], odd(4))").expectResult(FALSE);
+		infix("letrec([odd(v):if(v==0,false,even(v-1)), even(v):if(v==0,true,odd(v-1))], even(3))").expectResult(FALSE);
+
+		infix("letrec([x:2], letrec([y:x], x))").expectResult(i(2));
+	}
+
+	@Test(expected = ExecutionErrorException.class)
+	public void testLetRecSelfSymbolCall() {
+		infix("letrec([x:2], letrec([x:x], x))").expectResult(i(2));
+	}
+
+	@Test(expected = ExecutionErrorException.class)
+	public void testLetRecDefinedSymbolCallBeforeDefine() {
+		infix("letrec([x:2], letrec([y:x, x:2], x))").expectResult(i(2));
+	}
+
+	@Test(expected = ExecutionErrorException.class)
+	public void testLetRecDefinedSymbolCallAfterDefine() {
+		infix("letrec([x:2], letrec([x:2, y:x], x))").expectResult(i(2));
+	}
+
+	@Test
 	public void testCallableLetVariables() {
 		infix("let([f:symbol],f('test1'))").expectResult(sym("test1"));
 		infix("let([f:symbol],let([g:f], g('test2')))").expectResult(sym("test2"));

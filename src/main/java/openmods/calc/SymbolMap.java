@@ -23,4 +23,5 @@ public abstract class SymbolMap<E> {
 	}
 
 	public abstract ISymbol<E> get(String name);
+
 }

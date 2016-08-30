@@ -8,8 +8,16 @@ public class FrameFactory {
 		return new Frame<E>(new LocalSymbolMap<E>(enclosingFrame.symbols()), enclosingFrame.stack().substack(depth));
 	}
 
+	public static <E> Frame<E> newLocalFrame(SymbolMap<E> parentSymbols) {
+		return new Frame<E>(new LocalSymbolMap<E>(parentSymbols), new Stack<E>());
+	}
+
 	public static <E> Frame<E> newLocalFrame(Frame<E> enclosingFrame) {
-		return new Frame<E>(new LocalSymbolMap<E>(enclosingFrame.symbols()), new Stack<E>());
+		return newLocalFrame(enclosingFrame.symbols());
+	}
+
+	public static <E> Frame<E> symbolsToFrame(SymbolMap<E> symbols) {
+		return new Frame<E>(symbols, new Stack<E>());
 	}
 
 	public static <E> Frame<E> newProtectionFrameWithSubstack(Frame<E> enclosingFrame, int depth) {

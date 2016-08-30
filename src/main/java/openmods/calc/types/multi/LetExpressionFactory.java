@@ -14,6 +14,7 @@ import openmods.calc.FrameFactory;
 import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
 import openmods.calc.SymbolCall;
+import openmods.calc.SymbolMap;
 import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.ICompilerState;
@@ -37,10 +38,12 @@ public class LetExpressionFactory {
 	}
 
 	private class LetNode implements IExprNode<TypedValue> {
+		private final String letSymbol;
 		private final IExprNode<TypedValue> argsNode;
 		private final IExprNode<TypedValue> codeNode;
 
-		public LetNode(IExprNode<TypedValue> argsNode, IExprNode<TypedValue> codeNode) {
+		public LetNode(String letSymbol, IExprNode<TypedValue> argsNode, IExprNode<TypedValue> codeNode) {
+			this.letSymbol = letSymbol;
 			this.argsNode = argsNode;
 			this.codeNode = codeNode;
 		}
@@ -65,7 +68,7 @@ public class LetExpressionFactory {
 			}
 
 			output.add(Value.create(Code.flattenAndWrap(domain, codeNode)));
-			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LET, 2, 1));
+			output.add(new SymbolCall<TypedValue>(letSymbol, 2, 1));
 		}
 
 		private void flattenArgNode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> argNode) {
@@ -133,88 +136,198 @@ public class LetExpressionFactory {
 	}
 
 	private class LetStateTransition extends SameStateSymbolTransition<TypedValue> {
-		public LetStateTransition(ICompilerState<TypedValue> parentState) {
+		private final String letState;
+
+		public LetStateTransition(String letState, ICompilerState<TypedValue> parentState) {
 			super(parentState);
+			this.letState = letState;
 		}
 
 		@Override
 		public IExprNode<TypedValue> createRootNode(List<IExprNode<TypedValue>> children) {
 			Preconditions.checkState(children.size() == 2, "Expected two args for 'let' expression");
-			return new LetNode(children.get(0), children.get(1));
+			return new LetNode(letState, children.get(0), children.get(1));
 		}
 	}
 
-	public ISymbolCallStateTransition<TypedValue> createStateTransition(ICompilerState<TypedValue> parentState) {
-		return new LetStateTransition(parentState);
+	public ISymbolCallStateTransition<TypedValue> createLetStateTransition(ICompilerState<TypedValue> parentState) {
+		return new LetStateTransition(TypedCalcConstants.SYMBOL_LET, parentState);
 	}
 
-	private static TypedValue calculateBindValue(final Frame<TypedValue> currentFrame, final Symbol name, final Code expr) {
-		class PlaceholderSymbol implements ISymbol<TypedValue> {
-			@Override
-			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-				throw new ExecutionErrorException("Cannot call " + name.value + " symbol during definition");
-			}
+	public ISymbolCallStateTransition<TypedValue> createLetSeqStateTransition(ICompilerState<TypedValue> parentState) {
+		return new LetStateTransition(TypedCalcConstants.SYMBOL_LETSEQ, parentState);
+	}
 
-			@Override
-			public void get(Frame<TypedValue> frame) {
-				throw new ExecutionErrorException("Cannot reference " + name.value + " symbol during definition");
-			}
+	public ISymbolCallStateTransition<TypedValue> createLetRecStateTransition(ICompilerState<TypedValue> parentState) {
+		return new LetStateTransition(TypedCalcConstants.SYMBOL_LETREC, parentState);
+	}
+
+	private static class PlaceholderSymbol implements ISymbol<TypedValue> {
+		@Override
+		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			throw new ExecutionErrorException("Cannot call symbol during definition");
 		}
 
-		final Frame<TypedValue> overlayFrame = FrameFactory.newLocalFrameWithSubstack(currentFrame, 0);
-		overlayFrame.symbols().put(name.value, new PlaceholderSymbol());
-
-		expr.execute(overlayFrame);
-
-		final Stack<TypedValue> resultStack = overlayFrame.stack();
-		Preconditions.checkState(resultStack.size() == 1, "Expected single result from 'let' expression, got %s", resultStack.size());
-		final TypedValue result = resultStack.pop();
-		overlayFrame.symbols().put(name.value, result); // replace placeholder with actual value
-		return result;
+		@Override
+		public void get(Frame<TypedValue> frame) {
+			throw new ExecutionErrorException("Cannot reference symbol during definition");
+		}
 	}
 
-	private class LetSymbol extends FixedCallable<TypedValue> {
+	@SuppressWarnings("serial")
+	private static class InvalidArgsException extends RuntimeException {}
 
-		public LetSymbol() {
+	private static abstract class LetSymbolBase extends FixedCallable<TypedValue> {
+
+		public LetSymbolBase() {
 			super(2, 1);
 		}
 
 		@Override
-		public void call(final Frame<TypedValue> currentFrame) {
-			final TypedValue code = currentFrame.stack().pop();
+		public void call(Frame<TypedValue> currentFrame) {
+			final Frame<TypedValue> letFrame = FrameFactory.newLocalFrameWithSubstack(currentFrame, 2);
+			final TypedValue code = letFrame.stack().pop();
+			Preconditions.checkState(code.is(Code.class), "Expected code of first 'let' parameter, got %s", code);
 
-			final Frame<TypedValue> letFrame = FrameFactory.newLocalFrameWithSubstack(currentFrame, 1);
 			final TypedValue paramPairs = letFrame.stack().pop();
-			Preconditions.checkState(paramPairs.is(Cons.class), "Expected list of name:value pairs on first 'let' parameter, got %s", paramPairs);
+			Preconditions.checkState(paramPairs.is(Cons.class), "Expected list of name:value pairs on second 'let' parameter, got %s", paramPairs);
+			final Cons vars = paramPairs.as(Cons.class);
 
-			paramPairs.as(Cons.class).visit(new Cons.LinearVisitor() {
-				@Override
-				public void value(TypedValue value, boolean isLast) {
-					Preconditions.checkState(value.is(Cons.class), "Expected list of name:value pairs on first 'let' parameter, got %s", paramPairs);
-					final Cons pair = value.as(Cons.class);
-
-					Preconditions.checkState(pair.car.is(Symbol.class), "Expected list of name:value pairs on first 'let' parameter, got %s", paramPairs);
-					final Symbol name = pair.car.as(Symbol.class);
-
-					Preconditions.checkState(pair.cdr.is(Code.class), "Expected list of name:value pairs on first 'let' parameter, got %s", paramPairs);
-					final Code valueExpr = pair.cdr.as(Code.class);
-
-					final TypedValue bindValue = calculateBindValue(currentFrame, name, valueExpr);
-					letFrame.symbols().put(name.value, bindValue);
-				}
-
-				@Override
-				public void end(TypedValue terminator) {}
-
-				@Override
-				public void begin() {}
-			});
+			try {
+				prepareFrame(letFrame.symbols(), currentFrame.symbols(), vars);
+			} catch (InvalidArgsException e) {
+				throw new IllegalArgumentException("Expected list of name:value pairs on second 'let' parameter, got " + vars);
+			}
 
 			code.as(Code.class, "second 'let' parameter").execute(letFrame);
+		}
+
+		protected abstract void prepareFrame(SymbolMap<TypedValue> outputFrame, SymbolMap<TypedValue> callSymbols, Cons vars);
+	}
+
+	private abstract static class ArgPairVisitor implements Cons.LinearVisitor {
+		@Override
+		public void value(TypedValue value, boolean isLast) {
+			if (!value.is(Cons.class)) throw new InvalidArgsException();
+			final Cons pair = value.as(Cons.class);
+
+			Preconditions.checkState(pair.car.is(Symbol.class));
+			final Symbol name = pair.car.as(Symbol.class);
+
+			if (!pair.cdr.is(Code.class)) throw new InvalidArgsException();
+			final Code valueExpr = pair.cdr.as(Code.class);
+
+			acceptVar(name, valueExpr);
+		}
+
+		protected abstract void acceptVar(Symbol name, Code value);
+
+		@Override
+		public void end(TypedValue terminator) {}
+
+		@Override
+		public void begin() {}
+	}
+
+	private class LetSymbol extends LetSymbolBase {
+		@Override
+		protected void prepareFrame(final SymbolMap<TypedValue> outputSymbols, final SymbolMap<TypedValue> callSymbols, Cons vars) {
+			vars.visit(new ArgPairVisitor() {
+				@Override
+				protected void acceptVar(Symbol name, Code expr) {
+					final Frame<TypedValue> executionFrame = FrameFactory.newLocalFrame(callSymbols);
+					executionFrame.symbols().put(name.value, new PlaceholderSymbol());
+
+					expr.execute(executionFrame);
+
+					final Stack<TypedValue> resultStack = executionFrame.stack();
+					Preconditions.checkState(resultStack.size() == 1, "Expected single result from 'let' expression, got %s", resultStack.size());
+					final TypedValue result = resultStack.pop();
+					executionFrame.symbols().put(name.value, result); // replace placeholder with actual value
+					outputSymbols.put(name.value, result);
+				}
+			});
+		}
+	}
+
+	private class LetSeqSymbol extends LetSymbolBase {
+		@Override
+		protected void prepareFrame(final SymbolMap<TypedValue> outputSymbols, SymbolMap<TypedValue> callSymbols, Cons vars) {
+			final Frame<TypedValue> executionFrame = FrameFactory.symbolsToFrame(outputSymbols);
+			final Stack<TypedValue> resultStack = executionFrame.stack();
+
+			vars.visit(new ArgPairVisitor() {
+				@Override
+				protected void acceptVar(Symbol name, Code expr) {
+					outputSymbols.put(name.value, new PlaceholderSymbol());
+					expr.execute(executionFrame);
+					Preconditions.checkState(resultStack.size() == 1, "Expected single result from 'let' expression, got %s", resultStack.size());
+					outputSymbols.put(name.value, resultStack.pop());
+				}
+			});
+		}
+	}
+
+	private static class NameCodePair {
+		public final String name;
+		public final Code code;
+
+		public NameCodePair(String name, Code code) {
+			this.name = name;
+			this.code = code;
+		}
+	}
+
+	private static class NameValuePair {
+		public final String name;
+		public final TypedValue value;
+
+		public NameValuePair(String name, TypedValue value) {
+			this.name = name;
+			this.value = value;
+		}
+
+	}
+
+	private class LetRecSymbol extends LetSymbolBase {
+		@Override
+		protected void prepareFrame(final SymbolMap<TypedValue> outputSymbols, SymbolMap<TypedValue> callSymbols, Cons vars) {
+			final Frame<TypedValue> executionFrame = FrameFactory.newLocalFrame(callSymbols);
+			final SymbolMap<TypedValue> executionSymbols = executionFrame.symbols();
+			final List<NameCodePair> varsToExecute = Lists.newArrayList();
+
+			// fill placeholders, collect data
+			vars.visit(new ArgPairVisitor() {
+				@Override
+				protected void acceptVar(Symbol name, Code expr) {
+					executionSymbols.put(name.value, new PlaceholderSymbol());
+					varsToExecute.add(new NameCodePair(name.value, expr));
+				}
+			});
+
+			final Stack<TypedValue> resultStack = executionFrame.stack();
+
+			// evaluate expressions
+			final List<NameValuePair> varsToSet = Lists.newArrayList();
+			for (NameCodePair e : varsToExecute) {
+				e.code.execute(executionFrame);
+				Preconditions.checkState(resultStack.size() == 1, "Expected single result from 'let' expression, got %s", resultStack.size());
+				final TypedValue result = resultStack.pop();
+				varsToSet.add(new NameValuePair(e.name, result));
+			}
+
+			// expose results to namespace - must be done after evaluations, since all symbols must be executed with dummy values in place
+			// IMO this is more consistent than "each id is initialized immediately after the corresponding val-expr is evaluated"
+			for (NameValuePair e : varsToSet) {
+				executionSymbols.put(e.name, e.value);
+				outputSymbols.put(e.name, e.value);
+			}
 		}
 	}
 
 	public void registerSymbol(Environment<TypedValue> env) {
 		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_LET, new LetSymbol());
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_LETSEQ, new LetSeqSymbol());
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_LETREC, new LetRecSymbol());
 	}
 }

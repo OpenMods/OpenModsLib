@@ -16,6 +16,8 @@ public interface TypedCalcConstants {
 	public static final String SYMBOL_LIST = "list";
 	public static final String SYMBOL_IF = "if";
 	public static final String SYMBOL_LET = "let";
+	public static final String SYMBOL_LETSEQ = "letseq";
+	public static final String SYMBOL_LETREC = "letrec";
 	public static final String SYMBOL_CODE = "code";
 	public static final String SYMBOL_CLOSURE = "closure";
 	public static final String SYMBOL_DELAY = "delay";

@@ -20,7 +20,7 @@ public class SymbolGet<E> implements IExecutable<E> {
 		} catch (ExecutionErrorException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to execute symbol '" + id + "'", e);
+			throw new RuntimeException("Failed to get symbol '" + id + "'", e);
 		}
 	}
 
