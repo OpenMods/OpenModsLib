@@ -550,10 +550,10 @@ public class TypedValueCalculatorFactory {
 				.build(domain));
 
 		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("&", PRIORITY_BITWISE)
-				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
+				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, Boolean>() {
 					@Override
-					public BigInteger apply(Boolean left, Boolean right) {
-						return (left & right)? BigInteger.ONE : BigInteger.ZERO;
+					public Boolean apply(Boolean left, Boolean right) {
+						return left & right;
 					}
 				})
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
@@ -565,10 +565,10 @@ public class TypedValueCalculatorFactory {
 				.build(domain));
 
 		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("|", PRIORITY_BITWISE)
-				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
+				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, Boolean>() {
 					@Override
-					public BigInteger apply(Boolean left, Boolean right) {
-						return (left | right)? BigInteger.ONE : BigInteger.ZERO;
+					public Boolean apply(Boolean left, Boolean right) {
+						return left | right;
 					}
 				})
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
@@ -580,10 +580,10 @@ public class TypedValueCalculatorFactory {
 				.build(domain));
 
 		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("^", PRIORITY_BITWISE)
-				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
+				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, Boolean>() {
 					@Override
-					public BigInteger apply(Boolean left, Boolean right) {
-						return (left ^ right)? BigInteger.ONE : BigInteger.ZERO;
+					public Boolean apply(Boolean left, Boolean right) {
+						return left ^ right;
 					}
 				})
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
