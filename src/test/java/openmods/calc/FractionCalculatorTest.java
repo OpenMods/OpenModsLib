@@ -195,6 +195,19 @@ public class FractionCalculatorTest {
 	}
 
 	@Test
+	public void testNestedConstantEvaluatingBrackets() {
+		final SymbolStub<Fraction> stub = new SymbolStub<Fraction>()
+				.allowGets()
+				.setReturns(f(5));
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<Fraction> expr = sut.compilers.compile(ExprType.POSTFIX, "[4 [@dummy 3 -] *]");
+		stub.checkGetCount(1);
+		compiled(expr).expectResults(f(8));
+		stub.checkGetCount(1);
+	}
+
+	@Test
 	public void testSimpleLet() {
 		infix("let([x:2,y:3], x + y)").expectResult(f(5));
 		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(f(5));

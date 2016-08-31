@@ -210,6 +210,19 @@ public class DoubleCalculatorTest {
 	}
 
 	@Test
+	public void testNestedConstantEvaluatingBrackets() {
+		final SymbolStub<Double> stub = new SymbolStub<Double>()
+				.allowGets()
+				.setReturns(5.0);
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<Double> expr = sut.compilers.compile(ExprType.POSTFIX, "[4 [@dummy 3 -] *]");
+		stub.checkGetCount(1);
+		compiled(expr).expectResults(8.0);
+		stub.checkGetCount(1);
+	}
+
+	@Test
 	public void testSimpleLet() {
 		infix("let([x:2,y:3], x + y)").expectResult(5.0);
 		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(5.0);

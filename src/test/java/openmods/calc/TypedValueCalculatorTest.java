@@ -797,6 +797,19 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testNestedConstantEvaluatingBrackets() {
+		final SymbolStub<TypedValue> stub = new SymbolStub<TypedValue>()
+				.allowGets()
+				.setReturns(i(5));
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<TypedValue> expr = sut.compilers.compile(ExprType.POSTFIX, "[4 [@dummy 3 -] *]");
+		stub.checkGetCount(1);
+		compiled(expr).expectResults(i(8));
+		stub.checkGetCount(1);
+	}
+
+	@Test
 	public void testCodeParsingInPostfixParser() {
 		postfix("{ 1 2 +} iscode").expectResult(b(true));
 

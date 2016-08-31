@@ -211,6 +211,19 @@ public class BigIntCalculatorTest {
 	}
 
 	@Test
+	public void testNestedConstantEvaluatingBrackets() {
+		final SymbolStub<BigInteger> stub = new SymbolStub<BigInteger>()
+				.allowGets()
+				.setReturns(v(5));
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<BigInteger> expr = sut.compilers.compile(ExprType.POSTFIX, "[4 [@dummy 3 -] *]");
+		stub.checkGetCount(1);
+		compiled(expr).expectResults(v(8));
+		stub.checkGetCount(1);
+	}
+
+	@Test
 	public void testSimpleLet() {
 		infix("let([x:2,y:3], x + y)").expectResult(v(5));
 		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(v(5));
