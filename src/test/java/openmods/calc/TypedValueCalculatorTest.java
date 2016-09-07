@@ -454,6 +454,12 @@ public class TypedValueCalculatorTest {
 
 		infix("test.'a'['b'].path").expectResult(s("a/b"));
 		infix("test.('a')['b'].path").expectResult(s("a/b"));
+		infix("test.('a')['b']['path']").expectResult(s("a/b"));
+
+		infix("test.(str('b')).path").expectResult(s("b"));
+		infix("test.((str)('b')).path").expectResult(s("b"));
+		infix("test.a.((str)('b')).path").expectResult(s("a/b"));
+
 		sut.environment.setGlobalSymbol("key", s("a"));
 		infix("test.(key)['b'].path").expectResult(s("a/b"));
 	}
