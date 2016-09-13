@@ -1,0 +1,66 @@
+openmodslib.command.no_enough_args=Argumentos Insuficientes
+openmodslib.command.unknown_modid=ModID desconhecido
+openmodslib.command.unknown_value=Valor para configuração desconhecido
+openmodslib.command.saved=Configuração salva em %s
+openmodslib.command.not_multiple=Essa propriedade não aceita vários valores.
+openmodslib.command.online_change=Configuração alterada, usando novo valor.
+openmodslib.command.offline_change=Configuração alterada, os novos valores serão usados depois de um reinício.
+openmodslib.command.cancelled=Mudança de configuração cancelada!
+openmodslib.command.unknown_error=Houve um erro durante uma mudança na configuração: %s
+openmodslib.command.invalid_command=Comando '%s' inválido
+openmodslib.command.invalid_type=Não é possível converter o valor %s para %s
+openmodslib.command.invalid_class_name=Nome %s não é uma classe válida
+openmodslib.command.unknown_error_details=Houve um erro desconhecido, olhe os logs para mais detalhes.
+openmodslib.command.class_source=Classe '%s' carregada de '%s'
+openmodslib.command.api_class=Informações da API: name='%s', ownerMod='%s', version='%s'
+openmodslib.command.class_provider=Class provided by file %s (mods: %s)
+
+openmodslib.command.calc_set=Valor %s definido para %s
+openmodslib.command.calc_no_type=Por favor insira um novo modo de cálculo
+openmodslib.command.calc_no_name=Por favor insita um nome para o cálculo
+openmodslib.command.calc_invalid_name=Nome de cálculo inválido
+openmodslib.command.calc_invalid_type=Tipo de cálculo inválido. Tipos permitidos: %s
+openmodslib.command.calc_invalid_mode=Modo de cálculo inválido. Modos permitidos: %s
+openmodslib.command.calc_no_key=Por favor insira o nome da propriedade
+openmodslib.command.calc_no_value=Por favor insira um novo valor para a propriedade
+openmodslib.command.calc_invalid_key=Nome da propriedade inválido
+openmodslib.command.calc_cant_set=Houve uma falha ao definir a propriedade
+openmodslib.command.calc_function_defined=Função %s definida.
+openmodslib.command.calc_error=Falha ao executar: '%s'
+openmodslib.command.calc_stack_underflow=Calculator stack underflow
+openmodslib.command.calc_after_push=Pushed calculator, stack size: %s
+openmodslib.command.calc_after_pop=Popped calculator, stack size: %s
+openmodslib.command.calc_stack_size=Stack size: %s
+
+openmodslib.color.black=Preto
+openmodslib.color.red=Vermelho
+openmodslib.color.green=Verde
+openmodslib.color.brown=Marrom
+openmodslib.color.blue=Azul
+openmodslib.color.purple=Roxo
+openmodslib.color.cyan=Ciano
+openmodslib.color.lightGray=Cinza Claro
+openmodslib.color.gray=Cinza
+openmodslib.color.pink=Rosa
+openmodslib.color.lime=Lima
+openmodslib.color.yellow=Amarelo
+openmodslib.color.lightBlue=Azul Claro
+openmodslib.color.magenta=Magenta
+openmodslib.color.orange=Laranja
+openmodslib.color.white=Branco
+
+openmodslib.gui.watch_video=Assistir Vídeo
+
+openmodslib.locale.book.scale.pageNumber=0.5
+openmodslib.locale.book.scale.sectionTitle=2.0
+openmodslib.locale.book.scale.pageTitle=1.0
+openmodslib.locale.book.scale.pageContent=0.5
+
+openmodslib.locale.book.lineSpace.titledPage=2
+openmodslib.locale.book.lineSpace.recipePage=4
+
+openmodslib.config.features=Habilitar/desabilitar funções
+openmodslib.config.features.blocks=Habilitar/desabilitar blocos
+openmodslib.config.features.items=Habilitar/desabilitar itens
+openmodslib.config.config=Configurações de mods específicos
+openmodslib.config.update_warning=§c§lOBS:§r para alterar as configurações em tempo real, use §l/om_config_s§r ou §l/om_config_m§r.
