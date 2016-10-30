@@ -50,6 +50,7 @@ import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
 import openmods.calc.types.multi.TypedFunction.OptionalArgs;
+import openmods.calc.types.multi.TypedFunction.RawArg;
 import openmods.calc.types.multi.TypedFunction.RawDispatchArg;
 import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;
@@ -197,6 +198,7 @@ public class TypedValueCalculatorFactory {
 		domain.registerType(String.class, "str");
 		domain.registerType(Complex.class, "complex");
 		domain.registerType(IComposite.class, "object");
+		domain.registerType(IIndexable.class, "map");
 		domain.registerType(Cons.class, "pair");
 		domain.registerType(Symbol.class, "symbol");
 		domain.registerType(Code.class, "code");
@@ -1301,8 +1303,16 @@ public class TypedValueCalculatorFactory {
 
 			@Variant
 			@RawReturn
-			public TypedValue substr(@DispatchArg IComposite obj, String index) {
+			public TypedValue index(@DispatchArg IComposite obj, String index) {
 				final Optional<TypedValue> result = obj.get(domain, index);
+				if (!result.isPresent()) throw new IllegalArgumentException("Can't find index: " + index);
+				return result.get();
+			}
+
+			@Variant
+			@RawReturn
+			public TypedValue index(@DispatchArg IIndexable obj, @RawArg TypedValue index) {
+				final Optional<TypedValue> result = obj.get(index);
 				if (!result.isPresent()) throw new IllegalArgumentException("Can't find index: " + index);
 				return result.get();
 			}

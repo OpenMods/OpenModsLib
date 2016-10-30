@@ -9,6 +9,7 @@ import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.CalcTestUtils.SymbolStub;
 import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.IComposite;
+import openmods.calc.types.multi.IIndexable;
 import openmods.calc.types.multi.Symbol;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedBinaryOperator;
@@ -542,6 +543,26 @@ public class TypedValueCalculatorTest {
 		infix("test['b']('c').d").expectResult(s("b:c:d"));
 		infix("test['b']('c').('d')").expectResult(s("b:c:d"));
 		infix("test['b']('c')['d']").expectResult(s("b:c:d"));
+	}
+
+	private class TestIndexable implements IIndexable {
+		private int count;
+
+		@Override
+		public Optional<TypedValue> get(TypedValue index) {
+			return Optional.of(cons(i(count++), index));
+		}
+	}
+
+	@Test
+	public void testIndexable() {
+		final TypedValue test = domain.create(IIndexable.class, new TestIndexable());
+		sut.environment.setGlobalSymbol("test", test);
+		infix("test['ab']").expectResult(cons(i(0), s("ab")));
+		infix("test[4.01]").expectResult(cons(i(1), d(4.01)));
+		infix("test[test]").expectResult(cons(i(2), test));
+
+		infix("cdr(test[test])[-2]").expectResult(cons(i(4), i(-2)));
 	}
 
 	@Test
