@@ -44,6 +44,9 @@ class DotExprNode implements IExprNode<TypedValue> {
 		} else if (target instanceof SymbolGetNode) { // terminal node: symbol get - convert to string
 			convertSymbolNodeToKey(output, (SymbolGetNode<TypedValue>)target);
 			output.add(dotOperator);
+		} else if (target instanceof RawCodeExprNode) { // terminal node: with (.{...}) statement
+			target.flatten(output);
+			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_WITH, 2, 1));
 		} else { // terminal node - anything else (possible something that returns string)
 			target.flatten(output);
 			output.add(dotOperator);

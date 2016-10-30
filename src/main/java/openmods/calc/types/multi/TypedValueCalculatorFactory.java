@@ -1351,6 +1351,35 @@ public class TypedValueCalculatorFactory {
 
 		});
 
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_WITH, new ICallable<TypedValue>() {
+
+			@Override
+			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				if (argumentsCount.isPresent()) {
+					final int args = argumentsCount.get();
+					if (args != 2) throw new StackValidationException("Expected 2 arguments (scope and code) but got %s", args);
+				}
+
+				final TypedValue code = frame.stack().pop();
+				code.checkType(Code.class, "Second(code) 'with' parameter");
+
+				final TypedValue composite = frame.stack().pop();
+				composite.checkType(IComposite.class, "First(scope/composite) 'with' parameter");
+
+				final CompositeSymbolMap symbolMap = new CompositeSymbolMap(frame.symbols(), domain, composite.as(IComposite.class));
+				final Frame<TypedValue> newFrame = FrameFactory.newClosureFrame(symbolMap, frame, 0);
+
+				code.as(Code.class).execute(newFrame);
+
+				if (returnsCount.isPresent()) {
+					final int expected = returnsCount.get();
+					final int actual = newFrame.stack().size();
+					if (expected != actual) throw new StackValidationException("Expected %s returns but got %s", expected, actual);
+				}
+			}
+
+		});
+
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
 

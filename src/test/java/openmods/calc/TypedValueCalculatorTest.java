@@ -2,6 +2,7 @@ package openmods.calc;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.List;
@@ -384,19 +385,23 @@ public class TypedValueCalculatorTest {
 
 	private static class TestComposite implements IComposite {
 		private final List<String> path;
+		private final String prefix;
 
-		public TestComposite() {
+		public TestComposite(String prefix) {
 			this.path = ImmutableList.of();
+			this.prefix = Strings.nullToEmpty(prefix);
 		}
 
-		public TestComposite(List<String> parentPath, String elem) {
+		private TestComposite(String prefix, List<String> parentPath, String elem) {
+			this.prefix = prefix;
 			this.path = ImmutableList.<String> builder().addAll(parentPath).add(elem).build();
 		}
 
 		@Override
 		public Optional<TypedValue> get(TypeDomain domain, String component) {
 			if (component.equals("path")) return Optional.of(domain.create(String.class, Joiner.on("/").join(path)));
-			else return Optional.of(domain.create(IComposite.class, new TestComposite(path, component)));
+			else if (!component.startsWith(prefix)) return Optional.absent();
+			else return Optional.of(domain.create(IComposite.class, new TestComposite(prefix, path, component)));
 		}
 
 		@Override
@@ -407,7 +412,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testCompositeObjects() {
-		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new TestComposite()));
+		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new TestComposite("")));
 		infix("type(root)=='object'").expectResult(b(true));
 		infix("isobject(root)").expectResult(b(true));
 		infix("bool(root)").expectResult(b(true));
@@ -415,7 +420,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testDotOperator() {
-		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new TestComposite()));
+		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new TestComposite("")));
 		infix("root.path").expectResult(s(""));
 
 		prefix("(== (type root) 'object')").expectResult(b(true));
@@ -440,7 +445,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testObjectIndexingWithBrackets() {
-		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestComposite()));
+		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestComposite("")));
 		infix("test['path']").expectResult(s(""));
 		infix("isobject(test['a'])").expectResult(TRUE);
 
@@ -543,6 +548,18 @@ public class TypedValueCalculatorTest {
 		infix("test['b']('c').d").expectResult(s("b:c:d"));
 		infix("test['b']('c').('d')").expectResult(s("b:c:d"));
 		infix("test['b']('c')['d']").expectResult(s("b:c:d"));
+	}
+
+	@Test
+	public void testCompositeWithSyntax() {
+		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestComposite("m_")));
+
+		infix("test.m_a.m_b.{ path }").expectResult(s("m_a/m_b"));
+		infix("test.m_a.m_b.{ m_c }.path").expectResult(s("m_a/m_b/m_c"));
+		infix("test.{ m_a }.m_b.m_c.path").expectResult(s("m_a/m_b/m_c"));
+		infix("test.{ m_a.m_b }.m_c.path").expectResult(s("m_a/m_b/m_c"));
+
+		infix("test.m_a.m_b.{ cons(path, m_c.path) }").expectResult(cons(s("m_a/m_b"), s("m_a/m_b/m_c")));
 	}
 
 	private class TestIndexable implements IIndexable {
