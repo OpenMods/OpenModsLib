@@ -1,6 +1,7 @@
 package openmods.calc;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.List;
@@ -392,9 +393,9 @@ public class TypedValueCalculatorTest {
 		}
 
 		@Override
-		public TypedValue get(TypeDomain domain, String component) {
-			if (component.equals("path")) return domain.create(String.class, Joiner.on("/").join(path));
-			else return domain.create(IComposite.class, new TestComposite(path, component));
+		public Optional<TypedValue> get(TypeDomain domain, String component) {
+			if (component.equals("path")) return Optional.of(domain.create(String.class, Joiner.on("/").join(path)));
+			else return Optional.of(domain.create(IComposite.class, new TestComposite(path, component)));
 		}
 
 		@Override
@@ -466,14 +467,14 @@ public class TypedValueCalculatorTest {
 
 	private class TestCallableComposite implements IComposite {
 		@Override
-		public TypedValue get(final TypeDomain domain, final String component) {
-			return domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
+		public Optional<TypedValue> get(final TypeDomain domain, final String component) {
+			return Optional.of(domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue value) {
 					final String result = component + ":" + value.as(String.class);
 					return domain.create(String.class, result);
 				}
-			});
+			}));
 		}
 
 		@Override
@@ -501,8 +502,8 @@ public class TypedValueCalculatorTest {
 
 	private class TestCallableCompositeWithCompositeReturn implements IComposite {
 		@Override
-		public TypedValue get(final TypeDomain domain, final String component) {
-			return domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
+		public Optional<TypedValue> get(final TypeDomain domain, final String component) {
+			return Optional.of(domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue value) {
 					final String path = component + ":" + value.as(String.class);
@@ -513,13 +514,13 @@ public class TypedValueCalculatorTest {
 						}
 
 						@Override
-						public TypedValue get(TypeDomain domain, String component) {
-							return domain.create(String.class, path + ":" + component);
+						public Optional<TypedValue> get(TypeDomain domain, String component) {
+							return Optional.of(domain.create(String.class, path + ":" + component));
 						}
 					};
 					return domain.create(IComposite.class, result);
 				}
-			});
+			}));
 		}
 
 		@Override

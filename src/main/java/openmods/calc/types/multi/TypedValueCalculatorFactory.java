@@ -674,7 +674,9 @@ public class TypedValueCalculatorFactory {
 				.registerOperation(new TypedBinaryOperator.IVariantOperation<IComposite, String>() {
 					@Override
 					public TypedValue apply(TypeDomain domain, IComposite left, String right) {
-						return left.get(domain, right);
+						final Optional<TypedValue> result = left.get(domain, right);
+						if (!result.isPresent()) throw new IllegalAccessError("Can't find member: " + right);
+						return result.get();
 					}
 				})
 				.build(domain)).unwrap();
@@ -1300,7 +1302,9 @@ public class TypedValueCalculatorFactory {
 			@Variant
 			@RawReturn
 			public TypedValue substr(@DispatchArg IComposite obj, String index) {
-				return obj.get(domain, index);
+				final Optional<TypedValue> result = obj.get(domain, index);
+				if (!result.isPresent()) throw new IllegalArgumentException("Can't find index: " + index);
+				return result.get();
 			}
 		});
 
