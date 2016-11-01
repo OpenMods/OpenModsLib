@@ -1433,7 +1433,12 @@ public class TypedValueCalculatorFactory {
 								}
 							}
 						})
-						.addFactory(SquareBracketContainerNode.BRACKET_OPEN, SquareBracketContainerNode.<TypedValue> createNodeFactory())
+						.addFactory(SquareBracketContainerNode.BRACKET_OPEN, new IBracketExprNodeFactory<TypedValue>() {
+							@Override
+							public IExprNode<TypedValue> create(List<IExprNode<TypedValue>> children) {
+								return new ListBracketNode(children);
+							}
+						})
 						.addFactory(TypedCalcConstants.BRACKET_ARG_PACK, new IBracketExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(List<IExprNode<TypedValue>> children) {

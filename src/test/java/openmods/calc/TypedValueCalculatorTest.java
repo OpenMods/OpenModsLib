@@ -764,6 +764,15 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testListBrackets() {
+		infix("[]").expectResult(nil());
+		infix("[1]").expectResult(cons(i(1), nil()));
+		infix("[1,2,3]").expectResult(cons(i(1), cons(i(2), cons(i(3), nil()))));
+		infix("[1,2,3] == cons(1, cons(2, cons(3, null)))").expectResult(b(true));
+		prefix("(==  [1 2 3] #(1 2 3))").expectResult(b(true));
+	}
+
+	@Test
 	public void testLengthFunction() {
 		infix("len('')").expectResult(i(0));
 		infix("len('a')").expectResult(i(1));
