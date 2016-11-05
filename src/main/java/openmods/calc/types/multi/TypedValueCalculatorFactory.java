@@ -191,6 +191,7 @@ public class TypedValueCalculatorFactory {
 	public static Calculator<TypedValue, ExprType> create() {
 		final TypeDomain domain = new TypeDomain();
 
+		// don't forget to also fill truth values and is* functions
 		domain.registerType(UnitType.class, "<null>");
 		domain.registerType(BigInteger.class, "int");
 		domain.registerType(Double.class, "float");
@@ -292,6 +293,7 @@ public class TypedValueCalculatorFactory {
 		domain.registerAlwaysTrue(Cons.class);
 		domain.registerAlwaysTrue(Code.class);
 		domain.registerAlwaysTrue(ICallable.class);
+		domain.registerAlwaysTrue(IIndexable.class);
 
 		final TypedValue nullValue = domain.create(UnitType.class, UnitType.INSTANCE);
 
@@ -764,6 +766,7 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("issymbol", new PredicateIsType(Symbol.class));
 		env.setGlobalSymbol("iscode", new PredicateIsType(Code.class));
 		env.setGlobalSymbol("iscallable", new PredicateIsType(ICallable.class));
+		env.setGlobalSymbol("ismap", new PredicateIsType(IIndexable.class));
 
 		env.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
 			@Override

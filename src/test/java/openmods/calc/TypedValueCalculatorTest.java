@@ -575,6 +575,11 @@ public class TypedValueCalculatorTest {
 	public void testIndexable() {
 		final TypedValue test = domain.create(IIndexable.class, new TestIndexable());
 		sut.environment.setGlobalSymbol("test", test);
+
+		infix("ismap(test)").expectResult(TRUE);
+		infix("type(test) == 'map'").expectResult(TRUE);
+		infix("bool(test)").expectResult(TRUE);
+
 		infix("test['ab']").expectResult(cons(i(0), s("ab")));
 		infix("test[4.01]").expectResult(cons(i(1), d(4.01)));
 		infix("test[test]").expectResult(cons(i(2), test));
