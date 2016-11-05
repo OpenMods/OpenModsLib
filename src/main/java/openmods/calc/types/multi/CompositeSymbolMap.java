@@ -8,9 +8,9 @@ import openmods.calc.SymbolMap;
 public class CompositeSymbolMap extends NestedSymbolMap<TypedValue> {
 
 	private final TypeDomain domain;
-	private final IComposite composite;
+	private final CompositeTraits.Structured composite;
 
-	public CompositeSymbolMap(SymbolMap<TypedValue> parent, TypeDomain domain, IComposite composite) {
+	public CompositeSymbolMap(SymbolMap<TypedValue> parent, TypeDomain domain, CompositeTraits.Structured composite) {
 		super(parent);
 		this.domain = domain;
 		this.composite = composite;

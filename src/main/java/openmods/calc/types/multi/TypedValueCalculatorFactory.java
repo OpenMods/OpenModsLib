@@ -46,6 +46,7 @@ import openmods.calc.parsing.SquareBracketContainerNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.Tokenizer;
 import openmods.calc.parsing.ValueNode;
+import openmods.calc.types.multi.CompositeTraits.Structured;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
@@ -199,7 +200,6 @@ public class TypedValueCalculatorFactory {
 		domain.registerType(String.class, "str");
 		domain.registerType(Complex.class, "complex");
 		domain.registerType(IComposite.class, "object");
-		domain.registerType(IIndexable.class, "map");
 		domain.registerType(Cons.class, "pair");
 		domain.registerType(Symbol.class, "symbol");
 		domain.registerType(Code.class, "code");
@@ -288,12 +288,32 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
+		domain.registerTruthEvaluator(new ITruthEvaluator<IComposite>() {
+			@Override
+			public boolean isTruthy(IComposite value) {
+				{
+					final Optional<CompositeTraits.Truthy> truthyTrait = value.getOptional(CompositeTraits.Truthy.class);
+					if (truthyTrait.isPresent()) return truthyTrait.get().isTruthy();
+				}
+
+				{
+					final Optional<CompositeTraits.Countable> countableTrait = value.getOptional(CompositeTraits.Countable.class);
+					if (countableTrait.isPresent()) return countableTrait.get().count() > 0;
+				}
+
+				{
+					final Optional<CompositeTraits.Emptyable> emptyableTrait = value.getOptional(CompositeTraits.Emptyable.class);
+					if (emptyableTrait.isPresent()) return !emptyableTrait.get().isEmpty();
+				}
+
+				return true;
+			}
+		});
+
 		domain.registerAlwaysFalse(UnitType.class);
-		domain.registerAlwaysTrue(IComposite.class);
 		domain.registerAlwaysTrue(Cons.class);
 		domain.registerAlwaysTrue(Code.class);
 		domain.registerAlwaysTrue(ICallable.class);
-		domain.registerAlwaysTrue(IIndexable.class);
 
 		final TypedValue nullValue = domain.create(UnitType.class, UnitType.INSTANCE);
 
@@ -678,8 +698,10 @@ public class TypedValueCalculatorFactory {
 				.registerOperation(new TypedBinaryOperator.IVariantOperation<IComposite, String>() {
 					@Override
 					public TypedValue apply(TypeDomain domain, IComposite left, String right) {
-						final Optional<TypedValue> result = left.get(domain, right);
-						if (!result.isPresent()) throw new IllegalAccessError("Can't find member: " + right);
+						final Optional<Structured> structureTrait = left.getOptional(CompositeTraits.Structured.class);
+						if (!structureTrait.isPresent()) throw new IllegalArgumentException("Object has no memeberss");
+						final Optional<TypedValue> result = structureTrait.get().get(domain, right);
+						if (!result.isPresent()) throw new IllegalArgumentException("Can't find member: " + right);
 						return result.get();
 					}
 				})
@@ -765,8 +787,18 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("iscons", new PredicateIsType(Cons.class));
 		env.setGlobalSymbol("issymbol", new PredicateIsType(Symbol.class));
 		env.setGlobalSymbol("iscode", new PredicateIsType(Code.class));
-		env.setGlobalSymbol("iscallable", new PredicateIsType(ICallable.class));
-		env.setGlobalSymbol("ismap", new PredicateIsType(IIndexable.class));
+		env.setGlobalSymbol("iscallable", new UnaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue call(TypedValue value) {
+				if (value.is(ICallable.class))
+					return value.domain.create(Boolean.class, Boolean.TRUE);
+
+				if (value.is(IComposite.class) && value.as(IComposite.class).has(CompositeTraits.Callable.class))
+					return value.domain.create(Boolean.class, Boolean.TRUE);
+
+				return value.domain.create(Boolean.class, Boolean.FALSE);
+			}
+		});
 
 		env.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
 			@Override
@@ -1262,6 +1294,11 @@ public class TypedValueCalculatorFactory {
 			public BigInteger len(@DispatchArg Cons v) {
 				return BigInteger.valueOf(v.length());
 			}
+
+			@Variant
+			public BigInteger len(@DispatchArg IComposite v) {
+				return BigInteger.valueOf(v.get(CompositeTraits.Countable.class).count());
+			}
 		});
 
 		env.setGlobalSymbol("execute", new ICallable<TypedValue>() {
@@ -1306,18 +1343,31 @@ public class TypedValueCalculatorFactory {
 
 			@Variant
 			@RawReturn
-			public TypedValue index(@DispatchArg IComposite obj, String index) {
-				final Optional<TypedValue> result = obj.get(domain, index);
-				if (!result.isPresent()) throw new IllegalArgumentException("Can't find index: " + index);
-				return result.get();
-			}
+			public TypedValue index(@DispatchArg IComposite obj, @RawArg TypedValue index) {
+				{
+					final Optional<CompositeTraits.Enumerable> enumerableTrait = obj.getOptional(CompositeTraits.Enumerable.class);
+					if (enumerableTrait.isPresent() && index.is(BigInteger.class)) { return enumerableTrait.get().get(domain, index.as(BigInteger.class).intValue()); }
+				}
 
-			@Variant
-			@RawReturn
-			public TypedValue index(@DispatchArg IIndexable obj, @RawArg TypedValue index) {
-				final Optional<TypedValue> result = obj.get(index);
-				if (!result.isPresent()) throw new IllegalArgumentException("Can't find index: " + index);
-				return result.get();
+				{
+					final Optional<CompositeTraits.Structured> structuredTrait = obj.getOptional(CompositeTraits.Structured.class);
+					if (structuredTrait.isPresent() && index.is(String.class)) {
+						final Optional<TypedValue> result = structuredTrait.get().get(domain, index.as(String.class));
+						if (!result.isPresent()) throw new IllegalArgumentException("Can't find index: " + index);
+						return result.get();
+					}
+				}
+
+				{
+					final Optional<CompositeTraits.Indexable> indexableTrait = obj.getOptional(CompositeTraits.Indexable.class);
+					if (indexableTrait.isPresent()) {
+						final Optional<TypedValue> result = indexableTrait.get().get(index);
+						if (!result.isPresent()) throw new IllegalArgumentException("Can't find index: " + index);
+						return result.get();
+					}
+				}
+
+				throw new IllegalArgumentException("Object " + obj + " cannot be indexed with " + index);
 			}
 		});
 
@@ -1327,11 +1377,15 @@ public class TypedValueCalculatorFactory {
 				Preconditions.checkArgument(argumentsCount.isPresent(), "'apply' cannot be called without argument count");
 				int args = argumentsCount.get();
 
-				TypedValue targetValue = frame.stack().drop(args - 1);
-				Preconditions.checkState(targetValue.value instanceof ICallable, "Expected callable, got %s", targetValue);
-				@SuppressWarnings("unchecked")
-				final ICallable<TypedValue> targetCallable = (ICallable<TypedValue>)targetValue.value;
-				targetCallable.call(frame, Optional.of(args - 1), returnsCount);
+				final TypedValue targetValue = frame.stack().drop(args - 1);
+				if (targetValue.is(ICallable.class)) {
+					@SuppressWarnings("unchecked")
+					final ICallable<TypedValue> targetCallable = (ICallable<TypedValue>)targetValue.value;
+					targetCallable.call(frame, Optional.of(args - 1), returnsCount);
+				} else if (targetValue.is(IComposite.class)) {
+					final IComposite composite = targetValue.as(IComposite.class);
+					composite.get(CompositeTraits.Callable.class).call(frame, Optional.of(args - 1), returnsCount);
+				} else throw new IllegalArgumentException("Value " + targetValue + " is not callable");
 			}
 		});
 
@@ -1366,10 +1420,12 @@ public class TypedValueCalculatorFactory {
 				final TypedValue code = frame.stack().pop();
 				code.checkType(Code.class, "Second(code) 'with' parameter");
 
-				final TypedValue composite = frame.stack().pop();
-				composite.checkType(IComposite.class, "First(scope/composite) 'with' parameter");
+				final TypedValue target = frame.stack().pop();
+				target.checkType(IComposite.class, "First(scope/composite) 'with' parameter");
 
-				final CompositeSymbolMap symbolMap = new CompositeSymbolMap(frame.symbols(), domain, composite.as(IComposite.class));
+				final IComposite composite = target.as(IComposite.class);
+
+				final CompositeSymbolMap symbolMap = new CompositeSymbolMap(frame.symbols(), domain, composite.get(CompositeTraits.Structured.class));
 				final Frame<TypedValue> newFrame = FrameFactory.newClosureFrame(symbolMap, frame, 0);
 
 				code.as(Code.class).execute(newFrame);

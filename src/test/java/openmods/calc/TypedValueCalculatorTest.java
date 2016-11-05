@@ -8,9 +8,11 @@ import java.math.BigInteger;
 import java.util.List;
 import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.CalcTestUtils.SymbolStub;
+import openmods.calc.types.multi.CompositeTraits;
 import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.IComposite;
-import openmods.calc.types.multi.IIndexable;
+import openmods.calc.types.multi.ICompositeTrait;
+import openmods.calc.types.multi.SimpleComposite;
 import openmods.calc.types.multi.Symbol;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedBinaryOperator;
@@ -383,16 +385,160 @@ public class TypedValueCalculatorTest {
 		infix("log(2, E) == ln(2)").expectResult(b(true));
 	}
 
-	private static class TestComposite implements IComposite {
+	@Test
+	public void testEmptyCompositeObject() {
+		class EmptyComposite implements IComposite {
+
+			@Override
+			public String type() {
+				return "empty";
+			}
+
+			@Override
+			public boolean has(Class<? extends ICompositeTrait> cls) {
+				return false;
+			}
+
+			@Override
+			public <T extends ICompositeTrait> T get(Class<T> cls) {
+				return null;
+			}
+
+			@Override
+			public <T extends ICompositeTrait> Optional<T> getOptional(Class<T> cls) {
+				return Optional.absent();
+			}
+
+		}
+
+		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new EmptyComposite()));
+		infix("type(root)=='object'").expectResult(b(true));
+		infix("isobject(root)").expectResult(b(true));
+		infix("bool(root)").expectResult(b(true));
+	}
+
+	@Test
+	public void testTruthyCompositeObjects() {
+		class TruthyComposite extends SimpleComposite implements CompositeTraits.Truthy {
+			private final boolean value;
+
+			public TruthyComposite(boolean value) {
+				this.value = value;
+			}
+
+			@Override
+			public String type() {
+				return "truthy";
+			}
+
+			@Override
+			public boolean isTruthy() {
+				return value;
+			}
+		}
+
+		sut.environment.setGlobalSymbol("trueComposite", domain.create(IComposite.class, new TruthyComposite(true)));
+		sut.environment.setGlobalSymbol("falseComposite", domain.create(IComposite.class, new TruthyComposite(false)));
+
+		infix("bool(trueComposite)").expectResult(TRUE);
+		infix("bool(falseComposite)").expectResult(FALSE);
+	}
+
+	@Test
+	public void testEmptyableCompositeObjects() {
+		class EmptyableComposite extends SimpleComposite implements CompositeTraits.Emptyable {
+			private final boolean value;
+
+			public EmptyableComposite(boolean value) {
+				this.value = value;
+			}
+
+			@Override
+			public String type() {
+				return "truthy";
+			}
+
+			@Override
+			public boolean isEmpty() {
+				return value;
+			}
+		}
+
+		sut.environment.setGlobalSymbol("emptyComposite", domain.create(IComposite.class, new EmptyableComposite(true)));
+		sut.environment.setGlobalSymbol("nonEmptyComposite", domain.create(IComposite.class, new EmptyableComposite(false)));
+
+		infix("bool(emptyComposite)").expectResult(FALSE);
+		infix("bool(nonEmptyComposite)").expectResult(TRUE);
+	}
+
+	@Test
+	public void testCountableComposite() {
+		class CountableComposite extends SimpleComposite implements CompositeTraits.Countable {
+
+			private final int value;
+
+			public CountableComposite(int value) {
+				this.value = value;
+			}
+
+			@Override
+			public String type() {
+				return "countable";
+			}
+
+			@Override
+			public int count() {
+				return value;
+			}
+		}
+
+		sut.environment.setGlobalSymbol("zeroLength", domain.create(IComposite.class, new CountableComposite(0)));
+		sut.environment.setGlobalSymbol("nonZeroLength", domain.create(IComposite.class, new CountableComposite(5)));
+
+		infix("bool(zeroLength)").expectResult(FALSE);
+		infix("len(zeroLength)").expectResult(i(0));
+
+		infix("bool(nonZeroLength)").expectResult(TRUE);
+		infix("len(nonZeroLength)").expectResult(i(5));
+	}
+
+	@Test
+	public void testCallableComposite() {
+		class CallableComposite extends SimpleComposite implements CompositeTraits.Callable {
+			@Override
+			public String type() {
+				return "callable";
+			}
+
+			@Override
+			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				Assert.assertTrue(argumentsCount.isPresent());
+				for (int i = 0; i < argumentsCount.get(); i++)
+					frame.stack().pop();
+
+				Assert.assertTrue(returnsCount.isPresent());
+				Assert.assertEquals(1, returnsCount.get().intValue());
+				frame.stack().push(s("call:" + argumentsCount.get()));
+			}
+		}
+
+		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new CallableComposite()));
+
+		infix("iscallable(test)").expectResult(TRUE);
+		infix("test(2.0, 5)").expectResult(s("call:2"));
+		infix("apply(test, 4, 7, 4)").expectResult(s("call:3"));
+	}
+
+	private static class TestStructuredComposite extends SimpleComposite implements CompositeTraits.Structured {
 		private final List<String> path;
 		private final String prefix;
 
-		public TestComposite(String prefix) {
+		public TestStructuredComposite(String prefix) {
 			this.path = ImmutableList.of();
 			this.prefix = Strings.nullToEmpty(prefix);
 		}
 
-		private TestComposite(String prefix, List<String> parentPath, String elem) {
+		private TestStructuredComposite(String prefix, List<String> parentPath, String elem) {
 			this.prefix = prefix;
 			this.path = ImmutableList.<String> builder().addAll(parentPath).add(elem).build();
 		}
@@ -401,26 +547,18 @@ public class TypedValueCalculatorTest {
 		public Optional<TypedValue> get(TypeDomain domain, String component) {
 			if (component.equals("path")) return Optional.of(domain.create(String.class, Joiner.on("/").join(path)));
 			else if (!component.startsWith(prefix)) return Optional.absent();
-			else return Optional.of(domain.create(IComposite.class, new TestComposite(prefix, path, component)));
+			else return Optional.of(domain.create(IComposite.class, new TestStructuredComposite(prefix, path, component)));
 		}
 
 		@Override
-		public String subtype() {
+		public String type() {
 			return "nested:" + path.size();
 		}
 	}
 
 	@Test
-	public void testCompositeObjects() {
-		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new TestComposite("")));
-		infix("type(root)=='object'").expectResult(b(true));
-		infix("isobject(root)").expectResult(b(true));
-		infix("bool(root)").expectResult(b(true));
-	}
-
-	@Test
 	public void testDotOperator() {
-		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new TestComposite("")));
+		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new TestStructuredComposite("")));
 		infix("root.path").expectResult(s(""));
 
 		prefix("(== (type root) 'object')").expectResult(b(true));
@@ -445,7 +583,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testObjectIndexingWithBrackets() {
-		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestComposite("")));
+		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestStructuredComposite("")));
 		infix("test['path']").expectResult(s(""));
 		infix("isobject(test['a'])").expectResult(TRUE);
 
@@ -471,7 +609,7 @@ public class TypedValueCalculatorTest {
 		infix("test.(key)['b'].path").expectResult(s("a/b"));
 	}
 
-	private class TestCallableComposite implements IComposite {
+	private class TestStructuredCompositeWithCallableReturn extends SimpleComposite implements CompositeTraits.Structured {
 		@Override
 		public Optional<TypedValue> get(final TypeDomain domain, final String component) {
 			return Optional.of(domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
@@ -484,14 +622,14 @@ public class TypedValueCalculatorTest {
 		}
 
 		@Override
-		public String subtype() {
+		public String type() {
 			return "callable_composite";
 		}
 	}
 
 	@Test
 	public void testDotOperatorResultCall() {
-		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestCallableComposite()));
+		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestStructuredCompositeWithCallableReturn()));
 		infix("test.a('b')").expectResult(s("a:b"));
 		infix("test.a('c')").expectResult(s("a:c"));
 		infix("test.a('c')[0:-1]").expectResult(s("a:"));
@@ -506,16 +644,16 @@ public class TypedValueCalculatorTest {
 		infix("test.(key)('b')").expectResult(s("a:b"));
 	}
 
-	private class TestCallableCompositeWithCompositeReturn implements IComposite {
+	private class TestStructuredCompositeWithCompositeReturn extends SimpleComposite implements CompositeTraits.Structured {
 		@Override
 		public Optional<TypedValue> get(final TypeDomain domain, final String component) {
 			return Optional.of(domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue value) {
 					final String path = component + ":" + value.as(String.class);
-					final IComposite result = new IComposite() {
+					class InnerComposite extends SimpleComposite implements CompositeTraits.Structured {
 						@Override
-						public String subtype() {
+						public String type() {
 							return "whatever";
 						}
 
@@ -523,14 +661,14 @@ public class TypedValueCalculatorTest {
 						public Optional<TypedValue> get(TypeDomain domain, String component) {
 							return Optional.of(domain.create(String.class, path + ":" + component));
 						}
-					};
-					return domain.create(IComposite.class, result);
+					}
+					return domain.create(IComposite.class, new InnerComposite());
 				}
 			}));
 		}
 
 		@Override
-		public String subtype() {
+		public String type() {
 			return "callable_composite";
 		}
 	}
@@ -538,7 +676,7 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testNestedDotOperatorOnDotResultCall() {
 		// just some crazy brackets
-		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestCallableCompositeWithCompositeReturn()));
+		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestStructuredCompositeWithCompositeReturn()));
 		infix("test.b('c').d").expectResult(s("b:c:d"));
 
 		infix("test.'b'('c').d").expectResult(s("b:c:d"));
@@ -552,7 +690,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testCompositeWithSyntax() {
-		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestComposite("m_")));
+		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestStructuredComposite("m_")));
 
 		infix("test.m_a.m_b.{ path }").expectResult(s("m_a/m_b"));
 		infix("test.m_a.m_b.{ m_c }.path").expectResult(s("m_a/m_b/m_c"));
@@ -562,29 +700,57 @@ public class TypedValueCalculatorTest {
 		infix("test.m_a.m_b.{ cons(path, m_c.path) }").expectResult(cons(s("m_a/m_b"), s("m_a/m_b/m_c")));
 	}
 
-	private class TestIndexable implements IIndexable {
-		private int count;
-
-		@Override
-		public Optional<TypedValue> get(TypedValue index) {
-			return Optional.of(cons(i(count++), index));
-		}
-	}
-
 	@Test
-	public void testIndexable() {
-		final TypedValue test = domain.create(IIndexable.class, new TestIndexable());
-		sut.environment.setGlobalSymbol("test", test);
+	public void testIndexableComposite() {
+		class TestIndexableComposite extends SimpleComposite implements CompositeTraits.Indexable {
+			private int count;
 
-		infix("ismap(test)").expectResult(TRUE);
-		infix("type(test) == 'map'").expectResult(TRUE);
-		infix("bool(test)").expectResult(TRUE);
+			@Override
+			public Optional<TypedValue> get(TypedValue index) {
+				return Optional.of(cons(i(count++), index));
+			}
+
+			@Override
+			public String type() {
+				return "indexable";
+			}
+		}
+
+		final TypedValue test = domain.create(IComposite.class, new TestIndexableComposite());
+		sut.environment.setGlobalSymbol("test", test);
 
 		infix("test['ab']").expectResult(cons(i(0), s("ab")));
 		infix("test[4.01]").expectResult(cons(i(1), d(4.01)));
 		infix("test[test]").expectResult(cons(i(2), test));
 
 		infix("cdr(test[test])[-2]").expectResult(cons(i(4), i(-2)));
+	}
+
+	@Test
+	public void testEnumerableComposite() {
+		class TestEnumerableComposite extends SimpleComposite implements CompositeTraits.Enumerable {
+			@Override
+			public TypedValue get(TypeDomain domain, int index) {
+				return domain.create(BigInteger.class, BigInteger.valueOf(index + 2));
+			}
+
+			@Override
+			public String type() {
+				return "enumerable";
+			}
+
+			@Override
+			public int count() {
+				return 5;
+			}
+		}
+
+		final TypedValue test = domain.create(IComposite.class, new TestEnumerableComposite());
+		sut.environment.setGlobalSymbol("test", test);
+
+		infix("test[5]").expectResult(i(7));
+		infix("len(test)").expectResult(i(5));
+		infix("bool(test)").expectResult(TRUE);
 	}
 
 	@Test

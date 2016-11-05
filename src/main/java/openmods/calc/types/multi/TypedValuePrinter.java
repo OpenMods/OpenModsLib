@@ -132,6 +132,6 @@ public class TypedValuePrinter implements IValuePrinter<TypedValue> {
 	}
 
 	private static String printComposite(IComposite value) {
-		return "<" + value.subtype() + ":" + System.identityHashCode(value) + " " + value.toString() + ">";
+		return "<" + value.type() + ":" + System.identityHashCode(value) + " " + value.toString() + ">";
 	}
 }

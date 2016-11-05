@@ -42,9 +42,13 @@ public class TypedValue {
 		return false;
 	}
 
+	public String typeStr() {
+		return domain.getName(type);
+	}
+
 	@Override
 	public String toString() {
-		return "[" + domain.getName(type) + ":" + value + "]";
+		return "[" + typeStr() + ":" + value + "]";
 	}
 
 	public TypedValue cast(Class<?> type) {
