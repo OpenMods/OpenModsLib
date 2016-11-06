@@ -1516,8 +1516,7 @@ public class TypedValueCalculatorTest {
 		infix("let([a:2], match(a \\ a)(5))").expectResult(i(5));
 		infix("let([b:2], match(a \\ b)(5))").expectResult(i(2));
 
-		// matcher does not capture scope of 'match' call site, uses one from call instead
-		infix("let([b: match(1 \\ x, _ \\ false)], let([x: 'late'], b(1)))").expectResult(s("late"));
+		infix("let([x: 'pre'], let([b: match(1 \\ x, _ \\ false)], let([x: 'post'], b(1))))").expectResult(s("pre"));
 	}
 
 	@Test

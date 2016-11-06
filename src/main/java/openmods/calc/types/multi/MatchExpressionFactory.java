@@ -38,7 +38,7 @@ public class MatchExpressionFactory {
 		this.split = splitOperator;
 	}
 
-	private static interface PatternPart extends ICompositeTrait {
+	private static interface PatternPart {
 		public boolean match(SymbolMap<TypedValue> env, TypedValue value);
 	}
 
@@ -181,6 +181,14 @@ public class MatchExpressionFactory {
 		return new MatchStateTransition(compilerState);
 	}
 
+	private static class VarPlaceholder implements ICompositeTrait {
+		public final String var;
+
+		public VarPlaceholder(String var) {
+			this.var = var;
+		}
+	}
+
 	private class PatternPlaceholdersSymbolMap extends NestedSymbolMap<TypedValue> {
 
 		public PatternPlaceholdersSymbolMap(SymbolMap<TypedValue> parent) {
@@ -196,19 +204,16 @@ public class MatchExpressionFactory {
 		public ISymbol<TypedValue> get(String name) {
 			final ISymbol<TypedValue> parentSymbol = super.get(name);
 			if (parentSymbol != null) return parentSymbol;
-			final PatternPart patternToWrap = name.equals(TypedCalcConstants.MATCH_ANY)
-					? PatternAny.INSTANCE
-					: new PatternBindName(name);
-			return createSymbol(domain.create(IComposite.class, new SingleTraitComposite("patternBind", patternToWrap)));
+			return createSymbol(domain.create(IComposite.class, new SingleTraitComposite("patternBind", new VarPlaceholder(name))));
 		}
 
 	}
 
 	private class PatternSymbol extends BinaryFunction<TypedValue> {
-		private final SymbolMap<TypedValue> topSymbolMap;
+		private final SymbolMap<TypedValue> placeholderSymbolMap;
 
 		public PatternSymbol(SymbolMap<TypedValue> topSymbolMap) {
-			this.topSymbolMap = topSymbolMap;
+			this.placeholderSymbolMap = new PatternPlaceholdersSymbolMap(topSymbolMap);
 		}
 
 		@Override
@@ -216,7 +221,7 @@ public class MatchExpressionFactory {
 			final Code pattern = left.as(Code.class);
 			final Code action = right.as(Code.class);
 
-			final TypedValue compiledPattern = compilePattern(pattern);
+			final TypedValue compiledPattern = evaluatePattern(pattern);
 			final PatternPart translatedPatter = translatePattern(compiledPattern);
 
 			return left.domain.create(IComposite.class, new SingleTraitComposite("pattern", new Pattern(translatedPatter, action)));
@@ -225,8 +230,12 @@ public class MatchExpressionFactory {
 		private PatternPart translatePattern(TypedValue compiledPattern) {
 			if (compiledPattern.is(IComposite.class)) {
 				final IComposite composite = compiledPattern.as(IComposite.class);
-				if (composite.has(PatternPart.class))
-					return composite.get(PatternPart.class);
+				if (composite.has(VarPlaceholder.class))	 {
+					final VarPlaceholder p = composite.get(VarPlaceholder.class);
+					return p.var.equals(TypedCalcConstants.MATCH_ANY)
+							? PatternAny.INSTANCE
+							: new PatternBindName(p.var);
+				}
 			}
 
 			if (compiledPattern.is(Cons.class)) {
@@ -239,8 +248,8 @@ public class MatchExpressionFactory {
 			return new PatternMatchExact(compiledPattern);
 		}
 
-		private TypedValue compilePattern(final Code pattern) {
-			final Frame<TypedValue> patternFrame = FrameFactory.createTopFrame(new PatternPlaceholdersSymbolMap(topSymbolMap));
+		private TypedValue evaluatePattern(final Code pattern) {
+			final Frame<TypedValue> patternFrame = FrameFactory.createTopFrame(placeholderSymbolMap);
 			pattern.execute(patternFrame);
 			final Stack<TypedValue> resultStack = patternFrame.stack();
 			Preconditions.checkState(resultStack.size() == 1, "Invalid result of pattern compilation");
@@ -259,9 +268,11 @@ public class MatchExpressionFactory {
 
 	private static class MatchingFunction implements ICallable<TypedValue> {
 
+		private final SymbolMap<TypedValue> defineScope;
 		private final List<Pattern> patterns;
 
-		public MatchingFunction(List<Pattern> patterns) {
+		public MatchingFunction(SymbolMap<TypedValue> defineScope, List<Pattern> patterns) {
+			this.defineScope = defineScope;
 			this.patterns = ImmutableList.copyOf(patterns);
 		}
 
@@ -281,7 +292,7 @@ public class MatchExpressionFactory {
 			final TypedValue valueToMatch = stack.pop();
 
 			for (Pattern pattern : patterns) {
-				final SymbolMap<TypedValue> matchedSymbols = new LocalSymbolMap<TypedValue>(frame.symbols());
+				final SymbolMap<TypedValue> matchedSymbols = new LocalSymbolMap<TypedValue>(defineScope);
 				if (pattern.pattern.match(matchedSymbols, valueToMatch)) {
 					final Frame<TypedValue> matchedFrame = FrameFactory.newClosureFrame(matchedSymbols, frame, 0);
 					pattern.action.execute(matchedFrame);
@@ -314,7 +325,7 @@ public class MatchExpressionFactory {
 				patterns.add(patternComposite.get(Pattern.class));
 			}
 
-			stack.push(domain.create(ICallable.class, new MatchingFunction(Lists.reverse(patterns))));
+			stack.push(domain.create(ICallable.class, new MatchingFunction(frame.symbols(), Lists.reverse(patterns))));
 		}
 	}
 
