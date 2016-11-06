@@ -28,8 +28,12 @@ public class FrameFactory {
 		return new Frame<E>(new LocalSymbolMap<E>(scopeSymbols), stackFrame.stack().substack(depth));
 	}
 
+	public static <E> Frame<E> createTopFrame(SymbolMap<E> topSymbolMap) {
+		return new Frame<E>(topSymbolMap, new Stack<E>());
+	}
+
 	public static <E> Frame<E> createTopFrame() {
-		return new Frame<E>(new TopSymbolMap<E>(), new Stack<E>());
+		return createTopFrame(new TopSymbolMap<E>());
 	}
 
 }

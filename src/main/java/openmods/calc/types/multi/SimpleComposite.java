@@ -22,7 +22,7 @@ public abstract class SimpleComposite implements IComposite {
 
 	@Override
 	public <T extends ICompositeTrait> T get(Class<T> cls) {
-		Preconditions.checkState(has(cls));
+		Preconditions.checkState(has(cls), "No trait: %s", cls);
 		return cls.cast(this);
 	}
 

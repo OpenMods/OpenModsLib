@@ -81,6 +81,7 @@ public class TypedValueCalculatorFactory {
 	private static final int PRIORITY_LOGIC = 2; // && || ^^
 	private static final int PRIORITY_LAMBDA = 1; // ->
 	private static final int PRIORITY_CONS = 0; // :
+	private static final int PRIORITY_SPLIT = -1; // \
 
 	private static class MarkerBinaryOperator extends BinaryOperator<TypedValue> {
 		private MarkerBinaryOperator(String id, int precendence) {
@@ -724,6 +725,8 @@ public class TypedValueCalculatorFactory {
 		}
 
 		final BinaryOperator<TypedValue> lambdaOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("->", PRIORITY_LAMBDA, Associativity.RIGHT)).unwrap();
+
+		final BinaryOperator<TypedValue> splitOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("\\", PRIORITY_SPLIT)).unwrap();
 
 		final BinaryOperator<TypedValue> colonOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>(":", PRIORITY_CONS, Associativity.RIGHT) {
 			@Override
@@ -1451,6 +1454,9 @@ public class TypedValueCalculatorFactory {
 		final PromiseExpressionFactory delayFactory = new PromiseExpressionFactory(domain);
 		delayFactory.registerSymbols(env);
 
+		final MatchExpressionFactory matchFactory = new MatchExpressionFactory(domain, splitOperator);
+		matchFactory.registerSymbols(env);
+
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 
 			@Override
@@ -1462,6 +1468,7 @@ public class TypedValueCalculatorFactory {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_LETSEQ, letFactory.createLetSeqStateTransition(compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_LETREC, letFactory.createLetRecStateTransition(compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_DELAY, delayFactory.createStateTransition(compilerState));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_MATCH, matchFactory.createStateTransition(compilerState));
 
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_OPERATOR_WRAP, new CallableOperatorWrapperModifierTransition(domain, operators));
