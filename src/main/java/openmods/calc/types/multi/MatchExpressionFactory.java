@@ -230,7 +230,7 @@ public class MatchExpressionFactory {
 		private PatternPart translatePattern(TypedValue compiledPattern) {
 			if (compiledPattern.is(IComposite.class)) {
 				final IComposite composite = compiledPattern.as(IComposite.class);
-				if (composite.has(VarPlaceholder.class))	 {
+				if (composite.has(VarPlaceholder.class)) {
 					final VarPlaceholder p = composite.get(VarPlaceholder.class);
 					return p.var.equals(TypedCalcConstants.MATCH_ANY)
 							? PatternAny.INSTANCE

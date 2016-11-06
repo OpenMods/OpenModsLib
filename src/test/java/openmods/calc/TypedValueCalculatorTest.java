@@ -13,6 +13,7 @@ import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.IComposite;
 import openmods.calc.types.multi.ICompositeTrait;
 import openmods.calc.types.multi.SimpleComposite;
+import openmods.calc.types.multi.SingleTraitComposite;
 import openmods.calc.types.multi.Symbol;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedBinaryOperator;
@@ -504,12 +505,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testCallableComposite() {
-		class CallableComposite extends SimpleComposite implements CompositeTraits.Callable {
-			@Override
-			public String type() {
-				return "callable";
-			}
-
+		class CallableTestTrait implements CompositeTraits.Callable {
 			@Override
 			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				Assert.assertTrue(argumentsCount.isPresent());
@@ -522,11 +518,13 @@ public class TypedValueCalculatorTest {
 			}
 		}
 
-		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new CallableComposite()));
+		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new SingleTraitComposite("callable", new CallableTestTrait())));
 
 		infix("iscallable(test)").expectResult(TRUE);
 		infix("test(2.0, 5)").expectResult(s("call:2"));
 		infix("apply(test, 4, 7, 4)").expectResult(s("call:3"));
+		infix("let([tmp:test], tmp(1,2))").expectResult(s("call:2"));
+		infix("let([delayed:()->test], delayed()(1,2,3,4))").expectResult(s("call:4"));
 	}
 
 	private static class TestStructuredComposite extends SimpleComposite implements CompositeTraits.Structured {

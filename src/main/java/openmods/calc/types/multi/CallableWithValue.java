@@ -15,6 +15,11 @@ public class CallableWithValue implements ISymbol<TypedValue> {
 		this.value = domain.create(ICallable.class, callable);
 	}
 
+	public CallableWithValue(TypedValue value, ICallable<TypedValue> callable) {
+		this.callable = callable;
+		this.value = value;
+	}
+
 	@Override
 	public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 		callable.call(frame, argumentsCount, returnsCount);

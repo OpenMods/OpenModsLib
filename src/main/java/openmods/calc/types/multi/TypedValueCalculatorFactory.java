@@ -754,10 +754,15 @@ public class TypedValueCalculatorFactory {
 					@Override
 					@SuppressWarnings("unchecked")
 					protected ISymbol<TypedValue> createSymbol(TypedValue value) {
-						if (value.value instanceof ICallable)
+						if (value.is(ICallable.class))
 							return createSymbol((ICallable<TypedValue>)value.value);
-						else
-							return super.createSymbol(value);
+						else if (value.is(IComposite.class)) {
+							final IComposite composite = value.as(IComposite.class);
+							if (composite.has(CompositeTraits.Callable.class))
+								return new CallableWithValue(value, composite.get(CompositeTraits.Callable.class));
+						}
+
+						return super.createSymbol(value);
 					}
 
 				}
