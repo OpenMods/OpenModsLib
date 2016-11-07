@@ -19,7 +19,7 @@ public class TopSymbolMap<E> extends SymbolMap<E> {
 		}
 
 		@Override
-		public void get(Frame<E> frame) {
+		public E get() {
 			throw new UnsupportedOperationException("Cannot use function as value");
 		}
 
@@ -38,7 +38,7 @@ public class TopSymbolMap<E> extends SymbolMap<E> {
 				if (returns != 1) throw new StackValidationException("Has single return but expected %s", returns);
 			}
 
-			get(frame);
+			frame.stack().push(get());
 		}
 	}
 
@@ -50,8 +50,8 @@ public class TopSymbolMap<E> extends SymbolMap<E> {
 		}
 
 		@Override
-		public void get(Frame<E> frame) {
-			gettable.get(frame);
+		public E get() {
+			return gettable.get();
 		}
 	}
 
@@ -63,8 +63,8 @@ public class TopSymbolMap<E> extends SymbolMap<E> {
 		}
 
 		@Override
-		public void get(Frame<E> frame) {
-			frame.stack().push(value);
+		public E get() {
+			return value;
 		}
 	}
 

@@ -574,6 +574,7 @@ public class CalcTestUtils {
 		private List<E> expectedArgs = Lists.newArrayList();
 		private boolean exactArgCount = false;
 		private List<E> returns = Lists.newArrayList();
+		private E getValue;
 		private boolean exactReturnCount = false;
 
 		private boolean allowCalls = false;
@@ -592,6 +593,11 @@ public class CalcTestUtils {
 
 		public SymbolStub<E> setReturns(E... rets) {
 			returns = Arrays.asList(rets);
+			return this;
+		}
+
+		public SymbolStub<E> setGetValue(E value) {
+			this.getValue = value;
 			return this;
 		}
 
@@ -615,13 +621,10 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		public void get(Frame<E> frame) {
+		public E get() {
 			Assert.assertTrue(allowGets);
-
-			for (E ret : returns)
-				frame.stack().push(ret);
-
 			getCount++;
+			return getValue;
 		}
 
 		public SymbolStub<E> checkCallCount(int expectedCallCount) {

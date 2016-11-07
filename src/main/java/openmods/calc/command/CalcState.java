@@ -98,22 +98,22 @@ public class CalcState {
 
 				calculator.environment.setGlobalSymbol("$x", new IGettable<Double>() {
 					@Override
-					public void get(Frame<Double> frame) {
-						frame.stack().push(Double.valueOf(holder.getX()));
+					public Double get() {
+						return Double.valueOf(holder.getX());
 					}
 				});
 
 				calculator.environment.setGlobalSymbol("$y", new IGettable<Double>() {
 					@Override
-					public void get(Frame<Double> frame) {
-						frame.stack().push(Double.valueOf(holder.getY()));
+					public Double get() {
+						return Double.valueOf(holder.getY());
 					}
 				});
 
 				calculator.environment.setGlobalSymbol("$z", new IGettable<Double>() {
 					@Override
-					public void get(Frame<Double> frame) {
-						frame.stack().push(Double.valueOf(holder.getZ()));
+					public Double get() {
+						return Double.valueOf(holder.getZ());
 					}
 				});
 
@@ -127,22 +127,22 @@ public class CalcState {
 
 				calculator.environment.setGlobalSymbol("$x", new IGettable<Fraction>() {
 					@Override
-					public void get(Frame<Fraction> frame) {
-						frame.stack().push(Fraction.getFraction(holder.getX(), 1));
+					public Fraction get() {
+						return Fraction.getFraction(holder.getX(), 1);
 					}
 				});
 
 				calculator.environment.setGlobalSymbol("$y", new IGettable<Fraction>() {
 					@Override
-					public void get(Frame<Fraction> frame) {
-						frame.stack().push(Fraction.getFraction(holder.getY(), 1));
+					public Fraction get() {
+						return Fraction.getFraction(holder.getY(), 1);
 					}
 				});
 
 				calculator.environment.setGlobalSymbol("$z", new IGettable<Fraction>() {
 					@Override
-					public void get(Frame<Fraction> frame) {
-						frame.stack().push(Fraction.getFraction(holder.getZ(), 1));
+					public Fraction get() {
+						return Fraction.getFraction(holder.getZ(), 1);
 					}
 				});
 
@@ -156,22 +156,22 @@ public class CalcState {
 
 				calculator.environment.setGlobalSymbol("$x", new IGettable<BigInteger>() {
 					@Override
-					public void get(Frame<BigInteger> frame) {
-						frame.stack().push(BigInteger.valueOf(holder.getX()));
+					public BigInteger get() {
+						return BigInteger.valueOf(holder.getX());
 					}
 				});
 
 				calculator.environment.setGlobalSymbol("$y", new IGettable<BigInteger>() {
 					@Override
-					public void get(Frame<BigInteger> frame) {
-						frame.stack().push(BigInteger.valueOf(holder.getY()));
+					public BigInteger get() {
+						return BigInteger.valueOf(holder.getY());
 					}
 				});
 
 				calculator.environment.setGlobalSymbol("$z", new IGettable<BigInteger>() {
 					@Override
-					public void get(Frame<BigInteger> frame) {
-						frame.stack().push(BigInteger.valueOf(holder.getZ()));
+					public BigInteger get() {
+						return BigInteger.valueOf(holder.getZ());
 					}
 				});
 

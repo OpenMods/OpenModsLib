@@ -169,7 +169,7 @@ public class LetExpressionFactory {
 		}
 
 		@Override
-		public void get(Frame<TypedValue> frame) {
+		public TypedValue get() {
 			throw new ExecutionErrorException("Cannot reference symbol during definition");
 		}
 	}

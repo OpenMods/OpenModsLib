@@ -198,7 +198,7 @@ public class FractionCalculatorTest {
 	public void testNestedConstantEvaluatingBrackets() {
 		final SymbolStub<Fraction> stub = new SymbolStub<Fraction>()
 				.allowGets()
-				.setReturns(f(5));
+				.setGetValue(f(5));
 		sut.environment.setGlobalSymbol("dummy", stub);
 
 		final IExecutable<Fraction> expr = sut.compilers.compile(ExprType.POSTFIX, "[4 [@dummy 3 -] *]");

@@ -103,7 +103,7 @@ public class CommonSimpleSymbolFactory<E> {
 					private E value;
 
 					@Override
-					public void get(Frame<E> callSiteFrame) {
+					public E get() {
 						if (!isEvaluated) {
 							final Frame<E> executionFrame = FrameFactory.newLocalFrame(enclosingFrame);
 							exprExecutable.execute(executionFrame);
@@ -112,7 +112,7 @@ public class CommonSimpleSymbolFactory<E> {
 							value = resultStack.pop();
 						}
 
-						callSiteFrame.stack().push(value);
+						return value;
 					}
 				}
 

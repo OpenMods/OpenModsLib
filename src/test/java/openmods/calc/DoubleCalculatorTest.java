@@ -213,7 +213,7 @@ public class DoubleCalculatorTest {
 	public void testNestedConstantEvaluatingBrackets() {
 		final SymbolStub<Double> stub = new SymbolStub<Double>()
 				.allowGets()
-				.setReturns(5.0);
+				.setGetValue(5.0);
 		sut.environment.setGlobalSymbol("dummy", stub);
 
 		final IExecutable<Double> expr = sut.compilers.compile(ExprType.POSTFIX, "[4 [@dummy 3 -] *]");

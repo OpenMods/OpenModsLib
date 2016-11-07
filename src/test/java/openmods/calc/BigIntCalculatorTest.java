@@ -214,7 +214,7 @@ public class BigIntCalculatorTest {
 	public void testNestedConstantEvaluatingBrackets() {
 		final SymbolStub<BigInteger> stub = new SymbolStub<BigInteger>()
 				.allowGets()
-				.setReturns(v(5));
+				.setGetValue(v(5));
 		sut.environment.setGlobalSymbol("dummy", stub);
 
 		final IExecutable<BigInteger> expr = sut.compilers.compile(ExprType.POSTFIX, "[4 [@dummy 3 -] *]");

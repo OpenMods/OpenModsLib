@@ -16,7 +16,7 @@ public class SymbolGet<E> implements IExecutable<E> {
 		Preconditions.checkNotNull(symbol, "Unknown symbol: %s", id);
 
 		try {
-			symbol.get(frame);
+			frame.stack().push(symbol.get());
 		} catch (ExecutionErrorException e) {
 			throw e;
 		} catch (Exception e) {

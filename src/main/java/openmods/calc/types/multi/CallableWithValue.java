@@ -21,8 +21,8 @@ public class CallableWithValue implements ISymbol<TypedValue> {
 	}
 
 	@Override
-	public void get(Frame<TypedValue> frame) {
-		frame.stack().push(value);
+	public TypedValue get() {
+		return value;
 	}
 
 }

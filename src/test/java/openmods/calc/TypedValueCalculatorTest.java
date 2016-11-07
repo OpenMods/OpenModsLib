@@ -1023,7 +1023,7 @@ public class TypedValueCalculatorTest {
 	public void testNestedConstantEvaluatingBrackets() {
 		final SymbolStub<TypedValue> stub = new SymbolStub<TypedValue>()
 				.allowGets()
-				.setReturns(i(5));
+				.setGetValue(i(5));
 		sut.environment.setGlobalSymbol("dummy", stub);
 
 		final IExecutable<TypedValue> expr = sut.compilers.compile(ExprType.POSTFIX, "[4 [@dummy 3 -] *]");
@@ -1081,8 +1081,8 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testIfExpressionEvaluation() {
-		final SymbolStub<TypedValue> leftStub = new SymbolStub<TypedValue>().setReturns(i(2)).allowGets();
-		final SymbolStub<TypedValue> rightStub = new SymbolStub<TypedValue>().setReturns(i(3)).allowGets();
+		final SymbolStub<TypedValue> leftStub = new SymbolStub<TypedValue>().setGetValue(i(2)).allowGets();
+		final SymbolStub<TypedValue> rightStub = new SymbolStub<TypedValue>().setGetValue(i(3)).allowGets();
 
 		sut.environment.setGlobalSymbol("left", leftStub);
 		sut.environment.setGlobalSymbol("right", rightStub);
@@ -1415,7 +1415,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testPromiseContact() {
-		final SymbolStub<TypedValue> stub = new SymbolStub<TypedValue>().setReturns(i(2)).allowGets();
+		final SymbolStub<TypedValue> stub = new SymbolStub<TypedValue>().setGetValue(i(2)).allowGets();
 		sut.environment.setGlobalSymbol("test", stub);
 
 		final Stack<TypedValue> resultStack = infix("let([p:delay(test + 1)], p)").executeAndGetStack();
