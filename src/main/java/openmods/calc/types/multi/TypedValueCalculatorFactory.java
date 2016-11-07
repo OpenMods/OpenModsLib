@@ -748,14 +748,14 @@ public class TypedValueCalculatorFactory {
 				class TypedValueSymbolMap extends TopSymbolMap<TypedValue> {
 					@Override
 					protected ISymbol<TypedValue> createSymbol(ICallable<TypedValue> callable) {
-						return new CallableWithValue(domain, callable);
+						return new CallableWithValue(domain.create(ICallable.class, callable), callable);
 					}
 
 					@Override
 					@SuppressWarnings("unchecked")
 					protected ISymbol<TypedValue> createSymbol(TypedValue value) {
 						if (value.is(ICallable.class))
-							return createSymbol((ICallable<TypedValue>)value.value);
+							return new CallableWithValue(value, value.as(ICallable.class));
 						else if (value.is(IComposite.class)) {
 							final IComposite composite = value.as(IComposite.class);
 							if (composite.has(CompositeTraits.Callable.class))

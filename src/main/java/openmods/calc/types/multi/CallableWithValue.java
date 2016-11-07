@@ -10,11 +10,6 @@ public class CallableWithValue implements ISymbol<TypedValue> {
 	private final ICallable<TypedValue> callable;
 	private final TypedValue value;
 
-	public CallableWithValue(TypeDomain domain, ICallable<TypedValue> callable) {
-		this.callable = callable;
-		this.value = domain.create(ICallable.class, callable);
-	}
-
 	public CallableWithValue(TypedValue value, ICallable<TypedValue> callable) {
 		this.callable = callable;
 		this.value = value;
