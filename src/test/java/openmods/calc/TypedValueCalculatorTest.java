@@ -1523,4 +1523,19 @@ public class TypedValueCalculatorTest {
 		infix("letrec([f(l, c) : match(x:xs \\ f(xs, c+1), [] \\ c)(l)], f([1], 0))").expectResult(i(1));
 		infix("letrec([f(l, c) : match(x:xs \\ f(xs, c+1), [] \\ c)(l)], f([1,2,3], 0))").expectResult(i(3));
 	}
+
+	@Test
+	public void testInfixStringInterpolation() {
+		infix("let([a:2, b:'test'], $'a = {a}, b = {b}')").expectResult(s("a = 2, b = \"test\""));
+	}
+
+	@Test
+	public void testPrefixStringInterpolation() {
+		prefix("(let [(: a 2) (: b 'test')] $'a = {a}, b = {b}')").expectResult(s("a = 2, b = \"test\""));
+	}
+
+	@Test
+	public void testPosfixStringInterpolation() {
+		postfix("#a {2} : #b {'test'} : list$2  {$'a = {a}, b = {b}'} let$2").expectResult(s("a = 2, b = \"test\""));
+	}
 }

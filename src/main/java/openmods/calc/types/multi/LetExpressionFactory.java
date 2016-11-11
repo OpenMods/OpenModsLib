@@ -196,7 +196,7 @@ public class LetExpressionFactory {
 			try {
 				prepareFrame(letFrame.symbols(), currentFrame.symbols(), vars);
 			} catch (InvalidArgsException e) {
-				throw new IllegalArgumentException("Expected list of name:value pairs on second 'let' parameter, got " + vars);
+				throw new IllegalArgumentException("Expected list of name:value pairs on second 'let' parameter, got " + vars, e);
 			}
 
 			code.as(Code.class, "second 'let' parameter").execute(letFrame);

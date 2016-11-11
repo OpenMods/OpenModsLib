@@ -6,7 +6,7 @@ public interface TypedCalcConstants {
 	public static final String MODIFIER_QUOTE = "#";
 	public static final String SYMBOL_QUOTE = "quote";
 	public static final String MODIFIER_CDR = "...";
-
+	public static final String MODIFIER_INTERPOLATE = "$";
 	public static final String MODIFIER_OPERATOR_WRAP = "@";
 
 	public static final String SYMBOL_NULL = "null";

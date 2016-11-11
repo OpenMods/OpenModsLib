@@ -1477,6 +1477,7 @@ public class TypedValueCalculatorFactory {
 
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_OPERATOR_WRAP, new CallableOperatorWrapperModifierTransition(domain, operators));
+				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_INTERPOLATE, new StringInterpolate.StringInterpolateModifier(domain, valuePrinter));
 			}
 
 			@Override
@@ -1546,6 +1547,12 @@ public class TypedValueCalculatorFactory {
 									public IPostfixCompilerState<TypedValue> createState() {
 										return new CallableGetPostfixCompilerState(operators, domain);
 									}
+								})
+								.addModifierStateProvider(TypedCalcConstants.MODIFIER_INTERPOLATE, new IStateProvider<TypedValue>() {
+									@Override
+									public IPostfixCompilerState<TypedValue> createState() {
+										return new StringInterpolate.StringInterpolatePostfixCompilerState(domain, valuePrinter);
+									}
 								});
 			}
 
@@ -1555,6 +1562,7 @@ public class TypedValueCalculatorFactory {
 				tokenizer.addModifier(TypedCalcConstants.MODIFIER_QUOTE);
 				tokenizer.addModifier(TypedCalcConstants.MODIFIER_CDR);
 				tokenizer.addModifier(TypedCalcConstants.MODIFIER_OPERATOR_WRAP);
+				tokenizer.addModifier(TypedCalcConstants.MODIFIER_INTERPOLATE);
 			}
 
 			@Override
@@ -1563,12 +1571,14 @@ public class TypedValueCalculatorFactory {
 				tokenizer.addModifier(TypedCalcConstants.MODIFIER_QUOTE);
 				tokenizer.addModifier(TypedCalcConstants.MODIFIER_CDR);
 				tokenizer.addModifier(TypedCalcConstants.MODIFIER_OPERATOR_WRAP);
+				tokenizer.addModifier(TypedCalcConstants.MODIFIER_INTERPOLATE);
 			}
 
 			@Override
 			protected void setupPostfixTokenizer(Tokenizer tokenizer) {
 				super.setupPostfixTokenizer(tokenizer);
 				tokenizer.addModifier(TypedCalcConstants.MODIFIER_QUOTE);
+				tokenizer.addModifier(TypedCalcConstants.MODIFIER_INTERPOLATE);
 			}
 		}
 
