@@ -21,6 +21,7 @@ import openmods.calc.FrameFactory;
 import openmods.calc.GenericFunctions;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.ICallable;
+import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.StackValidationException;
@@ -97,6 +98,25 @@ public class TypedValueCalculatorFactory {
 		@Override
 		public TypedValue execute(TypedValue left, TypedValue right) {
 			throw new UnsupportedOperationException(); // should be replaced in AST tree modification
+		}
+	}
+
+	private static class MarkerBinaryOperatorNodeFactory implements IBinaryExprNodeFactory<TypedValue> {
+
+		private final BinaryOperator<TypedValue> op;
+
+		public MarkerBinaryOperatorNodeFactory(BinaryOperator<TypedValue> op) {
+			this.op = op;
+		}
+
+		@Override
+		public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
+			return new BinaryOpNode<TypedValue>(op, leftChild, rightChild) {
+				@Override
+				public void flatten(List<IExecutable<TypedValue>> output) {
+					throw new UnsupportedOperationException("This operator cannot be used in this context"); // should be captured before serialization;
+				}
+			};
 		}
 	}
 
@@ -1532,6 +1552,8 @@ public class TypedValueCalculatorFactory {
 							}
 						})
 						.addFactory(lambdaOperator, lambdaFactory.createLambdaExprNodeFactory(lambdaOperator))
+						.addFactory(assignOperator, new MarkerBinaryOperatorNodeFactory(assignOperator))
+						.addFactory(splitOperator, new MarkerBinaryOperatorNodeFactory(splitOperator))
 						.addFactory(defaultOperator, new IBinaryExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {

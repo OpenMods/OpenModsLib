@@ -1558,4 +1558,14 @@ public class TypedValueCalculatorTest {
 		infix("'2 + 2 = %d' % (2 + 2)").expectResult(s("2 + 2 = 4"));
 		infix("'1 / 2 = %f, 1 / 4 = %f' % [1 / 2, 1 / 4]").expectResult(s(String.format("1 / 2 = %f, 1 / 4 = %f", 0.5, 0.25)));
 	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void testAssignOperatorCompileFail() {
+		infix("a = 2");
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void testSplitterCompileFail() {
+		infix("a \\ 2");
+	}
 }
