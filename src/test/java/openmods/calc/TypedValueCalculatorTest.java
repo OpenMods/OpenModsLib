@@ -1406,6 +1406,7 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testLetFunctionDefinition() {
 		infix("let([a(b,c):b-c], a(1,2))").expectResult(i(-1));
+		infix("let([a(b,c)=b-c], a(1,2))").expectResult(i(-1));
 		infix("let([f(n):if(n<=0,1,f(n-1)*n)], f(6))").expectResult(i(720));
 	}
 
