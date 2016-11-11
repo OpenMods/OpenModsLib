@@ -47,6 +47,7 @@ import openmods.calc.parsing.Token;
 import openmods.calc.parsing.Tokenizer;
 import openmods.calc.parsing.ValueNode;
 import openmods.calc.types.multi.CompositeTraits.Structured;
+import openmods.calc.types.multi.Cons.LinearVisitor;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
@@ -188,6 +189,27 @@ public class TypedValueCalculatorFactory {
 		protected TypedValue call(TypedValue value) {
 			return value.domain.create(Boolean.class, value.is(cls));
 		}
+	}
+
+	private static List<Object> consToUnwrappedList(Cons pair, final TypedValue expectedTerminator) {
+		final List<Object> result = Lists.newArrayList();
+		pair.visit(new LinearVisitor() {
+
+			@Override
+			public void value(TypedValue value, boolean isLast) {
+				result.add(value.value);
+			}
+
+			@Override
+			public void end(TypedValue terminator) {
+				if (terminator != expectedTerminator) throw new IllegalArgumentException("Not null terminated list");
+			}
+
+			@Override
+			public void begin() {}
+		});
+
+		return result;
 	}
 
 	public static Calculator<TypedValue, ExprType> create() {
@@ -472,6 +494,18 @@ public class TypedValueCalculatorFactory {
 					@Override
 					public Double apply(Double left, Double right) {
 						return left % right;
+					}
+				})
+				.setDefaultOperation(new TypedBinaryOperator.IDefaultOperation() {
+					@Override
+					public Optional<TypedValue> apply(TypeDomain domain, TypedValue left, TypedValue right) {
+						if (!left.is(String.class)) return Optional.absent();
+						final String template = left.as(String.class);
+						final Object[] args = right.is(Cons.class)
+								? consToUnwrappedList(right.as(Cons.class), nullValue).toArray()
+								: new Object[] { right.value };
+						final String result = String.format(template, args);
+						return Optional.of(domain.create(String.class, result));
 					}
 				})
 				.build(domain));

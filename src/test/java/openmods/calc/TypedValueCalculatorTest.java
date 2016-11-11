@@ -1538,4 +1538,14 @@ public class TypedValueCalculatorTest {
 	public void testPosfixStringInterpolation() {
 		postfix("#a {2} : #b {'test'} : list$2  {$'a = {a}, b = {b}'} let$2").expectResult(s("a = 2, b = test"));
 	}
+
+	@Test
+	public void testFormatOperator() {
+		infix("'hello %s' % 'world'").expectResult(s("hello world"));
+		infix("'hello %s' % ['world']").expectResult(s("hello world"));
+		infix("'%s %s' % ['hello', 'world']").expectResult(s("hello world"));
+
+		infix("'2 + 2 = %d' % (2 + 2)").expectResult(s("2 + 2 = 4"));
+		infix("'1 / 2 = %f, 1 / 4 = %f' % [1 / 2, 1 / 4]").expectResult(s(String.format("1 / 2 = %f, 1 / 4 = %f", 0.5, 0.25)));
+	}
 }
