@@ -20,7 +20,7 @@ public class CompiledFunction<E> extends FixedCallable<E> {
 		final Stack<E> resultStack = newFrame.stack();
 		for (int i = 1; i <= argCount; i++) {
 			E arg = resultStack.pop();
-			newFrame.symbols().put("$" + i, arg);
+			newFrame.symbols().put("_" + i, arg);
 		}
 
 		body.execute(newFrame);

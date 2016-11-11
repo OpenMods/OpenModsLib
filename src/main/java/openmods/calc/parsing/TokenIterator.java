@@ -24,7 +24,7 @@ public class TokenIterator extends AbstractIterator<Token> implements PeekingIte
 
 	private static final Pattern QUOTED_NUMBER = Pattern.compile("^([0-9]+#[0-9A-Za-z'\"](?:_*[0-9A-Za-z'\"]+)*(?:\\.[0-9A-Za-z'\"](?:_*[0-9A-Za-z'\"]+)*)?)");
 
-	private static final Pattern SYMBOL = Pattern.compile("^([_A-Za-z$][_0-9A-Za-z]*)");
+	private static final Pattern SYMBOL = Pattern.compile("^([_A-Za-z][_0-9A-Za-z]*)");
 
 	private static final Pattern SYMBOL_ARGS = Pattern.compile("^(\\$[0-9]*,?[0-9]*)");
 

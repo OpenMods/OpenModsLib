@@ -4,7 +4,7 @@ import openmods.utils.Stack;
 
 public class Environment<E> {
 
-	public static final String VAR_ANS = "$ans";
+	public static final String VAR_ANS = "_ans";
 
 	private final Frame<E> topFrame = createTopMap();
 

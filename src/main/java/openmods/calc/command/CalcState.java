@@ -96,21 +96,21 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<Double, ExprType> calculator = DoubleCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("$x", new IGettable<Double>() {
+				calculator.environment.setGlobalSymbol("_x", new IGettable<Double>() {
 					@Override
 					public Double get() {
 						return Double.valueOf(holder.getX());
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$y", new IGettable<Double>() {
+				calculator.environment.setGlobalSymbol("_y", new IGettable<Double>() {
 					@Override
 					public Double get() {
 						return Double.valueOf(holder.getY());
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$z", new IGettable<Double>() {
+				calculator.environment.setGlobalSymbol("_z", new IGettable<Double>() {
 					@Override
 					public Double get() {
 						return Double.valueOf(holder.getZ());
@@ -125,21 +125,21 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<Fraction, ExprType> calculator = FractionCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("$x", new IGettable<Fraction>() {
+				calculator.environment.setGlobalSymbol("_x", new IGettable<Fraction>() {
 					@Override
 					public Fraction get() {
 						return Fraction.getFraction(holder.getX(), 1);
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$y", new IGettable<Fraction>() {
+				calculator.environment.setGlobalSymbol("_y", new IGettable<Fraction>() {
 					@Override
 					public Fraction get() {
 						return Fraction.getFraction(holder.getY(), 1);
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$z", new IGettable<Fraction>() {
+				calculator.environment.setGlobalSymbol("_z", new IGettable<Fraction>() {
 					@Override
 					public Fraction get() {
 						return Fraction.getFraction(holder.getZ(), 1);
@@ -154,21 +154,21 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<BigInteger, ExprType> calculator = BigIntCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("$x", new IGettable<BigInteger>() {
+				calculator.environment.setGlobalSymbol("_x", new IGettable<BigInteger>() {
 					@Override
 					public BigInteger get() {
 						return BigInteger.valueOf(holder.getX());
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$y", new IGettable<BigInteger>() {
+				calculator.environment.setGlobalSymbol("_y", new IGettable<BigInteger>() {
 					@Override
 					public BigInteger get() {
 						return BigInteger.valueOf(holder.getY());
 					}
 				});
 
-				calculator.environment.setGlobalSymbol("$z", new IGettable<BigInteger>() {
+				calculator.environment.setGlobalSymbol("_z", new IGettable<BigInteger>() {
 					@Override
 					public BigInteger get() {
 						return BigInteger.valueOf(holder.getZ());
