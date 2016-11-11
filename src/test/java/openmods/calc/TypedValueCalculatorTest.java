@@ -523,8 +523,8 @@ public class TypedValueCalculatorTest {
 		infix("iscallable(test)").expectResult(TRUE);
 		infix("test(2.0, 5)").expectResult(s("call:2"));
 		infix("apply(test, 4, 7, 4)").expectResult(s("call:3"));
-		infix("let([tmp:test], tmp(1,2))").expectResult(s("call:2"));
-		infix("let([delayed:()->test], delayed()(1,2,3,4))").expectResult(s("call:4"));
+		infix("let([tmp = test], tmp(1,2))").expectResult(s("call:2"));
+		infix("let([delayed = ()->test], delayed()(1,2,3,4))").expectResult(s("call:4"));
 	}
 
 	private static class TestStructuredComposite extends SimpleComposite implements CompositeTraits.Structured {
@@ -1148,6 +1148,16 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testLetExpressionBasicFormWithLowPrioOperator() {
+		infix("let([x = 2, y = 3], x + y)").expectResult(i(5));
+		infix("let([x = 1+2,y = 3], x + y)").expectResult(i(6));
+		infix("let([x = 1:2], x)").expectResult(cons(i(1), i(2)));
+		prefix("(let [(= x 2) (= y 3)] (+ x y))").expectResult(i(5));
+		prefix("(let [(= x (+ 1 2)) (= y 3)] (+ x y))").expectResult(i(6));
+		prefix("(let [(= x (: 1 2))] x)").expectResult(cons(i(1), i(2)));
+	}
+
+	@Test
 	public void testValueSymbolCall() {
 		infix("let([x:2], x())").expectResult(i(2));
 		infix("let([x:2], x)").expectResult(i(2));
@@ -1347,8 +1357,8 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testLambdaOperatorInLetScope() {
-		infix("let([f:(a,b)->a+b], f(3, 4))").expectResult(i(7));
-		prefix("(let [(:f (-> [a,b] (+ a b)))] (f 4 5))").expectResult(i(9));
+		infix("let([f = (a,b)->a+b], f(3, 4))").expectResult(i(7));
+		prefix("(let [(= f (-> [a,b] (+ a b)))] (f 4 5))").expectResult(i(9));
 	}
 
 	@Test
@@ -1360,14 +1370,14 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testLambdaScoping() {
-		infix("let([a:2], let([f:()->a], let([a:3], f())))").expectResult(i(2));
-		infix("let([f:a->b->a+b], let([f1:f(3)], let([a:4], f1(10))))").expectResult(i(13));
+		infix("let([a = 2], let([f = ()->a], let([a = 3], f())))").expectResult(i(2));
+		infix("let([f = a->b->a+b], let([f1 = f(3)], let([a = 4], f1(10))))").expectResult(i(13));
 	}
 
 	@Test
 	public void testHighOrderLambda() {
 		infix("(a->a(1)+2)(a->a-4)").expectResult(i(-1));
-		infix("let([f:a->a(3)+2], f(a->a-4))").expectResult(i(1));
+		infix("let([f = a->a(3)+2], f(a->a-4))").expectResult(i(1));
 	}
 
 	@Test
@@ -1379,8 +1389,8 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testLambdaRecursion() {
-		infix("let([f:n->if(n<=0,1,f(n-1)*n)], f(5))").expectResult(i(120));
-		infix("let([f:n->if(n<=2,1,f(n-1)+f(n-2))], f(9))").expectResult(i(34));
+		infix("let([f=n->if(n<=0,1,f(n-1)*n)], f(5))").expectResult(i(120));
+		infix("let([f=n->if(n<=2,1,f(n-1)+f(n-2))], f(9))").expectResult(i(34));
 	}
 
 	@Test
@@ -1432,96 +1442,96 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testSimpleValueMatch() {
-		infix("match('a' \\ 1, 2 \\ 'b')('a')").expectResult(i(1));
-		infix("match('a' \\ 1, 2 \\ 'b')(2)").expectResult(s("b"));
+		infix("match('a' -> 1, 2 -> 'b')('a')").expectResult(i(1));
+		infix("match('a' -> 1, 2 -> 'b')(2)").expectResult(s("b"));
 	}
 
 	@Test
 	public void testMatchWithGlobalSymbols() {
-		infix("match(true \\ 1, false \\ 0)(true)").expectResult(i(1));
-		infix("match(true \\ 1, false \\ 0)(false)").expectResult(i(0));
+		infix("match(true -> 1, false -> 0)(true)").expectResult(i(1));
+		infix("match(true -> 1, false -> 0)(false)").expectResult(i(0));
 
-		infix("match(str(2) \\ 1, 2 \\ 0)('2')").expectResult(i(1));
-		infix("match(str(2) \\ 1, 2 \\ 0)(2)").expectResult(i(0));
+		infix("match(str(2) -> 1, 2 -> 0)('2')").expectResult(i(1));
+		infix("match(str(2) -> 1, 2 -> 0)(2)").expectResult(i(0));
 	}
 
 	@Test
 	public void testWildcardMatch() {
-		infix("match('a' \\ 1, _ \\ '?')('a')").expectResult(i(1));
-		infix("match('a' \\ 1, _ \\ '?')('dummy')").expectResult(s("?"));
+		infix("match('a' -> 1, _ -> '?')('a')").expectResult(i(1));
+		infix("match('a' -> 1, _ -> '?')('dummy')").expectResult(s("?"));
 	}
 
 	@Test
 	public void testBindMatch() {
-		infix("match(a \\ a)('b')").expectResult(s("b"));
-		infix("match(a \\ a + 1)(2)").expectResult(i(3));
-		infix("match(a \\ 'd')(2)").expectResult(s("d"));
+		infix("match(a -> a)('b')").expectResult(s("b"));
+		infix("match(a -> a + 1)(2)").expectResult(i(3));
+		infix("match(a -> 'd')(2)").expectResult(s("d"));
 	}
 
 	@Test
 	public void testSimpleListMatch() {
-		infix("match(1:2:3 \\ 'ok', _ \\ 'fail')(1:2:3)").expectResult(s("ok"));
-		infix("match(1:2:3 \\ 'ok', _ \\ 'fail')(1:2:4)").expectResult(s("fail"));
-		infix("match(1:2:3 \\ 'ok', _ \\ 'fail')(1:2)").expectResult(s("fail"));
-		infix("match(1:2:3 \\ 'ok', _ \\ 'fail')(1:2:3:4)").expectResult(s("fail"));
+		infix("match(1:2:3 -> 'ok', _ -> 'fail')(1:2:3)").expectResult(s("ok"));
+		infix("match(1:2:3 -> 'ok', _ -> 'fail')(1:2:4)").expectResult(s("fail"));
+		infix("match(1:2:3 -> 'ok', _ -> 'fail')(1:2)").expectResult(s("fail"));
+		infix("match(1:2:3 -> 'ok', _ -> 'fail')(1:2:3:4)").expectResult(s("fail"));
 	}
 
 	@Test
 	public void testSimpleTerminatedListMatch() {
-		infix("match([1,2,3] \\ 'ok', _ \\ 'fail')([1,2,3])").expectResult(s("ok"));
-		infix("match([1,2,3] \\ 'ok', _ \\ 'fail')(1:2:3:null)").expectResult(s("ok"));
-		infix("match([1,2,3] \\ 'ok', _ \\ 'fail')(1:2:3)").expectResult(s("fail"));
+		infix("match([1,2,3] -> 'ok', _ -> 'fail')([1,2,3])").expectResult(s("ok"));
+		infix("match([1,2,3] -> 'ok', _ -> 'fail')(1:2:3:null)").expectResult(s("ok"));
+		infix("match([1,2,3] -> 'ok', _ -> 'fail')(1:2:3)").expectResult(s("fail"));
 	}
 
 	@Test
 	public void testEmptyListMatch() {
-		infix("match([] \\ 'ok', _ \\ 'fail')([])").expectResult(s("ok"));
-		infix("match([] \\ 'ok', _ \\ 'fail')(null)").expectResult(s("ok"));
-		infix("match([] \\ 'ok', _ \\ 'fail')([1])").expectResult(s("fail"));
+		infix("match([] -> 'ok', _ -> 'fail')([])").expectResult(s("ok"));
+		infix("match([] -> 'ok', _ -> 'fail')(null)").expectResult(s("ok"));
+		infix("match([] -> 'ok', _ -> 'fail')([1])").expectResult(s("fail"));
 	}
 
 	@Test
 	public void testListMatchWithWildcard() {
-		infix("match(1:2:_ \\ 'ok', _ \\ 'fail')(1:2:3)").expectResult(s("ok"));
-		infix("match(1:2:_ \\ 'ok', _ \\ 'fail')(1:2:4)").expectResult(s("ok"));
-		infix("match(1:2:_ \\ 'ok', _ \\ 'fail')(1:2)").expectResult(s("fail"));
-		infix("match(1:2:_ \\ 'ok', _ \\ 'fail')(1:2:3:4)").expectResult(s("ok"));
+		infix("match(1:2:_ -> 'ok', _ -> 'fail')(1:2:3)").expectResult(s("ok"));
+		infix("match(1:2:_ -> 'ok', _ -> 'fail')(1:2:4)").expectResult(s("ok"));
+		infix("match(1:2:_ -> 'ok', _ -> 'fail')(1:2)").expectResult(s("fail"));
+		infix("match(1:2:_ -> 'ok', _ -> 'fail')(1:2:3:4)").expectResult(s("ok"));
 	}
 
 	@Test
 	public void testNestedListMatch() {
-		infix("match(1:(2:3):4 \\ 'ok', _ \\ 'fail')(1:(2:3):4)").expectResult(s("ok"));
-		infix("match(1:(2:3):4 \\ 'ok', _ \\ 'fail')(1:2:3:4)").expectResult(s("fail"));
+		infix("match(1:(2:3):4 -> 'ok', _ -> 'fail')(1:(2:3):4)").expectResult(s("ok"));
+		infix("match(1:(2:3):4 -> 'ok', _ -> 'fail')(1:2:3:4)").expectResult(s("fail"));
 	}
 
 	@Test
 	public void testListMatchWithBinding() {
-		infix("match(1:2:xs \\ xs, _ \\ 'fail')(1:2:3)").expectResult(i(3));
-		infix("match(1:2:xs \\ xs, _ \\ 'fail')(1:2:4)").expectResult(i(4));
-		infix("match(1:2:xs \\ xs, _ \\ 'fail')(1:2)").expectResult(s("fail"));
-		infix("match(1:2:xs \\ xs, _ \\ 'fail')(1:2:3:4)").expectResult(cons(i(3), i(4)));
+		infix("match(1:2:xs -> xs, _ -> 'fail')(1:2:3)").expectResult(i(3));
+		infix("match(1:2:xs -> xs, _ -> 'fail')(1:2:4)").expectResult(i(4));
+		infix("match(1:2:xs -> xs, _ -> 'fail')(1:2)").expectResult(s("fail"));
+		infix("match(1:2:xs -> xs, _ -> 'fail')(1:2:3:4)").expectResult(cons(i(3), i(4)));
 	}
 
 	@Test
 	public void testNestedListMatchWithBinding() {
-		infix("match(1:(2:a):b \\ a:b, _ \\ 'fail')(1:(2:3):4)").expectResult(cons(i(3), i(4)));
-		infix("match(1:(2:a):b \\ a:b, _ \\ 'fail')(1:(2:3:5):4)").expectResult(cons(cons(i(3), i(5)), i(4)));
-		infix("match(1:(2:a):b \\ a:b, _ \\ 'fail')(1:(2:3:5):4:6)").expectResult(cons(cons(i(3), i(5)), cons(i(4), i(6))));
+		infix("match(1:(2:a):b -> a:b, _ -> 'fail')(1:(2:3):4)").expectResult(cons(i(3), i(4)));
+		infix("match(1:(2:a):b -> a:b, _ -> 'fail')(1:(2:3:5):4)").expectResult(cons(cons(i(3), i(5)), i(4)));
+		infix("match(1:(2:a):b -> a:b, _ -> 'fail')(1:(2:3:5):4:6)").expectResult(cons(cons(i(3), i(5)), cons(i(4), i(6))));
 	}
 
 	@Test
 	public void testMatchScope() {
-		infix("let([a:2], match(a \\ a)(5))").expectResult(i(5));
-		infix("let([b:2], match(a \\ b)(5))").expectResult(i(2));
+		infix("let([a:2], match(a -> a)(5))").expectResult(i(5));
+		infix("let([b:2], match(a -> b)(5))").expectResult(i(2));
 
-		infix("let([x: 'pre'], let([b: match(1 \\ x, _ \\ false)], let([x: 'post'], b(1))))").expectResult(s("pre"));
+		infix("let([x: 'pre'], let([b: match(1 -> x, _ -> false)], let([x: 'post'], b(1))))").expectResult(s("pre"));
 	}
 
 	@Test
 	public void testRecursiveMatch() {
-		infix("letrec([f(l, c) : match(x:xs \\ f(xs, c+1), [] \\ c)(l)], f([], 0))").expectResult(i(0));
-		infix("letrec([f(l, c) : match(x:xs \\ f(xs, c+1), [] \\ c)(l)], f([1], 0))").expectResult(i(1));
-		infix("letrec([f(l, c) : match(x:xs \\ f(xs, c+1), [] \\ c)(l)], f([1,2,3], 0))").expectResult(i(3));
+		infix("letrec([f(l, c) : match(x:xs -> f(xs, c+1), [] -> c)(l)], f([], 0))").expectResult(i(0));
+		infix("letrec([f(l, c) : match(x:xs -> f(xs, c+1), [] -> c)(l)], f([1], 0))").expectResult(i(1));
+		infix("letrec([f(l, c) : match(x:xs -> f(xs, c+1), [] -> c)(l)], f([1,2,3], 0))").expectResult(i(3));
 	}
 
 	@Test

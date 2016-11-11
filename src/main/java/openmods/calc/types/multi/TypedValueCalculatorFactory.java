@@ -80,9 +80,10 @@ public class TypedValueCalculatorFactory {
 	private static final int PRIORITY_SPACESHIP = 4; // <=>
 	private static final int PRIORITY_EQUALS = 3; // == !=
 	private static final int PRIORITY_LOGIC = 2; // && || ^^
-	private static final int PRIORITY_LAMBDA = 1; // ->
-	private static final int PRIORITY_CONS = 0; // :
+	private static final int PRIORITY_CONS = 1; // :
+	private static final int PRIORITY_LAMBDA = 0; // ->
 	private static final int PRIORITY_SPLIT = -1; // \
+	private static final int PRIORITY_ASSIGN = -2; // =
 
 	private static class MarkerBinaryOperator extends BinaryOperator<TypedValue> {
 		private MarkerBinaryOperator(String id, int precendence) {
@@ -759,6 +760,8 @@ public class TypedValueCalculatorFactory {
 		}
 
 		final BinaryOperator<TypedValue> lambdaOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("->", PRIORITY_LAMBDA, Associativity.RIGHT)).unwrap();
+
+		final BinaryOperator<TypedValue> assignOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("=", PRIORITY_ASSIGN)).unwrap();
 
 		final BinaryOperator<TypedValue> splitOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("\\", PRIORITY_SPLIT)).unwrap();
 
@@ -1489,7 +1492,7 @@ public class TypedValueCalculatorFactory {
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
 
-		final LetExpressionFactory letFactory = new LetExpressionFactory(domain, nullValue, colonOperator);
+		final LetExpressionFactory letFactory = new LetExpressionFactory(domain, nullValue, colonOperator, assignOperator);
 		letFactory.registerSymbol(env);
 
 		final LambdaExpressionFactory lambdaFactory = new LambdaExpressionFactory(domain, nullValue);
@@ -1498,7 +1501,7 @@ public class TypedValueCalculatorFactory {
 		final PromiseExpressionFactory delayFactory = new PromiseExpressionFactory(domain);
 		delayFactory.registerSymbols(env);
 
-		final MatchExpressionFactory matchFactory = new MatchExpressionFactory(domain, splitOperator);
+		final MatchExpressionFactory matchFactory = new MatchExpressionFactory(domain, splitOperator, lambdaOperator);
 		matchFactory.registerSymbols(env);
 
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
@@ -1525,10 +1528,10 @@ public class TypedValueCalculatorFactory {
 						.addFactory(dotOperator, new IBinaryExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
-								return new DotExprNode(rightChild, leftChild, dotOperator, domain);
+								return new DotExprNode(leftChild, rightChild, dotOperator, domain);
 							}
 						})
-						.addFactory(lambdaOperator, lambdaFactory.createLambdaExprNodeFactory())
+						.addFactory(lambdaOperator, lambdaFactory.createLambdaExprNodeFactory(lambdaOperator))
 						.addFactory(defaultOperator, new IBinaryExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {

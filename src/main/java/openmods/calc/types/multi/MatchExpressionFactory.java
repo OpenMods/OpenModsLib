@@ -31,11 +31,14 @@ import openmods.utils.Stack;
 public class MatchExpressionFactory {
 
 	private final TypeDomain domain;
+	@SuppressWarnings("unused") // will be used for guards
 	private final BinaryOperator<TypedValue> split;
+	private final BinaryOperator<TypedValue> lambda;
 
-	public MatchExpressionFactory(TypeDomain domain, BinaryOperator<TypedValue> splitOperator) {
+	public MatchExpressionFactory(TypeDomain domain, BinaryOperator<TypedValue> split, BinaryOperator<TypedValue> lambda) {
 		this.domain = domain;
-		this.split = splitOperator;
+		this.split = split;
+		this.lambda = lambda;
 	}
 
 	private static interface PatternPart {
@@ -158,7 +161,7 @@ public class MatchExpressionFactory {
 		public PatternConstructionCompiler apply(IExprNode<TypedValue> input) {
 			Preconditions.checkState(input instanceof BinaryOpNode, "Invalid 'match' syntax");
 			final BinaryOpNode<TypedValue> patternNode = (BinaryOpNode<TypedValue>)input;
-			Preconditions.checkState(patternNode.operator == split, "Invalid 'match' syntax, expected split between pattern and code");
+			Preconditions.checkState(patternNode.operator == lambda, "Invalid 'match' syntax, expected '->' between pattern and code, got %s", patternNode.operator);
 			return new PatternConstructionCompiler(patternNode.left, patternNode.right);
 		}
 	};

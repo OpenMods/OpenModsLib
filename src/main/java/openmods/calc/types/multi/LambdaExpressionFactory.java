@@ -1,9 +1,9 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
+import openmods.calc.BinaryOperator;
 import openmods.calc.Environment;
 import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
@@ -11,6 +11,7 @@ import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
+import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.BracketContainerNode;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
@@ -63,13 +64,10 @@ public class LambdaExpressionFactory {
 		}
 	}
 
-	private class LambdaExpr implements IExprNode<TypedValue> {
-		private final IExprNode<TypedValue> argNames;
-		private final IExprNode<TypedValue> code;
+	private class LambdaExpr extends BinaryOpNode<TypedValue> {
 
-		public LambdaExpr(IExprNode<TypedValue> argNames, IExprNode<TypedValue> code) {
-			this.argNames = argNames;
-			this.code = code;
+		public LambdaExpr(BinaryOperator<TypedValue> operator, IExprNode<TypedValue> left, IExprNode<TypedValue> right) {
+			super(operator, left, right);
 		}
 
 		@Override
@@ -80,21 +78,21 @@ public class LambdaExpressionFactory {
 		}
 
 		private void flattenClosureCode(List<IExecutable<TypedValue>> output) {
-			if (code instanceof RawCodeExprNode) {
-				code.flatten(output);
+			if (right instanceof RawCodeExprNode) {
+				right.flatten(output);
 			} else {
-				output.add(Value.create(Code.flattenAndWrap(domain, code)));
+				output.add(Value.create(Code.flattenAndWrap(domain, right)));
 			}
 		}
 
 		private TypedValue extractArgNamesList() {
 			final List<TypedValue> args = Lists.newArrayList();
 			// yup, any bracket. I prefer (), but [] are only option in prefix
-			if (argNames instanceof BracketContainerNode) {
-				for (IExprNode<TypedValue> arg : argNames.getChildren())
+			if (left instanceof BracketContainerNode) {
+				for (IExprNode<TypedValue> arg : left.getChildren())
 					args.add(extractNameFromNode(arg));
 			} else {
-				args.add(extractNameFromNode(argNames));
+				args.add(extractNameFromNode(left));
 			}
 
 			return Cons.createList(args, nullValue);
@@ -107,20 +105,13 @@ public class LambdaExpressionFactory {
 				throw new IllegalStateException("Expected single symbol or list of symbols on left side of lambda operator, got " + arg);
 			}
 		}
-
-		@Override
-		public Iterable<IExprNode<TypedValue>> getChildren() {
-			return ImmutableList.of(argNames, code);
-		}
-
 	}
 
-	public IBinaryExprNodeFactory<TypedValue> createLambdaExprNodeFactory() {
+	public IBinaryExprNodeFactory<TypedValue> createLambdaExprNodeFactory(final BinaryOperator<TypedValue> lambdaOp) {
 		return new IBinaryExprNodeFactory<TypedValue>() {
-
 			@Override
 			public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
-				return new LambdaExpr(leftChild, rightChild);
+				return new LambdaExpr(lambdaOp, leftChild, rightChild);
 			}
 		};
 	}

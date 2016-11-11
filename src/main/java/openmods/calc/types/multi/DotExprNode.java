@@ -1,33 +1,29 @@
 package openmods.calc.types.multi;
 
-import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.IExecutable;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
+import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.SymbolOpNode;
 
-class DotExprNode implements IExprNode<TypedValue> {
-	private final IExprNode<TypedValue> rightChild;
-	private final IExprNode<TypedValue> leftChild;
-	private final BinaryOperator<TypedValue> dotOperator;
+class DotExprNode extends BinaryOpNode<TypedValue> {
+
 	private final TypeDomain domain;
 
-	DotExprNode(IExprNode<TypedValue> rightChild, IExprNode<TypedValue> leftChild, BinaryOperator<TypedValue> dotOperator, TypeDomain domain) {
-		this.rightChild = rightChild;
-		this.leftChild = leftChild;
-		this.dotOperator = dotOperator;
+	public DotExprNode(IExprNode<TypedValue> left, IExprNode<TypedValue> right, BinaryOperator<TypedValue> operator, TypeDomain domain) {
+		super(operator, left, right);
 		this.domain = domain;
 	}
 
 	@Override
 	public void flatten(List<IExecutable<TypedValue>> output) {
-		leftChild.flatten(output);
-		flattenKeyNode(output, rightChild);
+		left.flatten(output);
+		flattenKeyNode(output, right);
 	}
 
 	// algorithm: if node has children, recurse, otherwise try to extract key (to be placed on the right side of dot)
@@ -39,17 +35,17 @@ class DotExprNode implements IExprNode<TypedValue> {
 		} else if (target instanceof SymbolCallNode) { // terminal node: symbol call
 			final SymbolCallNode<TypedValue> call = (SymbolCallNode<TypedValue>)target;
 			convertSymbolNodeToKey(output, call);
-			output.add(dotOperator);
+			output.add(operator);
 			appendSymbolApply(output, call.getChildren());
 		} else if (target instanceof SymbolGetNode) { // terminal node: symbol get - convert to string
 			convertSymbolNodeToKey(output, (SymbolGetNode<TypedValue>)target);
-			output.add(dotOperator);
+			output.add(operator);
 		} else if (target instanceof RawCodeExprNode) { // terminal node: with (.{...}) statement
 			target.flatten(output);
 			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_WITH, 2, 1));
 		} else { // terminal node - anything else (possible something that returns string)
 			target.flatten(output);
-			output.add(dotOperator);
+			output.add(operator);
 		}
 	}
 
@@ -65,10 +61,5 @@ class DotExprNode implements IExprNode<TypedValue> {
 
 	private void convertSymbolNodeToKey(List<IExecutable<TypedValue>> output, SymbolOpNode<TypedValue> target) {
 		output.add(Value.create(domain.create(String.class, target.symbol())));
-	}
-
-	@Override
-	public Iterable<IExprNode<TypedValue>> getChildren() {
-		return ImmutableList.of(leftChild, rightChild);
 	}
 }

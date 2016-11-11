@@ -30,11 +30,13 @@ public class LetExpressionFactory {
 	private final TypeDomain domain;
 	private final TypedValue nullValue;
 	private final BinaryOperator<TypedValue> colonOperator;
+	private final BinaryOperator<TypedValue> assignOperator;
 
-	public LetExpressionFactory(TypeDomain domain, TypedValue nullValue, BinaryOperator<TypedValue> colonOperator) {
+	public LetExpressionFactory(TypeDomain domain, TypedValue nullValue, BinaryOperator<TypedValue> colonOperator, BinaryOperator<TypedValue> assignOperator) {
 		this.domain = domain;
 		this.nullValue = nullValue;
 		this.colonOperator = colonOperator;
+		this.assignOperator = assignOperator;
 	}
 
 	private class LetNode implements IExprNode<TypedValue> {
@@ -74,7 +76,8 @@ public class LetExpressionFactory {
 		private void flattenArgNode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> argNode) {
 			if (argNode instanceof BinaryOpNode) {
 				final BinaryOpNode<TypedValue> opNode = (BinaryOpNode<TypedValue>)argNode;
-				if (opNode.operator == colonOperator) {
+				// assign op has lower prio, but we still need pair as backing structure - therefore we are placing colon
+				if (opNode.operator == colonOperator || opNode.operator == assignOperator) {
 					flattenNameAndValue(output, opNode.left, opNode.right);
 					output.add(colonOperator);
 					return;
