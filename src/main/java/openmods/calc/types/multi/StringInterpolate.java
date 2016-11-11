@@ -60,7 +60,7 @@ public class StringInterpolate {
 					public void append(IValuePrinter<TypedValue> printer, SymbolMap<TypedValue> symbols, StringBuilder output) {
 						final ISymbol<TypedValue> value = symbols.get(contents);
 						Preconditions.checkArgument(value != null, "No symbol: " + contents);
-						output.append(printer.toString(value.get()));
+						output.append(printer.str(value.get()));
 					}
 				};
 			}

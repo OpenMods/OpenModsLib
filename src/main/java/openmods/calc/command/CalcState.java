@@ -72,7 +72,7 @@ public class CalcState {
 					final List<String> results = Lists.newArrayListWithExpectedSize(in);
 					for (int i = 0; i < in; i++) {
 						final E value = stack.pop();
-						results.add(printer.toString(value));
+						results.add(printer.repr(value));
 					}
 
 					final String result = ": " + Joiner.on(" ").join(results);

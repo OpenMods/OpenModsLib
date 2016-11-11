@@ -13,9 +13,14 @@ public class FractionPrinter implements IValuePrinter<Fraction> {
 	public boolean expand;
 
 	@Override
-	public String toString(Fraction value) {
+	public String str(Fraction value) {
 		if (expand) return Double.toString(value.doubleValue());
 		return properFractions? value.toProperString() : value.toString();
+	}
+
+	@Override
+	public String repr(Fraction value) {
+		return str(value);
 	}
 
 }

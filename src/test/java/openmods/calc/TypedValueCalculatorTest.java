@@ -1526,16 +1526,16 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testInfixStringInterpolation() {
-		infix("let([a:2, b:'test'], $'a = {a}, b = {b}')").expectResult(s("a = 2, b = \"test\""));
+		infix("let([a:2, b:'test'], $'a = {a}, b = {b}')").expectResult(s("a = 2, b = test"));
 	}
 
 	@Test
 	public void testPrefixStringInterpolation() {
-		prefix("(let [(: a 2) (: b 'test')] $'a = {a}, b = {b}')").expectResult(s("a = 2, b = \"test\""));
+		prefix("(let [(: a 2) (: b 'test')] $'a = {a}, b = {b}')").expectResult(s("a = 2, b = test"));
 	}
 
 	@Test
 	public void testPosfixStringInterpolation() {
-		postfix("#a {2} : #b {'test'} : list$2  {$'a = {a}, b = {b}'} let$2").expectResult(s("a = 2, b = \"test\""));
+		postfix("#a {2} : #b {'test'} : list$2  {$'a = {a}, b = {b}'} let$2").expectResult(s("a = 2, b = test"));
 	}
 }

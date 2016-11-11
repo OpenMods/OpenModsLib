@@ -26,7 +26,7 @@ public class TypedValuePrinter implements IValuePrinter<TypedValue> {
 	public boolean allowStandardPrinter = false;
 
 	@Configurable
-	public boolean escapeStrings = true;
+	public boolean escapeStrings = false;
 
 	@Configurable
 	public boolean numericBool = false;
@@ -51,7 +51,7 @@ public class TypedValuePrinter implements IValuePrinter<TypedValue> {
 	}
 
 	@Override
-	public String toString(TypedValue value) {
+	public String str(TypedValue value) {
 		final String contents;
 		if (value.is(Double.class)) contents = printDouble(value.as(Double.class));
 		else if (value.is(BigInteger.class)) contents = printBigInteger(value.as(BigInteger.class));
@@ -61,17 +61,40 @@ public class TypedValuePrinter implements IValuePrinter<TypedValue> {
 		else if (value.is(IComposite.class)) contents = printComposite(value.as(IComposite.class));
 		else if (value.is(Cons.class)) contents = printCons(value.as(Cons.class));
 		else if (value.is(UnitType.class)) contents = TypedCalcConstants.SYMBOL_NULL;
+		else if (value.is(Symbol.class)) contents = printSymbol(value.as(Symbol.class));
 		else contents = value.value.toString();
 
 		return printTypes? "(" + value.type + ")" + contents : contents;
+	}
+
+	@Override
+	public String repr(TypedValue value) {
+		if (value.is(Double.class)) return printDouble(value.as(Double.class));
+		else if (value.is(BigInteger.class)) return printBigInteger(value.as(BigInteger.class));
+		else if (value.is(String.class)) return reprString(value.as(String.class));
+		else if (value.is(Boolean.class)) return reprBoolean(value.as(Boolean.class));
+		else if (value.is(Complex.class)) return printComplex(value.as(Complex.class));
+		else if (value.is(IComposite.class)) return printComposite(value.as(IComposite.class));
+		else if (value.is(Cons.class)) return reprCons(value.as(Cons.class));
+		else if (value.is(UnitType.class)) return TypedCalcConstants.SYMBOL_NULL;
+		else if (value.is(Symbol.class)) return reprSymbol(value.as(Symbol.class));
+		else return value.value.toString();
 	}
 
 	private String printBoolean(boolean value) {
 		return numericBool? (value? "1" : "0") : (value? TypedCalcConstants.SYMBOL_FALSE : TypedCalcConstants.SYMBOL_TRUE);
 	}
 
+	private static String reprBoolean(boolean value) {
+		return value? TypedCalcConstants.SYMBOL_FALSE : TypedCalcConstants.SYMBOL_TRUE;
+	}
+
 	private String printString(String value) {
 		return escapeStrings? StringEscaper.escapeString(value, '"', UNESCAPED_CHARS) : value;
+	}
+
+	private static String reprString(String value) {
+		return StringEscaper.escapeString(value, '"', UNESCAPED_CHARS);
 	}
 
 	private String printBigInteger(BigInteger value) {
@@ -100,18 +123,18 @@ public class TypedValuePrinter implements IValuePrinter<TypedValue> {
 			cons.visit(new Cons.BranchingVisitor() {
 				@Override
 				public void begin() {
-					result.append("(");
+					result.append("[");
 				}
 
 				@Override
 				public void value(TypedValue value, boolean isLast) {
-					result.append(TypedValuePrinter.this.toString(value));
+					result.append(TypedValuePrinter.this.str(value));
 					if (!isLast) result.append(" ");
 				}
 
 				@Override
 				public Cons.BranchingVisitor nestedValue(TypedValue value) {
-					result.append("(");
+					result.append("[");
 					return this;
 				}
 
@@ -119,19 +142,33 @@ public class TypedValuePrinter implements IValuePrinter<TypedValue> {
 				public void end(TypedValue terminator) {
 					if (terminator.value != nullValue || printNilInLists) {
 						result.append(" . ");
-						result.append(TypedValuePrinter.this.toString(terminator));
+						result.append(TypedValuePrinter.this.str(terminator));
 					}
-					result.append(")");
+					result.append("]");
 				}
 			});
 
 			return result.toString();
 		} else {
-			return "(" + toString(cons.car) + " . " + toString(cons.cdr) + ")";
+			return "(" + str(cons.car) + " . " + str(cons.cdr) + ")";
 		}
+	}
+
+	private String reprCons(Cons cons) {
+		// TODO: [] notation? problem with terminators
+		return repr(cons.car) + " : " + repr(cons.cdr);
 	}
 
 	private static String printComposite(IComposite value) {
 		return "<" + value.type() + ":" + System.identityHashCode(value) + " " + value.toString() + ">";
 	}
+
+	private static String printSymbol(Symbol s) {
+		return s.value;
+	}
+
+	private static String reprSymbol(Symbol s) {
+		return '#' + s.value;
+	}
+
 }

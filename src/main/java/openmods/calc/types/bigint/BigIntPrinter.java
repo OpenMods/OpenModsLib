@@ -75,8 +75,13 @@ public class BigIntPrinter implements IValuePrinter<BigInteger> {
 	public boolean uniformBaseNotation = false;
 
 	@Override
-	public String toString(BigInteger value) {
+	public String str(BigInteger value) {
 		if (base < Character.MIN_RADIX) return "invalid radix";
 		return PrinterUtils.decorateBase(!uniformBaseNotation, base, (base <= Character.MAX_RADIX)? value.toString(base) : printer.toString(value, base));
+	}
+
+	@Override
+	public String repr(BigInteger value) {
+		return str(value);
 	}
 }

@@ -45,7 +45,7 @@ public class Calculator<E, M> {
 
 	public String compileExecuteAndPrint(M exprType, String expr) {
 		final E result = compileExecuteAndPop(exprType, expr);
-		return printer.toString(result);
+		return printer.repr(result);
 	}
 
 	public E compileAndSetGlobalSymbol(M exprType, String id, String expr) {

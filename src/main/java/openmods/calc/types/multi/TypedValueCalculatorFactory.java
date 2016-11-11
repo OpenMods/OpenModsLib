@@ -835,9 +835,14 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("str", new UnaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
-				if (value.is(String.class)) return value;
-				if (value.is(Symbol.class)) return value.domain.create(String.class, value.as(Symbol.class).value);
-				else return value.domain.create(String.class, valuePrinter.toString(value));
+				return value.domain.create(String.class, valuePrinter.str(value));
+			}
+		});
+
+		env.setGlobalSymbol("repr", new UnaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue call(TypedValue value) {
+				return value.domain.create(String.class, valuePrinter.repr(value));
 			}
 		});
 
@@ -1405,7 +1410,7 @@ public class TypedValueCalculatorFactory {
 					final Integer gotArgs = argumentsCount.get();
 					if (gotArgs == 1) {
 						final TypedValue cause = frame.stack().pop();
-						throw new ExecutionErrorException(valuePrinter.toString(cause));
+						throw new ExecutionErrorException(valuePrinter.repr(cause));
 					}
 
 					Preconditions.checkArgument(gotArgs == 0, "'fail' expects at most single argument, got %s", gotArgs);

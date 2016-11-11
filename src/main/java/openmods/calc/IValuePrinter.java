@@ -1,5 +1,7 @@
 package openmods.calc;
 
 public interface IValuePrinter<E> {
-	public String toString(E value);
+	public String str(E value);
+
+	public String repr(E value);
 }

@@ -90,7 +90,7 @@ public class DoublePrinter implements IValuePrinter<Double> {
 	public boolean uniformBaseNotation = false;
 
 	@Override
-	public String toString(Double value) {
+	public String str(Double value) {
 		if (base == 10 && !allowStandardPrinter && !uniformBaseNotation) {
 			return value.toString();
 		} else {
@@ -99,5 +99,10 @@ public class DoublePrinter implements IValuePrinter<Double> {
 			final String result = printer.toString(value, base);
 			return PrinterUtils.decorateBase(!uniformBaseNotation, base, result);
 		}
+	}
+
+	@Override
+	public String repr(Double value) {
+		return str(value);
 	}
 }
