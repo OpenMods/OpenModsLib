@@ -1536,6 +1536,51 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testGuardedMatchWithNoDefaults() {
+		infix("match(a \\ a > 2 -> a \\ a < 2 -> -a)(3)").expectResult(i(3));
+		infix("match(a \\ a > 2 -> a \\ a < 2 -> -a)(1)").expectResult(i(-1));
+	}
+
+	@Test
+	public void testGuardedMatchWithDefaultOnly() {
+		infix("match(a \\ 2)(5)").expectResult(i(2));
+		infix("match(a \\ a + 1)(5)").expectResult(i(6));
+	}
+
+	@Test
+	public void testGuardedMatchWithDefault() {
+		infix("match(a \\ a > 5 -> 5\\ a)(6)").expectResult(i(5));
+		infix("match(a \\ a > 5 -> 5\\ a)(5)").expectResult(i(5));
+		infix("match(a \\ a > 5 -> 5\\ a)(4)").expectResult(i(4));
+	}
+
+	@Test
+	public void testGuardedMatchWithoutValidClause() {
+		infix("match(a \\ a > 5 -> 5)(3)").expectThrow(RuntimeException.class);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testGuardedMatchWithDefaultInMiddle() {
+		infix("match(a \\ a \\ a > 5 -> 5)(3)");
+	}
+
+	@Test
+	public void testGuardedMatchOrder() {
+		infix("match(a \\ a > 10 -> 10 \\ a > 5 -> 5 \\ a)(11)").expectResult(i(10));
+		infix("match(a \\ a > 10 -> 10 \\ a > 5 -> 5 \\ a)(10)").expectResult(i(5));
+		infix("match(a \\ a > 10 -> 10 \\ a > 5 -> 5 \\ a)(4)").expectResult(i(4));
+
+		infix("match(a \\ a > 5 -> 5 \\ a > 10 -> 10 \\ a)(11)").expectResult(i(5));
+
+		infix("match(a \\ true -> 'first' \\ true -> 'second' \\ 'third')('whatever')").expectResult(s("first"));
+	}
+
+	@Test
+	public void testGuardedMatchScope() {
+		infix("let([r=2,l=3], let([f = match(a \\ a > l -> r \\ a)], let([r=8,l=10], f(4))))").expectResult(i(2));
+	}
+
+	@Test
 	public void testInfixStringInterpolation() {
 		infix("let([a:2, b:'test'], $'a = {a}, b = {b}')").expectResult(s("a = 2, b = test"));
 	}

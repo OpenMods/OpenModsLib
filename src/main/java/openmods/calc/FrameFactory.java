@@ -24,6 +24,10 @@ public class FrameFactory {
 		return new Frame<E>(new ProtectionSymbolMap<E>(enclosingFrame.symbols()), enclosingFrame.stack().substack(depth));
 	}
 
+	public static <E> Frame<E> createProtectionFrame(SymbolMap<E> symbols) {
+		return new Frame<E>(new ProtectionSymbolMap<E>(symbols), new Stack<E>());
+	}
+
 	public static <E> Frame<E> newClosureFrame(SymbolMap<E> scopeSymbols, Frame<E> stackFrame, int depth) {
 		return new Frame<E>(new LocalSymbolMap<E>(scopeSymbols), stackFrame.stack().substack(depth));
 	}

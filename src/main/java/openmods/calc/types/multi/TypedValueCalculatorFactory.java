@@ -783,7 +783,7 @@ public class TypedValueCalculatorFactory {
 
 		final BinaryOperator<TypedValue> assignOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("=", PRIORITY_ASSIGN)).unwrap();
 
-		final BinaryOperator<TypedValue> splitOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("\\", PRIORITY_SPLIT)).unwrap();
+		final BinaryOperator<TypedValue> splitOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("\\", PRIORITY_SPLIT, Associativity.RIGHT)).unwrap();
 
 		final BinaryOperator<TypedValue> colonOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>(":", PRIORITY_CONS, Associativity.RIGHT) {
 			@Override
@@ -1521,7 +1521,7 @@ public class TypedValueCalculatorFactory {
 		final PromiseExpressionFactory delayFactory = new PromiseExpressionFactory(domain);
 		delayFactory.registerSymbols(env);
 
-		final MatchExpressionFactory matchFactory = new MatchExpressionFactory(domain, splitOperator, lambdaOperator);
+		final MatchExpressionFactory matchFactory = new MatchExpressionFactory(domain, splitOperator, lambdaOperator, colonOperator);
 		matchFactory.registerSymbols(env);
 
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
