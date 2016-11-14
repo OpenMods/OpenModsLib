@@ -26,24 +26,20 @@ class DotExprNode extends BinaryOpNode<TypedValue> {
 		flattenKeyNode(output, right);
 	}
 
-	// algorithm: if node has children, recurse, otherwise try to extract key (to be placed on the right side of dot)
+	// tring to convert symbol to key string (to be placed on the right side of dot)
 	private void flattenKeyNode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> target) {
-		if (target instanceof MethodCallNode) { // non-terminal: "left" node has children
-			final MethodCallNode call = (MethodCallNode)target;
-			flattenKeyNode(output, call.target); // recurse into left node
-			call.flattenArgsAndCall(output); // unwrap rest
-		} else if (target instanceof SymbolCallNode) { // terminal node: symbol call
+		if (target instanceof SymbolCallNode) { // symbol call -> use dot to extract member and apply args
 			final SymbolCallNode<TypedValue> call = (SymbolCallNode<TypedValue>)target;
 			convertSymbolNodeToKey(output, call);
 			output.add(operator);
 			appendSymbolApply(output, call.getChildren());
-		} else if (target instanceof SymbolGetNode) { // terminal node: symbol get - convert to string
+		} else if (target instanceof SymbolGetNode) { // symbol get -> convert to string, use with dot
 			convertSymbolNodeToKey(output, (SymbolGetNode<TypedValue>)target);
 			output.add(operator);
-		} else if (target instanceof RawCodeExprNode) { // terminal node: with (.{...}) statement
+		} else if (target instanceof RawCodeExprNode) { // with (.{...}) statement
 			target.flatten(output);
 			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_WITH, 2, 1));
-		} else { // terminal node - anything else (possible something that returns string)
+		} else { // terminal node - anything else (possibly something that returns string)
 			target.flatten(output);
 			output.add(operator);
 		}

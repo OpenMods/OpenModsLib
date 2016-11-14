@@ -580,6 +580,14 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testDotOperatorWithExpressionResult() {
+		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new TestStructuredComposite("")));
+
+		infix("let([key = 'a'], root.(key).path)").expectResult(s("a"));
+		infix("let([key() = 'a'], root.(key()).path)").expectResult(s("a"));
+	}
+
+	@Test
 	public void testObjectIndexingWithBrackets() {
 		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestStructuredComposite("")));
 		infix("test['path']").expectResult(s(""));

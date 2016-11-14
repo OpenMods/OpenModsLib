@@ -71,7 +71,6 @@ public class TypedValueCalculatorFactory {
 	};
 
 	private static final int PRIORITY_MAX = 12; // basically magic
-	private static final int PRIORITY_DOT = 11; // .
 	private static final int PRIORITY_EXP = 10; // **
 	private static final int PRIORITY_MULTIPLY = 9; // * / % //
 	private static final int PRIORITY_ADD = 8; // + -
@@ -750,7 +749,7 @@ public class TypedValueCalculatorFactory {
 
 		// magic
 
-		final BinaryOperator<TypedValue> dotOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder(".", PRIORITY_DOT)
+		final BinaryOperator<TypedValue> dotOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder(".", PRIORITY_MAX)
 				.registerOperation(new TypedBinaryOperator.IVariantOperation<IComposite, String>() {
 					@Override
 					public TypedValue apply(TypeDomain domain, IComposite left, String right) {

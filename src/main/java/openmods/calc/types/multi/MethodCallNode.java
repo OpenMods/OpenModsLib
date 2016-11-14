@@ -21,10 +21,6 @@ public class MethodCallNode implements IExprNode<TypedValue> {
 	@Override
 	public void flatten(List<IExecutable<TypedValue>> output) {
 		target.flatten(output);
-		flattenArgsAndCall(output);
-	}
-
-	public void flattenArgsAndCall(List<IExecutable<TypedValue>> output) {
 		int argCount = 0;
 		for (IExprNode<TypedValue> arg : args.getChildren()) {
 			arg.flatten(output);
