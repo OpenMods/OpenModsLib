@@ -159,9 +159,7 @@ public class MatchExpressionFactory {
 				clause.guard.execute(clauseEnv);
 				Preconditions.checkState(clauseEnvStack.size() == 1, "Invalid guard expression - expected exactly one result");
 				final TypedValue result = clauseEnvStack.pop();
-				final Optional<Boolean> isTruthy = result.isTruthy();
-				Preconditions.checkState(isTruthy.isPresent(), "%s is neither true or false", result);
-				if (isTruthy.get()) return clause.action;
+				if (result.isTruthy()) return clause.action;
 			}
 
 			return defaultAction;

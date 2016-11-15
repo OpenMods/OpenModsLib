@@ -6,6 +6,7 @@ import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedValue;
+import openmods.calc.types.multi.TypedValue.NoLogicValueException;
 import openmods.reflection.TypeVariableHolderHandler;
 import org.junit.Assert;
 import org.junit.Test;
@@ -109,13 +110,41 @@ public class MultiValueTest {
 			}
 		});
 
-		Assert.assertEquals(Optional.of(Boolean.TRUE), domain.create(Integer.class, 1).isTruthy());
-		Assert.assertEquals(Optional.of(Boolean.TRUE), domain.create(Boolean.class, Boolean.TRUE).isTruthy());
+		{
+			final TypedValue value = domain.create(Integer.class, 1);
+			Assert.assertEquals(Optional.of(Boolean.TRUE), value.isTruthyOptional());
+			Assert.assertTrue(value.isTruthy());
+		}
 
-		Assert.assertEquals(Optional.of(Boolean.FALSE), domain.create(Integer.class, 0).isTruthy());
-		Assert.assertEquals(Optional.of(Boolean.FALSE), domain.create(Boolean.class, Boolean.FALSE).isTruthy());
+		{
+			final TypedValue value = domain.create(Boolean.class, Boolean.TRUE);
+			Assert.assertEquals(Optional.of(Boolean.TRUE), value.isTruthyOptional());
+			Assert.assertTrue(value.isTruthy());
+		}
 
-		Assert.assertEquals(Optional.absent(), domain.create(Double.class, 0.0).isTruthy());
+		{
+			final TypedValue value = domain.create(Integer.class, 0);
+			Assert.assertEquals(Optional.of(Boolean.FALSE), value.isTruthyOptional());
+			Assert.assertFalse(value.isTruthy());
+		}
+
+		{
+			final TypedValue value = domain.create(Boolean.class, Boolean.FALSE);
+			Assert.assertEquals(Optional.of(Boolean.FALSE), value.isTruthyOptional());
+			Assert.assertFalse(value.isTruthy());
+		}
+
+		{
+			final TypedValue value = domain.create(Double.class, 0.0);
+			Assert.assertEquals(Optional.absent(), value.isTruthyOptional());
+
+			try {
+				value.isTruthy();
+				Assert.fail();
+			} catch (NoLogicValueException e) {
+				// no-op
+			}
+		}
 	}
 
 }

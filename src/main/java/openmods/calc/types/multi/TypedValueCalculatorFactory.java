@@ -579,23 +579,23 @@ public class TypedValueCalculatorFactory {
 		operators.registerUnaryOperator(new UnaryOperator<TypedValue>("!") {
 			@Override
 			public TypedValue execute(TypedValue value) {
-				final Optional<Boolean> isTruthy = value.isTruthy();
-				Preconditions.checkState(isTruthy.isPresent(), "Can't determine truth value for %s", value);
-				return value.domain.create(Boolean.class, !isTruthy.get());
+				return value.domain.create(Boolean.class, !value.isTruthy());
 			}
 		});
 
-		operators.registerBinaryOperator(new TypedBinaryBooleanOperator("&&", PRIORITY_LOGIC) {
+		operators.registerBinaryOperator(new BinaryOperator<TypedValue>("&&", PRIORITY_LOGIC) {
 			@Override
-			protected TypedValue execute(boolean isTruthy, TypedValue left, TypedValue right) {
-				return isTruthy? right : left;
+			public TypedValue execute(TypedValue left, TypedValue right) {
+				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
+				return left.isTruthy()? right : left;
 			}
 		});
 
-		operators.registerBinaryOperator(new TypedBinaryBooleanOperator("||", PRIORITY_LOGIC) {
+		operators.registerBinaryOperator(new BinaryOperator<TypedValue>("||", PRIORITY_LOGIC) {
 			@Override
-			protected TypedValue execute(boolean isTruthy, TypedValue left, TypedValue right) {
-				return isTruthy? left : right;
+			public TypedValue execute(TypedValue left, TypedValue right) {
+				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
+				return left.isTruthy()? left : right;
 			}
 		});
 
@@ -603,12 +603,7 @@ public class TypedValueCalculatorFactory {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
-				final Optional<Boolean> isLeftTruthy = left.isTruthy();
-				Preconditions.checkState(isLeftTruthy.isPresent(), "Can't determine truth value for %s", left);
-
-				final Optional<Boolean> isRightTruthy = right.isTruthy();
-				Preconditions.checkState(isRightTruthy.isPresent(), "Can't determine truth value for %s", right);
-				return left.domain.create(Boolean.class, isLeftTruthy.get() ^ isRightTruthy.get());
+				return left.domain.create(Boolean.class, left.isTruthy() ^ right.isTruthy());
 			}
 		});
 
@@ -883,9 +878,7 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("bool", new UnaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
-				final Optional<Boolean> isTruthy = value.isTruthy();
-				Preconditions.checkArgument(isTruthy.isPresent(), "Cannot determine value of %s", value);
-				return value.domain.create(Boolean.class, isTruthy.get());
+				return value.domain.create(Boolean.class, value.isTruthy());
 			}
 		});
 

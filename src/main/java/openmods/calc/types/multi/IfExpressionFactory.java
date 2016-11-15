@@ -1,6 +1,5 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;
@@ -82,10 +81,9 @@ public class IfExpressionFactory {
 			ifTrue.checkType(Code.class, "second (true branch) 'if' parameter");
 
 			final TypedValue condition = frame.stack().pop();
-			final Optional<Boolean> isTruthy = condition.isTruthy();
-			Preconditions.checkState(isTruthy.isPresent(), "%s is neither true or false", condition);
+			final boolean isTruthy = condition.isTruthy();
 
-			(isTruthy.get()? ifTrue : ifFalse).as(Code.class).execute(frame);
+			(isTruthy? ifTrue : ifFalse).as(Code.class).execute(frame);
 		}
 	}
 

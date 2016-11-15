@@ -98,9 +98,23 @@ public class TypedValue {
 		if (!expectedType.isInstance(value)) throw castException(expectedType, location);
 	}
 
-	public Optional<Boolean> isTruthy() {
+	public Optional<Boolean> isTruthyOptional() {
 		if (truthyCache == null) truthyCache = domain.isTruthy(this);
 		return truthyCache;
+	}
+
+	public static class NoLogicValueException extends RuntimeException {
+		private static final long serialVersionUID = -5318443217371834267L;
+
+		public NoLogicValueException(TypedValue value) {
+			super(String.format("Value %s is neither true or false", value));
+		}
+	}
+
+	public boolean isTruthy() {
+		final Optional<Boolean> isTruthy = isTruthyOptional();
+		if (!isTruthy.isPresent()) throw new NoLogicValueException(this);
+		return isTruthy.get();
 	}
 
 	public boolean is(Class<?> type) {
