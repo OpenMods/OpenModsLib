@@ -25,20 +25,15 @@ public class TopSymbolMap<E> extends SymbolMap<E> {
 
 	}
 
-	private abstract static class ValueSymbol<E> implements ISymbol<E> {
+	private abstract static class ValueSymbol<E> extends SingleReturnCallable<E> implements ISymbol<E> {
 		@Override
-		public void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+		public E call(Frame<E> frame, Optional<Integer> argumentsCount) {
 			if (argumentsCount.isPresent()) {
 				final int args = argumentsCount.get();
 				if (args != 0) throw new StackValidationException("Expected no arguments but got %s", args);
 			}
 
-			if (returnsCount.isPresent()) {
-				final int returns = returnsCount.get();
-				if (returns != 1) throw new StackValidationException("Has single return but expected %s", returns);
-			}
-
-			frame.stack().push(get());
+			return get();
 		}
 	}
 

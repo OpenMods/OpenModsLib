@@ -12,7 +12,7 @@ public class GenericFunctions {
 	}
 
 	// WARNING: this assumes 'accumulate' operation is associative!
-	public abstract static class AccumulatorFunction<E> implements ICallable<E> {
+	public abstract static class AccumulatorFunction<E> extends SingleReturnCallable<E> {
 		private final E nullValue;
 
 		public AccumulatorFunction(E nullValue) {
@@ -20,24 +20,20 @@ public class GenericFunctions {
 		}
 
 		@Override
-		public void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-			if (returnsCount.isPresent() && returnsCount.get() != 1) throw new StackValidationException("Invalid expected return values count");
-
+		public E call(Frame<E> frame, Optional<Integer> argumentsCount) {
 			final Stack<E> stack = frame.stack();
 			final int args = argumentsCount.or(2);
 
-			if (args == 0) {
-				stack.push(nullValue);
-			} else {
-				E result = stack.pop();
+			if (args == 0)
+				return nullValue;
+			E result = stack.pop();
 
-				for (int i = 1; i < args; i++) {
-					final E value = stack.pop();
-					result = accumulate(value, result);
-				}
-
-				stack.push(process(result, args));
+			for (int i = 1; i < args; i++) {
+				final E value = stack.pop();
+				result = accumulate(value, result);
 			}
+
+			return process(result, args);
 		}
 
 		protected E process(E result, int argCount) {

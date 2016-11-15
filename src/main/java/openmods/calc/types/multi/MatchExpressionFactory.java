@@ -16,6 +16,7 @@ import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
 import openmods.calc.LocalSymbolMap;
 import openmods.calc.NestedSymbolMap;
+import openmods.calc.SingleReturnCallable;
 import openmods.calc.StackValidationException;
 import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
@@ -337,7 +338,7 @@ public class MatchExpressionFactory {
 
 	}
 
-	private class PatternSymbol implements ICallable<TypedValue> {
+	private class PatternSymbol extends SingleReturnCallable<TypedValue> {
 		private final SymbolMap<TypedValue> placeholderSymbolMap;
 
 		public PatternSymbol(SymbolMap<TypedValue> topSymbolMap) {
@@ -345,12 +346,7 @@ public class MatchExpressionFactory {
 		}
 
 		@Override
-		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-			if (returnsCount.isPresent()) {
-				final int returns = returnsCount.get();
-				if (returns != 1) throw new StackValidationException("Has single result but expected %s", returns);
-			}
-
+		public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
 			// pattern, (guard:action)*, action
 			final int args = argumentsCount.or(2);
 			Preconditions.checkState(args >= 2, "'pattern' symbol expects more than one arg");
@@ -387,7 +383,7 @@ public class MatchExpressionFactory {
 				result = new GuardedPattern(translatedPattern, Lists.reverse(guardedActions), lastAction);
 			}
 
-			stack.push(domain.create(IComposite.class, new SingleTraitComposite("pattern", result)));
+			return domain.create(IComposite.class, new SingleTraitComposite("pattern", result));
 		}
 
 		private PatternPart translatePattern(TypedValue compiledPattern) {
@@ -446,11 +442,6 @@ public class MatchExpressionFactory {
 				if (args != 1) throw new StackValidationException("Expected single argument but got %s", args);
 			}
 
-			if (returnsCount.isPresent()) {
-				final int returns = returnsCount.get();
-				if (returns != 1) throw new StackValidationException("Has single result but expected %s", returns);
-			}
-
 			final Stack<TypedValue> stack = frame.stack();
 			final TypedValue valueToMatch = stack.pop();
 
@@ -460,6 +451,11 @@ public class MatchExpressionFactory {
 				if (match.isPresent()) {
 					final Frame<TypedValue> matchedFrame = FrameFactory.newClosureFrame(matchedSymbols, frame, 0);
 					match.get().execute(matchedFrame);
+					if (returnsCount.isPresent()) {
+						final int expected = returnsCount.get();
+						final int actual = matchedFrame.stack().size();
+						if (expected != actual) throw new StackValidationException("Has %s result(s) but expected %s", actual, expected);
+					}
 					return;
 				}
 			}
@@ -469,15 +465,10 @@ public class MatchExpressionFactory {
 
 	}
 
-	private class MatchSymbol implements ICallable<TypedValue> {
+	private class MatchSymbol extends SingleReturnCallable<TypedValue> {
 
 		@Override
-		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-			if (returnsCount.isPresent()) {
-				final int returns = returnsCount.get();
-				if (returns != 1) throw new StackValidationException("Has single result but expected %s", returns);
-			}
-
+		public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
 			Preconditions.checkArgument(argumentsCount.isPresent(), "'match' must be called with argument count");
 
 			final Stack<TypedValue> stack = frame.stack();
@@ -489,7 +480,7 @@ public class MatchExpressionFactory {
 				patterns.add(patternComposite.get(IPattern.class));
 			}
 
-			stack.push(domain.create(ICallable.class, new MatchingFunction(frame.symbols(), Lists.reverse(patterns))));
+			return domain.create(ICallable.class, new MatchingFunction(frame.symbols(), Lists.reverse(patterns)));
 		}
 	}
 

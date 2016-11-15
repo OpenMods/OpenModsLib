@@ -24,6 +24,7 @@ import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
 import openmods.calc.OperatorDictionary;
+import openmods.calc.SingleReturnCallable;
 import openmods.calc.StackValidationException;
 import openmods.calc.TopSymbolMap;
 import openmods.calc.UnaryFunction;
@@ -1328,14 +1329,9 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_LIST, new ICallable<TypedValue>() {
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_LIST, new SingleReturnCallable<TypedValue>() {
 			@Override
-			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-				if (returnsCount.isPresent()) {
-					final int returns = returnsCount.get();
-					if (returns != 1) throw new StackValidationException("Has one result but expected %s", returns);
-				}
-
+			public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
 				final Integer args = argumentsCount.or(0);
 				final Stack<TypedValue> stack = frame.stack();
 
@@ -1343,7 +1339,7 @@ public class TypedValueCalculatorFactory {
 				for (int i = 0; i < args; i++)
 					result = domain.create(Cons.class, new Cons(stack.pop(), result));
 
-				stack.push(result);
+				return result;
 			}
 		});
 
