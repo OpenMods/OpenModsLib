@@ -259,4 +259,53 @@ public class StackTest {
 	public void testInvalidDrop() {
 		stack.drop(0);
 	}
+
+	@Test
+	public void testClearAll() {
+		stack.push(1);
+		stack.push(2);
+		stack.push(3);
+
+		stack.clear();
+		Assert.assertTrue(stack.isEmpty());
+	}
+
+	@Test
+	public void testClearSubstack() {
+		stack.push(1);
+		stack.push(2);
+		stack.push(3);
+		stack.push(4);
+
+		final Stack<Integer> substack = stack.substack(2);
+		substack.clear();
+		Assert.assertTrue(substack.isEmpty());
+
+		assertValuesOnStack(stack, 1, 2);
+	}
+
+	@Test
+	public void testClearEmptySubstack() {
+		stack.push(1);
+		stack.push(2);
+		stack.push(3);
+
+		final Stack<Integer> substack = stack.substack(0);
+		substack.clear();
+		Assert.assertTrue(substack.isEmpty());
+
+		assertValuesOnStack(stack, 1, 2, 3);
+	}
+
+	@Test
+	public void testClearFullSubstack() {
+		stack.push(1);
+		stack.push(2);
+		stack.push(3);
+
+		final Stack<Integer> substack = stack.substack(3);
+		substack.clear();
+		Assert.assertTrue(substack.isEmpty());
+		Assert.assertTrue(stack.isEmpty());
+	}
 }

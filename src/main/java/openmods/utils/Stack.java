@@ -96,6 +96,12 @@ public class Stack<E> implements Iterable<E> {
 		return data.listIterator(bottomElement);
 	}
 
+	public void clear() {
+		if (bottomElement == 0) data.clear();
+		final int size = data.size();
+		if (size - bottomElement > 0) data.subList(bottomElement, size).clear();
+	}
+
 	public Stack<E> substack(int depth) {
 		final int newBottom = data.size() - depth;
 		if (newBottom < bottomElement) throw new StackUnderflowException(String.format("Not enough elements to create substack: required %s, size %d", depth, size()));
