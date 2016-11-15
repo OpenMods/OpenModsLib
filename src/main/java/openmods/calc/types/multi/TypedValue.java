@@ -12,6 +12,8 @@ public class TypedValue {
 
 	public final Object value;
 
+	private Optional<Boolean> truthyCache;
+
 	TypedValue(TypeDomain domain, Class<?> type, Object value) {
 		Preconditions.checkArgument(type.isInstance(value), "Value '%s' is not instance of '%s'", value, type);
 		this.domain = domain;
@@ -97,7 +99,8 @@ public class TypedValue {
 	}
 
 	public Optional<Boolean> isTruthy() {
-		return domain.isTruthy(this);
+		if (truthyCache == null) truthyCache = domain.isTruthy(this);
+		return truthyCache;
 	}
 
 	public boolean is(Class<?> type) {
