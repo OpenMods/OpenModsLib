@@ -1497,6 +1497,20 @@ public class TypedValueCalculatorFactory {
 
 		});
 
+		env.setGlobalSymbol("and", new LogicFunction(nullValue) {
+			@Override
+			protected boolean shouldReturn(TypedValue value) {
+				return !value.isTruthy();
+			}
+		});
+
+		env.setGlobalSymbol("or", new LogicFunction(nullValue) {
+			@Override
+			protected boolean shouldReturn(TypedValue value) {
+				return value.isTruthy();
+			}
+		});
+
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
 

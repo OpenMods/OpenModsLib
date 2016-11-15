@@ -1622,4 +1622,45 @@ public class TypedValueCalculatorTest {
 	public void testSplitterCompileFail() {
 		infix("a \\ 2");
 	}
+
+	private void assertAllCalled(String function, TypedValue a, TypedValue b, TypedValue c, TypedValue result) {
+		SymbolStub<TypedValue> stubA = new SymbolStub<TypedValue>().allowCalls().setReturns(a);
+		sut.environment.setGlobalSymbol("a", stubA);
+
+		SymbolStub<TypedValue> stubB = new SymbolStub<TypedValue>().allowCalls().setReturns(b);
+		sut.environment.setGlobalSymbol("b", stubB);
+
+		SymbolStub<TypedValue> stubC = new SymbolStub<TypedValue>().allowCalls().setReturns(c);
+		sut.environment.setGlobalSymbol("c", stubC);
+
+		infix(String.format("%s(a(), b(), c())", function)).expectResult(result);
+
+		stubA.checkCallCount(1);
+		stubB.checkCallCount(1);
+		stubC.checkCallCount(1);
+	}
+
+	@Test
+	public void testEagerOperators() {
+		infix("and()").expectResult(NULL);
+		infix("and(5)").expectResult(i(5));
+
+		infix("or()").expectResult(NULL);
+		infix("or(6)").expectResult(i(6));
+
+		assertAllCalled("and", i(1), i(2), i(3), i(3));
+		assertAllCalled("and", i(1), i(2), TRUE, TRUE);
+
+		assertAllCalled("and", i(1), i(2), i(0), i(0));
+		assertAllCalled("and", i(1), i(0), NULL, i(0));
+
+		assertAllCalled("and", i(1), i(0), i(2), i(0));
+		assertAllCalled("and", i(1), FALSE, i(2), FALSE);
+
+		assertAllCalled("or", i(0), NULL, FALSE, FALSE);
+		assertAllCalled("or", i(0), NULL, i(1), i(1));
+
+		assertAllCalled("or", i(0), TRUE, FALSE, TRUE);
+		assertAllCalled("or", i(1), TRUE, FALSE, i(1));
+	}
 }
