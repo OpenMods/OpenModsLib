@@ -406,7 +406,7 @@ public class MatchExpressionFactory {
 		}
 
 		private TypedValue evaluatePattern(Code pattern) {
-			final Frame<TypedValue> patternFrame = FrameFactory.createTopFrame(placeholderSymbolMap);
+			final Frame<TypedValue> patternFrame = FrameFactory.symbolsToFrame(placeholderSymbolMap);
 			pattern.execute(patternFrame);
 			final Stack<TypedValue> resultStack = patternFrame.stack();
 			Preconditions.checkState(resultStack.size() == 1, "Invalid result of pattern compilation");

@@ -1623,15 +1623,16 @@ public class TypedValueCalculatorTest {
 		infix("a \\ 2");
 	}
 
+	private SymbolStub<TypedValue> createConstFunction(String name, TypedValue value) {
+		SymbolStub<TypedValue> result = new SymbolStub<TypedValue>().allowCalls().setReturns(value);
+		sut.environment.setGlobalSymbol(name, result);
+		return result;
+	}
+
 	private void assertAllCalled(String function, TypedValue a, TypedValue b, TypedValue c, TypedValue result) {
-		SymbolStub<TypedValue> stubA = new SymbolStub<TypedValue>().allowCalls().setReturns(a);
-		sut.environment.setGlobalSymbol("a", stubA);
-
-		SymbolStub<TypedValue> stubB = new SymbolStub<TypedValue>().allowCalls().setReturns(b);
-		sut.environment.setGlobalSymbol("b", stubB);
-
-		SymbolStub<TypedValue> stubC = new SymbolStub<TypedValue>().allowCalls().setReturns(c);
-		sut.environment.setGlobalSymbol("c", stubC);
+		final SymbolStub<TypedValue> stubA = createConstFunction("a", a);
+		final SymbolStub<TypedValue> stubB = createConstFunction("b", b);
+		final SymbolStub<TypedValue> stubC = createConstFunction("c", c);
 
 		infix(String.format("%s(a(), b(), c())", function)).expectResult(result);
 
@@ -1641,7 +1642,7 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testEagerOperators() {
+	public void testEagerLogic() {
 		infix("and()").expectResult(NULL);
 		infix("and(5)").expectResult(i(5));
 
@@ -1662,5 +1663,81 @@ public class TypedValueCalculatorTest {
 
 		assertAllCalled("or", i(0), TRUE, FALSE, TRUE);
 		assertAllCalled("or", i(1), TRUE, FALSE, i(1));
+	}
+
+	private void assertFirstFewCalledPostfix(String function, TypedValue a, TypedValue b, TypedValue c, TypedValue result, int argsCalled) {
+		final SymbolStub<TypedValue> stubA = createConstFunction("a", a);
+		final SymbolStub<TypedValue> stubB = createConstFunction("b", b);
+		final SymbolStub<TypedValue> stubC = createConstFunction("c", c);
+
+		postfix(String.format("{a} {b} {c} %s$3", function)).expectResult(result);
+
+		stubA.checkCallCount(argsCalled > 0? 1 : 0);
+		stubB.checkCallCount(argsCalled > 1? 1 : 0);
+		stubC.checkCallCount(argsCalled > 2? 1 : 0);
+	}
+
+	@Test
+	public void testShortCuttingLogicInPosfix() {
+		postfix("andthen$0").expectResult(NULL);
+		postfix("{5} andthen$1").expectResult(i(5));
+
+		postfix("orelse$0").expectResult(NULL);
+		postfix("{6} orelse$1").expectResult(i(6));
+
+		final int firstArgEvaluated = 1;
+		final int firstTwoArgsEvaluated = 2;
+		final int allArgsEvaluated = 3;
+
+		assertFirstFewCalledPostfix("andthen", i(1), i(2), i(3), i(3), allArgsEvaluated);
+		assertFirstFewCalledPostfix("andthen", i(1), i(2), TRUE, TRUE, allArgsEvaluated);
+
+		assertFirstFewCalledPostfix("andthen", i(1), i(2), i(0), i(0), allArgsEvaluated);
+		assertFirstFewCalledPostfix("andthen", i(1), i(0), NULL, i(0), firstTwoArgsEvaluated);
+
+		assertFirstFewCalledPostfix("andthen", i(1), i(0), i(2), i(0), firstTwoArgsEvaluated);
+		assertFirstFewCalledPostfix("andthen", i(1), FALSE, i(2), FALSE, firstTwoArgsEvaluated);
+
+		assertFirstFewCalledPostfix("andthen", i(0), FALSE, i(2), i(0), firstArgEvaluated);
+
+		assertFirstFewCalledPostfix("orelse", i(0), NULL, FALSE, FALSE, allArgsEvaluated);
+		assertFirstFewCalledPostfix("orelse", i(0), NULL, i(1), i(1), allArgsEvaluated);
+
+		assertFirstFewCalledPostfix("orelse", i(0), TRUE, FALSE, TRUE, firstTwoArgsEvaluated);
+
+		assertFirstFewCalledPostfix("orelse", i(1), TRUE, FALSE, i(1), firstArgEvaluated);
+	}
+
+	private void assertFirstFewCalledInfix(String function, TypedValue a, TypedValue b, TypedValue c, TypedValue result, int argsCalled) {
+		final SymbolStub<TypedValue> stubA = createConstFunction("a", a);
+		final SymbolStub<TypedValue> stubB = createConstFunction("b", b);
+		final SymbolStub<TypedValue> stubC = createConstFunction("c", c);
+
+		infix(String.format("%s(a(), b(), c())", function)).expectResult(result);
+
+		stubA.checkCallCount(argsCalled > 0? 1 : 0);
+		stubB.checkCallCount(argsCalled > 1? 1 : 0);
+		stubC.checkCallCount(argsCalled > 2? 1 : 0);
+	}
+
+	@Test
+	public void testShortCuttingLogicInInfix() {
+		infix("andthen()").expectResult(NULL);
+		infix("andthen(5)").expectResult(i(5));
+
+		infix("orelse()").expectResult(NULL);
+		infix("orelse(6)").expectResult(i(6));
+
+		final int firstArgEvaluated = 1;
+		final int firstTwoArgsEvaluated = 2;
+		final int allArgsEvaluated = 3;
+
+		assertFirstFewCalledInfix("andthen", i(1), i(2), i(3), i(3), allArgsEvaluated);
+		assertFirstFewCalledInfix("andthen", i(1), FALSE, i(3), FALSE, firstTwoArgsEvaluated);
+		assertFirstFewCalledInfix("andthen", FALSE, i(2), i(3), FALSE, firstArgEvaluated);
+
+		assertFirstFewCalledInfix("orelse", i(1), i(2), i(3), i(1), firstArgEvaluated);
+		assertFirstFewCalledInfix("orelse", i(0), i(2), i(3), i(2), firstTwoArgsEvaluated);
+		assertFirstFewCalledInfix("orelse", i(0), FALSE, i(3), i(3), allArgsEvaluated);
 	}
 }

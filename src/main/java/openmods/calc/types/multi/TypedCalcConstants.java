@@ -26,6 +26,8 @@ public interface TypedCalcConstants {
 	public static final String SYMBOL_SLICE = "slice";
 	public static final String SYMBOL_PATTERN = "pattern";
 	public static final String SYMBOL_MATCH = "match";
+	public static final String SYMBOL_AND_THEN = "andthen";
+	public static final String SYMBOL_OR_ELSE = "orelse";
 
 	public static final String BRACKET_CODE = "{";
 	public static final String BRACKET_ARG_PACK = "(";

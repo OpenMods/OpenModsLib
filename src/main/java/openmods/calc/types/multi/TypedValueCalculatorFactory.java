@@ -1497,14 +1497,28 @@ public class TypedValueCalculatorFactory {
 
 		});
 
-		env.setGlobalSymbol("and", new LogicFunction(nullValue) {
+		env.setGlobalSymbol("and", new LogicFunction.Eager(nullValue) {
 			@Override
 			protected boolean shouldReturn(TypedValue value) {
 				return !value.isTruthy();
 			}
 		});
 
-		env.setGlobalSymbol("or", new LogicFunction(nullValue) {
+		env.setGlobalSymbol("or", new LogicFunction.Eager(nullValue) {
+			@Override
+			protected boolean shouldReturn(TypedValue value) {
+				return value.isTruthy();
+			}
+		});
+
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_AND_THEN, new LogicFunction.Shorting(nullValue) {
+			@Override
+			protected boolean shouldReturn(TypedValue value) {
+				return !value.isTruthy();
+			}
+		});
+
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_OR_ELSE, new LogicFunction.Shorting(nullValue) {
 			@Override
 			protected boolean shouldReturn(TypedValue value) {
 				return value.isTruthy();
@@ -1538,6 +1552,8 @@ public class TypedValueCalculatorFactory {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_LETREC, letFactory.createLetRecStateTransition(compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_DELAY, delayFactory.createStateTransition(compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_MATCH, matchFactory.createStateTransition(compilerState));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_AND_THEN, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_AND_THEN));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_OR_ELSE, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_OR_ELSE));
 
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_OPERATOR_WRAP, new CallableOperatorWrapperModifierTransition(domain, operators));
