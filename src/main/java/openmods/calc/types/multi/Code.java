@@ -28,7 +28,7 @@ public class Code {
 	@Override
 	public boolean equals(Object obj) {
 		return (this == obj)
-				|| (obj instanceof Code && ((Code)obj).equals(this.code));
+				|| (obj instanceof Code && ((Code)obj).code.equals(this.code));
 	}
 
 	public static TypedValue flattenAndWrap(TypeDomain domain, IExprNode<TypedValue> expr) {

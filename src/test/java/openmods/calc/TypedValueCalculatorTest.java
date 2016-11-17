@@ -1740,4 +1740,18 @@ public class TypedValueCalculatorTest {
 		assertFirstFewCalledInfix("orelse", i(0), i(2), i(3), i(2), firstTwoArgsEvaluated);
 		assertFirstFewCalledInfix("orelse", i(0), FALSE, i(3), i(3), allArgsEvaluated);
 	}
+
+	@Test
+	public void testShortcircuitingLogicOps() {
+		infix("a && b").expectSameAs(infix("andthen(a, b)"));
+		infix("a && b && 'c'").expectSameAs(infix("andthen(a, b, 'c')"));
+		infix("1 && (b && c) && 'c'").expectSameAs(infix("andthen(1, andthen(b, c), 'c')"));
+
+		infix("a || b").expectSameAs(infix("orelse(a, b)"));
+		infix("a || b || 'c'").expectSameAs(infix("orelse(a, b, 'c')"));
+		infix("1 || (b || c) || 'c'").expectSameAs(infix("orelse(1, orelse(b, c), 'c')"));
+
+		infix("1 && b || 'c'").expectSameAs(infix("orelse(andthen(1, b), 'c')"));
+		infix("1 && b && c || 'd' || 'e'").expectSameAs(infix("orelse(andthen(1, b, c), 'd', 'e')"));
+	}
 }

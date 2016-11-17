@@ -356,6 +356,10 @@ public class CalcTestUtils {
 		public static <E> CalcCheck<E> create(Calculator<E, ExprType> sut, IExecutable<E> expr) {
 			return new CalcCheck<E>(sut, expr);
 		}
+
+		public void expectSameAs(CalcCheck<E> other) {
+			Assert.assertEquals(this.expr, other.expr);
+		}
 	}
 
 	public static PeekingIterator<Token> tokenIterator(Token... inputs) {

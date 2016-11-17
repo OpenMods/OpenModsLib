@@ -583,21 +583,21 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<TypedValue>("&&", PRIORITY_LOGIC) {
+		final BinaryOperator<TypedValue> andOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>("&&", PRIORITY_LOGIC) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
 				return left.isTruthy()? right : left;
 			}
-		});
+		}).unwrap();
 
-		operators.registerBinaryOperator(new BinaryOperator<TypedValue>("||", PRIORITY_LOGIC) {
+		final BinaryOperator<TypedValue> orOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>("||", PRIORITY_LOGIC) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
 				return left.isTruthy()? left : right;
 			}
-		});
+		}).unwrap();
 
 		operators.registerBinaryOperator(new BinaryOperator<TypedValue>("^^", PRIORITY_LOGIC) {
 			@Override
@@ -1572,6 +1572,18 @@ public class TypedValueCalculatorFactory {
 						.addFactory(lambdaOperator, lambdaFactory.createLambdaExprNodeFactory(lambdaOperator))
 						.addFactory(assignOperator, new MarkerBinaryOperatorNodeFactory(assignOperator))
 						.addFactory(splitOperator, new MarkerBinaryOperatorNodeFactory(splitOperator))
+						.addFactory(andOperator, new IBinaryExprNodeFactory<TypedValue>() {
+							@Override
+							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
+								return new LazyBinaryOperatorNode(andOperator, leftChild, rightChild, domain, TypedCalcConstants.SYMBOL_AND_THEN);
+							}
+						})
+						.addFactory(orOperator, new IBinaryExprNodeFactory<TypedValue>() {
+							@Override
+							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
+								return new LazyBinaryOperatorNode(orOperator, leftChild, rightChild, domain, TypedCalcConstants.SYMBOL_OR_ELSE);
+							}
+						})
 						.addFactory(defaultOperator, new IBinaryExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
