@@ -71,20 +71,24 @@ public class TypedValueCalculatorFactory {
 		}
 	};
 
-	private static final int PRIORITY_MAX = 12; // basically magic
-	private static final int PRIORITY_EXP = 10; // **
-	private static final int PRIORITY_MULTIPLY = 9; // * / % //
-	private static final int PRIORITY_ADD = 8; // + -
-	private static final int PRIORITY_BITSHIFT = 7; // << >>
-	private static final int PRIORITY_BITWISE = 6; // & ^ |
-	private static final int PRIORITY_COMPARE = 5; // < > <= >= <=>
-	private static final int PRIORITY_SPACESHIP = 4; // <=>
-	private static final int PRIORITY_EQUALS = 3; // == !=
-	private static final int PRIORITY_LOGIC = 2; // && || ^^
-	private static final int PRIORITY_CONS = 1; // :
-	private static final int PRIORITY_LAMBDA = 0; // ->
-	private static final int PRIORITY_SPLIT = -1; // \
-	private static final int PRIORITY_ASSIGN = -2; // =
+	private static final int PRIORITY_MAX = 180; // basically magic
+	private static final int PRIORITY_EXP = 170; // **
+	private static final int PRIORITY_MULTIPLY = 160; // * / % //
+	private static final int PRIORITY_ADD = 150; // + -
+	private static final int PRIORITY_BITSHIFT = 140; // << >>
+	private static final int PRIORITY_BITWISE_AND = 130; // &
+	private static final int PRIORITY_BITWISE_XOR = 120; // ^
+	private static final int PRIORITY_BITWISE_OR = 110; // |
+	private static final int PRIORITY_COMPARE = 100; // < > <= >= <=>
+	private static final int PRIORITY_SPACESHIP = 90; // <=>
+	private static final int PRIORITY_EQUALS = 80; // == !=
+	private static final int PRIORITY_LOGIC_AND = 70; // &&
+	private static final int PRIORITY_LOGIC_XOR = 60; // ||
+	private static final int PRIORITY_LOGIC_OR = 50; // ^^
+	private static final int PRIORITY_CONS = 40; // :
+	private static final int PRIORITY_LAMBDA = 30; // ->
+	private static final int PRIORITY_SPLIT = 20; // \
+	private static final int PRIORITY_ASSIGN = 10; // =
 
 	private static class MarkerBinaryOperator extends BinaryOperator<TypedValue> {
 		private MarkerBinaryOperator(String id, int precendence) {
@@ -583,7 +587,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		final BinaryOperator<TypedValue> andOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>("&&", PRIORITY_LOGIC) {
+		final BinaryOperator<TypedValue> andOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>("&&", PRIORITY_LOGIC_AND) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
@@ -591,7 +595,7 @@ public class TypedValueCalculatorFactory {
 			}
 		}).unwrap();
 
-		final BinaryOperator<TypedValue> orOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>("||", PRIORITY_LOGIC) {
+		final BinaryOperator<TypedValue> orOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>("||", PRIORITY_LOGIC_OR) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
@@ -599,7 +603,7 @@ public class TypedValueCalculatorFactory {
 			}
 		}).unwrap();
 
-		operators.registerBinaryOperator(new BinaryOperator<TypedValue>("^^", PRIORITY_LOGIC) {
+		operators.registerBinaryOperator(new BinaryOperator<TypedValue>("^^", PRIORITY_LOGIC_XOR) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
@@ -624,7 +628,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("&", PRIORITY_BITWISE)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("&", PRIORITY_BITWISE_AND)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, Boolean>() {
 					@Override
 					public Boolean apply(Boolean left, Boolean right) {
@@ -639,7 +643,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("|", PRIORITY_BITWISE)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("|", PRIORITY_BITWISE_OR)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, Boolean>() {
 					@Override
 					public Boolean apply(Boolean left, Boolean right) {
@@ -654,7 +658,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("^", PRIORITY_BITWISE)
+		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("^", PRIORITY_BITWISE_XOR)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, Boolean>() {
 					@Override
 					public Boolean apply(Boolean left, Boolean right) {

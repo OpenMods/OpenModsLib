@@ -1753,5 +1753,7 @@ public class TypedValueCalculatorTest {
 
 		infix("1 && b || 'c'").expectSameAs(infix("orelse(andthen(1, b), 'c')"));
 		infix("1 && b && c || 'd' || 'e'").expectSameAs(infix("orelse(andthen(1, b, c), 'd', 'e')"));
+
+		infix("1 && a && 'b' || 2 && c && 'd' || 3 && e && 'f'").expectSameAs(infix("orelse(andthen(1, a, 'b'), andthen(2, c, 'd'), andthen(3, e, 'f'))"));
 	}
 }
