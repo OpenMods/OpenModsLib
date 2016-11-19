@@ -1742,7 +1742,7 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testShortcircuitingLogicOps() {
+	public void testShortCircuitingLogicOps() {
 		infix("a && b").expectSameAs(infix("andthen(a, b)"));
 		infix("a && b && 'c'").expectSameAs(infix("andthen(a, b, 'c')"));
 		infix("1 && (b && c) && 'c'").expectSameAs(infix("andthen(1, andthen(b, c), 'c')"));
@@ -1755,5 +1755,32 @@ public class TypedValueCalculatorTest {
 		infix("1 && b && c || 'd' || 'e'").expectSameAs(infix("orelse(andthen(1, b, c), 'd', 'e')"));
 
 		infix("1 && a && 'b' || 2 && c && 'd' || 3 && e && 'f'").expectSameAs(infix("orelse(andthen(1, a, 'b'), andthen(2, c, 'd'), andthen(3, e, 'f'))"));
+	}
+
+	@Test
+	public void testShortCircuitingNonNullSymbol() {
+		infix("nonnull()").expectThrow(RuntimeException.class);
+		infix("nonnull(null)").expectThrow(RuntimeException.class);
+		infix("nonnull(false)").expectResult(FALSE);
+		infix("nonnull(2)").expectResult(i(2));
+
+		infix("nonnull(null, 2, 3)").expectResult(i(2));
+		infix("nonnull(false, null, 2)").expectResult(FALSE);
+
+		final int firstArgEvaluated = 1;
+		final int firstTwoArgsEvaluated = 2;
+		final int allArgsEvaluated = 3;
+
+		assertFirstFewCalledInfix("nonnull", i(1), i(2), i(3), i(1), firstArgEvaluated);
+		assertFirstFewCalledInfix("nonnull", FALSE, i(2), i(3), FALSE, firstArgEvaluated);
+		assertFirstFewCalledInfix("nonnull", NULL, i(2), i(3), i(2), firstTwoArgsEvaluated);
+		assertFirstFewCalledInfix("nonnull", NULL, NULL, i(3), i(3), allArgsEvaluated);
+	}
+
+	@Test
+	public void testShortCircuitingNonNullOp() {
+		infix("a ?? b").expectSameAs(infix("nonnull(a, b)"));
+		infix("a ?? b ?? c").expectSameAs(infix("nonnull(a, b, c)"));
+		infix("1 ?? (b ?? c) ?? 'c'").expectSameAs(infix("nonnull(1, nonnull(b, c), 'c')"));
 	}
 }

@@ -72,6 +72,7 @@ public class TypedValueCalculatorFactory {
 	};
 
 	private static final int PRIORITY_MAX = 180; // basically magic
+	private static final int PRIORITY_NULL_AWARE = 175; // ??
 	private static final int PRIORITY_EXP = 170; // **
 	private static final int PRIORITY_MULTIPLY = 160; // * / % //
 	private static final int PRIORITY_ADD = 150; // + -
@@ -610,6 +611,13 @@ public class TypedValueCalculatorFactory {
 				return left.domain.create(Boolean.class, left.isTruthy() ^ right.isTruthy());
 			}
 		});
+
+		final BinaryOperator<TypedValue> nonNullOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>("??", PRIORITY_NULL_AWARE) {
+			@Override
+			public TypedValue execute(TypedValue left, TypedValue right) {
+				return left != nullValue? left : right;
+			}
+		}).unwrap();
 
 		// bitwise
 
@@ -1529,6 +1537,20 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_NON_NULL, new LogicFunction.Shorting(nullValue) {
+			@Override
+			public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+				final TypedValue result = super.call(frame, argumentsCount);
+				Preconditions.checkState(result != nullValue, "Returning null value from 'nonnull'");
+				return result;
+			}
+
+			@Override
+			protected boolean shouldReturn(TypedValue value) {
+				return value != nullValue;
+			}
+		});
+
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
 
@@ -1558,6 +1580,7 @@ public class TypedValueCalculatorFactory {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_MATCH, matchFactory.createStateTransition(compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_AND_THEN, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_AND_THEN));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_OR_ELSE, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_OR_ELSE));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_NON_NULL, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_NON_NULL));
 
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_OPERATOR_WRAP, new CallableOperatorWrapperModifierTransition(domain, operators));
@@ -1576,18 +1599,9 @@ public class TypedValueCalculatorFactory {
 						.addFactory(lambdaOperator, lambdaFactory.createLambdaExprNodeFactory(lambdaOperator))
 						.addFactory(assignOperator, new MarkerBinaryOperatorNodeFactory(assignOperator))
 						.addFactory(splitOperator, new MarkerBinaryOperatorNodeFactory(splitOperator))
-						.addFactory(andOperator, new IBinaryExprNodeFactory<TypedValue>() {
-							@Override
-							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
-								return new LazyBinaryOperatorNode(andOperator, leftChild, rightChild, domain, TypedCalcConstants.SYMBOL_AND_THEN);
-							}
-						})
-						.addFactory(orOperator, new IBinaryExprNodeFactory<TypedValue>() {
-							@Override
-							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
-								return new LazyBinaryOperatorNode(orOperator, leftChild, rightChild, domain, TypedCalcConstants.SYMBOL_OR_ELSE);
-							}
-						})
+						.addFactory(andOperator, LazyBinaryOperatorNode.createFactory(andOperator, domain, TypedCalcConstants.SYMBOL_AND_THEN))
+						.addFactory(orOperator, LazyBinaryOperatorNode.createFactory(orOperator, domain, TypedCalcConstants.SYMBOL_OR_ELSE))
+						.addFactory(nonNullOperator, LazyBinaryOperatorNode.createFactory(nonNullOperator, domain, TypedCalcConstants.SYMBOL_NON_NULL))
 						.addFactory(defaultOperator, new IBinaryExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {

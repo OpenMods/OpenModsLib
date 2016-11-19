@@ -8,6 +8,7 @@ import openmods.calc.SymbolCall;
 import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.IExprNode;
+import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
 
 public class LazyBinaryOperatorNode extends BinaryOpNode<TypedValue> {
 
@@ -48,4 +49,12 @@ public class LazyBinaryOperatorNode extends BinaryOpNode<TypedValue> {
 		output.add(node);
 	}
 
+	public static IBinaryExprNodeFactory<TypedValue> createFactory(final BinaryOperator<TypedValue> op, final TypeDomain domain, final String implSymbol) {
+		return new IBinaryExprNodeFactory<TypedValue>() {
+			@Override
+			public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
+				return new LazyBinaryOperatorNode(op, leftChild, rightChild, domain, implSymbol);
+			}
+		};
+	}
 }

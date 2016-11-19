@@ -28,10 +28,10 @@ public interface TypedCalcConstants {
 	public static final String SYMBOL_MATCH = "match";
 	public static final String SYMBOL_AND_THEN = "andthen";
 	public static final String SYMBOL_OR_ELSE = "orelse";
+	public static final String SYMBOL_NON_NULL = "nonnull";
 
 	public static final String BRACKET_CODE = "{";
 	public static final String BRACKET_ARG_PACK = "(";
 
 	public static final String MATCH_ANY = "_";
-
 }
