@@ -16,6 +16,7 @@ import openmods.calc.Compilers;
 import openmods.calc.Environment;
 import openmods.calc.ExecutionErrorException;
 import openmods.calc.ExprType;
+import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
 import openmods.calc.GenericFunctions;
@@ -215,6 +216,21 @@ public class TypedValueCalculatorFactory {
 		protected TypedValue call(TypedValue value) {
 			return value.domain.create(Boolean.class, value.is(cls));
 		}
+	}
+
+	private static boolean tryCall(Frame<TypedValue> frame, TypedValue target, Optional<Integer> returns, Optional<Integer> args) {
+		if (target.is(ICallable.class)) {
+			@SuppressWarnings("unchecked")
+			final ICallable<TypedValue> targetCallable = (ICallable<TypedValue>)target.value;
+			targetCallable.call(frame, args, returns);
+			return true;
+		} else if (target.is(IComposite.class)) {
+			final IComposite composite = target.as(IComposite.class);
+			composite.get(CompositeTraits.Callable.class).call(frame, args, returns);
+			return true;
+		}
+
+		return false;
 	}
 
 	private static List<Object> consToUnwrappedList(Cons pair, final TypedValue expectedTerminator) {
@@ -1445,17 +1461,11 @@ public class TypedValueCalculatorFactory {
 			@Override
 			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				Preconditions.checkArgument(argumentsCount.isPresent(), "'apply' cannot be called without argument count");
-				int args = argumentsCount.get();
+				final int args = argumentsCount.get();
 
 				final TypedValue targetValue = frame.stack().drop(args - 1);
-				if (targetValue.is(ICallable.class)) {
-					@SuppressWarnings("unchecked")
-					final ICallable<TypedValue> targetCallable = (ICallable<TypedValue>)targetValue.value;
-					targetCallable.call(frame, Optional.of(args - 1), returnsCount);
-				} else if (targetValue.is(IComposite.class)) {
-					final IComposite composite = targetValue.as(IComposite.class);
-					composite.get(CompositeTraits.Callable.class).call(frame, Optional.of(args - 1), returnsCount);
-				} else throw new IllegalArgumentException("Value " + targetValue + " is not callable");
+				if (!tryCall(frame, targetValue, returnsCount, Optional.of(args - 1)))
+					throw new IllegalArgumentException("Value " + targetValue + " is not callable");
 			}
 		});
 
@@ -1548,6 +1558,27 @@ public class TypedValueCalculatorFactory {
 			@Override
 			protected boolean shouldReturn(TypedValue value) {
 				return value != nullValue;
+			}
+		});
+
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_LIFT, new FixedCallable<TypedValue>(2, 1) {
+			@Override
+			public void call(Frame<TypedValue> frame) {
+				final Stack<TypedValue> stack = frame.stack();
+				final TypedValue op = stack.pop();
+				final TypedValue value = stack.peek(0);
+
+				if (value != nullValue) {
+					final Frame<TypedValue> executionFrame = FrameFactory.newProtectionFrameWithSubstack(frame, 1);
+					if (op.is(Code.class)) {
+						final Code codeOp = op.as(Code.class);
+						codeOp.execute(executionFrame);
+					} else if (!tryCall(executionFrame, op, Optional.of(1), Optional.of(1)))
+						throw new IllegalArgumentException("Value " + op + " is not callable");
+
+					final int actualReturns = executionFrame.stack().size();
+					if (actualReturns != 1) throw new StackValidationException("Code must have one return, but returned %s", actualReturns);
+				}
 			}
 		});
 
