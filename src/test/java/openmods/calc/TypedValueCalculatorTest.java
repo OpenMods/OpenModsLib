@@ -1840,4 +1840,35 @@ public class TypedValueCalculatorTest {
 		infix("let([t=null], t?['hello'])").expectResult(NULL);
 	}
 
+	@Test
+	public void testNullAwareDefaultOpChaining() {
+		class TestIndexableComposite extends SimpleComposite implements CompositeTraits.Indexable, CompositeTraits.Callable {
+			private final TypedValue path;
+
+			public TestIndexableComposite(TypedValue path) {
+				this.path = path;
+			}
+
+			@Override
+			public Optional<TypedValue> get(TypedValue index) {
+				return Optional.of(domain.create(IComposite.class, new TestIndexableComposite(cons(index, path))));
+			}
+
+			@Override
+			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				frame.stack().push(path);
+			}
+
+			@Override
+			public String type() {
+				return "indexable_callable";
+			}
+		}
+
+		sut.environment.setGlobalSymbol("a", domain.create(IComposite.class, new TestIndexableComposite(NULL)));
+
+		infix("let([t=a], t?['hello']?['world']?())").expectResult(cons(s("world"), cons(s("hello"), NULL)));
+		infix("let([t=null], t?['hello']?['world']?())").expectResult(NULL);
+	}
+
 }
