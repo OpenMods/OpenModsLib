@@ -1788,15 +1788,8 @@ public class TypedValueCalculatorTest {
 	public void testLiftFunctionOnExecutable() {
 		createConstFunction("a", i(4));
 
-		postfix("5 { a + } lift").expectResult(i(9));
-		postfix("null { a + } lift").expectResult(NULL);
+		postfix("5 { a + } nexecute").expectResult(i(9));
+		postfix("null { a + } nexecute").expectResult(NULL);
 	}
 
-	@Test
-	public void testLiftFunctionOnLambda() {
-		createConstFunction("a", i(4));
-
-		infix("lift(5, (v) -> a() + v)").expectResult(i(9));
-		infix("lift(null, (v) -> a() + v)").expectResult(NULL);
-	}
 }

@@ -1561,21 +1561,16 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_LIFT, new FixedCallable<TypedValue>(2, 1) {
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_NULL_EXECUTE, new FixedCallable<TypedValue>(2, 1) {
 			@Override
 			public void call(Frame<TypedValue> frame) {
 				final Stack<TypedValue> stack = frame.stack();
-				final TypedValue op = stack.pop();
+				final Code op = stack.pop().as(Code.class, "second nexecute arg");
 				final TypedValue value = stack.peek(0);
 
 				if (value != nullValue) {
 					final Frame<TypedValue> executionFrame = FrameFactory.newProtectionFrameWithSubstack(frame, 1);
-					if (op.is(Code.class)) {
-						final Code codeOp = op.as(Code.class);
-						codeOp.execute(executionFrame);
-					} else if (!tryCall(executionFrame, op, Optional.of(1), Optional.of(1)))
-						throw new IllegalArgumentException("Value " + op + " is not callable");
-
+					op.execute(executionFrame);
 					final int actualReturns = executionFrame.stack().size();
 					if (actualReturns != 1) throw new StackValidationException("Code must have one return, but returned %s", actualReturns);
 				}
