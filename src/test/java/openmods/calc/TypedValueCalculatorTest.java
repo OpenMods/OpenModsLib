@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.List;
 import openmods.calc.CalcTestUtils.CalcCheck;
+import openmods.calc.CalcTestUtils.CallableStub;
 import openmods.calc.CalcTestUtils.SymbolStub;
 import openmods.calc.types.multi.CompositeTraits;
 import openmods.calc.types.multi.Cons;
@@ -1786,10 +1787,57 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testLiftFunctionOnExecutable() {
-		createConstFunction("a", i(4));
-
+		final SymbolStub<TypedValue> f = createConstFunction("a", i(4));
 		postfix("5 { a + } nexecute").expectResult(i(9));
+		f.checkCallCount(1).resetCallCount();
+
 		postfix("null { a + } nexecute").expectResult(NULL);
+		f.checkCallCount(0);
+	}
+
+	@Test
+	public void testNullAwareDefaultOpWithNoArgCallable() {
+		CallableStub<TypedValue> result = new CallableStub<TypedValue>().setReturns(i(4));
+		sut.environment.setGlobalSymbol("a", result);
+		final CallableStub<TypedValue> f = result;
+
+		infix("let([t=a], t?())").expectResult(i(4));
+		f.checkCallCount(1).resetCallCount();
+
+		infix("let([t=null], t?())").expectResult(NULL);
+		f.checkCallCount(0);
+	}
+
+	@Test
+	public void testNullAwareDefaultOpWithArgsCallable() {
+		final CallableStub<TypedValue> f = new CallableStub<TypedValue>().expectArgs(TRUE, s("hello")).setReturns(i(4));
+		sut.environment.setGlobalSymbol("a", f);
+
+		infix("let([t=a], t?(true, 'hello'))").expectResult(i(4));
+		f.checkCallCount(1).resetCallCount();
+
+		infix("let([t=null], t?(true, 'hello'))").expectResult(NULL);
+		f.checkCallCount(0);
+	}
+
+	@Test
+	public void testNullAwareDefaultOpWithIndexable() {
+		class TestIndexableComposite extends SimpleComposite implements CompositeTraits.Indexable {
+			@Override
+			public Optional<TypedValue> get(TypedValue index) {
+				return Optional.of(cons(s("call"), index));
+			}
+
+			@Override
+			public String type() {
+				return "indexable";
+			}
+		}
+
+		sut.environment.setGlobalSymbol("a", domain.create(IComposite.class, new TestIndexableComposite()));
+
+		infix("let([t=a], t?['hello'])").expectResult(cons(s("call"), s("hello")));
+		infix("let([t=null], t?['hello'])").expectResult(NULL);
 	}
 
 }

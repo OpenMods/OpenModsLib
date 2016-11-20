@@ -818,6 +818,8 @@ public class TypedValueCalculatorFactory {
 		// NOTE: this operator won't be available in prefix and postfix
 		final BinaryOperator<TypedValue> defaultOperator = operators.registerDefaultOperator(new MarkerBinaryOperator("<?>", PRIORITY_MAX));
 
+		final BinaryOperator<TypedValue> nullAwareOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("?", PRIORITY_MAX)).unwrap();
+
 		final TypedValueParser valueParser = new TypedValueParser(domain);
 
 		final TypedValuePrinter valuePrinter = new TypedValuePrinter(nullValue);
@@ -1641,6 +1643,18 @@ public class TypedValueCalculatorFactory {
 									// 5I
 									return new BinaryOpNode<TypedValue>(multiplyOperator, leftChild, rightChild);
 								}
+							}
+						})
+						.addFactory(nullAwareOperator, new IBinaryExprNodeFactory<TypedValue>() {
+							@Override
+							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
+								if (rightChild instanceof SquareBracketContainerNode) {
+									// a?[...]
+									return new MethodCallNode.NullAware(TypedCalcConstants.SYMBOL_SLICE, leftChild, rightChild, domain);
+								} else if (rightChild instanceof ArgBracketNode) {
+									// a?(...)
+									return new MethodCallNode.NullAware(TypedCalcConstants.SYMBOL_APPLY, leftChild, rightChild, domain);
+								} else throw new UnsupportedOperationException("Operator '?' cannot be used with " + rightChild);
 							}
 						})
 						.addFactory(SquareBracketContainerNode.BRACKET_OPEN, new IBracketExprNodeFactory<TypedValue>() {

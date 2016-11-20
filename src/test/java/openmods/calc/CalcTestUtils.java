@@ -662,4 +662,57 @@ public class CalcTestUtils {
 		}
 
 	}
+
+	public static class CallableStub<E> implements ICallable<E> {
+		private int callCount;
+
+		private List<E> expectedArgs = Lists.newArrayList();
+		private boolean exactArgCount = false;
+		private List<E> returns = Lists.newArrayList();
+		private boolean exactReturnCount = false;
+
+		public CallableStub<E> expectArgs(E... args) {
+			expectedArgs = Lists.reverse(Arrays.asList(args));
+			return this;
+		}
+
+		public CallableStub<E> verifyArgCount() {
+			this.exactArgCount = true;
+			return this;
+		}
+
+		public CallableStub<E> setReturns(E... rets) {
+			returns = Arrays.asList(rets);
+			return this;
+		}
+
+		public CallableStub<E> verifyReturnCount() {
+			this.exactReturnCount = true;
+			return this;
+		}
+
+		@Override
+		public void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			if (exactArgCount) Assert.assertEquals(Optional.of(expectedArgs.size()), argumentsCount);
+			if (exactReturnCount) Assert.assertEquals(Optional.of(returns.size()), returnsCount);
+
+			for (E expectedArg : expectedArgs)
+				Assert.assertEquals(frame.stack().pop(), expectedArg);
+
+			for (E ret : returns)
+				frame.stack().push(ret);
+			callCount++;
+		}
+
+		public CallableStub<E> checkCallCount(int expectedCallCount) {
+			Assert.assertEquals(expectedCallCount, this.callCount);
+			return this;
+		}
+
+		public CallableStub<E> resetCallCount() {
+			this.callCount = 0;
+			return this;
+		}
+
+	}
 }
