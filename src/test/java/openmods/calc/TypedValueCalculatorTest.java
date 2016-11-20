@@ -2068,4 +2068,17 @@ public class TypedValueCalculatorTest {
 		infix("let([t=a], t?.{ cons(m_test1, m_test2) })").expectResult(cons(cons(s("get"), s("m_test1")), cons(s("get"), s("m_test2"))));
 		infix("let([t=null], t?.{ cons(m_test, m_test2) })").expectResult(NULL);
 	}
+
+	@Test
+	public void testEvalSymbol() {
+		infix("eval('infix', '2+2')").expectResult(i(4));
+		infix("eval('prefix', '(+ 2 3)')").expectResult(i(5));
+		postfix("'postfix' '3 4 + 5' eval$2").expectResults(i(7), i(5));
+	}
+
+	@Test
+	public void testEvalSymbolScope() {
+		infix("let([x = 2], eval('infix', 'x + 3'))").expectResult(i(5));
+		infix("let([x = 2], eval('infix', '(y) -> x + y'))(10)").expectResult(i(12));
+	}
 }

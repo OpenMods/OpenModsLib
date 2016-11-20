@@ -1749,6 +1749,10 @@ public class TypedValueCalculatorFactory {
 		}
 
 		final Compilers<TypedValue, ExprType> compilers = new TypedValueCompilersFactory().create(nullValue, valueParser, operators, env);
+
+		// bit far from other definitions, but requires compilers...
+		env.setGlobalSymbol("eval", new EvalSymbol(compilers));
+
 		return new Calculator<TypedValue, ExprType>(env, compilers, valuePrinter);
 	}
 }
