@@ -773,17 +773,23 @@ public class TypedValueCalculatorFactory {
 
 		// magic
 
+		final TypedBinaryOperator.IVariantOperation<IComposite, String> dotOperatorOperation = new TypedBinaryOperator.IVariantOperation<IComposite, String>() {
+			@Override
+			public TypedValue apply(TypeDomain domain, IComposite left, String right) {
+				final Optional<Structured> structureTrait = left.getOptional(CompositeTraits.Structured.class);
+				if (!structureTrait.isPresent()) throw new IllegalArgumentException("Object has no members");
+				final Optional<TypedValue> result = structureTrait.get().get(domain, right);
+				if (!result.isPresent()) throw new IllegalArgumentException("Can't find member: " + right);
+				return result.get();
+			}
+		};
+
 		final BinaryOperator<TypedValue> dotOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder(".", PRIORITY_MAX)
-				.registerOperation(new TypedBinaryOperator.IVariantOperation<IComposite, String>() {
-					@Override
-					public TypedValue apply(TypeDomain domain, IComposite left, String right) {
-						final Optional<Structured> structureTrait = left.getOptional(CompositeTraits.Structured.class);
-						if (!structureTrait.isPresent()) throw new IllegalArgumentException("Object has no memeberss");
-						final Optional<TypedValue> result = structureTrait.get().get(domain, right);
-						if (!result.isPresent()) throw new IllegalArgumentException("Can't find member: " + right);
-						return result.get();
-					}
-				})
+				.registerOperation(dotOperatorOperation)
+				.build(domain)).unwrap();
+
+		final BinaryOperator<TypedValue> nullAwareDotOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("?.", PRIORITY_MAX)
+				.registerOperation(dotOperatorOperation)
 				.build(domain)).unwrap();
 
 		{
@@ -1622,6 +1628,12 @@ public class TypedValueCalculatorFactory {
 							@Override
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
 								return new DotExprNode(leftChild, rightChild, dotOperator, domain);
+							}
+						})
+						.addFactory(nullAwareDotOperator, new IBinaryExprNodeFactory<TypedValue>() {
+							@Override
+							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
+								return new DotExprNode.NullAware(leftChild, rightChild, nullAwareDotOperator, domain);
 							}
 						})
 						.addFactory(lambdaOperator, lambdaFactory.createLambdaExprNodeFactory(lambdaOperator))

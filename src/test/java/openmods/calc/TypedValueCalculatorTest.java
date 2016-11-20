@@ -1871,4 +1871,167 @@ public class TypedValueCalculatorTest {
 		infix("let([t=null], t?['hello']?['world']?())").expectResult(NULL);
 	}
 
+	@Test
+	public void testNullAwareAccessOperator() {
+		class TestStructured extends SimpleComposite implements CompositeTraits.Structured {
+			@Override
+			public String type() {
+				return "structured";
+			}
+
+			@Override
+			public Optional<TypedValue> get(TypeDomain domain, String component) {
+				return Optional.of(cons(s("get"), s(component)));
+			}
+		}
+
+		sut.environment.setGlobalSymbol("a", domain.create(IComposite.class, new TestStructured()));
+
+		infix("let([t=a], t?.test)").expectResult(cons(s("get"), s("test")));
+		infix("let([t=a], t?.'str')").expectResult(cons(s("get"), s("str")));
+
+		infix("let([t=null], t?.test)").expectResult(NULL);
+		infix("let([t=null], t?.'str')").expectResult(NULL);
+	}
+
+	@Test
+	public void testNullAwareAccessOperatorLaziness() {
+		class TestStructured extends SimpleComposite implements CompositeTraits.Structured {
+			@Override
+			public String type() {
+				return "structured";
+			}
+
+			@Override
+			public Optional<TypedValue> get(TypeDomain domain, String component) {
+				return Optional.of(cons(s("get"), s(component)));
+			}
+		}
+
+		sut.environment.setGlobalSymbol("a", domain.create(IComposite.class, new TestStructured()));
+
+		final SymbolStub<TypedValue> c = createConstFunction("c", s("member"));
+
+		infix("let([t=a], t?.(c()))").expectResult(cons(s("get"), s("member")));
+		c.checkCallCount(1).resetCallCount();
+
+		// caveat: side effect of not interpreting calls of ?
+		infix("let([t=a], t?.c())").expectResult(cons(s("get"), s("member")));
+		c.checkCallCount(1).resetCallCount();
+
+		infix("let([t=null], t?.(c()))").expectResult(NULL);
+		c.checkCallCount(0);
+
+		infix("let([t=null], t?.c())").expectResult(NULL);
+		c.checkCallCount(0);
+	}
+
+	@Test
+	public void testNullAwareAccessIndexOperator() {
+		class TestIndexable extends SimpleComposite implements CompositeTraits.Indexable {
+
+			private final String value;
+
+			public TestIndexable(String value) {
+				this.value = value;
+			}
+
+			@Override
+			public String type() {
+				return "indexable";
+			}
+
+			@Override
+			public Optional<TypedValue> get(TypedValue index) {
+				return Optional.of(cons(s(value), index));
+			}
+
+		}
+
+		class TestStructured extends SimpleComposite implements CompositeTraits.Structured {
+			@Override
+			public String type() {
+				return "structured";
+			}
+
+			@Override
+			public Optional<TypedValue> get(TypeDomain domain, String component) {
+				return Optional.of(domain.create(IComposite.class, new TestIndexable(component)));
+			}
+		}
+
+		sut.environment.setGlobalSymbol("a", domain.create(IComposite.class, new TestStructured()));
+
+		// not ideal with that second '?', but for now should be enough; caused by [] being implemented by default op
+		infix("let([t=a], t?.test?[5])").expectResult(cons(s("test"), i(5)));
+		infix("let([t=a], t?.'hello'?['world'])").expectResult(cons(s("hello"), s("world")));
+
+		infix("let([t=null], t?.test?[5])").expectResult(NULL);
+		infix("let([t=null], t?.'hello'?['world'])").expectResult(NULL);
+	}
+
+	@Test
+	public void testNullAwareAccessCallOperator() {
+		class TestCallable extends SimpleComposite implements CompositeTraits.Callable {
+
+			private final String value;
+
+			public TestCallable(String value) {
+				this.value = value;
+			}
+
+			@Override
+			public String type() {
+				return "callable";
+			}
+
+			@Override
+			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				frame.stack().push(cons(s(value), frame.stack().pop()));
+			}
+
+		}
+
+		class TestStructured extends SimpleComposite implements CompositeTraits.Structured {
+			@Override
+			public String type() {
+				return "structured";
+			}
+
+			@Override
+			public Optional<TypedValue> get(TypeDomain domain, String component) {
+				return Optional.of(domain.create(IComposite.class, new TestCallable(component)));
+			}
+		}
+
+		sut.environment.setGlobalSymbol("a", domain.create(IComposite.class, new TestStructured()));
+
+		// not ideal with that second '?', but for now should be enough - done for symmetry with []
+		infix("let([t=a], t?.test?(5))").expectResult(cons(s("test"), i(5)));
+		infix("let([t=a], t?.'hello'?('world'))").expectResult(cons(s("hello"), s("world")));
+
+		infix("let([t=null], t?.test?(5))").expectResult(NULL);
+		infix("let([t=null], t?.'hello'?('world'))").expectResult(NULL);
+	}
+
+	@Test
+	public void testNullAwareWithOperator() {
+		class TestStructured extends SimpleComposite implements CompositeTraits.Structured {
+			@Override
+			public String type() {
+				return "structured";
+			}
+
+			@Override
+			public Optional<TypedValue> get(TypeDomain domain, String component) {
+				if (!component.startsWith("m_")) return Optional.absent();
+				return Optional.of(cons(s("get"), s(component)));
+			}
+		}
+
+		sut.environment.setGlobalSymbol("a", domain.create(IComposite.class, new TestStructured()));
+
+		infix("let([t=a], t?.{ cons(m_test1, m_test2) })").expectResult(cons(cons(s("get"), s("m_test1")), cons(s("get"), s("m_test2"))));
+		infix("let([t=null], t?.{ cons(m_test, m_test2) })").expectResult(NULL);
+	}
 }

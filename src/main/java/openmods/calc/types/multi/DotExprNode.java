@@ -1,5 +1,6 @@
 package openmods.calc.types.multi;
 
+import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.IExecutable;
@@ -11,9 +12,9 @@ import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.SymbolOpNode;
 
-class DotExprNode extends BinaryOpNode<TypedValue> {
+public class DotExprNode extends BinaryOpNode<TypedValue> {
 
-	private final TypeDomain domain;
+	protected final TypeDomain domain;
 
 	public DotExprNode(IExprNode<TypedValue> left, IExprNode<TypedValue> right, BinaryOperator<TypedValue> operator, TypeDomain domain) {
 		super(operator, left, right);
@@ -23,26 +24,42 @@ class DotExprNode extends BinaryOpNode<TypedValue> {
 	@Override
 	public void flatten(List<IExecutable<TypedValue>> output) {
 		left.flatten(output);
-		flattenKeyNode(output, right);
+		flattenKeyNode(output);
 	}
 
 	// tring to convert symbol to key string (to be placed on the right side of dot)
-	private void flattenKeyNode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> target) {
-		if (target instanceof SymbolCallNode) { // symbol call -> use dot to extract member and apply args
-			final SymbolCallNode<TypedValue> call = (SymbolCallNode<TypedValue>)target;
-			convertSymbolNodeToKey(output, call);
-			output.add(operator);
-			appendSymbolApply(output, call.getChildren());
-		} else if (target instanceof SymbolGetNode) { // symbol get -> convert to string, use with dot
-			convertSymbolNodeToKey(output, (SymbolGetNode<TypedValue>)target);
-			output.add(operator);
-		} else if (target instanceof RawCodeExprNode) { // with (.{...}) statement
-			target.flatten(output);
-			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_WITH, 2, 1));
+	private void flattenKeyNode(List<IExecutable<TypedValue>> output) {
+		if (right instanceof SymbolCallNode) { // symbol call -> use dot to extract member and apply args
+			flattenMemberApplyNode(output);
+		} else if (right instanceof SymbolGetNode) { // symbol get -> convert to string, use with dot
+			flattenMemberGet(output);
+		} else if (right instanceof RawCodeExprNode) { // with (.{...}) statement
+			flattenWithNode(output);
 		} else { // terminal node - anything else (possibly something that returns string)
-			target.flatten(output);
-			output.add(operator);
+			flattenNonTrivialMemberGetNode(output);
 		}
+	}
+
+	protected void flattenMemberGet(List<IExecutable<TypedValue>> output) {
+		convertSymbolNodeToKey(output, (SymbolGetNode<TypedValue>)right);
+		output.add(operator);
+	}
+
+	protected void flattenNonTrivialMemberGetNode(List<IExecutable<TypedValue>> output) {
+		right.flatten(output);
+		output.add(operator);
+	}
+
+	protected void flattenMemberApplyNode(List<IExecutable<TypedValue>> output) {
+		final SymbolCallNode<TypedValue> call = (SymbolCallNode<TypedValue>)right;
+		convertSymbolNodeToKey(output, call);
+		output.add(operator);
+		appendSymbolApply(output, call.getChildren());
+	}
+
+	protected void flattenWithNode(List<IExecutable<TypedValue>> output) {
+		right.flatten(output);
+		output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_WITH, 2, 1));
 	}
 
 	private static void appendSymbolApply(List<IExecutable<TypedValue>> output, Iterable<IExprNode<TypedValue>> children) {
@@ -57,5 +74,36 @@ class DotExprNode extends BinaryOpNode<TypedValue> {
 
 	private void convertSymbolNodeToKey(List<IExecutable<TypedValue>> output, SymbolOpNode<TypedValue> target) {
 		output.add(Value.create(domain.create(String.class, target.symbol())));
+	}
+
+	public static class NullAware extends DotExprNode {
+
+		public NullAware(IExprNode<TypedValue> left, IExprNode<TypedValue> right, BinaryOperator<TypedValue> operator, TypeDomain domain) {
+			super(left, right, operator, domain);
+		}
+
+		@Override
+		public void flatten(List<IExecutable<TypedValue>> output) {
+			left.flatten(output);
+
+			final List<IExecutable<TypedValue>> nonNullOp = Lists.newArrayList();
+			flattenKeyNode(nonNullOp);
+
+			output.add(Value.create(Code.wrap(domain, nonNullOp)));
+
+			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_NULL_EXECUTE, 2, 1));
+		}
+
+		private void flattenKeyNode(List<IExecutable<TypedValue>> output) {
+			if (right instanceof SymbolGetNode) { // symbol get -> convert to string, use with dot
+				flattenMemberGet(output);
+			} else if (right instanceof RawCodeExprNode) { // with (.{...}) statement
+				flattenWithNode(output);
+			} else { // terminal node - anything else (possibly something that returns string)
+				flattenNonTrivialMemberGetNode(output);
+			}
+
+			// if (right instanceof SymbolCallNode) <- disabled, for symmetry with [...], use .?member?()
+		}
 	}
 }
