@@ -1042,6 +1042,26 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testConstantEvaluatingSymbol() {
+		final SymbolStub<TypedValue> stub = new SymbolStub<TypedValue>()
+				.allowCalls()
+				.expectArgs(i(1), i(2))
+				.verifyArgCount()
+				.setReturns(i(5))
+				.verifyReturnCount();
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<TypedValue> expr = sut.compilers.compile(ExprType.INFIX, "9 + const(dummy(1,2) + 3)");
+		stub.checkCallCount(1);
+
+		compiled(expr).expectResults(i(17));
+		stub.checkCallCount(1);
+
+		compiled(expr).expectResults(i(17));
+		stub.checkCallCount(1);
+	}
+
+	@Test
 	public void testCodeParsingInPostfixParser() {
 		postfix("{ 1 2 +} iscode").expectResult(b(true));
 

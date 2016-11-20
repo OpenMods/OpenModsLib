@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
 import java.util.List;
 import openmods.calc.BinaryOperator;
+import openmods.calc.Environment;
 import openmods.calc.ExecutionErrorException;
 import openmods.calc.ExprType;
 import openmods.calc.Frame;
@@ -23,6 +24,7 @@ public class CommonSimpleSymbolFactory<E> {
 
 	public static final String SYMBOL_LET = "let";
 	public static final String SYMBOL_FAIL = "fail";
+	public static final String SYMBOL_CONSTANT = "const";
 
 	private class FailStateTransition extends SingleStateTransition.ForSymbol<E> {
 		@Override
@@ -60,10 +62,11 @@ public class CommonSimpleSymbolFactory<E> {
 		}
 
 		@Override
-		protected void configureCompilerStateCommon(MappedCompilerState<E> compilerState) {
-			super.configureCompilerStateCommon(compilerState);
+		protected void configureCompilerStateCommon(MappedCompilerState<E> compilerState, Environment<E> environment) {
+			super.configureCompilerStateCommon(compilerState, environment);
 			compilerState.addStateTransition(SYMBOL_LET, createParserTransition(compilerState));
 			compilerState.addStateTransition(SYMBOL_FAIL, new FailStateTransition());
+			compilerState.addStateTransition(SYMBOL_CONSTANT, new ConstantSymbolStateTransition<E>(compilerState, environment));
 		}
 	}
 

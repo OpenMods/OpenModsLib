@@ -224,6 +224,26 @@ public class BigIntCalculatorTest {
 	}
 
 	@Test
+	public void testConstantEvaluatingSymbol() {
+		final SymbolStub<BigInteger> stub = new SymbolStub<BigInteger>()
+				.allowCalls()
+				.expectArgs(v(1), v(2))
+				.verifyArgCount()
+				.setReturns(v(5))
+				.verifyReturnCount();
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<BigInteger> expr = sut.compilers.compile(ExprType.INFIX, "9 + const(dummy(1,2) + 3)");
+		stub.checkCallCount(1);
+
+		compiled(expr).expectResults(v(17));
+		stub.checkCallCount(1);
+
+		compiled(expr).expectResults(v(17));
+		stub.checkCallCount(1);
+	}
+
+	@Test
 	public void testSimpleLet() {
 		infix("let([x:2,y:3], x + y)").expectResult(v(5));
 		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(v(5));

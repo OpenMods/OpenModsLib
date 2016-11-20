@@ -223,6 +223,26 @@ public class DoubleCalculatorTest {
 	}
 
 	@Test
+	public void testConstantEvaluatingSymbol() {
+		final SymbolStub<Double> stub = new SymbolStub<Double>()
+				.allowCalls()
+				.expectArgs(1.0, 2.0)
+				.verifyArgCount()
+				.setReturns(5.0)
+				.verifyReturnCount();
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<Double> expr = sut.compilers.compile(ExprType.INFIX, "9 + const(dummy(1,2) + 3)");
+		stub.checkCallCount(1);
+
+		compiled(expr).expectResults(17.0);
+		stub.checkCallCount(1);
+
+		compiled(expr).expectResults(17.0);
+		stub.checkCallCount(1);
+	}
+
+	@Test
 	public void testSimpleLet() {
 		infix("let([x:2,y:3], x + y)").expectResult(5.0);
 		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(5.0);

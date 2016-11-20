@@ -32,6 +32,7 @@ import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
 import openmods.calc.parsing.BinaryOpNode;
+import openmods.calc.parsing.ConstantSymbolStateTransition;
 import openmods.calc.parsing.DefaultExecutableListBuilder;
 import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.DefaultPostfixCompiler;
@@ -1603,7 +1604,7 @@ public class TypedValueCalculatorFactory {
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 
 			@Override
-			protected void configureCompilerStateCommon(MappedCompilerState<TypedValue> compilerState) {
+			protected void configureCompilerStateCommon(MappedCompilerState<TypedValue> compilerState, Environment<TypedValue> environment) {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_QUOTE, new QuoteStateTransition.ForSymbol(domain, nullValue, valueParser));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_CODE, new CodeStateTransition(domain, compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_IF, ifFactory.createStateTransition(compilerState));
@@ -1615,6 +1616,7 @@ public class TypedValueCalculatorFactory {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_AND_THEN, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_AND_THEN));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_OR_ELSE, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_OR_ELSE));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_NON_NULL, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_NON_NULL));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_CONSTANT, new ConstantSymbolStateTransition<TypedValue>(compilerState, environment));
 
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_OPERATOR_WRAP, new CallableOperatorWrapperModifierTransition(domain, operators));

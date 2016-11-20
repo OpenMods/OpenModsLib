@@ -92,8 +92,8 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 		infixCompilerState.addStateTransition(SYMBOL_INFIX, new ParserSwitchTransition<E>(infixCompilerState));
 		infixCompilerState.addStateTransition(SYMBOL_PREFIX, new ParserSwitchTransition<E>(prefixCompilerState));
 
-		configureCompilerStateCommon(prefixCompilerState);
-		configureCompilerStateCommon(infixCompilerState);
+		configureCompilerStateCommon(prefixCompilerState, environment);
+		configureCompilerStateCommon(infixCompilerState, environment);
 
 		final Map<ExprType, ICompiler<E>> compilers = Maps.newHashMap();
 		compilers.put(ExprType.PREFIX, new WrappedCompiler<E>(prefixTokenizer, createPrefixParser(prefixCompilerState)));
@@ -175,5 +175,5 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 		return new DefaultExprNodeFactory<E>(valueParser);
 	}
 
-	protected void configureCompilerStateCommon(MappedCompilerState<E> compilerState) {}
+	protected void configureCompilerStateCommon(MappedCompilerState<E> compilerState, Environment<E> environment) {}
 }

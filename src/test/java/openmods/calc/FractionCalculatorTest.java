@@ -208,6 +208,26 @@ public class FractionCalculatorTest {
 	}
 
 	@Test
+	public void testConstantEvaluatingSymbol() {
+		final SymbolStub<Fraction> stub = new SymbolStub<Fraction>()
+				.allowCalls()
+				.expectArgs(f(1), f(2))
+				.verifyArgCount()
+				.setReturns(f(5))
+				.verifyReturnCount();
+		sut.environment.setGlobalSymbol("dummy", stub);
+
+		final IExecutable<Fraction> expr = sut.compilers.compile(ExprType.INFIX, "9 + const(dummy(1,2) + 3)");
+		stub.checkCallCount(1);
+
+		compiled(expr).expectResults(f(17));
+		stub.checkCallCount(1);
+
+		compiled(expr).expectResults(f(17));
+		stub.checkCallCount(1);
+	}
+
+	@Test
 	public void testSimpleLet() {
 		infix("let([x:2,y:3], x + y)").expectResult(f(5));
 		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(f(5));

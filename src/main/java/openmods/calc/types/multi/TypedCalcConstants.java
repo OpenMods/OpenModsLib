@@ -30,6 +30,7 @@ public interface TypedCalcConstants {
 	public static final String SYMBOL_OR_ELSE = "orelse";
 	public static final String SYMBOL_NON_NULL = "nonnull";
 	public static final String SYMBOL_NULL_EXECUTE = "nexecute";
+	public static final String SYMBOL_CONSTANT = "const";
 
 	public static final String BRACKET_CODE = "{";
 	public static final String BRACKET_ARG_PACK = "(";
