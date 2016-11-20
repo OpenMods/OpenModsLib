@@ -1445,18 +1445,18 @@ public class TypedValueCalculatorFactory {
 				}
 
 				{
-					final Optional<CompositeTraits.Structured> structuredTrait = obj.getOptional(CompositeTraits.Structured.class);
-					if (structuredTrait.isPresent() && index.is(String.class)) {
-						final Optional<TypedValue> result = structuredTrait.get().get(domain, index.as(String.class));
+					final Optional<CompositeTraits.Indexable> indexableTrait = obj.getOptional(CompositeTraits.Indexable.class);
+					if (indexableTrait.isPresent()) {
+						final Optional<TypedValue> result = indexableTrait.get().get(index);
 						if (!result.isPresent()) throw new IllegalArgumentException("Can't find index: " + index);
 						return result.get();
 					}
 				}
 
 				{
-					final Optional<CompositeTraits.Indexable> indexableTrait = obj.getOptional(CompositeTraits.Indexable.class);
-					if (indexableTrait.isPresent()) {
-						final Optional<TypedValue> result = indexableTrait.get().get(index);
+					final Optional<CompositeTraits.Structured> structuredTrait = obj.getOptional(CompositeTraits.Structured.class);
+					if (structuredTrait.isPresent() && index.is(String.class)) {
+						final Optional<TypedValue> result = structuredTrait.get().get(domain, index.as(String.class));
 						if (!result.isPresent()) throw new IllegalArgumentException("Can't find index: " + index);
 						return result.get();
 					}
