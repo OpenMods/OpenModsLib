@@ -1814,10 +1814,24 @@ public class TypedValueCalculatorTest {
 		sut.environment.setGlobalSymbol("a", f);
 
 		infix("let([t=a], t?(true, 'hello'))").expectResult(i(4));
-		f.checkCallCount(1).resetCallCount();
-
 		infix("let([t=null], t?(true, 'hello'))").expectResult(NULL);
-		f.checkCallCount(0);
+	}
+
+	@Test
+	public void testNullAwareDefaultOpWithArgsCallableLaziness() {
+		final CallableStub<TypedValue> f = new CallableStub<TypedValue>().expectArgs(TRUE, s("hello")).setReturns(i(4));
+		sut.environment.setGlobalSymbol("a", f);
+
+		final SymbolStub<TypedValue> c1 = createConstFunction("f_true", TRUE);
+		final SymbolStub<TypedValue> c2 = createConstFunction("f_hello", s("hello"));
+
+		infix("let([t=a], t?(f_true(), f_hello()))").expectResult(i(4));
+		c1.checkCallCount(1).resetCallCount();
+		c2.checkCallCount(1).resetCallCount();
+
+		infix("let([t=null], t?(f_true(), f_hello()))").expectResult(NULL);
+		c1.checkCallCount(0);
+		c2.checkCallCount(0);
 	}
 
 	@Test
