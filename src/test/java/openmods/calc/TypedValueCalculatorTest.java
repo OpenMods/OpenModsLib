@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import java.math.BigInteger;
 import java.util.List;
 import openmods.calc.CalcTestUtils.CalcCheck;
@@ -1478,11 +1479,9 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testMatchWithGlobalSymbols() {
-		infix("match(true -> 1, false -> 0)(true)").expectResult(i(1));
-		infix("match(true -> 1, false -> 0)(false)").expectResult(i(0));
-
-		infix("match(str(2) -> 1, 2 -> 0)('2')").expectResult(i(1));
-		infix("match(str(2) -> 1, 2 -> 0)(2)").expectResult(i(0));
+		infix("match(true -> 1, false -> 0, null -> -1)(true)").expectResult(i(1));
+		infix("match(true -> 1, false -> 0, null -> -1)(false)").expectResult(i(0));
+		infix("match(true -> 1, false -> 0, null -> -1)(null)").expectResult(i(-1));
 	}
 
 	@Test
@@ -1607,6 +1606,96 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testGuardedMatchScope() {
 		infix("let([r=2,l=3], let([f = match(a \\ a > l -> r \\ a)], let([r=8,l=10], f(4))))").expectResult(i(2));
+	}
+
+	private class TestDeconstructor extends SimpleComposite implements CompositeTraits.Decomposable {
+
+		@Override
+		public String type() {
+			return "constructor";
+		}
+
+		@Override
+		public Optional<List<TypedValue>> tryDecompose(TypedValue input, int variableCount) {
+			final List<TypedValue> result = Lists.newArrayList();
+			for (int i = 0; i < variableCount; i++)
+				result.add(input);
+
+			return Optional.of(result);
+		}
+
+	}
+
+	@Test
+	public void testDeconstructingMatchWithConstants() {
+		sut.environment.setGlobalSymbol("Test", domain.create(IComposite.class, new TestDeconstructor()));
+
+		infix("match(Test(1) -> 'left', Test(2, b) -> 'right')(1)").expectResult(s("left"));
+		infix("match(Test(1) -> 'left', Test(2, b) -> 'right')(2)").expectResult(s("right"));
+	}
+
+	@Test
+	public void testDeconstructingMatchWithVarBinding() {
+		sut.environment.setGlobalSymbol("Test", domain.create(IComposite.class, new TestDeconstructor()));
+
+		infix("match(Test(a) -> a + 3)(2)").expectResult(i(5));
+		infix("match(Test(a, b) -> a + b)(2)").expectResult(i(4));
+
+		infix("match(Test(1, a) -> a + 1, Test(2, b) -> b + 2)(1)").expectResult(i(2));
+		infix("match(Test(1, a) -> a + 1, Test(2, b) -> b + 2)(2)").expectResult(i(4));
+
+		infix("match(Test(1, a) -> a + 1, Test(2, b) -> b + 2)(2)").expectResult(i(4));
+	}
+
+	@Test
+	public void testDeconstructingMatchWithConsVarBinding() {
+		sut.environment.setGlobalSymbol("Test", domain.create(IComposite.class, new TestDeconstructor()));
+
+		infix("match(Test(1:a) -> cons('left', a), Test(2:a) -> cons('right', a))(1:5)").expectResult(cons(s("left"), i(5)));
+		infix("match(Test(1:a) -> cons('left', a), Test(2:a) -> cons('right', a))(2:7)").expectResult(cons(s("right"), i(7)));
+	}
+
+	@Test
+	public void testNestedDeconstructingMatch() {
+		sut.environment.setGlobalSymbol("Test", domain.create(IComposite.class, new TestDeconstructor()));
+
+		infix("match(Test(Test(a), Test(b)) -> cons(a + 1, b + 2))(6)").expectResult(cons(i(7), i(8)));
+	}
+
+	@Test
+	public void testDeconstructingMatchDifferentConstructors() {
+		class SingleValueDeconstructor extends SimpleComposite implements CompositeTraits.Decomposable {
+			private final TypedValue pattern;
+
+			public SingleValueDeconstructor(TypedValue pattern) {
+				this.pattern = pattern;
+			}
+
+			@Override
+			public String type() {
+				return "constructor";
+			}
+
+			@Override
+			public Optional<List<TypedValue>> tryDecompose(TypedValue input, int variableCount) {
+				if (!input.equals(pattern)) return Optional.absent();
+
+				final List<TypedValue> result = Lists.newArrayList();
+				for (int i = 0; i < variableCount; i++)
+					result.add(input);
+
+				return Optional.of(result);
+			}
+		}
+
+		sut.environment.setGlobalSymbol("Test2", domain.create(IComposite.class, new SingleValueDeconstructor(i(2))));
+		sut.environment.setGlobalSymbol("Test3", domain.create(IComposite.class, new SingleValueDeconstructor(i(3))));
+
+		infix("match(Test2(a) -> cons('left', a), Test3(a) -> cons('right', a))(2)").expectResult(cons(s("left"), i(2)));
+		infix("match(Test2(a) -> cons('left', a), Test3(a) -> cons('right', a))(3)").expectResult(cons(s("right"), i(3)));
+
+		infix("match(Test2(a, b) -> cons(a, b), Test3(a, b) -> cons(a, b))(2)").expectResult(cons(i(2), i(2)));
+		infix("match(Test2(a, b) -> cons(a, b), Test3(a, b) -> cons(a, b))(3)").expectResult(cons(i(3), i(3)));
 	}
 
 	@Test

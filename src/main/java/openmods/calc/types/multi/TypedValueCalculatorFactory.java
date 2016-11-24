@@ -24,9 +24,11 @@ import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
+import openmods.calc.LocalSymbolMap;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SingleReturnCallable;
 import openmods.calc.StackValidationException;
+import openmods.calc.SymbolMap;
 import openmods.calc.TopSymbolMap;
 import openmods.calc.UnaryFunction;
 import openmods.calc.UnaryOperator;
@@ -831,48 +833,51 @@ public class TypedValueCalculatorFactory {
 
 		final TypedValuePrinter valuePrinter = new TypedValuePrinter(nullValue);
 
+		class TypedValueSymbolMap extends TopSymbolMap<TypedValue> {
+			@Override
+			protected ISymbol<TypedValue> createSymbol(ICallable<TypedValue> callable) {
+				return new CallableWithValue(domain.create(ICallable.class, callable), callable);
+			}
+
+			@Override
+			@SuppressWarnings("unchecked")
+			protected ISymbol<TypedValue> createSymbol(TypedValue value) {
+				if (value.is(ICallable.class))
+					return new CallableWithValue(value, value.as(ICallable.class));
+				else if (value.is(IComposite.class)) {
+					final IComposite composite = value.as(IComposite.class);
+					if (composite.has(CompositeTraits.Callable.class))
+						return new CallableWithValue(value, composite.get(CompositeTraits.Callable.class));
+				}
+
+				return super.createSymbol(value);
+			}
+
+		}
+
+		final SymbolMap<TypedValue> coreMap = new TypedValueSymbolMap();
+
+		coreMap.put(TypedCalcConstants.SYMBOL_NULL, nullValue);
+		coreMap.put(TypedCalcConstants.SYMBOL_FALSE, domain.create(Boolean.class, Boolean.TRUE));
+		coreMap.put(TypedCalcConstants.SYMBOL_TRUE, domain.create(Boolean.class, Boolean.FALSE));
+		coreMap.put("NAN", domain.create(Double.class, Double.NaN));
+		coreMap.put("INF", domain.create(Double.class, Double.POSITIVE_INFINITY));
+		coreMap.put("I", domain.create(Complex.class, Complex.I));
+
 		final Environment<TypedValue> env = new Environment<TypedValue>(nullValue) {
 			@Override
 			protected Frame<TypedValue> createTopMap() {
-				class TypedValueSymbolMap extends TopSymbolMap<TypedValue> {
-					@Override
-					protected ISymbol<TypedValue> createSymbol(ICallable<TypedValue> callable) {
-						return new CallableWithValue(domain.create(ICallable.class, callable), callable);
-					}
-
-					@Override
-					@SuppressWarnings("unchecked")
-					protected ISymbol<TypedValue> createSymbol(TypedValue value) {
-						if (value.is(ICallable.class))
-							return new CallableWithValue(value, value.as(ICallable.class));
-						else if (value.is(IComposite.class)) {
-							final IComposite composite = value.as(IComposite.class);
-							if (composite.has(CompositeTraits.Callable.class))
-								return new CallableWithValue(value, composite.get(CompositeTraits.Callable.class));
-						}
-
-						return super.createSymbol(value);
-					}
-
-				}
-
-				return new Frame<TypedValue>(new TypedValueSymbolMap(), new Stack<TypedValue>());
+				final SymbolMap<TypedValue> mainSymbolMap = new LocalSymbolMap<TypedValue>(coreMap);
+				return new Frame<TypedValue>(mainSymbolMap, new Stack<TypedValue>());
 			}
 		};
 
+		final SymbolMap<TypedValue> envMap = env.topFrame().symbols();
+
 		GenericFunctions.createStackManipulationFunctions(env);
-
-		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_NULL, nullValue);
-
-		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_FALSE, domain.create(Boolean.class, Boolean.TRUE));
-		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_TRUE, domain.create(Boolean.class, Boolean.FALSE));
 
 		env.setGlobalSymbol("E", domain.create(Double.class, Math.E));
 		env.setGlobalSymbol("PI", domain.create(Double.class, Math.PI));
-		env.setGlobalSymbol("NAN", domain.create(Double.class, Double.NaN));
-		env.setGlobalSymbol("INF", domain.create(Double.class, Double.POSITIVE_INFINITY));
-
-		env.setGlobalSymbol("I", domain.create(Complex.class, Complex.I));
 
 		env.setGlobalSymbol("isint", new PredicateIsType(BigInteger.class));
 		env.setGlobalSymbol("isbool", new PredicateIsType(Boolean.class));
@@ -997,7 +1002,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("symbol", new SimpleTypedFunction(domain) {
+		coreMap.put("symbol", new SimpleTypedFunction(domain) {
 			@Variant
 			public Symbol symbol(String value) {
 				return Symbol.get(value);
@@ -1336,7 +1341,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("cons", new BinaryFunction<TypedValue>() {
+		coreMap.put("cons", new BinaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue left, TypedValue right) {
 				return domain.create(Cons.class, new Cons(left, right));
@@ -1359,7 +1364,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_LIST, new SingleReturnCallable<TypedValue>() {
+		coreMap.put(TypedCalcConstants.SYMBOL_LIST, new SingleReturnCallable<TypedValue>() {
 			@Override
 			public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
 				final Integer args = argumentsCount.or(0);
@@ -1599,7 +1604,7 @@ public class TypedValueCalculatorFactory {
 		delayFactory.registerSymbols(env);
 
 		final MatchExpressionFactory matchFactory = new MatchExpressionFactory(domain, splitOperator, lambdaOperator, colonOperator);
-		matchFactory.registerSymbols(env);
+		matchFactory.registerSymbols(envMap, coreMap);
 
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 

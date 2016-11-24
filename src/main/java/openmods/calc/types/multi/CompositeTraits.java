@@ -1,6 +1,7 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Optional;
+import java.util.List;
 import openmods.calc.ICallable;
 
 public class CompositeTraits {
@@ -30,5 +31,9 @@ public class CompositeTraits {
 	}
 
 	public interface Callable extends ICompositeTrait, ICallable<TypedValue> {}
+
+	public interface Decomposable extends ICompositeTrait {
+		public Optional<List<TypedValue>> tryDecompose(TypedValue input, int variableCount);
+	}
 
 }
