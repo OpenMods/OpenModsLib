@@ -1,5 +1,6 @@
 package openmods.calc.types.multi;
 
+import com.google.common.base.Optional;
 import gnu.trove.set.TCharSet;
 import gnu.trove.set.hash.TCharHashSet;
 import java.math.BigInteger;
@@ -9,6 +10,7 @@ import openmods.calc.PrinterUtils;
 import openmods.calc.parsing.StringEscaper;
 import openmods.calc.types.bigint.BigIntPrinter;
 import openmods.calc.types.fp.DoublePrinter;
+import openmods.calc.types.multi.CompositeTraits.Printable;
 import openmods.config.simpler.Configurable;
 import openmods.math.Complex;
 
@@ -159,7 +161,10 @@ public class TypedValuePrinter implements IValuePrinter<TypedValue> {
 		return repr(cons.car) + " : " + repr(cons.cdr);
 	}
 
-	private static String printComposite(IComposite value) {
+	private String printComposite(IComposite value) {
+		final Optional<Printable> printer = value.getOptional(CompositeTraits.Printable.class);
+		if (printer.isPresent()) return printer.get().str(this);
+
 		return "<" + value.type() + ":" + System.identityHashCode(value) + " " + value.toString() + ">";
 	}
 

@@ -274,40 +274,34 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testTypeFunctions() {
-		infix("issymbol(#test)").expectResult(b(true));
-		infix("issymbol(#+)").expectResult(b(true));
-		infix("issymbol(#2)").expectResult(b(false));
+	public void testTypeFunction() {
+		infix("type(#test) == symbol").expectResult(b(true));
+		infix("type(#test).name").expectResult(s("symbol"));
+		infix("type(#+) == symbol").expectResult(b(true));
 
-		infix("type(null)").expectResult(s("<null>"));
-		infix("type(true)").expectResult(s("bool"));
-		infix("type(5)").expectResult(s("int"));
-		infix("type(5.0)").expectResult(s("float"));
-		infix("type('a')").expectResult(s("str"));
-		infix("type(I)").expectResult(s("complex"));
-		infix("type(2 + 3I)").expectResult(s("complex"));
-		infix("type(2 + 3*I)").expectResult(s("complex"));
+		infix("type(null).name").expectResult(s("<null>"));
 
-		infix("isint(null)").expectResult(b(false));
-		infix("isint(true)").expectResult(b(false));
-		infix("isint(5)").expectResult(b(true));
-		infix("isint(5.0)").expectResult(b(false));
-		infix("isint('hello')").expectResult(b(false));
-		infix("isint('I')").expectResult(b(false));
-		infix("isint(#2)").expectResult(b(true));
+		infix("type(true).name").expectResult(s("bool"));
+		infix("type(true) == bool").expectResult(TRUE);
 
-		infix("iscomplex(1)").expectResult(b(false));
-		infix("iscomplex(I)").expectResult(b(true));
-		infix("iscomplex(1 + I)").expectResult(b(true));
+		infix("type(5).name").expectResult(s("int"));
+		infix("type(5) == int").expectResult(TRUE);
+		infix("type(#5) == int").expectResult(TRUE);
 
-		infix("isnumber(null)").expectResult(b(false));
-		infix("isnumber(true)").expectResult(b(true));
-		infix("isnumber(5)").expectResult(b(true));
-		infix("isnumber(5.0)").expectResult(b(true));
-		infix("isnumber(I)").expectResult(b(true));
-		infix("isnumber(3 + 4I)").expectResult(b(true));
-		infix("isnumber('hello')").expectResult(b(false));
+		infix("type(5.0).name").expectResult(s("float"));
+		infix("type(5.0) == float").expectResult(TRUE);
 
+		infix("type('a').name").expectResult(s("str"));
+		infix("type('a') == str").expectResult(TRUE);
+
+		infix("type(I).name").expectResult(s("complex"));
+		infix("type(I) == complex").expectResult(TRUE);
+		infix("type(2 + 3I) == complex").expectResult(TRUE);
+		infix("type(2 + 3*I) == complex").expectResult(TRUE);
+	}
+
+	@Test
+	public void testTypeConversionFunctions() {
 		infix("int(true)").expectResult(i(1));
 		infix("int(5)").expectResult(i(5));
 		infix("int(5.2)").expectResult(i(5));
@@ -350,6 +344,8 @@ public class TypedValueCalculatorTest {
 		infix("parse('0x29A')").expectResult(i(666));
 		infix("parse('0x29A.1')").expectResult(d(666.0625));
 		infix("parse('100#10')").expectResult(i(100));
+
+		infix("type(symbol('test')) == symbol").expectResult(TRUE);
 	}
 
 	@Test
@@ -415,8 +411,8 @@ public class TypedValueCalculatorTest {
 		}
 
 		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new EmptyComposite()));
-		infix("type(root)=='object'").expectResult(b(true));
-		infix("isobject(root)").expectResult(b(true));
+		infix("type(root) == object").expectResult(b(true));
+		infix("type(root).name == 'object'").expectResult(b(true));
 		infix("bool(root)").expectResult(b(true));
 	}
 
@@ -561,15 +557,15 @@ public class TypedValueCalculatorTest {
 		sut.environment.setGlobalSymbol("root", domain.create(IComposite.class, new TestStructuredComposite("")));
 		infix("root.path").expectResult(s(""));
 
-		prefix("(== (type root) 'object')").expectResult(b(true));
-		prefix("(isobject root)").expectResult(b(true));
+		prefix("(== (type root) object)").expectResult(TRUE);
+		prefix("(== (. (type root) name) 'object')").expectResult(TRUE);
 		prefix("(. root path)").expectResult(s(""));
 
-		infix("isobject(root.a)").expectResult(b(true));
+		infix("type(root.a) == object").expectResult(TRUE);
 		infix("root.a.path").expectResult(s("a"));
 		prefix("(. root a path)").expectResult(s("a"));
 
-		infix("isobject(root.a.b)").expectResult(b(true));
+		infix("type(root.a.b) == object").expectResult(TRUE);
 		infix("root.a.b.path").expectResult(s("a/b"));
 
 		infix("root.'a'.path").expectResult(s("a"));
@@ -593,7 +589,7 @@ public class TypedValueCalculatorTest {
 	public void testObjectIndexingWithBrackets() {
 		sut.environment.setGlobalSymbol("test", domain.create(IComposite.class, new TestStructuredComposite("")));
 		infix("test['path']").expectResult(s(""));
-		infix("isobject(test['a'])").expectResult(TRUE);
+		infix("type(test['a']) == object").expectResult(TRUE);
 
 		infix("test['a']['b']['path']").expectResult(s("a/b"));
 
@@ -820,7 +816,7 @@ public class TypedValueCalculatorTest {
 	public void testPostfixQuotes() {
 		postfix("#a").expectResult(sym("a"));
 		postfix("# a").expectResult(sym("a"));
-		postfix("#a issymbol").expectResult(b(true));
+		postfix("#a type @symbol == ").expectResult(b(true));
 		postfix("#abc 'abc' symbol ==").expectResult(b(true));
 
 		postfix("#+").expectResult(sym("+"));
@@ -935,7 +931,7 @@ public class TypedValueCalculatorTest {
 	public void testListFunctions() {
 		infix("list()").expectResult(nil());
 		infix("list(1,2,3)").expectResult(cons(i(1), cons(i(2), cons(i(3), nil()))));
-		infix("iscons(list(1,2,3))").expectResult(b(true));
+		infix("type(list(1,2,3)) == cons").expectResult(b(true));
 		infix("list(1,2,3) == cons(1, cons(2, cons(3, null)))").expectResult(b(true));
 		prefix("(== (list 1,2,3) #(1 2 3))").expectResult(b(true));
 		infix("car(cons(1, 2))").expectResult(i(1));
@@ -1064,7 +1060,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testCodeParsingInPostfixParser() {
-		postfix("{ 1 2 +} iscode").expectResult(b(true));
+		postfix("{ 1 2 +} type @code ==").expectResult(b(true));
 
 		postfix("{ 1 2 +} execute").expectResult(i(3));
 		postfix("{ 1 2 +} execute$1,1").expectResult(i(3));
@@ -1075,8 +1071,8 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testCodeSymbol() {
-		infix("iscode(code(2 + 3))").expectResult(TRUE);
-		infix("(iscode (code (+ 2 3)))").expectResult(TRUE);
+		infix("type(code(2 + 3)) == code").expectResult(TRUE);
+		infix("type(code(2 + 3)).name == 'code'").expectResult(TRUE);
 
 		infix("execute(code(2 + 3))").expectResult(i(5));
 		prefix("(execute (code (+ 2 3)))").expectResult(i(5));
@@ -1084,13 +1080,10 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testCodeBrackets() {
-		infix("iscode({2 + 3})").expectResult(TRUE);
+		infix("type({2 + 3}) == code").expectResult(TRUE);
 		infix("execute({2 + 3})").expectResult(i(5));
 
-		prefix("(iscode {6})").expectResult(TRUE);
 		prefix("(execute {6})").expectResult(i(6));
-
-		prefix("(iscode {(+ 2 3)})").expectResult(TRUE);
 		prefix("(execute {(+ 2 3)})").expectResult(i(5));
 	}
 
@@ -1696,6 +1689,14 @@ public class TypedValueCalculatorTest {
 
 		infix("match(Test2(a, b) -> cons(a, b), Test3(a, b) -> cons(a, b))(2)").expectResult(cons(i(2), i(2)));
 		infix("match(Test2(a, b) -> cons(a, b), Test3(a, b) -> cons(a, b))(3)").expectResult(cons(i(3), i(3)));
+	}
+
+	@Test
+	public void testPrimitiveTypeMatch() {
+		infix("match(int(x) -> 'int':x, str(x) -> 'str':x, bool(x) -> 'bool':x, float(x) -> 'float':x)(5)").expectResult(cons(s("int"), i(5)));
+		infix("match(int(x) -> 'int':x, str(x) -> 'str':x, bool(x) -> 'bool':x, float(x) -> 'float':x)(5.0)").expectResult(cons(s("float"), d(5.0)));
+		infix("match(int(x) -> 'int':x, str(x) -> 'str':x, bool(x) -> 'bool':x, float(x) -> 'float':x)('abc')").expectResult(cons(s("str"), s("abc")));
+		infix("match(int(x) -> 'int':x, str(x) -> 'str':x, bool(x) -> 'bool':x, float(x) -> 'float':x)(true)").expectResult(cons(s("bool"), TRUE));
 	}
 
 	@Test

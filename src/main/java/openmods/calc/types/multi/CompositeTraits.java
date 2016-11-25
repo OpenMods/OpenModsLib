@@ -3,6 +3,7 @@ package openmods.calc.types.multi;
 import com.google.common.base.Optional;
 import java.util.List;
 import openmods.calc.ICallable;
+import openmods.calc.IValuePrinter;
 
 public class CompositeTraits {
 
@@ -34,6 +35,10 @@ public class CompositeTraits {
 
 	public interface Decomposable extends ICompositeTrait {
 		public Optional<List<TypedValue>> tryDecompose(TypedValue input, int variableCount);
+	}
+
+	public interface Printable extends ICompositeTrait {
+		public String str(IValuePrinter<TypedValue> printer);
 	}
 
 }

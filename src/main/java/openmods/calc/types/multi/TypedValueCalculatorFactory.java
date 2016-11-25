@@ -5,8 +5,10 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
@@ -208,19 +210,6 @@ public class TypedValueCalculatorFactory {
 		return false;
 	}
 
-	private static class PredicateIsType extends UnaryFunction<TypedValue> {
-		private final Class<?> cls;
-
-		public PredicateIsType(Class<?> cls) {
-			this.cls = cls;
-		}
-
-		@Override
-		protected TypedValue call(TypedValue value) {
-			return value.domain.create(Boolean.class, value.is(cls));
-		}
-	}
-
 	private static boolean tryCall(Frame<TypedValue> frame, TypedValue target, Optional<Integer> returns, Optional<Integer> args) {
 		if (target.is(ICallable.class)) {
 			@SuppressWarnings("unchecked")
@@ -268,7 +257,7 @@ public class TypedValueCalculatorFactory {
 		domain.registerType(String.class, "str");
 		domain.registerType(Complex.class, "complex");
 		domain.registerType(IComposite.class, "object");
-		domain.registerType(Cons.class, "pair");
+		domain.registerType(Cons.class, "cons");
 		domain.registerType(Symbol.class, "symbol");
 		domain.registerType(Code.class, "code");
 		domain.registerType(ICallable.class, "callable");
@@ -879,16 +868,6 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("E", domain.create(Double.class, Math.E));
 		env.setGlobalSymbol("PI", domain.create(Double.class, Math.PI));
 
-		env.setGlobalSymbol("isint", new PredicateIsType(BigInteger.class));
-		env.setGlobalSymbol("isbool", new PredicateIsType(Boolean.class));
-		env.setGlobalSymbol("isfloat", new PredicateIsType(Double.class));
-		env.setGlobalSymbol("isnull", new PredicateIsType(UnitType.class));
-		env.setGlobalSymbol("isstr", new PredicateIsType(String.class));
-		env.setGlobalSymbol("iscomplex", new PredicateIsType(Complex.class));
-		env.setGlobalSymbol("isobject", new PredicateIsType(IComposite.class));
-		env.setGlobalSymbol("iscons", new PredicateIsType(Cons.class));
-		env.setGlobalSymbol("issymbol", new PredicateIsType(Symbol.class));
-		env.setGlobalSymbol("iscode", new PredicateIsType(Code.class));
 		env.setGlobalSymbol("iscallable", new UnaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
@@ -909,27 +888,56 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("type", new UnaryFunction<TypedValue>() {
+		class TypeSymbol extends UnaryFunction<TypedValue> {
+
+			private final Map<Class<?>, TypedValue> types = Maps.newHashMap();
+
+			{
+				types.put(UnitType.class, TypeComposite.create(domain, UnitType.class));
+			}
+
 			@Override
 			protected TypedValue call(TypedValue value) {
-				final TypeDomain domain = value.domain;
-				return domain.create(String.class, domain.getName(value.type));
+				final TypedValue type = types.get(value.type);
+				return type != null? type : nullValue;
 			}
-		});
 
-		env.setGlobalSymbol("bool", new UnaryFunction<TypedValue>() {
+			public void registerType(SymbolMap<TypedValue> symbols, Class<?> tag) {
+				domain.checkIsKnownType(tag);
+				final TypedValue typeValue = TypeComposite.create(domain, tag);
+				types.put(tag, typeValue);
+				symbols.put(domain.getName(tag), typeValue);
+			}
+
+			public void registerType(SymbolMap<TypedValue> symbols, Class<?> tag, ICallable<TypedValue> callBehaviour) {
+				domain.checkIsKnownType(tag);
+				final TypedValue typeValue = TypeComposite.create(domain, tag, callBehaviour);
+				types.put(tag, typeValue);
+				symbols.put(domain.getName(tag), typeValue);
+			}
+		}
+
+		final TypeSymbol typeSymbol = new TypeSymbol();
+
+		env.setGlobalSymbol("type", typeSymbol);
+
+		typeSymbol.registerType(envMap, Boolean.class, new UnaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
 				return value.domain.create(Boolean.class, value.isTruthy());
 			}
 		});
 
-		env.setGlobalSymbol("str", new UnaryFunction<TypedValue>() {
+		typeSymbol.registerType(envMap, String.class, new UnaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
 				return value.domain.create(String.class, valuePrinter.str(value));
 			}
 		});
+
+		typeSymbol.registerType(envMap, IComposite.class);
+		typeSymbol.registerType(envMap, Code.class);
+		typeSymbol.registerType(envMap, ICallable.class);
 
 		env.setGlobalSymbol("repr", new UnaryFunction<TypedValue>() {
 			@Override
@@ -938,7 +946,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("int", new SimpleTypedFunction(domain) {
+		typeSymbol.registerType(envMap, BigInteger.class, new SimpleTypedFunction(domain) {
 			@Variant
 			public BigInteger convert(@DispatchArg(extra = { Boolean.class }) BigInteger value) {
 				return value;
@@ -958,7 +966,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("float", new SimpleTypedFunction(domain) {
+		typeSymbol.registerType(envMap, Double.class, new SimpleTypedFunction(domain) {
 			@Variant
 			public Double convert(@DispatchArg(extra = { BigInteger.class, Boolean.class }) Double value) {
 				return value;
@@ -972,7 +980,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("complex", new SimpleTypedFunction(domain) {
+		typeSymbol.registerType(envMap, Complex.class, new SimpleTypedFunction(domain) {
 			@Variant
 			public Complex convert(Double re, Double im) {
 				return Complex.cartesian(re, im);
@@ -1002,7 +1010,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		coreMap.put("symbol", new SimpleTypedFunction(domain) {
+		typeSymbol.registerType(envMap, Symbol.class, new SimpleTypedFunction(domain) {
 			@Variant
 			public Symbol symbol(String value) {
 				return Symbol.get(value);
@@ -1341,7 +1349,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		coreMap.put("cons", new BinaryFunction<TypedValue>() {
+		typeSymbol.registerType(envMap, Cons.class, new BinaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue left, TypedValue right) {
 				return domain.create(Cons.class, new Cons(left, right));
