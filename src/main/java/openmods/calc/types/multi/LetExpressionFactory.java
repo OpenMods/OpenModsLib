@@ -2,7 +2,6 @@ package openmods.calc.types.multi;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.BinaryOperator;
@@ -17,12 +16,10 @@ import openmods.calc.StackValidationException;
 import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
 import openmods.calc.Value;
-import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
-import openmods.calc.parsing.SquareBracketContainerNode;
 import openmods.calc.parsing.SymbolCallNode;
 import openmods.utils.Stack;
 
@@ -40,54 +37,13 @@ public class LetExpressionFactory {
 		this.assignOperator = assignOperator;
 	}
 
-	private class LetNode implements IExprNode<TypedValue> {
-		private final String letSymbol;
-		private final IExprNode<TypedValue> argsNode;
-		private final IExprNode<TypedValue> codeNode;
-
+	private class LetNode extends ScopeModifierNode {
 		public LetNode(String letSymbol, IExprNode<TypedValue> argsNode, IExprNode<TypedValue> codeNode) {
-			this.letSymbol = letSymbol;
-			this.argsNode = argsNode;
-			this.codeNode = codeNode;
+			super(domain, letSymbol, colonOperator, assignOperator, argsNode, codeNode);
 		}
 
 		@Override
-		public void flatten(List<IExecutable<TypedValue>> output) {
-			// expecting [a:b,c:1+2]. If correctly formed, arg name (symbol) will be transformed into symbol atom
-			if (argsNode instanceof SquareBracketContainerNode) {
-				final SquareBracketContainerNode<TypedValue> bracketNode = (SquareBracketContainerNode<TypedValue>)argsNode;
-
-				int argumentCount = 0;
-				for (IExprNode<TypedValue> argNode : bracketNode.getChildren()) {
-					flattenArgNode(output, argNode);
-					argumentCount++;
-				}
-
-				Preconditions.checkState(argumentCount > 0, "'let' expects at least one argument");
-				// slighly inefficient, but compatible with hand-called instruction
-				output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, argumentCount, 1));
-			} else { // assume list of arg pairs
-				argsNode.flatten(output);
-			}
-
-			output.add(Value.create(Code.flattenAndWrap(domain, codeNode)));
-			output.add(new SymbolCall<TypedValue>(letSymbol, 2, 1));
-		}
-
-		private void flattenArgNode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> argNode) {
-			if (argNode instanceof BinaryOpNode) {
-				final BinaryOpNode<TypedValue> opNode = (BinaryOpNode<TypedValue>)argNode;
-				// assign op has lower prio, but we still need pair as backing structure - therefore we are placing colon
-				if (opNode.operator == colonOperator || opNode.operator == assignOperator) {
-					flattenNameAndValue(output, opNode.left, opNode.right);
-					output.add(colonOperator);
-					return;
-				}
-			}
-			argNode.flatten(output); // not directly arg pair, but may still produce valid one
-		}
-
-		private void flattenNameAndValue(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> name, IExprNode<TypedValue> value) {
+		protected void flattenNameAndValue(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> name, IExprNode<TypedValue> value) {
 			if (name instanceof SymbolCallNode) {
 				// f(x, y):<some code> -> f:(x,y)-><some code>
 				final SymbolCallNode<TypedValue> callNode = (SymbolCallNode<TypedValue>)name;
@@ -131,12 +87,6 @@ public class LetExpressionFactory {
 		private IExecutable<TypedValue> flattenExprToCodeConstant(IExprNode<TypedValue> code) {
 			return Value.create(Code.flattenAndWrap(domain, code));
 		}
-
-		@Override
-		public Iterable<IExprNode<TypedValue>> getChildren() {
-			return ImmutableList.of(argsNode, codeNode);
-		}
-
 	}
 
 	private class LetStateTransition extends SameStateSymbolTransition<TypedValue> {
@@ -192,12 +142,8 @@ public class LetExpressionFactory {
 
 			final Frame<TypedValue> letFrame = FrameFactory.newLocalFrameWithSubstack(currentFrame, 2);
 			final Stack<TypedValue> letStack = letFrame.stack();
-			final TypedValue code = letStack.pop();
-			Preconditions.checkState(code.is(Code.class), "Expected code of first 'let' parameter, got %s", code);
-
-			final TypedValue paramPairs = letStack.pop();
-			Preconditions.checkState(paramPairs.is(Cons.class), "Expected list of name:value pairs on second 'let' parameter, got %s", paramPairs);
-			final Cons vars = paramPairs.as(Cons.class);
+			final Code code = letStack.pop().as(Code.class, "second (code) 'let' parameter");
+			final Cons vars = letStack.pop().as(Cons.class, "first (var list) 'let'  parameter");
 
 			try {
 				prepareFrame(letFrame.symbols(), currentFrame.symbols(), vars);
@@ -205,7 +151,7 @@ public class LetExpressionFactory {
 				throw new IllegalArgumentException("Expected list of name:value pairs on second 'let' parameter, got " + vars, e);
 			}
 
-			code.as(Code.class, "second 'let' parameter").execute(letFrame);
+			code.execute(letFrame);
 
 			if (returnsCount.isPresent()) {
 				final int expected = returnsCount.get();
@@ -217,7 +163,11 @@ public class LetExpressionFactory {
 		protected abstract void prepareFrame(SymbolMap<TypedValue> outputFrame, SymbolMap<TypedValue> callSymbols, Cons vars);
 	}
 
-	private abstract static class ArgPairVisitor implements Cons.LinearVisitor {
+	private abstract class ArgPairVisitor extends Cons.ListVisitor {
+		public ArgPairVisitor() {
+			super(nullValue);
+		}
+
 		@Override
 		public void value(TypedValue value, boolean isLast) {
 			if (!value.is(Cons.class)) throw new InvalidArgsException();

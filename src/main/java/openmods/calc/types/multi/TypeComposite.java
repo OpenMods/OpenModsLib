@@ -1,6 +1,7 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.Frame;
@@ -25,6 +26,7 @@ public class TypeComposite extends SimpleComposite implements CompositeTraits.De
 
 	@Override
 	public Optional<List<TypedValue>> tryDecompose(TypedValue input, int variableCount) {
+		Preconditions.checkArgument(variableCount == 1, "Invalid number of values to unpack, expected 1 got %s", variableCount);
 		if (!input.is(tag)) return Optional.absent();
 
 		final List<TypedValue> result = ImmutableList.of(input);

@@ -1729,6 +1729,14 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testAltTypes() {
+		infix("alt([Maybe=Just(x) \\ Nothing], match((Just(y)) -> y + 1, (Nothing) -> 'nope')(Just(2)))").expectResult(i(3));
+		infix("alt([Maybe=Just(x) \\ Nothing], match((Just(y)) -> y + 1, (Nothing) -> 'nope')(Nothing()))").expectResult(s("nope"));
+
+		infix("alt([Tree=Leaf(value)\\Node(left, right)], letrec([f = match((Leaf(v)) -> v, (Node(l,r)) -> f(l) + f(r))], f(Node(Node(Leaf(1), Leaf(4)), Leaf(6)))))").expectResult(i(11));
+	}
+
+	@Test
 	public void testInfixStringInterpolation() {
 		infix("let([a:2, b:'test'], $'a = {a}, b = {b}')").expectResult(s("a = 2, b = test"));
 	}

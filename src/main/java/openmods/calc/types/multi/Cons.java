@@ -80,6 +80,23 @@ public class Cons {
 		public void end(TypedValue terminator);
 	}
 
+	public abstract static class ListVisitor implements LinearVisitor {
+
+		private final TypedValue expectedTerminator;
+
+		public ListVisitor(TypedValue expectedTerminator) {
+			this.expectedTerminator = expectedTerminator;
+		}
+
+		@Override
+		public void begin() {}
+
+		@Override
+		public void end(TypedValue actualTerminator) {
+			Preconditions.checkState(actualTerminator.equals(expectedTerminator), "Not valid list: expected %s, got %s", expectedTerminator, actualTerminator);
+		}
+	}
+
 	public void visit(BranchingVisitor visitor) {
 		visitor.begin();
 
