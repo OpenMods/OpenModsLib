@@ -68,6 +68,8 @@ public class TypeVariableHolderHandler {
 			return annotation.value();
 	}
 
+	private static final Type USE_DECLARING_TYPE_MARKER = Type.getType(TypeVariableHolder.UseDeclaringType.class);
+
 	private static void findTargets(ASMData target, Map<Field, Class<?>> classTargetToSource, Map<Field, Class<?>> fieldTargetToSource) {
 		final String targetClassName = target.getClassName();
 		final String targetObject = target.getObjectName();
@@ -76,7 +78,7 @@ public class TypeVariableHolderHandler {
 		try {
 			final Class<?> targetClass = Class.forName(targetClassName);
 			final Class<?> sourceClass;
-			if (sourceClassName == null || sourceClassName.equals(TypeVariableHolder.UseDeclaringType.class.getName()))
+			if (sourceClassName == null || sourceClassName.equals(USE_DECLARING_TYPE_MARKER))
 				sourceClass = targetClass;
 			else
 				sourceClass = Class.forName(sourceClassName.getClassName());
