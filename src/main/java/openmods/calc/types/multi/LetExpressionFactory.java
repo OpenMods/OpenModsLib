@@ -8,11 +8,12 @@ import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Environment;
 import openmods.calc.ExecutionErrorException;
-import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
+import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
+import openmods.calc.StackValidationException;
 import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
 import openmods.calc.Value;
@@ -180,19 +181,21 @@ public class LetExpressionFactory {
 	@SuppressWarnings("serial")
 	private static class InvalidArgsException extends RuntimeException {}
 
-	private static abstract class LetSymbolBase extends FixedCallable<TypedValue> {
-
-		public LetSymbolBase() {
-			super(2, 1);
-		}
+	private static abstract class LetSymbolBase implements ICallable<TypedValue> {
 
 		@Override
-		public void call(Frame<TypedValue> currentFrame) {
+		public void call(Frame<TypedValue> currentFrame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			if (argumentsCount.isPresent()) {
+				final int args = argumentsCount.get();
+				if (args != 2) throw new StackValidationException("Expected 2 arguments but got %s", args);
+			}
+
 			final Frame<TypedValue> letFrame = FrameFactory.newLocalFrameWithSubstack(currentFrame, 2);
-			final TypedValue code = letFrame.stack().pop();
+			final Stack<TypedValue> letStack = letFrame.stack();
+			final TypedValue code = letStack.pop();
 			Preconditions.checkState(code.is(Code.class), "Expected code of first 'let' parameter, got %s", code);
 
-			final TypedValue paramPairs = letFrame.stack().pop();
+			final TypedValue paramPairs = letStack.pop();
 			Preconditions.checkState(paramPairs.is(Cons.class), "Expected list of name:value pairs on second 'let' parameter, got %s", paramPairs);
 			final Cons vars = paramPairs.as(Cons.class);
 
@@ -203,6 +206,12 @@ public class LetExpressionFactory {
 			}
 
 			code.as(Code.class, "second 'let' parameter").execute(letFrame);
+
+			if (returnsCount.isPresent()) {
+				final int expected = returnsCount.get();
+				final int actual = letStack.size();
+				if (expected != actual) throw new StackValidationException("Has %s result(s) but expected %s", actual, expected);
+			}
 		}
 
 		protected abstract void prepareFrame(SymbolMap<TypedValue> outputFrame, SymbolMap<TypedValue> callSymbols, Cons vars);
