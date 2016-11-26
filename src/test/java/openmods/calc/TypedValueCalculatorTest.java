@@ -1466,139 +1466,139 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testSimpleValueMatch() {
-		infix("match('a' -> 1, 2 -> 'b')('a')").expectResult(i(1));
-		infix("match('a' -> 1, 2 -> 'b')(2)").expectResult(s("b"));
+		infix("match(('a') -> 1, (2) -> 'b')('a')").expectResult(i(1));
+		infix("match(('a') -> 1, (2) -> 'b')(2)").expectResult(s("b"));
 	}
 
 	@Test
 	public void testMatchWithGlobalSymbols() {
-		infix("match(true -> 1, false -> 0, null -> -1)(true)").expectResult(i(1));
-		infix("match(true -> 1, false -> 0, null -> -1)(false)").expectResult(i(0));
-		infix("match(true -> 1, false -> 0, null -> -1)(null)").expectResult(i(-1));
+		infix("match((true) -> 1, (false) -> 0, (null) -> -1)(true)").expectResult(i(1));
+		infix("match((true) -> 1, (false) -> 0, (null) -> -1)(false)").expectResult(i(0));
+		infix("match((true) -> 1, (false) -> 0, (null) -> -1)(null)").expectResult(i(-1));
 	}
 
 	@Test
 	public void testWildcardMatch() {
-		infix("match('a' -> 1, _ -> '?')('a')").expectResult(i(1));
-		infix("match('a' -> 1, _ -> '?')('dummy')").expectResult(s("?"));
+		infix("match(('a') -> 1, (_) -> '?')('a')").expectResult(i(1));
+		infix("match(('a') -> 1, (_) -> '?')('dummy')").expectResult(s("?"));
 	}
 
 	@Test
 	public void testBindMatch() {
-		infix("match(a -> a)('b')").expectResult(s("b"));
-		infix("match(a -> a + 1)(2)").expectResult(i(3));
-		infix("match(a -> 'd')(2)").expectResult(s("d"));
+		infix("match((a) -> a)('b')").expectResult(s("b"));
+		infix("match((a) -> a + 1)(2)").expectResult(i(3));
+		infix("match((a) -> 'd')(2)").expectResult(s("d"));
 	}
 
 	@Test
 	public void testSimpleListMatch() {
-		infix("match(1:2:3 -> 'ok', _ -> 'fail')(1:2:3)").expectResult(s("ok"));
-		infix("match(1:2:3 -> 'ok', _ -> 'fail')(1:2:4)").expectResult(s("fail"));
-		infix("match(1:2:3 -> 'ok', _ -> 'fail')(1:2)").expectResult(s("fail"));
-		infix("match(1:2:3 -> 'ok', _ -> 'fail')(1:2:3:4)").expectResult(s("fail"));
+		infix("match((1:2:3) -> 'ok', (_) -> 'fail')(1:2:3)").expectResult(s("ok"));
+		infix("match((1:2:3) -> 'ok', (_) -> 'fail')(1:2:4)").expectResult(s("fail"));
+		infix("match((1:2:3) -> 'ok', (_) -> 'fail')(1:2)").expectResult(s("fail"));
+		infix("match((1:2:3) -> 'ok', (_) -> 'fail')(1:2:3:4)").expectResult(s("fail"));
 	}
 
 	@Test
 	public void testSimpleTerminatedListMatch() {
-		infix("match([1,2,3] -> 'ok', _ -> 'fail')([1,2,3])").expectResult(s("ok"));
-		infix("match([1,2,3] -> 'ok', _ -> 'fail')(1:2:3:null)").expectResult(s("ok"));
-		infix("match([1,2,3] -> 'ok', _ -> 'fail')(1:2:3)").expectResult(s("fail"));
+		infix("match(([1,2,3]) -> 'ok', (_) -> 'fail')([1,2,3])").expectResult(s("ok"));
+		infix("match(([1,2,3]) -> 'ok', (_) -> 'fail')(1:2:3:null)").expectResult(s("ok"));
+		infix("match(([1,2,3]) -> 'ok', (_) -> 'fail')(1:2:3)").expectResult(s("fail"));
 	}
 
 	@Test
 	public void testEmptyListMatch() {
-		infix("match([] -> 'ok', _ -> 'fail')([])").expectResult(s("ok"));
-		infix("match([] -> 'ok', _ -> 'fail')(null)").expectResult(s("ok"));
-		infix("match([] -> 'ok', _ -> 'fail')([1])").expectResult(s("fail"));
+		infix("match(([]) -> 'ok', (_) -> 'fail')([])").expectResult(s("ok"));
+		infix("match(([]) -> 'ok', (_) -> 'fail')(null)").expectResult(s("ok"));
+		infix("match(([]) -> 'ok', (_) -> 'fail')([1])").expectResult(s("fail"));
 	}
 
 	@Test
 	public void testListMatchWithWildcard() {
-		infix("match(1:2:_ -> 'ok', _ -> 'fail')(1:2:3)").expectResult(s("ok"));
-		infix("match(1:2:_ -> 'ok', _ -> 'fail')(1:2:4)").expectResult(s("ok"));
-		infix("match(1:2:_ -> 'ok', _ -> 'fail')(1:2)").expectResult(s("fail"));
-		infix("match(1:2:_ -> 'ok', _ -> 'fail')(1:2:3:4)").expectResult(s("ok"));
+		infix("match((1:2:_) -> 'ok', (_) -> 'fail')(1:2:3)").expectResult(s("ok"));
+		infix("match((1:2:_) -> 'ok', (_) -> 'fail')(1:2:4)").expectResult(s("ok"));
+		infix("match((1:2:_) -> 'ok', (_) -> 'fail')(1:2)").expectResult(s("fail"));
+		infix("match((1:2:_) -> 'ok', (_) -> 'fail')(1:2:3:4)").expectResult(s("ok"));
 	}
 
 	@Test
 	public void testNestedListMatch() {
-		infix("match(1:(2:3):4 -> 'ok', _ -> 'fail')(1:(2:3):4)").expectResult(s("ok"));
-		infix("match(1:(2:3):4 -> 'ok', _ -> 'fail')(1:2:3:4)").expectResult(s("fail"));
+		infix("match((1:(2:3):4) -> 'ok', (_) -> 'fail')(1:(2:3):4)").expectResult(s("ok"));
+		infix("match((1:(2:3):4) -> 'ok', (_) -> 'fail')(1:2:3:4)").expectResult(s("fail"));
 	}
 
 	@Test
 	public void testListMatchWithBinding() {
-		infix("match(1:2:xs -> xs, _ -> 'fail')(1:2:3)").expectResult(i(3));
-		infix("match(1:2:xs -> xs, _ -> 'fail')(1:2:4)").expectResult(i(4));
-		infix("match(1:2:xs -> xs, _ -> 'fail')(1:2)").expectResult(s("fail"));
-		infix("match(1:2:xs -> xs, _ -> 'fail')(1:2:3:4)").expectResult(cons(i(3), i(4)));
+		infix("match((1:2:xs) -> xs, (_) -> 'fail')(1:2:3)").expectResult(i(3));
+		infix("match((1:2:xs) -> xs, (_) -> 'fail')(1:2:4)").expectResult(i(4));
+		infix("match((1:2:xs) -> xs, (_) -> 'fail')(1:2)").expectResult(s("fail"));
+		infix("match((1:2:xs) -> xs, (_) -> 'fail')(1:2:3:4)").expectResult(cons(i(3), i(4)));
 	}
 
 	@Test
 	public void testNestedListMatchWithBinding() {
-		infix("match(1:(2:a):b -> a:b, _ -> 'fail')(1:(2:3):4)").expectResult(cons(i(3), i(4)));
-		infix("match(1:(2:a):b -> a:b, _ -> 'fail')(1:(2:3:5):4)").expectResult(cons(cons(i(3), i(5)), i(4)));
-		infix("match(1:(2:a):b -> a:b, _ -> 'fail')(1:(2:3:5):4:6)").expectResult(cons(cons(i(3), i(5)), cons(i(4), i(6))));
+		infix("match((1:(2:a):b) -> a:b, (_) -> 'fail')(1:(2:3):4)").expectResult(cons(i(3), i(4)));
+		infix("match((1:(2:a):b) -> a:b, (_) -> 'fail')(1:(2:3:5):4)").expectResult(cons(cons(i(3), i(5)), i(4)));
+		infix("match((1:(2:a):b) -> a:b, (_) -> 'fail')(1:(2:3:5):4:6)").expectResult(cons(cons(i(3), i(5)), cons(i(4), i(6))));
 	}
 
 	@Test
 	public void testMatchScope() {
-		infix("let([a:2], match(a -> a)(5))").expectResult(i(5));
-		infix("let([b:2], match(a -> b)(5))").expectResult(i(2));
+		infix("let([a:2], match((a) -> a)(5))").expectResult(i(5));
+		infix("let([b:2], match((a) -> b)(5))").expectResult(i(2));
 
-		infix("let([x: 'pre'], let([b: match(1 -> x, _ -> false)], let([x: 'post'], b(1))))").expectResult(s("pre"));
+		infix("let([x: 'pre'], let([b: match((1) -> x, (_) -> false)], let([x: 'post'], b(1))))").expectResult(s("pre"));
 	}
 
 	@Test
 	public void testRecursiveMatch() {
-		infix("letrec([f(l, c) : match(x:xs -> f(xs, c+1), [] -> c)(l)], f([], 0))").expectResult(i(0));
-		infix("letrec([f(l, c) : match(x:xs -> f(xs, c+1), [] -> c)(l)], f([1], 0))").expectResult(i(1));
-		infix("letrec([f(l, c) : match(x:xs -> f(xs, c+1), [] -> c)(l)], f([1,2,3], 0))").expectResult(i(3));
+		infix("letrec([f(l, c) : match((x:xs) -> f(xs, c+1), ([]) -> c)(l)], f([], 0))").expectResult(i(0));
+		infix("letrec([f(l, c) : match((x:xs) -> f(xs, c+1), ([]) -> c)(l)], f([1], 0))").expectResult(i(1));
+		infix("letrec([f(l, c) : match((x:xs) -> f(xs, c+1), ([]) -> c)(l)], f([1,2,3], 0))").expectResult(i(3));
 	}
 
 	@Test
 	public void testGuardedMatchWithNoDefaults() {
-		infix("match(a \\ a > 2 -> a \\ a < 2 -> -a)(3)").expectResult(i(3));
-		infix("match(a \\ a > 2 -> a \\ a < 2 -> -a)(1)").expectResult(i(-1));
+		infix("match((a) \\ a > 2 -> a \\ a < 2 -> -a)(3)").expectResult(i(3));
+		infix("match((a) \\ a > 2 -> a \\ a < 2 -> -a)(1)").expectResult(i(-1));
 	}
 
 	@Test
 	public void testGuardedMatchWithDefaultOnly() {
-		infix("match(a \\ 2)(5)").expectResult(i(2));
-		infix("match(a \\ a + 1)(5)").expectResult(i(6));
+		infix("match((a) \\ 2)(5)").expectResult(i(2));
+		infix("match((a) \\ a + 1)(5)").expectResult(i(6));
 	}
 
 	@Test
 	public void testGuardedMatchWithDefault() {
-		infix("match(a \\ a > 5 -> 5\\ a)(6)").expectResult(i(5));
-		infix("match(a \\ a > 5 -> 5\\ a)(5)").expectResult(i(5));
-		infix("match(a \\ a > 5 -> 5\\ a)(4)").expectResult(i(4));
+		infix("match((a) \\ a > 5 -> 5\\ a)(6)").expectResult(i(5));
+		infix("match((a) \\ a > 5 -> 5\\ a)(5)").expectResult(i(5));
+		infix("match((a) \\ a > 5 -> 5\\ a)(4)").expectResult(i(4));
 	}
 
 	@Test
 	public void testGuardedMatchWithoutValidClause() {
-		infix("match(a \\ a > 5 -> 5)(3)").expectThrow(RuntimeException.class);
+		infix("match((a) \\ a > 5 -> 5)(3)").expectThrow(RuntimeException.class);
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void testGuardedMatchWithDefaultInMiddle() {
-		infix("match(a \\ a \\ a > 5 -> 5)(3)");
+		infix("match((a) \\ a \\ a > 5 -> 5)(3)");
 	}
 
 	@Test
 	public void testGuardedMatchOrder() {
-		infix("match(a \\ a > 10 -> 10 \\ a > 5 -> 5 \\ a)(11)").expectResult(i(10));
-		infix("match(a \\ a > 10 -> 10 \\ a > 5 -> 5 \\ a)(10)").expectResult(i(5));
-		infix("match(a \\ a > 10 -> 10 \\ a > 5 -> 5 \\ a)(4)").expectResult(i(4));
+		infix("match((a) \\ a > 10 -> 10 \\ a > 5 -> 5 \\ a)(11)").expectResult(i(10));
+		infix("match((a) \\ a > 10 -> 10 \\ a > 5 -> 5 \\ a)(10)").expectResult(i(5));
+		infix("match((a) \\ a > 10 -> 10 \\ a > 5 -> 5 \\ a)(4)").expectResult(i(4));
 
-		infix("match(a \\ a > 5 -> 5 \\ a > 10 -> 10 \\ a)(11)").expectResult(i(5));
+		infix("match((a) \\ a > 5 -> 5 \\ a > 10 -> 10 \\ a)(11)").expectResult(i(5));
 
-		infix("match(a \\ true -> 'first' \\ true -> 'second' \\ 'third')('whatever')").expectResult(s("first"));
+		infix("match((a) \\ true -> 'first' \\ true -> 'second' \\ 'third')('whatever')").expectResult(s("first"));
 	}
 
 	@Test
 	public void testGuardedMatchScope() {
-		infix("let([r=2,l=3], let([f = match(a \\ a > l -> r \\ a)], let([r=8,l=10], f(4))))").expectResult(i(2));
+		infix("let([r=2,l=3], let([f = match((a) \\ a > l -> r \\ a)], let([r=8,l=10], f(4))))").expectResult(i(2));
 	}
 
 	private class TestDeconstructor extends SimpleComposite implements CompositeTraits.Decomposable {
@@ -1623,36 +1623,65 @@ public class TypedValueCalculatorTest {
 	public void testDeconstructingMatchWithConstants() {
 		sut.environment.setGlobalSymbol("Test", domain.create(IComposite.class, new TestDeconstructor()));
 
-		infix("match(Test(1) -> 'left', Test(2, b) -> 'right')(1)").expectResult(s("left"));
-		infix("match(Test(1) -> 'left', Test(2, b) -> 'right')(2)").expectResult(s("right"));
+		infix("match((Test(1)) -> 'left', (Test(2, b)) -> 'right')(1)").expectResult(s("left"));
+		infix("match((Test(1)) -> 'left', (Test(2, b)) -> 'right')(2)").expectResult(s("right"));
 	}
 
 	@Test
 	public void testDeconstructingMatchWithVarBinding() {
 		sut.environment.setGlobalSymbol("Test", domain.create(IComposite.class, new TestDeconstructor()));
 
-		infix("match(Test(a) -> a + 3)(2)").expectResult(i(5));
-		infix("match(Test(a, b) -> a + b)(2)").expectResult(i(4));
+		infix("match((Test(a)) -> a + 3)(2)").expectResult(i(5));
+		infix("match((Test(a, b)) -> a + b)(2)").expectResult(i(4));
 
-		infix("match(Test(1, a) -> a + 1, Test(2, b) -> b + 2)(1)").expectResult(i(2));
-		infix("match(Test(1, a) -> a + 1, Test(2, b) -> b + 2)(2)").expectResult(i(4));
+		infix("match((Test(1, a)) -> a + 1, (Test(2, b)) -> b + 2)(1)").expectResult(i(2));
+		infix("match((Test(1, a)) -> a + 1, (Test(2, b)) -> b + 2)(2)").expectResult(i(4));
 
-		infix("match(Test(1, a) -> a + 1, Test(2, b) -> b + 2)(2)").expectResult(i(4));
+		infix("match((Test(1, a)) -> a + 1, (Test(2, b)) -> b + 2)(2)").expectResult(i(4));
 	}
 
 	@Test
 	public void testDeconstructingMatchWithConsVarBinding() {
 		sut.environment.setGlobalSymbol("Test", domain.create(IComposite.class, new TestDeconstructor()));
 
-		infix("match(Test(1:a) -> cons('left', a), Test(2:a) -> cons('right', a))(1:5)").expectResult(cons(s("left"), i(5)));
-		infix("match(Test(1:a) -> cons('left', a), Test(2:a) -> cons('right', a))(2:7)").expectResult(cons(s("right"), i(7)));
+		infix("match((Test(1:a)) -> cons('left', a), (Test(2:a)) -> cons('right', a))(1:5)").expectResult(cons(s("left"), i(5)));
+		infix("match((Test(1:a)) -> cons('left', a), (Test(2:a)) -> cons('right', a))(2:7)").expectResult(cons(s("right"), i(7)));
 	}
 
 	@Test
 	public void testNestedDeconstructingMatch() {
 		sut.environment.setGlobalSymbol("Test", domain.create(IComposite.class, new TestDeconstructor()));
 
-		infix("match(Test(Test(a), Test(b)) -> cons(a + 1, b + 2))(6)").expectResult(cons(i(7), i(8)));
+		infix("match((Test(Test(a), Test(b))) -> cons(a + 1, b + 2))(6)").expectResult(cons(i(7), i(8)));
+	}
+
+	@Test
+	public void testMultipleArgMatcherSameCount() {
+		infix("match((1,2) -> 'left', (3,4) -> 'right', (_,_) -> 'other')(1,2)").expectResult(s("left"));
+		infix("match((1,2) -> 'left', (3,4) -> 'right', (_,_) -> 'other')(3,4)").expectResult(s("right"));
+		infix("match((1,2) -> 'left', (3,4) -> 'right', (_,_) -> 'other')(1,4)").expectResult(s("other"));
+	}
+
+	@Test
+	public void testMultipleArgMatcherBinding() {
+		infix("match((1,a) -> 'left':a, (a,1) -> 'right':a, (a,b) -> a:b)(1,2)").expectResult(cons(s("left"), i(2)));
+		infix("match((1,a) -> 'left':a, (a,1) -> 'right':a, (a,b) -> a:b)(3,1)").expectResult(cons(s("right"), i(3)));
+		infix("match((1,a) -> 'left':a, (a,1) -> 'right':a, (a,b) -> a:b)(3,2)").expectResult(cons(i(3), i(2)));
+	}
+
+	@Test
+	public void testMultipleArgMatcherBindingWithGuards() {
+		infix("match((1,a) \\ a > 2 -> 'left', (a,b) \\ a < b -> 'right', (_,_) -> 'other')(1,3)").expectResult(s("left"));
+		infix("match((1,a) \\ a > 2 -> 'left', (a,b) \\ a < b -> 'right', (_,_) -> 'other')(1,2)").expectResult(s("right"));
+		infix("match((1,a) \\ a > 2 -> 'left', (a,b) \\ a < b -> 'right', (_,_) -> 'other')(1,1)").expectResult(s("other"));
+	}
+
+	@Test
+	public void testMultipleArgMatcherWithDifferentArgCount() {
+		infix("match(() -> 0, (_) -> 1, (_, _) -> 2, (_, _, _) -> 3)()").expectResult(i(0));
+		infix("match(() -> 0, (_) -> 1, (_, _) -> 2, (_, _, _) -> 3)('a')").expectResult(i(1));
+		infix("match(() -> 0, (_) -> 1, (_, _) -> 2, (_, _, _) -> 3)('a','b')").expectResult(i(2));
+		infix("match(() -> 0, (_) -> 1, (_, _) -> 2, (_, _, _) -> 3)('a','b','c')").expectResult(i(3));
 	}
 
 	@Test
@@ -1684,19 +1713,19 @@ public class TypedValueCalculatorTest {
 		sut.environment.setGlobalSymbol("Test2", domain.create(IComposite.class, new SingleValueDeconstructor(i(2))));
 		sut.environment.setGlobalSymbol("Test3", domain.create(IComposite.class, new SingleValueDeconstructor(i(3))));
 
-		infix("match(Test2(a) -> cons('left', a), Test3(a) -> cons('right', a))(2)").expectResult(cons(s("left"), i(2)));
-		infix("match(Test2(a) -> cons('left', a), Test3(a) -> cons('right', a))(3)").expectResult(cons(s("right"), i(3)));
+		infix("match((Test2(a)) -> cons('left', a), (Test3(a)) -> cons('right', a))(2)").expectResult(cons(s("left"), i(2)));
+		infix("match((Test2(a)) -> cons('left', a), (Test3(a)) -> cons('right', a))(3)").expectResult(cons(s("right"), i(3)));
 
-		infix("match(Test2(a, b) -> cons(a, b), Test3(a, b) -> cons(a, b))(2)").expectResult(cons(i(2), i(2)));
-		infix("match(Test2(a, b) -> cons(a, b), Test3(a, b) -> cons(a, b))(3)").expectResult(cons(i(3), i(3)));
+		infix("match((Test2(a, b)) -> cons(a, b), (Test3(a, b)) -> cons(a, b))(2)").expectResult(cons(i(2), i(2)));
+		infix("match((Test2(a, b)) -> cons(a, b), (Test3(a, b)) -> cons(a, b))(3)").expectResult(cons(i(3), i(3)));
 	}
 
 	@Test
 	public void testPrimitiveTypeMatch() {
-		infix("match(int(x) -> 'int':x, str(x) -> 'str':x, bool(x) -> 'bool':x, float(x) -> 'float':x)(5)").expectResult(cons(s("int"), i(5)));
-		infix("match(int(x) -> 'int':x, str(x) -> 'str':x, bool(x) -> 'bool':x, float(x) -> 'float':x)(5.0)").expectResult(cons(s("float"), d(5.0)));
-		infix("match(int(x) -> 'int':x, str(x) -> 'str':x, bool(x) -> 'bool':x, float(x) -> 'float':x)('abc')").expectResult(cons(s("str"), s("abc")));
-		infix("match(int(x) -> 'int':x, str(x) -> 'str':x, bool(x) -> 'bool':x, float(x) -> 'float':x)(true)").expectResult(cons(s("bool"), TRUE));
+		infix("match((int(x)) -> 'int':x, (str(x)) -> 'str':x, (bool(x)) -> 'bool':x, (float(x)) -> 'float':x)(5)").expectResult(cons(s("int"), i(5)));
+		infix("match((int(x)) -> 'int':x, (str(x)) -> 'str':x, (bool(x)) -> 'bool':x, (float(x)) -> 'float':x)(5.0)").expectResult(cons(s("float"), d(5.0)));
+		infix("match((int(x)) -> 'int':x, (str(x)) -> 'str':x, (bool(x)) -> 'bool':x, (float(x)) -> 'float':x)('abc')").expectResult(cons(s("str"), s("abc")));
+		infix("match((int(x)) -> 'int':x, (str(x)) -> 'str':x, (bool(x)) -> 'bool':x, (float(x)) -> 'float':x)(true)").expectResult(cons(s("bool"), TRUE));
 	}
 
 	@Test

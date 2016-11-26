@@ -8,6 +8,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.BinaryOperator;
+import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
 import openmods.calc.ICallable;
@@ -22,6 +23,7 @@ import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
 import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
+import openmods.calc.parsing.BracketContainerNode;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
@@ -31,16 +33,18 @@ import openmods.utils.Stack;
 
 public class MatchExpressionFactory {
 
+	private static final String SYMBOL_DEFAULT_ACTION = "default";
+	private static final String SYMBOL_GUARDED_ACTION = "guarded";
+	private static final String SYMBOL_PATTERN_VAR = "var";
+
 	private final TypeDomain domain;
 	private final BinaryOperator<TypedValue> split;
 	private final BinaryOperator<TypedValue> lambda;
-	private final BinaryOperator<TypedValue> cons;
 
-	public MatchExpressionFactory(TypeDomain domain, BinaryOperator<TypedValue> split, BinaryOperator<TypedValue> lambda, BinaryOperator<TypedValue> cons) {
+	public MatchExpressionFactory(TypeDomain domain, BinaryOperator<TypedValue> split, BinaryOperator<TypedValue> lambda) {
 		this.domain = domain;
 		this.split = split;
 		this.lambda = lambda;
-		this.cons = cons;
 	}
 
 	private static interface PatternPart {
@@ -151,23 +155,52 @@ public class MatchExpressionFactory {
 	}
 
 	private static interface IPattern extends ICompositeTrait {
-		public Optional<Code> match(SymbolMap<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value);
+		public int requiredArgs();
+
+		public Optional<Code> match(SymbolMap<TypedValue> env, SymbolMap<TypedValue> output, List<TypedValue> values);
 	}
 
-	private static class UnguardedPattern implements IPattern {
-		private final PatternPart pattern;
+	private abstract static class PatternBase implements IPattern {
+		private final List<PatternPart> patterns;
+
+		public PatternBase(List<PatternPart> patterns) {
+			this.patterns = patterns;
+		}
+
+		@Override
+		public Optional<Code> match(SymbolMap<TypedValue> env, SymbolMap<TypedValue> output, List<TypedValue> values) {
+			Preconditions.checkState(values.size() == patterns.size(), "Invalid usage: expected %s values, got %s", patterns.size(), values.size());
+			for (int i = 0; i < values.size(); i++) {
+				final TypedValue value = values.get(i);
+				final PatternPart pattern = patterns.get(i);
+				if (!pattern.match(env, output, value)) return Optional.absent();
+
+			}
+
+			return matchGuard(env, output);
+		}
+
+		protected abstract Optional<Code> matchGuard(SymbolMap<TypedValue> env, SymbolMap<TypedValue> output);
+
+		@Override
+		public int requiredArgs() {
+			return patterns.size();
+		}
+	}
+
+	private static class UnguardedPattern extends PatternBase {
 		private final Optional<Code> action;
 
-		public UnguardedPattern(PatternPart pattern, Optional<Code> action) {
-			this.pattern = pattern;
+		public UnguardedPattern(List<PatternPart> patterns, Optional<Code> action) {
+			super(patterns);
 			this.action = action;
 		}
 
 		@Override
-		public Optional<Code> match(SymbolMap<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value) {
-			if (pattern.match(env, output, value)) return action;
-			else return Optional.absent();
+		protected Optional<Code> matchGuard(SymbolMap<TypedValue> env, SymbolMap<TypedValue> output) {
+			return action;
 		}
+
 	}
 
 	private static class GuardedPatternClause {
@@ -180,21 +213,18 @@ public class MatchExpressionFactory {
 		}
 	}
 
-	private static class GuardedPattern implements IPattern {
-		public final PatternPart pattern;
+	private static class GuardedPattern extends PatternBase {
 		public final List<GuardedPatternClause> guardedActions;
 		public final Optional<Code> defaultAction;
 
-		public GuardedPattern(PatternPart pattern, List<GuardedPatternClause> guardedActions, Optional<Code> defaultAction) {
-			this.pattern = pattern;
+		public GuardedPattern(List<PatternPart> patterns, List<GuardedPatternClause> guardedActions, Optional<Code> defaultAction) {
+			super(patterns);
 			this.guardedActions = ImmutableList.copyOf(guardedActions);
 			this.defaultAction = defaultAction;
 		}
 
 		@Override
-		public Optional<Code> match(SymbolMap<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value) {
-			if (!pattern.match(env, output, value)) return Optional.absent();
-
+		protected Optional<Code> matchGuard(SymbolMap<TypedValue> env, SymbolMap<TypedValue> output) {
 			final Frame<TypedValue> clauseEnv = FrameFactory.createProtectionFrame(output);
 			final Stack<TypedValue> clauseEnvStack = clauseEnv.stack();
 
@@ -224,6 +254,7 @@ public class MatchExpressionFactory {
 		@Override
 		public void flatten(List<IExecutable<TypedValue>> output) {
 			output.add(Value.create(Code.flattenAndWrap(domain, action)));
+			output.add(new SymbolCall<TypedValue>(SYMBOL_DEFAULT_ACTION, 1, 0));
 		}
 
 	}
@@ -241,25 +272,32 @@ public class MatchExpressionFactory {
 		public void flatten(List<IExecutable<TypedValue>> output) {
 			output.add(Value.create(Code.flattenAndWrap(domain, guard)));
 			output.add(Value.create(Code.flattenAndWrap(domain, action)));
-			output.add(cons);
+			output.add(new SymbolCall<TypedValue>(SYMBOL_GUARDED_ACTION, 2, 0));
 		}
 	}
 
 	private class PatternConstructionCompiler {
-		private final IExprNode<TypedValue> patternConstructor;
+		private final List<IExprNode<TypedValue>> patternConstructors;
 		private final List<? extends PatternActionCompiler> patternActions;
 
-		public PatternConstructionCompiler(IExprNode<TypedValue> patternConstructor, List<? extends PatternActionCompiler> patternActions) {
-			this.patternConstructor = patternConstructor;
+		public PatternConstructionCompiler(List<IExprNode<TypedValue>> patternConstructors, List<? extends PatternActionCompiler> patternActions) {
+			this.patternConstructors = patternConstructors;
 			this.patternActions = patternActions;
 		}
 
 		public void flatten(List<IExecutable<TypedValue>> output) {
-			output.add(Value.create(Code.flattenAndWrap(domain, patternConstructor)));
-			for (PatternActionCompiler action : patternActions)
-				action.flatten(output);
+			final List<IExecutable<TypedValue>> patternCompileCode = Lists.newArrayList();
 
-			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_PATTERN, 1 + patternActions.size(), 1));
+			for (IExprNode<TypedValue> patternConstructor : patternConstructors) {
+				patternCompileCode.add(Value.create(Code.flattenAndWrap(domain, patternConstructor)));
+				patternCompileCode.add(new SymbolCall<TypedValue>(SYMBOL_PATTERN_VAR, 1, 0));
+			}
+
+			for (PatternActionCompiler action : patternActions)
+				action.flatten(patternCompileCode);
+
+			output.add(Value.create(Code.wrap(domain, patternCompileCode)));
+			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_PATTERN, 1, 1));
 		}
 	}
 
@@ -291,14 +329,23 @@ public class MatchExpressionFactory {
 		public PatternConstructionCompiler apply(IExprNode<TypedValue> input) {
 			Preconditions.checkState(input instanceof BinaryOpNode, "Invalid 'match' syntax");
 			final BinaryOpNode<TypedValue> patternNode = (BinaryOpNode<TypedValue>)input;
+			final List<IExprNode<TypedValue>> varMatchers = extractVarMatchers(patternNode.left);
 			if (patternNode.operator == lambda) {
 				// pattern -> action
-				return new PatternConstructionCompiler(patternNode.left, ImmutableList.of(new UnguardedPatternActionCompiler(patternNode.right)));
+				return new PatternConstructionCompiler(varMatchers, ImmutableList.of(new UnguardedPatternActionCompiler(patternNode.right)));
 			} else if (patternNode.operator == split) {
 				final List<PatternActionCompiler> compilers = Lists.newArrayList();
 				extractGuards(compilers, patternNode.right);
-				return new PatternConstructionCompiler(patternNode.left, compilers);
+				return new PatternConstructionCompiler(varMatchers, compilers);
 			} else throw new IllegalStateException("Invalid 'match' syntax, expected '->' between pattern and action or \\ between pattern and guarded actions, got" + patternNode.operator);
+		}
+
+		private List<IExprNode<TypedValue>> extractVarMatchers(IExprNode<TypedValue> arg) {
+			if (arg instanceof BracketContainerNode) {
+				return ImmutableList.copyOf(arg.getChildren());
+			} else {
+				throw new IllegalStateException("Expected argument list, got " + arg);
+			}
 		}
 
 		private void extractGuards(List<PatternActionCompiler> compilers, IExprNode<TypedValue> clause) {
@@ -412,52 +459,30 @@ public class MatchExpressionFactory {
 
 	}
 
-	private class PatternSymbol extends SingleReturnCallable<TypedValue> {
+	private static class PatternBuilderVarSymbol extends FixedCallable<TypedValue> {
+		private final PatternBuilderEnv parent;
 		private final SymbolMap<TypedValue> placeholderSymbolMap;
 
-		public PatternSymbol(SymbolMap<TypedValue> topSymbolMap) {
-			this.placeholderSymbolMap = new PatternPlaceholdersSymbolMap(topSymbolMap);
+		public PatternBuilderVarSymbol(PatternBuilderEnv parent, SymbolMap<TypedValue> placeholderSymbolMap) {
+			super(1, 0);
+			this.parent = parent;
+			this.placeholderSymbolMap = placeholderSymbolMap;
 		}
 
 		@Override
-		public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
-			// pattern, (guard:action)*, action
-			final int args = argumentsCount.or(2);
-			Preconditions.checkState(args >= 2, "'pattern' symbol expects more than one arg");
-
-			final Stack<TypedValue> stack = frame.stack();
-
-			Optional<Code> lastAction = Optional.absent();
-			final List<GuardedPatternClause> guardedActions = Lists.newArrayList();
-			for (int i = 0; i < args - 1; i++) {
-				final TypedValue arg = stack.pop();
-				if (arg.is(Code.class)) {
-					Preconditions.checkState(i == 0, "'code' value allowed only on end of 'pattern' args");
-					lastAction = Optional.of(arg.as(Code.class));
-				} else if (arg.is(Cons.class)) {
-					final Cons pair = arg.as(Cons.class);
-					Preconditions.checkState(pair.car.is(Code.class) && pair.cdr.is(Code.class), "Expected code:code pair on 'pattern' args, got %s", pair);
-					guardedActions.add(new GuardedPatternClause(pair.car.as(Code.class), pair.cdr.as(Code.class)));
-				} else {
-					throw new IllegalArgumentException("Only code:code pairs and code allowed in 'pattern' args");
-				}
-			}
-
-			final Code pattern = stack.pop().as(Code.class, "first 'match' argument (pattern)");
-
+		public void call(Frame<TypedValue> frame) {
+			final Code pattern = frame.stack().pop().as(Code.class, "variable pattern");
 			final TypedValue compiledPattern = evaluatePattern(pattern);
 			final PatternPart translatedPattern = translatePattern(compiledPattern);
+			parent.addVarPattern(translatedPattern);
+		}
 
-			final IPattern result;
-
-			if (guardedActions.isEmpty()) {
-				Preconditions.checkState(lastAction.isPresent(), "Invalid 'pattern' arguments"); // impossible?
-				result = new UnguardedPattern(translatedPattern, lastAction);
-			} else {
-				result = new GuardedPattern(translatedPattern, Lists.reverse(guardedActions), lastAction);
-			}
-
-			return domain.create(IComposite.class, new SingleTraitComposite("pattern", result));
+		private TypedValue evaluatePattern(Code pattern) {
+			final Frame<TypedValue> patternFrame = FrameFactory.symbolsToFrame(placeholderSymbolMap);
+			pattern.execute(patternFrame);
+			final Stack<TypedValue> resultStack = patternFrame.stack();
+			Preconditions.checkState(resultStack.size() == 1, "Invalid result of pattern compilation");
+			return resultStack.pop();
 		}
 
 		private PatternPart translatePattern(TypedValue compiledPattern) {
@@ -488,14 +513,109 @@ public class MatchExpressionFactory {
 
 			return new PatternMatchExact(compiledPattern);
 		}
+	}
 
-		private TypedValue evaluatePattern(Code pattern) {
-			final Frame<TypedValue> patternFrame = FrameFactory.symbolsToFrame(placeholderSymbolMap);
-			pattern.execute(patternFrame);
-			final Stack<TypedValue> resultStack = patternFrame.stack();
-			Preconditions.checkState(resultStack.size() == 1, "Invalid result of pattern compilation");
-			return resultStack.pop();
+	private static class PatternBuilderGuardedActionSymbol extends FixedCallable<TypedValue> {
+		private final PatternBuilderEnv parent;
+
+		public PatternBuilderGuardedActionSymbol(PatternBuilderEnv parent) {
+			super(2, 0);
+			this.parent = parent;
 		}
+
+		@Override
+		public void call(Frame<TypedValue> frame) {
+			final Stack<TypedValue> stack = frame.stack();
+			final Code action = stack.pop().as(Code.class, "pattern action");
+			final Code guard = stack.pop().as(Code.class, "pattern guard");
+
+			parent.addGuardedAction(new GuardedPatternClause(guard, action));
+		}
+	}
+
+	private static class PatternBuilderDefaultActionSymbol extends FixedCallable<TypedValue> {
+		private final PatternBuilderEnv parent;
+
+		public PatternBuilderDefaultActionSymbol(PatternBuilderEnv parent) {
+			super(1, 0);
+			this.parent = parent;
+		}
+
+		@Override
+		public void call(Frame<TypedValue> frame) {
+			final Stack<TypedValue> stack = frame.stack();
+			final Code action = stack.pop().as(Code.class, "pattern action");
+
+			parent.addDefaultAction(action);
+		}
+	}
+
+	private class PatternBuilderEnv {
+		private final List<PatternPart> varPatterns = Lists.newArrayList();
+		private final List<GuardedPatternClause> guardedActions = Lists.newArrayList();
+		private Optional<Code> defaultAction = Optional.absent();
+
+		private boolean firstActionAdded;
+
+		public void addVarPattern(PatternPart pattern) {
+			Preconditions.checkState(!firstActionAdded, "Trying to add variable pattern after action");
+			varPatterns.add(pattern);
+		}
+
+		public void addGuardedAction(GuardedPatternClause guardedPatternClause) {
+			Preconditions.checkState(!defaultAction.isPresent(), "Trying to add guarded action after default");
+			firstActionAdded = true;
+			guardedActions.add(guardedPatternClause);
+		}
+
+		public void addDefaultAction(Code action) {
+			firstActionAdded = true;
+			defaultAction = Optional.of(action);
+		}
+
+		public IPattern buildPattern() {
+			if (guardedActions.isEmpty()) {
+				Preconditions.checkState(defaultAction.isPresent(), "Invalid 'pattern' arguments"); // impossible?
+				return new UnguardedPattern(varPatterns, defaultAction);
+			} else {
+				return new GuardedPattern(varPatterns, guardedActions, defaultAction);
+			}
+		}
+
+	}
+
+	private class PatternSymbol extends FixedCallable<TypedValue> {
+		private final SymbolMap<TypedValue> topSymbolMap;
+
+		public PatternSymbol(SymbolMap<TypedValue> topSymbolMap) {
+			super(1, 1);
+			this.topSymbolMap = topSymbolMap;
+		}
+
+		@Override
+		public void call(Frame<TypedValue> frame) {
+			final Stack<TypedValue> stack = frame.stack();
+
+			final Code pattern = stack.pop().as(Code.class, "pattern constructor code (first arg)");
+
+			final IPattern result = evaluatePattern(pattern, topSymbolMap);
+			stack.push(domain.create(IComposite.class, new SingleTraitComposite("pattern", result)));
+		}
+
+		private IPattern evaluatePattern(Code pattern, SymbolMap<TypedValue> topSymbolMap) {
+			final Frame<TypedValue> executionFrame = FrameFactory.createTopFrame();
+			final SymbolMap<TypedValue> executionSymbols = executionFrame.symbols();
+			final PatternBuilderEnv builder = new PatternBuilderEnv();
+
+			executionSymbols.put(SYMBOL_PATTERN_VAR, new PatternBuilderVarSymbol(builder, new PatternPlaceholdersSymbolMap(topSymbolMap)));
+			executionSymbols.put(SYMBOL_GUARDED_ACTION, new PatternBuilderGuardedActionSymbol(builder));
+			executionSymbols.put(SYMBOL_DEFAULT_ACTION, new PatternBuilderDefaultActionSymbol(builder));
+
+			pattern.execute(executionFrame);
+			Preconditions.checkState(executionFrame.stack().isEmpty(), "Leftovers on pattern execution stack: %s", executionFrame.stack());
+			return builder.buildPattern();
+		}
+
 	}
 
 	public static class MatchFailedException extends RuntimeException {
@@ -519,19 +639,22 @@ public class MatchExpressionFactory {
 
 		@Override
 		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-			if (argumentsCount.isPresent()) {
-				final int args = argumentsCount.get();
-				if (args != 1) throw new StackValidationException("Expected single argument but got %s", args);
-			}
-
 			final Stack<TypedValue> stack = frame.stack();
-			final TypedValue valueToMatch = stack.pop();
-
 			final SymbolMap<TypedValue> env = new ProtectionSymbolMap<TypedValue>(defineScope);
 			for (IPattern pattern : patterns) {
+				final int args = pattern.requiredArgs();
+				if (argumentsCount.isPresent()) {
+					if (argumentsCount.get() != args) continue;
+				} else {
+					if (stack.size() < args) continue;
+				}
+
+				final Stack<TypedValue> valuesToMatchStack = stack.substack(args);
+				final List<TypedValue> valuesToMatch = ImmutableList.copyOf(valuesToMatchStack);
 				final SymbolMap<TypedValue> matchedSymbols = new LocalSymbolMap<TypedValue>(defineScope);
-				final Optional<Code> match = pattern.match(env, matchedSymbols, valueToMatch);
+				final Optional<Code> match = pattern.match(env, matchedSymbols, valuesToMatch);
 				if (match.isPresent()) {
+					valuesToMatchStack.clear();
 					final Frame<TypedValue> matchedFrame = FrameFactory.newClosureFrame(matchedSymbols, frame, 0);
 					match.get().execute(matchedFrame);
 					if (returnsCount.isPresent()) {
@@ -543,7 +666,7 @@ public class MatchExpressionFactory {
 				}
 			}
 
-			throw new MatchFailedException("Unmatched value: " + valueToMatch);
+			throw new MatchFailedException("Can't find matching variant");
 		}
 
 	}

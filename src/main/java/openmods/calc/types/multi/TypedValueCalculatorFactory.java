@@ -1611,7 +1611,7 @@ public class TypedValueCalculatorFactory {
 		final PromiseExpressionFactory delayFactory = new PromiseExpressionFactory(domain);
 		delayFactory.registerSymbols(env);
 
-		final MatchExpressionFactory matchFactory = new MatchExpressionFactory(domain, splitOperator, lambdaOperator, colonOperator);
+		final MatchExpressionFactory matchFactory = new MatchExpressionFactory(domain, splitOperator, lambdaOperator);
 		matchFactory.registerSymbols(envMap, coreMap);
 
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
