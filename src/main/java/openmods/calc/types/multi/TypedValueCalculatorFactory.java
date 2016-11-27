@@ -1599,6 +1599,8 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
+		env.setGlobalSymbol("struct", new StructSymbol(nullValue));
+
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
 

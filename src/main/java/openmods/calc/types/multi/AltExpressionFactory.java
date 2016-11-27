@@ -1,5 +1,6 @@
 package openmods.calc.types.multi;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -179,21 +180,20 @@ public class AltExpressionFactory {
 		}
 
 		@Override
-		public Optional<List<TypedValue>> tryDecompose(TypedValue input, int variableCount) {
+		public Optional<List<TypedValue>> tryDecompose(final TypedValue input, int variableCount) {
 			Preconditions.checkArgument(variableCount == 1, "Invalid number of values to unpack, expected 1 got %s", variableCount);
-			if (input.is(IComposite.class)) {
-				final IComposite c = input.as(IComposite.class);
 
-				final Optional<AltTypeVariantTrait> typeTrait = c.getOptional(AltTypeVariantTrait.class);
-				if (typeTrait.isPresent()) {
-					if (typeTrait.get().getType() == this) {
+			return TypedCalcUtils.tryDecomposeTrait(input, AltTypeVariantTrait.class, new Function<AltTypeVariantTrait, Optional<List<TypedValue>>>() {
+				@Override
+				public Optional<List<TypedValue>> apply(AltTypeVariantTrait trait) {
+					if (trait.getType() == AltType.this) {
 						final List<TypedValue> result = ImmutableList.of(input);
 						return Optional.of(result);
+					} else {
+						return Optional.absent();
 					}
 				}
-			}
-
-			return Optional.absent();
+			});
 		}
 
 	}
@@ -229,23 +229,19 @@ public class AltExpressionFactory {
 
 		@Override
 		public Optional<List<TypedValue>> tryDecompose(TypedValue input, int variableCount) {
-			Preconditions.checkArgument(variableCount == members.size(), "Invalid number of values to unpack, expected 1 got %s", variableCount);
-
-			if (input.is(IComposite.class)) {
-				final IComposite c = input.as(IComposite.class);
-
-				final Optional<AltContainerTrait> typeTrait = c.getOptional(AltContainerTrait.class);
-				if (typeTrait.isPresent()) {
-					final AltContainerTrait container = typeTrait.get();
-					if (container.getVariant() == this) {
-						final List<TypedValue> values = container.values();
+			Preconditions.checkArgument(variableCount == members.size(), "Invalid number of values to unpack, expected %s got %s", members.size(), variableCount);
+			return TypedCalcUtils.tryDecomposeTrait(input, AltContainerTrait.class, new Function<AltContainerTrait, Optional<List<TypedValue>>>() {
+				@Override
+				public Optional<List<TypedValue>> apply(AltContainerTrait trait) {
+					if (trait.getVariant() == AltTypeVariant.this) {
+						final List<TypedValue> values = trait.values();
 						Preconditions.checkState(values.size() == members.size(), "Mismatched size in container: names: %s, values: %s", members, values);
 						return Optional.of(values);
+					} else {
+						return Optional.absent();
 					}
 				}
-			}
-
-			return Optional.absent();
+			});
 		}
 
 		@Override

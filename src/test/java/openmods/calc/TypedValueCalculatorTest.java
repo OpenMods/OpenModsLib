@@ -2208,4 +2208,23 @@ public class TypedValueCalculatorTest {
 		infix("let([x = 2], eval('infix', 'x + 3'))").expectResult(i(5));
 		infix("let([x = 2], eval('infix', '(y) -> x + y'))(10)").expectResult(i(12));
 	}
+
+	@Test
+	public void testStructSymbol() {
+		infix("letseq([Point=struct(#x,#y), p=Point()], cons(p.x, p.y))").expectResult(cons(nil(), nil()));
+		infix("letseq([Point=struct(#x,#y), p=Point(#y:5)], cons(p.x, p.y))").expectResult(cons(nil(), i(5)));
+		infix("letseq([Point=struct(#x,#y), p=Point(#x:1,#y:5)], cons(p.x, p.y))").expectResult(cons(i(1), i(5)));
+
+		infix("let([Point=struct(#x,#y,#z)], Point._fields)").expectResult(list(s("x"), s("y"), s("z")));
+		infix("let([Point=struct(#x,#y,#z)], Point()._fields)").expectResult(list(s("x"), s("y"), s("z")));
+
+		infix("let([Point=struct(#x,#y)], match((Point(x)) -> 'point', (_) -> 'other')(Point()))").expectResult(s("point"));
+		infix("let([Point=struct(#x,#y)], match((Point(x)) -> 'point', (_) -> 'other')(5))").expectResult(s("other"));
+
+		infix("letseq([Point=struct(#x,#y), p1 = Point(#y:3), p2 = p1._update(#x:2), p3 = p1._update(#y:8)], list(p1.x:p1.y, p2.x:p2.y, p3.x:p3.y))")
+				.expectResult(list(
+						cons(nil(), i(3)),
+						cons(i(2), i(3)),
+						cons(nil(), i(8))));
+	}
 }
