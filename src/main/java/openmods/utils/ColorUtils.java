@@ -229,10 +229,19 @@ public class ColorUtils {
 		}
 
 		public int distanceSq(RGB other) {
-			final int dR = this.r - other.r;
-			final int dG = this.g - other.g;
-			final int dB = this.b - other.b;
-			return (dR * dR) + (dG * dG) + (dB * dB);
+			// Formula taken from http://www.compuphase.com/cmetric.htm
+			int meanR = (this.r + other.r) >>> 1;
+			int dR = this.r - other.r;
+			int dG = this.g - other.g;
+			int dB = this.b - other.b;
+
+			int dR2 = dR*dR;
+			int dG2 = dG*dG;
+			int dB2 = dB*dB;
+
+			return Math.abs((((512+meanR)*dR2)>>8)
+					   + (dG2 << 2)
+					   + (((767-meanR)*dB2)>>8));
 		}
 	}
 
