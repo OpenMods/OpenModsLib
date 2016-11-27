@@ -16,22 +16,22 @@ import org.apache.commons.lang3.text.WordUtils;
 
 public class ColorUtils {
 	public static enum ColorMeta {
-		BLACK("black", 0x1E1B1B),
-		RED("red", 0xB3312C),
-		GREEN("green", 0x3B511A),
-		BROWN("brown", 0x51301A),
-		BLUE("blue", 0x253192),
-		PURPLE("purple", 0x7B2FBE),
-		CYAN("cyan", 0x287697),
-		LIGHT_GRAY("lightGray", "silver", 0xABABAB),
-		GRAY("gray", 0x434343),
-		PINK("pink", 0xD88198),
-		LIME("lime", 0x41CD34),
-		YELLOW("yellow", 0xDECF2A),
-		LIGHT_BLUE("lightBlue", "light_blue", 0x6689D3),
-		MAGENTA("magenta", 0xC354CD),
-		ORANGE("orange", 0xEB8844),
-		WHITE("white", 0xF0F0F0);
+		BLACK("black", 0x1E1B1B, "f"),
+		RED("red", 0xB3312C, "e"),
+		GREEN("green", 0x3B511A, "d"),
+		BROWN("brown", 0x51301A, "c"),
+		BLUE("blue", 0x253192, "b"),
+		PURPLE("purple", 0x7B2FBE, "a"),
+		CYAN("cyan", 0x287697, "9"),
+		LIGHT_GRAY("lightGray", "silver", 0xABABAB, "8"),
+		GRAY("gray", 0x434343, "7"),
+		PINK("pink", 0xD88198, "6"),
+		LIME("lime", 0x41CD34, "5"),
+		YELLOW("yellow", 0xDECF2A, "4"),
+		LIGHT_BLUE("lightBlue", "light_blue", 0x6689D3, "3"),
+		MAGENTA("magenta", 0xC354CD, "2"),
+		ORANGE("orange", 0xEB8844, "1"),
+		WHITE("white", 0xF0F0F0, "0");
 
 		public final int rgb;
 		public final int vanillaDyeId;
@@ -42,6 +42,7 @@ public class ColorUtils {
 		public final String name;
 		public final String unlocalizedName;
 		public final String textureName;
+		public final String paintId;
 		public final RGB rgbWrap;
 		public final CYMK cymkWrap;
 
@@ -53,17 +54,18 @@ public class ColorUtils {
 			return new ItemStack(item, amount, vanillaDyeId);
 		}
 
-		private ColorMeta(String name, int rgb) {
-			this(name, name, rgb);
+		private ColorMeta(String name, int rgb, String paintId) {
+			this(name, name, rgb, paintId);
 		}
 
-		private ColorMeta(String name, String textureName, int rgb) {
+		private ColorMeta(String name, String textureName, int rgb, String paintId) {
 			this.oreName = "dye" + WordUtils.capitalize(name);
 			this.oreId = OreDictionary.getOreID(oreName);
 			this.textureName = textureName;
 			this.name = name.toLowerCase(Locale.ENGLISH);
 			this.unlocalizedName = "openmodslib.color." + name;
 			this.rgb = rgb;
+			this.paintId = paintId;
 
 			final int index = ordinal();
 			this.vanillaDyeId = index;
