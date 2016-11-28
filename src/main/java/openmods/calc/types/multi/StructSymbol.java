@@ -54,8 +54,6 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 		private final Set<String> fields;
 		private final Map<String, TypedValue> values;
 
-		private String toStringCache;
-
 		private class UpdateMethod extends SingleReturnCallable<TypedValue> {
 			@Override
 			public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
@@ -87,15 +85,11 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 
 		@Override
 		public String str(IValuePrinter<TypedValue> printer) {
-			if (toStringCache == null) {
-				final List<String> entries = Lists.newArrayList();
-				for (String field : fields)
-					entries.add(field + "=" + printer.str(values.get(field)));
+			final List<String> entries = Lists.newArrayList();
+			for (String field : fields)
+				entries.add(field + "=" + printer.str(values.get(field)));
 
-				toStringCache = "struct: {" + Joiner.on(",").join(entries) + "}";
-			}
-
-			return toStringCache;
+			return "struct: {" + Joiner.on(",").join(entries) + "}";
 		}
 
 		@Override

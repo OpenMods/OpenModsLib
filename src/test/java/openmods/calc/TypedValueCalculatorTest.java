@@ -5,8 +5,10 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Set;
 import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.CalcTestUtils.CallableStub;
 import openmods.calc.CalcTestUtils.SymbolStub;
@@ -89,6 +91,10 @@ public class TypedValueCalculatorTest {
 
 	private TypedValue cons(TypedValue car, TypedValue cdr) {
 		return domain.create(Cons.class, new Cons(car, cdr));
+	}
+
+	private TypedValue complex(double real, double imag) {
+		return domain.create(Complex.class, Complex.create(real, imag));
 	}
 
 	private TypedValue list(TypedValue... values) {
@@ -2226,5 +2232,44 @@ public class TypedValueCalculatorTest {
 						cons(nil(), i(3)),
 						cons(i(2), i(3)),
 						cons(nil(), i(8))));
+	}
+
+	private void assertSameListContents(Set<TypedValue> expected, TypedValue actual) {
+		final Cons list = actual.as(Cons.class);
+
+		final Set<TypedValue> actualValues = Sets.newHashSet();
+		list.visit(new Cons.ListVisitor(nil()) {
+			@Override
+			public void value(TypedValue value, boolean isLast) {
+				actualValues.add(value);
+			}
+		});
+
+		Assert.assertEquals(expected, actualValues);
+	}
+
+	@Test
+	public void testDict() {
+		infix("len(dict(1:'a','a':#b,2I:5))").expectResult(i(3));
+		infix("let([d = dict(1:'a','a':#b,2I:5)], cons(d[1], d[2I]))").expectResult(cons(s("a"), i(5)));
+		infix("dict(1:'a','a':#b,2I:5)['what']").expectResult(nil());
+
+		infix("dict(1:'a','a':#b,2I:5).hasKey(1)").expectResult(TRUE);
+		infix("dict(1:'a','a':#b,2I:5).hasKey('what')").expectResult(FALSE);
+
+		infix("dict(1:'a','a':#b,2I:5).hasValue(#b)").expectResult(TRUE);
+		infix("dict(1:'a','a':#b,2I:5).hasValue('c')").expectResult(FALSE);
+
+		infix("dict(1:'a','a':#b,2I:5).hasValue(#b)").expectResult(TRUE);
+
+		assertSameListContents(Sets.newHashSet(i(1), s("a"), complex(0, 2)), infix("dict(1:'a','a':#b,2I:5).keys").executeAndPop());
+		assertSameListContents(Sets.newHashSet(s("a"), sym("b"), i(5)), infix("dict(1:'a','a':#b,2I:5).values").executeAndPop());
+		assertSameListContents(Sets.newHashSet(cons(i(1), s("a")), cons(s("a"), sym("b")), cons(complex(0, 2), i(5))), infix("dict(1:'a','a':#b,2I:5).items").executeAndPop());
+
+		infix("let([d = dict(1:'a','a':#b)], len(d.update(#b:4,3:'4')):len(d))").expectResult(cons(i(4), i(2)));
+		assertSameListContents(Sets.newHashSet(cons(i(1), s("a")), cons(s("a"), sym("b")), cons(sym("b"), i(4)), cons(i(3), s("4"))), infix("dict(1:'a','a':#b).update(#b:4,3:'4').items").executeAndPop());
+
+		infix("let([d = dict(1:'a','a':#b)], len(d.remove(1,#what)):len(d))").expectResult(cons(i(1), i(2)));
+		assertSameListContents(Sets.newHashSet(cons(s("a"), sym("b"))), infix("dict(1:'a','a':#b).remove(1,#what).items").executeAndPop());
 	}
 }

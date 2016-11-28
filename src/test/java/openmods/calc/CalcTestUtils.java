@@ -316,6 +316,14 @@ public class CalcTestUtils {
 			return new StackCheck<E>(sut);
 		}
 
+		public E executeAndPop() {
+			final Frame<E> frame = sut.environment.executeIsolated(expr);
+			final E top = frame.stack().pop();
+			if (!frame.stack().isEmpty())
+				Assert.fail("Extra values on stack: " + Lists.newArrayList(frame.stack()));
+			return top;
+		}
+
 		public Stack<E> executeAndGetStack() {
 			final Frame<E> frame = sut.environment.executeIsolated(expr);
 			return frame.stack();

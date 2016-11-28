@@ -1600,6 +1600,7 @@ public class TypedValueCalculatorFactory {
 		});
 
 		env.setGlobalSymbol("struct", new StructSymbol(nullValue));
+		env.setGlobalSymbol("dict", new DictSymbol(nullValue));
 
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
