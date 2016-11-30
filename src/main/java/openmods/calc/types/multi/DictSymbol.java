@@ -17,6 +17,7 @@ import openmods.calc.SingleReturnCallable;
 import openmods.calc.UnaryFunction;
 import openmods.utils.Stack;
 
+// TODO: change to composite, missing type decompose
 public class DictSymbol extends SingleReturnCallable<TypedValue> {
 
 	private final TypedValue nullValue;

@@ -1,11 +1,13 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import java.util.Collections;
 import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.FixedCallable;
@@ -28,7 +30,6 @@ import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
-import openmods.calc.types.multi.CompositeTraits.Decomposable;
 import openmods.utils.Stack;
 
 public class MatchExpressionFactory {
@@ -112,25 +113,20 @@ public class MatchExpressionFactory {
 
 	}
 
-	private static class PatternMatchDecomposable implements PatternPart {
+	private abstract static class PatternMatchDecomposableBase implements PatternPart {
 
 		private final List<PatternPart> argMatchers;
 
-		private final String typeName;
-
-		public PatternMatchDecomposable(List<PatternPart> argMatchers, String typeName) {
+		public PatternMatchDecomposableBase(List<PatternPart> argMatchers) {
 			this.argMatchers = argMatchers;
-			this.typeName = typeName;
 		}
 
 		@Override
 		public boolean match(SymbolMap<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value) {
-			final ISymbol<TypedValue> type = env.get(typeName);
-			Preconditions.checkState(type != null, "Can't find decomposable constructor %s", typeName);
-			final TypedValue typeValue = type.get();
+			final TypedValue typeValue = findConstructor(env);
 			Preconditions.checkState(typeValue.is(IComposite.class), "Value %s does not describe decomposable type", typeValue);
 			final IComposite compositeType = typeValue.as(IComposite.class);
-			final Optional<Decomposable> maybeDecomposable = compositeType.getOptional(CompositeTraits.Decomposable.class);
+			final Optional<CompositeTraits.Decomposable> maybeDecomposable = compositeType.getOptional(CompositeTraits.Decomposable.class);
 			Preconditions.checkState(maybeDecomposable.isPresent(), "Value %s does not describe decomposable type", compositeType);
 
 			final CompositeTraits.Decomposable decomposableCtor = maybeDecomposable.get();
@@ -152,6 +148,58 @@ public class MatchExpressionFactory {
 			return true;
 		}
 
+		protected abstract TypedValue findConstructor(SymbolMap<TypedValue> env);
+	}
+
+	private static class PatternMatchDecomposable extends PatternMatchDecomposableBase {
+
+		private final String typeName;
+
+		public PatternMatchDecomposable(List<PatternPart> argMatchers, String typeName) {
+			super(argMatchers);
+			this.typeName = typeName;
+		}
+
+		@Override
+		protected TypedValue findConstructor(SymbolMap<TypedValue> env) {
+			final ISymbol<TypedValue> type = env.get(typeName);
+			Preconditions.checkState(type != null, "Can't find decomposable constructor %s", typeName);
+			return type.get();
+		}
+	}
+
+	private class PatternMatchNamespaceDecomposable extends PatternMatchDecomposableBase {
+
+		private final String pathStart;
+
+		private final List<String> path;
+
+		public PatternMatchNamespaceDecomposable(List<PatternPart> argMatchers, String pathStart, List<String> path) {
+			super(argMatchers);
+			this.pathStart = pathStart;
+			this.path = path;
+		}
+
+		@Override
+		protected TypedValue findConstructor(SymbolMap<TypedValue> env) {
+			final ISymbol<TypedValue> initialSymbol = env.get(pathStart);
+			Preconditions.checkState(initialSymbol != null, "Can't find symbol %s", pathStart);
+
+			TypedValue result = initialSymbol.get();
+
+			for (String p : path) {
+				Preconditions.checkState(result.is(IComposite.class), "Value %s is not composite", result);
+				final IComposite composite = result.as(IComposite.class);
+				final Optional<CompositeTraits.Structured> maybeStructured = composite.getOptional(CompositeTraits.Structured.class);
+				Preconditions.checkState(maybeStructured.isPresent(), "Value %s is not structured composite", result);
+
+				final Optional<TypedValue> maybeNewResult = maybeStructured.get().get(domain, p);
+				Preconditions.checkState(maybeNewResult.isPresent(), "Can't find value %s in in %s", p, maybeStructured);
+				result = maybeNewResult.get();
+			}
+
+			return result;
+		}
 	}
 
 	private static interface IPattern extends ICompositeTrait {
@@ -397,22 +445,106 @@ public class MatchExpressionFactory {
 		return new MatchStateTransition(compilerState);
 	}
 
-	private static class VarPlaceholder implements ICompositeTrait {
+	private interface PatternProvider extends ICompositeTrait {
+		public PatternPart getPattern(IPatternTranslator translator);
+	}
+
+	private static class VarPlaceholder implements PatternProvider {
 		public final String var;
 
 		public VarPlaceholder(String var) {
 			this.var = var;
 		}
+
+		@Override
+		public PatternPart getPattern(IPatternTranslator translator) {
+			return var.equals(TypedCalcConstants.MATCH_ANY)
+					? PatternAny.INSTANCE
+					: new PatternBindName(var);
+		}
 	}
 
-	private static class CtorPlaceholder implements ICompositeTrait {
-		public final String var;
+	private class NamespaceConstructorStruct implements CompositeTraits.Structured {
+		private final String var;
+		private final List<String> path;
 
-		public final List<TypedValue> args;
+		private NamespaceConstructorStruct(String var, List<String> path) {
+			this.var = var;
+			this.path = path;
+		}
+
+		@Override
+		public Optional<TypedValue> get(TypeDomain domain, String component) {
+			final List<String> newPath = Lists.newArrayList(path);
+			newPath.add(component);
+			return Optional.of(domain.create(IComposite.class, createNamespaceProvider(var, newPath)));
+		}
+	}
+
+	private IComposite createNamespaceProvider(final String var, final List<String> path) {
+		class NamespaceCtorCallable extends SingleReturnCallable<TypedValue> implements CompositeTraits.Callable {
+			@Override
+			public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+				Preconditions.checkArgument(argumentsCount.isPresent(), "Type constructor must be always called with arg count");
+
+				final Stack<TypedValue> args = frame.stack().substack(argumentsCount.get());
+				final NamespaceCtorPlaceholder placeholder = new NamespaceCtorPlaceholder(var, path, args);
+				args.clear();
+				return domain.create(IComposite.class, new SingleTraitComposite("patternCtor", placeholder));
+			}
+		}
+
+		return new MappedComposite.Builder()
+				.put(PatternProvider.class, new PatternProvider() {
+					@Override
+					public PatternPart getPattern(IPatternTranslator translator) {
+						throw new IllegalStateException("Unfinished namespace constructor matcher: " + var + "." + Joiner.on(".").join(path));
+					}
+				})
+				.put(CompositeTraits.Structured.class, new NamespaceConstructorStruct(var, path))
+				.put(CompositeTraits.Callable.class, new NamespaceCtorCallable())
+				.build("namespaceCtorPlaceholder");
+	}
+
+	private static List<PatternPart> translatePatterns(IPatternTranslator translator, List<TypedValue> args) {
+		final List<PatternPart> varMatchers = Lists.newArrayList();
+
+		for (TypedValue m : args)
+			varMatchers.add(translator.translatePattern(m));
+
+		return varMatchers;
+	}
+
+	private class NamespaceCtorPlaceholder implements PatternProvider {
+		private final String var;
+		private final List<String> path;
+		private final List<TypedValue> args;
+
+		public NamespaceCtorPlaceholder(String var, List<String> path, Iterable<TypedValue> args) {
+			this.var = var;
+			this.path = path;
+			this.args = ImmutableList.copyOf(args);
+		}
+
+		@Override
+		public PatternPart getPattern(IPatternTranslator translator) {
+			return new PatternMatchNamespaceDecomposable(translatePatterns(translator, args), var, path);
+		}
+	}
+
+	private static class CtorPlaceholder implements PatternProvider {
+		private final String var;
+
+		private final List<TypedValue> args;
 
 		public CtorPlaceholder(String var, Iterable<TypedValue> args) {
 			this.var = var;
 			this.args = ImmutableList.copyOf(args);
+		}
+
+		@Override
+		public PatternPart getPattern(IPatternTranslator translator) {
+			return new PatternMatchDecomposable(translatePatterns(translator, args), var);
 		}
 	}
 
@@ -425,7 +557,11 @@ public class MatchExpressionFactory {
 
 		@Override
 		public TypedValue get() {
-			return domain.create(IComposite.class, new SingleTraitComposite("patternBind", new VarPlaceholder(var)));
+			return domain.create(IComposite.class,
+					new MappedComposite.Builder()
+							.put(PatternProvider.class, new VarPlaceholder(var))
+							.put(CompositeTraits.Structured.class, new NamespaceConstructorStruct(var, Collections.<String> emptyList()))
+							.build("patternBind"));
 		}
 
 		@Override
@@ -459,7 +595,11 @@ public class MatchExpressionFactory {
 
 	}
 
-	private static class PatternBuilderVarSymbol extends FixedCallable<TypedValue> {
+	private static interface IPatternTranslator {
+		public PatternPart translatePattern(TypedValue value);
+	}
+
+	private static class PatternBuilderVarSymbol extends FixedCallable<TypedValue> implements IPatternTranslator {
 		private final PatternBuilderEnv parent;
 		private final SymbolMap<TypedValue> placeholderSymbolMap;
 
@@ -485,22 +625,13 @@ public class MatchExpressionFactory {
 			return resultStack.pop();
 		}
 
-		private PatternPart translatePattern(TypedValue compiledPattern) {
+		@Override
+		public PatternPart translatePattern(TypedValue compiledPattern) {
 			if (compiledPattern.is(IComposite.class)) {
 				final IComposite composite = compiledPattern.as(IComposite.class);
-				if (composite.has(VarPlaceholder.class)) {
-					final VarPlaceholder p = composite.get(VarPlaceholder.class);
-					return p.var.equals(TypedCalcConstants.MATCH_ANY)
-							? PatternAny.INSTANCE
-							: new PatternBindName(p.var);
-				} else if (composite.has(CtorPlaceholder.class)) {
-					final CtorPlaceholder p = composite.get(CtorPlaceholder.class);
-					final List<PatternPart> varMatchers = Lists.newArrayList();
-
-					for (TypedValue m : p.args)
-						varMatchers.add(translatePattern(m));
-
-					return new PatternMatchDecomposable(varMatchers, p.var);
+				if (composite.has(PatternProvider.class)) {
+					final PatternProvider p = composite.get(PatternProvider.class);
+					return p.getPattern(this);
 				}
 			}
 

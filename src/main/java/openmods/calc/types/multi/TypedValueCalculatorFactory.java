@@ -210,21 +210,6 @@ public class TypedValueCalculatorFactory {
 		return false;
 	}
 
-	private static boolean tryCall(Frame<TypedValue> frame, TypedValue target, Optional<Integer> returns, Optional<Integer> args) {
-		if (target.is(ICallable.class)) {
-			@SuppressWarnings("unchecked")
-			final ICallable<TypedValue> targetCallable = (ICallable<TypedValue>)target.value;
-			targetCallable.call(frame, args, returns);
-			return true;
-		} else if (target.is(IComposite.class)) {
-			final IComposite composite = target.as(IComposite.class);
-			composite.get(CompositeTraits.Callable.class).call(frame, args, returns);
-			return true;
-		}
-
-		return false;
-	}
-
 	private static List<Object> consToUnwrappedList(Cons pair, final TypedValue expectedTerminator) {
 		final List<Object> result = Lists.newArrayList();
 		pair.visit(new LinearVisitor() {
@@ -769,7 +754,7 @@ public class TypedValueCalculatorFactory {
 			@Override
 			public TypedValue apply(TypeDomain domain, IComposite left, String right) {
 				final Optional<Structured> structureTrait = left.getOptional(CompositeTraits.Structured.class);
-				if (!structureTrait.isPresent()) throw new IllegalArgumentException("Object has no members");
+				if (!structureTrait.isPresent()) throw new IllegalArgumentException("Object has no members: " + left);
 				final Optional<TypedValue> result = structureTrait.get().get(domain, right);
 				if (!result.isPresent()) throw new IllegalArgumentException("Can't find member: " + right);
 				return result.get();
@@ -871,13 +856,7 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("iscallable", new UnaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
-				if (value.is(ICallable.class))
-					return value.domain.create(Boolean.class, Boolean.TRUE);
-
-				if (value.is(IComposite.class) && value.as(IComposite.class).has(CompositeTraits.Callable.class))
-					return value.domain.create(Boolean.class, Boolean.TRUE);
-
-				return value.domain.create(Boolean.class, Boolean.FALSE);
+				return value.domain.create(Boolean.class, TypedCalcUtils.isCallable(value));
 			}
 		});
 
@@ -1479,14 +1458,14 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_APPLY, new ICallable<TypedValue>() {
+		coreMap.put(TypedCalcConstants.SYMBOL_APPLY, new ICallable<TypedValue>() {
 			@Override
 			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 				Preconditions.checkArgument(argumentsCount.isPresent(), "'apply' cannot be called without argument count");
 				final int args = argumentsCount.get();
 
 				final TypedValue targetValue = frame.stack().drop(args - 1);
-				if (!tryCall(frame, targetValue, returnsCount, Optional.of(args - 1)))
+				if (!TypedCalcUtils.tryCall(frame, targetValue, returnsCount, Optional.of(args - 1)))
 					throw new IllegalArgumentException("Value " + targetValue + " is not callable");
 			}
 		});
@@ -1601,6 +1580,7 @@ public class TypedValueCalculatorFactory {
 
 		env.setGlobalSymbol("struct", new StructSymbol(nullValue));
 		env.setGlobalSymbol("dict", new DictSymbol(nullValue));
+		env.setGlobalSymbol("Optional", new OptionalTypeFactory(nullValue).create());
 
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);

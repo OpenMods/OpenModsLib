@@ -2272,4 +2272,25 @@ public class TypedValueCalculatorTest {
 		infix("let([d = dict(1:'a','a':#b)], len(d.remove(1,#what)):len(d))").expectResult(cons(i(1), i(2)));
 		assertSameListContents(Sets.newHashSet(cons(s("a"), sym("b"))), infix("dict(1:'a','a':#b).remove(1,#what).items").executeAndPop());
 	}
+
+	@Test
+	public void testOptional() {
+		// infix("Optional.from(1) == Optional.Present(1)").expectResult(TRUE); // TODO: waiting for Equatable
+		infix("Optional.from(null) == Optional.Absent()").expectResult(TRUE);
+
+		infix("Optional.from(1).get()").expectResult(i(1));
+		infix("Optional.Present(2).get()").expectResult(i(2));
+
+		infix("Optional.from(1).map((x)->x+5).get()").expectResult(i(6));
+		infix("Optional.from(null).map((x)->x+5) == Optional.Absent()").expectResult(TRUE);
+
+		infix("Optional.from(2).orCall(()->fail('nope'))").expectResult(i(2));
+		infix("Optional.from(null).orCall(()->#b)").expectResult(sym("b"));
+
+		infix("Optional.from(3).or(9)").expectResult(i(3));
+		infix("Optional.from(null).or('d')").expectResult(s("d"));
+
+		infix("match((Optional.Present(v)) -> 'present':v, (Optional.Absent()) -> 'absent')(Optional.from(5))").expectResult(cons(s("present"), i(5)));
+		infix("match((Optional.Present(v)) -> 'present':v, (Optional.Absent()) -> 'absent')(Optional.from(null))").expectResult(s("absent"));
+	}
 }
