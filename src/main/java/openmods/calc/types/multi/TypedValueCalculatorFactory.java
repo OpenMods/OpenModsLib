@@ -1640,7 +1640,7 @@ public class TypedValueCalculatorFactory {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_ALT, altFactor.createStateTransition(compilerState));
 
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
-				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_OPERATOR_WRAP, new CallableOperatorWrapperModifierTransition(domain, operators));
+				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_OPERATOR_WRAP, new CallableGetModifierTransition(domain, operators));
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_INTERPOLATE, new StringInterpolate.StringInterpolateModifier(domain, valuePrinter));
 			}
 

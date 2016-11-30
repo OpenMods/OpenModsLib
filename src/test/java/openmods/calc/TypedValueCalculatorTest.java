@@ -1386,8 +1386,15 @@ public class TypedValueCalculatorTest {
 		infix("apply(@+, 1, 2)").expectResult(i(3));
 		prefix("(apply @** 2 5)").expectResult(i(32));
 
+		infix("@+(1, 2)").expectResult(i(3));
+
 		infix("let([plus:@+], plus(12,34))").expectResult(i(46));
 		prefix("(let [(:minus @-)] (minus 12 34))").expectResult(i(-22));
+	}
+
+	@Test
+	public void testForcedSymbolGetApply() {
+		infix("@if(true, {2+2}, {'else'})").expectResult(i(4));
 	}
 
 	@Test

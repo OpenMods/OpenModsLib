@@ -1,6 +1,5 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.PeekingIterator;
 import openmods.calc.BinaryOperator;
 import openmods.calc.ICallable;
@@ -10,16 +9,17 @@ import openmods.calc.parsing.CallableOperatorWrappers;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.SingleStateTransition;
+import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 import openmods.calc.parsing.ValueNode;
 
-public class CallableOperatorWrapperModifierTransition extends SingleStateTransition.ForModifier<TypedValue> {
+public class CallableGetModifierTransition extends SingleStateTransition.ForModifier<TypedValue> {
 
 	private final TypeDomain domain;
 	private final OperatorDictionary<TypedValue> operators;
 
-	public CallableOperatorWrapperModifierTransition(TypeDomain domain, OperatorDictionary<TypedValue> operators) {
+	public CallableGetModifierTransition(TypeDomain domain, OperatorDictionary<TypedValue> operators) {
 		this.domain = domain;
 		this.operators = operators;
 	}
@@ -27,15 +27,17 @@ public class CallableOperatorWrapperModifierTransition extends SingleStateTransi
 	@Override
 	public IExprNode<TypedValue> parseSymbol(ICompilerState<TypedValue> state, PeekingIterator<Token> input) {
 		final Token token = input.next();
-		Preconditions.checkState(token.type == TokenType.OPERATOR, "Expected operator token, got %s", token);
+		if (token.type == TokenType.OPERATOR) {
+			final BinaryOperator<TypedValue> binaryOp = operators.getBinaryOperator(token.value);
+			if (binaryOp != null) return createGetter(new CallableOperatorWrappers.Binary(binaryOp));
 
-		final BinaryOperator<TypedValue> binaryOp = operators.getBinaryOperator(token.value);
-		if (binaryOp != null) return createGetter(new CallableOperatorWrappers.Binary(binaryOp));
+			final UnaryOperator<TypedValue> unaryOp = operators.getUnaryOperator(token.value);
+			if (unaryOp != null) return createGetter(new CallableOperatorWrappers.Unary(unaryOp));
 
-		final UnaryOperator<TypedValue> unaryOp = operators.getUnaryOperator(token.value);
-		if (unaryOp != null) return createGetter(new CallableOperatorWrappers.Unary(unaryOp));
+			throw new IllegalArgumentException("Unknown operator: " + token.value);
+		} else if (token.type == TokenType.SYMBOL) { return new SymbolGetNode<TypedValue>(token.value); }
 
-		throw new IllegalArgumentException("Unknown operator: " + token.value);
+		throw new IllegalStateException("Expected operator or symbol token, got " + token);
 	}
 
 	private IExprNode<TypedValue> createGetter(ICallable<TypedValue> wrapper) {
