@@ -508,6 +508,49 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testEquatableComposite() {
+		// not very good example but meh...
+		class EquatableComposite extends SimpleComposite implements CompositeTraits.Equatable {
+
+			private final TypedValue target;
+
+			public EquatableComposite(TypedValue target) {
+				this.target = target;
+			}
+
+			@Override
+			public String type() {
+				return "equatable";
+			}
+
+			@Override
+			public boolean isEqual(TypedValue value) {
+				return target.equals(value);
+			}
+		}
+
+		sut.environment.setGlobalSymbol("equalsTo5", domain.create(IComposite.class, new EquatableComposite(i(5))));
+
+		infix("equalsTo5 == 5").expectResult(TRUE);
+		infix("equalsTo5 != 5").expectResult(FALSE);
+
+		infix("equalsTo5 == 6").expectResult(FALSE);
+		infix("equalsTo5 != 6").expectResult(TRUE);
+
+		infix("equalsTo5 == '5'").expectResult(FALSE);
+		infix("equalsTo5 != '5'").expectResult(TRUE);
+
+		infix("5 == equalsTo5").expectResult(TRUE);
+		infix("5 != equalsTo5").expectResult(FALSE);
+
+		infix("6 == equalsTo5").expectResult(FALSE);
+		infix("6 != equalsTo5").expectResult(TRUE);
+
+		infix("'5'== equalsTo5").expectResult(FALSE);
+		infix("'5'!= equalsTo5").expectResult(TRUE);
+	}
+
+	@Test
 	public void testCallableComposite() {
 		class CallableTestTrait implements CompositeTraits.Callable {
 			@Override
@@ -1740,6 +1783,14 @@ public class TypedValueCalculatorTest {
 		infix("alt([Maybe=Just(x) \\ Nothing], match((Just(y)) -> y + 1, (Nothing) -> 'nope')(Nothing()))").expectResult(s("nope"));
 
 		infix("alt([Tree=Leaf(value)\\Node(left, right)], letrec([f = match((Leaf(v)) -> v, (Node(l,r)) -> f(l) + f(r))], f(Node(Node(Leaf(1), Leaf(4)), Leaf(6)))))").expectResult(i(11));
+
+		infix("alt([Maybe=Just(x) \\ Nothing], Just(1) == Just(1))").expectResult(TRUE);
+		infix("alt([Maybe=Just(x) \\ Nothing], Just(1) != Just(5))").expectResult(TRUE);
+
+		infix("alt([Maybe=Just(x) \\ Nothing], Nothing() == Nothing())").expectResult(TRUE);
+		infix("alt([Maybe=Just(x) \\ Nothing], Just(1) != Nothing())").expectResult(TRUE);
+
+		infix("alt([Alt=V1 \\ V2], let([tmp = V1()], alt([Alt=V1 \\ V2], tmp != V1())))").expectResult(TRUE);
 	}
 
 	@Test
@@ -2232,6 +2283,11 @@ public class TypedValueCalculatorTest {
 						cons(nil(), i(3)),
 						cons(i(2), i(3)),
 						cons(nil(), i(8))));
+
+		infix("let([Point=struct(#x,#y)], Point(#x:5,#y:6) ==  Point(#y:6,#x:5))").expectResult(TRUE);
+		infix("let([Point=struct(#x,#y)], Point(#x:5) ==  Point(#x:5))").expectResult(TRUE);
+		infix("let([Point=struct(#x,#y)], Point(#x:4,#y:6) ==  Point(#x:5,#y:6))").expectResult(FALSE);
+		infix("let([Point1=struct(#x,#y), Point2=struct(#x,#y)], Point1(#x:5,#y:6) ==  Point2(#x:5,#y:6))").expectResult(FALSE);
 	}
 
 	private void assertSameListContents(Set<TypedValue> expected, TypedValue actual) {
@@ -2252,6 +2308,9 @@ public class TypedValueCalculatorTest {
 	public void testDict() {
 		infix("len(dict(1:'a','a':#b,2I:5))").expectResult(i(3));
 		infix("let([d = dict(1:'a','a':#b,2I:5)], cons(d[1], d[2I]))").expectResult(cons(s("a"), i(5)));
+
+		infix("dict(1:'a','a':#b,2I:5) == dict(1:'a','a':#b,2I:5)").expectResult(TRUE);
+
 		infix("dict(1:'a','a':#b,2I:5)['what']").expectResult(nil());
 
 		infix("dict(1:'a','a':#b,2I:5).hasKey(1)").expectResult(TRUE);
@@ -2266,17 +2325,24 @@ public class TypedValueCalculatorTest {
 		assertSameListContents(Sets.newHashSet(s("a"), sym("b"), i(5)), infix("dict(1:'a','a':#b,2I:5).values").executeAndPop());
 		assertSameListContents(Sets.newHashSet(cons(i(1), s("a")), cons(s("a"), sym("b")), cons(complex(0, 2), i(5))), infix("dict(1:'a','a':#b,2I:5).items").executeAndPop());
 
-		infix("let([d = dict(1:'a','a':#b)], len(d.update(#b:4,3:'4')):len(d))").expectResult(cons(i(4), i(2)));
+		infix("let([d = dict(1:'a','a':#b)], (d.update(#b:4,3:'4') == dict(1:'a','a':#b, #b:4, 3:'4')) && (d == dict(1:'a','a':#b)))").expectResult(TRUE);
 		assertSameListContents(Sets.newHashSet(cons(i(1), s("a")), cons(s("a"), sym("b")), cons(sym("b"), i(4)), cons(i(3), s("4"))), infix("dict(1:'a','a':#b).update(#b:4,3:'4').items").executeAndPop());
 
-		infix("let([d = dict(1:'a','a':#b)], len(d.remove(1,#what)):len(d))").expectResult(cons(i(1), i(2)));
+		infix("let([d = dict(1:'a','a':#b)], (d.remove(1,#what) == dict('a':#b)) && (d == dict(1:'a','a':#b)))").expectResult(TRUE);
 		assertSameListContents(Sets.newHashSet(cons(s("a"), sym("b"))), infix("dict(1:'a','a':#b).remove(1,#what).items").executeAndPop());
 	}
 
 	@Test
 	public void testOptional() {
-		// infix("Optional.from(1) == Optional.Present(1)").expectResult(TRUE); // TODO: waiting for Equatable
+		infix("Optional.Present(1) == Optional.Present(1)").expectResult(TRUE);
+		infix("Optional.Absent() == Optional.Absent()").expectResult(TRUE);
+
 		infix("Optional.from(null) == Optional.Absent()").expectResult(TRUE);
+		infix("Optional.from(4) == Optional.Present(4)").expectResult(TRUE);
+
+		infix("Optional.from(null) != Optional.from(1)").expectResult(TRUE);
+		infix("Optional.from(5) != Optional.from(1)").expectResult(TRUE);
+		infix("Optional.from(2) == Optional.from(2)").expectResult(TRUE);
 
 		infix("Optional.from(1).get()").expectResult(i(1));
 		infix("Optional.Present(2).get()").expectResult(i(2));

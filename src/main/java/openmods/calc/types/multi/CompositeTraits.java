@@ -41,4 +41,7 @@ public class CompositeTraits {
 		public String str(IValuePrinter<TypedValue> printer);
 	}
 
+	public interface Equatable extends ICompositeTrait {
+		public boolean isEqual(TypedValue value);
+	}
 }

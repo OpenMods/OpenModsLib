@@ -117,9 +117,11 @@ public class OptionalTypeFactory {
 		public String str(IValuePrinter<TypedValue> printer) {
 			return "Optional.Absent()";
 		}
+
+		// no need for explicit equatable for now, since there's only one value of this type
 	}
 
-	private class Present extends SimpleComposite implements OptionalTrait, CompositeTraits.Printable, CompositeTraits.Truthy, CompositeTraits.Structured {
+	private class Present extends SimpleComposite implements OptionalTrait, CompositeTraits.Printable, CompositeTraits.Truthy, CompositeTraits.Structured, CompositeTraits.Equatable {
 		private final TypedValue value;
 
 		private final Map<String, TypedValue> members;
@@ -202,6 +204,18 @@ public class OptionalTypeFactory {
 		@Override
 		public String str(IValuePrinter<TypedValue> printer) {
 			return "Optional.Present(" + printer.str(value) + ")";
+		}
+
+		@Override
+		public boolean isEqual(TypedValue value) {
+			if (value.value == this) return true;
+
+			if (value.value instanceof Present) {
+				final Present other = (Present)value.value;
+				return other.value.equals(this.value);
+			}
+
+			return false;
 		}
 	}
 

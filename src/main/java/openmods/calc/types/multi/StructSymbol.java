@@ -48,11 +48,12 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 		public Object getTypeMarker();
 	}
 
-	private class StructValue extends SimpleComposite implements CompositeTraits.Structured, CompositeTraits.Printable, StructValueTrait {
+	private class StructValue extends SimpleComposite implements CompositeTraits.Structured, CompositeTraits.Printable, CompositeTraits.Equatable, StructValueTrait {
 
 		private final Object typeMarker;
 		private final Set<String> fields;
 		private final Map<String, TypedValue> values;
+		private final Map<String, TypedValue> members;
 
 		private class UpdateMethod extends SingleReturnCallable<TypedValue> {
 			@Override
@@ -71,11 +72,12 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 		public StructValue(Object typeMarker, Set<String> fields, Map<String, TypedValue> values) {
 			this.typeMarker = typeMarker;
 			this.fields = fields;
+			this.values = ImmutableMap.copyOf(values);
 
 			final Map<String, TypedValue> valuesCopy = Maps.newHashMap(values);
 			valuesCopy.put("_update", domain.create(ICallable.class, new UpdateMethod()));
 
-			this.values = ImmutableMap.copyOf(valuesCopy);
+			this.members = ImmutableMap.copyOf(valuesCopy);
 		}
 
 		@Override
@@ -94,12 +96,25 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 
 		@Override
 		public Optional<TypedValue> get(TypeDomain domain, String component) {
-			return Optional.fromNullable(values.get(component));
+			return Optional.fromNullable(members.get(component));
 		}
 
 		@Override
 		public Object getTypeMarker() {
 			return typeMarker;
+		}
+
+		@Override
+		public boolean isEqual(TypedValue value) {
+			if (value.value == this) return true;
+
+			if (value.value instanceof StructValue) {
+				final StructValue other = (StructValue)value.value;
+				return other.typeMarker == this.typeMarker
+						&& other.values.equals(this.values);
+			}
+
+			return false;
 		}
 
 	}

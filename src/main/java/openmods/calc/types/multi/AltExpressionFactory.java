@@ -86,6 +86,7 @@ public class AltExpressionFactory {
 		}
 
 		private void flattenConstructorDefinitions(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> value) {
+			// TODO this does not handle alts with single constructor
 			if (value instanceof BinaryOpNode) {
 				final BinaryOpNode<TypedValue> op = (BinaryOpNode<TypedValue>)value;
 				if (op.operator == splitOperator) {
@@ -264,7 +265,7 @@ public class AltExpressionFactory {
 
 	}
 
-	private static class AltContainer extends SimpleComposite implements CompositeTraits.Printable, AltContainerTrait {
+	private static class AltContainer extends SimpleComposite implements CompositeTraits.Printable, CompositeTraits.Equatable, AltContainerTrait {
 
 		private final AltTypeVariant variant;
 
@@ -294,6 +295,19 @@ public class AltExpressionFactory {
 		public String str(IValuePrinter<TypedValue> printer) {
 			// TODO somehow mix member names here?
 			return "<alt " + variant.type.name + ":" + variant.name + "(" + Joiner.on(',').join(values) + ")>";
+		}
+
+		@Override
+		public boolean isEqual(TypedValue value) {
+			if (value.value == this) return true;
+
+			if (value.value instanceof AltContainer) {
+				final AltContainer other = (AltContainer)value.value;
+				return other.variant == this.variant &&
+						other.values.equals(this.values);
+			}
+
+			return false;
 		}
 
 	}

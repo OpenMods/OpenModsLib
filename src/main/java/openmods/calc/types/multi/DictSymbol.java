@@ -44,7 +44,7 @@ public class DictSymbol extends SingleReturnCallable<TypedValue> {
 		public TypedValue get();
 	}
 
-	private class Dict extends SimpleComposite implements CompositeTraits.Structured, CompositeTraits.Indexable, CompositeTraits.Countable, CompositeTraits.Printable {
+	private class Dict extends SimpleComposite implements CompositeTraits.Structured, CompositeTraits.Indexable, CompositeTraits.Countable, CompositeTraits.Printable, CompositeTraits.Equatable {
 
 		private final Map<TypedValue, TypedValue> values;
 
@@ -173,6 +173,18 @@ public class DictSymbol extends SingleReturnCallable<TypedValue> {
 			}
 
 			return Optional.fromNullable(member);
+		}
+
+		@Override
+		public boolean isEqual(TypedValue value) {
+			if (value.value == this) return true;
+
+			if (value.value instanceof Dict) {
+				final Dict other = (Dict)value.value;
+				return other.values.equals(this.values);
+			}
+
+			return false;
 		}
 
 	}

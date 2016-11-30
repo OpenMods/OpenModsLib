@@ -54,6 +54,7 @@ import openmods.calc.parsing.SquareBracketContainerNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.Tokenizer;
 import openmods.calc.parsing.ValueNode;
+import openmods.calc.types.multi.CompositeTraits.Equatable;
 import openmods.calc.types.multi.CompositeTraits.Structured;
 import openmods.calc.types.multi.Cons.LinearVisitor;
 import openmods.calc.types.multi.TypeDomain.Coercion;
@@ -162,7 +163,27 @@ public class TypedValueCalculatorFactory {
 				.setDefaultOperation(new TypedBinaryOperator.IDefaultOperation() {
 					@Override
 					public Optional<TypedValue> apply(TypeDomain domain, TypedValue left, TypedValue right) {
-						return Optional.of(domain.create(Boolean.class, equalsTranslator.interpret(left.equals(right))));
+						final boolean areEquals = areEquals(left, right);
+						final boolean result = equalsTranslator.interpret(areEquals);
+						return Optional.of(domain.create(Boolean.class, result));
+					}
+
+					private boolean areEquals(TypedValue left, TypedValue right) {
+						if (left.equals(right)) return true;
+
+						if (left.is(IComposite.class)) {
+							final IComposite composite = left.as(IComposite.class);
+							final Optional<Equatable> equatable = composite.getOptional(CompositeTraits.Equatable.class);
+							if (equatable.isPresent()) return equatable.get().isEqual(right);
+						}
+
+						if (right.is(IComposite.class)) {
+							final IComposite composite = right.as(IComposite.class);
+							final Optional<Equatable> equatable = composite.getOptional(CompositeTraits.Equatable.class);
+							if (equatable.isPresent()) return equatable.get().isEqual(left);
+						}
+
+						return false;
 					}
 				})
 				.build(domain);
