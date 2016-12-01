@@ -33,38 +33,31 @@ public abstract class ScopeModifierNode implements IExprNode<TypedValue> {
 
 	@Override
 	public void flatten(List<IExecutable<TypedValue>> output) {
-		// expecting [a:...,c:...]. If correctly formed, arg name (symbol) will be transformed into symbol atom
-		if (argsNode instanceof SquareBracketContainerNode) {
-			final SquareBracketContainerNode<TypedValue> bracketNode = (SquareBracketContainerNode<TypedValue>)argsNode;
+		// expecting [a:...,c:...]. Arg name (symbol) will be transformed into symbol atom
+		Preconditions.checkState(argsNode instanceof SquareBracketContainerNode, "Expected square brackets, got %s", argsNode);
+		final SquareBracketContainerNode<TypedValue> bracketNode = (SquareBracketContainerNode<TypedValue>)argsNode;
 
-			int argumentCount = 0;
-			for (IExprNode<TypedValue> argNode : bracketNode.getChildren()) {
-				flattenArgNode(output, argNode);
-				argumentCount++;
-			}
-
-			Preconditions.checkState(argumentCount > 0, "'%s' expects at least one argument", symbol);
-			// slighly inefficient, but compatible with hand-called instruction
-			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, argumentCount, 1));
-		} else { // assume list of arg pairs
-			argsNode.flatten(output);
+		int argumentCount = 0;
+		for (IExprNode<TypedValue> argNode : bracketNode.getChildren()) {
+			flattenArgNode(output, argNode);
+			argumentCount++;
 		}
+
+		Preconditions.checkState(argumentCount > 0, "'%s' expects at least one argument", symbol);
+		// slighly inefficient, but compatible with hand-called instruction
+		output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, argumentCount, 1));
 
 		output.add(Value.create(Code.flattenAndWrap(domain, codeNode)));
 		output.add(new SymbolCall<TypedValue>(symbol, 2, 1));
 	}
 
 	private void flattenArgNode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> argNode) {
-		if (argNode instanceof BinaryOpNode) {
-			final BinaryOpNode<TypedValue> opNode = (BinaryOpNode<TypedValue>)argNode;
-			// assign op has lower prio, but we still need pair as backing structure - therefore we are placing colon
-			if (opNode.operator == colonOperator || opNode.operator == assignOperator) {
-				flattenNameAndValue(output, opNode.left, opNode.right);
-				output.add(colonOperator);
-				return;
-			}
-		}
-		argNode.flatten(output); // not directly arg pair, but may still produce valid one
+		Preconditions.checkState(argNode instanceof BinaryOpNode, "Expected ':' or '=' as separator");
+		final BinaryOpNode<TypedValue> opNode = (BinaryOpNode<TypedValue>)argNode;
+		// assign op has lower prio, but we still need pair as backing structure - therefore we are placing colon
+		Preconditions.checkState(opNode.operator == colonOperator || opNode.operator == assignOperator, "Expected ':' or '=' as separator");
+		flattenNameAndValue(output, opNode.left, opNode.right);
+		output.add(colonOperator);
 	}
 
 	protected abstract void flattenNameAndValue(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> name, IExprNode<TypedValue> value);

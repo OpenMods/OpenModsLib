@@ -70,50 +70,25 @@ public class AltExpressionFactory {
 		}
 
 		@Override
-		protected void flattenNameAndValue(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> name, IExprNode<TypedValue> value) {
-			flattenTypeName(output, name);
-			flattenConstructorDefinitions(output, value);
+		protected void flattenNameAndValue(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> nameNode, IExprNode<TypedValue> ctorsNode) {
+			output.add(Value.create(TypedCalcUtils.extractNameFromNode(domain, nameNode)));
+
+			final List<AltConstructorCompiler> ctors = Lists.newArrayList();
+			flattenConstructorDefinitionList(ctors, ctorsNode);
+			for (AltConstructorCompiler ctor : ctors)
+				ctor.flatten(output);
+
+			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, ctors.size(), 1));
 		}
 
-		private void flattenTypeName(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> name) {
-			try {
-				// f:..., 'f':..., #f:...
-				output.add(Value.create(TypedCalcUtils.extractNameFromNode(domain, name)));
-			} catch (IllegalArgumentException e) {
-				// hopefully something that evaluates to symbol
-				name.flatten(output);
-			}
-		}
-
-		private void flattenConstructorDefinitions(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> value) {
-			// TODO this does not handle alts with single constructor
-			if (value instanceof BinaryOpNode) {
-				final BinaryOpNode<TypedValue> op = (BinaryOpNode<TypedValue>)value;
-				if (op.operator == splitOperator) {
-					final List<AltConstructorCompiler> ctors = Lists.newArrayList();
-					flattenConstructorDefinitionList(ctors, op);
-					for (AltConstructorCompiler ctor : ctors)
-						ctor.flatten(output);
-
-					output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, ctors.size(), 1));
-				} else {
-					// list: #ctorName, #ctorArgs...
-					value.flatten(output);
-				}
+		private void flattenConstructorDefinitionList(List<AltConstructorCompiler> output, IExprNode<TypedValue> ctorsNode) {
+			if (ctorsNode instanceof BinaryOpNode) {
+				final BinaryOpNode<TypedValue> opNode = (BinaryOpNode<TypedValue>)ctorsNode;
+				Preconditions.checkState(opNode.operator == splitOperator, "Malformed constructor list, expected '\\', got %s", opNode.operator);
+				flattenConstructorDefinition(output, opNode.left);
+				flattenConstructorDefinitionList(output, opNode.right);
 			} else {
-				// list: #ctorName, #ctorArgs...
-				value.flatten(output);
-			}
-		}
-
-		private void flattenConstructorDefinitionList(List<AltConstructorCompiler> output, BinaryOpNode<TypedValue> op) {
-			flattenConstructorDefinition(output, op.left);
-			if (op.right instanceof BinaryOpNode) {
-				final BinaryOpNode<TypedValue> rightOp = (BinaryOpNode<TypedValue>)op.right;
-				Preconditions.checkState(rightOp.operator == splitOperator, "Malformed constructor list, expected '\\', got %s", rightOp);
-				flattenConstructorDefinitionList(output, rightOp);
-			} else {
-				flattenConstructorDefinition(output, op.right);
+				flattenConstructorDefinition(output, ctorsNode);
 			}
 		}
 

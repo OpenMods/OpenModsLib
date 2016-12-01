@@ -50,14 +50,8 @@ public class LetExpressionFactory {
 				output.add(Value.create(Symbol.get(domain, callNode.symbol())));
 				output.add(Value.create(createLambdaWrapperCode(callNode, value)));
 			} else {
-				try {
-					// f:<some code>, 'f':<some code>, #f:<some code>
-					output.add(Value.create(TypedCalcUtils.extractNameFromNode(domain, name)));
-				} catch (IllegalArgumentException e) {
-					// hopefully something that evaluates to symbol
-					// TODO no valid syntax in prefix
-					name.flatten(output);
-				}
+				// f:<some code>, 'f':<some code>, #f:<some code>
+				output.add(Value.create(TypedCalcUtils.extractNameFromNode(domain, name)));
 				output.add(flattenExprToCodeConstant(value));
 			}
 		}

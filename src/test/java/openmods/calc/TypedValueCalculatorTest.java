@@ -1237,19 +1237,6 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testLetExplicitSymbolVariableNames() {
-		infix("let([#x:2, #y:3], x + y)").expectResult(i(5));
-	}
-
-	@Test
-	public void testLetSymbolVariableNamesFromCall() {
-		sut.environment.setGlobalSymbol("x", domain.create(Symbol.class, Symbol.get("a")));
-		sut.environment.setGlobalSymbol("y", domain.create(Symbol.class, Symbol.get("b")));
-
-		infix("let([(x()):2,(y()):3], a + b)").expectResult(i(5));
-	}
-
-	@Test
 	public void testLetSymbolStringVariableNames() {
 		infix("let(['x':2,'y':3], x + y)").expectResult(i(5));
 		prefix("(let [(:'x' 2), (:'y' 3)] (+ x y))").expectResult(i(5));
@@ -1258,13 +1245,12 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testNestedLet() {
 		infix("let([x:2], let([y:x+2], x + y))").expectResult(i(6));
-		infix("let([x:#y], let([(x):2], y + 1))").expectResult(i(3));
 	}
 
 	@Test
 	public void testLetWithExplicitList() {
-		infix("let(list(#x:{2}, #y:{1+2}), x+y)").expectResult(i(5));
-		infix("let([l:list(#x:{2}, #y:{1+2})], let(l, x+y))").expectResult(i(5));
+		infix("@let([#x:{2}, #y:{1+2}], {x+y})").expectResult(i(5));
+		infix("let([l:[#x:{2}, #y:{1+2}]], @let(l, {x+y}))").expectResult(i(5));
 	}
 
 	@Test
@@ -1790,14 +1776,26 @@ public class TypedValueCalculatorTest {
 		infix("alt([Maybe=Just(x) \\ Nothing], match((Just(y)) -> y + 1, (Nothing) -> 'nope')(Nothing()))").expectResult(s("nope"));
 
 		infix("alt([Tree=Leaf(value)\\Node(left, right)], letrec([f = match((Leaf(v)) -> v, (Node(l,r)) -> f(l) + f(r))], f(Node(Node(Leaf(1), Leaf(4)), Leaf(6)))))").expectResult(i(11));
+	}
 
+	@Test
+	public void testAltTypesSameTypeComparision() {
 		infix("alt([Maybe=Just(x) \\ Nothing], Just(1) == Just(1))").expectResult(TRUE);
 		infix("alt([Maybe=Just(x) \\ Nothing], Just(1) != Just(5))").expectResult(TRUE);
 
 		infix("alt([Maybe=Just(x) \\ Nothing], Nothing() == Nothing())").expectResult(TRUE);
 		infix("alt([Maybe=Just(x) \\ Nothing], Just(1) != Nothing())").expectResult(TRUE);
+	}
 
-		infix("alt([Alt=V1 \\ V2], let([tmp = V1()], alt([Alt=V1 \\ V2], tmp != V1())))").expectResult(TRUE);
+	@Test
+	public void testAltTypesDifferentTypeSameNameComparision() {
+		infix("alt([Alt=V], let([tmp = V()], alt([Alt=V], tmp != V())))").expectResult(TRUE);
+	}
+
+	@Test
+	public void testManualAltTypesDefinition() {
+		// TODO expand when `Typed` is implemented
+		infix("@alt([#V:[#A1:[#x], #A2:[#x,#y]]], {A1(2) == A1(2) && A2(1,2) == A2(1,2)})").expectResult(TRUE);
 	}
 
 	@Test

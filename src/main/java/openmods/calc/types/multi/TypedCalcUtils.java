@@ -22,7 +22,7 @@ public class TypedCalcUtils {
 				return Symbol.get(domain, value.as(String.class));
 		}
 
-		throw new IllegalArgumentException();
+		throw new IllegalArgumentException("Failed to extract identifier from " + arg);
 	}
 
 	public static <T extends ICompositeTrait, R> Optional<R> tryDecomposeTrait(TypedValue value, Class<T> trait, Function<T, Optional<R>> f) {
