@@ -137,12 +137,14 @@ public class AltExpressionFactory {
 		public List<TypedValue> values();
 	}
 
-	private static class AltType extends SimpleComposite implements CompositeTraits.Decomposable, CompositeTraits.Printable {
+	private class AltType extends SimpleComposite implements CompositeTraits.Printable, CompositeTraits.TypeMarker {
 
 		private final String name;
+		private final TypedValue selfValue;
 
 		public AltType(String name) {
 			this.name = name;
+			this.selfValue = domain.create(IComposite.class, this);
 		}
 
 		@Override
@@ -154,24 +156,6 @@ public class AltExpressionFactory {
 		public String str(IValuePrinter<TypedValue> printer) {
 			return "<alt " + name + ">";
 		}
-
-		@Override
-		public Optional<List<TypedValue>> tryDecompose(final TypedValue input, int variableCount) {
-			Preconditions.checkArgument(variableCount == 1, "Invalid number of values to unpack, expected 1 got %s", variableCount);
-
-			return TypedCalcUtils.tryDecomposeTrait(input, AltTypeVariantTrait.class, new Function<AltTypeVariantTrait, Optional<List<TypedValue>>>() {
-				@Override
-				public Optional<List<TypedValue>> apply(AltTypeVariantTrait trait) {
-					if (trait.getType() == AltType.this) {
-						final List<TypedValue> result = ImmutableList.of(input);
-						return Optional.of(result);
-					} else {
-						return Optional.absent();
-					}
-				}
-			});
-		}
-
 	}
 
 	private class AltTypeVariant extends SimpleComposite implements CompositeTraits.Decomposable, CompositeTraits.Printable, AltTypeVariantTrait, CompositeTraits.Callable {
@@ -240,7 +224,7 @@ public class AltExpressionFactory {
 
 	}
 
-	private static class AltContainer extends SimpleComposite implements CompositeTraits.Printable, CompositeTraits.Equatable, AltContainerTrait {
+	private static class AltContainer extends SimpleComposite implements CompositeTraits.Printable, CompositeTraits.Equatable, CompositeTraits.Typed, AltContainerTrait {
 
 		private final AltTypeVariant variant;
 
@@ -283,6 +267,11 @@ public class AltExpressionFactory {
 			}
 
 			return false;
+		}
+
+		@Override
+		public TypedValue getType() {
+			return variant.type.selfValue;
 		}
 
 	}
@@ -332,7 +321,7 @@ public class AltExpressionFactory {
 			final Cons ctors = nameAndCtors.cdr.as(Cons.class);
 
 			final AltType newType = new AltType(name.value);
-			symbols.put(name.value, domain.create(IComposite.class, newType));
+			symbols.put(name.value, newType.selfValue);
 
 			ctors.visit(new Cons.ListVisitor(nullValue) {
 				@Override

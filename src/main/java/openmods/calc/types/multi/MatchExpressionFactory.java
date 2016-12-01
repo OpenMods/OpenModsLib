@@ -30,6 +30,7 @@ import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
+import openmods.calc.types.multi.CompositeTraits.Typed;
 import openmods.utils.Stack;
 
 public class MatchExpressionFactory {
@@ -124,28 +125,49 @@ public class MatchExpressionFactory {
 		@Override
 		public boolean match(SymbolMap<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value) {
 			final TypedValue typeValue = findConstructor(env);
-			Preconditions.checkState(typeValue.is(IComposite.class), "Value %s does not describe decomposable type", typeValue);
-			final IComposite compositeType = typeValue.as(IComposite.class);
-			final Optional<CompositeTraits.Decomposable> maybeDecomposable = compositeType.getOptional(CompositeTraits.Decomposable.class);
-			Preconditions.checkState(maybeDecomposable.isPresent(), "Value %s does not describe decomposable type", compositeType);
 
-			final CompositeTraits.Decomposable decomposableCtor = maybeDecomposable.get();
-			final int expectedValueCount = argMatchers.size();
-			final Optional<List<TypedValue>> maybeDecomposition = decomposableCtor.tryDecompose(value, expectedValueCount);
-			if (!maybeDecomposition.isPresent()) return false;
+			if (typeValue.is(IComposite.class)) {
+				final IComposite compositeType = typeValue.as(IComposite.class);
 
-			final List<TypedValue> decomposition = maybeDecomposition.get();
-			final int actualValueCount = decomposition.size();
-			Preconditions.checkState(actualValueCount == expectedValueCount, "Decomposable contract broken - returned different number of values: expected: %s, got %s", expectedValueCount, actualValueCount);
+				// case 1: maybe type knows how to decompose this value
+				final Optional<CompositeTraits.Decomposable> maybeDecomposable = compositeType.getOptional(CompositeTraits.Decomposable.class);
+				if (maybeDecomposable.isPresent()) {
+					final CompositeTraits.Decomposable decomposableCtor = maybeDecomposable.get();
+					final int expectedValueCount = argMatchers.size();
+					final Optional<List<TypedValue>> maybeDecomposition = decomposableCtor.tryDecompose(value, expectedValueCount);
+					if (!maybeDecomposition.isPresent()) return false;
 
-			for (int i = 0; i < actualValueCount; i++) {
-				final PatternPart pattern = argMatchers.get(i);
-				final TypedValue var = decomposition.get(i);
+					final List<TypedValue> decomposition = maybeDecomposition.get();
+					final int actualValueCount = decomposition.size();
+					Preconditions.checkState(actualValueCount == expectedValueCount, "Decomposable contract broken - returned different number of values: expected: %s, got %s", expectedValueCount, actualValueCount);
 
-				if (!pattern.match(env, output, var)) return false;
+					for (int i = 0; i < actualValueCount; i++) {
+						final PatternPart pattern = argMatchers.get(i);
+						final TypedValue var = decomposition.get(i);
+
+						if (!pattern.match(env, output, var)) return false;
+					}
+
+					return true;
+				}
+
+				// case 2: check for value type, compare with matcher type
+				if (argMatchers.size() == 1 && compositeType.has(CompositeTraits.TypeMarker.class)) {
+					if (value.is(IComposite.class)) {
+						final Optional<Typed> maybeTyped = value.as(IComposite.class).getOptional(CompositeTraits.Typed.class);
+						if (maybeTyped.isPresent()) {
+							final TypedValue expectedTypeValue = maybeTyped.get().getType();
+							if (TypedCalcUtils.areEqual(typeValue, expectedTypeValue)) {
+								final PatternPart pattern = argMatchers.get(0);
+								return pattern.match(env, output, value);
+							}
+						}
+					}
+					return false;
+				}
 			}
 
-			return true;
+			throw new IllegalStateException("Value " + typeValue + " does not describe constructor or type");
 		}
 
 		protected abstract TypedValue findConstructor(SymbolMap<TypedValue> env);

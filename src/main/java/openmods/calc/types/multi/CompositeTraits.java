@@ -44,4 +44,12 @@ public class CompositeTraits {
 	public interface Equatable extends ICompositeTrait {
 		public boolean isEqual(TypedValue value);
 	}
+
+	public interface TypeMarker extends ICompositeTrait {
+
+	}
+
+	public interface Typed extends ICompositeTrait {
+		public TypedValue getType();
+	}
 }

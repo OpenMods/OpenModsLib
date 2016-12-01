@@ -17,16 +17,18 @@ import openmods.calc.SingleReturnCallable;
 import openmods.calc.UnaryFunction;
 import openmods.utils.Stack;
 
-// TODO: change to composite, missing type decompose
-public class DictSymbol extends SingleReturnCallable<TypedValue> {
+public class DictSymbol extends SimpleComposite implements CompositeTraits.Callable, CompositeTraits.TypeMarker {
 
 	private final TypedValue nullValue;
 
 	private final TypeDomain domain;
 
+	private final TypedValue selfValue;
+
 	public DictSymbol(TypedValue nullValue) {
 		this.nullValue = nullValue;
 		this.domain = nullValue.domain;
+		this.selfValue = domain.create(IComposite.class, this);
 	}
 
 	private static void extractKeyValuesPairs(Iterable<TypedValue> args, Map<TypedValue, TypedValue> output) {
@@ -44,7 +46,7 @@ public class DictSymbol extends SingleReturnCallable<TypedValue> {
 		public TypedValue get();
 	}
 
-	private class Dict extends SimpleComposite implements CompositeTraits.Structured, CompositeTraits.Indexable, CompositeTraits.Countable, CompositeTraits.Printable, CompositeTraits.Equatable {
+	private class Dict extends SimpleComposite implements CompositeTraits.Structured, CompositeTraits.Indexable, CompositeTraits.Countable, CompositeTraits.Printable, CompositeTraits.Equatable, CompositeTraits.Typed {
 
 		private final Map<TypedValue, TypedValue> values;
 
@@ -187,19 +189,33 @@ public class DictSymbol extends SingleReturnCallable<TypedValue> {
 			return false;
 		}
 
+		@Override
+		public TypedValue getType() {
+			return DictSymbol.this.selfValue;
+		}
+
 	}
 
 	@Override
-	public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+	public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
 		Preconditions.checkState(argumentsCount.isPresent(), "'dict' symbol requires arguments count");
-		final Stack<TypedValue> args = frame.stack().substack(argumentsCount.get());
+		final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.get());
 
 		final Map<TypedValue, TypedValue> values = Maps.newHashMap();
-		extractKeyValuesPairs(args, values);
+		extractKeyValuesPairs(stack, values);
 
 		final TypedValue result = domain.create(IComposite.class, new Dict(values));
-		args.clear();
-		return result;
+		stack.clear();
+		stack.push(result);
+	}
+
+	@Override
+	public String type() {
+		return "dict_type";
+	}
+
+	public TypedValue value() {
+		return selfValue;
 	}
 
 }

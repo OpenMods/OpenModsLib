@@ -1,15 +1,13 @@
 package openmods.calc;
 
 import com.google.common.base.Optional;
+import openmods.calc.types.multi.TypedCalcUtils;
 
 public abstract class SingleReturnCallable<E> implements ICallable<E> {
 
 	@Override
 	public final void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-		if (returnsCount.isPresent()) {
-			final int returns = returnsCount.get();
-			if (returns != 1) throw new StackValidationException("Has single result but expected %s", returns);
-		}
+		TypedCalcUtils.expectSingleReturn(returnsCount);
 
 		final E result = call(frame, argumentsCount);
 		frame.stack().push(result);

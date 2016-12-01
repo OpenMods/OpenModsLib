@@ -2,7 +2,6 @@ package openmods.calc.types.multi;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
@@ -23,11 +22,13 @@ public class OptionalTypeFactory {
 	private final TypeDomain domain;
 	private final TypedValue nullValue;
 	private final TypedValue absentValue;
+	private final TypedValue typeValue;
 
 	public OptionalTypeFactory(TypedValue nullValue) {
 		this.domain = nullValue.domain;
 		this.nullValue = nullValue;
-		absentValue = domain.create(IComposite.class, new Absent());
+		this.absentValue = domain.create(IComposite.class, new Absent());
+		this.typeValue = domain.create(IComposite.class, createOptionalType());
 	}
 
 	private interface OptionalTrait extends ICompositeTrait {
@@ -45,7 +46,7 @@ public class OptionalTypeFactory {
 	private static final String MEMBER_OR = "or";
 	private static final String MEMBER_GET = "get";
 
-	private class Absent extends SimpleComposite implements OptionalTrait, CompositeTraits.Printable, CompositeTraits.Truthy, CompositeTraits.Structured {
+	private class Absent extends SimpleComposite implements OptionalTrait, CompositeTraits.Printable, CompositeTraits.Truthy, CompositeTraits.Structured, CompositeTraits.Typed {
 		private final Map<String, TypedValue> members;
 
 		public Absent() {
@@ -118,10 +119,15 @@ public class OptionalTypeFactory {
 			return "Optional.Absent()";
 		}
 
+		@Override
+		public TypedValue getType() {
+			return typeValue;
+		}
+
 		// no need for explicit equatable for now, since there's only one value of this type
 	}
 
-	private class Present extends SimpleComposite implements OptionalTrait, CompositeTraits.Printable, CompositeTraits.Truthy, CompositeTraits.Structured, CompositeTraits.Equatable {
+	private class Present extends SimpleComposite implements OptionalTrait, CompositeTraits.Printable, CompositeTraits.Truthy, CompositeTraits.Structured, CompositeTraits.Equatable, CompositeTraits.Typed {
 		private final TypedValue value;
 
 		private final Map<String, TypedValue> members;
@@ -217,6 +223,12 @@ public class OptionalTypeFactory {
 
 			return false;
 		}
+
+		@Override
+		public TypedValue getType() {
+			return typeValue;
+		}
+
 	}
 
 	private IComposite createPresentConstructor() {
@@ -232,6 +244,7 @@ public class OptionalTypeFactory {
 				.put(CompositeTraits.Decomposable.class, new CompositeTraits.Decomposable() {
 					@Override
 					public Optional<List<TypedValue>> tryDecompose(TypedValue input, int variableCount) {
+						Preconditions.checkArgument(variableCount == 1, "Invalid number of values to unpack, expected 1 got %s", variableCount);
 						final Optional<OptionalTrait> trait = TypedCalcUtils.tryGetTrait(input, OptionalTrait.class);
 						if (!trait.isPresent()) return Optional.absent();
 						final OptionalTrait optionalInfo = trait.get();
@@ -258,6 +271,7 @@ public class OptionalTypeFactory {
 				.put(CompositeTraits.Decomposable.class, new CompositeTraits.Decomposable() {
 					@Override
 					public Optional<List<TypedValue>> tryDecompose(TypedValue input, int variableCount) {
+						Preconditions.checkArgument(variableCount == 0, "Invalid number of values to unpack, expected none got %s", variableCount);
 						final Optional<OptionalTrait> trait = TypedCalcUtils.tryGetTrait(input, OptionalTrait.class);
 						if (!trait.isPresent()) return Optional.absent();
 						final OptionalTrait optionalInfo = trait.get();
@@ -284,18 +298,7 @@ public class OptionalTypeFactory {
 				.build();
 
 		return new MappedComposite.Builder()
-				.put(CompositeTraits.Decomposable.class, new CompositeTraits.Decomposable() {
-					@Override
-					public Optional<List<TypedValue>> tryDecompose(TypedValue input, int variableCount) {
-						final Optional<OptionalTrait> optionalTrait = TypedCalcUtils.tryGetTrait(input, OptionalTrait.class);
-						if (optionalTrait.isPresent()) {
-							final List<TypedValue> result = ImmutableList.of(input);
-							return Optional.of(result);
-						} else {
-							return Optional.absent();
-						}
-					}
-				})
+				.put(CompositeTraits.TypeMarker.class, new CompositeTraits.TypeMarker() {})
 				.put(CompositeTraits.Structured.class, new CompositeTraits.Structured() {
 					@Override
 					public Optional<TypedValue> get(TypeDomain domain, String component) {
@@ -305,7 +308,7 @@ public class OptionalTypeFactory {
 				.build("<type Optional>");
 	}
 
-	public TypedValue create() {
-		return domain.create(IComposite.class, createOptionalType());
+	public TypedValue value() {
+		return typeValue;
 	}
 }

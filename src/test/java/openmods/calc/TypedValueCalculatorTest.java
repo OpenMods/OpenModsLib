@@ -1788,14 +1788,26 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testAltTypesTyping() {
+		infix("alt([Maybe=Just(x) \\ Nothing], type(Just(1)) == type(Nothing()))").expectResult(TRUE);
+		infix("alt([Maybe=Just(x) \\ Nothing], type(Just(1)) == type(Just(2)))").expectResult(TRUE);
+		infix("alt([Maybe=Just(x) \\ Nothing], type(Nothing()) == type(Nothing()))").expectResult(TRUE);
+
+		infix("alt([Maybe=Just(x) \\ Nothing], match((Maybe(x)) -> 'maybe', (_) -> 'other')(Just(1)))").expectResult(s("maybe"));
+		infix("alt([Maybe=Just(x) \\ Nothing], match((Maybe(x)) -> 'maybe', (_) -> 'other')(Nothing()))").expectResult(s("maybe"));
+		infix("alt([Maybe=Just(x) \\ Nothing], match((Maybe(x)) -> 'maybe', (_) -> 'other')(5))").expectResult(s("other"));
+	}
+
+	@Test
 	public void testAltTypesDifferentTypeSameNameComparision() {
 		infix("alt([Alt=V], let([tmp = V()], alt([Alt=V], tmp != V())))").expectResult(TRUE);
+		infix("alt([Alt=V], let([tmp = V()], alt([Alt=V], type(tmp) != type(V()))))").expectResult(TRUE);
 	}
 
 	@Test
 	public void testManualAltTypesDefinition() {
-		// TODO expand when `Typed` is implemented
 		infix("@alt([#V:[#A1:[#x], #A2:[#x,#y]]], {A1(2) == A1(2) && A2(1,2) == A2(1,2)})").expectResult(TRUE);
+		infix("@alt([#V:[#A1:[#x], #A2:[#x,#y]]], {type(A1(2)) == type(A2(1,2))})").expectResult(TRUE);
 	}
 
 	@Test
@@ -2283,6 +2295,8 @@ public class TypedValueCalculatorTest {
 		infix("let([Point=struct(#x,#y)], match((Point(x)) -> 'point', (_) -> 'other')(Point()))").expectResult(s("point"));
 		infix("let([Point=struct(#x,#y)], match((Point(x)) -> 'point', (_) -> 'other')(5))").expectResult(s("other"));
 
+		infix("let([Point=struct(#x,#y)], type(Point()) == Point)").expectResult(TRUE);
+
 		infix("letseq([Point=struct(#x,#y), p1 = Point(#y:3), p2 = p1._update(#x:2), p3 = p1._update(#y:8)], list(p1.x:p1.y, p2.x:p2.y, p3.x:p3.y))")
 				.expectResult(list(
 						cons(nil(), i(3)),
@@ -2323,8 +2337,11 @@ public class TypedValueCalculatorTest {
 
 		infix("dict(1:'a','a':#b,2I:5).hasValue(#b)").expectResult(TRUE);
 		infix("dict(1:'a','a':#b,2I:5).hasValue('c')").expectResult(FALSE);
-
 		infix("dict(1:'a','a':#b,2I:5).hasValue(#b)").expectResult(TRUE);
+
+		infix("match((dict(x)) -> 'dict', (_) -> 'other')(dict())").expectResult(s("dict"));
+		infix("match((dict(x)) -> 'dict', (_) -> 'other')(5)").expectResult(s("other"));
+		infix("type(dict()) == dict").expectResult(TRUE);
 
 		assertSameListContents(Sets.newHashSet(i(1), s("a"), complex(0, 2)), infix("dict(1:'a','a':#b,2I:5).keys").executeAndPop());
 		assertSameListContents(Sets.newHashSet(s("a"), sym("b"), i(5)), infix("dict(1:'a','a':#b,2I:5).values").executeAndPop());
@@ -2363,5 +2380,12 @@ public class TypedValueCalculatorTest {
 
 		infix("match((Optional.Present(v)) -> 'present':v, (Optional.Absent()) -> 'absent')(Optional.from(5))").expectResult(cons(s("present"), i(5)));
 		infix("match((Optional.Present(v)) -> 'present':v, (Optional.Absent()) -> 'absent')(Optional.from(null))").expectResult(s("absent"));
+
+		infix("match((Optional(x)) -> 'optional', (_) -> 'other')(Optional.Absent())").expectResult(s("optional"));
+		infix("match((Optional(x)) -> 'optional', (_) -> 'other')(Optional.Present(1))").expectResult(s("optional"));
+		infix("match((Optional(x)) -> 'optional', (_) -> 'other')(4)").expectResult(s("other"));
+
+		infix("type(Optional.Absent()) == Optional").expectResult(TRUE);
+		infix("type(Optional.Present(4)) == Optional").expectResult(TRUE);
 	}
 }

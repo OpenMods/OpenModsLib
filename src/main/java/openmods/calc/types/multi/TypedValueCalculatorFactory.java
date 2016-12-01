@@ -54,8 +54,8 @@ import openmods.calc.parsing.SquareBracketContainerNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.Tokenizer;
 import openmods.calc.parsing.ValueNode;
-import openmods.calc.types.multi.CompositeTraits.Equatable;
 import openmods.calc.types.multi.CompositeTraits.Structured;
+import openmods.calc.types.multi.CompositeTraits.Typed;
 import openmods.calc.types.multi.Cons.LinearVisitor;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
@@ -163,27 +163,9 @@ public class TypedValueCalculatorFactory {
 				.setDefaultOperation(new TypedBinaryOperator.IDefaultOperation() {
 					@Override
 					public Optional<TypedValue> apply(TypeDomain domain, TypedValue left, TypedValue right) {
-						final boolean areEquals = areEquals(left, right);
+						final boolean areEquals = TypedCalcUtils.areEqual(left, right);
 						final boolean result = equalsTranslator.interpret(areEquals);
 						return Optional.of(domain.create(Boolean.class, result));
-					}
-
-					private boolean areEquals(TypedValue left, TypedValue right) {
-						if (left.equals(right)) return true;
-
-						if (left.is(IComposite.class)) {
-							final IComposite composite = left.as(IComposite.class);
-							final Optional<Equatable> equatable = composite.getOptional(CompositeTraits.Equatable.class);
-							if (equatable.isPresent()) return equatable.get().isEqual(right);
-						}
-
-						if (right.is(IComposite.class)) {
-							final IComposite composite = right.as(IComposite.class);
-							final Optional<Equatable> equatable = composite.getOptional(CompositeTraits.Equatable.class);
-							if (equatable.isPresent()) return equatable.get().isEqual(left);
-						}
-
-						return false;
 					}
 				})
 				.build(domain);
@@ -891,6 +873,7 @@ public class TypedValueCalculatorFactory {
 		class TypeSymbol extends UnaryFunction<TypedValue> {
 
 			private final Map<Class<?>, TypedValue> types = Maps.newHashMap();
+			private final TypedValue objectType = TypeComposite.create(domain, IComposite.class);
 
 			{
 				types.put(UnitType.class, TypeComposite.create(domain, UnitType.class));
@@ -899,7 +882,22 @@ public class TypedValueCalculatorFactory {
 			@Override
 			protected TypedValue call(TypedValue value) {
 				final TypedValue type = types.get(value.type);
-				return type != null? type : nullValue;
+				if (type != null) return type;
+
+				if (value.is(IComposite.class)) {
+					final Optional<Typed> maybeTyped = value.as(IComposite.class).getOptional(CompositeTraits.Typed.class);
+					if (maybeTyped.isPresent())
+						return maybeTyped.get().getType();
+					else
+						return objectType; // TODO It will probably look better with composite wrappers for primitives
+				}
+
+				return nullValue;
+			}
+
+			public void registerObjectType(SymbolMap<TypedValue> symbols) {
+				domain.checkIsKnownType(IComposite.class);
+				symbols.put(domain.getName(IComposite.class), objectType);
 			}
 
 			public void registerType(SymbolMap<TypedValue> symbols, Class<?> tag) {
@@ -935,7 +933,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		typeSymbol.registerType(envMap, IComposite.class);
+		typeSymbol.registerObjectType(envMap);
 		typeSymbol.registerType(envMap, Code.class);
 		typeSymbol.registerType(envMap, ICallable.class);
 
@@ -1600,8 +1598,8 @@ public class TypedValueCalculatorFactory {
 		});
 
 		env.setGlobalSymbol("struct", new StructSymbol(nullValue));
-		env.setGlobalSymbol("dict", new DictSymbol(nullValue));
-		env.setGlobalSymbol("Optional", new OptionalTypeFactory(nullValue).create());
+		env.setGlobalSymbol("dict", new DictSymbol(nullValue).value());
+		env.setGlobalSymbol("Optional", new OptionalTypeFactory(nullValue).value());
 
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);

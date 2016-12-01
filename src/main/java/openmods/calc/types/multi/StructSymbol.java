@@ -1,10 +1,8 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -45,12 +43,14 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 	}
 
 	private interface StructValueTrait extends ICompositeTrait {
-		public Object getTypeMarker();
+		public StructType getTypeMarker();
 	}
 
-	private class StructValue extends SimpleComposite implements CompositeTraits.Structured, CompositeTraits.Printable, CompositeTraits.Equatable, StructValueTrait {
+	private class StructValue extends SimpleComposite implements CompositeTraits.Structured, CompositeTraits.Printable, CompositeTraits.Equatable, CompositeTraits.Typed, StructValueTrait {
 
-		private final Object typeMarker;
+		private final StructType type;
+		private final TypedValue typeValue;
+
 		private final Set<String> fields;
 		private final Map<String, TypedValue> values;
 		private final Map<String, TypedValue> members;
@@ -63,14 +63,15 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 				final Stack<TypedValue> args = frame.stack().substack(argCount);
 				final Map<String, TypedValue> newValues = Maps.newHashMap(values);
 				extractValues(args, fields, newValues);
-				final TypedValue result = domain.create(IComposite.class, new StructValue(typeMarker, fields, newValues));
+				final TypedValue result = domain.create(IComposite.class, new StructValue(type, typeValue, fields, newValues));
 				args.clear();
 				return result;
 			}
 		}
 
-		public StructValue(Object typeMarker, Set<String> fields, Map<String, TypedValue> values) {
-			this.typeMarker = typeMarker;
+		public StructValue(StructType type, TypedValue typeValue, Set<String> fields, Map<String, TypedValue> values) {
+			this.type = type;
+			this.typeValue = typeValue;
 			this.fields = fields;
 			this.values = ImmutableMap.copyOf(values);
 
@@ -100,8 +101,8 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 		}
 
 		@Override
-		public Object getTypeMarker() {
-			return typeMarker;
+		public StructType getTypeMarker() {
+			return type;
 		}
 
 		@Override
@@ -110,76 +111,68 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 
 			if (value.value instanceof StructValue) {
 				final StructValue other = (StructValue)value.value;
-				return other.typeMarker == this.typeMarker
+				return other.type == this.type
 						&& other.values.equals(this.values);
 			}
 
 			return false;
 		}
 
-	}
-
-	private IComposite createSymbolFactory(List<String> fields) {
-		final Object typeMarker = new Object();
-		final Set<String> fieldNames = Sets.newLinkedHashSet();
-		fieldNames.addAll(fields);
-
-		final List<TypedValue> wrappedFieldNames = Lists.newArrayList();
-		for (String fieldName : fields)
-			wrappedFieldNames.add(domain.create(String.class, fieldName));
-
-		final TypedValue fieldsList = Cons.createList(wrappedFieldNames, nullValue);
-
-		class CallableConstructor extends SingleReturnCallable<TypedValue> implements CompositeTraits.Callable {
-			@Override
-			public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
-				final int argCount = argumentsCount.or(fieldNames.size());
-
-				final Stack<TypedValue> args = frame.stack().substack(argCount);
-				final Map<String, TypedValue> values = Maps.newHashMap();
-
-				for (String field : fieldNames)
-					values.put(field, nullValue);
-
-				extractValues(args, fieldNames, values);
-				values.put(MEMBER_FIELDS, fieldsList);
-				final TypedValue result = domain.create(IComposite.class, new StructValue(typeMarker, fieldNames, values));
-				args.clear();
-
-				return result;
-			}
-
+		@Override
+		public TypedValue getType() {
+			return typeValue;
 		}
 
-		return new MappedComposite.Builder()
-				.put(CompositeTraits.Decomposable.class, new CompositeTraits.Decomposable() {
-					@Override
-					public Optional<List<TypedValue>> tryDecompose(final TypedValue input, int variableCount) {
-						Preconditions.checkArgument(variableCount == 1, "Invalid number of values to unpack, expected 1 got %s", variableCount);
+	}
 
-						return TypedCalcUtils.tryDecomposeTrait(input, StructValueTrait.class, new Function<StructValueTrait, Optional<List<TypedValue>>>() {
-							@Override
-							public Optional<List<TypedValue>> apply(StructValueTrait trait) {
-								if (trait.getTypeMarker() == typeMarker) {
-									final List<TypedValue> result = ImmutableList.of(input);
-									return Optional.of(result);
-								} else {
-									return Optional.absent();
-								}
-							}
-						});
-					}
+	private class StructType extends SimpleComposite implements CompositeTraits.Callable, CompositeTraits.Structured, CompositeTraits.TypeMarker {
 
-				})
-				.put(CompositeTraits.Callable.class, new CallableConstructor())
-				.put(CompositeTraits.Structured.class, new CompositeTraits.Structured() {
-					@Override
-					public Optional<TypedValue> get(TypeDomain domain, String component) {
-						if (component.equals(MEMBER_FIELDS)) return Optional.of(fieldsList);
-						return Optional.absent();
-					}
-				})
-				.build("structtype");
+		private final Set<String> fieldNames = Sets.newLinkedHashSet();
+		private final List<TypedValue> wrappedFieldNames = Lists.newArrayList();
+		private final TypedValue fieldsList;
+		private final TypedValue selfValue;
+
+		public StructType(List<String> fields) {
+			this.fieldNames.addAll(fields);
+
+			for (String fieldName : fields)
+				wrappedFieldNames.add(domain.create(String.class, fieldName));
+
+			fieldsList = Cons.createList(wrappedFieldNames, nullValue);
+
+			selfValue = domain.create(IComposite.class, this);
+		}
+
+		@Override
+		public String type() {
+			return "struct_type";
+		}
+
+		@Override
+		public Optional<TypedValue> get(TypeDomain domain, String component) {
+			if (component.equals(MEMBER_FIELDS)) return Optional.of(fieldsList);
+			return Optional.absent();
+		}
+
+		@Override
+		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			TypedCalcUtils.expectSingleReturn(returnsCount);
+
+			final int argCount = argumentsCount.or(fieldNames.size());
+
+			final Stack<TypedValue> stack = frame.stack().substack(argCount);
+			final Map<String, TypedValue> values = Maps.newHashMap();
+
+			for (String field : fieldNames)
+				values.put(field, nullValue);
+
+			extractValues(stack, fieldNames, values);
+			values.put(MEMBER_FIELDS, fieldsList);
+			final TypedValue result = domain.create(IComposite.class, new StructValue(this, selfValue, fieldNames, values));
+			stack.clear();
+			stack.push(result);
+		}
+
 	}
 
 	@Override
@@ -198,7 +191,7 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 			}
 		}
 
-		final TypedValue result = domain.create(IComposite.class, createSymbolFactory(fields));
+		final TypedValue result = domain.create(IComposite.class, new StructType(fields));
 		args.clear();
 		return result;
 

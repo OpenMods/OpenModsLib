@@ -4,9 +4,11 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import openmods.calc.Frame;
 import openmods.calc.ICallable;
+import openmods.calc.StackValidationException;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.ValueNode;
+import openmods.calc.types.multi.CompositeTraits.Equatable;
 
 public class TypedCalcUtils {
 
@@ -71,5 +73,30 @@ public class TypedCalcUtils {
 		}
 
 		return false;
+	}
+
+	public static boolean areEqual(TypedValue left, TypedValue right) {
+		if (left.equals(right)) return true;
+
+		if (left.is(IComposite.class)) {
+			final IComposite composite = left.as(IComposite.class);
+			final Optional<Equatable> equatable = composite.getOptional(CompositeTraits.Equatable.class);
+			if (equatable.isPresent()) return equatable.get().isEqual(right);
+		}
+
+		if (right.is(IComposite.class)) {
+			final IComposite composite = right.as(IComposite.class);
+			final Optional<Equatable> equatable = composite.getOptional(CompositeTraits.Equatable.class);
+			if (equatable.isPresent()) return equatable.get().isEqual(left);
+		}
+
+		return false;
+	}
+
+	public static void expectSingleReturn(Optional<Integer> returnsCount) {
+		if (returnsCount.isPresent()) {
+			final int returns = returnsCount.get();
+			if (returns != 1) throw new StackValidationException("Has single result but expected %s", returns);
+		}
 	}
 }
