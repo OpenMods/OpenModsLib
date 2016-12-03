@@ -178,8 +178,6 @@ public class CalcTestUtils {
 
 	public static final Token OP_MINUS = op("-");
 
-	public static final BinaryOperator<String> DEFAULT = new DummyBinaryOperator<String>(0, "<?>");
-
 	public static final UnaryOperator<String> UNARY_MINUS = new DummyUnaryOperator<String>("-");
 
 	public static final UnaryOperator<String> UNARY_NEG = new DummyUnaryOperator<String>("!");
@@ -189,6 +187,10 @@ public class CalcTestUtils {
 	public static final BinaryOperator<String> MULTIPLY = new DummyBinaryOperator<String>(2, "*");
 
 	public static final Token OP_MULTIPLY = op("*");
+
+	public static final BinaryOperator<String> DEFAULT = new DummyBinaryOperator<String>(2, "<*>");
+
+	public static final Token OP_DEFAULT = op("<*>");
 
 	public static final BinaryOperator<String> ASSIGN = new DummyBinaryOperator<String>(1, "=", Associativity.RIGHT);
 

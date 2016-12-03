@@ -19,7 +19,10 @@ public class InfixCompilerTest extends CalcTestUtils {
 		operators.registerBinaryOperator(MINUS);
 		operators.registerUnaryOperator(UNARY_MINUS);
 		operators.registerUnaryOperator(UNARY_NEG);
-		operators.registerBinaryOperator(MULTIPLY).setDefault();
+		operators.registerBinaryOperator(MULTIPLY);
+
+		// token for default added only for testing purposes
+		operators.registerBinaryOperator(DEFAULT).setDefault();
 	}
 
 	private final ICompilerState<String> testState = new TestCompilerState() {
@@ -292,117 +295,117 @@ public class InfixCompilerTest extends CalcTestUtils {
 	public void testDefaultOperator() {
 		// 2a == 2 * a
 		given(dec("2"), symbol("a"))
-				.expect(c("2"), get("a"), MULTIPLY)
-				.expectSameAs(dec("2"), OP_MULTIPLY, symbol("a"));
+				.expect(c("2"), get("a"), DEFAULT)
+				.expectSameAs(dec("2"), OP_DEFAULT, symbol("a"));
 
 		// -2a == -2 * a
 		given(OP_MINUS, dec("2"), symbol("a"))
-				.expect(c("2"), UNARY_MINUS, get("a"), MULTIPLY)
-				.expectSameAs(OP_MINUS, dec("2"), OP_MULTIPLY, symbol("a"));
+				.expect(c("2"), UNARY_MINUS, get("a"), DEFAULT)
+				.expectSameAs(OP_MINUS, dec("2"), OP_DEFAULT, symbol("a"));
 
 		// -2a() == -2 * a()
 		given(OP_MINUS, dec("2"), symbol("a"), LEFT_BRACKET, RIGHT_BRACKET)
-				.expect(c("2"), UNARY_MINUS, call("a", 0), MULTIPLY)
-				.expectSameAs(OP_MINUS, dec("2"), OP_MULTIPLY, symbol("a"), LEFT_BRACKET, RIGHT_BRACKET);
+				.expect(c("2"), UNARY_MINUS, call("a", 0), DEFAULT)
+				.expectSameAs(OP_MINUS, dec("2"), OP_DEFAULT, symbol("a"), LEFT_BRACKET, RIGHT_BRACKET);
 
 		// 2(a) = 2 * (a)
 		given(dec("2"), LEFT_BRACKET, symbol("a"), RIGHT_BRACKET)
-				.expect(c("2"), get("a"), MULTIPLY)
-				.expectSameAs(dec("2"), OP_MULTIPLY, symbol("a"));
+				.expect(c("2"), get("a"), DEFAULT)
+				.expectSameAs(dec("2"), OP_DEFAULT, symbol("a"));
 
 		// 3 a + 2 = 3 * a + 2
 		given(dec("3"), symbol("a"), OP_PLUS, dec("2"))
-				.expect(c("3"), get("a"), MULTIPLY, c("2"), PLUS);
+				.expect(c("3"), get("a"), DEFAULT, c("2"), PLUS);
 
 		// 3 + 2a == 3 + 2 * a
 		given(dec("3"), OP_PLUS, dec("2"), symbol("a"))
-				.expect(c("3"), c("2"), get("a"), MULTIPLY, PLUS)
-				.expectSameAs(dec("3"), OP_PLUS, dec("2"), OP_MULTIPLY, symbol("a"));
+				.expect(c("3"), c("2"), get("a"), DEFAULT, PLUS)
+				.expectSameAs(dec("3"), OP_PLUS, dec("2"), OP_DEFAULT, symbol("a"));
 
 		// 3a(2) == 3 * a(2)
 		given(dec("3"), symbol("a"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
-				.expect(c("3"), c("2"), call("a", 1), MULTIPLY)
-				.expectSameAs(dec("3"), OP_MULTIPLY, symbol("a"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET);
+				.expect(c("3"), c("2"), call("a", 1), DEFAULT)
+				.expectSameAs(dec("3"), OP_DEFAULT, symbol("a"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET);
 
 		// 2 3 = 2 * 3 (weird edge condition, but whatever)
 		given(dec("2"), dec("3"))
-				.expect(c("2"), c("3"), MULTIPLY)
-				.expectSameAs(dec("2"), OP_MULTIPLY, dec("3"));
+				.expect(c("2"), c("3"), DEFAULT)
+				.expectSameAs(dec("2"), OP_DEFAULT, dec("3"));
 
 		// 3(2) == 3 * 2
 		given(dec("3"), LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
-				.expect(c("3"), c("2"), MULTIPLY)
-				.expectSameAs(dec("3"), OP_MULTIPLY, dec("2"));
+				.expect(c("3"), c("2"), DEFAULT)
+				.expectSameAs(dec("3"), OP_DEFAULT, dec("2"));
 
 		// (2)3 = 2 * 3
 		given(LEFT_BRACKET, dec("2"), RIGHT_BRACKET, dec("3"))
-				.expect(c("2"), c("3"), MULTIPLY)
-				.expectSameAs(dec("2"), OP_MULTIPLY, dec("3"));
+				.expect(c("2"), c("3"), DEFAULT)
+				.expectSameAs(dec("2"), OP_DEFAULT, dec("3"));
 
 		// (2) i == 2 * i
 		given(LEFT_BRACKET, dec("2"), RIGHT_BRACKET, symbol("i"))
-				.expect(c("2"), get("i"), MULTIPLY)
-				.expectSameAs(dec("2"), OP_MULTIPLY, symbol("i"));
+				.expect(c("2"), get("i"), DEFAULT)
+				.expectSameAs(dec("2"), OP_DEFAULT, symbol("i"));
 
 		// -(2) i == -2 * i
 		given(OP_MINUS, LEFT_BRACKET, dec("2"), RIGHT_BRACKET, symbol("i"))
-				.expect(c("2"), UNARY_MINUS, get("i"), MULTIPLY)
-				.expectSameAs(OP_MINUS, dec("2"), OP_MULTIPLY, symbol("i"));
+				.expect(c("2"), UNARY_MINUS, get("i"), DEFAULT)
+				.expectSameAs(OP_MINUS, dec("2"), OP_DEFAULT, symbol("i"));
 
 		// a(2i, 4) == a(2*i, 4)
 		given(symbol("a"), LEFT_BRACKET, dec("2"), symbol("i"), COMMA, dec("4"), RIGHT_BRACKET)
-				.expect(c("2"), get("i"), MULTIPLY, c("4"), call("a", 2))
-				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("2"), OP_MULTIPLY, symbol("i"), COMMA, dec("4"), RIGHT_BRACKET);
+				.expect(c("2"), get("i"), DEFAULT, c("4"), call("a", 2))
+				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("2"), OP_DEFAULT, symbol("i"), COMMA, dec("4"), RIGHT_BRACKET);
 
 		// (2)(3) == 2 * 3
 		given(LEFT_BRACKET, dec("2"), RIGHT_BRACKET, LEFT_BRACKET, dec("3"), RIGHT_BRACKET)
-				.expect(c("2"), c("3"), MULTIPLY)
-				.expectSameAs(dec("2"), OP_MULTIPLY, dec("3"));
+				.expect(c("2"), c("3"), DEFAULT)
+				.expectSameAs(dec("2"), OP_DEFAULT, dec("3"));
 
 		// (2)5(3) == 2 * 5 * 3
 		given(LEFT_BRACKET, dec("2"), RIGHT_BRACKET, dec("5"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET)
-				.expect(c("2"), c("5"), MULTIPLY, c("3"), MULTIPLY)
-				.expectSameAs(dec("2"), OP_MULTIPLY, dec("5"), OP_MULTIPLY, dec("3"));
+				.expect(c("2"), c("5"), DEFAULT, c("3"), DEFAULT)
+				.expectSameAs(dec("2"), OP_DEFAULT, dec("5"), OP_DEFAULT, dec("3"));
 
 		// (2)a(3) = 2 * a(3)
 		given(LEFT_BRACKET, dec("2"), RIGHT_BRACKET, symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET)
-				.expect(c("2"), c("3"), call("a", 1), MULTIPLY)
-				.expectSameAs(dec("2"), OP_MULTIPLY, symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET);
+				.expect(c("2"), c("3"), call("a", 1), DEFAULT)
+				.expectSameAs(dec("2"), OP_DEFAULT, symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET);
 
 		// a(3)2 = a(3) * 2
 		given(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, dec("2"))
-				.expect(c("3"), call("a", 1), c("2"), MULTIPLY)
-				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, OP_MULTIPLY, dec("2"));
+				.expect(c("3"), call("a", 1), c("2"), DEFAULT)
+				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, OP_DEFAULT, dec("2"));
 
 		// a(3)j = a(3) * j
 		given(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, symbol("j"))
-				.expect(c("3"), call("a", 1), get("j"), MULTIPLY)
-				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, OP_MULTIPLY, symbol("j"));
+				.expect(c("3"), call("a", 1), get("j"), DEFAULT)
+				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, OP_DEFAULT, symbol("j"));
 
 		// a(3)(2) = a(3) * 2
 		given(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, LEFT_BRACKET, dec("2"), RIGHT_BRACKET)
-				.expect(c("3"), call("a", 1), c("2"), MULTIPLY)
-				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, OP_MULTIPLY, dec("2"));
+				.expect(c("3"), call("a", 1), c("2"), DEFAULT)
+				.expectSameAs(symbol("a"), LEFT_BRACKET, dec("3"), RIGHT_BRACKET, OP_DEFAULT, dec("2"));
 
 		// a[3] = a * [3]
 		given(symbol("a"), leftBracket("["), dec("3"), rightBracket("]"))
-				.expect(get("a"), c("3"), MULTIPLY)
-				.expectSameAs(symbol("a"), OP_MULTIPLY, dec("3"));
+				.expect(get("a"), c("3"), DEFAULT)
+				.expectSameAs(symbol("a"), OP_DEFAULT, dec("3"));
 
 		// a 3 = a * 3
 		given(symbol("a"), dec("3"))
-				.expect(get("a"), c("3"), MULTIPLY)
-				.expectSameAs(symbol("a"), OP_MULTIPLY, dec("3"));
+				.expect(get("a"), c("3"), DEFAULT)
+				.expectSameAs(symbol("a"), OP_DEFAULT, dec("3"));
 
 		// a b = a * b
 		given(symbol("a"), symbol("b"))
-				.expect(get("a"), get("b"), MULTIPLY)
-				.expectSameAs(symbol("a"), OP_MULTIPLY, symbol("b"));
+				.expect(get("a"), get("b"), DEFAULT)
+				.expectSameAs(symbol("a"), OP_DEFAULT, symbol("b"));
 
 		// -a b = -a * b
 		given(OP_MINUS, symbol("a"), symbol("b"))
-				.expect(get("a"), UNARY_MINUS, get("b"), MULTIPLY)
-				.expectSameAs(OP_MINUS, symbol("a"), OP_MULTIPLY, symbol("b"));
+				.expect(get("a"), UNARY_MINUS, get("b"), DEFAULT)
+				.expectSameAs(OP_MINUS, symbol("a"), OP_DEFAULT, symbol("b"));
 	}
 
 	@Test
@@ -435,7 +438,7 @@ public class InfixCompilerTest extends CalcTestUtils {
 	public void testQuoteAndDeafultOpOrder() {
 		// #abc(12)
 		given(QUOTE_MODIFIER, symbol("abc"), LEFT_BRACKET, dec("12"), RIGHT_BRACKET)
-				.expectSameAs(QUOTE_MODIFIER, symbol("abc"), OP_MULTIPLY, LEFT_BRACKET, dec("12"), RIGHT_BRACKET)
-				.expect(OPEN_ROOT_QUOTE_M, rawValueMarker(symbol("abc")), CLOSE_ROOT_QUOTE_M, c("12"), MULTIPLY);
+				.expectSameAs(QUOTE_MODIFIER, symbol("abc"), OP_DEFAULT, LEFT_BRACKET, dec("12"), RIGHT_BRACKET)
+				.expect(OPEN_ROOT_QUOTE_M, rawValueMarker(symbol("abc")), CLOSE_ROOT_QUOTE_M, c("12"), DEFAULT);
 	}
 }
