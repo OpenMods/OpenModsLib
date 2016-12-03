@@ -19,6 +19,7 @@ public class PrefixCompilerTest extends CalcTestUtils {
 		operators.registerBinaryOperator(ASSIGN);
 		operators.registerUnaryOperator(UNARY_NEG);
 		operators.registerUnaryOperator(UNARY_MINUS);
+		operators.registerDefaultOperator(DEFAULT);
 	}
 
 	private static final Token CLOSE_LIST = rightBracket("]");
@@ -225,5 +226,22 @@ public class PrefixCompilerTest extends CalcTestUtils {
 		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE_M, call("test", 1));
 		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, dec("34"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE_M, c("34"), call("test", 2));
 		given(LEFT_BRACKET, symbol("test"), QUOTE_MODIFIER, LEFT_BRACKET, dec("12"), RIGHT_BRACKET, LEFT_BRACKET, symbol("sqrt"), dec("34"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, OPEN_QUOTE, valueMarker("12"), CLOSE_QUOTE, CLOSE_ROOT_QUOTE_M, c("34"), call("sqrt", 1), call("test", 2));
+	}
+
+	@Test
+	public void testExpressionOnFirstPosition() {
+		given(LEFT_BRACKET, LEFT_BRACKET, OP_PLUS, dec("12"), dec("34"), RIGHT_BRACKET, dec("56"), dec("78"), RIGHT_BRACKET).expect(c("12"), c("34"), PLUS, c("56"), c("78"), call(SYMBOL_LIST, 2, 1), DEFAULT);
+		given(LEFT_BRACKET, LEFT_BRACKET, symbol("test"), RIGHT_BRACKET, dec("12"), dec("34"), RIGHT_BRACKET).expect(call("test", 0, 1), c("12"), c("34"), call(SYMBOL_LIST, 2, 1), DEFAULT);
+	}
+
+	@Test
+	public void testModifierOnFirstPosition() {
+		given(LEFT_BRACKET, QUOTE_MODIFIER, LEFT_BRACKET, symbol("test"), RIGHT_BRACKET, dec("12"), dec("34"), RIGHT_BRACKET).expect(OPEN_ROOT_QUOTE_M, OPEN_QUOTE, rawValueMarker(symbol("test")), CLOSE_QUOTE, CLOSE_ROOT_QUOTE_M, c("12"), c("34"), call(SYMBOL_LIST, 2, 1), DEFAULT);
+	}
+
+	@Test
+	public void testValueOnFirstPosition() {
+		// I'm not sure if it's good idea, but it's side-effect of default op. Without this there wouldn't be 'apply' synctatic sugar
+		given(LEFT_BRACKET, dec("5"), symbol("I"), RIGHT_BRACKET).expect(c("5"), get("I"), call(SYMBOL_LIST, 1, 1), DEFAULT);
 	}
 }

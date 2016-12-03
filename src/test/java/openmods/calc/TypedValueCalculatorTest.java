@@ -1321,8 +1321,8 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testCallableDefaultOpApply() {
-		infix("(symbol)('test')").expectResult(sym("test"));
-		infix("(max)(1, 3, 2)").expectResult(i(3));
+		infix("(symbol)('test')").expectSameAs(infix("apply(symbol, 'test')")).expectResult(sym("test"));
+		infix("(max)(1, 3, 2)").expectSameAs(infix("apply(max, 1, 3, 2)")).expectResult(i(3));
 	}
 
 	@Test
@@ -1380,7 +1380,11 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testForcedSymbolGetApply() {
-		infix("@if(true, {2+2}, {'else'})").expectSameAs(infix("if(true, 2+2, 'else')")).expectResult(i(4));
+		infix("@if(true, {2+2}, {'else'})")
+				.expectSameAs(infix("if(true, 2+2, 'else')"))
+				.expectSameAs(prefix("(@if true {(+ 2 2)} {'else'})"))
+				.expectSameAs(prefix("(if true (+ 2 2) 'else')"))
+				.expectResult(i(4));
 	}
 
 	@Test

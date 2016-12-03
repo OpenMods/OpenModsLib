@@ -32,16 +32,22 @@ public class PrefixParser<E> implements IAstParser<E> {
 
 	protected IExprNode<E> parseNode(ICompilerState<E> state, PeekingIterator<Token> input) {
 		final Token token = next(input);
-		if (token.type.isValue()) return exprNodeFactory.createValueNode(token);
+		return parseNode(state, input, token);
+	}
 
-		if (token.type == TokenType.SYMBOL) return exprNodeFactory.createSymbolGetNode(token.value);
+	private IExprNode<E> parseNode(ICompilerState<E> state, PeekingIterator<Token> input, final Token firstToken) {
+		if (firstToken.type.isValue()) return exprNodeFactory.createValueNode(firstToken);
 
-		if (token.type == TokenType.MODIFIER) return parseModifierNode(token.value, state, input);
-
-		if (token.type == TokenType.LEFT_BRACKET)
-			return parseNestedNode(token.value, state, input);
-
-		throw new IllegalArgumentException("Unexpected token: " + token);
+		switch (firstToken.type) {
+			case SYMBOL:
+				return exprNodeFactory.createSymbolGetNode(firstToken.value);
+			case MODIFIER:
+				return parseModifierNode(firstToken.value, state, input);
+			case LEFT_BRACKET:
+				return parseNestedNode(firstToken.value, state, input);
+			default:
+				throw new IllegalArgumentException("Unexpected token: " + firstToken);
+		}
 	}
 
 	private IExprNode<E> parseNestedNode(String openingBracket, ICompilerState<E> state, PeekingIterator<Token> input) {
@@ -55,8 +61,7 @@ public class PrefixParser<E> implements IAstParser<E> {
 				final ISymbolCallStateTransition<E> stateTransition = state.getStateForSymbolCall(operationName);
 				final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input, stateTransition.getState());
 				return stateTransition.createRootNode(args);
-				// no modifiers allowed on this position (yet), so assuming operator
-			} else if (operationToken.type == TokenType.OPERATOR || operationToken.type == TokenType.MODIFIER) {
+			} else if (operationToken.type == TokenType.OPERATOR) {
 				final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input, state);
 				if (args.size() == 1) {
 					final UnaryOperator<E> unaryOperator = operators.getUnaryOperator(operationName);
@@ -70,8 +75,10 @@ public class PrefixParser<E> implements IAstParser<E> {
 					throw new IllegalArgumentException("Called operator " + operationName + " without any arguments");
 				}
 			} else {
-				// TODO: consider doing nested statements on first entry?
-				throw new IllegalArgumentException("Unexpected token: " + operationToken);
+				// bit non-standard, but meh
+				final IExprNode<E> target = parseNode(state, input, operationToken);
+				final List<IExprNode<E>> args = collectArgs(openingBracket, closingBracket, input, state);
+				return exprNodeFactory.createBinaryOpNode(operators.getDefaultOperator(), target, exprNodeFactory.createBracketNode(openingBracket, closingBracket, args));
 			}
 		} else {
 			// not parenthesis, so probably data structure

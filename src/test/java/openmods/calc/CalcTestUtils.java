@@ -178,6 +178,8 @@ public class CalcTestUtils {
 
 	public static final Token OP_MINUS = op("-");
 
+	public static final BinaryOperator<String> DEFAULT = new DummyBinaryOperator<String>(0, "<?>");
+
 	public static final UnaryOperator<String> UNARY_MINUS = new DummyUnaryOperator<String>("-");
 
 	public static final UnaryOperator<String> UNARY_NEG = new DummyUnaryOperator<String>("!");
