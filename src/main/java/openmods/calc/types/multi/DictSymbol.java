@@ -10,6 +10,8 @@ import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import openmods.calc.BinaryFunction;
+import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.ICallable;
 import openmods.calc.IValuePrinter;
@@ -25,9 +27,12 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 
 	private final TypedValue selfValue;
 
-	public DictSymbol(TypedValue nullValue) {
+	private final OptionalTypeFactory optionalFactory;
+
+	public DictSymbol(TypedValue nullValue, OptionalTypeFactory optionalFactory) {
 		this.nullValue = nullValue;
 		this.domain = nullValue.domain;
+		this.optionalFactory = optionalFactory;
 		this.selfValue = domain.create(IComposite.class, this);
 	}
 
@@ -111,6 +116,35 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 				@Override
 				protected TypedValue call(TypedValue key) {
 					return domain.create(Boolean.class, Dict.this.values.containsKey(key));
+				}
+			}));
+			members.put("getOptional", domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
+				@Override
+				protected TypedValue call(TypedValue key) {
+					return optionalFactory.wrapNullable(Dict.this.values.get(key));
+				}
+			}));
+			members.put("getOr", domain.create(ICallable.class, new BinaryFunction<TypedValue>() {
+				@Override
+				protected TypedValue call(TypedValue key, TypedValue defaultValue) {
+					final TypedValue result = Dict.this.values.get(key);
+					return result != null? result : defaultValue;
+				}
+			}));
+			members.put("getOrCall", domain.create(ICallable.class, new FixedCallable<TypedValue>(2, 1) {
+				@Override
+				public void call(Frame<TypedValue> frame) {
+					final Stack<TypedValue> stack = frame.stack();
+					final TypedValue defaultFunction = stack.pop();
+					final TypedValue key = stack.pop();
+					final TypedValue result = Dict.this.values.get(key);
+					if (result != null) {
+						stack.push(result);
+					} else {
+						if (!TypedCalcUtils.tryCall(frame, defaultFunction, Optional.of(1), Optional.of(0)))
+							throw new IllegalArgumentException("Value is not callable: " + defaultFunction);
+					}
+
 				}
 			}));
 			members.put("hasValue", domain.create(ICallable.class, new UnaryFunction<TypedValue>() {

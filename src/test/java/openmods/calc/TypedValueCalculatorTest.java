@@ -2357,6 +2357,15 @@ public class TypedValueCalculatorTest {
 
 		infix("let([d = dict(1:'a','a':#b)], (d.remove(1,#what) == dict('a':#b)) && (d == dict(1:'a','a':#b)))").expectResult(TRUE);
 		assertSameListContents(Sets.newHashSet(cons(s("a"), sym("b"))), infix("dict(1:'a','a':#b).remove(1,#what).items").executeAndPop());
+
+		infix("dict(1:'a',#b:3).getOptional(#b) == Optional.Present(3)").expectResult(TRUE);
+		infix("dict(1:'a',#b:3).getOptional(#blah) == Optional.Absent()").expectResult(TRUE);
+
+		infix("dict(1:'a',#b:3).getOr(#b, 'bye')").expectResult(i(3));
+		infix("dict(1:'a',#b:3).getOr(#blah, 'bye')").expectResult(s("bye"));
+
+		infix("dict(1:'a',#b:3).getOrCall(1, ()->'nope')").expectResult(s("a"));
+		infix("dict(1:'a',#b:3).getOrCall(2, ()->'nope')").expectResult(s("nope"));
 	}
 
 	@Test

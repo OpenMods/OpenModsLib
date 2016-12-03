@@ -308,7 +308,20 @@ public class OptionalTypeFactory {
 				.build("<type Optional>");
 	}
 
+	public TypedValue getAbsent() {
+		return absentValue;
+	}
+
+	public TypedValue present(TypedValue value) {
+		return domain.create(IComposite.class, new Present(value));
+	}
+
+	public TypedValue wrapNullable(TypedValue result) {
+		return result != null? present(result) : absentValue;
+	}
+
 	public TypedValue value() {
 		return typeValue;
 	}
+
 }

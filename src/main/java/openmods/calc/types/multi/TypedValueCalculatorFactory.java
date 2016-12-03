@@ -1600,9 +1600,11 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
+		final OptionalTypeFactory optionalFactory = new OptionalTypeFactory(nullValue);
+		env.setGlobalSymbol("Optional", optionalFactory.value());
+
 		env.setGlobalSymbol("struct", new StructSymbol(nullValue));
-		env.setGlobalSymbol("dict", new DictSymbol(nullValue).value());
-		env.setGlobalSymbol("Optional", new OptionalTypeFactory(nullValue).value());
+		env.setGlobalSymbol("dict", new DictSymbol(nullValue, optionalFactory).value());
 
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
