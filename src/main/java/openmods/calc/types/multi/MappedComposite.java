@@ -41,6 +41,8 @@ public class MappedComposite implements IComposite {
 	}
 
 	public static class Builder {
+		private Builder() {}
+
 		private final ImmutableMap.Builder<Class<? extends ICompositeTrait>, ICompositeTrait> traits = ImmutableMap.builder();
 
 		public <T extends ICompositeTrait> Builder put(Class<T> trait, T target) {
@@ -51,6 +53,10 @@ public class MappedComposite implements IComposite {
 		public IComposite build(String type) {
 			return new MappedComposite(type, traits.build());
 		}
+	}
+
+	public static Builder builder() {
+		return new Builder();
 	}
 
 }

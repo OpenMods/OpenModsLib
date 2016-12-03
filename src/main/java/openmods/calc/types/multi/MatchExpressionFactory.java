@@ -516,7 +516,7 @@ public class MatchExpressionFactory {
 			}
 		}
 
-		return new MappedComposite.Builder()
+		return MappedComposite.builder()
 				.put(PatternProvider.class, new PatternProvider() {
 					@Override
 					public PatternPart getPattern(IPatternTranslator translator) {
@@ -580,7 +580,7 @@ public class MatchExpressionFactory {
 		@Override
 		public TypedValue get() {
 			return domain.create(IComposite.class,
-					new MappedComposite.Builder()
+					MappedComposite.builder()
 							.put(PatternProvider.class, new VarPlaceholder(var))
 							.put(CompositeTraits.Structured.class, new NamespaceConstructorStruct(var, Collections.<String> emptyList()))
 							.build("patternBind"));

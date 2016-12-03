@@ -239,7 +239,7 @@ public class OptionalTypeFactory {
 			}
 		}
 
-		return new MappedComposite.Builder()
+		return MappedComposite.builder()
 				.put(CompositeTraits.Callable.class, new PresentConstructor())
 				.put(CompositeTraits.Decomposable.class, new CompositeTraits.Decomposable() {
 					@Override
@@ -266,7 +266,7 @@ public class OptionalTypeFactory {
 			}
 		}
 
-		return new MappedComposite.Builder()
+		return MappedComposite.builder()
 				.put(CompositeTraits.Callable.class, new AbsentConstructor())
 				.put(CompositeTraits.Decomposable.class, new CompositeTraits.Decomposable() {
 					@Override
@@ -297,7 +297,7 @@ public class OptionalTypeFactory {
 				.put("Absent", domain.create(IComposite.class, createAbsentConstructor()))
 				.build();
 
-		return new MappedComposite.Builder()
+		return MappedComposite.builder()
 				.put(CompositeTraits.TypeMarker.class, new CompositeTraits.TypeMarker() {})
 				.put(CompositeTraits.Structured.class, new CompositeTraits.Structured() {
 					@Override
