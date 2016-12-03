@@ -46,7 +46,8 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 		public TypedValue get();
 	}
 
-	private class Dict extends SimpleComposite implements CompositeTraits.Structured, CompositeTraits.Indexable, CompositeTraits.Countable, CompositeTraits.Printable, CompositeTraits.Equatable, CompositeTraits.Typed {
+	private class Dict extends SimpleComposite
+			implements CompositeTraits.Structured, CompositeTraits.Indexable, CompositeTraits.Countable, CompositeTraits.Printable, CompositeTraits.Equatable, CompositeTraits.Typed, CompositeTraits.Callable {
 
 		private final Map<TypedValue, TypedValue> values;
 
@@ -192,6 +193,19 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 		@Override
 		public TypedValue getType() {
 			return DictSymbol.this.selfValue;
+		}
+
+		@Override
+		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			TypedCalcUtils.expectSingleReturn(returnsCount);
+
+			Preconditions.checkState(argumentsCount.isPresent(), "This method requires arguments count");
+			final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.get());
+
+			final Map<TypedValue, TypedValue> newValues = Maps.newHashMap(values);
+			extractKeyValuesPairs(stack, newValues);
+			stack.clear();
+			stack.push(domain.create(IComposite.class, new Dict(newValues)));
 		}
 
 	}

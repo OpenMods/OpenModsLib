@@ -2353,6 +2353,7 @@ public class TypedValueCalculatorTest {
 
 		infix("let([d = dict(1:'a','a':#b)], (d.update(#b:4,3:'4') == dict(1:'a','a':#b, #b:4, 3:'4')) && (d == dict(1:'a','a':#b)))").expectResult(TRUE);
 		assertSameListContents(Sets.newHashSet(cons(i(1), s("a")), cons(s("a"), sym("b")), cons(sym("b"), i(4)), cons(i(3), s("4"))), infix("dict(1:'a','a':#b).update(#b:4,3:'4').items").executeAndPop());
+		assertSameListContents(Sets.newHashSet(cons(i(1), s("a")), cons(s("a"), sym("b")), cons(sym("b"), i(4)), cons(i(3), s("4"))), infix("dict(1:'a','a':#b)(#b:4,3:'4').items").executeAndPop());
 
 		infix("let([d = dict(1:'a','a':#b)], (d.remove(1,#what) == dict('a':#b)) && (d == dict(1:'a','a':#b)))").expectResult(TRUE);
 		assertSameListContents(Sets.newHashSet(cons(s("a"), sym("b"))), infix("dict(1:'a','a':#b).remove(1,#what).items").executeAndPop());
