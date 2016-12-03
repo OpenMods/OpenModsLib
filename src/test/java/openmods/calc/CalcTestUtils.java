@@ -365,8 +365,9 @@ public class CalcTestUtils {
 			return new CalcCheck<E>(sut, expr);
 		}
 
-		public void expectSameAs(CalcCheck<E> other) {
+		public CalcCheck<E> expectSameAs(CalcCheck<E> other) {
 			Assert.assertEquals(this.expr, other.expr);
+			return this;
 		}
 	}
 

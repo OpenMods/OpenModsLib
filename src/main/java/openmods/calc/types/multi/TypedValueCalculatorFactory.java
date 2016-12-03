@@ -3,6 +3,7 @@ package openmods.calc.types.multi;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -51,6 +52,8 @@ import openmods.calc.parsing.MappedExprNodeFactory;
 import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
 import openmods.calc.parsing.MappedExprNodeFactory.IBracketExprNodeFactory;
 import openmods.calc.parsing.SquareBracketContainerNode;
+import openmods.calc.parsing.SymbolCallNode;
+import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.Tokenizer;
 import openmods.calc.parsing.ValueNode;
@@ -1670,8 +1673,15 @@ public class TypedValueCalculatorFactory {
 									// a[...]
 									return new MethodCallNode(TypedCalcConstants.SYMBOL_SLICE, leftChild, rightChild);
 								} else if (rightChild instanceof ArgBracketNode && !isNumericValueNode(leftChild)) {
-									// (a)(...), a(...)(...)
-									return new MethodCallNode(TypedCalcConstants.SYMBOL_APPLY, leftChild, rightChild);
+									if (leftChild instanceof SymbolGetNode) {
+										// @a(...)
+										final String symbol = ((SymbolGetNode<TypedValue>)leftChild).symbol();
+										final List<? extends IExprNode<TypedValue>> args = ImmutableList.copyOf(rightChild.getChildren());
+										return new SymbolCallNode<TypedValue>(symbol, args);
+									} else {
+										// (a)(...), a(...)(...)
+										return new MethodCallNode(TypedCalcConstants.SYMBOL_APPLY, leftChild, rightChild);
+									}
 								} else {
 									// 5I
 									return new BinaryOpNode<TypedValue>(multiplyOperator, leftChild, rightChild);

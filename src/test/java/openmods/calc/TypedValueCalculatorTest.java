@@ -1380,7 +1380,7 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testForcedSymbolGetApply() {
-		infix("@if(true, {2+2}, {'else'})").expectResult(i(4));
+		infix("@if(true, {2+2}, {'else'})").expectSameAs(infix("if(true, 2+2, 'else')")).expectResult(i(4));
 	}
 
 	@Test
