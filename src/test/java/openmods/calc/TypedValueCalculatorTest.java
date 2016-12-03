@@ -2301,7 +2301,7 @@ public class TypedValueCalculatorTest {
 
 		infix("let([Point=struct(#x,#y)], type(Point()) == Point)").expectResult(TRUE);
 
-		infix("letseq([Point=struct(#x,#y), p1 = Point(#y:3), p2 = p1._update(#x:2), p3 = p1._update(#y:8)], list(p1.x:p1.y, p2.x:p2.y, p3.x:p3.y))")
+		infix("letseq([Point=struct(#x,#y), p1 = Point(#y:3), p2 = p1(#x:2), p3 = p1(#y:8)], list(p1.x:p1.y, p2.x:p2.y, p3.x:p3.y))")
 				.expectResult(list(
 						cons(nil(), i(3)),
 						cons(i(2), i(3)),

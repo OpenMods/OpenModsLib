@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import openmods.calc.Frame;
-import openmods.calc.ICallable;
 import openmods.calc.IValuePrinter;
 import openmods.calc.SingleReturnCallable;
 import openmods.utils.Stack;
@@ -46,39 +45,19 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 		public StructType getTypeMarker();
 	}
 
-	private class StructValue extends SimpleComposite implements CompositeTraits.Structured, CompositeTraits.Printable, CompositeTraits.Equatable, CompositeTraits.Typed, StructValueTrait {
+	private class StructValue extends SimpleComposite implements CompositeTraits.Structured, CompositeTraits.Printable, CompositeTraits.Equatable, CompositeTraits.Typed, CompositeTraits.Callable, StructValueTrait {
 
 		private final StructType type;
 		private final TypedValue typeValue;
 
 		private final Set<String> fields;
 		private final Map<String, TypedValue> values;
-		private final Map<String, TypedValue> members;
-
-		private class UpdateMethod extends SingleReturnCallable<TypedValue> {
-			@Override
-			public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
-				final int argCount = argumentsCount.or(fields.size());
-
-				final Stack<TypedValue> args = frame.stack().substack(argCount);
-				final Map<String, TypedValue> newValues = Maps.newHashMap(values);
-				extractValues(args, fields, newValues);
-				final TypedValue result = domain.create(IComposite.class, new StructValue(type, typeValue, fields, newValues));
-				args.clear();
-				return result;
-			}
-		}
 
 		public StructValue(StructType type, TypedValue typeValue, Set<String> fields, Map<String, TypedValue> values) {
 			this.type = type;
 			this.typeValue = typeValue;
 			this.fields = fields;
 			this.values = ImmutableMap.copyOf(values);
-
-			final Map<String, TypedValue> valuesCopy = Maps.newHashMap(values);
-			valuesCopy.put("_update", domain.create(ICallable.class, new UpdateMethod()));
-
-			this.members = ImmutableMap.copyOf(valuesCopy);
 		}
 
 		@Override
@@ -97,7 +76,7 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 
 		@Override
 		public Optional<TypedValue> get(TypeDomain domain, String component) {
-			return Optional.fromNullable(members.get(component));
+			return Optional.fromNullable(values.get(component));
 		}
 
 		@Override
@@ -121,6 +100,17 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 		@Override
 		public TypedValue getType() {
 			return typeValue;
+		}
+
+		@Override
+		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			TypedCalcUtils.expectSingleReturn(returnsCount);
+
+			final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.or(fields.size()));
+			final Map<String, TypedValue> newValues = Maps.newHashMap(values);
+			extractValues(stack, fields, newValues);
+			stack.clear();
+			stack.push(domain.create(IComposite.class, new StructValue(type, typeValue, fields, newValues)));
 		}
 
 	}
