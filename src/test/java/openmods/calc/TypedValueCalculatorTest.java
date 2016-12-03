@@ -2408,4 +2408,18 @@ public class TypedValueCalculatorTest {
 		infix("do(2+2,3+3,4+4)").expectResult(i(8));
 		postfix("{1} {2 3} {4 5 6} do$3").expectResults(i(4), i(5), i(6));
 	}
+
+	@Test
+	public void testGlobalsSymbol() {
+		infix("globals().max == max").expectResult(TRUE);
+		infix("let([oldmax = max, max = ()->'nope'], globals().max != max)").expectResult(TRUE);
+		infix("let([oldmax = max, max = ()->'nope'], globals().max == oldmax)").expectResult(TRUE);
+		infix("let([oldmax = max, max = ()->'nope'], globals().{max == oldmax})").expectResult(TRUE);
+	}
+
+	@Test
+	public void testLocalsSymbol() {
+		infix("locals().max == max").expectResult(TRUE);
+		infix("let([test = 5], let([l = locals(), test = 6], test == 6 && l.test == 5))").expectResult(TRUE);
+	}
 }

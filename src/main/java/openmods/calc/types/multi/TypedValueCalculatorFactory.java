@@ -28,6 +28,7 @@ import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
 import openmods.calc.LocalSymbolMap;
+import openmods.calc.NullaryFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SingleReturnCallable;
 import openmods.calc.StackValidationException;
@@ -129,7 +130,7 @@ public class TypedValueCalculatorFactory {
 			return new BinaryOpNode<TypedValue>(op, leftChild, rightChild) {
 				@Override
 				public void flatten(List<IExecutable<TypedValue>> output) {
-					throw new UnsupportedOperationException("This operator cannot be used in this context"); // should be captured before serialization;
+					throw new UnsupportedOperationException("Operator " + op + " cannot be used in this context"); // should be captured before serialization;
 				}
 			};
 		}
@@ -1605,6 +1606,20 @@ public class TypedValueCalculatorFactory {
 
 		env.setGlobalSymbol("struct", new StructSymbol(nullValue));
 		env.setGlobalSymbol("dict", new DictSymbol(nullValue, optionalFactory).value());
+
+		env.setGlobalSymbol("globals", new NullaryFunction<TypedValue>() {
+			@Override
+			protected TypedValue call() {
+				return domain.create(IComposite.class, new EnvMap(envMap));
+			}
+		});
+
+		env.setGlobalSymbol("locals", new FixedCallable<TypedValue>(0, 1) {
+			@Override
+			public void call(Frame<TypedValue> frame) {
+				frame.stack().push(domain.create(IComposite.class, new EnvMap(frame.symbols())));
+			}
+		});
 
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
