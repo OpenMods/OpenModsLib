@@ -1621,8 +1621,11 @@ public class TypedValueCalculatorFactory {
 		final MatchExpressionFactory matchFactory = new MatchExpressionFactory(domain, splitOperator, lambdaOperator);
 		matchFactory.registerSymbols(envMap, coreMap);
 
-		final AltExpressionFactory altFactor = new AltExpressionFactory(domain, nullValue, colonOperator, assignOperator, splitOperator);
-		altFactor.registerSymbol(env);
+		final AltExpressionFactory altFactory = new AltExpressionFactory(domain, nullValue, colonOperator, assignOperator, splitOperator);
+		altFactory.registerSymbol(env);
+
+		final DoExpressionFactory doFactory = new DoExpressionFactory(domain);
+		doFactory.registerSymbol(env);
 
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 
@@ -1640,7 +1643,8 @@ public class TypedValueCalculatorFactory {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_OR_ELSE, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_OR_ELSE));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_NON_NULL, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_NON_NULL));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_CONSTANT, new ConstantSymbolStateTransition<TypedValue>(compilerState, environment));
-				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_ALT, altFactor.createStateTransition(compilerState));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_ALT, altFactory.createStateTransition(compilerState));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_DO, doFactory.createStateTransition(compilerState));
 
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_QUOTE, new QuoteStateTransition.ForModifier(domain, nullValue, valueParser));
 				compilerState.addStateTransition(TypedCalcConstants.MODIFIER_OPERATOR_WRAP, new CallableGetModifierTransition(domain, operators));
@@ -1717,7 +1721,8 @@ public class TypedValueCalculatorFactory {
 						.addFactory(TypedCalcConstants.BRACKET_CODE, new IBracketExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(List<IExprNode<TypedValue>> children) {
-								return new RawCodeExprNode(domain, children);
+								Preconditions.checkState(children.size() == 1, "Expected only one expression in curly brackets");
+								return new RawCodeExprNode(domain, children.get(0));
 							}
 						});
 			}

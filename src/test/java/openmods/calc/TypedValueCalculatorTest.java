@@ -2402,4 +2402,10 @@ public class TypedValueCalculatorTest {
 		infix("type(Optional.Absent()) == Optional").expectResult(TRUE);
 		infix("type(Optional.Present(4)) == Optional").expectResult(TRUE);
 	}
+
+	@Test
+	public void testDoExpression() {
+		infix("do(2+2,3+3,4+4)").expectResult(i(8));
+		postfix("{1} {2 3} {4 5 6} do$3").expectResults(i(4), i(5), i(6));
+	}
 }

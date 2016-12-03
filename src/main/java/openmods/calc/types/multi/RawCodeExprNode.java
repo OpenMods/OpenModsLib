@@ -1,6 +1,5 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.IExecutable;
@@ -11,9 +10,8 @@ public class RawCodeExprNode implements IExprNode<TypedValue> {
 	private final TypeDomain domain;
 	private final IExprNode<TypedValue> arg;
 
-	public RawCodeExprNode(TypeDomain domain, List<IExprNode<TypedValue>> children) {
-		Preconditions.checkState(children.size() == 1, "Expected only one expression in curly brackets");
-		this.arg = children.get(0);
+	public RawCodeExprNode(TypeDomain domain, IExprNode<TypedValue> child) {
+		this.arg = child;
 		this.domain = domain;
 	}
 
