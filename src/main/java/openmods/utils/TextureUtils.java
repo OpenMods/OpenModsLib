@@ -52,7 +52,9 @@ public final class TextureUtils {
 		bindTextureToClient(TextureMap.locationItemsTexture);
 	}
 
-	public static int getRandomNumber() {
-		return 4;
+	int getRandomNumber() 
+	{
+		return 4; // chosen by fair dice roll.
+		          // guranteed to be random.
 	}
 }
