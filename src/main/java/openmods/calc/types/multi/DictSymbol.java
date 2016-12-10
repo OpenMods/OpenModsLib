@@ -13,13 +13,11 @@ import java.util.Map.Entry;
 import openmods.calc.BinaryFunction;
 import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
-import openmods.calc.ICallable;
-import openmods.calc.IValuePrinter;
 import openmods.calc.SingleReturnCallable;
 import openmods.calc.UnaryFunction;
 import openmods.utils.Stack;
 
-public class DictSymbol extends SimpleComposite implements CompositeTraits.Callable, CompositeTraits.TypeMarker {
+public class DictSymbol {
 
 	private final TypedValue nullValue;
 
@@ -32,8 +30,32 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 	public DictSymbol(TypedValue nullValue, OptionalTypeFactory optionalFactory) {
 		this.nullValue = nullValue;
 		this.domain = nullValue.domain;
+		this.domain.registerType(Dict.class, "dict", createValueMetaObject());
 		this.optionalFactory = optionalFactory;
-		this.selfValue = domain.create(IComposite.class, this);
+		this.selfValue = domain.create(TypeUserdata.class, new TypeUserdata("dict"), createTypeMetaObject());
+	}
+
+	private MetaObject createTypeMetaObject() {
+		return MetaObject.builder()
+				.set(new MetaObject.SlotCall() {
+					@Override
+					public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+						Preconditions.checkState(argumentsCount.isPresent(), "'dict' symbol requires arguments count");
+						final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.get());
+
+						final Map<TypedValue, TypedValue> values = Maps.newHashMap();
+						extractKeyValuesPairs(stack, values);
+
+						final TypedValue result = domain.create(Dict.class, new Dict(values));
+						stack.clear();
+						stack.push(result);
+
+					}
+				})
+				.set(TypeUserdata.typeReprSlot)
+				.set(TypeUserdata.typeStrSlot)
+				.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
+				.build();
 	}
 
 	private static void extractKeyValuesPairs(Iterable<TypedValue> args, Map<TypedValue, TypedValue> output) {
@@ -51,9 +73,7 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 		public TypedValue get();
 	}
 
-	private class Dict extends SimpleComposite
-			implements CompositeTraits.Structured, CompositeTraits.Indexable, CompositeTraits.Countable, CompositeTraits.Printable, CompositeTraits.Equatable, CompositeTraits.Typed, CompositeTraits.Callable {
-
+	private class Dict {
 		private final Map<TypedValue, TypedValue> values;
 
 		private final Map<String, TypedValue> members = Maps.newHashMap();
@@ -68,7 +88,7 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 
 				final Map<TypedValue, TypedValue> newValues = Maps.newHashMap(values);
 				extractKeyValuesPairs(args, newValues);
-				final TypedValue result = domain.create(IComposite.class, new Dict(newValues));
+				final TypedValue result = domain.create(Dict.class, new Dict(newValues));
 				args.clear();
 				return result;
 			}
@@ -84,7 +104,7 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 				for (TypedValue arg : args)
 					newValues.remove(arg);
 
-				final TypedValue result = domain.create(IComposite.class, new Dict(newValues));
+				final TypedValue result = domain.create(Dict.class, new Dict(newValues));
 				args.clear();
 				return result;
 			}
@@ -110,28 +130,28 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 		public Dict(Map<TypedValue, TypedValue> values) {
 			this.values = ImmutableMap.copyOf(values);
 
-			members.put("update", domain.create(ICallable.class, new UpdateMethod()));
-			members.put("remove", domain.create(ICallable.class, new RemoveMethod()));
-			members.put("hasKey", domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
+			members.put("update", FunctionValue.wrap(domain, new UpdateMethod()));
+			members.put("remove", FunctionValue.wrap(domain, new RemoveMethod()));
+			members.put("hasKey", FunctionValue.wrap(domain, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue key) {
 					return domain.create(Boolean.class, Dict.this.values.containsKey(key));
 				}
 			}));
-			members.put("getOptional", domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
+			members.put("getOptional", FunctionValue.wrap(domain, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue key) {
 					return optionalFactory.wrapNullable(Dict.this.values.get(key));
 				}
 			}));
-			members.put("getOr", domain.create(ICallable.class, new BinaryFunction<TypedValue>() {
+			members.put("getOr", FunctionValue.wrap(domain, new BinaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue key, TypedValue defaultValue) {
 					final TypedValue result = Dict.this.values.get(key);
 					return result != null? result : defaultValue;
 				}
 			}));
-			members.put("getOrCall", domain.create(ICallable.class, new FixedCallable<TypedValue>(2, 1) {
+			members.put("getOrCall", FunctionValue.wrap(domain, new FixedCallable<TypedValue>(2, 1) {
 				@Override
 				public void call(Frame<TypedValue> frame) {
 					final Stack<TypedValue> stack = frame.stack();
@@ -141,13 +161,12 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 					if (result != null) {
 						stack.push(result);
 					} else {
-						if (!TypedCalcUtils.tryCall(frame, defaultFunction, Optional.of(1), Optional.of(0)))
-							throw new IllegalArgumentException("Value is not callable: " + defaultFunction);
+						MetaObjectUtils.call(frame, defaultFunction, Optional.of(0), Optional.of(1));
 					}
 
 				}
 			}));
-			members.put("hasValue", domain.create(ICallable.class, new UnaryFunction<TypedValue>() {
+			members.put("hasValue", FunctionValue.wrap(domain, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue value) {
 					return domain.create(Boolean.class, Dict.this.values.containsValue(value));
@@ -174,38 +193,13 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 			});
 		}
 
-		@Override
-		public String type() {
-			return "map";
-		}
-
-		@Override
-		public String str(IValuePrinter<TypedValue> printer) {
-			final List<String> entries = Lists.newArrayList();
-			for (Map.Entry<TypedValue, TypedValue> e : values.entrySet())
-				entries.add(printer.str(e.getKey()) + ":" + printer.str(e.getValue()));
-
-			return "dict(" + Joiner.on(",").join(entries) + ")";
-		}
-
-		@Override
-		public int count() {
-			return values.size();
-		}
-
-		@Override
-		public Optional<TypedValue> get(TypedValue index) {
-			return Optional.of(Objects.firstNonNull(values.get(index), nullValue));
-		}
-
-		@Override
-		public Optional<TypedValue> get(TypeDomain domain, String component) {
-			TypedValue member = members.get(component);
+		public Optional<TypedValue> attr(String key) {
+			TypedValue member = members.get(key);
 			if (member == null && !delayedMembers.isEmpty()) {
-				final DelayedValue delayedValue = delayedMembers.remove(component);
+				final DelayedValue delayedValue = delayedMembers.remove(key);
 				if (delayedValue != null) {
 					member = delayedValue.get();
-					members.put(component, member);
+					members.put(key, member);
 				}
 			}
 
@@ -213,53 +207,101 @@ public class DictSymbol extends SimpleComposite implements CompositeTraits.Calla
 		}
 
 		@Override
-		public boolean isEqual(TypedValue value) {
-			if (value.value == this) return true;
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((values == null)? 0 : values.hashCode());
+			return result;
+		}
 
-			if (value.value instanceof Dict) {
-				final Dict other = (Dict)value.value;
+		@Override
+		public boolean equals(Object o) {
+			if (o == this) return true;
+
+			if (o instanceof Dict) {
+				final Dict other = (Dict)o;
 				return other.values.equals(this.values);
 			}
 
 			return false;
 		}
-
-		@Override
-		public TypedValue getType() {
-			return DictSymbol.this.selfValue;
-		}
-
-		@Override
-		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-			TypedCalcUtils.expectSingleReturn(returnsCount);
-
-			Preconditions.checkState(argumentsCount.isPresent(), "This method requires arguments count");
-			final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.get());
-
-			final Map<TypedValue, TypedValue> newValues = Maps.newHashMap(values);
-			extractKeyValuesPairs(stack, newValues);
-			stack.clear();
-			stack.push(domain.create(IComposite.class, new Dict(newValues)));
-		}
-
 	}
 
-	@Override
-	public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-		Preconditions.checkState(argumentsCount.isPresent(), "'dict' symbol requires arguments count");
-		final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.get());
+	private MetaObject createValueMetaObject() {
+		return MetaObject.builder()
+				.set(new MetaObject.SlotCall() {
+					@Override
+					public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+						TypedCalcUtils.expectSingleReturn(returnsCount);
 
-		final Map<TypedValue, TypedValue> values = Maps.newHashMap();
-		extractKeyValuesPairs(stack, values);
+						final Dict dict = self.as(Dict.class);
 
-		final TypedValue result = domain.create(IComposite.class, new Dict(values));
-		stack.clear();
-		stack.push(result);
-	}
+						Preconditions.checkState(argumentsCount.isPresent(), "This method requires arguments count");
+						final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.get());
 
-	@Override
-	public String type() {
-		return "dict_type";
+						final Map<TypedValue, TypedValue> newValues = Maps.newHashMap(dict.values);
+						extractKeyValuesPairs(stack, newValues);
+						stack.clear();
+						stack.push(domain.create(Dict.class, new Dict(newValues)));
+					}
+				})
+				.set(new MetaObject.SlotType() {
+					@Override
+					public TypedValue type(TypedValue self, Frame<TypedValue> frame) {
+						return DictSymbol.this.selfValue;
+					}
+				})
+				.set(new MetaObject.SlotStr() {
+					@Override
+					public String str(TypedValue self, Frame<TypedValue> frame) {
+						final Dict dict = self.as(Dict.class);
+						final List<String> entries = Lists.newArrayList();
+						for (Map.Entry<TypedValue, TypedValue> e : dict.values.entrySet())
+							entries.add(MetaObjectUtils.callStrSlot(frame, e.getKey()) + ":" + MetaObjectUtils.callStrSlot(frame, e.getValue()));
+
+						return "{" + Joiner.on(",").join(entries) + "}";
+					}
+				})
+				.set(new MetaObject.SlotRepr() {
+
+					@Override
+					public String repr(TypedValue self, Frame<TypedValue> frame) {
+						final Dict dict = self.as(Dict.class);
+						final List<String> entries = Lists.newArrayList();
+						for (Map.Entry<TypedValue, TypedValue> e : dict.values.entrySet())
+							entries.add(MetaObjectUtils.callReprSlot(frame, e.getKey()) + ":" + MetaObjectUtils.callReprSlot(frame, e.getValue()));
+
+						return "dict(" + Joiner.on(",").join(entries) + ")";
+					}
+				})
+				.set(new MetaObject.SlotLength() {
+					@Override
+					public int length(TypedValue self, Frame<TypedValue> frame) {
+						return self.as(Dict.class).values.size();
+					}
+				})
+				.set(new MetaObject.SlotBool() {
+					@Override
+					public boolean bool(TypedValue self, Frame<TypedValue> frame) {
+						return !self.as(Dict.class).values.isEmpty();
+					}
+				})
+				.set(new MetaObject.SlotSlice() {
+
+					@Override
+					public TypedValue slice(TypedValue self, TypedValue index, Frame<TypedValue> frame) {
+						return Objects.firstNonNull(self.as(Dict.class).values.get(index), nullValue);
+					}
+				})
+				.set(new MetaObject.SlotAttr() {
+
+					@Override
+					public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
+						return self.as(Dict.class).attr(key);
+					}
+				})
+				.set(MetaObjectUtils.USE_VALUE_EQUALS)
+				.build();
 	}
 
 	public TypedValue value() {

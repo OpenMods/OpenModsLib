@@ -1,6 +1,5 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -13,7 +12,6 @@ import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
 import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
-import openmods.calc.IValuePrinter;
 import openmods.calc.StackValidationException;
 import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
@@ -41,6 +39,10 @@ public class AltExpressionFactory {
 		this.colonOperator = colonOperator;
 		this.assignOperator = assignOperator;
 		this.splitOperator = splitOperator;
+
+		this.domain.registerType(AltType.class, "alt_type", createAltTypeMetaObject());
+		this.domain.registerType(AltTypeVariant.class, "alt_variant", createAltVariantMetaObject());
+		this.domain.registerType(AltValue.class, "alt_value", createAltValueMetaObject());
 	}
 
 	private class AltConstructorCompiler {
@@ -127,38 +129,37 @@ public class AltExpressionFactory {
 		return new AltStateTransition(parentState);
 	}
 
-	private static interface AltTypeVariantTrait extends ICompositeTrait {
-		public AltType getType();
-	}
-
-	private static interface AltContainerTrait extends ICompositeTrait {
-		public AltTypeVariant getVariant();
-
-		public List<TypedValue> values();
-	}
-
-	private class AltType extends SimpleComposite implements CompositeTraits.Printable, CompositeTraits.TypeMarker {
+	private class AltType extends TypeUserdata {
 
 		private final String name;
 		private final TypedValue selfValue;
 
 		public AltType(String name) {
+			super("alt_type_" + name);
 			this.name = name;
-			this.selfValue = domain.create(IComposite.class, this);
-		}
-
-		@Override
-		public String type() {
-			return name;
-		}
-
-		@Override
-		public String str(IValuePrinter<TypedValue> printer) {
-			return "<alt " + name + ">";
+			this.selfValue = domain.create(AltType.class, this);
 		}
 	}
 
-	private class AltTypeVariant extends SimpleComposite implements CompositeTraits.Decomposable, CompositeTraits.Printable, AltTypeVariantTrait, CompositeTraits.Callable {
+	private static MetaObject createAltTypeMetaObject() {
+		return MetaObject.builder()
+				.set(new MetaObject.SlotStr() {
+					@Override
+					public String str(TypedValue self, Frame<TypedValue> frame) {
+						return "<alt " + self.as(AltType.class) + ">";
+					}
+				})
+				.set(new MetaObject.SlotRepr() {
+					@Override
+					public String repr(TypedValue self, Frame<TypedValue> frame) {
+						return "<alt " + self.as(AltType.class) + ">";
+					}
+				})
+				.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
+				.build();
+	}
+
+	private class AltTypeVariant extends TypeUserdata {
 
 		private final String name;
 
@@ -167,113 +168,147 @@ public class AltExpressionFactory {
 		private final List<String> members;
 
 		public AltTypeVariant(String name, AltType type, List<String> members) {
+			super("alt_variant_" + type.name + "_" + name);
 			this.name = name;
 			this.type = type;
 			this.members = members;
 		}
-
-		@Override
-		public String type() {
-			return type.name + ":" + name;
-		}
-
-		@Override
-		public AltType getType() {
-			return type;
-		}
-
-		@Override
-		public String str(IValuePrinter<TypedValue> printer) {
-			return "<alt " + type.name + ":" + name + ">";
-		}
-
-		@Override
-		public Optional<List<TypedValue>> tryDecompose(TypedValue input, int variableCount) {
-			Preconditions.checkArgument(variableCount == members.size(), "Invalid number of values to unpack, expected %s got %s", members.size(), variableCount);
-			return TypedCalcUtils.tryDecomposeTrait(input, AltContainerTrait.class, new Function<AltContainerTrait, Optional<List<TypedValue>>>() {
-				@Override
-				public Optional<List<TypedValue>> apply(AltContainerTrait trait) {
-					if (trait.getVariant() == AltTypeVariant.this) {
-						final List<TypedValue> values = trait.values();
-						Preconditions.checkState(values.size() == members.size(), "Mismatched size in container: names: %s, values: %s", members, values);
-						return Optional.of(values);
-					} else {
-						return Optional.absent();
-					}
-				}
-			});
-		}
-
-		@Override
-		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-			if (argumentsCount.isPresent()) {
-				final int args = argumentsCount.get();
-				if (args != members.size()) throw new StackValidationException("Expected %s argument(s) but got %s", members.size(), args);
-			}
-
-			if (returnsCount.isPresent()) {
-				final int returns = returnsCount.get();
-				if (returns != 1) throw new StackValidationException("Has single result but expected %s", returns);
-			}
-
-			final Stack<TypedValue> substack = frame.stack().substack(members.size());
-			final AltContainer container = new AltContainer(this, ImmutableList.copyOf(substack));
-			substack.clear();
-			substack.push(domain.create(IComposite.class, container));
-		}
-
 	}
 
-	private static class AltContainer extends SimpleComposite implements CompositeTraits.Printable, CompositeTraits.Equatable, CompositeTraits.Typed, AltContainerTrait {
+	private MetaObject createAltVariantMetaObject() {
+		// extends SimpleComposite implements CompositeTraits.Decomposable, CompositeTraits.Printable, AltTypeVariantTrait, CompositeTraits.Callable
+		return MetaObject.builder()
+				.set(new MetaObject.SlotDecompose() {
+					@Override
+					public Optional<List<TypedValue>> tryDecompose(TypedValue self, TypedValue input, int variableCount, Frame<TypedValue> frame) {
+						final AltTypeVariant variant = self.as(AltTypeVariant.class);
+
+						Preconditions.checkArgument(variableCount == variant.members.size(), "Invalid number of values to unpack, expected %s got %s", variant.members.size(), variableCount);
+
+						if (input.is(AltValue.class)) {
+							final AltValue value = input.as(AltValue.class);
+
+							if (value.variant == variant) {
+								final List<TypedValue> values = value.values;
+								Preconditions.checkState(values.size() == variant.members.size(), "Mismatched size in container: names: %s, values: %s", variant.members, values);
+								return Optional.of(values);
+							}
+						}
+
+						return Optional.absent();
+					}
+
+				})
+				.set(new MetaObject.SlotStr() {
+
+					@Override
+					public String str(TypedValue self, Frame<TypedValue> frame) {
+						final AltTypeVariant variant = self.as(AltTypeVariant.class);
+						return "<alt " + variant.type.name + ":" + variant.name + ">";
+					}
+				})
+				.set(new MetaObject.SlotRepr() {
+
+					@Override
+					public String repr(TypedValue self, Frame<TypedValue> frame) {
+						final AltTypeVariant variant = self.as(AltTypeVariant.class);
+						return "<alt " + variant.type.name + ":" + variant.name + ">";
+					}
+				})
+				.set(new MetaObject.SlotCall() {
+
+					@Override
+					public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+						final AltTypeVariant variant = self.as(AltTypeVariant.class);
+						if (argumentsCount.isPresent()) {
+							final int args = argumentsCount.get();
+							if (args != variant.members.size()) throw new StackValidationException("Expected %s argument(s) but got %s", variant.members.size(), args);
+						}
+
+						TypedCalcUtils.expectSingleReturn(returnsCount);
+
+						final Stack<TypedValue> substack = frame.stack().substack(variant.members.size());
+						final AltValue container = new AltValue(variant, ImmutableList.copyOf(substack));
+						substack.clear();
+						substack.push(domain.create(AltValue.class, container));
+					}
+				})
+				.build();
+	}
+
+	private static class AltValue {
 
 		private final AltTypeVariant variant;
 
 		private final List<TypedValue> values;
 
-		public AltContainer(AltTypeVariant variant, List<TypedValue> values) {
+		public AltValue(AltTypeVariant variant, List<TypedValue> values) {
 			this.variant = variant;
 			this.values = values;
 		}
 
 		@Override
-		public String type() {
-			return "instance " + variant.type();
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((values == null)? 0 : values.hashCode());
+			result = prime * result + ((variant == null)? 0 : variant.hashCode());
+			return result;
 		}
 
 		@Override
-		public AltTypeVariant getVariant() {
-			return variant;
-		}
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
 
-		@Override
-		public List<TypedValue> values() {
-			return values;
-		}
-
-		@Override
-		public String str(IValuePrinter<TypedValue> printer) {
-			// TODO somehow mix member names here?
-			return "<alt " + variant.type.name + ":" + variant.name + "(" + Joiner.on(',').join(values) + ")>";
-		}
-
-		@Override
-		public boolean isEqual(TypedValue value) {
-			if (value.value == this) return true;
-
-			if (value.value instanceof AltContainer) {
-				final AltContainer other = (AltContainer)value.value;
-				return other.variant == this.variant &&
-						other.values.equals(this.values);
+			if (obj instanceof AltValue) {
+				final AltValue other = (AltValue)obj;
+				return (other.variant == this.variant) &&
+						(other.values.equals(this.values));
 			}
 
 			return false;
 		}
 
-		@Override
-		public TypedValue getType() {
-			return variant.type.selfValue;
-		}
+	}
 
+	private static MetaObject createAltValueMetaObject() {
+		return MetaObject.builder()
+				.set(new MetaObject.SlotStr() {
+					@Override
+					public String str(TypedValue self, Frame<TypedValue> frame) {
+						final AltValue value = self.as(AltValue.class);
+						final List<String> values = Lists.newArrayList();
+						for (int i = 0; i < values.size(); i++) {
+							final String k = value.variant.members.get(i);
+							final TypedValue v = value.values.get(i);
+							values.add(k + "=" + MetaObjectUtils.callStrSlot(frame, v));
+						}
+						return "<alt " + value.variant.type.name + ":" + value.variant.name + "(" + Joiner.on(',').join(values) + ")>";
+					}
+
+				})
+				.set(new MetaObject.SlotRepr() {
+
+					@Override
+					public String repr(TypedValue self, Frame<TypedValue> frame) {
+						final AltValue value = self.as(AltValue.class);
+						final List<String> values = Lists.newArrayList();
+						for (int i = 0; i < values.size(); i++) {
+							final String k = value.variant.members.get(i);
+							final TypedValue v = value.values.get(i);
+							values.add(k + "=" + MetaObjectUtils.callReprSlot(frame, v));
+						}
+						return value.variant.type.name + "." + value.variant.name + "(" + Joiner.on(',').join(values) + ")>";
+					}
+				})
+				.set(new MetaObject.SlotType() {
+
+					@Override
+					public TypedValue type(TypedValue self, Frame<TypedValue> frame) {
+						return self.as(AltValue.class).variant.type.selfValue;
+					}
+				})
+				.build();
 	}
 
 	private class AltSymbol implements ICallable<TypedValue> {
@@ -351,8 +386,7 @@ public class AltExpressionFactory {
 				Preconditions.checkState(membersList == nullValue, "Expected list or null (empty list), got %s", membersList);
 			}
 
-			final AltTypeVariant ctor = new AltTypeVariant(name.value, type, memberNames);
-			symbols.put(name.value, domain.create(IComposite.class, ctor));
+			symbols.put(name.value, domain.create(AltTypeVariant.class, new AltTypeVariant(name.value, type, memberNames)));
 		}
 
 	}

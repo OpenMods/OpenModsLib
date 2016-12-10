@@ -1,12 +1,9 @@
 package openmods.calc;
 
-import com.google.common.base.Optional;
 import openmods.calc.types.multi.IConverter;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypeDomain.Coercion;
-import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedValue;
-import openmods.calc.types.multi.TypedValue.NoLogicValueException;
 import openmods.reflection.TypeVariableHolderHandler;
 import org.junit.Assert;
 import org.junit.Test;
@@ -86,65 +83,6 @@ public class MultiValueTest {
 	public void testSelfCoercion() {
 		final TypeDomain domain = new TypeDomain();
 		Assert.assertEquals(Coercion.TO_LEFT, domain.getCoercionRule(Float.class, Float.class));
-	}
-
-	@Test
-	public void testTruthiness() {
-		final TypeDomain domain = new TypeDomain();
-		domain.registerType(Boolean.class);
-		domain.registerType(Double.class);
-		domain.registerType(Integer.class);
-
-		domain.registerTruthEvaluator(new ITruthEvaluator<Boolean>() {
-			@Override
-			public boolean isTruthy(Boolean value) {
-				return value.booleanValue();
-			}
-		});
-
-		domain.registerTruthEvaluator(new ITruthEvaluator<Integer>() {
-
-			@Override
-			public boolean isTruthy(Integer value) {
-				return value != 0;
-			}
-		});
-
-		{
-			final TypedValue value = domain.create(Integer.class, 1);
-			Assert.assertEquals(Optional.of(Boolean.TRUE), value.isTruthyOptional());
-			Assert.assertTrue(value.isTruthy());
-		}
-
-		{
-			final TypedValue value = domain.create(Boolean.class, Boolean.TRUE);
-			Assert.assertEquals(Optional.of(Boolean.TRUE), value.isTruthyOptional());
-			Assert.assertTrue(value.isTruthy());
-		}
-
-		{
-			final TypedValue value = domain.create(Integer.class, 0);
-			Assert.assertEquals(Optional.of(Boolean.FALSE), value.isTruthyOptional());
-			Assert.assertFalse(value.isTruthy());
-		}
-
-		{
-			final TypedValue value = domain.create(Boolean.class, Boolean.FALSE);
-			Assert.assertEquals(Optional.of(Boolean.FALSE), value.isTruthyOptional());
-			Assert.assertFalse(value.isTruthy());
-		}
-
-		{
-			final TypedValue value = domain.create(Double.class, 0.0);
-			Assert.assertEquals(Optional.absent(), value.isTruthyOptional());
-
-			try {
-				value.isTruthy();
-				Assert.fail();
-			} catch (NoLogicValueException e) {
-				// no-op
-			}
-		}
 	}
 
 }

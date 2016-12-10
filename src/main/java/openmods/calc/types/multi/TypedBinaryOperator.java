@@ -14,7 +14,7 @@ import openmods.calc.BinaryOperator;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.reflection.TypeVariableHolder;
 
-public class TypedBinaryOperator extends BinaryOperator<TypedValue> {
+public class TypedBinaryOperator extends BinaryOperator.Direct<TypedValue> {
 
 	public interface ICoercedOperation<T> {
 		public TypedValue apply(TypeDomain domain, T left, T right);

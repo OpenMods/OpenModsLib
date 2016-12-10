@@ -19,4 +19,13 @@ public abstract class UnaryFunction<E> extends FixedCallable<E> {
 		stack.push(result);
 	}
 
+	public static <E> ICallable<E> createConst(final E value) {
+		return new UnaryFunction<E>() {
+			@Override
+			protected E call(E value) {
+				return value;
+			}
+		};
+	}
+
 }

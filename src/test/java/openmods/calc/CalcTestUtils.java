@@ -141,7 +141,7 @@ public class CalcTestUtils {
 
 	public static final Token QUOTE_SYMBOL = symbol(TypedCalcConstants.SYMBOL_QUOTE);
 
-	public static class DummyBinaryOperator<E> extends BinaryOperator<E> {
+	public static class DummyBinaryOperator<E> extends BinaryOperator.Direct<E> {
 
 		public DummyBinaryOperator(int precendence, String id) {
 			super(id, precendence);
@@ -157,7 +157,7 @@ public class CalcTestUtils {
 		}
 	}
 
-	public static class DummyUnaryOperator<E> extends UnaryOperator<E> {
+	public static class DummyUnaryOperator<E> extends UnaryOperator.Direct<E> {
 		public DummyUnaryOperator(String id) {
 			super(id);
 		}

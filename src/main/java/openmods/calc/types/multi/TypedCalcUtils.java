@@ -1,14 +1,11 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import openmods.calc.Frame;
-import openmods.calc.ICallable;
 import openmods.calc.StackValidationException;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.ValueNode;
-import openmods.calc.types.multi.CompositeTraits.Equatable;
 
 public class TypedCalcUtils {
 
@@ -27,76 +24,26 @@ public class TypedCalcUtils {
 		throw new IllegalArgumentException("Failed to extract identifier from " + arg);
 	}
 
-	public static <T extends ICompositeTrait, R> Optional<R> tryDecomposeTrait(TypedValue value, Class<T> trait, Function<T, Optional<R>> f) {
-		if (value.is(IComposite.class)) {
-			final IComposite c = value.as(IComposite.class);
-
-			final Optional<T> typeTrait = c.getOptional(trait);
-			if (typeTrait.isPresent()) {
-				final T container = typeTrait.get();
-				return f.apply(container);
-			}
-		}
-
-		return Optional.absent();
-	}
-
-	public static <T extends ICompositeTrait> Optional<T> tryGetTrait(TypedValue value, Class<T> trait) {
-		if (value.is(IComposite.class)) {
-			final IComposite c = value.as(IComposite.class);
-			return c.getOptional(trait);
-		}
-
-		return Optional.absent();
-	}
-
-	public static boolean isCallable(TypedValue value) {
-		if (value.is(ICallable.class))
-			return true;
-
-		if (value.is(IComposite.class) && value.as(IComposite.class).has(CompositeTraits.Callable.class))
-			return true;
-
-		return false;
-	}
-
-	public static boolean tryCall(Frame<TypedValue> frame, TypedValue target, Optional<Integer> returns, Optional<Integer> args) {
-		if (target.is(ICallable.class)) {
-			@SuppressWarnings("unchecked")
-			final ICallable<TypedValue> targetCallable = (ICallable<TypedValue>)target.value;
-			targetCallable.call(frame, args, returns);
-			return true;
-		} else if (target.is(IComposite.class)) {
-			final IComposite composite = target.as(IComposite.class);
-			composite.get(CompositeTraits.Callable.class).call(frame, args, returns);
-			return true;
-		}
-
-		return false;
-	}
-
-	public static boolean areEqual(TypedValue left, TypedValue right) {
-		if (left.equals(right)) return true;
-
-		if (left.is(IComposite.class)) {
-			final IComposite composite = left.as(IComposite.class);
-			final Optional<Equatable> equatable = composite.getOptional(CompositeTraits.Equatable.class);
-			if (equatable.isPresent()) return equatable.get().isEqual(right);
-		}
-
-		if (right.is(IComposite.class)) {
-			final IComposite composite = right.as(IComposite.class);
-			final Optional<Equatable> equatable = composite.getOptional(CompositeTraits.Equatable.class);
-			if (equatable.isPresent()) return equatable.get().isEqual(left);
-		}
-
-		return false;
-	}
-
 	public static void expectSingleReturn(Optional<Integer> returnsCount) {
 		if (returnsCount.isPresent()) {
 			final int returns = returnsCount.get();
 			if (returns != 1) throw new StackValidationException("Has single result but expected %s", returns);
 		}
+	}
+
+	public static boolean isEqual(Frame<TypedValue> frame, TypedValue left, TypedValue right) {
+		if (left.equals(right)) return true;
+
+		{
+			final MetaObject.SlotEquals isEquals = left.getMetaObject().slotEquals;
+			if (isEquals != null) return isEquals.equals(left, right, frame);
+		}
+
+		{
+			final MetaObject.SlotEquals isEquals = right.getMetaObject().slotEquals;
+			if (isEquals != null) return isEquals.equals(right, left, frame);
+		}
+
+		return false;
 	}
 }

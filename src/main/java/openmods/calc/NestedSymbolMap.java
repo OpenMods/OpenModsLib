@@ -2,7 +2,7 @@ package openmods.calc;
 
 public abstract class NestedSymbolMap<E> extends SymbolMap<E> {
 
-	private final SymbolMap<E> parent;
+	protected final SymbolMap<E> parent;
 
 	public NestedSymbolMap(SymbolMap<E> parent) {
 		this.parent = parent;

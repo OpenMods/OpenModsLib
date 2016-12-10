@@ -12,6 +12,10 @@ public class FrameFactory {
 		return new Frame<E>(new LocalSymbolMap<E>(parentSymbols), new Stack<E>());
 	}
 
+	public static <E> Frame<E> newLocalFrame(Frame<E> parent, Stack<E> stack) {
+		return new Frame<E>(parent.symbols(), stack);
+	}
+
 	public static <E> Frame<E> newLocalFrame(Frame<E> enclosingFrame) {
 		return newLocalFrame(enclosingFrame.symbols());
 	}

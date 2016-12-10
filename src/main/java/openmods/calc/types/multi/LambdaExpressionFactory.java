@@ -7,7 +7,6 @@ import openmods.calc.BinaryOperator;
 import openmods.calc.Environment;
 import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
-import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
@@ -60,7 +59,7 @@ public class LambdaExpressionFactory {
 				// empty arg list
 			}
 
-			frame.stack().push(domain.create(ICallable.class, new Closure(frame.symbols(), code, args)));
+			frame.stack().push(FunctionValue.wrap(domain, new Closure(frame.symbols(), code, args)));
 		}
 	}
 

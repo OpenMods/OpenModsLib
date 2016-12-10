@@ -250,70 +250,70 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 
 	@Override
 	protected void configureOperators(OperatorDictionary<Double> operators) {
-		operators.registerUnaryOperator(new UnaryOperator<Double>("neg") {
+		operators.registerUnaryOperator(new UnaryOperator.Direct<Double>("neg") {
 			@Override
 			public Double execute(Double value) {
 				return -value;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("+", PRIORITY_ADD) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("+", PRIORITY_ADD) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left + right;
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator<Double>("+") {
+		operators.registerUnaryOperator(new UnaryOperator.Direct<Double>("+") {
 			@Override
 			public Double execute(Double value) {
 				return +value;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("-", PRIORITY_ADD) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("-", PRIORITY_ADD) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left - right;
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator<Double>("-") {
+		operators.registerUnaryOperator(new UnaryOperator.Direct<Double>("-") {
 			@Override
 			public Double execute(Double value) {
 				return -value;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("*", PRIORITY_MULTIPLY) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("*", PRIORITY_MULTIPLY) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left * right;
 			}
 		}).setDefault();
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("/", PRIORITY_MULTIPLY) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("/", PRIORITY_MULTIPLY) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left / right;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("%", PRIORITY_MULTIPLY) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("%", PRIORITY_MULTIPLY) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left % right;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("^", PRIORITY_POWER) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("^", PRIORITY_POWER) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return Math.pow(left, right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Double>("**", PRIORITY_POWER) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("**", PRIORITY_POWER) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return Math.pow(left, right);

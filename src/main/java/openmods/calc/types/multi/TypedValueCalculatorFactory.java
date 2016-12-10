@@ -58,14 +58,10 @@ import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.Tokenizer;
 import openmods.calc.parsing.ValueNode;
-import openmods.calc.types.multi.CompositeTraits.Structured;
-import openmods.calc.types.multi.CompositeTraits.Typed;
 import openmods.calc.types.multi.Cons.LinearVisitor;
 import openmods.calc.types.multi.TypeDomain.Coercion;
-import openmods.calc.types.multi.TypeDomain.ITruthEvaluator;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
 import openmods.calc.types.multi.TypedFunction.OptionalArgs;
-import openmods.calc.types.multi.TypedFunction.RawArg;
 import openmods.calc.types.multi.TypedFunction.RawDispatchArg;
 import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;
@@ -102,7 +98,7 @@ public class TypedValueCalculatorFactory {
 	private static final int PRIORITY_SPLIT = 20; // \
 	private static final int PRIORITY_ASSIGN = 10; // =
 
-	private static class MarkerBinaryOperator extends BinaryOperator<TypedValue> {
+	private static class MarkerBinaryOperator extends BinaryOperator.Direct<TypedValue> {
 		private MarkerBinaryOperator(String id, int precendence) {
 			super(id, precendence);
 		}
@@ -155,23 +151,6 @@ public class TypedValueCalculatorFactory {
 				.registerOperation(Double.class, Boolean.class, TypedValueCalculatorFactory.<Double> createCompareOperation(compareTranslator))
 				.registerOperation(String.class, Boolean.class, TypedValueCalculatorFactory.<String> createCompareOperation(compareTranslator))
 				.registerOperation(Boolean.class, Boolean.class, TypedValueCalculatorFactory.<Boolean> createCompareOperation(compareTranslator))
-				.build(domain);
-	}
-
-	private interface EqualsResultInterpreter {
-		public boolean interpret(boolean isEqual);
-	}
-
-	private static TypedBinaryOperator createEqualsOperator(TypeDomain domain, String id, int priority, final EqualsResultInterpreter equalsTranslator) {
-		return new TypedBinaryOperator.Builder(id, priority)
-				.setDefaultOperation(new TypedBinaryOperator.IDefaultOperation() {
-					@Override
-					public Optional<TypedValue> apply(TypeDomain domain, TypedValue left, TypedValue right) {
-						final boolean areEquals = TypedCalcUtils.areEqual(left, right);
-						final boolean result = equalsTranslator.interpret(areEquals);
-						return Optional.of(domain.create(Boolean.class, result));
-					}
-				})
 				.build(domain);
 	}
 
@@ -238,21 +217,470 @@ public class TypedValueCalculatorFactory {
 		return result;
 	}
 
+	private static class EnvHolder {
+		public final SymbolMap<TypedValue> symbols;
+
+		public EnvHolder(SymbolMap<TypedValue> symbols) {
+			this.symbols = symbols;
+		}
+	}
+
+	private static abstract class SlotCaller extends FixedCallable<TypedValue> {
+
+		public SlotCaller() {
+			super(1, 1);
+		}
+
+		@Override
+		public void call(Frame<TypedValue> frame) {
+			final TypedValue value = frame.stack().pop();
+			frame.stack().push(callSlot(frame, value, value.getMetaObject()));
+		}
+
+		protected abstract TypedValue callSlot(Frame<TypedValue> frame, TypedValue value, MetaObject metaObject);
+	}
+
 	public static Calculator<TypedValue, ExprType> create() {
 		final TypeDomain domain = new TypeDomain();
 
-		// don't forget to also fill truth values and is* functions
-		domain.registerType(UnitType.class, "<null>");
-		domain.registerType(BigInteger.class, "int");
-		domain.registerType(Double.class, "float");
-		domain.registerType(Boolean.class, "bool");
-		domain.registerType(String.class, "str");
-		domain.registerType(Complex.class, "complex");
-		domain.registerType(IComposite.class, "object");
-		domain.registerType(Cons.class, "cons");
-		domain.registerType(Symbol.class, "symbol");
-		domain.registerType(Code.class, "code");
-		domain.registerType(ICallable.class, "callable");
+		final TypedValueParser valueParser = new TypedValueParser(domain);
+
+		final MetaObject.SlotAttr typeAttributesSlot = new MetaObject.SlotAttr() {
+			@Override
+			public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
+				if ("name".equals(key)) return Optional.of(domain.create(String.class, self.as(TypeUserdata.class).name));
+				return Optional.absent();
+			}
+		};
+
+		domain.registerType(TypeUserdata.class, "type",
+				MetaObject.builder()
+						.set(TypeUserdata.typeStrSlot)
+						.set(TypeUserdata.typeReprSlot)
+						.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
+						.set(typeAttributesSlot)
+						.build());
+
+		{
+
+			final TypedValue nullType = domain.create(TypeUserdata.class, new TypeUserdata("<null>"));
+
+			domain.registerType(UnitType.class, "<null>",
+					MetaObject.builder()
+							.set(MetaObjectUtils.BOOL_ALWAYS_FALSE)
+							.set(new MetaObject.SlotLength() {
+								@Override
+								public int length(TypedValue self, Frame<TypedValue> frame) {
+									return 0;
+								}
+							})
+							.set(MetaObjectUtils.strConst("null"))
+							.set(MetaObjectUtils.reprConst("null"))
+							.set(MetaObjectUtils.typeConst(nullType))
+							.build());
+		}
+
+		final TypedValue nullValue = domain.create(UnitType.class, UnitType.INSTANCE);
+		final TypedValuePrinter valuePrinter = new TypedValuePrinter(nullValue);
+
+		final Map<String, TypedValue> basicTypes = Maps.newHashMap();
+
+		{
+			final TypedValue intType = domain.create(TypeUserdata.class, new TypeUserdata("int"),
+					MetaObject.builder()
+							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
+								@Variant
+								public BigInteger convert(@DispatchArg(extra = { Boolean.class }) BigInteger value) {
+									return value;
+								}
+
+								@Variant
+								public BigInteger convert(@DispatchArg Double value) {
+									return BigInteger.valueOf(value.longValue());
+								}
+
+								@Variant
+								public BigInteger convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
+									final int usedRadix = radix.transform(INT_UNWRAP).or(valuePrinter.base);
+									final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
+									Preconditions.checkArgument(result.getRight() == null, "Fractional part in argument to 'int': %s", value);
+									return result.getLeft();
+								}
+							}))
+							.set(TypeUserdata.typeStrSlot)
+							.set(TypeUserdata.typeReprSlot)
+							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
+							.set(typeAttributesSlot)
+							.build());
+
+			basicTypes.put("int", intType);
+
+			domain.registerType(BigInteger.class, "int",
+					MetaObject.builder()
+							.set(new MetaObject.SlotBool() {
+								@Override
+								public boolean bool(TypedValue value, Frame<TypedValue> frame) {
+									return !value.as(BigInteger.class).equals(BigInteger.ZERO);
+								}
+							})
+							.set(MetaObjectUtils.typeConst(intType))
+							.set(new MetaObject.SlotStr() {
+								@Override
+								public String str(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.str(self.as(BigInteger.class));
+								}
+							})
+							.set(new MetaObject.SlotRepr() {
+								@Override
+								public String repr(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.repr(self.as(BigInteger.class));
+								}
+							})
+							.build());
+		}
+
+		{
+			final TypedValue floatType = domain.create(TypeUserdata.class, new TypeUserdata("float"),
+					MetaObject.builder()
+							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
+								@Variant
+								public Double convert(@DispatchArg(extra = { BigInteger.class, Boolean.class }) Double value) {
+									return value;
+								}
+
+								@Variant
+								public Double convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
+									final int usedRadix = radix.transform(INT_UNWRAP).or(valuePrinter.base);
+									final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
+									return result.getLeft().doubleValue() + result.getRight();
+								}
+							}))
+							.set(TypeUserdata.typeStrSlot)
+							.set(TypeUserdata.typeReprSlot)
+							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
+							.set(typeAttributesSlot)
+							.build());
+
+			basicTypes.put("float", floatType);
+
+			domain.registerType(Double.class, "float",
+					MetaObject.builder()
+							.set(new MetaObject.SlotBool() {
+								@Override
+								public boolean bool(TypedValue value, Frame<TypedValue> frame) {
+									return value.as(Double.class) != 0;
+								}
+							})
+							.set(MetaObjectUtils.typeConst(floatType))
+							.set(new MetaObject.SlotStr() {
+								@Override
+								public String str(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.str(self.as(Double.class));
+								}
+							})
+							.set(new MetaObject.SlotRepr() {
+								@Override
+								public String repr(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.repr(self.as(Double.class));
+								}
+							})
+							.build());
+		}
+
+		{
+			final TypedValue boolType = domain.create(TypeUserdata.class, new TypeUserdata("bool"),
+					MetaObject.builder()
+							.set(MetaObjectUtils.callableAdapter(new SlotCaller() {
+								@Override
+								protected TypedValue callSlot(Frame<TypedValue> frame, TypedValue value, MetaObject metaObject) {
+									return domain.create(Boolean.class, MetaObjectUtils.boolValue(frame, value));
+								}
+							}))
+							.set(TypeUserdata.typeStrSlot)
+							.set(TypeUserdata.typeReprSlot)
+							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
+							.set(typeAttributesSlot)
+							.build());
+
+			basicTypes.put("bool", boolType);
+
+			domain.registerType(Boolean.class, "bool",
+					MetaObject.builder()
+							.set(new MetaObject.SlotBool() {
+								@Override
+								public boolean bool(TypedValue value, Frame<TypedValue> frame) {
+									return value.as(Boolean.class).booleanValue();
+								}
+							})
+							.set(MetaObjectUtils.typeConst(boolType))
+							.set(new MetaObject.SlotStr() {
+								@Override
+								public String str(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.str(self.as(Boolean.class));
+								}
+							})
+							.set(new MetaObject.SlotRepr() {
+								@Override
+								public String repr(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.repr(self.as(Boolean.class));
+								}
+							})
+							.build());
+		}
+
+		{
+			final TypedValue strType = domain.create(TypeUserdata.class, new TypeUserdata("str"),
+					MetaObject.builder()
+							.set(MetaObjectUtils.callableAdapter(new UnaryFunction<TypedValue>() {
+								@Override
+								protected TypedValue call(TypedValue value) {
+									return value.domain.create(String.class, valuePrinter.str(value));
+								}
+							}))
+							.set(TypeUserdata.typeStrSlot)
+							.set(TypeUserdata.typeReprSlot)
+							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
+							.set(typeAttributesSlot)
+							.build());
+
+			basicTypes.put("str", strType);
+
+			domain.registerType(String.class, "str",
+					MetaObject.builder()
+
+							.set(new MetaObject.SlotLength() {
+								@Override
+								public int length(TypedValue self, Frame<TypedValue> frame) {
+									return self.as(String.class).length();
+								}
+							})
+							.set(new MetaObject.SlotSlice() {
+								@Override
+								public TypedValue slice(TypedValue self, TypedValue range, Frame<TypedValue> frame) {
+									final String target = self.as(String.class);
+									final String result;
+
+									if (range.is(Cons.class)) {
+										result = substr(target, range.as(Cons.class));
+									} else {
+										result = charAt(target, range.unwrap(BigInteger.class));
+									}
+
+									return domain.create(String.class, result);
+								}
+
+								private String substr(String str, Cons range) {
+									final int left = calculateBoundary(range.car, str.length());
+									final int right = calculateBoundary(range.cdr, str.length());
+									return str.substring(left, right);
+								}
+
+								private int calculateBoundary(TypedValue v, int length) {
+									final int i = v.unwrap(BigInteger.class).intValue();
+									return i >= 0? i : (length + i);
+								}
+
+								private String charAt(String str, BigInteger index) {
+									int i = index.intValue();
+									if (i < 0) i = str.length() + i;
+									return String.valueOf(str.charAt(i));
+								}
+
+							})
+							.set(new MetaObject.SlotBool() {
+								@Override
+								public boolean bool(TypedValue value, Frame<TypedValue> frame) {
+									return !value.as(String.class).isEmpty();
+								}
+							})
+							.set(MetaObjectUtils.typeConst(strType))
+							.set(new MetaObject.SlotStr() {
+								@Override
+								public String str(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.str(self.as(String.class));
+								}
+							})
+							.set(new MetaObject.SlotRepr() {
+								@Override
+								public String repr(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.repr(self.as(String.class));
+								}
+							})
+							.build());
+		}
+
+		{
+			final TypedValue complexType = domain.create(TypeUserdata.class, new TypeUserdata("complex"),
+					MetaObject.builder()
+							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
+								@Variant
+								public Complex convert(Double re, Double im) {
+									return Complex.cartesian(re, im);
+								}
+							}))
+							.set(TypeUserdata.typeStrSlot)
+							.set(TypeUserdata.typeReprSlot)
+							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
+							.set(typeAttributesSlot)
+							.build());
+
+			basicTypes.put("complex", complexType);
+
+			domain.registerType(Complex.class, "complex",
+					MetaObject.builder()
+							.set(new MetaObject.SlotBool() {
+								@Override
+								public boolean bool(TypedValue value, Frame<TypedValue> frame) {
+									return !value.as(Complex.class).equals(Complex.ZERO);
+								}
+							})
+							.set(MetaObjectUtils.typeConst(complexType))
+							.set(new MetaObject.SlotStr() {
+								@Override
+								public String str(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.str(self.as(Complex.class));
+								}
+							})
+							.set(new MetaObject.SlotRepr() {
+								@Override
+								public String repr(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.repr(self.as(Complex.class));
+								}
+							})
+							.build());
+		}
+
+		{
+			final TypedValue consType = domain.create(TypeUserdata.class, new TypeUserdata("cons"),
+					MetaObject.builder()
+							.set(MetaObjectUtils.callableAdapter(new BinaryFunction<TypedValue>() {
+								@Override
+								protected TypedValue call(TypedValue left, TypedValue right) {
+									return domain.create(Cons.class, new Cons(left, right));
+								}
+							}))
+							.set(TypeUserdata.typeStrSlot)
+							.set(TypeUserdata.typeReprSlot)
+							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
+							.set(typeAttributesSlot)
+							.build());
+
+			basicTypes.put("cons", consType);
+
+			domain.registerType(Cons.class, "cons",
+					MetaObject.builder()
+							.set(new MetaObject.SlotLength() {
+								@Override
+								public int length(TypedValue self, Frame<TypedValue> frame) {
+									return self.as(Cons.class).length();
+								}
+							})
+							.set(MetaObjectUtils.BOOL_ALWAYS_TRUE)
+							.set(MetaObjectUtils.typeConst(consType))
+							.set(new MetaObject.SlotStr() {
+								@Override
+								public String str(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.str(self.as(Cons.class));
+								}
+							})
+							.set(new MetaObject.SlotRepr() {
+								@Override
+								public String repr(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.repr(self.as(Cons.class));
+								}
+							})
+							.build());
+		}
+
+		{
+			final TypedValue symbolType = domain.create(TypeUserdata.class, new TypeUserdata("symbol"),
+					MetaObject.builder()
+							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
+								@Variant
+								public Symbol symbol(String value) {
+									return Symbol.get(value);
+								}
+							}))
+							.set(TypeUserdata.typeStrSlot)
+							.set(TypeUserdata.typeReprSlot)
+							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
+							.set(typeAttributesSlot)
+							.build());
+
+			basicTypes.put("symbol", symbolType);
+
+			domain.registerType(Symbol.class, "symbol",
+					MetaObject.builder()
+							.set(MetaObjectUtils.BOOL_ALWAYS_TRUE)
+							.set(MetaObjectUtils.typeConst(symbolType))
+							.set(new MetaObject.SlotStr() {
+								@Override
+								public String str(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.str(self.as(Symbol.class));
+								}
+							})
+							.set(new MetaObject.SlotRepr() {
+								@Override
+								public String repr(TypedValue self, Frame<TypedValue> frame) {
+									return valuePrinter.repr(self.as(Symbol.class));
+								}
+							})
+							.build());
+		}
+
+		{
+
+			final TypedValue functionType = domain.create(TypeUserdata.class, new TypeUserdata("function"));
+
+			basicTypes.put("function", functionType);
+
+			domain.registerType(FunctionValue.class, "function",
+					MetaObject.builder()
+							.set(new MetaObject.SlotCall() {
+								@Override
+								public void call(TypedValue self, Optional<Integer> argCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+									final FunctionValue function = self.as(FunctionValue.class);
+									function.callable.call(frame, argCount, returnsCount);
+								}
+							})
+							.set(MetaObjectUtils.BOOL_ALWAYS_TRUE)
+							.set(MetaObjectUtils.typeConst(functionType))
+							.build());
+		}
+
+		{
+			final TypedValue envType = domain.create(TypeUserdata.class, new TypeUserdata("env"));
+
+			basicTypes.put("env", envType);
+
+			domain.registerType(EnvHolder.class, "env",
+					MetaObject.builder()
+							.set(new MetaObject.SlotAttr() {
+								@Override
+								public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
+									final EnvHolder target = self.as(EnvHolder.class);
+									final ISymbol<TypedValue> result = target.symbols.get(key);
+									if (result == null) return Optional.absent();
+									return Optional.of(result.get());
+								}
+							})
+							.set(MetaObjectUtils.typeConst(envType))
+							.build());
+
+		}
+
+		{
+			// TODO decompose may not work due to special 'code' form
+			final TypedValue codeType = domain.create(TypeUserdata.class, new TypeUserdata("code"));
+
+			basicTypes.put("code", codeType);
+
+			domain.registerType(Code.class, "code",
+					MetaObject.builder()
+							.set(MetaObjectUtils.BOOL_ALWAYS_TRUE)
+							.set(MetaObjectUtils.typeConst(codeType))
+							.build());
+		}
 
 		domain.registerConverter(new IConverter<Boolean, BigInteger>() {
 			@Override
@@ -302,74 +730,10 @@ public class TypedValueCalculatorFactory {
 
 		domain.registerSymmetricCoercionRule(Double.class, Complex.class, Coercion.TO_RIGHT);
 
-		domain.registerTruthEvaluator(new ITruthEvaluator<Boolean>() {
-			@Override
-			public boolean isTruthy(Boolean value) {
-				return value.booleanValue();
-			}
-		});
-
-		domain.registerTruthEvaluator(new ITruthEvaluator<BigInteger>() {
-			@Override
-			public boolean isTruthy(BigInteger value) {
-				return !value.equals(BigInteger.ZERO);
-			}
-		});
-
-		domain.registerTruthEvaluator(new ITruthEvaluator<Double>() {
-			@Override
-			public boolean isTruthy(Double value) {
-				return value != 0;
-			}
-		});
-
-		domain.registerTruthEvaluator(new ITruthEvaluator<Complex>() {
-			@Override
-			public boolean isTruthy(Complex value) {
-				return !value.equals(Complex.ZERO);
-			}
-		});
-
-		domain.registerTruthEvaluator(new ITruthEvaluator<String>() {
-			@Override
-			public boolean isTruthy(String value) {
-				return !value.isEmpty();
-			}
-		});
-
-		domain.registerTruthEvaluator(new ITruthEvaluator<IComposite>() {
-			@Override
-			public boolean isTruthy(IComposite value) {
-				{
-					final Optional<CompositeTraits.Truthy> truthyTrait = value.getOptional(CompositeTraits.Truthy.class);
-					if (truthyTrait.isPresent()) return truthyTrait.get().isTruthy();
-				}
-
-				{
-					final Optional<CompositeTraits.Countable> countableTrait = value.getOptional(CompositeTraits.Countable.class);
-					if (countableTrait.isPresent()) return countableTrait.get().count() > 0;
-				}
-
-				{
-					final Optional<CompositeTraits.Emptyable> emptyableTrait = value.getOptional(CompositeTraits.Emptyable.class);
-					if (emptyableTrait.isPresent()) return !emptyableTrait.get().isEmpty();
-				}
-
-				return true;
-			}
-		});
-
-		domain.registerAlwaysFalse(UnitType.class);
-		domain.registerAlwaysTrue(Cons.class);
-		domain.registerAlwaysTrue(Code.class);
-		domain.registerAlwaysTrue(ICallable.class);
-
-		final TypedValue nullValue = domain.create(UnitType.class, UnitType.INSTANCE);
-
 		final OperatorDictionary<TypedValue> operators = new OperatorDictionary<TypedValue>();
 
 		// arithmetic
-		final BinaryOperator<TypedValue> addOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("+", PRIORITY_ADD)
+		final BinaryOperator.Direct<TypedValue> addOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("+", PRIORITY_ADD)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
 					@Override
 					public BigInteger apply(BigInteger left, BigInteger right) {
@@ -403,7 +767,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain)).unwrap();
 
-		operators.registerUnaryOperator(new UnaryOperator<TypedValue>("+") {
+		operators.registerUnaryOperator(new UnaryOperator.Direct<TypedValue>("+") {
 			@Override
 			public TypedValue execute(TypedValue value) {
 				Preconditions.checkState(NUMBER_TYPES.contains(value.type), "Not a number: %s", value);
@@ -476,7 +840,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain)).unwrap();
 
-		final BinaryOperator<TypedValue> divideOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("/", PRIORITY_MULTIPLY)
+		final BinaryOperator.Direct<TypedValue> divideOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("/", PRIORITY_MULTIPLY)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Double, Double>() {
 					@Override
 					public Double apply(Double left, Double right) {
@@ -581,38 +945,67 @@ public class TypedValueCalculatorFactory {
 
 		// logic
 
-		operators.registerUnaryOperator(new UnaryOperator<TypedValue>("!") {
+		operators.registerUnaryOperator(new UnaryOperator.StackBased<TypedValue>("!") {
 			@Override
-			public TypedValue execute(TypedValue value) {
-				return value.domain.create(Boolean.class, !value.isTruthy());
+			public void executeOnStack(Frame<TypedValue> frame) {
+				final TypedValue selfValue = frame.stack().pop();
+				final boolean boolValue = MetaObjectUtils.boolValue(frame, selfValue);
+				frame.stack().push(domain.create(Boolean.class, !boolValue));
 			}
 		});
 
-		final BinaryOperator<TypedValue> andOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>("&&", PRIORITY_LOGIC_AND) {
+		abstract class BinaryLogicOperator extends BinaryOperator.StackBased<TypedValue> {
+
+			public BinaryLogicOperator(String id, int precendence) {
+				super(id, precendence);
+			}
+
 			@Override
-			public TypedValue execute(TypedValue left, TypedValue right) {
+			public void executeOnStack(Frame<TypedValue> frame) {
+				final Stack<TypedValue> stack = frame.stack();
+				final TypedValue right = stack.pop();
+				final TypedValue left = stack.pop();
+				final Frame<TypedValue> truthFrame = FrameFactory.newLocalFrame(frame);
+				truthFrame.stack().push(left);
+				final boolean flag = MetaObjectUtils.boolValue(frame, left);
+				stack.push(select(flag, left, right));
+			}
+
+			protected abstract TypedValue select(boolean firstBool, TypedValue first, TypedValue second);
+		}
+
+		final BinaryOperator<TypedValue> andOperator = operators.registerBinaryOperator(new BinaryLogicOperator("&&", PRIORITY_LOGIC_AND) {
+			@Override
+			public TypedValue select(boolean firstBool, TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
-				return left.isTruthy()? right : left;
+				return firstBool? right : left;
 			}
 		}).unwrap();
 
-		final BinaryOperator<TypedValue> orOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>("||", PRIORITY_LOGIC_OR) {
+		final BinaryOperator<TypedValue> orOperator = operators.registerBinaryOperator(new BinaryLogicOperator("||", PRIORITY_LOGIC_OR) {
 			@Override
-			public TypedValue execute(TypedValue left, TypedValue right) {
+			public TypedValue select(boolean firstBool, TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
-				return left.isTruthy()? left : right;
+				return firstBool? left : right;
 			}
 		}).unwrap();
 
-		operators.registerBinaryOperator(new BinaryOperator<TypedValue>("^^", PRIORITY_LOGIC_XOR) {
+		operators.registerBinaryOperator(new BinaryOperator.StackBased<TypedValue>("^^", PRIORITY_LOGIC_XOR) {
+
 			@Override
-			public TypedValue execute(TypedValue left, TypedValue right) {
-				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
-				return left.domain.create(Boolean.class, left.isTruthy() ^ right.isTruthy());
+			public void executeOnStack(Frame<TypedValue> frame) {
+				final Stack<TypedValue> stack = frame.stack();
+				final TypedValue right = stack.peek(0);
+				final Boolean rightValue = MetaObjectUtils.boolValue(frame, right);
+
+				final TypedValue left = stack.peek(0);
+				final Boolean leftValue = MetaObjectUtils.boolValue(frame, left);
+
+				stack.push(left.domain.create(Boolean.class, leftValue ^ rightValue));
 			}
 		});
 
-		final BinaryOperator<TypedValue> nonNullOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>("??", PRIORITY_NULL_AWARE) {
+		final BinaryOperator<TypedValue> nonNullOperator = operators.registerBinaryOperator(new BinaryOperator.Direct<TypedValue>("??", PRIORITY_NULL_AWARE) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				return left != nullValue? left : right;
@@ -713,33 +1106,51 @@ public class TypedValueCalculatorFactory {
 
 		// comparision
 
-		final BinaryOperator<TypedValue> ltOperator = operators.registerBinaryOperator(createCompareOperator(domain, "<", PRIORITY_COMPARE, new CompareResultInterpreter() {
+		final BinaryOperator.Direct<TypedValue> ltOperator = operators.registerBinaryOperator(createCompareOperator(domain, "<", PRIORITY_COMPARE, new CompareResultInterpreter() {
 			@Override
 			public boolean interpret(int value) {
 				return value < 0;
 			}
 		})).unwrap();
 
-		final BinaryOperator<TypedValue> gtOperator = operators.registerBinaryOperator(createCompareOperator(domain, ">", PRIORITY_COMPARE, new CompareResultInterpreter() {
+		final BinaryOperator.Direct<TypedValue> gtOperator = operators.registerBinaryOperator(createCompareOperator(domain, ">", PRIORITY_COMPARE, new CompareResultInterpreter() {
 			@Override
 			public boolean interpret(int value) {
 				return value > 0;
 			}
 		})).unwrap();
 
-		operators.registerBinaryOperator(createEqualsOperator(domain, "==", PRIORITY_EQUALS, new EqualsResultInterpreter() {
+		abstract class EqualsOperator extends BinaryOperator.StackBased<TypedValue> {
+
+			public EqualsOperator(String id, int precendence) {
+				super(id, precendence);
+			}
+
+			@Override
+			public void executeOnStack(Frame<TypedValue> frame) {
+				final Stack<TypedValue> stack = frame.stack();
+				final TypedValue right = stack.pop();
+				final TypedValue left = stack.pop();
+				final boolean result = TypedCalcUtils.isEqual(frame, left, right);
+				stack.push(domain.create(Boolean.class, interpret(result)));
+			}
+
+			public abstract boolean interpret(boolean isEqual);
+		}
+
+		operators.registerBinaryOperator(new EqualsOperator("==", PRIORITY_EQUALS) {
 			@Override
 			public boolean interpret(boolean isEqual) {
 				return isEqual;
 			}
-		}));
+		});
 
-		operators.registerBinaryOperator(createEqualsOperator(domain, "!=", PRIORITY_EQUALS, new EqualsResultInterpreter() {
+		operators.registerBinaryOperator(new EqualsOperator("!=", PRIORITY_EQUALS) {
 			@Override
 			public boolean interpret(boolean isEqual) {
 				return !isEqual;
 			}
-		}));
+		});
 
 		operators.registerBinaryOperator(createCompareOperator(domain, "<=", PRIORITY_COMPARE, new CompareResultInterpreter() {
 			@Override
@@ -757,24 +1168,27 @@ public class TypedValueCalculatorFactory {
 
 		// magic
 
-		final TypedBinaryOperator.IVariantOperation<IComposite, String> dotOperatorOperation = new TypedBinaryOperator.IVariantOperation<IComposite, String>() {
-			@Override
-			public TypedValue apply(TypeDomain domain, IComposite left, String right) {
-				final Optional<Structured> structureTrait = left.getOptional(CompositeTraits.Structured.class);
-				if (!structureTrait.isPresent()) throw new IllegalArgumentException("Object has no members: " + left);
-				final Optional<TypedValue> result = structureTrait.get().get(domain, right);
-				if (!result.isPresent()) throw new IllegalArgumentException("Can't find member: " + right);
-				return result.get();
+		class DotOperator extends BinaryOperator.StackBased<TypedValue> {
+
+			public DotOperator(String id, int precendence) {
+				super(id, precendence);
 			}
-		};
 
-		final BinaryOperator<TypedValue> dotOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder(".", PRIORITY_MAX)
-				.registerOperation(dotOperatorOperation)
-				.build(domain)).unwrap();
+			@Override
+			public void executeOnStack(Frame<TypedValue> frame) {
+				final String key = frame.stack().pop().as(String.class, "attribute name");
+				final TypedValue target = frame.stack().pop();
+				final MetaObject.SlotAttr slotAttr = target.getMetaObject().slotAttr;
+				Preconditions.checkState(slotAttr != null, "Value %s has no attributes", target);
+				final Optional<TypedValue> attr = slotAttr.attr(target, key, frame);
+				Preconditions.checkState(attr.isPresent(), "Value %s has no attribute %s", target, key);
+				frame.stack().push(attr.get());
+			}
+		}
 
-		final BinaryOperator<TypedValue> nullAwareDotOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("?.", PRIORITY_MAX)
-				.registerOperation(dotOperatorOperation)
-				.build(domain)).unwrap();
+		final BinaryOperator<TypedValue> dotOperator = operators.registerBinaryOperator(new DotOperator(".", PRIORITY_MAX)).unwrap();
+
+		final BinaryOperator<TypedValue> nullAwareDotOperator = operators.registerBinaryOperator(new DotOperator("?.", PRIORITY_MAX)).unwrap();
 
 		{
 			class SpaceshipOperation<T extends Comparable<T>> implements TypedBinaryOperator.ICoercedOperation<T> {
@@ -798,7 +1212,7 @@ public class TypedValueCalculatorFactory {
 
 		final BinaryOperator<TypedValue> splitOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("\\", PRIORITY_SPLIT, Associativity.RIGHT)).unwrap();
 
-		final BinaryOperator<TypedValue> colonOperator = operators.registerBinaryOperator(new BinaryOperator<TypedValue>(":", PRIORITY_CONS, Associativity.RIGHT) {
+		final BinaryOperator<TypedValue> colonOperator = operators.registerBinaryOperator(new BinaryOperator.Direct<TypedValue>(":", PRIORITY_CONS, Associativity.RIGHT) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				return domain.create(Cons.class, new Cons(left, right));
@@ -810,27 +1224,21 @@ public class TypedValueCalculatorFactory {
 
 		final BinaryOperator<TypedValue> nullAwareOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("?", PRIORITY_MAX)).unwrap();
 
-		final TypedValueParser valueParser = new TypedValueParser(domain);
-
-		final TypedValuePrinter valuePrinter = new TypedValuePrinter(nullValue);
-
 		class TypedValueSymbolMap extends TopSymbolMap<TypedValue> {
 			@Override
 			protected ISymbol<TypedValue> createSymbol(ICallable<TypedValue> callable) {
-				return new CallableWithValue(domain.create(ICallable.class, callable), callable);
+				final TypedValue value = domain.create(FunctionValue.class, new FunctionValue(callable));
+				return new CallableWithValue(value, callable);
 			}
 
 			@Override
-			@SuppressWarnings("unchecked")
 			protected ISymbol<TypedValue> createSymbol(TypedValue value) {
-				if (value.is(ICallable.class))
-					return new CallableWithValue(value, value.as(ICallable.class));
-				else if (value.is(IComposite.class)) {
-					final IComposite composite = value.as(IComposite.class);
-					if (composite.has(CompositeTraits.Callable.class))
-						return new CallableWithValue(value, composite.get(CompositeTraits.Callable.class));
-				}
+				if (MetaObjectUtils.isCallable(value)) return new SlotCallableWithValue(value);
 
+				if (value.is(FunctionValue.class)) {
+					final FunctionValue function = value.as(FunctionValue.class);
+					return new CallableWithValue(value, function.callable);
+				}
 				return super.createSymbol(value);
 			}
 
@@ -855,6 +1263,9 @@ public class TypedValueCalculatorFactory {
 
 		final SymbolMap<TypedValue> envMap = env.topFrame().symbols();
 
+		for (Map.Entry<String, TypedValue> e : basicTypes.entrySet())
+			envMap.put(e.getKey(), e.getValue());
+
 		GenericFunctions.createStackManipulationFunctions(env);
 
 		env.setGlobalSymbol("E", domain.create(Double.class, Math.E));
@@ -863,7 +1274,7 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("iscallable", new UnaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
-				return value.domain.create(Boolean.class, TypedCalcUtils.isCallable(value));
+				return value.domain.create(Boolean.class, MetaObjectUtils.isCallable(value));
 			}
 		});
 
@@ -874,118 +1285,18 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		class TypeSymbol extends UnaryFunction<TypedValue> {
-
-			private final Map<Class<?>, TypedValue> types = Maps.newHashMap();
-			private final TypedValue objectType = TypeComposite.create(domain, IComposite.class);
-
-			{
-				types.put(UnitType.class, TypeComposite.create(domain, UnitType.class));
-			}
-
+		env.setGlobalSymbol("type", new SlotCaller() {
 			@Override
-			protected TypedValue call(TypedValue value) {
-				final TypedValue type = types.get(value.type);
-				if (type != null) return type;
-
-				if (value.is(IComposite.class)) {
-					final Optional<Typed> maybeTyped = value.as(IComposite.class).getOptional(CompositeTraits.Typed.class);
-					if (maybeTyped.isPresent())
-						return maybeTyped.get().getType();
-					else
-						return objectType; // TODO It will probably look better with composite wrappers for primitives
-				}
-
-				return nullValue;
-			}
-
-			public void registerObjectType(SymbolMap<TypedValue> symbols) {
-				domain.checkIsKnownType(IComposite.class);
-				symbols.put(domain.getName(IComposite.class), objectType);
-			}
-
-			public void registerType(SymbolMap<TypedValue> symbols, Class<?> tag) {
-				domain.checkIsKnownType(tag);
-				final TypedValue typeValue = TypeComposite.create(domain, tag);
-				types.put(tag, typeValue);
-				symbols.put(domain.getName(tag), typeValue);
-			}
-
-			public void registerType(SymbolMap<TypedValue> symbols, Class<?> tag, ICallable<TypedValue> callBehaviour) {
-				domain.checkIsKnownType(tag);
-				final TypedValue typeValue = TypeComposite.create(domain, tag, callBehaviour);
-				types.put(tag, typeValue);
-				symbols.put(domain.getName(tag), typeValue);
-			}
-		}
-
-		final TypeSymbol typeSymbol = new TypeSymbol();
-
-		env.setGlobalSymbol("type", typeSymbol);
-
-		typeSymbol.registerType(envMap, Boolean.class, new UnaryFunction<TypedValue>() {
-			@Override
-			protected TypedValue call(TypedValue value) {
-				return value.domain.create(Boolean.class, value.isTruthy());
+			protected TypedValue callSlot(Frame<TypedValue> frame, TypedValue value, MetaObject metaObject) {
+				final MetaObject.SlotType slotType = value.getMetaObject().slotType;
+				return slotType != null? slotType.type(value, frame) : nullValue;
 			}
 		});
-
-		typeSymbol.registerType(envMap, String.class, new UnaryFunction<TypedValue>() {
-			@Override
-			protected TypedValue call(TypedValue value) {
-				return value.domain.create(String.class, valuePrinter.str(value));
-			}
-		});
-
-		typeSymbol.registerObjectType(envMap);
-		typeSymbol.registerType(envMap, Code.class);
-		typeSymbol.registerType(envMap, ICallable.class);
 
 		env.setGlobalSymbol("repr", new UnaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
 				return value.domain.create(String.class, valuePrinter.repr(value));
-			}
-		});
-
-		typeSymbol.registerType(envMap, BigInteger.class, new SimpleTypedFunction(domain) {
-			@Variant
-			public BigInteger convert(@DispatchArg(extra = { Boolean.class }) BigInteger value) {
-				return value;
-			}
-
-			@Variant
-			public BigInteger convert(@DispatchArg Double value) {
-				return BigInteger.valueOf(value.longValue());
-			}
-
-			@Variant
-			public BigInteger convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
-				final int usedRadix = radix.transform(INT_UNWRAP).or(valuePrinter.base);
-				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
-				Preconditions.checkArgument(result.getRight() == null, "Fractional part in argument to 'int': %s", value);
-				return result.getLeft();
-			}
-		});
-
-		typeSymbol.registerType(envMap, Double.class, new SimpleTypedFunction(domain) {
-			@Variant
-			public Double convert(@DispatchArg(extra = { BigInteger.class, Boolean.class }) Double value) {
-				return value;
-			}
-
-			@Variant
-			public Double convert(@DispatchArg String value, @OptionalArgs Optional<BigInteger> radix) {
-				final int usedRadix = radix.transform(INT_UNWRAP).or(valuePrinter.base);
-				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
-				return result.getLeft().doubleValue() + result.getRight();
-			}
-		});
-
-		typeSymbol.registerType(envMap, Complex.class, new SimpleTypedFunction(domain) {
-			@Variant
-			public Complex convert(Double re, Double im) {
-				return Complex.cartesian(re, im);
 			}
 		});
 
@@ -1009,13 +1320,6 @@ public class TypedValueCalculatorFactory {
 				final int usedRadix = radix.transform(INT_UNWRAP).or(valuePrinter.base);
 				final Pair<BigInteger, Double> result = TypedValueParser.NUMBER_PARSER.parseString(value, usedRadix);
 				return TypedValueParser.mergeNumberParts(domain, result);
-			}
-		});
-
-		typeSymbol.registerType(envMap, Symbol.class, new SimpleTypedFunction(domain) {
-			@Variant
-			public Symbol symbol(String value) {
-				return Symbol.get(value);
 			}
 		});
 
@@ -1351,13 +1655,6 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		typeSymbol.registerType(envMap, Cons.class, new BinaryFunction<TypedValue>() {
-			@Override
-			protected TypedValue call(TypedValue left, TypedValue right) {
-				return domain.create(Cons.class, new Cons(left, right));
-			}
-		});
-
 		env.setGlobalSymbol("car", new SimpleTypedFunction(domain) {
 			@Variant
 			@RawReturn
@@ -1388,26 +1685,12 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("len", new SimpleTypedFunction(domain) {
-			@Variant
-			public BigInteger len(@DispatchArg UnitType v) {
-				// since empty list == nil
-				return BigInteger.ZERO;
-			}
-
-			@Variant
-			public BigInteger len(@DispatchArg String v) {
-				return BigInteger.valueOf(v.length());
-			}
-
-			@Variant
-			public BigInteger len(@DispatchArg Cons v) {
-				return BigInteger.valueOf(v.length());
-			}
-
-			@Variant
-			public BigInteger len(@DispatchArg IComposite v) {
-				return BigInteger.valueOf(v.get(CompositeTraits.Countable.class).count());
+		env.setGlobalSymbol("len", new SlotCaller() {
+			@Override
+			protected TypedValue callSlot(Frame<TypedValue> frame, TypedValue value, MetaObject metaObject) {
+				final MetaObject.SlotLength slotLength = metaObject.slotLength;
+				Preconditions.checkState(slotLength != null, "Value %s has no length", value);
+				return domain.create(BigInteger.class, BigInteger.valueOf(slotLength.length(value, frame)));
 			}
 		});
 
@@ -1431,53 +1714,32 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_SLICE, new SimpleTypedFunction(domain) {
-			@Variant
-			public String charAt(@DispatchArg String str, @DispatchArg(extra = { Boolean.class }) BigInteger index) {
-				int i = index.intValue();
-				if (i < 0) i = str.length() + i;
-				return String.valueOf(str.charAt(i));
-			}
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_SLICE, new FixedCallable<TypedValue>(2, 1) {
 
-			@Variant
-			public String substr(@DispatchArg String str, @DispatchArg Cons range) {
-				final int left = calculateBoundary(range.car, str.length());
-				final int right = calculateBoundary(range.cdr, str.length());
-				return str.substring(left, right);
-			}
+			@Override
+			public void call(Frame<TypedValue> frame) {
+				final Stack<TypedValue> stack = frame.stack();
+				final TypedValue range = stack.pop();
+				final TypedValue target = stack.pop();
 
-			private int calculateBoundary(TypedValue v, int length) {
-				final int i = v.unwrap(BigInteger.class).intValue();
-				return i >= 0? i : (length + i);
-			}
-
-			@Variant
-			@RawReturn
-			public TypedValue index(@DispatchArg IComposite obj, @RawArg TypedValue index) {
-				{
-					final Optional<CompositeTraits.Enumerable> enumerableTrait = obj.getOptional(CompositeTraits.Enumerable.class);
-					if (enumerableTrait.isPresent() && index.is(BigInteger.class)) { return enumerableTrait.get().get(domain, index.as(BigInteger.class).intValue()); }
+				final MetaObject.SlotSlice slotSlice = target.getMetaObject().slotSlice;
+				if (slotSlice != null) {
+					stack.push(slotSlice.slice(target, range, frame));
+					return;
 				}
 
-				{
-					final Optional<CompositeTraits.Indexable> indexableTrait = obj.getOptional(CompositeTraits.Indexable.class);
-					if (indexableTrait.isPresent()) {
-						final Optional<TypedValue> result = indexableTrait.get().get(index);
-						if (!result.isPresent()) throw new IllegalArgumentException("Can't find index: " + index);
-						return result.get();
+				if (range.is(String.class)) {
+					final MetaObject.SlotAttr slotAttr = target.getMetaObject().slotAttr;
+					if (slotAttr != null) {
+						final Optional<TypedValue> attr = slotAttr.attr(target, range.as(String.class), frame);
+						if (attr.isPresent()) {
+							stack.push(attr.get());
+							return;
+						}
 					}
 				}
 
-				{
-					final Optional<CompositeTraits.Structured> structuredTrait = obj.getOptional(CompositeTraits.Structured.class);
-					if (structuredTrait.isPresent() && index.is(String.class)) {
-						final Optional<TypedValue> result = structuredTrait.get().get(domain, index.as(String.class));
-						if (!result.isPresent()) throw new IllegalArgumentException("Can't find index: " + index);
-						return result.get();
-					}
-				}
-
-				throw new IllegalArgumentException("Object " + obj + " cannot be indexed with " + index);
+				throw new IllegalArgumentException("Cannot 'apply' slice operator to " + target + " for key " + range);
 			}
 		});
 
@@ -1487,9 +1749,8 @@ public class TypedValueCalculatorFactory {
 				Preconditions.checkArgument(argumentsCount.isPresent(), "'apply' cannot be called without argument count");
 				final int args = argumentsCount.get();
 
-				final TypedValue targetValue = frame.stack().drop(args - 1);
-				if (!TypedCalcUtils.tryCall(frame, targetValue, returnsCount, Optional.of(args - 1)))
-					throw new IllegalArgumentException("Value " + targetValue + " is not callable");
+				final TypedValue target = frame.stack().drop(args - 1);
+				MetaObjectUtils.call(frame, target, Optional.of(args - 1), returnsCount);
 			}
 		});
 
@@ -1525,11 +1786,8 @@ public class TypedValueCalculatorFactory {
 				code.checkType(Code.class, "Second(code) 'with' parameter");
 
 				final TypedValue target = frame.stack().pop();
-				target.checkType(IComposite.class, "First(scope/composite) 'with' parameter");
 
-				final IComposite composite = target.as(IComposite.class);
-
-				final CompositeSymbolMap symbolMap = new CompositeSymbolMap(frame.symbols(), domain, composite.get(CompositeTraits.Structured.class));
+				final CompositeSymbolMap symbolMap = new CompositeSymbolMap(frame.symbols(), target);
 				final Frame<TypedValue> newFrame = FrameFactory.newClosureFrame(symbolMap, frame, 0);
 
 				code.as(Code.class).execute(newFrame);
@@ -1545,29 +1803,29 @@ public class TypedValueCalculatorFactory {
 
 		env.setGlobalSymbol("and", new LogicFunction.Eager(nullValue) {
 			@Override
-			protected boolean shouldReturn(TypedValue value) {
-				return !value.isTruthy();
+			protected boolean shouldReturn(Frame<TypedValue> scratch, TypedValue arg) {
+				return !MetaObjectUtils.boolValue(scratch, arg);
 			}
 		});
 
 		env.setGlobalSymbol("or", new LogicFunction.Eager(nullValue) {
 			@Override
-			protected boolean shouldReturn(TypedValue value) {
-				return value.isTruthy();
+			protected boolean shouldReturn(Frame<TypedValue> scratch, TypedValue arg) {
+				return MetaObjectUtils.boolValue(scratch, arg);
 			}
 		});
 
 		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_AND_THEN, new LogicFunction.Shorting(nullValue) {
 			@Override
-			protected boolean shouldReturn(TypedValue value) {
-				return !value.isTruthy();
+			protected boolean shouldReturn(Frame<TypedValue> scratch, TypedValue arg) {
+				return !MetaObjectUtils.boolValue(scratch, arg);
 			}
 		});
 
 		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_OR_ELSE, new LogicFunction.Shorting(nullValue) {
 			@Override
-			protected boolean shouldReturn(TypedValue value) {
-				return value.isTruthy();
+			protected boolean shouldReturn(Frame<TypedValue> scratch, TypedValue arg) {
+				return MetaObjectUtils.boolValue(scratch, arg);
 			}
 		});
 
@@ -1580,8 +1838,8 @@ public class TypedValueCalculatorFactory {
 			}
 
 			@Override
-			protected boolean shouldReturn(TypedValue value) {
-				return value != nullValue;
+			protected boolean shouldReturn(Frame<TypedValue> scratch, TypedValue arg) {
+				return arg != nullValue;
 			}
 		});
 
@@ -1602,7 +1860,7 @@ public class TypedValueCalculatorFactory {
 		});
 
 		final OptionalTypeFactory optionalFactory = new OptionalTypeFactory(nullValue);
-		env.setGlobalSymbol("Optional", optionalFactory.value());
+		optionalFactory.registerSymbol(env);
 
 		env.setGlobalSymbol("struct", new StructSymbol(nullValue));
 		env.setGlobalSymbol("dict", new DictSymbol(nullValue, optionalFactory).value());
@@ -1610,14 +1868,14 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("globals", new NullaryFunction<TypedValue>() {
 			@Override
 			protected TypedValue call() {
-				return domain.create(IComposite.class, new EnvMap(envMap));
+				return domain.create(EnvHolder.class, new EnvHolder(envMap));
 			}
 		});
 
 		env.setGlobalSymbol("locals", new FixedCallable<TypedValue>(0, 1) {
 			@Override
 			public void call(Frame<TypedValue> frame) {
-				frame.stack().push(domain.create(IComposite.class, new EnvMap(frame.symbols())));
+				frame.stack().push(domain.create(EnvHolder.class, new EnvHolder(frame.symbols())));
 			}
 		});
 

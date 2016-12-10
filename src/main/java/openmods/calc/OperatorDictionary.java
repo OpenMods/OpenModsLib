@@ -14,31 +14,31 @@ public class OperatorDictionary<E> {
 
 	private BinaryOperator<E> defaultOperator;
 
-	public class BinaryOperatorRegistration {
-		private final BinaryOperator<E> op;
+	public class BinaryOperatorRegistration<O extends BinaryOperator<E>> {
+		private final O op;
 
-		private BinaryOperatorRegistration(BinaryOperator<E> op) {
+		private BinaryOperatorRegistration(O op) {
 			this.op = op;
 		}
 
-		public BinaryOperatorRegistration setDefault() {
+		public BinaryOperatorRegistration<O> setDefault() {
 			Preconditions.checkState(defaultOperator == null, "Trying to replace default operator: %s -> %s", defaultOperator, op);
 			defaultOperator = op;
 			return this;
 		}
 
-		public BinaryOperator<E> unwrap() {
+		public O unwrap() {
 			return op;
 		}
 	}
 
-	public BinaryOperatorRegistration registerBinaryOperator(BinaryOperator<E> operator) {
+	public <O extends BinaryOperator<E>> BinaryOperatorRegistration<O> registerBinaryOperator(O operator) {
 		final IExecutable<E> prev = binaryOperators.put(operator.id, operator);
 		Preconditions.checkState(prev == null, "Duplicate operator '%s': %s -> %s", prev, operator);
-		return new BinaryOperatorRegistration(operator);
+		return new BinaryOperatorRegistration<O>(operator);
 	}
 
-	public UnaryOperator<E> registerUnaryOperator(UnaryOperator<E> operator) {
+	public <O extends UnaryOperator<E>> O registerUnaryOperator(O operator) {
 		final IExecutable<E> prev = unaryOperators.put(operator.id, operator);
 		Preconditions.checkState(prev == null, "Duplicate operator '%s': %s -> %s", prev, operator);
 		return operator;

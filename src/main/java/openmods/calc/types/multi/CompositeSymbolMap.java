@@ -1,19 +1,20 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Optional;
+import openmods.calc.Frame;
+import openmods.calc.FrameFactory;
 import openmods.calc.ISymbol;
 import openmods.calc.NestedSymbolMap;
 import openmods.calc.SymbolMap;
 
 public class CompositeSymbolMap extends NestedSymbolMap<TypedValue> {
+	private final TypedValue target;
+	private final MetaObject.SlotAttr attrSlot;
 
-	private final TypeDomain domain;
-	private final CompositeTraits.Structured composite;
-
-	public CompositeSymbolMap(SymbolMap<TypedValue> parent, TypeDomain domain, CompositeTraits.Structured composite) {
+	public CompositeSymbolMap(SymbolMap<TypedValue> parent, TypedValue target) {
 		super(parent);
-		this.domain = domain;
-		this.composite = composite;
+		this.target = target;
+		this.attrSlot = target.getMetaObject().slotAttr;
 	}
 
 	@Override
@@ -23,9 +24,8 @@ public class CompositeSymbolMap extends NestedSymbolMap<TypedValue> {
 
 	@Override
 	public ISymbol<TypedValue> get(String name) {
-		final Optional<TypedValue> result = composite.get(domain, name);
-		return result.isPresent()
-				? createSymbol(result.get())
-				: super.get(name);
+		final Frame<TypedValue> frame = FrameFactory.symbolsToFrame(parent);
+		final Optional<TypedValue> value = attrSlot.attr(target, name, frame);
+		return value.isPresent()? super.createSymbol(value.get()) : super.get(name);
 	}
 }

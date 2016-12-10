@@ -12,13 +12,22 @@ public class TypedValue {
 
 	public final Object value;
 
-	private Optional<Boolean> truthyCache;
+	private Optional<MetaObject> metaObject;
 
 	TypedValue(TypeDomain domain, Class<?> type, Object value) {
 		Preconditions.checkArgument(type.isInstance(value), "Value '%s' is not instance of '%s'", value, type);
 		this.domain = domain;
 		this.type = type;
 		this.value = value;
+		this.metaObject = Optional.absent();
+	}
+
+	TypedValue(TypeDomain domain, Class<?> type, Object value, MetaObject metaObject) {
+		Preconditions.checkArgument(type.isInstance(value), "Value '%s' is not instance of '%s'", value, type);
+		this.domain = domain;
+		this.type = type;
+		this.value = value;
+		this.metaObject = Optional.of(metaObject);
 	}
 
 	@Override
@@ -98,26 +107,16 @@ public class TypedValue {
 		if (!expectedType.isInstance(value)) throw castException(expectedType, location);
 	}
 
-	public Optional<Boolean> isTruthyOptional() {
-		if (truthyCache == null) truthyCache = domain.isTruthy(this);
-		return truthyCache;
-	}
-
-	public static class NoLogicValueException extends RuntimeException {
-		private static final long serialVersionUID = -5318443217371834267L;
-
-		public NoLogicValueException(TypedValue value) {
-			super(String.format("Value %s is neither true or false", value));
-		}
-	}
-
-	public boolean isTruthy() {
-		final Optional<Boolean> isTruthy = isTruthyOptional();
-		if (!isTruthy.isPresent()) throw new NoLogicValueException(this);
-		return isTruthy.get();
-	}
-
 	public boolean is(Class<?> type) {
 		return this.type == type;
+	}
+
+	public MetaObject getMetaObject() {
+		if (!metaObject.isPresent()) {
+			final MetaObject defaultMetaObject = domain.getDefaultMetaObject(type);
+			metaObject = Optional.of(defaultMetaObject);
+		}
+
+		return metaObject.get();
 	}
 }

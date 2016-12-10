@@ -10,7 +10,7 @@ import java.util.Map;
 import openmods.calc.UnaryOperator;
 import openmods.reflection.TypeVariableHolder;
 
-public class TypedUnaryOperator extends UnaryOperator<TypedValue> {
+public class TypedUnaryOperator extends UnaryOperator.Direct<TypedValue> {
 
 	public static class TypeVariableHolders {
 		@TypeVariableHolder(IOperation.class)

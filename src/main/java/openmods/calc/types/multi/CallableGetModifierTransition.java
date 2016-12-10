@@ -41,7 +41,7 @@ public class CallableGetModifierTransition extends SingleStateTransition.ForModi
 	}
 
 	private IExprNode<TypedValue> createGetter(ICallable<TypedValue> wrapper) {
-		return new ValueNode<TypedValue>(domain.create(ICallable.class, wrapper));
+		return new ValueNode<TypedValue>(FunctionValue.wrap(domain, wrapper));
 	}
 
 	@Override

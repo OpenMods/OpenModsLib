@@ -145,7 +145,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 
 			for (Pair<Object, Method> p : this.variants) {
 				try {
-					variants.add(createVariant(p.getLeft(), p.getRight(), domain));
+					variants.add(createVariant(domain, p.getLeft(), p.getRight()));
 				} catch (Exception e) {
 					throw new RuntimeException("Failed to register method " + p.getRight(), e);
 				}
@@ -430,30 +430,24 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 		}
 	}
 
-	private static DispatchArgMatcher createMatcher(TypeDomain domain, Class<?> argType, DispatchArg annotation, Class<?>... extraTypes) {
+	private static DispatchArgMatcher createMatcher(Class<?> argType, DispatchArg annotation, Class<?>... extraTypes) {
 		final Set<Class<?>> dispatchArgsTypes = Sets.newHashSet(annotation.extra());
 		dispatchArgsTypes.addAll(Arrays.asList(extraTypes));
-
-		for (Class<?> cls : dispatchArgsTypes)
-			if (cls != MissingType.class) domain.checkConversion(cls, argType);
 
 		dispatchArgsTypes.add(argType);
 		return new DispatchArgMatcher(dispatchArgsTypes);
 	}
 
-	private static DispatchArgMatcher createMatcher(TypeDomain domain, RawDispatchArg annotation, Class<?>... extraTypes) {
+	private static DispatchArgMatcher createMatcher(RawDispatchArg annotation, Class<?>... extraTypes) {
 		final Set<Class<?>> dispatchArgsTypes = Sets.newHashSet(annotation.value());
 		Preconditions.checkArgument(!dispatchArgsTypes.isEmpty(), "Raw dispatch arg must specify dispatch types");
 
 		dispatchArgsTypes.addAll(Arrays.asList(extraTypes));
 
-		for (Class<?> cls : dispatchArgsTypes)
-			domain.checkIsKnownType(cls);
-
 		return new DispatchArgMatcher(dispatchArgsTypes);
 	}
 
-	public static TypeVariant createVariant(final Object target, final Method method, final TypeDomain typeDomain) {
+	public static TypeVariant createVariant(final TypeDomain typeDomain, final Object target, final Method method) {
 		final Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 		final Type[] parameterTypes = method.getGenericParameterTypes();
 		final int parameterCount = parameterTypes.length;
@@ -495,7 +489,6 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 					Preconditions.checkState(TypedValue.class.isAssignableFrom(componentType), "Raw argument must have TypedValue type");
 					argConverters.add(new VariadicRawArgConverter());
 				} else {
-					Preconditions.checkState(typeDomain.isKnownType(componentType), "Argument %s is not valid in domain", componentType);
 					argConverters.add(new VariadicArgConverter(componentType));
 
 				}
@@ -505,22 +498,20 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 				if (isRawArg) {
 					Preconditions.checkState(TypedValue.class.isAssignableFrom(varType), "Raw argument must have TypedValue type");
 					argConverters.add(new OptionalRawArgConverter());
-					if (isDispatchArg) argMatchers.put(i, createMatcher(typeDomain, dispatchRawAnn, MissingType.class));
+					if (isDispatchArg) argMatchers.put(i, createMatcher(dispatchRawAnn, MissingType.class));
 				} else {
-					Preconditions.checkState(typeDomain.isKnownType(varType), "Argument %s is not valid in domain", varType);
 					argConverters.add(new OptionalArgConverter(varType));
-					if (isDispatchArg) argMatchers.put(i, createMatcher(typeDomain, varType, dispatchAnn, MissingType.class));
+					if (isDispatchArg) argMatchers.put(i, createMatcher(varType, dispatchAnn, MissingType.class));
 				}
 			} else {
 				final Class<?> rawType = type.getRawType();
 				if (isRawArg) {
 					Preconditions.checkState(TypedValue.class.isAssignableFrom(rawType), "Raw argument must have TypedValue type");
 					argConverters.add(new MandatoryRawArgConverter());
-					if (isDispatchArg) argMatchers.put(i, createMatcher(typeDomain, dispatchRawAnn));
+					if (isDispatchArg) argMatchers.put(i, createMatcher(dispatchRawAnn));
 				} else {
-					Preconditions.checkState(typeDomain.isKnownType(rawType), "Argument %s is not valid in domain", type);
 					argConverters.add(new MandatoryArgConverter(rawType));
-					if (isDispatchArg) argMatchers.put(i, createMatcher(typeDomain, rawType, dispatchAnn));
+					if (isDispatchArg) argMatchers.put(i, createMatcher(rawType, dispatchAnn));
 				}
 			}
 		}
@@ -554,7 +545,6 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			Preconditions.checkState(!isRawReturn, "Method marked as @MultiReturn cannot be marked as @RawReturn");
 			if (returnType.isArray()) {
 				final Class<?> componentType = returnType.getComponentType();
-				typeDomain.checkIsKnownType(componentType);
 				class ArrayReturnVariant extends TypeVariant {
 					public ArrayReturnVariant() {
 						super(typeDomain, target, method, argMatchers, argConverters, mandatoryArgCount);
@@ -577,7 +567,6 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 				return new ArrayReturnVariant();
 			} else if (Iterable.class.isAssignableFrom(returnType)) {
 				final Class<?> componentType = IterableTypeHolder.resolve(method.getGenericReturnType());
-				typeDomain.checkIsKnownType(componentType);
 				class IterableReturnVariant extends TypeVariant {
 					public IterableReturnVariant() {
 						super(typeDomain, target, method, argMatchers, argConverters, mandatoryArgCount);
@@ -615,7 +604,6 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			}
 			return new RawSingleReturnVariant();
 		} else {
-			typeDomain.checkIsKnownType(returnType);
 			class SingleReturnVariant extends TypeVariant {
 				public SingleReturnVariant() {
 					super(typeDomain, target, method, argMatchers, argConverters, mandatoryArgCount);

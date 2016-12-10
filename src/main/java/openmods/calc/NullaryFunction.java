@@ -13,4 +13,12 @@ public abstract class NullaryFunction<E> extends FixedCallable<E> {
 		frame.stack().push(call());
 	}
 
+	public static <E> ICallable<E> createConst(final E value) {
+		return new NullaryFunction<E>() {
+			@Override
+			protected E call() {
+				return value;
+			}
+		};
+	}
 }

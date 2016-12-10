@@ -145,105 +145,105 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 
 	@Override
 	protected void configureOperators(OperatorDictionary<BigInteger> operators) {
-		operators.registerUnaryOperator(new UnaryOperator<BigInteger>("~") {
+		operators.registerUnaryOperator(new UnaryOperator.Direct<BigInteger>("~") {
 			@Override
 			public BigInteger execute(BigInteger value) {
 				return value.not();
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator<BigInteger>("neg") {
+		operators.registerUnaryOperator(new UnaryOperator.Direct<BigInteger>("neg") {
 			@Override
 			public BigInteger execute(BigInteger value) {
 				return value.negate();
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("^", PRIORITY_BITWISE) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("^", PRIORITY_BITWISE) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.xor(right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("|", PRIORITY_BITWISE) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("|", PRIORITY_BITWISE) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.or(right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("&", PRIORITY_BITWISE) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("&", PRIORITY_BITWISE) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.and(right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("+", PRIORITY_ADD) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("+", PRIORITY_ADD) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.add(right);
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator<BigInteger>("+") {
+		operators.registerUnaryOperator(new UnaryOperator.Direct<BigInteger>("+") {
 			@Override
 			public BigInteger execute(BigInteger value) {
 				return value;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("-", PRIORITY_ADD) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("-", PRIORITY_ADD) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.subtract(right);
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator<BigInteger>("-") {
+		operators.registerUnaryOperator(new UnaryOperator.Direct<BigInteger>("-") {
 			@Override
 			public BigInteger execute(BigInteger value) {
 				return value.negate();
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("*", PRIORITY_MULTIPLY) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("*", PRIORITY_MULTIPLY) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.multiply(right);
 			}
 		}).setDefault();
 
-		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("/", PRIORITY_MULTIPLY) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("/", PRIORITY_MULTIPLY) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.divide(right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("%", PRIORITY_MULTIPLY) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("%", PRIORITY_MULTIPLY) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.mod(right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("**", PRIORITY_EXP) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("**", PRIORITY_EXP) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.pow(right.intValue());
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<BigInteger>("<<", PRIORITY_BITSHIFT) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("<<", PRIORITY_BITSHIFT) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.shiftLeft(right.intValue());
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<BigInteger>(">>", PRIORITY_BITSHIFT) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>(">>", PRIORITY_BITSHIFT) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.shiftRight(right.intValue());

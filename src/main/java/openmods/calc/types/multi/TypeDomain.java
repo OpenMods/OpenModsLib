@@ -1,6 +1,5 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
@@ -21,11 +20,6 @@ public class TypeDomain {
 		@TypeVariableHolder(IConverter.class)
 		public static class Converter {
 			public static TypeVariable<?> S;
-			public static TypeVariable<?> T;
-		}
-
-		@TypeVariableHolder(ITruthEvaluator.class)
-		public static class TruthEvaluator {
 			public static TypeVariable<?> T;
 		}
 	}
@@ -62,17 +56,35 @@ public class TypeDomain {
 
 	}
 
-	private final Map<Class<?>, String> allowedTypes = Maps.newIdentityHashMap();
+	private final MetaObject emptyMetaObject = MetaObject.builder().build();
+
+	private static class TypeInfo {
+		public final String name;
+		public final MetaObject defaultMetaObject;
+
+		public TypeInfo(String name, MetaObject defaultMetaObject) {
+			this.name = name;
+			this.defaultMetaObject = defaultMetaObject;
+		}
+
+	}
+
+	private final Map<Class<?>, TypeInfo> allowedTypes = Maps.newIdentityHashMap();
 
 	private final Table<Class<?>, Class<?>, RawConverter> converters = HashBasedTable.create();
 
 	public TypeDomain registerType(Class<?> type) {
-		allowedTypes.put(type, type.getSimpleName());
+		registerType(type, type.getSimpleName());
 		return this;
 	}
 
 	public TypeDomain registerType(Class<?> type, String shortName) {
-		allowedTypes.put(type, shortName);
+		registerType(type, shortName, emptyMetaObject);
+		return this;
+	}
+
+	public TypeDomain registerType(Class<?> type, String shortName, MetaObject defaultMetaObject) {
+		allowedTypes.put(type, new TypeInfo(shortName, defaultMetaObject));
 		return this;
 	}
 
@@ -85,11 +97,21 @@ public class TypeDomain {
 	}
 
 	public String getName(Class<?> type) {
-		return Objects.firstNonNull(allowedTypes.get(type), "<unknown>");
+		final TypeInfo typeInfo = allowedTypes.get(type);
+		Preconditions.checkState(typeInfo != null, "Type %s is not registered", type);
+		return typeInfo.name;
 	}
 
 	public Optional<String> tryGetName(Class<?> type) {
-		return Optional.fromNullable(allowedTypes.get(type));
+		final TypeInfo typeInfo = allowedTypes.get(type);
+		if (typeInfo == null) return Optional.absent();
+		return Optional.of(typeInfo.name);
+	}
+
+	public MetaObject getDefaultMetaObject(Class<?> type) {
+		final TypeInfo typeInfo = allowedTypes.get(type);
+		Preconditions.checkState(typeInfo != null, "Type %s is not registered", type);
+		return typeInfo.defaultMetaObject;
 	}
 
 	public <T> TypeDomain registerCast(Class<? extends T> source, Class<T> target) {
@@ -187,67 +209,14 @@ public class TypeDomain {
 		return result != null? result : Coercion.INVALID;
 	}
 
-	public interface ITruthEvaluator<T> {
-		public boolean isTruthy(T value);
-	}
-
-	private final Map<Class<?>, ITruthEvaluator<Object>> truthEvaluators = Maps.newHashMap();
-
-	public <T> TypeDomain registerTruthEvaluator(final Class<T> cls, final ITruthEvaluator<T> evaluator) {
-		checkIsKnownType(cls);
-		final Map<Class<?>, ITruthEvaluator<Object>> prev = truthEvaluators;
-		prev.put(cls, new ITruthEvaluator<Object>() {
-			@Override
-			public boolean isTruthy(Object value) {
-				T cast = cls.cast(value);
-				return evaluator.isTruthy(cast);
-			}
-		});
-		Preconditions.checkState(prev != null, "Duplicate truth evaluator for type: %s", cls);
-		return this;
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T> TypeDomain registerTruthEvaluator(ITruthEvaluator<T> evaluator) {
-		final TypeToken<?> converterType = TypeToken.of(evaluator.getClass());
-		final Class<T> sourceType = (Class<T>)converterType.resolveType(TypeVariableHolders.TruthEvaluator.T).getRawType();
-		return registerTruthEvaluator(sourceType, evaluator);
-	}
-
-	public <T> TypeDomain registerAlwaysTrue(Class<T> cls) {
-		class AlwaysTrueEvaluator implements ITruthEvaluator<T> {
-			@Override
-			public boolean isTruthy(T value) {
-				return true;
-			}
-		}
-		return registerTruthEvaluator(cls, new AlwaysTrueEvaluator());
-	}
-
-	public <T> TypeDomain registerAlwaysFalse(Class<T> cls) {
-		class AlwaysFalseEvaluator implements ITruthEvaluator<T> {
-			@Override
-			public boolean isTruthy(T value) {
-				return false;
-			}
-		}
-		return registerTruthEvaluator(cls, new AlwaysFalseEvaluator());
-	}
-
-	private static final Optional<Boolean> UNKNOWN = Optional.absent();
-	private static final Optional<Boolean> TRUE = Optional.of(Boolean.TRUE);
-	private static final Optional<Boolean> FALSE = Optional.of(Boolean.FALSE);
-
-	public Optional<Boolean> isTruthy(TypedValue value) {
-		Preconditions.checkArgument(value.domain == this, "Mixed domain");
-		final ITruthEvaluator<Object> truthEvaluator = truthEvaluators.get(value.type);
-		if (truthEvaluator == null) return UNKNOWN;
-		return truthEvaluator.isTruthy(value.value)? TRUE : FALSE;
-	}
-
 	public <T> TypedValue create(Class<T> type, T value) {
 		checkIsKnownType(type);
 		return new TypedValue(this, type, value);
+	}
+
+	public <T> TypedValue create(Class<T> type, T value, MetaObject metaObject) {
+		checkIsKnownType(type);
+		return new TypedValue(this, type, value, metaObject);
 	}
 
 	public <T> TypedValue castAndCreate(Class<T> type, Object value) {

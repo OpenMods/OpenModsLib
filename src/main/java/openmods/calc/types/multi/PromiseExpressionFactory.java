@@ -8,9 +8,7 @@ import openmods.calc.Environment;
 import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
-import openmods.calc.ICallable;
 import openmods.calc.SymbolMap;
-import openmods.calc.UnaryFunction;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
@@ -87,14 +85,7 @@ public class PromiseExpressionFactory {
 			final Stack<TypedValue> stack = frame.stack();
 			final TypedValue arg = stack.pop();
 			final Code code = arg.as(Code.class, "'code' argument");
-			stack.push(arg.domain.create(ICallable.class, new DelayCallable(frame.symbols(), code)));
-		}
-	}
-
-	private class IsPromiseSymbol extends UnaryFunction<TypedValue> {
-		@Override
-		protected TypedValue call(TypedValue value) {
-			return value.domain.create(Boolean.class, value.type == ICallable.class && value.value instanceof DelayCallable);
+			stack.push(FunctionValue.wrap(arg.domain, new DelayCallable(frame.symbols(), code)));
 		}
 	}
 
@@ -111,16 +102,14 @@ public class PromiseExpressionFactory {
 		public void call(Frame<TypedValue> frame) {
 			final Stack<TypedValue> stack = frame.stack();
 			final TypedValue arg = stack.pop();
-			@SuppressWarnings("unchecked")
-			final ICallable<TypedValue> callable = arg.as(ICallable.class, "'force' argument");
-			callable.call(frame, ZERO_ARGS, ONE_RETURN);
+
+			MetaObjectUtils.call(frame, arg, ZERO_ARGS, ONE_RETURN);
 		}
 
 	}
 
 	public void registerSymbols(Environment<TypedValue> env) {
 		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_DELAY, new DelaySymbol());
-		env.setGlobalSymbol("ispromise", new IsPromiseSymbol());
 		env.setGlobalSymbol("force", new ForceSymbol());
 	}
 

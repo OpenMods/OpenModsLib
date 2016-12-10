@@ -137,49 +137,49 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 
 	@Override
 	protected void configureOperators(OperatorDictionary<Fraction> operators) {
-		operators.registerUnaryOperator(new UnaryOperator<Fraction>("neg") {
+		operators.registerUnaryOperator(new UnaryOperator.Direct<Fraction>("neg") {
 			@Override
 			public Fraction execute(Fraction value) {
 				return value.negate();
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Fraction>("+", PRIORITY_ADD) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<Fraction>("+", PRIORITY_ADD) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.add(right);
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator<Fraction>("+") {
+		operators.registerUnaryOperator(new UnaryOperator.Direct<Fraction>("+") {
 			@Override
 			public Fraction execute(Fraction value) {
 				return value;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Fraction>("-", PRIORITY_ADD) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<Fraction>("-", PRIORITY_ADD) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.subtract(right);
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator<Fraction>("-") {
+		operators.registerUnaryOperator(new UnaryOperator.Direct<Fraction>("-") {
 			@Override
 			public Fraction execute(Fraction value) {
 				return value.negate();
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator<Fraction>("*", PRIORITY_MULTIPLY) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<Fraction>("*", PRIORITY_MULTIPLY) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.multiplyBy(right);
 			}
 		}).setDefault();
 
-		operators.registerBinaryOperator(new BinaryOperator<Fraction>("/", PRIORITY_MULTIPLY) {
+		operators.registerBinaryOperator(new BinaryOperator.Direct<Fraction>("/", PRIORITY_MULTIPLY) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.divideBy(right);

@@ -81,9 +81,7 @@ public class IfExpressionFactory {
 			ifTrue.checkType(Code.class, "second (true branch) 'if' parameter");
 
 			final TypedValue condition = frame.stack().pop();
-			final boolean isTruthy = condition.isTruthy();
-
-			(isTruthy? ifTrue : ifFalse).as(Code.class).execute(frame);
+			(MetaObjectUtils.boolValue(frame, condition)? ifTrue : ifFalse).as(Code.class).execute(frame);
 		}
 	}
 
