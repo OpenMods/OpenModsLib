@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import openmods.calc.Frame;
 import openmods.calc.ICallable;
+import openmods.utils.OptionalInt;
 
 public class MetaObjectUtils {
 
@@ -59,7 +60,7 @@ public class MetaObjectUtils {
 	public static MetaObject.SlotCall callableAdapter(final ICallable<TypedValue> callable) {
 		return new MetaObject.SlotCall() {
 			@Override
-			public void call(TypedValue self, Optional<Integer> argCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+			public void call(TypedValue self, OptionalInt argCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 				callable.call(frame, argCount, returnsCount);
 			}
 		};
@@ -84,7 +85,7 @@ public class MetaObjectUtils {
 		return slotRepr != null? slotRepr.repr(value, frame) : value.toString();
 	}
 
-	public static void call(Frame<TypedValue> frame, TypedValue target, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+	public static void call(Frame<TypedValue> frame, TypedValue target, OptionalInt argumentsCount, OptionalInt returnsCount) {
 		final MetaObject.SlotCall slotCall = target.getMetaObject().slotCall;
 		Preconditions.checkState(slotCall != null, "Value %s is not callable", target);
 		slotCall.call(target, argumentsCount, returnsCount, frame);

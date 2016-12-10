@@ -66,6 +66,7 @@ import openmods.calc.types.multi.TypedFunction.RawDispatchArg;
 import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;
 import openmods.math.Complex;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -638,7 +639,7 @@ public class TypedValueCalculatorFactory {
 					MetaObject.builder()
 							.set(new MetaObject.SlotCall() {
 								@Override
-								public void call(TypedValue self, Optional<Integer> argCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+								public void call(TypedValue self, OptionalInt argCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 									final FunctionValue function = self.as(FunctionValue.class);
 									function.callable.call(frame, argCount, returnsCount);
 								}
@@ -1673,7 +1674,7 @@ public class TypedValueCalculatorFactory {
 
 		coreMap.put(TypedCalcConstants.SYMBOL_LIST, new SingleReturnCallable<TypedValue>() {
 			@Override
-			public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+			public TypedValue call(Frame<TypedValue> frame, OptionalInt argumentsCount) {
 				final Integer args = argumentsCount.or(0);
 				final Stack<TypedValue> stack = frame.stack();
 
@@ -1696,21 +1697,14 @@ public class TypedValueCalculatorFactory {
 
 		env.setGlobalSymbol("execute", new ICallable<TypedValue>() {
 			@Override
-			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-				if (argumentsCount.isPresent()) {
-					final int args = argumentsCount.get();
-					if (args != 1) throw new StackValidationException("Expected one argument but got %s", args);
-				}
+			public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+				TypedCalcUtils.expectExactArgCount(argumentsCount, 1);
 
 				final Frame<TypedValue> sandboxFrame = FrameFactory.newProtectionFrameWithSubstack(frame, 1);
 				final TypedValue top = sandboxFrame.stack().pop();
 				top.as(Code.class, "first argument").execute(sandboxFrame);
 
-				if (returnsCount.isPresent()) {
-					final int expectedReturns = returnsCount.get();
-					final int actualReturns = sandboxFrame.stack().size();
-					if (expectedReturns != actualReturns) throw new StackValidationException("Has %s result(s) but expected %s", actualReturns, expectedReturns);
-				}
+				TypedCalcUtils.expectExactReturnCount(returnsCount, sandboxFrame.stack().size());
 			}
 		});
 
@@ -1745,19 +1739,18 @@ public class TypedValueCalculatorFactory {
 
 		coreMap.put(TypedCalcConstants.SYMBOL_APPLY, new ICallable<TypedValue>() {
 			@Override
-			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 				Preconditions.checkArgument(argumentsCount.isPresent(), "'apply' cannot be called without argument count");
 				final int args = argumentsCount.get();
 
 				final TypedValue target = frame.stack().drop(args - 1);
-				MetaObjectUtils.call(frame, target, Optional.of(args - 1), returnsCount);
+				MetaObjectUtils.call(frame, target, OptionalInt.of(args - 1), returnsCount);
 			}
 		});
 
 		env.setGlobalSymbol("fail", new ICallable<TypedValue>() {
-
 			@Override
-			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 				if (argumentsCount.isPresent()) {
 					final Integer gotArgs = argumentsCount.get();
 					if (gotArgs == 1) {
@@ -1774,13 +1767,9 @@ public class TypedValueCalculatorFactory {
 		});
 
 		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_WITH, new ICallable<TypedValue>() {
-
 			@Override
-			public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-				if (argumentsCount.isPresent()) {
-					final int args = argumentsCount.get();
-					if (args != 2) throw new StackValidationException("Expected 2 arguments (scope and code) but got %s", args);
-				}
+			public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+				TypedCalcUtils.expectExactArgCount(argumentsCount, 2);
 
 				final TypedValue code = frame.stack().pop();
 				code.checkType(Code.class, "Second(code) 'with' parameter");
@@ -1792,11 +1781,7 @@ public class TypedValueCalculatorFactory {
 
 				code.as(Code.class).execute(newFrame);
 
-				if (returnsCount.isPresent()) {
-					final int expected = returnsCount.get();
-					final int actual = newFrame.stack().size();
-					if (expected != actual) throw new StackValidationException("Expected %s returns but got %s", expected, actual);
-				}
+				TypedCalcUtils.expectExactReturnCount(returnsCount, newFrame.stack().size());
 			}
 
 		});
@@ -1831,7 +1816,7 @@ public class TypedValueCalculatorFactory {
 
 		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_NON_NULL, new LogicFunction.Shorting(nullValue) {
 			@Override
-			public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+			public TypedValue call(Frame<TypedValue> frame, OptionalInt argumentsCount) {
 				final TypedValue result = super.call(frame, argumentsCount);
 				Preconditions.checkState(result != nullValue, "Returning null value from 'nonnull'");
 				return result;

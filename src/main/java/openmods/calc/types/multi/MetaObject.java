@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import java.util.List;
 import openmods.calc.Frame;
+import openmods.utils.OptionalInt;
 
 public class MetaObject {
 
@@ -45,7 +46,7 @@ public class MetaObject {
 	public final SlotEquals slotEquals;
 
 	public interface SlotCall {
-		public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame);
+		public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame);
 	}
 
 	public final SlotCall slotCall;

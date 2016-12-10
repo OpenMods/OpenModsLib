@@ -26,6 +26,7 @@ import openmods.calc.types.multi.TypedValueCalculatorFactory;
 import openmods.math.Complex;
 import openmods.reflection.MethodAccess;
 import openmods.reflection.TypeVariableHolderHandler;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 import org.junit.Assert;
 import org.junit.Test;
@@ -477,13 +478,13 @@ public class TypedValueCalculatorTest {
 	public void testCallableComposite() {
 		class CallableSlot implements MetaObject.SlotCall {
 			@Override
-			public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+			public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 				Assert.assertTrue(argumentsCount.isPresent());
 				for (int i = 0; i < argumentsCount.get(); i++)
 					frame.stack().pop();
 
 				Assert.assertTrue(returnsCount.isPresent());
-				Assert.assertEquals(1, returnsCount.get().intValue());
+				Assert.assertEquals(1, returnsCount.get());
 				frame.stack().push(s("call:" + argumentsCount.get()));
 			}
 		}
@@ -1970,7 +1971,7 @@ public class TypedValueCalculatorTest {
 			}
 
 			@Override
-			public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+			public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 				frame.stack().push(path);
 			}
 		}
@@ -2094,7 +2095,7 @@ public class TypedValueCalculatorTest {
 			}
 
 			@Override
-			public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+			public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 				frame.stack().push(cons(s(value), frame.stack().pop()));
 			}
 

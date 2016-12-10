@@ -14,7 +14,6 @@ import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
 import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
-import openmods.calc.StackValidationException;
 import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
 import openmods.calc.Value;
@@ -25,6 +24,7 @@ import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
 import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.SymbolGetNode;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class AltExpressionFactory {
@@ -231,13 +231,10 @@ public class AltExpressionFactory {
 				.set(new MetaObject.SlotCall() {
 
 					@Override
-					public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+					public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 						final AltTypeVariant variant = self.as(AltTypeVariant.class);
-						if (argumentsCount.isPresent()) {
-							final int args = argumentsCount.get();
-							if (args != variant.members.size()) throw new StackValidationException("Expected %s argument(s) but got %s", variant.members.size(), args);
-						}
 
+						TypedCalcUtils.expectExactArgCount(argumentsCount, variant.members.size());
 						TypedCalcUtils.expectSingleReturn(returnsCount);
 
 						final Stack<TypedValue> substack = frame.stack().substack(variant.members.size());
@@ -327,11 +324,8 @@ public class AltExpressionFactory {
 	private class AltSymbol implements ICallable<TypedValue> {
 
 		@Override
-		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-			if (argumentsCount.isPresent()) {
-				final int args = argumentsCount.get();
-				if (args != 2) throw new StackValidationException("Expected 2 arguments but got %s", args);
-			}
+		public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+			TypedCalcUtils.expectExactArgCount(argumentsCount, 2);
 
 			final Frame<TypedValue> subframe = FrameFactory.newLocalFrameWithSubstack(frame, 2);
 			final Stack<TypedValue> substack = subframe.stack();
@@ -344,14 +338,7 @@ public class AltExpressionFactory {
 				throw new IllegalArgumentException("Failed to extract alt types description from: " + vars, e);
 			}
 			code.execute(subframe);
-
-			if (returnsCount.isPresent())
-
-			{
-				final int expected = returnsCount.get();
-				final int actual = substack.size();
-				if (expected != actual) throw new StackValidationException("Has %s result(s) but expected %s", actual, expected);
-			}
+			TypedCalcUtils.expectExactReturnCount(returnsCount, substack.size());
 		}
 
 		private void prepareFrame(final SymbolMap<TypedValue> symbols, Cons vars) {

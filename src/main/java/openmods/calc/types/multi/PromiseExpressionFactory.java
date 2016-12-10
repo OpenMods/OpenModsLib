@@ -15,6 +15,7 @@ import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
 import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.ValueNode;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class PromiseExpressionFactory {
@@ -90,10 +91,6 @@ public class PromiseExpressionFactory {
 	}
 
 	private static class ForceSymbol extends FixedCallable<TypedValue> {
-
-		private static final Optional<Integer> ONE_RETURN = Optional.of(1);
-		private static final Optional<Integer> ZERO_ARGS = Optional.of(0);
-
 		public ForceSymbol() {
 			super(1, 1);
 		}
@@ -103,7 +100,7 @@ public class PromiseExpressionFactory {
 			final Stack<TypedValue> stack = frame.stack();
 			final TypedValue arg = stack.pop();
 
-			MetaObjectUtils.call(frame, arg, ZERO_ARGS, ONE_RETURN);
+			MetaObjectUtils.call(frame, arg, OptionalInt.ZERO, OptionalInt.ONE);
 		}
 
 	}

@@ -1,6 +1,5 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -8,12 +7,12 @@ import java.util.List;
 import openmods.calc.Environment;
 import openmods.calc.Frame;
 import openmods.calc.ICallable;
-import openmods.calc.StackValidationException;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
 import openmods.calc.parsing.SymbolCallNode;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class DoExpressionFactory {
@@ -48,7 +47,7 @@ public class DoExpressionFactory {
 
 	private class DoSymbol implements ICallable<TypedValue> {
 		@Override
-		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+		public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 			Preconditions.checkState(argumentsCount.isPresent(), "'do' symbol requires arguments count");
 			final Integer argCount = argumentsCount.get();
 			Preconditions.checkState(argCount > 1, "'do' expects at least one argument");
@@ -60,11 +59,7 @@ public class DoExpressionFactory {
 				exprCode.execute(frame);
 			}
 
-			if (returnsCount.isPresent()) {
-				final int expected = returnsCount.get();
-				final int actual = stack.size();
-				if (expected != actual) throw new StackValidationException("Has %s result(s) but expected %s", actual, expected);
-			}
+			TypedCalcUtils.expectExactReturnCount(returnsCount, stack.size());
 		}
 	}
 

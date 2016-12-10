@@ -1,7 +1,6 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import java.util.Locale;
 import openmods.calc.Compilers;
 import openmods.calc.ExprType;
@@ -9,7 +8,7 @@ import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
 import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
-import openmods.calc.StackValidationException;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class EvalSymbol implements ICallable<TypedValue> {
@@ -21,11 +20,8 @@ public class EvalSymbol implements ICallable<TypedValue> {
 	}
 
 	@Override
-	public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-		if (argumentsCount.isPresent()) {
-			final int args = argumentsCount.get();
-			if (args != 2) throw new StackValidationException("Expected 2 arguments but got %s", args);
-		}
+	public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+		TypedCalcUtils.expectExactArgCount(argumentsCount, 2);
 
 		final Stack<TypedValue> stack = frame.stack();
 		final String code = stack.pop().as(String.class, "second 'eval' argument");
@@ -43,11 +39,7 @@ public class EvalSymbol implements ICallable<TypedValue> {
 		final Frame<TypedValue> executionFrame = FrameFactory.newLocalFrameWithSubstack(frame, 0);
 		compiled.execute(executionFrame);
 
-		if (returnsCount.isPresent()) {
-			final int expected = returnsCount.get();
-			final int actual = executionFrame.stack().size();
-			if (expected != actual) throw new StackValidationException("Has %s result(s) but expected %s", actual, expected);
-		}
+		TypedCalcUtils.expectExactReturnCount(returnsCount, executionFrame.stack().size());
 	}
 
 }

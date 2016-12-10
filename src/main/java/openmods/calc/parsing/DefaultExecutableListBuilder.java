@@ -1,6 +1,5 @@
 package openmods.calc.parsing;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.ExecutableList;
@@ -11,6 +10,7 @@ import openmods.calc.OperatorDictionary;
 import openmods.calc.SymbolCall;
 import openmods.calc.SymbolGet;
 import openmods.calc.Value;
+import openmods.utils.OptionalInt;
 
 public class DefaultExecutableListBuilder<E> implements IExecutableListBuilder<E> {
 
@@ -62,7 +62,7 @@ public class DefaultExecutableListBuilder<E> implements IExecutableListBuilder<E
 	}
 
 	@Override
-	public void appendSymbolCall(String id, Optional<Integer> argCount, Optional<Integer> returnCount) {
+	public void appendSymbolCall(String id, OptionalInt argCount, OptionalInt returnCount) {
 		addToBuffer(new SymbolCall<E>(id, argCount, returnCount));
 	}
 

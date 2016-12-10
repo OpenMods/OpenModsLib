@@ -1,19 +1,19 @@
 package openmods.calc;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import openmods.utils.OptionalInt;
 
 public class SymbolCall<E> implements IExecutable<E> {
-	public static final Optional<Integer> DEFAULT_ARG_COUNT = Optional.absent();
+	public static final OptionalInt DEFAULT_ARG_COUNT = OptionalInt.absent();
 
-	public static final Optional<Integer> DEFAULT_RET_COUNT = Optional.absent();
+	public static final OptionalInt DEFAULT_RET_COUNT = OptionalInt.absent();
 
 	private final String id;
 
-	private final Optional<Integer> argCount;
+	private final OptionalInt argCount;
 
-	private final Optional<Integer> returnCount;
+	private final OptionalInt returnCount;
 
 	public SymbolCall(String id) {
 		this(id, DEFAULT_ARG_COUNT, DEFAULT_RET_COUNT);
@@ -21,11 +21,11 @@ public class SymbolCall<E> implements IExecutable<E> {
 
 	public SymbolCall(String id, int argumentCount, int returnCount) {
 		this.id = id;
-		this.argCount = Optional.of(argumentCount);
-		this.returnCount = Optional.of(returnCount);
+		this.argCount = OptionalInt.of(argumentCount);
+		this.returnCount = OptionalInt.of(returnCount);
 	}
 
-	public SymbolCall(String id, Optional<Integer> argumentCount, Optional<Integer> returnCount) {
+	public SymbolCall(String id, OptionalInt argumentCount, OptionalInt returnCount) {
 		this.id = id;
 		this.argCount = argumentCount;
 		this.returnCount = returnCount;
@@ -61,7 +61,7 @@ public class SymbolCall<E> implements IExecutable<E> {
 		return false;
 	}
 
-	private static <T> String printOptional(Optional<T> value) {
+	private static String printOptional(OptionalInt value) {
 		return value.isPresent()? String.valueOf(value.get()) : "?";
 	}
 

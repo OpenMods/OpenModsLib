@@ -18,7 +18,6 @@ import openmods.calc.ISymbol;
 import openmods.calc.LocalSymbolMap;
 import openmods.calc.NestedSymbolMap;
 import openmods.calc.SingleReturnCallable;
-import openmods.calc.StackValidationException;
 import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
 import openmods.calc.Value;
@@ -28,6 +27,7 @@ import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class MatchExpressionFactory {
@@ -527,7 +527,7 @@ public class MatchExpressionFactory {
 			})
 			.set(new MetaObject.SlotCall() {
 				@Override
-				public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+				public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 					Preconditions.checkArgument(argumentsCount.isPresent(), "Type constructor must be always called with arg count");
 					TypedCalcUtils.expectSingleReturn(returnsCount);
 
@@ -541,7 +541,7 @@ public class MatchExpressionFactory {
 			})
 			.build();
 
-	private TypedValue createCtorPlaceholder(String name, Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+	private TypedValue createCtorPlaceholder(String name, Frame<TypedValue> frame, OptionalInt argumentsCount) {
 		final Stack<TypedValue> args = frame.stack().substack(argumentsCount.get());
 		final CtorPlaceholder placeholder = new CtorPlaceholder(name, args);
 		args.clear();
@@ -562,7 +562,7 @@ public class MatchExpressionFactory {
 			.set(new MetaObject.SlotCall() {
 
 				@Override
-				public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+				public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 					final VarPlaceholder placeholder = (VarPlaceholder)self.as(IPatternPlaceholder.class);
 
 					TypedCalcUtils.expectSingleReturn(returnsCount);
@@ -602,7 +602,7 @@ public class MatchExpressionFactory {
 		}
 
 		@Override
-		public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+		public TypedValue call(Frame<TypedValue> frame, OptionalInt argumentsCount) {
 			Preconditions.checkArgument(argumentsCount.isPresent(), "Type constructor must be always called with arg count");
 			return createCtorPlaceholder(var, frame, argumentsCount);
 		}
@@ -799,7 +799,7 @@ public class MatchExpressionFactory {
 		}
 
 		@Override
-		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+		public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 			final Stack<TypedValue> stack = frame.stack();
 
 			final Frame<TypedValue> env = FrameFactory.createProtectionFrame(defineScope);
@@ -819,11 +819,7 @@ public class MatchExpressionFactory {
 					valuesToMatchStack.clear();
 					final Frame<TypedValue> matchedFrame = FrameFactory.newClosureFrame(matchedSymbols, frame, 0);
 					match.get().execute(matchedFrame);
-					if (returnsCount.isPresent()) {
-						final int expected = returnsCount.get();
-						final int actual = matchedFrame.stack().size();
-						if (expected != actual) throw new StackValidationException("Has %s result(s) but expected %s", actual, expected);
-					}
+					TypedCalcUtils.expectExactReturnCount(returnsCount, matchedFrame.stack().size());
 					return;
 				}
 			}
@@ -836,7 +832,7 @@ public class MatchExpressionFactory {
 	private class MatchSymbol extends SingleReturnCallable<TypedValue> {
 
 		@Override
-		public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+		public TypedValue call(Frame<TypedValue> frame, OptionalInt argumentsCount) {
 			Preconditions.checkArgument(argumentsCount.isPresent(), "'match' must be called with argument count");
 
 			final Stack<TypedValue> stack = frame.stack();

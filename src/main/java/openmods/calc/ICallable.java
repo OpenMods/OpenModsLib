@@ -1,7 +1,7 @@
 package openmods.calc;
 
-import com.google.common.base.Optional;
+import openmods.utils.OptionalInt;
 
 public interface ICallable<E> {
-	public void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount);
+	public void call(Frame<E> frame, OptionalInt argumentsCount, OptionalInt returnsCount);
 }

@@ -14,6 +14,7 @@ import openmods.calc.FrameFactory;
 import openmods.calc.ICallable;
 import openmods.calc.NullaryFunction;
 import openmods.calc.UnaryFunction;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class OptionalTypeFactory {
@@ -143,7 +144,7 @@ public class OptionalTypeFactory {
 
 			stack.push(Present.this.value);
 
-			MetaObjectUtils.call(executionFrame, arg, Optional.of(1), Optional.of(1));
+			MetaObjectUtils.call(executionFrame, arg, OptionalInt.ONE, OptionalInt.ONE);
 
 			final TypedValue result = stack.pop();
 
@@ -209,7 +210,7 @@ public class OptionalTypeFactory {
 
 		@Override
 		public void orCall(Frame<TypedValue> frame, TypedValue arg) {
-			MetaObjectUtils.call(frame, arg, Optional.of(0), Optional.of(1));
+			MetaObjectUtils.call(frame, arg, OptionalInt.ZERO, OptionalInt.ONE);
 
 		}
 

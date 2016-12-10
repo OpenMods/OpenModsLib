@@ -1,6 +1,6 @@
 package openmods.calc;
 
-import com.google.common.base.Optional;
+import openmods.utils.OptionalInt;
 
 public abstract class FixedCallable<E> implements ICallable<E> {
 
@@ -14,16 +14,9 @@ public abstract class FixedCallable<E> implements ICallable<E> {
 	}
 
 	@Override
-	public final void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-		if (argumentsCount.isPresent()) {
-			final int args = argumentsCount.get();
-			if (args != argCount) throw new StackValidationException("Expected %s argument(s) but got %s", this.argCount, args);
-		}
-
-		if (returnsCount.isPresent()) {
-			final int returns = returnsCount.get();
-			if (returns != resultCount) throw new StackValidationException("Has %s result(s) but expected %s", this.resultCount, returns);
-		}
+	public final void call(Frame<E> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+		if (!argumentsCount.compareIfPresent(argCount)) throw new StackValidationException("Expected %s argument(s) but got %s", this.argCount, argumentsCount.get());
+		if (!returnsCount.compareIfPresent(resultCount)) throw new StackValidationException("Has %s result(s) but expected %s", this.resultCount, returnsCount.get());
 
 		call(frame);
 	}

@@ -1,7 +1,7 @@
 package openmods.calc.parsing;
 
-import com.google.common.base.Optional;
 import openmods.calc.IExecutable;
+import openmods.utils.OptionalInt;
 
 public interface IExecutableListBuilder<E> {
 
@@ -13,7 +13,7 @@ public interface IExecutableListBuilder<E> {
 
 	public void appendSymbolGet(String id);
 
-	public void appendSymbolCall(String id, Optional<Integer> argCount, Optional<Integer> returnCount);
+	public void appendSymbolCall(String id, OptionalInt argCount, OptionalInt returnCount);
 
 	public void appendExecutable(IExecutable<E> executable);
 

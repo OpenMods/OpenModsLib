@@ -1,8 +1,8 @@
 package openmods.calc;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import java.util.Map;
+import openmods.utils.OptionalInt;
 
 public class TopSymbolMap<E> extends SymbolMap<E> {
 
@@ -14,7 +14,7 @@ public class TopSymbolMap<E> extends SymbolMap<E> {
 		}
 
 		@Override
-		public void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+		public void call(Frame<E> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 			callable.call(frame, argumentsCount, returnsCount);
 		}
 
@@ -27,11 +27,8 @@ public class TopSymbolMap<E> extends SymbolMap<E> {
 
 	private abstract static class ValueSymbol<E> extends SingleReturnCallable<E> implements ISymbol<E> {
 		@Override
-		public E call(Frame<E> frame, Optional<Integer> argumentsCount) {
-			if (argumentsCount.isPresent()) {
-				final int args = argumentsCount.get();
-				if (args != 0) throw new StackValidationException("Expected no arguments but got %s", args);
-			}
+		public E call(Frame<E> frame, OptionalInt argumentsCount) {
+			if (!argumentsCount.compareIfPresent(0)) throw new StackValidationException("Expected no arguments but got %s", argumentsCount.get());
 
 			return get();
 		}

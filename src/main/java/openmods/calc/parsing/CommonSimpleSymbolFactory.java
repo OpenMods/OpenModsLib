@@ -1,6 +1,5 @@
 package openmods.calc.parsing;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -18,6 +17,7 @@ import openmods.calc.IExecutable;
 import openmods.calc.IGettable;
 import openmods.calc.StackValidationException;
 import openmods.calc.SymbolMap;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class CommonSimpleSymbolFactory<E> {
@@ -140,13 +140,9 @@ public class CommonSimpleSymbolFactory<E> {
 				class LetFunction implements ICallable<E> {
 
 					@Override
-					public void call(Frame<E> callSiteFrame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+					public void call(Frame<E> callSiteFrame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 						final int expectedArgCount = reversedArgs.size();
-
-						if (argumentsCount.isPresent()) {
-							final int givenArgCount = argumentsCount.get();
-							if (givenArgCount != expectedArgCount) throw new StackValidationException("Expected %s argument(s) but got %s", expectedArgCount, givenArgCount);
-						}
+						if (!argumentsCount.compareIfPresent(expectedArgCount)) throw new StackValidationException("Expected %s argument(s) but got %s", expectedArgCount, argumentsCount.get());
 
 						final Frame<E> executionFrame = FrameFactory.newLocalFrameWithSubstack(enclosingFrame, expectedArgCount);
 						final Stack<E> argStack = executionFrame.stack();
@@ -155,11 +151,8 @@ public class CommonSimpleSymbolFactory<E> {
 
 						exprExecutable.execute(executionFrame);
 
-						if (returnsCount.isPresent()) {
-							final int expectedReturns = returnsCount.get();
-							final int actualReturns = argStack.size();
-							if (expectedReturns != actualReturns) throw new StackValidationException("Has %s result(s) but expected %s", actualReturns, expectedReturns);
-						}
+						final int actualReturns = argStack.size();
+						if (!returnsCount.compareIfPresent(actualReturns)) throw new StackValidationException("Has %s result(s) but expected %s", actualReturns, returnsCount.get());
 					}
 
 				}

@@ -1,6 +1,5 @@
 package openmods.calc;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;
@@ -8,11 +7,10 @@ import openmods.calc.parsing.DefaultPostfixCompiler;
 import openmods.calc.parsing.IPostfixCompilerState;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
+import openmods.utils.OptionalInt;
 import org.junit.Test;
 
 public class PostfixCompilerTest extends CalcTestUtils {
-
-	private static final Optional<Integer> ABSENT = Optional.<Integer> absent();
 	public final OperatorDictionary<String> operators = new OperatorDictionary<String>();
 	{
 		operators.registerBinaryOperator(PLUS);
@@ -153,12 +151,12 @@ public class PostfixCompilerTest extends CalcTestUtils {
 
 	@Test
 	public void testSymbolWithArgs() {
-		given(symbol_args("a$2")).expect(call("a", Optional.of(2), ABSENT));
-		given(symbol_args("a$2,")).expect(call("a", Optional.of(2), ABSENT));
-		given(symbol_args("a$,3")).expect(call("a", ABSENT, Optional.of(3)));
-		given(symbol_args("a$,")).expect(call("a", ABSENT, ABSENT));
-		given(symbol_args("b$3,4")).expect(call("b", Optional.of(3), Optional.of(4)));
-		given(symbol_args("b$35,45")).expect(call("b", Optional.of(35), Optional.of(45)));
+		given(symbol_args("a$2")).expect(call("a", OptionalInt.of(2), OptionalInt.absent()));
+		given(symbol_args("a$2,")).expect(call("a", OptionalInt.of(2), OptionalInt.absent()));
+		given(symbol_args("a$,3")).expect(call("a", OptionalInt.absent(), OptionalInt.of(3)));
+		given(symbol_args("a$,")).expect(call("a", OptionalInt.absent(), OptionalInt.absent()));
+		given(symbol_args("b$3,4")).expect(call("b", OptionalInt.of(3), OptionalInt.of(4)));
+		given(symbol_args("b$35,45")).expect(call("b", OptionalInt.of(35), OptionalInt.of(45)));
 	}
 
 }

@@ -24,6 +24,7 @@ import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;
 import openmods.calc.types.multi.TypedValue;
 import openmods.reflection.TypeVariableHolderHandler;
+import openmods.utils.OptionalInt;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -35,8 +36,6 @@ public class TypedFunctionTest {
 		TypeVariableHolderHandler.initializeClass(TypeDomain.TypeVariableHolders.class);
 		TypeVariableHolderHandler.initializeClass(TypedFunction.class);
 	}
-
-	private static final Optional<Integer> SKIP = Optional.<Integer> absent();
 
 	private static final TypeDomain domain = new TypeDomain();
 	static {
@@ -76,24 +75,24 @@ public class TypedFunctionTest {
 	}
 
 	private static TypedValue execute(ICallable<TypedValue> f, TypedValue... values) {
-		return execute(f, Optional.of(values.length), values);
+		return execute(f, OptionalInt.of(values.length), values);
 	}
 
-	private static TypedValue execute(ICallable<TypedValue> f, Optional<Integer> argCount, TypedValue... values) {
+	private static TypedValue execute(ICallable<TypedValue> f, OptionalInt argCount, TypedValue... values) {
 		final Frame<TypedValue> frame = FrameFactory.createTopFrame();
 		for (TypedValue v : values)
 			frame.stack().push(v);
-		f.call(frame, argCount, SKIP);
+		f.call(frame, argCount, OptionalInt.absent());
 		final TypedValue result = frame.stack().pop();
 		Assert.assertTrue(frame.stack().isEmpty());
 		return result;
 	}
 
-	private static List<TypedValue> execute(ICallable<TypedValue> f, Optional<Integer> argCount, int rets, TypedValue... values) {
+	private static List<TypedValue> execute(ICallable<TypedValue> f, OptionalInt argCount, int rets, TypedValue... values) {
 		final Frame<TypedValue> frame = FrameFactory.createTopFrame();
 		for (TypedValue v : values)
 			frame.stack().push(v);
-		f.call(frame, argCount, Optional.of(rets));
+		f.call(frame, argCount, OptionalInt.of(rets));
 		List<TypedValue> results = Lists.newArrayList();
 		for (int i = 0; i < rets; i++)
 			results.add(frame.stack().pop());
@@ -342,7 +341,7 @@ public class TypedFunctionTest {
 
 		final TypedValue ret = wrap("Hello world");
 		Mockito.when(mock.test()).thenReturn(ret);
-		assertValueEquals(execute(target, SKIP), ret);
+		assertValueEquals(execute(target, OptionalInt.absent()), ret);
 		Mockito.verify(mock).test();
 
 		Mockito.verifyNoMoreInteractions(mock);
@@ -361,7 +360,7 @@ public class TypedFunctionTest {
 		final TypedValue ret1 = wrap("Hello world");
 		final TypedValue ret2 = wrap(7);
 		Mockito.when(mock.test()).thenReturn(MultipleReturn.wrap(ret1, ret2));
-		Assert.assertEquals(execute(target, SKIP, 2), Arrays.asList(ret1, ret2));
+		Assert.assertEquals(execute(target, OptionalInt.absent(), 2), Arrays.asList(ret1, ret2));
 		Mockito.verify(mock).test();
 
 		Mockito.verifyNoMoreInteractions(mock);
@@ -379,7 +378,7 @@ public class TypedFunctionTest {
 		TypedFunction target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test()).thenReturn(new Integer[] { 3, 1, 5 });
-		Assert.assertEquals(execute(target, SKIP, 3), Arrays.asList(wrap(3), wrap(1), wrap(5)));
+		Assert.assertEquals(execute(target, OptionalInt.absent(), 3), Arrays.asList(wrap(3), wrap(1), wrap(5)));
 		Mockito.verify(mock).test();
 
 		Mockito.verifyNoMoreInteractions(mock);
@@ -397,7 +396,7 @@ public class TypedFunctionTest {
 		TypedFunction target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test()).thenReturn(Lists.newArrayList("b", "c", "a", "d"));
-		Assert.assertEquals(execute(target, SKIP, 4), Arrays.asList(wrap("b"), wrap("c"), wrap("a"), wrap("d")));
+		Assert.assertEquals(execute(target, OptionalInt.absent(), 4), Arrays.asList(wrap("b"), wrap("c"), wrap("a"), wrap("d")));
 		Mockito.verify(mock).test();
 
 		Mockito.verifyNoMoreInteractions(mock);

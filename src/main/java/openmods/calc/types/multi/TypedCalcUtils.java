@@ -1,11 +1,11 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Optional;
 import openmods.calc.Frame;
 import openmods.calc.StackValidationException;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.ValueNode;
+import openmods.utils.OptionalInt;
 
 public class TypedCalcUtils {
 
@@ -24,11 +24,16 @@ public class TypedCalcUtils {
 		throw new IllegalArgumentException("Failed to extract identifier from " + arg);
 	}
 
-	public static void expectSingleReturn(Optional<Integer> returnsCount) {
-		if (returnsCount.isPresent()) {
-			final int returns = returnsCount.get();
-			if (returns != 1) throw new StackValidationException("Has single result but expected %s", returns);
-		}
+	public static void expectExactArgCount(OptionalInt actual, int expected) {
+		if (!actual.compareIfPresent(expected)) throw new StackValidationException("Expected %s argument(s) but got %s", expected, actual.get());
+	}
+
+	public static void expectSingleReturn(OptionalInt returnsCount) {
+		if (!returnsCount.compareIfPresent(1)) throw new StackValidationException("Has single result but expected %s", returnsCount.get());
+	}
+
+	public static void expectExactReturnCount(OptionalInt expected, int actual) {
+		if (!expected.compareIfPresent(actual)) throw new StackValidationException("Has %s result(s) but expected %s", actual, expected.get());
 	}
 
 	public static boolean isEqual(Frame<TypedValue> frame, TypedValue left, TypedValue right) {

@@ -1,6 +1,5 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;
@@ -12,7 +11,6 @@ import openmods.calc.FrameFactory;
 import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
 import openmods.calc.ISymbol;
-import openmods.calc.StackValidationException;
 import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
 import openmods.calc.Value;
@@ -21,6 +19,7 @@ import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
 import openmods.calc.parsing.SymbolCallNode;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class LetExpressionFactory {
@@ -112,7 +111,7 @@ public class LetExpressionFactory {
 
 	private static class PlaceholderSymbol implements ISymbol<TypedValue> {
 		@Override
-		public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+		public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 			throw new ExecutionErrorException("Cannot call symbol during definition");
 		}
 
@@ -128,11 +127,8 @@ public class LetExpressionFactory {
 	private static abstract class LetSymbolBase implements ICallable<TypedValue> {
 
 		@Override
-		public void call(Frame<TypedValue> currentFrame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-			if (argumentsCount.isPresent()) {
-				final int args = argumentsCount.get();
-				if (args != 2) throw new StackValidationException("Expected 2 arguments but got %s", args);
-			}
+		public void call(Frame<TypedValue> currentFrame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+			TypedCalcUtils.expectExactArgCount(argumentsCount, 2);
 
 			final Frame<TypedValue> letFrame = FrameFactory.newLocalFrameWithSubstack(currentFrame, 2);
 			final Stack<TypedValue> letStack = letFrame.stack();
@@ -147,11 +143,7 @@ public class LetExpressionFactory {
 
 			code.execute(letFrame);
 
-			if (returnsCount.isPresent()) {
-				final int expected = returnsCount.get();
-				final int actual = letStack.size();
-				if (expected != actual) throw new StackValidationException("Has %s result(s) but expected %s", actual, expected);
-			}
+			TypedCalcUtils.expectExactReturnCount(returnsCount, letStack.size());
 		}
 
 		protected abstract void prepareFrame(SymbolMap<TypedValue> outputFrame, SymbolMap<TypedValue> callSymbols, Cons vars);

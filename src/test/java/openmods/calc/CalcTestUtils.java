@@ -1,6 +1,5 @@
 package openmods.calc;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -24,6 +23,7 @@ import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 import openmods.calc.types.multi.TypedCalcConstants;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 import org.junit.Assert;
 
@@ -216,7 +216,7 @@ public class CalcTestUtils {
 		return new SymbolCall<String>(value, args, rets);
 	}
 
-	public static SymbolCall<String> call(String value, Optional<Integer> args, Optional<Integer> rets) {
+	public static SymbolCall<String> call(String value, OptionalInt args, OptionalInt rets) {
 		return new SymbolCall<String>(value, args, rets);
 	}
 
@@ -624,10 +624,10 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		public void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+		public void call(Frame<E> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 			Assert.assertTrue(allowCalls);
-			if (exactArgCount) Assert.assertEquals(Optional.of(expectedArgs.size()), argumentsCount);
-			if (exactReturnCount) Assert.assertEquals(Optional.of(returns.size()), returnsCount);
+			if (exactArgCount) Assert.assertEquals(OptionalInt.of(expectedArgs.size()), argumentsCount);
+			if (exactReturnCount) Assert.assertEquals(OptionalInt.of(returns.size()), returnsCount);
 
 			for (E expectedArg : expectedArgs)
 				Assert.assertEquals(frame.stack().pop(), expectedArg);
@@ -705,9 +705,9 @@ public class CalcTestUtils {
 		}
 
 		@Override
-		public void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-			if (exactArgCount) Assert.assertEquals(Optional.of(expectedArgs.size()), argumentsCount);
-			if (exactReturnCount) Assert.assertEquals(Optional.of(returns.size()), returnsCount);
+		public void call(Frame<E> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+			if (exactArgCount) Assert.assertEquals(OptionalInt.of(expectedArgs.size()), argumentsCount);
+			if (exactReturnCount) Assert.assertEquals(OptionalInt.of(returns.size()), returnsCount);
 
 			for (E expectedArg : expectedArgs)
 				Assert.assertEquals(frame.stack().pop(), expectedArg);

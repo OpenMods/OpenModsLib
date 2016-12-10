@@ -1,9 +1,9 @@
 package openmods.calc.parsing;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import openmods.calc.IExecutable;
 import openmods.calc.SymbolCall;
+import openmods.utils.OptionalInt;
 
 public class SimplePostfixCompilerState<E> implements IPostfixCompilerState<E> {
 
@@ -28,8 +28,8 @@ public class SimplePostfixCompilerState<E> implements IPostfixCompilerState<E> {
 		final int argsStart = value.lastIndexOf('$');
 		Preconditions.checkArgument(argsStart >= 0, "No args in token '%s'", value);
 		final String id = value.substring(0, argsStart);
-		Optional<Integer> argCount = Optional.absent();
-		Optional<Integer> retCount = Optional.absent();
+		OptionalInt argCount = OptionalInt.absent();
+		OptionalInt retCount = OptionalInt.absent();
 
 		try {
 			final String args = value.substring(argsStart + 1, value.length());
@@ -39,16 +39,16 @@ public class SimplePostfixCompilerState<E> implements IPostfixCompilerState<E> {
 				{
 					final String argCountStr = args.substring(0, argsSeparator);
 					if (!argCountStr.isEmpty())
-						argCount = Optional.of(Integer.parseInt(argCountStr));
+						argCount = OptionalInt.of(Integer.parseInt(argCountStr));
 				}
 
 				{
 					final String retCountStr = args.substring(argsSeparator + 1, args.length());
 					if (!retCountStr.isEmpty())
-						retCount = Optional.of(Integer.parseInt(retCountStr));
+						retCount = OptionalInt.of(Integer.parseInt(retCountStr));
 				}
 			} else {
-				argCount = Optional.of(Integer.parseInt(args));
+				argCount = OptionalInt.of(Integer.parseInt(args));
 
 			}
 		} catch (Exception e) {

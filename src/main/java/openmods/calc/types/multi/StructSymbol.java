@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import openmods.calc.Frame;
 import openmods.calc.SingleReturnCallable;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class StructSymbol extends SingleReturnCallable<TypedValue> {
@@ -113,7 +114,7 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 				})
 				.set(new MetaObject.SlotCall() {
 					@Override
-					public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+					public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 						final StructValue value = self.as(StructValue.class);
 						TypedCalcUtils.expectSingleReturn(returnsCount);
 
@@ -162,8 +163,7 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 				.set(new MetaObject.SlotCall() {
 
 					@Override
-					public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
-
+					public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 						TypedCalcUtils.expectSingleReturn(returnsCount);
 						final StructType type = self.as(StructType.class);
 						final int argCount = argumentsCount.or(type.fieldNames.size());
@@ -186,7 +186,7 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 	}
 
 	@Override
-	public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+	public TypedValue call(Frame<TypedValue> frame, OptionalInt argumentsCount) {
 		Preconditions.checkState(argumentsCount.isPresent(), "'struct' symbol requires arguments count");
 		final Stack<TypedValue> args = frame.stack().substack(argumentsCount.get());
 

@@ -15,6 +15,7 @@ import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.SingleReturnCallable;
 import openmods.calc.UnaryFunction;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class DictSymbol {
@@ -39,8 +40,9 @@ public class DictSymbol {
 		return MetaObject.builder()
 				.set(new MetaObject.SlotCall() {
 					@Override
-					public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+					public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 						Preconditions.checkState(argumentsCount.isPresent(), "'dict' symbol requires arguments count");
+						TypedCalcUtils.expectSingleReturn(returnsCount);
 						final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.get());
 
 						final Map<TypedValue, TypedValue> values = Maps.newHashMap();
@@ -82,7 +84,7 @@ public class DictSymbol {
 
 		private class UpdateMethod extends SingleReturnCallable<TypedValue> {
 			@Override
-			public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+			public TypedValue call(Frame<TypedValue> frame, OptionalInt argumentsCount) {
 				Preconditions.checkState(argumentsCount.isPresent(), "This method requires arguments count");
 				final Stack<TypedValue> args = frame.stack().substack(argumentsCount.get());
 
@@ -96,7 +98,7 @@ public class DictSymbol {
 
 		private class RemoveMethod extends SingleReturnCallable<TypedValue> {
 			@Override
-			public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+			public TypedValue call(Frame<TypedValue> frame, OptionalInt argumentsCount) {
 				Preconditions.checkState(argumentsCount.isPresent(), "This method requires arguments count");
 				final Stack<TypedValue> args = frame.stack().substack(argumentsCount.get());
 
@@ -161,7 +163,7 @@ public class DictSymbol {
 					if (result != null) {
 						stack.push(result);
 					} else {
-						MetaObjectUtils.call(frame, defaultFunction, Optional.of(0), Optional.of(1));
+						MetaObjectUtils.call(frame, defaultFunction, OptionalInt.ZERO, OptionalInt.ONE);
 					}
 
 				}
@@ -231,14 +233,13 @@ public class DictSymbol {
 		return MetaObject.builder()
 				.set(new MetaObject.SlotCall() {
 					@Override
-					public void call(TypedValue self, Optional<Integer> argumentsCount, Optional<Integer> returnsCount, Frame<TypedValue> frame) {
+					public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 						TypedCalcUtils.expectSingleReturn(returnsCount);
-
-						final Dict dict = self.as(Dict.class);
-
 						Preconditions.checkState(argumentsCount.isPresent(), "This method requires arguments count");
+
 						final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.get());
 
+						final Dict dict = self.as(Dict.class);
 						final Map<TypedValue, TypedValue> newValues = Maps.newHashMap(dict.values);
 						extractKeyValuesPairs(stack, newValues);
 						stack.clear();

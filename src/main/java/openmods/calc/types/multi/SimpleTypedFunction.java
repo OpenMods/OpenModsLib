@@ -1,8 +1,8 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Optional;
 import openmods.calc.Frame;
 import openmods.calc.ICallable;
+import openmods.utils.OptionalInt;
 
 public abstract class SimpleTypedFunction implements ICallable<TypedValue> {
 
@@ -13,7 +13,7 @@ public abstract class SimpleTypedFunction implements ICallable<TypedValue> {
 	}
 
 	@Override
-	public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+	public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 		handler.call(frame, argumentsCount, returnsCount);
 	}
 

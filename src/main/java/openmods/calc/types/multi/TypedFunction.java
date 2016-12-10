@@ -30,6 +30,7 @@ import openmods.calc.Frame;
 import openmods.calc.ICallable;
 import openmods.reflection.TypeVariableHolder;
 import openmods.utils.AnnotationMap;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -156,13 +157,13 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			} else {
 				verifyVariants(variants);
 				Collections.sort(variants, VARIANT_ORDERING);
-				final Optional<Integer> mandatoryArgNum = calculateMandatoryArgNum(variants);
+				final OptionalInt mandatoryArgNum = calculateMandatoryArgNum(variants);
 				return createMultiFunction(variants, mandatoryArgNum);
 			}
 		}
 
 		private static TypedFunction createSingleFunction(final TypeVariant variant) {
-			return new TypedFunction(Optional.of(variant.mandatoryArgNum)) {
+			return new TypedFunction(OptionalInt.of(variant.mandatoryArgNum)) {
 				@Override
 				protected List<TypedValue> execute(List<TypedValue> args) {
 					if (!variant.matchDispatchArgs(args)) throw new DispatchException(args);
@@ -171,7 +172,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			};
 		}
 
-		private static TypedFunction createMultiFunction(final List<TypeVariant> variants, final Optional<Integer> mandatoryArgNum) {
+		private static TypedFunction createMultiFunction(final List<TypeVariant> variants, final OptionalInt mandatoryArgNum) {
 			return new TypedFunction(mandatoryArgNum) {
 				@Override
 				protected List<TypedValue> execute(List<TypedValue> args) {
@@ -201,13 +202,13 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			if (!ambiguousMethods.isEmpty()) throw new AmbiguousDispatchException(ambiguousMethods);
 		}
 
-		private static Optional<Integer> calculateMandatoryArgNum(List<TypeVariant> variants) {
-			Optional<Integer> result = Optional.absent();
+		private static OptionalInt calculateMandatoryArgNum(List<TypeVariant> variants) {
+			OptionalInt result = OptionalInt.absent();
 			for (TypeVariant v : variants) {
 				if (result.isPresent()) {
-					if (result.get() != v.mandatoryArgNum) return Optional.absent();
+					if (result.get() != v.mandatoryArgNum) return OptionalInt.absent();
 				} else {
-					result = Optional.of(v.mandatoryArgNum);
+					result = OptionalInt.of(v.mandatoryArgNum);
 				}
 			}
 
@@ -624,14 +625,14 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 		}
 	}
 
-	private final Optional<Integer> mandatoryArgNum;
+	private final OptionalInt mandatoryArgNum;
 
-	public TypedFunction(Optional<Integer> mandatoryArgNum) {
+	public TypedFunction(OptionalInt mandatoryArgNum) {
 		this.mandatoryArgNum = mandatoryArgNum;
 	}
 
 	@Override
-	public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+	public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 		final int argCount;
 
 		if (argumentsCount.isPresent()) {

@@ -1,7 +1,6 @@
 package openmods.calc.command;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -22,6 +21,7 @@ import openmods.calc.StackValidationException;
 import openmods.calc.types.bigint.BigIntCalculatorFactory;
 import openmods.calc.types.fp.DoubleCalculatorFactory;
 import openmods.calc.types.fraction.FractionCalculatorFactory;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 import org.apache.commons.lang3.math.Fraction;
 
@@ -61,10 +61,10 @@ public class CalcState {
 			final IValuePrinter<E> printer = calculator.printer;
 			calculator.environment.setGlobalSymbol("p", new ICallable<E>() {
 				@Override
-				public void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+				public void call(Frame<E> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 					Preconditions.checkNotNull(sender, "DERP");
 
-					if (returnsCount.isPresent() && returnsCount.get() != 0) throw new StackValidationException("This function does not return any values");
+					if (!returnsCount.compareIfPresent(0)) throw new StackValidationException("This function does not return any values");
 
 					final Stack<E> stack = frame.stack();
 					final int in = argumentsCount.or(1);

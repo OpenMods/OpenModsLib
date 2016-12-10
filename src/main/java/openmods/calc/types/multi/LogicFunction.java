@@ -1,11 +1,11 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import java.util.Iterator;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
 import openmods.calc.SingleReturnCallable;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public abstract class LogicFunction extends SingleReturnCallable<TypedValue> {
@@ -17,7 +17,7 @@ public abstract class LogicFunction extends SingleReturnCallable<TypedValue> {
 	}
 
 	@Override
-	public TypedValue call(Frame<TypedValue> frame, Optional<Integer> argumentsCount) {
+	public TypedValue call(Frame<TypedValue> frame, OptionalInt argumentsCount) {
 		final int argCount = argumentsCount.or(2);
 
 		if (argCount == 0)

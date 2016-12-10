@@ -1,9 +1,9 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import openmods.calc.Frame;
 import openmods.calc.ISymbol;
+import openmods.utils.OptionalInt;
 
 public class SlotCallableWithValue implements ISymbol<TypedValue> {
 
@@ -17,7 +17,7 @@ public class SlotCallableWithValue implements ISymbol<TypedValue> {
 	}
 
 	@Override
-	public void call(Frame<TypedValue> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+	public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 		slot.call(value, argumentsCount, returnsCount, frame);
 	}
 

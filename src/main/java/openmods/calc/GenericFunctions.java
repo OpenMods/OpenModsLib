@@ -1,8 +1,8 @@
 package openmods.calc;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import java.util.List;
+import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class GenericFunctions {
@@ -20,7 +20,7 @@ public class GenericFunctions {
 		}
 
 		@Override
-		public E call(Frame<E> frame, Optional<Integer> argumentsCount) {
+		public E call(Frame<E> frame, OptionalInt argumentsCount) {
 			final Stack<E> stack = frame.stack();
 			final int args = argumentsCount.or(2);
 
@@ -59,7 +59,7 @@ public class GenericFunctions {
 
 		calculator.setGlobalSymbol("pop", new ICallable<E>() {
 			@Override
-			public void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			public void call(Frame<E> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 				if (returnsCount.isPresent() && returnsCount.get() != 0) throw new StackValidationException("Invalid expected return values on 'pop'");
 
 				final Stack<E> stack = frame.stack();
@@ -72,7 +72,7 @@ public class GenericFunctions {
 
 		calculator.setGlobalSymbol("dup", new ICallable<E>() {
 			@Override
-			public void call(Frame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
+			public void call(Frame<E> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 				final Stack<E> stack = frame.stack();
 
 				List<E> values = Lists.newArrayList();
