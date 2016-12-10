@@ -1657,8 +1657,11 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testAltTypes() {
-		infix("alt([Maybe=Just(x) \\ Nothing], match((Just(y)) -> y + 1, (Nothing) -> 'nope')(Just(2)))").expectResult(i(3));
-		infix("alt([Maybe=Just(x) \\ Nothing], match((Just(y)) -> y + 1, (Nothing) -> 'nope')(Nothing()))").expectResult(s("nope"));
+		infix("alt([Maybe=Just(x) \\ Nothing], match((Just(y)) -> y + 1, (Nothing()) -> 'nope')(Just(2)))").expectResult(i(3));
+		infix("alt([Maybe=Just(x) \\ Nothing], match((Just(y)) -> y + 1, (Nothing()) -> 'nope')(Nothing()))").expectResult(s("nope"));
+
+		infix("alt([Maybe=Just(x) \\ Nothing], match((Maybe.Just(y)) -> y + 1, (Maybe.Nothing()) -> 'nope')(Maybe.Just(2)))").expectResult(i(3));
+		infix("alt([Maybe=Just(x) \\ Nothing], match((Maybe.Just(y)) -> y + 1, (Maybe.Nothing()) -> 'nope')(Maybe.Nothing()))").expectResult(s("nope"));
 
 		infix("alt([Tree=Leaf(value)\\Node(left, right)], letrec([f = match((Leaf(v)) -> v, (Node(l,r)) -> f(l) + f(r))], f(Node(Node(Leaf(1), Leaf(4)), Leaf(6)))))").expectResult(i(11));
 	}

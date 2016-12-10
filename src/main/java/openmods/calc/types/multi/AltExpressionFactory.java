@@ -5,7 +5,9 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.util.List;
+import java.util.Map;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Environment;
 import openmods.calc.Frame;
@@ -133,11 +135,16 @@ public class AltExpressionFactory {
 
 		private final String name;
 		private final TypedValue selfValue;
+		private Map<String, TypedValue> variants = Maps.newHashMap();
 
 		public AltType(String name) {
 			super("alt_type_" + name);
 			this.name = name;
 			this.selfValue = domain.create(AltType.class, this);
+		}
+
+		public Optional<TypedValue> attr(String key) {
+			return Optional.fromNullable(variants.get(key));
 		}
 	}
 
@@ -153,6 +160,12 @@ public class AltExpressionFactory {
 					@Override
 					public String repr(TypedValue self, Frame<TypedValue> frame) {
 						return "<alt " + self.as(AltType.class) + ">";
+					}
+				})
+				.set(new MetaObject.SlotAttr() {
+					@Override
+					public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
+						return self.as(AltType.class).attr(key);
 					}
 				})
 				.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
@@ -350,7 +363,7 @@ public class AltExpressionFactory {
 			});
 		}
 
-		private void visitTypeDefinition(final SymbolMap<TypedValue> symbols, TypedValue typeDefinition) {
+		private void visitTypeDefinition(SymbolMap<TypedValue> symbols, TypedValue typeDefinition) {
 			final Cons nameAndCtors = typeDefinition.as(Cons.class);
 			final Symbol name = nameAndCtors.car.as(Symbol.class);
 			final Cons ctors = nameAndCtors.cdr.as(Cons.class);
@@ -361,12 +374,15 @@ public class AltExpressionFactory {
 			ctors.visit(new Cons.ListVisitor(nullValue) {
 				@Override
 				public void value(TypedValue value, boolean isLast) {
-					visitConstructor(symbols, newType, value);
+					visitConstructor(newType.variants, newType, value);
 				}
 			});
+
+			for (Map.Entry<String, TypedValue> e : newType.variants.entrySet())
+				symbols.put(e.getKey(), e.getValue());
 		}
 
-		private void visitConstructor(SymbolMap<TypedValue> symbols, AltType type, TypedValue ctorDefinition) {
+		private void visitConstructor(Map<String, TypedValue> variants, AltType type, TypedValue ctorDefinition) {
 			final Cons nameAndMembers = ctorDefinition.as(Cons.class);
 
 			final Symbol name = nameAndMembers.car.as(Symbol.class);
@@ -386,7 +402,7 @@ public class AltExpressionFactory {
 				Preconditions.checkState(membersList == nullValue, "Expected list or null (empty list), got %s", membersList);
 			}
 
-			symbols.put(name.value, domain.create(AltTypeVariant.class, new AltTypeVariant(name.value, type, memberNames)));
+			variants.put(name.value, domain.create(AltTypeVariant.class, new AltTypeVariant(name.value, type, memberNames)));
 		}
 
 	}
