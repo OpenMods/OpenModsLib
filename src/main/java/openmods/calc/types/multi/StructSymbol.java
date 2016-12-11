@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -131,7 +132,6 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 	private class StructType extends TypeUserdata {
 
 		private final Set<String> fieldNames = Sets.newLinkedHashSet();
-		private final List<TypedValue> wrappedFieldNames = Lists.newArrayList();
 		private final TypedValue fieldsList;
 		private final TypedValue selfValue;
 
@@ -139,11 +139,8 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 			super("struct");
 			this.fieldNames.addAll(fields);
 
-			for (String fieldName : fields)
-				wrappedFieldNames.add(domain.create(String.class, fieldName));
-
+			final List<TypedValue> wrappedFieldNames = Lists.newArrayList(Iterables.transform(fieldNames, domain.createTransformer(String.class)));
 			fieldsList = Cons.createList(wrappedFieldNames, nullValue);
-
 			selfValue = domain.create(StructType.class, this);
 		}
 
