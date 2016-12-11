@@ -132,28 +132,28 @@ public class DictSymbol {
 		public Dict(Map<TypedValue, TypedValue> values) {
 			this.values = ImmutableMap.copyOf(values);
 
-			members.put("update", FunctionValue.wrap(domain, new UpdateMethod()));
-			members.put("remove", FunctionValue.wrap(domain, new RemoveMethod()));
-			members.put("hasKey", FunctionValue.wrap(domain, new UnaryFunction<TypedValue>() {
+			members.put("update", CallableValue.wrap(domain, new UpdateMethod()));
+			members.put("remove", CallableValue.wrap(domain, new RemoveMethod()));
+			members.put("hasKey", CallableValue.wrap(domain, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue key) {
 					return domain.create(Boolean.class, Dict.this.values.containsKey(key));
 				}
 			}));
-			members.put("getOptional", FunctionValue.wrap(domain, new UnaryFunction<TypedValue>() {
+			members.put("getOptional", CallableValue.wrap(domain, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue key) {
 					return optionalFactory.wrapNullable(Dict.this.values.get(key));
 				}
 			}));
-			members.put("getOr", FunctionValue.wrap(domain, new BinaryFunction<TypedValue>() {
+			members.put("getOr", CallableValue.wrap(domain, new BinaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue key, TypedValue defaultValue) {
 					final TypedValue result = Dict.this.values.get(key);
 					return result != null? result : defaultValue;
 				}
 			}));
-			members.put("getOrCall", FunctionValue.wrap(domain, new FixedCallable<TypedValue>(2, 1) {
+			members.put("getOrCall", CallableValue.wrap(domain, new FixedCallable<TypedValue>(2, 1) {
 				@Override
 				public void call(Frame<TypedValue> frame) {
 					final Stack<TypedValue> stack = frame.stack();
@@ -168,7 +168,7 @@ public class DictSymbol {
 
 				}
 			}));
-			members.put("hasValue", FunctionValue.wrap(domain, new UnaryFunction<TypedValue>() {
+			members.put("hasValue", CallableValue.wrap(domain, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue value) {
 					return domain.create(Boolean.class, Dict.this.values.containsValue(value));

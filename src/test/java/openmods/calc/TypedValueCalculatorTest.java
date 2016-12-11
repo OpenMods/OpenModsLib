@@ -13,7 +13,7 @@ import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.CalcTestUtils.CallableStub;
 import openmods.calc.CalcTestUtils.SymbolStub;
 import openmods.calc.types.multi.Cons;
-import openmods.calc.types.multi.FunctionValue;
+import openmods.calc.types.multi.CallableValue;
 import openmods.calc.types.multi.MetaObject;
 import openmods.calc.types.multi.MetaObjectUtils;
 import openmods.calc.types.multi.Symbol;
@@ -1218,7 +1218,7 @@ public class TypedValueCalculatorTest {
 			@Override
 			protected TypedValue call(TypedValue left, TypedValue right) {
 				final BigInteger closure = left.as(BigInteger.class).subtract(right.as(BigInteger.class));
-				return FunctionValue.wrap(domain, new UnaryFunction<TypedValue>() {
+				return CallableValue.wrap(domain, new UnaryFunction<TypedValue>() {
 					@Override
 					protected TypedValue call(TypedValue value) {
 						final BigInteger arg = value.as(BigInteger.class);

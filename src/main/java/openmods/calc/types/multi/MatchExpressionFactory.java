@@ -843,7 +843,7 @@ public class MatchExpressionFactory {
 				patterns.add(arg.as(IPattern.class));
 			}
 
-			return domain.create(FunctionValue.class, new FunctionValue(new MatchingFunction(frame.symbols(), Lists.reverse(patterns))));
+			return domain.create(CallableValue.class, new CallableValue(new MatchingFunction(frame.symbols(), Lists.reverse(patterns))));
 		}
 	}
 

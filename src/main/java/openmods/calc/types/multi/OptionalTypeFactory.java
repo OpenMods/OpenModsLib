@@ -32,7 +32,7 @@ public class OptionalTypeFactory {
 	private static final String MEMBER_GET = "get";
 
 	private TypedValue wrap(ICallable<TypedValue> callable) {
-		return domain.create(FunctionValue.class, new FunctionValue(callable));
+		return domain.create(CallableValue.class, new CallableValue(callable));
 	}
 
 	private abstract class OptionalValue {

@@ -635,12 +635,12 @@ public class TypedValueCalculatorFactory {
 
 			basicTypes.put("function", functionType);
 
-			domain.registerType(FunctionValue.class, "function",
+			domain.registerType(CallableValue.class, "function",
 					MetaObject.builder()
 							.set(new MetaObject.SlotCall() {
 								@Override
 								public void call(TypedValue self, OptionalInt argCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
-									final FunctionValue function = self.as(FunctionValue.class);
+									final CallableValue function = self.as(CallableValue.class);
 									function.callable.call(frame, argCount, returnsCount);
 								}
 							})
@@ -1228,18 +1228,19 @@ public class TypedValueCalculatorFactory {
 		class TypedValueSymbolMap extends TopSymbolMap<TypedValue> {
 			@Override
 			protected ISymbol<TypedValue> createSymbol(ICallable<TypedValue> callable) {
-				final TypedValue value = domain.create(FunctionValue.class, new FunctionValue(callable));
+				final TypedValue value = domain.create(CallableValue.class, new CallableValue(callable));
 				return new CallableWithValue(value, callable);
 			}
 
 			@Override
 			protected ISymbol<TypedValue> createSymbol(TypedValue value) {
-				if (MetaObjectUtils.isCallable(value)) return new SlotCallableWithValue(value);
-
-				if (value.is(FunctionValue.class)) {
-					final FunctionValue function = value.as(FunctionValue.class);
+				if (value.is(CallableValue.class)) {
+					final CallableValue function = value.as(CallableValue.class);
 					return new CallableWithValue(value, function.callable);
 				}
+
+				if (MetaObjectUtils.isCallable(value)) return new SlotCallableWithValue(value);
+
 				return super.createSymbol(value);
 			}
 

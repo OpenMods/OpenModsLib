@@ -59,7 +59,7 @@ public class LambdaExpressionFactory {
 				// empty arg list
 			}
 
-			frame.stack().push(FunctionValue.wrap(domain, new Closure(frame.symbols(), code, args)));
+			frame.stack().push(CallableValue.wrap(domain, new Closure(frame.symbols(), code, args)));
 		}
 	}
 

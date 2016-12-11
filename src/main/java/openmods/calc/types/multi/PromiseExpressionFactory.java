@@ -86,7 +86,7 @@ public class PromiseExpressionFactory {
 			final Stack<TypedValue> stack = frame.stack();
 			final TypedValue arg = stack.pop();
 			final Code code = arg.as(Code.class, "'code' argument");
-			stack.push(FunctionValue.wrap(arg.domain, new DelayCallable(frame.symbols(), code)));
+			stack.push(CallableValue.wrap(arg.domain, new DelayCallable(frame.symbols(), code)));
 		}
 	}
 

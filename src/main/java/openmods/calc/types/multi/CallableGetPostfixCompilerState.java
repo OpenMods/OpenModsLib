@@ -37,7 +37,7 @@ public class CallableGetPostfixCompilerState extends SymbolGetPostfixCompilerSta
 	}
 
 	private IExecutable<TypedValue> createGetter(ICallable<TypedValue> wrapper) {
-		return Value.create(FunctionValue.wrap(domain, wrapper));
+		return Value.create(CallableValue.wrap(domain, wrapper));
 	}
 
 }
