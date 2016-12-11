@@ -107,7 +107,6 @@ public class MetaObjectUtils {
 		public Optional<List<TypedValue>> tryDecompose(TypedValue self, TypedValue input, int variableCount, Frame<TypedValue> frame) {
 			final MetaObject.SlotType valueTypeSlot = input.getMetaObject().slotType;
 			if (valueTypeSlot != null) {
-
 				final TypedValue valueType = valueTypeSlot.type(input, frame);
 				if (TypedCalcUtils.isEqual(frame, self, valueType)) {
 					List<TypedValue> result = ImmutableList.of(input);

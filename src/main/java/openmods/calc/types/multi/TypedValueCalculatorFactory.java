@@ -248,6 +248,8 @@ public class TypedValueCalculatorFactory {
 
 		domain.registerType(TypeUserdata.class, "type", TypeUserdata.defaultMetaObject(domain).build());
 
+		SimpleNamespace.register(domain);
+
 		{
 
 			final TypedValue nullType = domain.create(TypeUserdata.class, new TypeUserdata("<null>"));
@@ -1821,6 +1823,8 @@ public class TypedValueCalculatorFactory {
 				frame.stack().push(domain.create(EnvHolder.class, new EnvHolder(frame.symbols())));
 			}
 		});
+
+		CapabilitiesChecker.register(domain, env);
 
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);

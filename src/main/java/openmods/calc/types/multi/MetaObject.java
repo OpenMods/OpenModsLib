@@ -2,11 +2,25 @@ package openmods.calc.types.multi;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.util.List;
 import openmods.calc.Frame;
 import openmods.utils.OptionalInt;
 
 public class MetaObject {
+
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.FIELD)
+	public @interface Slot {
+
+	}
 
 	private MetaObject(Builder builder) {
 		this.slotAttr = builder.slotAttr;
@@ -25,61 +39,110 @@ public class MetaObject {
 		public boolean bool(TypedValue self, Frame<TypedValue> frame);
 	}
 
+	@Slot
 	public final SlotBool slotBool;
 
 	public interface SlotLength {
 		public int length(TypedValue self, Frame<TypedValue> frame);
 	}
 
+	@Slot
 	public final SlotLength slotLength;
 
 	public interface SlotAttr {
 		public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame);
 	}
 
+	@Slot
 	public final SlotAttr slotAttr;
 
 	public interface SlotEquals {
 		public boolean equals(TypedValue self, TypedValue value, Frame<TypedValue> frame);
 	}
 
+	@Slot
 	public final SlotEquals slotEquals;
 
 	public interface SlotCall {
 		public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame);
 	}
 
+	@Slot
 	public final SlotCall slotCall;
 
 	public interface SlotType {
 		public TypedValue type(TypedValue self, Frame<TypedValue> frame);
 	}
 
+	@Slot
 	public final SlotType slotType;
 
 	public interface SlotSlice {
 		public TypedValue slice(TypedValue self, TypedValue range, Frame<TypedValue> frame);
 	}
 
+	@Slot
 	public final SlotSlice slotSlice;
 
 	public interface SlotStr {
 		public String str(TypedValue self, Frame<TypedValue> frame);
 	}
 
+	@Slot
 	public final SlotStr slotStr;
 
 	public interface SlotRepr {
 		public String repr(TypedValue self, Frame<TypedValue> frame);
 	}
 
+	@Slot
 	public final SlotRepr slotRepr;
 
 	public interface SlotDecompose {
 		public Optional<List<TypedValue>> tryDecompose(TypedValue self, TypedValue input, int variableCount, Frame<TypedValue> frame);
 	}
 
+	@Slot
 	public final SlotDecompose slotDecompose;
+
+	public static class SlotInfo {
+		public final Field field;
+		public final String name;
+		public final Predicate<MetaObject> isPresent;
+
+		public SlotInfo(final Field field, String name) {
+			this.field = field;
+			this.name = name;
+
+			this.isPresent = new Predicate<MetaObject>() {
+				@Override
+				public boolean apply(MetaObject input) {
+					try {
+						return field.get(input) != null;
+					} catch (Exception e) {
+						throw Throwables.propagate(e);
+					}
+				}
+			};
+		}
+	}
+
+	public static final List<SlotInfo> slots;
+
+	static {
+		final ImmutableList.Builder<SlotInfo> slotsBuilder = ImmutableList.builder();
+
+		for (final Field f : MetaObject.class.getDeclaredFields()) {
+			if (f.isAnnotationPresent(MetaObject.Slot.class)) {
+				final String fieldName = f.getName();
+				if (!fieldName.startsWith("slot")) throw new AssertionError("Invalid slot name: " + fieldName);
+				final String slotName = fieldName.substring("slot".length());
+				slotsBuilder.add(new SlotInfo(f, slotName));
+			}
+		}
+
+		slots = slotsBuilder.build();
+	}
 
 	public static class Builder {
 		private SlotBool slotBool;

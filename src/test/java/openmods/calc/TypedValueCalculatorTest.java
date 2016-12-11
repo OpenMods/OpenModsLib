@@ -2305,4 +2305,31 @@ public class TypedValueCalculatorTest {
 		infix("locals().max == max").expectResult(TRUE);
 		infix("let([test = 5], let([l = locals(), test = 6], test == 6 && l.test == 5))").expectResult(TRUE);
 	}
+
+	@Test
+	public void testCapabilities() {
+		sut.environment.setGlobalSymbol("test", domain.create(DummyObject.class, DUMMY,
+				MetaObject.builder()
+						.set(new MetaObject.SlotBool() {
+							@Override
+							public boolean bool(TypedValue self, Frame<TypedValue> frame) {
+								return false;
+							}
+						})
+						.set(new MetaObject.SlotStr() {
+							@Override
+							public String str(TypedValue self, Frame<TypedValue> frame) {
+								return "dummy";
+							}
+						})
+						.build()));
+
+		infix("can(test, capabilities.str)").expectResult(TRUE);
+		infix("can(test, capabilities.repr)").expectResult(FALSE);
+		infix("can(test, capabilities.bool)").expectResult(TRUE);
+
+		infix("match((capabilities.str(x)) -> 'can', (_) -> 'cannot')(test)").expectResult(s("can"));
+		infix("match((capabilities.str(x)) -> 'can', (_) -> 'cannot')(4)").expectResult(s("can"));
+		infix("match((capabilities.str(x)) -> 'can', (_) -> 'cannot')(locals())").expectResult(s("cannot"));
+	}
 }
