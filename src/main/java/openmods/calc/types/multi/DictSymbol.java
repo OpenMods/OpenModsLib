@@ -37,7 +37,7 @@ public class DictSymbol {
 	}
 
 	private MetaObject createTypeMetaObject() {
-		return MetaObject.builder()
+		return TypeUserdata.defaultMetaObject(domain)
 				.set(new MetaObject.SlotCall() {
 					@Override
 					public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
@@ -54,9 +54,6 @@ public class DictSymbol {
 
 					}
 				})
-				.set(TypeUserdata.typeReprSlot)
-				.set(TypeUserdata.typeStrSlot)
-				.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
 				.build();
 	}
 

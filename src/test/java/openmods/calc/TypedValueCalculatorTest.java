@@ -12,8 +12,8 @@ import java.util.Set;
 import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.CalcTestUtils.CallableStub;
 import openmods.calc.CalcTestUtils.SymbolStub;
-import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.CallableValue;
+import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.MetaObject;
 import openmods.calc.types.multi.MetaObjectUtils;
 import openmods.calc.types.multi.Symbol;
@@ -1665,6 +1665,13 @@ public class TypedValueCalculatorTest {
 		infix("alt([Maybe=Just(x) \\ Nothing], match((Maybe.Just(y)) -> y + 1, (Maybe.Nothing()) -> 'nope')(Maybe.Nothing()))").expectResult(s("nope"));
 
 		infix("alt([Tree=Leaf(value)\\Node(left, right)], letrec([f = match((Leaf(v)) -> v, (Node(l,r)) -> f(l) + f(r))], f(Node(Node(Leaf(1), Leaf(4)), Leaf(6)))))").expectResult(i(11));
+
+		infix("alt([Tree=Leaf(value)\\Node(left, right)], Leaf.fields)").expectResult(list(s("value")));
+		infix("alt([Tree=Leaf(value)\\Node(left, right)], Node.fields)").expectResult(list(s("left"), s("right")));
+
+		infix("alt([Tree=Leaf(value)\\Node(left, right)], Node(1,2).left)").expectResult(i(1));
+		infix("alt([Tree=Leaf(value)\\Node(left, right)], Node(1,2).right)").expectResult(i(2));
+		infix("alt([Tree=Leaf(value)\\Node(left, right)], Leaf(3).value)").expectResult(i(3));
 	}
 
 	@Test
@@ -2158,8 +2165,9 @@ public class TypedValueCalculatorTest {
 		infix("letseq([Point=struct(#x,#y), p=Point(#y:5)], cons(p.x, p.y))").expectResult(cons(nil(), i(5)));
 		infix("letseq([Point=struct(#x,#y), p=Point(#x:1,#y:5)], cons(p.x, p.y))").expectResult(cons(i(1), i(5)));
 
-		infix("let([Point=struct(#x,#y,#z)], Point._fields)").expectResult(list(s("x"), s("y"), s("z")));
-		infix("let([Point=struct(#x,#y,#z)], Point()._fields)").expectResult(list(s("x"), s("y"), s("z")));
+		infix("let([Point=struct(#x,#y,#z)], Point.name)").expectResult(s("struct"));
+		infix("let([Point=struct(#x,#y,#z)], Point.fields)").expectResult(list(s("x"), s("y"), s("z")));
+		infix("let([Point=struct(#x,#y,#z)], type(Point()).fields)").expectResult(list(s("x"), s("y"), s("z")));
 
 		infix("let([Point=struct(#x,#y)], match((Point(x)) -> 'point', (_) -> 'other')(Point()))").expectResult(s("point"));
 		infix("let([Point=struct(#x,#y)], match((Point(x)) -> 'point', (_) -> 'other')(5))").expectResult(s("other"));
@@ -2215,7 +2223,9 @@ public class TypedValueCalculatorTest {
 
 		infix("match((dict(x)) -> 'dict', (_) -> 'other')(dict())").expectResult(s("dict"));
 		infix("match((dict(x)) -> 'dict', (_) -> 'other')(5)").expectResult(s("other"));
+
 		infix("type(dict()) == dict").expectResult(TRUE);
+		infix("type(dict()).name").expectResult(s("dict"));
 
 		assertSameListContents(Sets.newHashSet(i(1), s("a"), complex(0, 2)), infix("dict(1:'a','a':#b,2I:5).keys").executeAndPop());
 		assertSameListContents(Sets.newHashSet(s("a"), sym("b"), i(5)), infix("dict(1:'a','a':#b,2I:5).values").executeAndPop());
@@ -2270,7 +2280,10 @@ public class TypedValueCalculatorTest {
 		infix("match((optional(x)) -> 'optional', (_) -> 'other')(4)").expectResult(s("other"));
 
 		infix("type(optional.absent()) == optional").expectResult(TRUE);
+		infix("optional.absent.name").expectResult(s("optional.absent"));
+
 		infix("type(optional.present(4)) == optional").expectResult(TRUE);
+		infix("optional.present.name").expectResult(s("optional.present"));
 	}
 
 	@Test

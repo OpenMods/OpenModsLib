@@ -17,7 +17,7 @@ import openmods.utils.Stack;
 
 public class StructSymbol extends SingleReturnCallable<TypedValue> {
 
-	private static final String MEMBER_FIELDS = "_fields";
+	private static final String ATTR_FIELDS = "fields";
 
 	private final TypedValue nullValue;
 	private final TypeDomain domain;
@@ -155,13 +155,13 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 					@Override
 					public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
 						final StructType type = self.as(StructType.class);
-						if (key.equals(MEMBER_FIELDS)) return Optional.of(type.fieldsList);
+						if (key.equals(ATTR_FIELDS)) return Optional.of(type.fieldsList);
+						else if (key.equals(TypeUserdata.ATTR_TYPE_NAME)) return Optional.of(domain.create(String.class, "struct"));
 						return Optional.absent();
 					}
 				})
 				.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
 				.set(new MetaObject.SlotCall() {
-
 					@Override
 					public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 						TypedCalcUtils.expectSingleReturn(returnsCount);
@@ -175,7 +175,6 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 							values.put(field, nullValue);
 
 						extractValues(stack, type.fieldNames, values);
-						values.put(MEMBER_FIELDS, type.fieldsList);
 						final TypedValue result = domain.create(StructValue.class, new StructValue(type, values));
 						stack.clear();
 						stack.push(result);

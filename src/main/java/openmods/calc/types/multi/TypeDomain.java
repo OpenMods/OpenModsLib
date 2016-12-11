@@ -1,5 +1,6 @@
 package openmods.calc.types.multi;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
@@ -221,5 +222,26 @@ public class TypeDomain {
 
 	public <T> TypedValue castAndCreate(Class<T> type, Object value) {
 		return create(type, type.cast(value));
+	}
+
+	public <T> Function<T, TypedValue> createTransformer(final Class<T> type) {
+		checkIsKnownType(type);
+		return new Function<T, TypedValue>() {
+			@Override
+			public TypedValue apply(T input) {
+				return create(type, input);
+			}
+		};
+	}
+
+	public <T> Function<T, TypedValue> createTransformer(final Class<T> type, final TypedValue nullValue) {
+		checkIsKnownType(type);
+		Preconditions.checkArgument(nullValue.domain == this, "Different domains");
+		return new Function<T, TypedValue>() {
+			@Override
+			public TypedValue apply(T input) {
+				return input != null? create(type, input) : nullValue;
+			}
+		};
 	}
 }

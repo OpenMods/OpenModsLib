@@ -246,21 +246,7 @@ public class TypedValueCalculatorFactory {
 
 		final TypedValueParser valueParser = new TypedValueParser(domain);
 
-		final MetaObject.SlotAttr typeAttributesSlot = new MetaObject.SlotAttr() {
-			@Override
-			public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
-				if ("name".equals(key)) return Optional.of(domain.create(String.class, self.as(TypeUserdata.class).name));
-				return Optional.absent();
-			}
-		};
-
-		domain.registerType(TypeUserdata.class, "type",
-				MetaObject.builder()
-						.set(TypeUserdata.typeStrSlot)
-						.set(TypeUserdata.typeReprSlot)
-						.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
-						.set(typeAttributesSlot)
-						.build());
+		domain.registerType(TypeUserdata.class, "type", TypeUserdata.defaultMetaObject(domain).build());
 
 		{
 
@@ -288,7 +274,7 @@ public class TypedValueCalculatorFactory {
 
 		{
 			final TypedValue intType = domain.create(TypeUserdata.class, new TypeUserdata("int"),
-					MetaObject.builder()
+					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
 								@Variant
 								public BigInteger convert(@DispatchArg(extra = { Boolean.class }) BigInteger value) {
@@ -308,10 +294,6 @@ public class TypedValueCalculatorFactory {
 									return result.getLeft();
 								}
 							}))
-							.set(TypeUserdata.typeStrSlot)
-							.set(TypeUserdata.typeReprSlot)
-							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
-							.set(typeAttributesSlot)
 							.build());
 
 			basicTypes.put("int", intType);
@@ -342,7 +324,7 @@ public class TypedValueCalculatorFactory {
 
 		{
 			final TypedValue floatType = domain.create(TypeUserdata.class, new TypeUserdata("float"),
-					MetaObject.builder()
+					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
 								@Variant
 								public Double convert(@DispatchArg(extra = { BigInteger.class, Boolean.class }) Double value) {
@@ -356,10 +338,6 @@ public class TypedValueCalculatorFactory {
 									return result.getLeft().doubleValue() + result.getRight();
 								}
 							}))
-							.set(TypeUserdata.typeStrSlot)
-							.set(TypeUserdata.typeReprSlot)
-							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
-							.set(typeAttributesSlot)
 							.build());
 
 			basicTypes.put("float", floatType);
@@ -390,17 +368,13 @@ public class TypedValueCalculatorFactory {
 
 		{
 			final TypedValue boolType = domain.create(TypeUserdata.class, new TypeUserdata("bool"),
-					MetaObject.builder()
+					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new SlotCaller() {
 								@Override
 								protected TypedValue callSlot(Frame<TypedValue> frame, TypedValue value, MetaObject metaObject) {
 									return domain.create(Boolean.class, MetaObjectUtils.boolValue(frame, value));
 								}
 							}))
-							.set(TypeUserdata.typeStrSlot)
-							.set(TypeUserdata.typeReprSlot)
-							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
-							.set(typeAttributesSlot)
 							.build());
 
 			basicTypes.put("bool", boolType);
@@ -431,24 +405,19 @@ public class TypedValueCalculatorFactory {
 
 		{
 			final TypedValue strType = domain.create(TypeUserdata.class, new TypeUserdata("str"),
-					MetaObject.builder()
+					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new UnaryFunction<TypedValue>() {
 								@Override
 								protected TypedValue call(TypedValue value) {
 									return value.domain.create(String.class, valuePrinter.str(value));
 								}
 							}))
-							.set(TypeUserdata.typeStrSlot)
-							.set(TypeUserdata.typeReprSlot)
-							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
-							.set(typeAttributesSlot)
 							.build());
 
 			basicTypes.put("str", strType);
 
 			domain.registerType(String.class, "str",
 					MetaObject.builder()
-
 							.set(new MetaObject.SlotLength() {
 								@Override
 								public int length(TypedValue self, Frame<TypedValue> frame) {
@@ -512,17 +481,13 @@ public class TypedValueCalculatorFactory {
 
 		{
 			final TypedValue complexType = domain.create(TypeUserdata.class, new TypeUserdata("complex"),
-					MetaObject.builder()
+					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
 								@Variant
 								public Complex convert(Double re, Double im) {
 									return Complex.cartesian(re, im);
 								}
 							}))
-							.set(TypeUserdata.typeStrSlot)
-							.set(TypeUserdata.typeReprSlot)
-							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
-							.set(typeAttributesSlot)
 							.build());
 
 			basicTypes.put("complex", complexType);
@@ -553,17 +518,13 @@ public class TypedValueCalculatorFactory {
 
 		{
 			final TypedValue consType = domain.create(TypeUserdata.class, new TypeUserdata("cons"),
-					MetaObject.builder()
+					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new BinaryFunction<TypedValue>() {
 								@Override
 								protected TypedValue call(TypedValue left, TypedValue right) {
 									return domain.create(Cons.class, new Cons(left, right));
 								}
 							}))
-							.set(TypeUserdata.typeStrSlot)
-							.set(TypeUserdata.typeReprSlot)
-							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
-							.set(typeAttributesSlot)
 							.build());
 
 			basicTypes.put("cons", consType);
@@ -595,17 +556,13 @@ public class TypedValueCalculatorFactory {
 
 		{
 			final TypedValue symbolType = domain.create(TypeUserdata.class, new TypeUserdata("symbol"),
-					MetaObject.builder()
+					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
 								@Variant
 								public Symbol symbol(String value) {
 									return Symbol.get(value);
 								}
 							}))
-							.set(TypeUserdata.typeStrSlot)
-							.set(TypeUserdata.typeReprSlot)
-							.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
-							.set(typeAttributesSlot)
 							.build());
 
 			basicTypes.put("symbol", symbolType);

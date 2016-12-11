@@ -291,6 +291,9 @@ public class OptionalTypeFactory {
 							}
 
 						})
+						.set(TypeUserdata.defaultStrSlot)
+						.set(TypeUserdata.defaultReprSlot)
+						.set(TypeUserdata.defaultAttrSlot(domain))
 						.build());
 	}
 
@@ -316,8 +319,10 @@ public class OptionalTypeFactory {
 
 								return Optional.absent();
 							}
-
 						})
+						.set(TypeUserdata.defaultStrSlot)
+						.set(TypeUserdata.defaultReprSlot)
+						.set(TypeUserdata.defaultAttrSlot(domain))
 						.build());
 
 	}
@@ -335,14 +340,15 @@ public class OptionalTypeFactory {
 				}))
 				.put("present", presentTypeValue)
 				.put("absent", absentTypeValue)
+				.put("name", domain.create(String.class, "optional"))
 				.build();
 
 		return domain.create(TypeUserdata.class, new TypeUserdata("optional"),
 				MetaObject.builder()
-						.set(MetaObjectUtils.attrFromMap(methods))
-						.set(TypeUserdata.typeReprSlot)
-						.set(TypeUserdata.typeStrSlot)
+						.set(TypeUserdata.defaultStrSlot)
+						.set(TypeUserdata.defaultReprSlot)
 						.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
+						.set(MetaObjectUtils.attrFromMap(methods))
 						.build());
 	}
 

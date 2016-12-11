@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.List;
@@ -28,6 +29,8 @@ import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
 public class AltExpressionFactory {
+
+	private static final String ATTR_FIELDS = "fields";
 
 	private final TypeDomain domain;
 	private final TypedValue nullValue;
@@ -132,19 +135,18 @@ public class AltExpressionFactory {
 	}
 
 	private class AltType extends TypeUserdata {
-
-		private final String name;
+		private final String id;
 		private final TypedValue selfValue;
-		private Map<String, TypedValue> variants = Maps.newHashMap();
+		private Map<String, TypedValue> members = Maps.newHashMap();
 
-		public AltType(String name) {
-			super("alt_type_" + name);
-			this.name = name;
+		public AltType(String id) {
+			super("alt_type_" + id);
+			this.id = id;
 			this.selfValue = domain.create(AltType.class, this);
 		}
 
 		public Optional<TypedValue> attr(String key) {
-			return Optional.fromNullable(variants.get(key));
+			return Optional.fromNullable(members.get(key));
 		}
 	}
 
@@ -173,23 +175,26 @@ public class AltExpressionFactory {
 	}
 
 	private class AltTypeVariant extends TypeUserdata {
-
-		private final String name;
+		private final String id;
 
 		private final AltType type;
 
 		private final List<String> members;
 
+		private final TypedValue membersList;
+
 		public AltTypeVariant(String name, AltType type, List<String> members) {
-			super("alt_variant_" + type.name + "_" + name);
-			this.name = name;
+			super("alt_variant_" + type.id + "_" + name);
+			this.id = name;
 			this.type = type;
 			this.members = members;
+
+			final List<TypedValue> convertedMembers = ImmutableList.copyOf(Iterables.transform(members, domain.createTransformer(String.class)));
+			this.membersList = Cons.createList(convertedMembers, nullValue);
 		}
 	}
 
 	private MetaObject createAltVariantMetaObject() {
-		// extends SimpleComposite implements CompositeTraits.Decomposable, CompositeTraits.Printable, AltTypeVariantTrait, CompositeTraits.Callable
 		return MetaObject.builder()
 				.set(new MetaObject.SlotDecompose() {
 					@Override
@@ -217,7 +222,7 @@ public class AltExpressionFactory {
 					@Override
 					public String str(TypedValue self, Frame<TypedValue> frame) {
 						final AltTypeVariant variant = self.as(AltTypeVariant.class);
-						return "<alt " + variant.type.name + ":" + variant.name + ">";
+						return "<alt " + variant.type.id + ":" + variant.id + ">";
 					}
 				})
 				.set(new MetaObject.SlotRepr() {
@@ -225,7 +230,7 @@ public class AltExpressionFactory {
 					@Override
 					public String repr(TypedValue self, Frame<TypedValue> frame) {
 						final AltTypeVariant variant = self.as(AltTypeVariant.class);
-						return "<alt " + variant.type.name + ":" + variant.name + ">";
+						return "<alt " + variant.type.id + ":" + variant.id + ">";
 					}
 				})
 				.set(new MetaObject.SlotCall() {
@@ -241,6 +246,14 @@ public class AltExpressionFactory {
 						final AltValue container = new AltValue(variant, ImmutableList.copyOf(substack));
 						substack.clear();
 						substack.push(domain.create(AltValue.class, container));
+					}
+				})
+				.set(new MetaObject.SlotAttr() {
+					@Override
+					public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
+						if (TypeUserdata.ATTR_TYPE_NAME.equals(key)) return Optional.of(domain.create(String.class, self.as(AltTypeVariant.class).name));
+						else if (ATTR_FIELDS.equals(key)) return Optional.of(self.as(AltTypeVariant.class).membersList);
+						return Optional.absent();
 					}
 				})
 				.build();
@@ -293,12 +306,11 @@ public class AltExpressionFactory {
 							final TypedValue v = value.values.get(i);
 							values.add(k + "=" + MetaObjectUtils.callStrSlot(frame, v));
 						}
-						return "<alt " + value.variant.type.name + ":" + value.variant.name + "(" + Joiner.on(',').join(values) + ")>";
+						return "<alt " + value.variant.type.id + ":" + value.variant.id + "(" + Joiner.on(',').join(values) + ")>";
 					}
 
 				})
 				.set(new MetaObject.SlotRepr() {
-
 					@Override
 					public String repr(TypedValue self, Frame<TypedValue> frame) {
 						final AltValue value = self.as(AltValue.class);
@@ -308,14 +320,22 @@ public class AltExpressionFactory {
 							final TypedValue v = value.values.get(i);
 							values.add(k + "=" + MetaObjectUtils.callReprSlot(frame, v));
 						}
-						return value.variant.type.name + "." + value.variant.name + "(" + Joiner.on(',').join(values) + ")>";
+						return value.variant.type.id + "." + value.variant.id + "(" + Joiner.on(',').join(values) + ")>";
 					}
 				})
 				.set(new MetaObject.SlotType() {
-
 					@Override
 					public TypedValue type(TypedValue self, Frame<TypedValue> frame) {
 						return self.as(AltValue.class).variant.type.selfValue;
+					}
+				})
+				.set(new MetaObject.SlotAttr() {
+					@Override
+					public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
+						final AltValue value = self.as(AltValue.class);
+						final int memberIndex = value.variant.members.indexOf(key);
+						if (memberIndex == -1) return Optional.absent();
+						return Optional.of(value.values.get(memberIndex));
 					}
 				})
 				.build();
@@ -361,12 +381,14 @@ public class AltExpressionFactory {
 			ctors.visit(new Cons.ListVisitor(nullValue) {
 				@Override
 				public void value(TypedValue value, boolean isLast) {
-					visitConstructor(newType.variants, newType, value);
+					visitConstructor(newType.members, newType, value);
 				}
 			});
 
-			for (Map.Entry<String, TypedValue> e : newType.variants.entrySet())
+			for (Map.Entry<String, TypedValue> e : newType.members.entrySet())
 				symbols.put(e.getKey(), e.getValue());
+
+			newType.members.put(TypeUserdata.ATTR_TYPE_NAME, domain.create(String.class, newType.id));
 		}
 
 		private void visitConstructor(Map<String, TypedValue> variants, AltType type, TypedValue ctorDefinition) {
