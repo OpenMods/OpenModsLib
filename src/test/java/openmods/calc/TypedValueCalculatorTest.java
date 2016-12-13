@@ -2344,6 +2344,10 @@ public class TypedValueCalculatorTest {
 		infix("getmetaobject(1).str.info == slots.str").expectResult(TRUE);
 
 		infix("getmetaobject(1).str(123)").expectResult(s("123"));
+		infix("slots.str(123)").expectResult(s("123"));
+
+		infix("let([f = (a,b)->a-b], getmetaobject(f).call(f, 3, 5))").expectResult(i(-2));
+		infix("slots.call((a,b)->a-b, 3, 6)").expectResult(i(-3));
 
 		infix("getmetaobject(1).call").expectResult(NULL);
 	}

@@ -141,6 +141,19 @@ public class MetaObjectSymbols {
 						return Optional.absent();
 					}
 				})
+				.set(new MetaObject.SlotCall() {
+					@Override
+					public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
+						final MetaObjectInfo.SlotAccess info = self.as(MetaObjectInfo.SlotAccess.class);
+
+						final TypedValue target = frame.stack().peek(argumentsCount.get() - 1);
+
+						final MetaObject mo = target.getMetaObject();
+						final Slot slot = info.get(mo);
+						Preconditions.checkState(slot != null, "Value %s has no slot %s", target);
+						info.adapter.call(slot, frame, argumentsCount, returnsCount);
+					}
+				})
 				.set(new MetaObject.SlotStr() {
 					@Override
 					public String str(TypedValue self, Frame<TypedValue> frame) {
