@@ -239,7 +239,7 @@ public class OptionalType {
 	}
 
 	private static TypedValue createPresentConstructor(final TypeDomain domain) {
-		return domain.create(TypeUserdata.class, new TypeUserdata("optional.present"),
+		return domain.create(TypeUserdata.class, new TypeUserdata("optional.present", Value.class),
 				MetaObject.builder()
 						.set(MetaObjectUtils.callableAdapter(new UnaryFunction<TypedValue>() {
 							@Override
@@ -272,7 +272,7 @@ public class OptionalType {
 	private static final Optional<List<TypedValue>> ABSENT_MATCH = Optional.of(Collections.<TypedValue> emptyList());
 
 	private static TypedValue createAbsentConstructor(final TypeDomain domain) {
-		return domain.create(TypeUserdata.class, new TypeUserdata("optional.absent"),
+		return domain.create(TypeUserdata.class, new TypeUserdata("optional.absent", Value.class),
 				MetaObject.builder()
 						.set(MetaObjectUtils.callableAdapter(new NullaryFunction<TypedValue>() {
 							@Override
@@ -313,7 +313,7 @@ public class OptionalType {
 				.put("name", domain.create(String.class, "optional"))
 				.build();
 
-		return domain.create(TypeUserdata.class, new TypeUserdata("optional"),
+		return domain.create(TypeUserdata.class, new TypeUserdata("optional", Value.class),
 				MetaObject.builder()
 						.set(TypeUserdata.defaultStrSlot)
 						.set(TypeUserdata.defaultReprSlot)

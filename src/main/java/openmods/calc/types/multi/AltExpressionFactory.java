@@ -140,7 +140,7 @@ public class AltExpressionFactory {
 		private Map<String, TypedValue> members = Maps.newHashMap();
 
 		public AltType(String id) {
-			super("alt_type_" + id);
+			super("alt_type_" + id, AltValue.class);
 			this.id = id;
 			this.selfValue = domain.create(AltType.class, this);
 		}
@@ -184,7 +184,7 @@ public class AltExpressionFactory {
 		private final TypedValue membersList;
 
 		public AltTypeVariant(String name, AltType type, List<String> members) {
-			super("alt_variant_" + type.id + "_" + name);
+			super("alt_variant_" + type.id + "_" + name, AltValue.class);
 			this.id = name;
 			this.type = type;
 			this.members = members;

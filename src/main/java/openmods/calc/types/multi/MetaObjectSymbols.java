@@ -76,13 +76,13 @@ public class MetaObjectSymbols {
 		domain.registerType(MetaObjectInfo.SlotAccess.class, "metaobjectslot", createCapabilityMetaObject());
 
 		{
-			final TypedValue metaObjectSlotType = domain.create(TypeUserdata.class, new TypeUserdata("metaobjectslotvalue"));
+			final TypedValue metaObjectSlotType = domain.create(TypeUserdata.class, new TypeUserdata("metaobjectslotvalue", MetaObjectSlot.class));
 			env.setGlobalSymbol("metaobjectslotvalue", metaObjectSlotType);
 			domain.registerType(MetaObjectSlot.class, "metaobjectslotvalue", createMetaObjectSlotMetaObject(metaObjectSlotType));
 		}
 
 		{
-			final TypedValue metaObjectType = domain.create(TypeUserdata.class, new TypeUserdata("metaobject"),
+			final TypedValue metaObjectType = domain.create(TypeUserdata.class, new TypeUserdata("metaobject", MetaObject.class),
 					TypeUserdata.defaultMetaObject(domain)
 							.set(new MetaObject.SlotCall() {
 								@Override

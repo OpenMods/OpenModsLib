@@ -11,6 +11,7 @@ import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import openmods.calc.Frame;
 import openmods.calc.SingleReturnCallable;
 import openmods.utils.OptionalInt;
@@ -129,6 +130,8 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 				.build();
 	}
 
+	private static AtomicInteger structCounter = new AtomicInteger(0);
+
 	private class StructType extends TypeUserdata {
 
 		private final Set<String> fieldNames = Sets.newLinkedHashSet();
@@ -136,7 +139,7 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 		private final TypedValue selfValue;
 
 		public StructType(List<String> fields) {
-			super("struct");
+			super("struct_" + structCounter.incrementAndGet(), StructValue.class);
 			this.fieldNames.addAll(fields);
 
 			final List<TypedValue> wrappedFieldNames = Lists.newArrayList(Iterables.transform(fieldNames, domain.createTransformer(String.class)));
@@ -154,7 +157,7 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 						final StructType type = self.as(StructType.class);
 						if (key.equals(ATTR_FIELDS)) return Optional.of(type.fieldsList);
 						else if (key.equals(TypeUserdata.ATTR_TYPE_NAME)) return Optional.of(domain.create(String.class, "struct"));
-						return Optional.absent();
+						return type.attr(domain, key);
 					}
 				})
 				.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)

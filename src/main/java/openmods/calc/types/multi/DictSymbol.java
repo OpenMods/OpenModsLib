@@ -30,7 +30,7 @@ public class DictSymbol {
 		this.nullValue = nullValue;
 		this.domain = nullValue.domain;
 		this.domain.registerType(Dict.class, "dict", createValueMetaObject());
-		this.selfValue = domain.create(TypeUserdata.class, new TypeUserdata("dict"), createTypeMetaObject());
+		this.selfValue = domain.create(TypeUserdata.class, new TypeUserdata("dict", Dict.class), createTypeMetaObject());
 	}
 
 	private MetaObject createTypeMetaObject() {

@@ -6,16 +6,20 @@ import openmods.calc.types.multi.MetaObject.SlotAttr;
 
 class TypeUserdata {
 	public static final String ATTR_TYPE_NAME = "name";
+	public static final String ATTR_TYPE_METAOBJECT = "metaobject";
 
 	public final String name;
 
-	public TypeUserdata(String name) {
+	public final Class<?> type;
+
+	public TypeUserdata(String name, Class<?> type) {
 		this.name = name;
+		this.type = type;
 	}
 
 	@Override
 	public String toString() {
-		return "<type: " + name + ">";
+		return "<type: " + name + " " + type + ">";
 	}
 
 	public static final MetaObject.SlotStr defaultStrSlot = new MetaObject.SlotStr() {
@@ -36,13 +40,19 @@ class TypeUserdata {
 		return new MetaObject.SlotAttr() {
 			@Override
 			public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
-				if (ATTR_TYPE_NAME.equals(key)) return Optional.of(domain.create(String.class, self.as(TypeUserdata.class).name));
-				return Optional.absent();
+				return self.as(TypeUserdata.class).attr(domain, key);
 			}
 		};
 	}
 
-	public static MetaObject.Builder defaultMetaObject(final TypeDomain domain) {
+	protected Optional<TypedValue> attr(TypeDomain domain, String key) {
+		if (ATTR_TYPE_NAME.equals(key)) return Optional.of(domain.create(String.class, name));
+		if (ATTR_TYPE_METAOBJECT.equals(key)) return Optional.of(domain.create(MetaObject.class, domain.getDefaultMetaObject(type)));
+
+		return Optional.absent();
+	}
+
+	public static MetaObject.Builder defaultMetaObject(TypeDomain domain) {
 		return MetaObject.builder()
 				.set(defaultStrSlot)
 				.set(defaultReprSlot)

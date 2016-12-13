@@ -276,7 +276,7 @@ public class TypedValueCalculatorFactory {
 
 		{
 
-			final TypedValue nullType = domain.create(TypeUserdata.class, new TypeUserdata("<null>"));
+			final TypedValue nullType = domain.create(TypeUserdata.class, new TypeUserdata("<null>", UnitType.class));
 
 			domain.registerType(UnitType.class, "<null>",
 					MetaObject.builder()
@@ -299,7 +299,7 @@ public class TypedValueCalculatorFactory {
 		final Map<String, TypedValue> basicTypes = Maps.newHashMap();
 
 		{
-			final TypedValue intType = domain.create(TypeUserdata.class, new TypeUserdata("int"),
+			final TypedValue intType = domain.create(TypeUserdata.class, new TypeUserdata("int", BigInteger.class),
 					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
 								@Variant
@@ -350,7 +350,7 @@ public class TypedValueCalculatorFactory {
 		}
 
 		{
-			final TypedValue floatType = domain.create(TypeUserdata.class, new TypeUserdata("float"),
+			final TypedValue floatType = domain.create(TypeUserdata.class, new TypeUserdata("float", Double.class),
 					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
 								@Variant
@@ -395,7 +395,7 @@ public class TypedValueCalculatorFactory {
 		}
 
 		{
-			final TypedValue boolType = domain.create(TypeUserdata.class, new TypeUserdata("bool"),
+			final TypedValue boolType = domain.create(TypeUserdata.class, new TypeUserdata("bool", Boolean.class),
 					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new SlotCaller() {
 								@Override
@@ -433,7 +433,7 @@ public class TypedValueCalculatorFactory {
 		}
 
 		{
-			final TypedValue strType = domain.create(TypeUserdata.class, new TypeUserdata("str"),
+			final TypedValue strType = domain.create(TypeUserdata.class, new TypeUserdata("str", String.class),
 					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new UnaryFunction<TypedValue>() {
 								@Override
@@ -510,7 +510,7 @@ public class TypedValueCalculatorFactory {
 		}
 
 		{
-			final TypedValue complexType = domain.create(TypeUserdata.class, new TypeUserdata("complex"),
+			final TypedValue complexType = domain.create(TypeUserdata.class, new TypeUserdata("complex", Complex.class),
 					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
 								@Variant
@@ -548,7 +548,7 @@ public class TypedValueCalculatorFactory {
 		}
 
 		{
-			final TypedValue consType = domain.create(TypeUserdata.class, new TypeUserdata("cons"),
+			final TypedValue consType = domain.create(TypeUserdata.class, new TypeUserdata("cons", Cons.class),
 					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new BinaryFunction<TypedValue>() {
 								@Override
@@ -587,7 +587,7 @@ public class TypedValueCalculatorFactory {
 		}
 
 		{
-			final TypedValue symbolType = domain.create(TypeUserdata.class, new TypeUserdata("symbol"),
+			final TypedValue symbolType = domain.create(TypeUserdata.class, new TypeUserdata("symbol", Symbol.class),
 					TypeUserdata.defaultMetaObject(domain)
 							.set(MetaObjectUtils.callableAdapter(new SimpleTypedFunction(domain) {
 								@Variant
@@ -621,7 +621,7 @@ public class TypedValueCalculatorFactory {
 
 		{
 
-			final TypedValue functionType = domain.create(TypeUserdata.class, new TypeUserdata("function"));
+			final TypedValue functionType = domain.create(TypeUserdata.class, new TypeUserdata("function", CallableValue.class));
 
 			basicTypes.put("function", functionType);
 
@@ -640,7 +640,7 @@ public class TypedValueCalculatorFactory {
 		}
 
 		{
-			final TypedValue envType = domain.create(TypeUserdata.class, new TypeUserdata("env"));
+			final TypedValue envType = domain.create(TypeUserdata.class, new TypeUserdata("env", EnvHolder.class));
 
 			basicTypes.put("env", envType);
 
@@ -662,7 +662,7 @@ public class TypedValueCalculatorFactory {
 
 		{
 			// TODO decompose may not work due to special 'code' form
-			final TypedValue codeType = domain.create(TypeUserdata.class, new TypeUserdata("code"));
+			final TypedValue codeType = domain.create(TypeUserdata.class, new TypeUserdata("code", Code.class));
 
 			basicTypes.put("code", codeType);
 

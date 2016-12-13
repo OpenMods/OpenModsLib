@@ -466,8 +466,10 @@ public class TypedValueCalculatorTest {
 		infix("equalsTo5 == '5'").expectResult(FALSE);
 		infix("equalsTo5 != '5'").expectResult(TRUE);
 
-		infix("5 == equalsTo5").expectResult(TRUE);
-		infix("5 != equalsTo5").expectResult(FALSE);
+		// 'int' comparator is called first, so comparision fails
+		// normally it shouldn't be problem, since 'equals' is expected to be symmetric
+		infix("5 == equalsTo5").expectResult(FALSE);
+		infix("5 != equalsTo5").expectResult(TRUE);
 
 		infix("6 == equalsTo5").expectResult(FALSE);
 		infix("6 != equalsTo5").expectResult(TRUE);
@@ -1686,6 +1688,11 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testAltTypesMetaobject() {
+		infix("alt([Maybe=Just(x) \\ Nothing], getmetaobject(Just(1)) == getmetaobject(Just(2)))").expectResult(TRUE);
+	}
+
+	@Test
 	public void testAltTypesTyping() {
 		infix("alt([Maybe=Just(x) \\ Nothing], type(Just(1)) == type(Nothing()))").expectResult(TRUE);
 		infix("alt([Maybe=Just(x) \\ Nothing], type(Just(1)) == type(Just(2)))").expectResult(TRUE);
@@ -2175,6 +2182,9 @@ public class TypedValueCalculatorTest {
 		infix("let([Point=struct(#x,#y)], match((Point(x)) -> 'point', (_) -> 'other')(5))").expectResult(s("other"));
 
 		infix("let([Point=struct(#x,#y)], type(Point()) == Point)").expectResult(TRUE);
+		infix("let([Point=struct(#x,#y)], type(Point()) == type(Point(#x=2)))").expectResult(TRUE);
+
+		infix("let([Point=struct(#x,#y)], type(Point()).metaobject == getmetaobject(Point(#x=2)))").expectResult(TRUE);
 
 		infix("letseq([Point=struct(#x,#y), p1 = Point(#y:3), p2 = p1(#x:2), p3 = p1(#y:8)], list(p1.x:p1.y, p2.x:p2.y, p3.x:p3.y))")
 				.expectResult(list(
@@ -2229,6 +2239,7 @@ public class TypedValueCalculatorTest {
 
 		infix("type(dict()) == dict").expectResult(TRUE);
 		infix("type(dict()).name").expectResult(s("dict"));
+		infix("type(dict()).metaobject == getmetaobject(dict())").expectResult(TRUE);
 
 		assertSameListContents(Sets.newHashSet(i(1), s("a"), complex(0, 2)), infix("dict(1:'a','a':#b,2I:5).keys").executeAndPop());
 		assertSameListContents(Sets.newHashSet(s("a"), sym("b"), i(5)), infix("dict(1:'a','a':#b,2I:5).values").executeAndPop());
@@ -2340,14 +2351,21 @@ public class TypedValueCalculatorTest {
 	public void testMetaObjectFromBuiltInObject() {
 		infix("type(getmetaobject(1)) == metaobject").expectResult(TRUE);
 		infix("type(getmetaobject(1).str) == metaobjectslotvalue").expectResult(TRUE);
+
+		infix("getmetaobject(1) == getmetaobject(2)").expectResult(TRUE);
+		infix("getmetaobject(1) == int.metaobject").expectResult(TRUE);
+		infix("getmetaobject(1) != getmetaobject(I)").expectResult(TRUE);
+
 		infix("getmetaobject(1).str.name").expectResult(s("str"));
 		infix("getmetaobject(1).str.info == slots.str").expectResult(TRUE);
 
 		infix("getmetaobject(1).str(123)").expectResult(s("123"));
+		infix("int.metaobject.str(123)").expectResult(s("123"));
 		infix("slots.str(123)").expectResult(s("123"));
 
 		infix("let([f = (a,b)->a-b], getmetaobject(f).call(f, 3, 5))").expectResult(i(-2));
-		infix("slots.call((a,b)->a-b, 3, 6)").expectResult(i(-3));
+		infix("let([f = (a,b)->a-b], function.metaobject.call(f, 3, 6))").expectResult(i(-3));
+		infix("slots.call((a,b)->a-b, 3, 7)").expectResult(i(-4));
 
 		infix("getmetaobject(1).call").expectResult(NULL);
 	}
@@ -2382,8 +2400,8 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testCustomMetaObjectBoolSlot() {
 		infix("letseq([mo = metaobject(slots.bool = (self) -> self == 'yup'), o_true=setmetaobject('yup', mo), o_false=setmetaobject('nope', mo)], bool(o_true):bool(o_false))").expectResult(cons(TRUE, FALSE));
-		infix("let([mo = getmetaobject(0)], mo.bool(0))").expectResult(FALSE);
-		infix("let([mo = getmetaobject(1)], mo.bool(1))").expectResult(TRUE);
+		infix("int.metaobject.bool(0)").expectResult(FALSE);
+		infix("int.metaobject.bool(1)").expectResult(TRUE);
 	}
 
 	@Test
@@ -2395,37 +2413,37 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testCustomMetaObjectEqualsSlot() {
 		infix("letseq([s='abcd', l=len(s), mo = metaobject(slots.equals = (self, other) -> l == len(other)), o=setmetaobject('abcd', mo)], (o == 'defg'):(o == 'abc'))").expectResult(cons(TRUE, FALSE));
-		infix("letseq([mo = getmetaobject(5)], mo.equals(5, 5):mo.equals(5,6))").expectResult(cons(TRUE, FALSE));
+		infix("letseq([mo = int.metaobject], mo.equals(5, 5):mo.equals(5,6))").expectResult(cons(TRUE, FALSE));
 	}
 
 	@Test
 	public void testCustomMetaObjectLengthSlot() {
 		infix("letseq([mo = metaobject(slots.length = (self) -> int(self) + 7), o=setmetaobject(5, mo)], len(o))").expectResult(i(12));
-		infix("letseq([mo = getmetaobject('test')], mo.length('abcde'))").expectResult(i(5));
+		infix("str.metaobject.length('abcde')").expectResult(i(5));
 	}
 
 	@Test
 	public void testCustomMetaObjectReprSlot() {
 		infix("letseq([mo = metaobject(slots.repr = (self) -> $'<{self}>'), o=setmetaobject('test', mo)], repr(o))").expectResult(s("<test>"));
-		infix("letseq([mo = getmetaobject('a')], mo.repr('abc'))").expectResult(s("\"abc\""));
+		infix("str.metaobject.repr('abc')").expectResult(s("\"abc\""));
 	}
 
 	@Test
 	public void testCustomMetaObjectStrSlot() {
 		infix("letseq([mo = metaobject(slots.str = (self) -> 'hello'), o=setmetaobject('123', mo)], str(o))").expectResult(s("hello"));
-		infix("letseq([mo = getmetaobject('a')], mo.str('abc'))").expectResult(s("abc"));
+		infix("str.metaobject.str('abc')").expectResult(s("abc"));
 	}
 
 	@Test
 	public void testCustomMetaObjectSliceSlot() {
 		infix("letseq([mo = metaobject(slots.slice = (self, index) -> self + index), o=setmetaobject(15, mo)], o[20])").expectResult(i(35));
-		infix("letseq([mo = getmetaobject(dict())], mo.slice(dict('3':-5), '3'))").expectResult(i(-5));
+		infix("dict.metaobject.slice(dict('3':-5), '3')").expectResult(i(-5));
 	}
 
 	@Test
 	public void testCustomMetaObjectTypeSlot() {
 		infix("letseq([mo = metaobject(slots.type = (self) -> 'what?'), o=setmetaobject(15, mo)], type(o))").expectResult(s("what?"));
-		infix("letseq([mo = getmetaobject('hello')], mo.type('hi') == str)").expectResult(TRUE);
+		infix("str.metaobject.type('hi') == str").expectResult(TRUE);
 	}
 
 	@Test
