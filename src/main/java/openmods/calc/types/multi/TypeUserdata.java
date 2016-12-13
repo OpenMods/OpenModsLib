@@ -46,6 +46,7 @@ class TypeUserdata {
 		return MetaObject.builder()
 				.set(defaultStrSlot)
 				.set(defaultReprSlot)
+				.set(MetaObjectUtils.USE_VALUE_EQUALS)
 				.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
 				.set(defaultAttrSlot(domain));
 	}

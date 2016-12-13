@@ -90,7 +90,7 @@ public class TypedUnaryOperator extends UnaryOperator.Direct<TypedValue> {
 				public TypedValue apply(TypeDomain domain, TypedValue argValue) {
 					final A value = argValue.unwrap(argCls);
 					final R result = op.apply(value);
-					return new TypedValue(domain, resultCls, result);
+					return domain.create(resultCls, result);
 				}
 
 				@Override

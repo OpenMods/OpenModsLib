@@ -133,7 +133,7 @@ public class TypedBinaryOperator extends BinaryOperator.Direct<TypedValue> {
 					final T leftValue = left.unwrap(type);
 					final T rightValue = right.unwrap(type);
 					final O result = op.apply(leftValue, rightValue);
-					return new TypedValue(domain, output, result);
+					return domain.create(output, result);
 				}
 
 				@Override
@@ -196,7 +196,7 @@ public class TypedBinaryOperator extends BinaryOperator.Direct<TypedValue> {
 					final L leftValue = leftArg.unwrap(left);
 					final R rightValue = rightArg.unwrap(right);
 					final O result = op.apply(leftValue, rightValue);
-					return new TypedValue(domain, output, result);
+					return domain.create(output, result);
 				}
 
 				@Override

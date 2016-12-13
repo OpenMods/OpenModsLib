@@ -17,59 +17,55 @@ import openmods.calc.UnaryFunction;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
-public class OptionalTypeFactory {
-
-	private final TypeDomain domain;
-	private final TypedValue nullValue;
-	private final TypedValue absentValue;
-	private final TypedValue typeValue;
-	private final TypedValue presentTypeValue;
-	private final TypedValue absentTypeValue;
+public class OptionalType {
 
 	private static final String MEMBER_MAP = "map";
 	private static final String MEMBER_OR_CALL = "orCall";
 	private static final String MEMBER_OR = "or";
 	private static final String MEMBER_GET = "get";
 
-	private TypedValue wrap(ICallable<TypedValue> callable) {
+	private static TypedValue wrap(TypeDomain domain, ICallable<TypedValue> callable) {
 		return domain.create(CallableValue.class, new CallableValue(callable));
 	}
 
-	private abstract class OptionalValue {
+	public static abstract class Value {
 
 		private final Map<String, TypedValue> members;
 
-		public OptionalValue() {
+		protected TypeDomain domain;
+
+		public Value(TypeDomain domain) {
+			this.domain = domain;
 			final ImmutableMap.Builder<String, TypedValue> members = ImmutableMap.builder();
 
-			members.put(MEMBER_GET, wrap(new NullaryFunction<TypedValue>() {
+			members.put(MEMBER_GET, wrap(domain, new NullaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call() {
-					return OptionalValue.this.getValue();
+					return Value.this.getValue();
 				}
 			}));
 
-			members.put(MEMBER_OR, wrap(new UnaryFunction<TypedValue>() {
+			members.put(MEMBER_OR, wrap(domain, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue value) {
-					return OptionalValue.this.or(value);
+					return Value.this.or(value);
 				}
 			}));
 
-			members.put(MEMBER_OR_CALL, wrap(new FixedCallable<TypedValue>(1, 1) {
+			members.put(MEMBER_OR_CALL, wrap(domain, new FixedCallable<TypedValue>(1, 1) {
 				@Override
 				public void call(Frame<TypedValue> frame) {
 					final TypedValue arg = frame.stack().pop();
-					OptionalValue.this.orCall(frame, arg);
+					Value.this.orCall(frame, arg);
 
 				}
 			}));
 
-			members.put(MEMBER_MAP, wrap(new FixedCallable<TypedValue>(1, 1) {
+			members.put(MEMBER_MAP, wrap(domain, new FixedCallable<TypedValue>(1, 1) {
 				@Override
 				public void call(Frame<TypedValue> frame) {
 					final TypedValue arg = frame.stack().pop();
-					frame.stack().push(OptionalValue.this.map(frame, arg));
+					frame.stack().push(Value.this.map(frame, arg));
 
 				}
 			}));
@@ -97,12 +93,14 @@ public class OptionalTypeFactory {
 
 		public abstract String repr();
 
+		public abstract Optional<TypedValue> asOptional();
 	}
 
-	private class Present extends OptionalValue {
+	private static class Present extends Value {
 		private final TypedValue value;
 
-		public Present(TypedValue value) {
+		public Present(TypeDomain domain, TypedValue value) {
+			super(domain);
 			this.value = value;
 		}
 
@@ -151,14 +149,13 @@ public class OptionalTypeFactory {
 			if (!stack.isEmpty())
 				throw new IllegalStateException("Values left on stack: " + Lists.newArrayList(stack));
 
-			return present(result);
+			return present(domain, result);
 		}
 
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + getOuterType().hashCode();
 			result = prime * result + ((value == null)? 0 : value.hashCode());
 			return result;
 		}
@@ -175,13 +172,17 @@ public class OptionalTypeFactory {
 			return false;
 		}
 
-		private OptionalTypeFactory getOuterType() {
-			return OptionalTypeFactory.this;
+		@Override
+		public Optional<TypedValue> asOptional() {
+			return Optional.of(value);
 		}
-
 	}
 
-	private class Absent extends OptionalValue {
+	private static class Absent extends Value {
+
+		public Absent(TypeDomain domain) {
+			super(domain);
+		}
 
 		@Override
 		public boolean isPresent() {
@@ -217,70 +218,41 @@ public class OptionalTypeFactory {
 		@Override
 		public TypedValue map(Frame<TypedValue> frame, TypedValue arg) {
 			Preconditions.checkArgument(MetaObjectUtils.isCallable(arg), "Value is not callable: %s", arg);
-			return absentValue;
+			return domain.create(Value.class, this);
+		}
+
+		@Override
+		public Optional<TypedValue> asOptional() {
+			return Optional.absent();
+		}
+
+		@Override
+		public int hashCode() {
+			return 42;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return obj == this || obj instanceof Absent;
 		}
 
 	}
 
-	public OptionalTypeFactory(TypedValue nullValue) {
-		this.domain = nullValue.domain;
-		this.nullValue = nullValue;
-		this.presentTypeValue = createPresentConstructor();
-		this.absentTypeValue = createAbsentConstructor();
-		this.typeValue = createOptionalType();
-
-		this.domain.registerType(OptionalValue.class, "optional",
-				MetaObject.builder()
-						.set(new MetaObject.SlotAttr() {
-							@Override
-							public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
-								return self.as(OptionalValue.class).attr(key);
-							}
-						})
-						.set(new MetaObject.SlotStr() {
-							@Override
-							public String str(TypedValue self, Frame<TypedValue> frame) {
-								return self.as(OptionalValue.class).str();
-							}
-						})
-						.set(new MetaObject.SlotRepr() {
-							@Override
-							public String repr(TypedValue self, Frame<TypedValue> frame) {
-								return self.as(OptionalValue.class).repr();
-							}
-						})
-						.set(new MetaObject.SlotBool() {
-							@Override
-							public boolean bool(TypedValue self, Frame<TypedValue> frame) {
-								return self.as(OptionalValue.class).isPresent();
-							}
-
-						})
-						.set(new MetaObject.SlotType() {
-							@Override
-							public TypedValue type(TypedValue self, Frame<TypedValue> frame) {
-								return typeValue;
-							}
-						})
-						.build());
-		this.absentValue = domain.create(OptionalValue.class, new Absent());
-	}
-
-	private TypedValue createPresentConstructor() {
+	private static TypedValue createPresentConstructor(final TypeDomain domain) {
 		return domain.create(TypeUserdata.class, new TypeUserdata("optional.present"),
 				MetaObject.builder()
 						.set(MetaObjectUtils.callableAdapter(new UnaryFunction<TypedValue>() {
 							@Override
 							protected TypedValue call(TypedValue value) {
-								return domain.create(OptionalValue.class, new Present(value));
+								return domain.create(Value.class, new Present(domain, value));
 							}
 						}))
 						.set(new MetaObject.SlotDecompose() {
 							@Override
 							public Optional<List<TypedValue>> tryDecompose(TypedValue self, TypedValue input, int variableCount, Frame<TypedValue> frame) {
 								Preconditions.checkArgument(variableCount == 1, "Invalid number of values to unpack, expected none got %s", variableCount);
-								if (input.is(OptionalValue.class)) {
-									final OptionalValue optional = input.as(OptionalValue.class);
+								if (input.is(Value.class)) {
+									final Value optional = input.as(Value.class);
 									if (!optional.isPresent()) return Optional.absent();
 
 									final List<TypedValue> result = Lists.newArrayList(optional.getValue());
@@ -299,21 +271,21 @@ public class OptionalTypeFactory {
 
 	private static final Optional<List<TypedValue>> ABSENT_MATCH = Optional.of(Collections.<TypedValue> emptyList());
 
-	private TypedValue createAbsentConstructor() {
+	private static TypedValue createAbsentConstructor(final TypeDomain domain) {
 		return domain.create(TypeUserdata.class, new TypeUserdata("optional.absent"),
 				MetaObject.builder()
 						.set(MetaObjectUtils.callableAdapter(new NullaryFunction<TypedValue>() {
 							@Override
 							protected TypedValue call() {
-								return absentValue;
+								return absent(domain);
 							}
 						}))
 						.set(new MetaObject.SlotDecompose() {
 							@Override
 							public Optional<List<TypedValue>> tryDecompose(TypedValue self, TypedValue input, int variableCount, Frame<TypedValue> frame) {
 								Preconditions.checkArgument(variableCount == 0, "Invalid number of values to unpack, expected none got %s", variableCount);
-								if (input.is(OptionalValue.class)) {
-									if (input.as(OptionalValue.class).isPresent()) return Optional.absent();
+								if (input.is(Value.class)) {
+									if (input.as(Value.class).isPresent()) return Optional.absent();
 									else return ABSENT_MATCH;
 								}
 
@@ -327,15 +299,13 @@ public class OptionalTypeFactory {
 
 	}
 
-	private TypedValue createOptionalType() {
+	private static TypedValue createOptionalType(final TypedValue nullValue, final TypedValue presentTypeValue, final TypedValue absentTypeValue) {
+		final TypeDomain domain = nullValue.domain;
 		final Map<String, TypedValue> methods = ImmutableMap.<String, TypedValue> builder()
-				.put("from", wrap(new UnaryFunction<TypedValue>() {
+				.put("from", wrap(domain, new UnaryFunction<TypedValue>() {
 					@Override
 					protected TypedValue call(TypedValue value) {
-						if (value == nullValue)
-							return absentValue;
-						else
-							return domain.create(OptionalValue.class, new Present(value));
+						return (value == nullValue)? absent(domain) : present(domain, value);
 					}
 				}))
 				.put("present", presentTypeValue)
@@ -352,20 +322,64 @@ public class OptionalTypeFactory {
 						.build());
 	}
 
-	public TypedValue getAbsent() {
-		return absentValue;
-	}
+	public static void register(Environment<TypedValue> env, TypedValue nullValue) {
+		final TypeDomain domain = nullValue.domain;
+		final TypedValue presentConstructor = createPresentConstructor(domain);
+		final TypedValue absentConstructor = createAbsentConstructor(domain);
 
-	public TypedValue present(TypedValue value) {
-		return domain.create(OptionalValue.class, new Present(value));
-	}
+		final TypedValue typeValue = createOptionalType(nullValue, presentConstructor, absentConstructor);
 
-	public TypedValue wrapNullable(TypedValue result) {
-		return result != null? present(result) : absentValue;
-	}
-
-	public void registerSymbol(Environment<TypedValue> env) {
 		env.setGlobalSymbol("optional", typeValue);
+
+		domain.registerType(Value.class, "optional",
+				MetaObject.builder()
+						.set(new MetaObject.SlotAttr() {
+							@Override
+							public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
+								return self.as(Value.class).attr(key);
+							}
+						})
+						.set(new MetaObject.SlotStr() {
+							@Override
+							public String str(TypedValue self, Frame<TypedValue> frame) {
+								return self.as(Value.class).str();
+							}
+						})
+						.set(new MetaObject.SlotRepr() {
+							@Override
+							public String repr(TypedValue self, Frame<TypedValue> frame) {
+								return self.as(Value.class).repr();
+							}
+						})
+						.set(new MetaObject.SlotBool() {
+							@Override
+							public boolean bool(TypedValue self, Frame<TypedValue> frame) {
+								return self.as(Value.class).isPresent();
+							}
+
+						})
+						.set(new MetaObject.SlotType() {
+							@Override
+							public TypedValue type(TypedValue self, Frame<TypedValue> frame) {
+								return typeValue;
+							}
+						})
+						.build());
 	}
 
+	public static TypedValue absent(TypeDomain domain) {
+		return domain.create(Value.class, new Absent(domain));
+	}
+
+	public static TypedValue present(TypeDomain domain, TypedValue value) {
+		return domain.create(Value.class, new Present(domain, value));
+	}
+
+	public static TypedValue wrapNullable(TypeDomain domain, TypedValue result) {
+		return result != null? present(domain, result) : absent(domain);
+	}
+
+	public static TypedValue fromOptional(TypeDomain domain, Optional<TypedValue> value) {
+		return value.isPresent()? present(domain, value.get()) : absent(domain);
+	}
 }

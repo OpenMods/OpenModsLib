@@ -119,4 +119,8 @@ public class TypedValue {
 
 		return metaObject.get();
 	}
+
+	public TypedValue updateMetaObject(MetaObject newMetaObject) {
+		return new TypedValue(domain, type, value, newMetaObject);
+	}
 }

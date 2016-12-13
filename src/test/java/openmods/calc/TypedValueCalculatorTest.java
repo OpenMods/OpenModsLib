@@ -15,6 +15,7 @@ import openmods.calc.CalcTestUtils.SymbolStub;
 import openmods.calc.types.multi.CallableValue;
 import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.MetaObject;
+import openmods.calc.types.multi.MetaObjectInfo;
 import openmods.calc.types.multi.MetaObjectUtils;
 import openmods.calc.types.multi.Symbol;
 import openmods.calc.types.multi.TypeDomain;
@@ -40,6 +41,7 @@ public class TypedValueCalculatorTest {
 		filler.fillHolders(TypeDomain.TypeVariableHolders.class);
 		filler.fillHolders(MethodAccess.TypeVariableHolders.class);
 		filler.fillHolders(TypedFunction.class);
+		filler.fillHolders(MetaObjectInfo.SlotAdapterVars.class);
 	}
 
 	private final Calculator<TypedValue, ExprType> sut = TypedValueCalculatorFactory.create();
@@ -1733,7 +1735,7 @@ public class TypedValueCalculatorTest {
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void testAssignOperatorCompileFail() {
-		infix("a = 2");
+		infix("a = b = 2");
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -2206,6 +2208,7 @@ public class TypedValueCalculatorTest {
 		infix("bool(dict())").expectResult(FALSE);
 
 		infix("len(dict(1:'a','a':#b,2I:5))").expectResult(i(3));
+		infix("len(dict(1 = 'a','a' = #b,2I = 5))").expectResult(i(3)); // alternative notation
 		infix("bool(dict(1:'a','a':#b,2I:5))").expectResult(TRUE);
 
 		infix("let([d = dict(1:'a','a':#b,2I:5)], cons(d[1], d[2I]))").expectResult(cons(s("a"), i(5)));
@@ -2307,7 +2310,7 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testCapabilities() {
+	public void testSlotPredicates() {
 		sut.environment.setGlobalSymbol("test", domain.create(DummyObject.class, DUMMY,
 				MetaObject.builder()
 						.set(new MetaObject.SlotBool() {
@@ -2324,12 +2327,108 @@ public class TypedValueCalculatorTest {
 						})
 						.build()));
 
-		infix("can(test, capabilities.str)").expectResult(TRUE);
-		infix("can(test, capabilities.repr)").expectResult(FALSE);
-		infix("can(test, capabilities.bool)").expectResult(TRUE);
+		infix("has(test, slots.str)").expectResult(TRUE);
+		infix("has(test, slots.repr)").expectResult(FALSE);
+		infix("has(test, slots.bool)").expectResult(TRUE);
 
-		infix("match((capabilities.str(x)) -> 'can', (_) -> 'cannot')(test)").expectResult(s("can"));
-		infix("match((capabilities.str(x)) -> 'can', (_) -> 'cannot')(4)").expectResult(s("can"));
-		infix("match((capabilities.str(x)) -> 'can', (_) -> 'cannot')(locals())").expectResult(s("cannot"));
+		infix("match((slots.str(x)) -> 'can', (_) -> 'cannot')(test)").expectResult(s("can"));
+		infix("match((slots.str(x)) -> 'can', (_) -> 'cannot')(4)").expectResult(s("can"));
+		infix("match((slots.str(x)) -> 'can', (_) -> 'cannot')(locals())").expectResult(s("cannot"));
+	}
+
+	@Test
+	public void testMetaObjectFromBuiltInObject() {
+		infix("type(getmetaobject(1)) == metaobject").expectResult(TRUE);
+		infix("type(getmetaobject(1).str) == metaobjectslotvalue").expectResult(TRUE);
+		infix("getmetaobject(1).str.name").expectResult(s("str"));
+		infix("getmetaobject(1).str.info == slots.str").expectResult(TRUE);
+
+		infix("getmetaobject(1).str(123)").expectResult(s("123"));
+
+		infix("getmetaobject(1).call").expectResult(NULL);
+	}
+
+	@Test
+	public void testCustomMetaCreationAndSetting() {
+		infix("type(metaobject(slots.str=(s) -> 'hello')) == metaobject").expectResult(TRUE);
+		infix("let([callableInt=setmetaobject(13, metaobject(slots.call = (self, other) -> self + other))], callableInt(21))").expectResult(i(34));
+	}
+
+	@Test
+	public void testCustomMetaObjectSlotRetrievalOptimization() {
+		infix("let([f = (s) -> 'hello'], metaobject(slots.str=f).str == f)").expectResult(TRUE);
+	}
+
+	@Test
+	public void testCustomMetaObjectWithNativeSlots() {
+		infix("letseq([originalMetaobject = getmetaobject(3), callableInt=setmetaobject(13, metaobject(slots.call = (self) -> self + 1, slots.str=originalMetaobject.str))], str(callableInt) + ' ' + str(callableInt()))").expectResult(s("13 14"));
+	}
+
+	@Test
+	public void testCustomMetaObjectUpdateFromNative() {
+		infix("letseq([originalMetaobject = getmetaobject('s'), callableStr=setmetaobject('hello', originalMetaobject(slots.call = (self) -> 'world'))], callableStr + ' ' + callableStr())").expectResult(s("hello world"));
+	}
+
+	@Test
+	public void testCustomMetaObjectAttrSlot() {
+		infix("letseq([mo = metaobject(slots.attr = (self, key) -> optional.present('m_' + self + '_' + key)), o1=setmetaobject('a', mo), o2=setmetaobject('b', mo)], (o1.x:o1.y):(o2.x:o2.y))").expectResult(cons(cons(s("m_a_x"), s("m_a_y")), cons(s("m_b_x"), s("m_b_y"))));
+		infix("let([mo = getmetaobject(int)], mo.attr(int, 'name') == optional.present('int'))").expectResult(TRUE);
+	}
+
+	@Test
+	public void testCustomMetaObjectBoolSlot() {
+		infix("letseq([mo = metaobject(slots.bool = (self) -> self == 'yup'), o_true=setmetaobject('yup', mo), o_false=setmetaobject('nope', mo)], bool(o_true):bool(o_false))").expectResult(cons(TRUE, FALSE));
+		infix("let([mo = getmetaobject(0)], mo.bool(0))").expectResult(FALSE);
+		infix("let([mo = getmetaobject(1)], mo.bool(1))").expectResult(TRUE);
+	}
+
+	@Test
+	public void testCustomMetaObjectCallSlot() {
+		infix("letseq([mo = metaobject(slots.call = (self, a, b) -> if(self == 'left', a, b)), left=setmetaobject('left', mo), right=setmetaobject('right', mo)], left(1,2):right(1,2))").expectResult(cons(i(1), i(2)));
+		infix("letseq([v = (a,b) -> a - b, mo = getmetaobject(v)], mo.call(v, 1, 2))").expectResult(i(-1));
+	}
+
+	@Test
+	public void testCustomMetaObjectEqualsSlot() {
+		infix("letseq([s='abcd', l=len(s), mo = metaobject(slots.equals = (self, other) -> l == len(other)), o=setmetaobject('abcd', mo)], (o == 'defg'):(o == 'abc'))").expectResult(cons(TRUE, FALSE));
+		infix("letseq([mo = getmetaobject(5)], mo.equals(5, 5):mo.equals(5,6))").expectResult(cons(TRUE, FALSE));
+	}
+
+	@Test
+	public void testCustomMetaObjectLengthSlot() {
+		infix("letseq([mo = metaobject(slots.length = (self) -> int(self) + 7), o=setmetaobject(5, mo)], len(o))").expectResult(i(12));
+		infix("letseq([mo = getmetaobject('test')], mo.length('abcde'))").expectResult(i(5));
+	}
+
+	@Test
+	public void testCustomMetaObjectReprSlot() {
+		infix("letseq([mo = metaobject(slots.repr = (self) -> $'<{self}>'), o=setmetaobject('test', mo)], repr(o))").expectResult(s("<test>"));
+		infix("letseq([mo = getmetaobject('a')], mo.repr('abc'))").expectResult(s("\"abc\""));
+	}
+
+	@Test
+	public void testCustomMetaObjectStrSlot() {
+		infix("letseq([mo = metaobject(slots.str = (self) -> 'hello'), o=setmetaobject('123', mo)], str(o))").expectResult(s("hello"));
+		infix("letseq([mo = getmetaobject('a')], mo.str('abc'))").expectResult(s("abc"));
+	}
+
+	@Test
+	public void testCustomMetaObjectSliceSlot() {
+		infix("letseq([mo = metaobject(slots.slice = (self, index) -> self + index), o=setmetaobject(15, mo)], o[20])").expectResult(i(35));
+		infix("letseq([mo = getmetaobject(dict())], mo.slice(dict('3':-5), '3'))").expectResult(i(-5));
+	}
+
+	@Test
+	public void testCustomMetaObjectTypeSlot() {
+		infix("letseq([mo = metaobject(slots.type = (self) -> 'what?'), o=setmetaobject(15, mo)], type(o))").expectResult(s("what?"));
+		infix("letseq([mo = getmetaobject('hello')], mo.type('hi') == str)").expectResult(TRUE);
+	}
+
+	@Test
+	public void testCustomMetaObjectDecomposeSlot() {
+		infix("letseq([mo = metaobject(slots.decompose = (self, value, count) -> if(value == 'go', optional.present((self + 1):(self + 3)), optional.absent())), O=setmetaobject(15, mo)], match((O(a, b)) -> a:b, (_) -> 'other')('go'))").expectResult(cons(i(16), i(18)));
+		infix("letseq([mo = metaobject(slots.decompose = (self, value, count) -> if(value == 'go', optional.present((self + 1):(self + 3)), optional.absent())), O=setmetaobject(15, mo)], match((O(a, b)) -> a:b, (_) -> 'other')('no go'))").expectResult(s("other"));
+		infix("letseq([mo = getmetaobject(int)], mo.decompose(int, 5, 1) == optional.present(5))").expectResult(TRUE);
+		infix("letseq([mo = getmetaobject(int)], mo.decompose(int, '5', 1) == optional.absent())").expectResult(TRUE);
 	}
 }

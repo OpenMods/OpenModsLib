@@ -57,7 +57,15 @@ public class TypeDomain {
 
 	}
 
-	private final MetaObject emptyMetaObject = MetaObject.builder().build();
+	private final MetaObject defaultMetaObject;
+
+	public TypeDomain() {
+		this.defaultMetaObject = MetaObject.builder().build();
+	}
+
+	public TypeDomain(MetaObject defaultMetaObject) {
+		this.defaultMetaObject = defaultMetaObject;
+	}
 
 	private static class TypeInfo {
 		public final String name;
@@ -80,7 +88,7 @@ public class TypeDomain {
 	}
 
 	public TypeDomain registerType(Class<?> type, String shortName) {
-		registerType(type, shortName, emptyMetaObject);
+		registerType(type, shortName, defaultMetaObject);
 		return this;
 	}
 

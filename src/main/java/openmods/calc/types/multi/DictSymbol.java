@@ -26,13 +26,10 @@ public class DictSymbol {
 
 	private final TypedValue selfValue;
 
-	private final OptionalTypeFactory optionalFactory;
-
-	public DictSymbol(TypedValue nullValue, OptionalTypeFactory optionalFactory) {
+	public DictSymbol(TypedValue nullValue) {
 		this.nullValue = nullValue;
 		this.domain = nullValue.domain;
 		this.domain.registerType(Dict.class, "dict", createValueMetaObject());
-		this.optionalFactory = optionalFactory;
 		this.selfValue = domain.create(TypeUserdata.class, new TypeUserdata("dict"), createTypeMetaObject());
 	}
 
@@ -140,7 +137,7 @@ public class DictSymbol {
 			members.put("getOptional", CallableValue.wrap(domain, new UnaryFunction<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue key) {
-					return optionalFactory.wrapNullable(Dict.this.values.get(key));
+					return OptionalType.wrapNullable(domain, Dict.this.values.get(key));
 				}
 			}));
 			members.put("getOr", CallableValue.wrap(domain, new BinaryFunction<TypedValue>() {

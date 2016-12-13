@@ -55,6 +55,11 @@ public abstract class OptionalInt {
 		public String toString() {
 			return "present: " + value;
 		}
+
+		@Override
+		public OptionalInt map(IntFunction function) {
+			return new Present(function.apply(value));
+		}
 	}
 
 	private static class Absent extends OptionalInt {
@@ -84,6 +89,11 @@ public abstract class OptionalInt {
 			return "absent";
 		}
 
+		@Override
+		public OptionalInt map(IntFunction function) {
+			return this;
+		}
+
 	}
 
 	private OptionalInt() {}
@@ -95,6 +105,12 @@ public abstract class OptionalInt {
 	public abstract int or(int defaultValue);
 
 	public abstract boolean compareIfPresent(int value);
+
+	public interface IntFunction {
+		public int apply(int value);
+	}
+
+	public abstract OptionalInt map(IntFunction function);
 
 	private static final OptionalInt[] cache = new OptionalInt[CACHE_RANGE * 2 + 1];
 

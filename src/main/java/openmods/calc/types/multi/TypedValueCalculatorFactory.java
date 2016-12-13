@@ -133,6 +133,30 @@ public class TypedValueCalculatorFactory {
 		}
 	}
 
+	private static class SingularBinaryOperatorNodeFactory implements IBinaryExprNodeFactory<TypedValue> {
+
+		private final BinaryOperator<TypedValue> op;
+
+		public SingularBinaryOperatorNodeFactory(BinaryOperator<TypedValue> op) {
+			this.op = op;
+		}
+
+		@Override
+		public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
+			checkChild(leftChild);
+			checkChild(rightChild);
+			return new BinaryOpNode<TypedValue>(op, leftChild, rightChild);
+		}
+
+		private void checkChild(IExprNode<TypedValue> child) {
+			if (child instanceof BinaryOpNode) {
+				final BinaryOpNode<TypedValue> childOpNode = (BinaryOpNode<TypedValue>)child;
+				if (childOpNode.operator == this.op)
+					throw new UnsupportedOperationException("Operator " + op.id + "(" + op + ") cannot be chained");
+			}
+		}
+	}
+
 	private interface CompareResultInterpreter {
 		public boolean interpret(int value);
 	}
@@ -242,7 +266,7 @@ public class TypedValueCalculatorFactory {
 	}
 
 	public static Calculator<TypedValue, ExprType> create() {
-		final TypeDomain domain = new TypeDomain();
+		final TypeDomain domain = new TypeDomain(MetaObject.builder().set(MetaObjectUtils.USE_VALUE_EQUALS).build());
 
 		final TypedValueParser valueParser = new TypedValueParser(domain);
 
@@ -321,6 +345,7 @@ public class TypedValueCalculatorFactory {
 									return valuePrinter.repr(self.as(BigInteger.class));
 								}
 							})
+							.set(MetaObjectUtils.USE_VALUE_EQUALS)
 							.build());
 		}
 
@@ -365,6 +390,7 @@ public class TypedValueCalculatorFactory {
 									return valuePrinter.repr(self.as(Double.class));
 								}
 							})
+							.set(MetaObjectUtils.USE_VALUE_EQUALS)
 							.build());
 		}
 
@@ -402,6 +428,7 @@ public class TypedValueCalculatorFactory {
 									return valuePrinter.repr(self.as(Boolean.class));
 								}
 							})
+							.set(MetaObjectUtils.USE_VALUE_EQUALS)
 							.build());
 		}
 
@@ -478,6 +505,7 @@ public class TypedValueCalculatorFactory {
 									return valuePrinter.repr(self.as(String.class));
 								}
 							})
+							.set(MetaObjectUtils.USE_VALUE_EQUALS)
 							.build());
 		}
 
@@ -515,6 +543,7 @@ public class TypedValueCalculatorFactory {
 									return valuePrinter.repr(self.as(Complex.class));
 								}
 							})
+							.set(MetaObjectUtils.USE_VALUE_EQUALS)
 							.build());
 		}
 
@@ -553,6 +582,7 @@ public class TypedValueCalculatorFactory {
 									return valuePrinter.repr(self.as(Cons.class));
 								}
 							})
+							.set(MetaObjectUtils.USE_VALUE_EQUALS)
 							.build());
 		}
 
@@ -585,6 +615,7 @@ public class TypedValueCalculatorFactory {
 									return valuePrinter.repr(self.as(Symbol.class));
 								}
 							})
+							.set(MetaObjectUtils.USE_VALUE_EQUALS)
 							.build());
 		}
 
@@ -1141,7 +1172,7 @@ public class TypedValueCalculatorFactory {
 				final MetaObject.SlotAttr slotAttr = target.getMetaObject().slotAttr;
 				Preconditions.checkState(slotAttr != null, "Value %s has no attributes", target);
 				final Optional<TypedValue> attr = slotAttr.attr(target, key, frame);
-				Preconditions.checkState(attr.isPresent(), "Value %s has no attribute %s", target, key);
+				Preconditions.checkState(attr.isPresent(), "Value '%s' has no attribute '%s'", target, key);
 				frame.stack().push(attr.get());
 			}
 		}
@@ -1168,11 +1199,17 @@ public class TypedValueCalculatorFactory {
 
 		final BinaryOperator<TypedValue> lambdaOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("->", PRIORITY_LAMBDA, Associativity.RIGHT)).unwrap();
 
-		final BinaryOperator<TypedValue> assignOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("=", PRIORITY_ASSIGN)).unwrap();
-
 		final BinaryOperator<TypedValue> splitOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("\\", PRIORITY_SPLIT, Associativity.RIGHT)).unwrap();
 
 		final BinaryOperator<TypedValue> colonOperator = operators.registerBinaryOperator(new BinaryOperator.Direct<TypedValue>(":", PRIORITY_CONS, Associativity.RIGHT) {
+			@Override
+			public TypedValue execute(TypedValue left, TypedValue right) {
+				return domain.create(Cons.class, new Cons(left, right));
+			}
+		}).unwrap();
+
+		// this is just sugar - but low priority op is handy for functions that use pairs as named args
+		final BinaryOperator<TypedValue> assignOperator = operators.registerBinaryOperator(new BinaryOperator.Direct<TypedValue>("=", PRIORITY_ASSIGN) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				return domain.create(Cons.class, new Cons(left, right));
@@ -1704,7 +1741,11 @@ public class TypedValueCalculatorFactory {
 				final int args = argumentsCount.get();
 
 				final TypedValue target = frame.stack().drop(args - 1);
-				MetaObjectUtils.call(frame, target, OptionalInt.of(args - 1), returnsCount);
+				try {
+					MetaObjectUtils.call(frame, target, OptionalInt.of(args - 1), returnsCount);
+				} catch (Exception e) {
+					throw new RuntimeException("Failed to execute value " + target, e);
+				}
 			}
 		});
 
@@ -1804,11 +1845,10 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		final OptionalTypeFactory optionalFactory = new OptionalTypeFactory(nullValue);
-		optionalFactory.registerSymbol(env);
+		OptionalType.register(env, nullValue);
 
 		env.setGlobalSymbol("struct", new StructSymbol(nullValue));
-		env.setGlobalSymbol("dict", new DictSymbol(nullValue, optionalFactory).value());
+		env.setGlobalSymbol("dict", new DictSymbol(nullValue).value());
 
 		env.setGlobalSymbol("globals", new NullaryFunction<TypedValue>() {
 			@Override
@@ -1824,7 +1864,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		CapabilitiesChecker.register(domain, env);
+		MetaObjectSymbols.register(env);
 
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
@@ -1887,7 +1927,7 @@ public class TypedValueCalculatorFactory {
 							}
 						})
 						.addFactory(lambdaOperator, lambdaFactory.createLambdaExprNodeFactory(lambdaOperator))
-						.addFactory(assignOperator, new MarkerBinaryOperatorNodeFactory(assignOperator))
+						.addFactory(assignOperator, new SingularBinaryOperatorNodeFactory(assignOperator))
 						.addFactory(splitOperator, new MarkerBinaryOperatorNodeFactory(splitOperator))
 						.addFactory(andOperator, LazyBinaryOperatorNode.createFactory(andOperator, domain, TypedCalcConstants.SYMBOL_AND_THEN))
 						.addFactory(orOperator, LazyBinaryOperatorNode.createFactory(orOperator, domain, TypedCalcConstants.SYMBOL_OR_ELSE))
