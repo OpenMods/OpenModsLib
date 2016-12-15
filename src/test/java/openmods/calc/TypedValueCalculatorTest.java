@@ -558,7 +558,7 @@ public class TypedValueCalculatorTest {
 				MetaObject.builder().set(new TestStructuredComposite("")).build()));
 
 		infix("let([key = 'a'], root.(key).path)").expectResult(s("a"));
-		infix("let([key() = 'a'], root.(key()).path)").expectResult(s("a"));
+		infix("let([key -> 'a'], root.(key()).path)").expectResult(s("a"));
 	}
 
 	@Test
@@ -1160,8 +1160,8 @@ public class TypedValueCalculatorTest {
 	public void testLetSeq() {
 		infix("letseq([x:2, y:x+3], y)").expectResult(i(5));
 
-		infix("letseq([x:2, y():x+3], y())").expectResult(i(5));
-		infix("letseq([x():2, y:x()+3], y)").expectResult(i(5));
+		infix("letseq([x:2, y->x+3], y())").expectResult(i(5));
+		infix("letseq([x->2, y:x()+3], y)").expectResult(i(5));
 
 		infix("let([z:9], letseq([x:2, y:x+z], y))").expectResult(i(11));
 		infix("let([x:5], letseq([x:2, y:x+3], y))").expectResult(i(5));
@@ -1176,10 +1176,10 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testLetRec() {
-		infix("letrec([odd(v):if(v==0,false,even(v-1)), even(v):if(v==0,true,odd(v-1))], even(6))").expectResult(TRUE);
-		infix("letrec([odd(v):if(v==0,false,even(v-1)), even(v):if(v==0,true,odd(v-1))], odd(5))").expectResult(TRUE);
-		infix("letrec([odd(v):if(v==0,false,even(v-1)), even(v):if(v==0,true,odd(v-1))], odd(4))").expectResult(FALSE);
-		infix("letrec([odd(v):if(v==0,false,even(v-1)), even(v):if(v==0,true,odd(v-1))], even(3))").expectResult(FALSE);
+		infix("letrec([odd(v)->if(v==0,false,even(v-1)), even(v)->if(v==0,true,odd(v-1))], even(6))").expectResult(TRUE);
+		infix("letrec([odd(v)->if(v==0,false,even(v-1)), even(v)->if(v==0,true,odd(v-1))], odd(5))").expectResult(TRUE);
+		infix("letrec([odd(v)->if(v==0,false,even(v-1)), even(v)->if(v==0,true,odd(v-1))], odd(4))").expectResult(FALSE);
+		infix("letrec([odd(v)->if(v==0,false,even(v-1)), even(v)->if(v==0,true,odd(v-1))], even(3))").expectResult(FALSE);
 
 		infix("letrec([x:2], letrec([y:x], x))").expectResult(i(2));
 	}
@@ -1366,9 +1366,13 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testLetFunctionDefinition() {
-		infix("let([a(b,c):b-c], a(1,2))").expectResult(i(-1));
-		infix("let([a(b,c)=b-c], a(1,2))").expectResult(i(-1));
-		infix("let([f(n):if(n<=0,1,f(n-1)*n)], f(6))").expectResult(i(720));
+		infix("let([a() -> -5], a())").expectResult(i(-5));
+		infix("let([a -> -5], a())").expectResult(i(-5));
+		infix("let(['a' -> -5], a())").expectResult(i(-5));
+
+		infix("let([a(b,c) -> b-c], a(1,2))").expectResult(i(-1));
+
+		infix("let([f(n)->if(n<=0,1,f(n-1)*n)], f(6))").expectResult(i(720));
 	}
 
 	@Test
@@ -1488,9 +1492,9 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testRecursiveMatch() {
-		infix("letrec([f(l, c) : match((x:xs) -> f(xs, c+1), ([]) -> c)(l)], f([], 0))").expectResult(i(0));
-		infix("letrec([f(l, c) : match((x:xs) -> f(xs, c+1), ([]) -> c)(l)], f([1], 0))").expectResult(i(1));
-		infix("letrec([f(l, c) : match((x:xs) -> f(xs, c+1), ([]) -> c)(l)], f([1,2,3], 0))").expectResult(i(3));
+		infix("letrec([f(l, c) -> match((x:xs) -> f(xs, c+1), ([]) -> c)(l)], f([], 0))").expectResult(i(0));
+		infix("letrec([f(l, c) -> match((x:xs) -> f(xs, c+1), ([]) -> c)(l)], f([1], 0))").expectResult(i(1));
+		infix("letrec([f(l, c) -> match((x:xs) -> f(xs, c+1), ([]) -> c)(l)], f([1,2,3], 0))").expectResult(i(3));
 	}
 
 	@Test

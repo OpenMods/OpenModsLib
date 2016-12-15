@@ -14,6 +14,7 @@ import openmods.calc.ISymbol;
 import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
 import openmods.calc.Value;
+import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
@@ -28,12 +29,14 @@ public class LetExpressionFactory {
 	private final TypedValue nullValue;
 	private final BinaryOperator<TypedValue> colonOperator;
 	private final BinaryOperator<TypedValue> assignOperator;
+	private final BinaryOperator<TypedValue> lambdaOperator;
 
-	public LetExpressionFactory(TypeDomain domain, TypedValue nullValue, BinaryOperator<TypedValue> colonOperator, BinaryOperator<TypedValue> assignOperator) {
+	public LetExpressionFactory(TypeDomain domain, TypedValue nullValue, BinaryOperator<TypedValue> colonOperator, BinaryOperator<TypedValue> assignOperator, BinaryOperator<TypedValue> lambdaOperator) {
 		this.domain = domain;
 		this.nullValue = nullValue;
 		this.colonOperator = colonOperator;
 		this.assignOperator = assignOperator;
+		this.lambdaOperator = lambdaOperator;
 	}
 
 	private class LetNode extends ScopeModifierNode {
@@ -42,28 +45,54 @@ public class LetExpressionFactory {
 		}
 
 		@Override
+		protected void handlePairOp(List<IExecutable<TypedValue>> output, BinaryOpNode<TypedValue> opNode) {
+			if (opNode.operator == lambdaOperator) {
+				extractLambdaDefinition(output, opNode);
+			} else {
+				throw new UnsupportedOperationException("Expected '=', ':' or '->' as pair separators, got " + opNode.operator);
+			}
+		}
+
+		@Override
 		protected void flattenNameAndValue(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> name, IExprNode<TypedValue> value) {
 			if (name instanceof SymbolCallNode) {
-				// f(x, y):<some code> -> f:(x,y)-><some code>
-				final SymbolCallNode<TypedValue> callNode = (SymbolCallNode<TypedValue>)name;
-				output.add(Value.create(Symbol.get(domain, callNode.symbol())));
-				output.add(Value.create(createLambdaWrapperCode(callNode, value)));
+				// for now
+				throw new UnsupportedOperationException();
 			} else {
-				// f:<some code>, 'f':<some code>, #f:<some code>
+				// f:<value initializer>, 'f':<value initializer>, #f:<value initializer>
 				output.add(Value.create(TypedCalcUtils.extractNameFromNode(domain, name)));
 				output.add(flattenExprToCodeConstant(value));
 			}
 		}
 
-		private TypedValue createLambdaWrapperCode(SymbolCallNode<TypedValue> callNode, IExprNode<TypedValue> value) {
-			final List<IExecutable<TypedValue>> result = Lists.newArrayList();
+		private void extractLambdaDefinition(List<IExecutable<TypedValue>> output, BinaryOpNode<TypedValue> opNode) {
+			final IExprNode<TypedValue> nameNode = opNode.left;
+			final IExprNode<TypedValue> lambdaBody = opNode.right;
 
+			final TypedValue varName;
 			final List<TypedValue> argNames;
-			try {
-				argNames = extractArgNames(callNode.getChildren());
-			} catch (IllegalArgumentException e) {
-				throw new IllegalArgumentException("Cannot extract lambda arg names from " + callNode);
+			if (nameNode instanceof SymbolCallNode) {
+				// f(...) -> <lambda body>
+				final String symbolName = ((SymbolCallNode<TypedValue>)nameNode).symbol();
+				varName = Symbol.get(domain, symbolName);
+
+				try {
+					argNames = extractArgNames(nameNode.getChildren());
+				} catch (IllegalArgumentException e) {
+					throw new IllegalArgumentException("Cannot extract lambda arg names from " + nameNode);
+				}
+			} else {
+				// f -> <lambda body>, #f -> <lambda body>
+				varName = TypedCalcUtils.extractNameFromNode(domain, nameNode);
+				argNames = Lists.newArrayList();
 			}
+
+			output.add(Value.create(varName));
+			output.add(Value.create(createLambdaWrapperCode(argNames, lambdaBody)));
+		}
+
+		private TypedValue createLambdaWrapperCode(List<TypedValue> argNames, IExprNode<TypedValue> value) {
+			final List<IExecutable<TypedValue>> result = Lists.newArrayList();
 			result.add(Value.create(Cons.createList(argNames, nullValue)));
 			result.add(flattenExprToCodeConstant(value));
 			result.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_CLOSURE, 2, 1));

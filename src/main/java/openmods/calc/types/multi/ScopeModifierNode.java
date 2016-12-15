@@ -55,9 +55,16 @@ public abstract class ScopeModifierNode implements IExprNode<TypedValue> {
 		Preconditions.checkState(argNode instanceof BinaryOpNode, "Expected ':' or '=' as separator");
 		final BinaryOpNode<TypedValue> opNode = (BinaryOpNode<TypedValue>)argNode;
 		// assign op has lower prio, but we still need pair as backing structure - therefore we are placing colon
-		Preconditions.checkState(opNode.operator == colonOperator || opNode.operator == assignOperator, "Expected ':' or '=' as separator");
-		flattenNameAndValue(output, opNode.left, opNode.right);
+		if (opNode.operator == colonOperator || opNode.operator == assignOperator) {
+			flattenNameAndValue(output, opNode.left, opNode.right);
+		} else {
+			handlePairOp(output, opNode);
+		}
 		output.add(colonOperator);
+	}
+
+	protected void handlePairOp(List<IExecutable<TypedValue>> output, BinaryOpNode<TypedValue> opNode) {
+		throw new UnsupportedOperationException("Expected '=' or ':' as pair separators, got " + opNode.operator);
 	}
 
 	protected abstract void flattenNameAndValue(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> name, IExprNode<TypedValue> value);
