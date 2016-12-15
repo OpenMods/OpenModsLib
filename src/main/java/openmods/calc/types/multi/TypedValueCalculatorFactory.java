@@ -1866,6 +1866,8 @@ public class TypedValueCalculatorFactory {
 
 		MetaObjectSymbols.register(env);
 
+		RegexSymbol.register(env);
+
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
 

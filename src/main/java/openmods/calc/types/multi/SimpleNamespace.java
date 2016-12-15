@@ -14,16 +14,18 @@ public class SimpleNamespace {
 	}
 
 	public static void register(TypeDomain domain) {
-		domain.registerType(SimpleNamespace.class, "namespace",
-				MetaObject.builder()
-						.set(new MetaObject.SlotAttr() {
-							@Override
-							public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
-								final SimpleNamespace ns = self.as(SimpleNamespace.class);
-								return Optional.fromNullable(ns.values.get(key));
-							}
-						})
-						.build());
+		domain.registerType(SimpleNamespace.class, "namespace", defaultMetaObject().build());
+	}
+
+	public static MetaObject.Builder defaultMetaObject() {
+		return MetaObject.builder()
+				.set(new MetaObject.SlotAttr() {
+					@Override
+					public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
+						final SimpleNamespace ns = self.as(SimpleNamespace.class);
+						return Optional.fromNullable(ns.values.get(key));
+					}
+				});
 	}
 
 }

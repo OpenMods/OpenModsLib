@@ -105,6 +105,7 @@ public class MetaObjectUtils {
 	public static final MetaObject.SlotDecompose DECOMPOSE_ON_TYPE = new MetaObject.SlotDecompose() {
 		@Override
 		public Optional<List<TypedValue>> tryDecompose(TypedValue self, TypedValue input, int variableCount, Frame<TypedValue> frame) {
+			Preconditions.checkArgument(variableCount == 1, "Invalid number of variables, expected one, got %s", variableCount);
 			final MetaObject.SlotType valueTypeSlot = input.getMetaObject().slotType;
 			if (valueTypeSlot != null) {
 				final TypedValue valueType = valueTypeSlot.type(input, frame);

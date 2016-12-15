@@ -9,6 +9,7 @@ import com.google.common.collect.Sets;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.CalcTestUtils.CallableStub;
 import openmods.calc.CalcTestUtils.SymbolStub;
@@ -2452,5 +2453,63 @@ public class TypedValueCalculatorTest {
 		infix("letseq([mo = metaobject(slots.decompose = (self, value, count) -> if(value == 'go', optional.present((self + 1):(self + 3)), optional.absent())), O=setmetaobject(15, mo)], match((O(a, b)) -> a:b, (_) -> 'other')('no go'))").expectResult(s("other"));
 		infix("letseq([mo = getmetaobject(int)], mo.decompose(int, 5, 1) == optional.present(5))").expectResult(TRUE);
 		infix("letseq([mo = getmetaobject(int)], mo.decompose(int, '5', 1) == optional.absent())").expectResult(TRUE);
+	}
+
+	@Test
+	public void testRegexCompilation() {
+		infix("type(regex('test+')) == regex.pattern").expectResult(TRUE);
+
+		infix("regex('test+').pattern").expectResult(s("test+"));
+		infix("regex('test+', regex.i | regex.x).flags").expectResult(i(Pattern.CASE_INSENSITIVE | Pattern.COMMENTS));
+	}
+
+	@Test
+	public void testRegexMatch() {
+		infix("type(regex('test+').full) == regex.matcher").expectResult(TRUE);
+		infix("type(regex('test+').full('test')) == optional").expectResult(TRUE);
+		infix("type(regex('test+').full('test').get()) == regex.match").expectResult(TRUE);
+
+		infix("regex('test+').full('tost') == optional.absent()").expectResult(TRUE);
+		infix("regex('test+').full('atest') == optional.absent()").expectResult(TRUE);
+		infix("regex('test+').full('testa') == optional.absent()").expectResult(TRUE);
+
+		infix("regex('test+').full('test').get().start").expectResult(i(0));
+		infix("regex('test+').full('test').get().end").expectResult(i(4));
+		infix("regex('test+').full('test').get().matched").expectResult(s("test"));
+
+		infix("regex('test+').full('testtt').get().start").expectResult(i(0));
+		infix("regex('test+').full('testtt').get().end").expectResult(i(6));
+		infix("regex('test+').full('testtt').get().matched").expectResult(s("testtt"));
+	}
+
+	@Test
+	public void testRegexGroups() {
+		infix("len(regex('a(.?)b(.?)c').full('abc').get())").expectResult(i(2));
+		infix("regex('a(.?)b(.?)c').full('abc').get()[0]").expectResult(s("abc"));
+		infix("regex('a(.?)b(.?)c').full('abc').get()[1]").expectResult(s(""));
+		infix("regex('a(.?)b(.?)c').full('abc').get()[2]").expectResult(s(""));
+
+		infix("len(regex('a(.?)b(.?)c').full('a1b2c').get())").expectResult(i(2));
+		infix("regex('a(.?)b(.?)c').full('a1b2c').get()[0]").expectResult(s("a1b2c"));
+		infix("regex('a(.?)b(.?)c').full('a1b2c').get()[1]").expectResult(s("1"));
+		infix("regex('a(.?)b(.?)c').full('a1b2c').get()[2]").expectResult(s("2"));
+	}
+
+	@Test
+	public void testRegexSearch() {
+		infix("type(regex('test+').partial) == regex.matcher").expectResult(TRUE);
+		infix("type(regex('test+').partial('test')) == optional").expectResult(TRUE);
+		infix("type(regex('test+').partial('test')) == optional").expectResult(TRUE);
+		infix("type(regex('test+').partial('test').get()) == regex.match").expectResult(TRUE);
+
+		infix("regex('test+').partial('tost') == optional.absent()").expectResult(TRUE);
+
+		infix("regex('test+').partial('atest').get().start").expectResult(i(1));
+		infix("regex('test+').partial('atest').get().end").expectResult(i(5));
+		infix("regex('test+').partial('atest').get().matched").expectResult(s("test"));
+
+		infix("regex('test+').partial('testa').get().start").expectResult(i(0));
+		infix("regex('test+').partial('testa').get().end").expectResult(i(4));
+		infix("regex('test+').partial('testa').get().matched").expectResult(s("test"));
 	}
 }
