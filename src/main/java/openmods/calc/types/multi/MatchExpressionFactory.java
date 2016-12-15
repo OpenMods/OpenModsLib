@@ -1,7 +1,6 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -14,9 +13,7 @@ import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
 import openmods.calc.ICallable;
 import openmods.calc.IExecutable;
-import openmods.calc.ISymbol;
 import openmods.calc.LocalSymbolMap;
-import openmods.calc.NestedSymbolMap;
 import openmods.calc.SingleReturnCallable;
 import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
@@ -27,6 +24,7 @@ import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
+import openmods.calc.types.multi.BindPatternTranslator.PatternPart;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
@@ -40,168 +38,18 @@ public class MatchExpressionFactory {
 	private final BinaryOperator<TypedValue> split;
 	private final BinaryOperator<TypedValue> lambda;
 
+	private final BindPatternEvaluator patternEvaluator;
+	private final BindPatternTranslator patternTranslator;
+
 	public MatchExpressionFactory(TypeDomain domain, BinaryOperator<TypedValue> split, BinaryOperator<TypedValue> lambda) {
 		this.domain = domain;
 		this.split = split;
 		this.lambda = lambda;
 
 		this.domain.registerType(IPattern.class, "pattern");
-		this.domain.registerType(IPatternPlaceholder.class, "patternPlaceholder");
-	}
 
-	private static interface PatternPart {
-		public boolean match(Frame<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value);
-	}
-
-	private static class PatternAny implements PatternPart {
-
-		public static final PatternAny INSTANCE = new PatternAny();
-
-		@Override
-		public boolean match(Frame<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value) {
-			return true;
-		}
-
-	}
-
-	private static class PatternBindName implements PatternPart {
-
-		private final String name;
-
-		public PatternBindName(String name) {
-			this.name = name;
-		}
-
-		@Override
-		public boolean match(Frame<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value) {
-			output.put(name, value);
-			return true;
-		}
-
-	}
-
-	private static class PatternMatchExact implements PatternPart {
-
-		private final TypedValue expected;
-
-		public PatternMatchExact(TypedValue expected) {
-			this.expected = expected;
-		}
-
-		@Override
-		public boolean match(Frame<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value) {
-			return value.equals(expected);
-		}
-
-	}
-
-	private static class PatternMatchCons implements PatternPart {
-
-		private final PatternPart carMatcher;
-		private final PatternPart cdrMatcher;
-
-		public PatternMatchCons(PatternPart carMatcher, PatternPart cdrMatcher) {
-			this.carMatcher = carMatcher;
-			this.cdrMatcher = cdrMatcher;
-		}
-
-		@Override
-		public boolean match(Frame<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value) {
-			if (!value.is(Cons.class)) return false;
-			final Cons pair = value.as(Cons.class);
-			return carMatcher.match(env, output, pair.car) && cdrMatcher.match(null, output, pair.cdr);
-		}
-
-	}
-
-	private abstract static class PatternMatchDecomposableBase implements PatternPart {
-
-		private final List<PatternPart> argMatchers;
-
-		public PatternMatchDecomposableBase(List<PatternPart> argMatchers) {
-			this.argMatchers = argMatchers;
-		}
-
-		@Override
-		public boolean match(Frame<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value) {
-			final TypedValue typeValue = findConstructor(env);
-
-			final MetaObject.SlotDecompose decomposer = typeValue.getMetaObject().slotDecompose;
-
-			// case 1: maybe type knows how to decompose this value
-
-			if (decomposer != null) {
-				final int expectedValueCount = argMatchers.size();
-				final Optional<List<TypedValue>> maybeDecomposition = decomposer.tryDecompose(typeValue, value, expectedValueCount, env);
-				if (!maybeDecomposition.isPresent()) return false;
-
-				final List<TypedValue> decomposition = maybeDecomposition.get();
-				final int actualValueCount = decomposition.size();
-				Preconditions.checkState(actualValueCount == expectedValueCount, "Decomposable contract broken - returned different number of values: expected: %s, got %s", expectedValueCount, actualValueCount);
-
-				for (int i = 0; i < actualValueCount; i++) {
-					final PatternPart pattern = argMatchers.get(i);
-					final TypedValue var = decomposition.get(i);
-
-					if (!pattern.match(env, output, var)) return false;
-				}
-
-				return true;
-			}
-
-			throw new IllegalStateException("Value " + typeValue + " does not describe constructor or type");
-		}
-
-		protected abstract TypedValue findConstructor(Frame<TypedValue> env);
-	}
-
-	private static class PatternMatchDecomposable extends PatternMatchDecomposableBase {
-
-		private final String typeName;
-
-		public PatternMatchDecomposable(List<PatternPart> argMatchers, String typeName) {
-			super(argMatchers);
-			this.typeName = typeName;
-		}
-
-		@Override
-		protected TypedValue findConstructor(Frame<TypedValue> env) {
-			final ISymbol<TypedValue> type = env.symbols().get(typeName);
-			Preconditions.checkState(type != null, "Can't find decomposable constructor %s", typeName);
-			return type.get();
-		}
-	}
-
-	private class PatternMatchNamespaceDecomposable extends PatternMatchDecomposableBase {
-
-		private final String pathStart;
-
-		private final List<String> path;
-
-		public PatternMatchNamespaceDecomposable(List<PatternPart> argMatchers, String pathStart, List<String> path) {
-			super(argMatchers);
-			this.pathStart = pathStart;
-			this.path = path;
-		}
-
-		@Override
-		protected TypedValue findConstructor(Frame<TypedValue> env) {
-			final ISymbol<TypedValue> initialSymbol = env.symbols().get(pathStart);
-			Preconditions.checkState(initialSymbol != null, "Can't find symbol %s", pathStart);
-
-			TypedValue result = initialSymbol.get();
-
-			for (String p : path) {
-				final MetaObject.SlotAttr slotAttr = result.getMetaObject().slotAttr;
-				Preconditions.checkState(slotAttr != null, "Value %s is not structure", result);
-
-				final Optional<TypedValue> maybeNewResult = slotAttr.attr(result, p, env);
-				Preconditions.checkState(maybeNewResult.isPresent(), "Can't find value %s in in %s", p, result);
-				result = maybeNewResult.get();
-			}
-
-			return result;
-		}
+		this.patternEvaluator = new BindPatternEvaluator(this.domain);
+		this.patternTranslator = new BindPatternTranslator();
 	}
 
 	private static interface IPattern {
@@ -224,7 +72,6 @@ public class MatchExpressionFactory {
 				final TypedValue value = values.get(i);
 				final PatternPart pattern = patterns.get(i);
 				if (!pattern.match(env, output, value)) return Optional.absent();
-
 			}
 
 			return matchGuard(env, output);
@@ -287,7 +134,6 @@ public class MatchExpressionFactory {
 
 			return defaultAction;
 		}
-
 	}
 
 	private interface PatternActionCompiler {
@@ -323,7 +169,6 @@ public class MatchExpressionFactory {
 			output.add(Value.create(Code.flattenAndWrap(domain, action)));
 			output.add(new SymbolCall<TypedValue>(SYMBOL_DEFAULT_ACTION, 1, 0));
 		}
-
 	}
 
 	private class PatternConstructionCompiler {
@@ -447,233 +292,24 @@ public class MatchExpressionFactory {
 		return new MatchStateTransition(compilerState);
 	}
 
-	private interface IPatternPlaceholder {
-		public PatternPart getPattern(IPatternTranslator translator);
-	}
-
-	private static class VarPlaceholder implements IPatternPlaceholder {
-		public final String var;
-
-		public VarPlaceholder(String var) {
-			this.var = var;
-		}
-
-		@Override
-		public PatternPart getPattern(IPatternTranslator translator) {
-			return var.equals(TypedCalcConstants.MATCH_ANY)
-					? PatternAny.INSTANCE
-					: new PatternBindName(var);
-		}
-	}
-
-	private static List<PatternPart> translatePatterns(IPatternTranslator translator, List<TypedValue> args) {
-		final List<PatternPart> varMatchers = Lists.newArrayList();
-
-		for (TypedValue m : args)
-			varMatchers.add(translator.translatePattern(m));
-
-		return varMatchers;
-	}
-
-	private class TerminalNamespaceCtorPlaceholder implements IPatternPlaceholder {
-		private final String var;
-		private final List<String> path;
-		private final List<TypedValue> args;
-
-		public TerminalNamespaceCtorPlaceholder(String var, List<String> path, Iterable<TypedValue> args) {
-			this.var = var;
-			this.path = path;
-			this.args = ImmutableList.copyOf(args);
-		}
-
-		@Override
-		public PatternPart getPattern(IPatternTranslator translator) {
-			return new PatternMatchNamespaceDecomposable(translatePatterns(translator, args), var, path);
-		}
-	}
-
-	private class NamespaceCtorPlaceholder implements IPatternPlaceholder {
-		private final String var;
-		private final List<String> path;
-
-		public NamespaceCtorPlaceholder(String var, List<String> path) {
-			this.var = var;
-			this.path = path;
-		}
-
-		@Override
-		public PatternPart getPattern(IPatternTranslator translator) {
-			throw new IllegalStateException("Unfinished namespace constructor matcher: " + var + "." + Joiner.on(".").join(path));
-		}
-
-		public IPatternPlaceholder extend(String key) {
-			final List<String> newPath = Lists.newArrayList(path);
-			newPath.add(key);
-			return new NamespaceCtorPlaceholder(var, newPath);
-		}
-
-		public IPatternPlaceholder terminate(Iterable<TypedValue> args) {
-			return new TerminalNamespaceCtorPlaceholder(var, path, args);
-		}
-	}
-
-	private final MetaObject namespaceCtorPlaceholderMetaObject = MetaObject.builder()
-			.set(new MetaObject.SlotAttr() {
-				@Override
-				public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
-					final NamespaceCtorPlaceholder placeholder = (NamespaceCtorPlaceholder)self.as(IPatternPlaceholder.class);
-					return Optional.of(domain.create(IPatternPlaceholder.class, placeholder.extend(key), self.getMetaObject()));
-				}
-			})
-			.set(new MetaObject.SlotCall() {
-				@Override
-				public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
-					Preconditions.checkArgument(argumentsCount.isPresent(), "Type constructor must be always called with arg count");
-					TypedCalcUtils.expectSingleReturn(returnsCount);
-
-					final NamespaceCtorPlaceholder placeholder = (NamespaceCtorPlaceholder)self.as(IPatternPlaceholder.class);
-					final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.get());
-					final IPatternPlaceholder terminalPlaceholder = placeholder.terminate(stack);
-					stack.clear();
-					stack.push(domain.create(IPatternPlaceholder.class, terminalPlaceholder));
-				}
-
-			})
-			.build();
-
-	private TypedValue createCtorPlaceholder(String name, Frame<TypedValue> frame, OptionalInt argumentsCount) {
-		final Stack<TypedValue> args = frame.stack().substack(argumentsCount.get());
-		final CtorPlaceholder placeholder = new CtorPlaceholder(name, args);
-		args.clear();
-		return domain.create(IPatternPlaceholder.class, placeholder);
-	}
-
-	private MetaObject varPlaceholderMetaObject = MetaObject.builder()
-			.set(new MetaObject.SlotAttr() {
-				@Override
-				public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
-					final VarPlaceholder placeholder = (VarPlaceholder)self.as(IPatternPlaceholder.class);
-
-					return Optional.of(domain.create(IPatternPlaceholder.class,
-							new NamespaceCtorPlaceholder(placeholder.var, ImmutableList.of(key)),
-							namespaceCtorPlaceholderMetaObject));
-				}
-			})
-			.set(new MetaObject.SlotCall() {
-
-				@Override
-				public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
-					final VarPlaceholder placeholder = (VarPlaceholder)self.as(IPatternPlaceholder.class);
-
-					TypedCalcUtils.expectSingleReturn(returnsCount);
-					Preconditions.checkArgument(argumentsCount.isPresent(), "Type constructor must be always called with arg count");
-					frame.stack().push(createCtorPlaceholder(placeholder.var, frame, argumentsCount));
-				}
-
-			})
-			.build();
-
-	private static class CtorPlaceholder implements IPatternPlaceholder {
-		private final String var;
-
-		private final List<TypedValue> args;
-
-		public CtorPlaceholder(String var, Iterable<TypedValue> args) {
-			this.var = var;
-			this.args = ImmutableList.copyOf(args);
-		}
-
-		@Override
-		public PatternPart getPattern(IPatternTranslator translator) {
-			return new PatternMatchDecomposable(translatePatterns(translator, args), var);
-		}
-	}
-
-	private class PlaceholderSymbol extends SingleReturnCallable<TypedValue> implements ISymbol<TypedValue> {
-		private final String var;
-
-		public PlaceholderSymbol(String var) {
-			this.var = var;
-		}
-
-		@Override
-		public TypedValue get() {
-			return domain.create(IPatternPlaceholder.class, new VarPlaceholder(var), varPlaceholderMetaObject);
-		}
-
-		@Override
-		public TypedValue call(Frame<TypedValue> frame, OptionalInt argumentsCount) {
-			Preconditions.checkArgument(argumentsCount.isPresent(), "Type constructor must be always called with arg count");
-			return createCtorPlaceholder(var, frame, argumentsCount);
-		}
-	}
-
-	private class PatternPlaceholdersSymbolMap extends NestedSymbolMap<TypedValue> {
-
-		public PatternPlaceholdersSymbolMap(SymbolMap<TypedValue> parent) {
-			super(parent);
-		}
-
-		@Override
-		public void put(String name, ISymbol<TypedValue> symbol) {
-			throw new UnsupportedOperationException("Can't create new symbols in match patterns");
-		}
-
-		@Override
-		public ISymbol<TypedValue> get(String name) {
-			final ISymbol<TypedValue> parentSymbol = super.get(name);
-			if (parentSymbol != null) return parentSymbol;
-			return new PlaceholderSymbol(name);
-		}
-
-	}
-
-	private static interface IPatternTranslator {
-		public PatternPart translatePattern(TypedValue value);
-	}
-
-	private static class PatternBuilderVarSymbol extends FixedCallable<TypedValue> implements IPatternTranslator {
+	private class PatternBuilderVarSymbol extends FixedCallable<TypedValue> {
 		private final PatternBuilderEnv parent;
-		private final SymbolMap<TypedValue> placeholderSymbolMap;
+		private final SymbolMap<TypedValue> topSymbolMap;
 
-		public PatternBuilderVarSymbol(PatternBuilderEnv parent, SymbolMap<TypedValue> placeholderSymbolMap) {
+		public PatternBuilderVarSymbol(PatternBuilderEnv parent, SymbolMap<TypedValue> topSymbolMap) {
 			super(1, 0);
 			this.parent = parent;
-			this.placeholderSymbolMap = placeholderSymbolMap;
+			this.topSymbolMap = topSymbolMap;
 		}
 
 		@Override
 		public void call(Frame<TypedValue> frame) {
 			final Code pattern = frame.stack().pop().as(Code.class, "variable pattern");
-			final TypedValue compiledPattern = evaluatePattern(pattern);
-			final PatternPart translatedPattern = translatePattern(compiledPattern);
+			final TypedValue compiledPattern = patternEvaluator.evaluate(topSymbolMap, pattern);
+			final PatternPart translatedPattern = patternTranslator.translatePattern(compiledPattern);
 			parent.addVarPattern(translatedPattern);
 		}
 
-		private TypedValue evaluatePattern(Code pattern) {
-			final Frame<TypedValue> patternFrame = FrameFactory.symbolsToFrame(placeholderSymbolMap);
-			pattern.execute(patternFrame);
-			final Stack<TypedValue> resultStack = patternFrame.stack();
-			Preconditions.checkState(resultStack.size() == 1, "Invalid result of pattern compilation");
-			return resultStack.pop();
-		}
-
-		@Override
-		public PatternPart translatePattern(TypedValue value) {
-			if (value.is(IPatternPlaceholder.class)) {
-				final IPatternPlaceholder p = value.as(IPatternPlaceholder.class);
-				return p.getPattern(this);
-			}
-
-			if (value.is(Cons.class)) {
-				final Cons pair = value.as(Cons.class);
-				final PatternPart carPattern = translatePattern(pair.car);
-				final PatternPart cdrPattern = translatePattern(pair.cdr);
-				return new PatternMatchCons(carPattern, cdrPattern);
-			}
-
-			return new PatternMatchExact(value);
-		}
 	}
 
 	private static class PatternBuilderGuardedActionSymbol extends FixedCallable<TypedValue> {
@@ -768,7 +404,7 @@ public class MatchExpressionFactory {
 			final SymbolMap<TypedValue> executionSymbols = executionFrame.symbols();
 			final PatternBuilderEnv builder = new PatternBuilderEnv();
 
-			executionSymbols.put(SYMBOL_PATTERN_VAR, new PatternBuilderVarSymbol(builder, new PatternPlaceholdersSymbolMap(topSymbolMap)));
+			executionSymbols.put(SYMBOL_PATTERN_VAR, new PatternBuilderVarSymbol(builder, topSymbolMap));
 			executionSymbols.put(SYMBOL_GUARDED_ACTION, new PatternBuilderGuardedActionSymbol(builder));
 			executionSymbols.put(SYMBOL_DEFAULT_ACTION, new PatternBuilderDefaultActionSymbol(builder));
 

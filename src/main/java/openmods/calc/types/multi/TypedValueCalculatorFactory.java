@@ -1880,6 +1880,8 @@ public class TypedValueCalculatorFactory {
 		final PromiseExpressionFactory delayFactory = new PromiseExpressionFactory(domain);
 		delayFactory.registerSymbols(env);
 
+		BindPatternTranslator.registerType(domain);
+
 		final MatchExpressionFactory matchFactory = new MatchExpressionFactory(domain, splitOperator, lambdaOperator);
 		matchFactory.registerSymbols(envMap, coreMap);
 
