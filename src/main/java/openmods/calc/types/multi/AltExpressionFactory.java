@@ -72,8 +72,8 @@ public class AltExpressionFactory {
 
 	private class AltNode extends ScopeModifierNode {
 
-		public AltNode(IExprNode<TypedValue> altDefinitionNode, IExprNode<TypedValue> codeNode) {
-			super(domain, TypedCalcConstants.SYMBOL_ALT, colonOperator, assignOperator, altDefinitionNode, codeNode);
+		public AltNode(List<IExprNode<TypedValue>> children) {
+			super(domain, TypedCalcConstants.SYMBOL_ALT, colonOperator, assignOperator, children);
 		}
 
 		@Override
@@ -126,8 +126,7 @@ public class AltExpressionFactory {
 
 			@Override
 			public IExprNode<TypedValue> createRootNode(List<IExprNode<TypedValue>> children) {
-				Preconditions.checkState(children.size() == 2, "Expected two args for 'alt' expression");
-				return new AltNode(children.get(0), children.get(1));
+				return new AltNode(children);
 			}
 		}
 

@@ -4,10 +4,10 @@ import java.util.List;
 import openmods.calc.IExecutable;
 import openmods.calc.SymbolCall;
 import openmods.calc.Value;
-import openmods.calc.parsing.ContainerNode;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.SameStateSymbolTransition;
+import openmods.calc.parsing.SymbolCallNode;
 
 public class LazyArgsSymbolTransition extends SameStateSymbolTransition<TypedValue> {
 
@@ -20,10 +20,10 @@ public class LazyArgsSymbolTransition extends SameStateSymbolTransition<TypedVal
 		this.symbolName = symbolName;
 	}
 
-	private class LazyArgsSymbolNode extends ContainerNode<TypedValue> {
+	private class LazyArgsSymbolNode extends SymbolCallNode<TypedValue> {
 
 		public LazyArgsSymbolNode(List<IExprNode<TypedValue>> args) {
-			super(args);
+			super(symbolName, args);
 		}
 
 		@Override

@@ -21,6 +21,7 @@ import openmods.calc.types.multi.MetaObjectUtils;
 import openmods.calc.types.multi.Symbol;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedBinaryOperator;
+import openmods.calc.types.multi.TypedCalcConstants;
 import openmods.calc.types.multi.TypedFunction;
 import openmods.calc.types.multi.TypedUnaryOperator;
 import openmods.calc.types.multi.TypedValue;
@@ -553,6 +554,14 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testDotOperatorWithCustomExprSymbolGet() {
+		sut.environment.setGlobalSymbol("root", domain.create(DummyObject.class, DUMMY,
+				MetaObject.builder().set(new TestStructuredComposite("")).build()));
+		// 'code' has special transition, but nothing should happen since it compiles to SymbolGet here
+		infix("root.code.path").expectResult(s("code"));
+	}
+
+	@Test
 	public void testDotOperatorWithExpressionResult() {
 		sut.environment.setGlobalSymbol("root", domain.create(DummyObject.class, DUMMY,
 				MetaObject.builder().set(new TestStructuredComposite("")).build()));
@@ -621,6 +630,54 @@ public class TypedValueCalculatorTest {
 
 		sut.environment.setGlobalSymbol("key", s("a"));
 		infix("test.(key)('b')").expectResult(s("a:b"));
+	}
+
+	private void testCustomSymbolCall(String symbol) {
+		sut.environment.setGlobalSymbol("test", domain.create(DummyObject.class, DUMMY,
+				MetaObject.builder().set(new MetaObject.SlotAttr() {
+					@Override
+					public Optional<TypedValue> attr(TypedValue self, final String key, Frame<TypedValue> frame) {
+						return Optional.of(domain.create(DummyObject.class, DUMMY,
+								MetaObject.builder()
+										.set(new MetaObject.SlotCall() {
+											@Override
+											public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
+												final Stack<TypedValue> substack = frame.stack().substack(argumentsCount.get());
+												final List<String> result = Lists.newArrayList();
+												for (TypedValue v : substack)
+													result.add(v.as(String.class));
+												substack.clear();
+												final String args = Joiner.on(",").join(result);
+												substack.push(domain.create(String.class, key + "(" + args + ")"));
+											}
+										})
+										.build()));
+					}
+				}).build()));
+
+		infix("test." + symbol + "()").expectResult(s(symbol + "()"));
+		infix("test." + symbol + "('a' + 'b' * 3)").expectResult(s(symbol + "(abbb)"));
+		infix("test." + symbol + "('a' * 2, 'b' * 4)").expectResult(s(symbol + "(aa,bbbb)"));
+	}
+
+	@Test
+	public void testDotOperatorWithCustomExprSymbolCall() {
+
+		// following symbols have custom state transition and symbol, but it works with dot as long as it extends SymbolCallNode
+
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_CODE);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_IF);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_LET);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_LETSEQ);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_LETREC);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_DELAY);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_MATCH);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_AND_THEN);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_OR_ELSE);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_NON_NULL);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_CONSTANT);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_ALT);
+		testCustomSymbolCall(TypedCalcConstants.SYMBOL_DO);
 	}
 
 	private class TestStructuredCompositeWithCompositeReturn implements MetaObject.SlotAttr {

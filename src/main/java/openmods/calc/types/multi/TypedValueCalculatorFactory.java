@@ -1906,7 +1906,7 @@ public class TypedValueCalculatorFactory {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_AND_THEN, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_AND_THEN));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_OR_ELSE, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_OR_ELSE));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_NON_NULL, new LazyArgsSymbolTransition(compilerState, domain, TypedCalcConstants.SYMBOL_NON_NULL));
-				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_CONSTANT, new ConstantSymbolStateTransition<TypedValue>(compilerState, environment));
+				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_CONSTANT, new ConstantSymbolStateTransition<TypedValue>(compilerState, environment, TypedCalcConstants.SYMBOL_CONSTANT));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_ALT, altFactory.createStateTransition(compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_DO, doFactory.createStateTransition(compilerState));
 

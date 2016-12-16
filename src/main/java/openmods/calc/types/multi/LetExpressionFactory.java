@@ -40,8 +40,8 @@ public class LetExpressionFactory {
 	}
 
 	private class LetNode extends ScopeModifierNode {
-		public LetNode(String letSymbol, IExprNode<TypedValue> argsNode, IExprNode<TypedValue> codeNode) {
-			super(domain, letSymbol, colonOperator, assignOperator, argsNode, codeNode);
+		public LetNode(String letSymbol, List<IExprNode<TypedValue>> children) {
+			super(domain, letSymbol, colonOperator, assignOperator, children);
 		}
 
 		@Override
@@ -121,8 +121,7 @@ public class LetExpressionFactory {
 
 		@Override
 		public IExprNode<TypedValue> createRootNode(List<IExprNode<TypedValue>> children) {
-			Preconditions.checkState(children.size() == 2, "Expected two args for 'let' expression");
-			return new LetNode(letState, children.get(0), children.get(1));
+			return new LetNode(letState, children);
 		}
 	}
 

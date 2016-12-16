@@ -8,13 +8,15 @@ import openmods.calc.Environment;
 import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
+import openmods.calc.IExecutable;
+import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
+import openmods.calc.Value;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
 import openmods.calc.parsing.SymbolCallNode;
-import openmods.calc.parsing.ValueNode;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
@@ -26,6 +28,21 @@ public class PromiseExpressionFactory {
 		this.domain = domain;
 	}
 
+	private class DelayExprNode extends SymbolCallNode<TypedValue> {
+
+		public DelayExprNode(List<IExprNode<TypedValue>> children) {
+			super(TypedCalcConstants.SYMBOL_DELAY, children);
+		}
+
+		@Override
+		public void flatten(List<IExecutable<TypedValue>> output) {
+			final List<IExprNode<TypedValue>> args = ImmutableList.copyOf(getChildren());
+			Preconditions.checkArgument(args.size() == 1, "'delay' expects single argument");
+			output.add(Value.create(Code.flattenAndWrap(domain, args.get(0))));
+			output.add(new SymbolCall<TypedValue>(symbol, 1, 1));
+		}
+	}
+
 	private class DelayStateTransition extends SameStateSymbolTransition<TypedValue> {
 
 		public DelayStateTransition(ICompilerState<TypedValue> compilerState) {
@@ -34,9 +51,7 @@ public class PromiseExpressionFactory {
 
 		@Override
 		public IExprNode<TypedValue> createRootNode(List<IExprNode<TypedValue>> children) {
-			Preconditions.checkArgument(children.size() == 1, "'delay' expects single argument");
-			final ValueNode<TypedValue> arg = new ValueNode<TypedValue>(Code.flattenAndWrap(domain, children.get(0)));
-			return new SymbolCallNode<TypedValue>(TypedCalcConstants.SYMBOL_DELAY, ImmutableList.of(arg));
+			return new DelayExprNode(children);
 		}
 
 	}

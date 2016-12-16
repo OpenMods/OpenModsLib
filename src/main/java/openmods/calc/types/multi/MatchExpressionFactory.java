@@ -24,6 +24,7 @@ import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
+import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.types.multi.BindPatternTranslator.PatternPart;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
@@ -196,27 +197,24 @@ public class MatchExpressionFactory {
 		}
 	}
 
-	private class MatchNode implements IExprNode<TypedValue> {
+	private class MatchNode extends SymbolCallNode<TypedValue> {
 
-		private final List<PatternConstructionCompiler> patterns;
-
-		public MatchNode(Iterable<PatternConstructionCompiler> patterns) {
-			this.patterns = ImmutableList.copyOf(patterns);
+		public MatchNode(List<IExprNode<TypedValue>> children) {
+			super(TypedCalcConstants.SYMBOL_MATCH, children);
 		}
 
 		@Override
 		public void flatten(List<IExecutable<TypedValue>> output) {
-			for (PatternConstructionCompiler e : patterns)
+			int patternCount = 0;
+			for (PatternConstructionCompiler e : Iterables.transform(getChildren(), patternNodeCoverter)) {
 				e.flatten(output);
+				patternCount++;
+			}
 
-			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_MATCH, patterns.size(), 1));
+			Preconditions.checkArgument(patternCount > 0, "'match' expects at least one argument");
+
+			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_MATCH, patternCount, 1));
 		}
-
-		@Override
-		public Iterable<IExprNode<TypedValue>> getChildren() {
-			return ImmutableList.of();
-		}
-
 	}
 
 	private final Function<IExprNode<TypedValue>, PatternConstructionCompiler> patternNodeCoverter = new Function<IExprNode<TypedValue>, PatternConstructionCompiler>() {
@@ -282,8 +280,7 @@ public class MatchExpressionFactory {
 
 		@Override
 		public IExprNode<TypedValue> createRootNode(List<IExprNode<TypedValue>> children) {
-			Preconditions.checkArgument(children.size() > 0, "'match' expects at least one argument");
-			return new MatchNode(Iterables.transform(children, patternNodeCoverter));
+			return new MatchNode(children);
 		}
 
 	}

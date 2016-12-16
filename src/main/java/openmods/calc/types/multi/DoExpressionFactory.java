@@ -2,11 +2,13 @@ package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.Environment;
 import openmods.calc.Frame;
 import openmods.calc.ICallable;
+import openmods.calc.IExecutable;
+import openmods.calc.SymbolCall;
+import openmods.calc.Value;
 import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
@@ -23,6 +25,25 @@ public class DoExpressionFactory {
 		this.domain = domain;
 	}
 
+	private class DoNode extends SymbolCallNode<TypedValue> {
+
+		public DoNode(List<IExprNode<TypedValue>> args) {
+			super(TypedCalcConstants.SYMBOL_DO, args);
+		}
+
+		@Override
+		public void flatten(List<IExecutable<TypedValue>> output) {
+			int argCount = 0;
+			for (IExprNode<TypedValue> child : getChildren()) {
+				output.add(Value.create(Code.flattenAndWrap(domain, child)));
+				argCount++;
+			}
+
+			Preconditions.checkState(argCount > 1, "'do' expects at least one argument");
+			output.add(new SymbolCall<TypedValue>(symbol, argCount, 1));
+		}
+	}
+
 	private class DoExpr extends SameStateSymbolTransition<TypedValue> {
 
 		public DoExpr(ICompilerState<TypedValue> parentState) {
@@ -31,13 +52,7 @@ public class DoExpressionFactory {
 
 		@Override
 		public IExprNode<TypedValue> createRootNode(List<IExprNode<TypedValue>> children) {
-			Preconditions.checkState(children.size() > 1, "'do' expects at least one argument");
-
-			final List<IExprNode<TypedValue>> args = Lists.newArrayList();
-			for (IExprNode<TypedValue> child : children)
-				args.add(new RawCodeExprNode(domain, child));
-
-			return new SymbolCallNode<TypedValue>(TypedCalcConstants.SYMBOL_DO, args);
+			return new DoNode(children);
 		}
 	}
 

@@ -1,7 +1,7 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.Environment;
 import openmods.calc.FixedCallable;
@@ -13,6 +13,7 @@ import openmods.calc.parsing.ICompilerState;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.ISymbolCallStateTransition;
 import openmods.calc.parsing.SameStateSymbolTransition;
+import openmods.calc.parsing.SymbolCallNode;
 
 public class IfExpressionFactory {
 
@@ -22,29 +23,23 @@ public class IfExpressionFactory {
 		this.domain = domain;
 	}
 
-	private class IfNode implements IExprNode<TypedValue> {
-		private final IExprNode<TypedValue> condition;
-		private final IExprNode<TypedValue> ifTrue;
-		private final IExprNode<TypedValue> ifFalse;
-
-		public IfNode(IExprNode<TypedValue> condition, IExprNode<TypedValue> ifTrue, IExprNode<TypedValue> ifFalse) {
-			this.condition = condition;
-			this.ifTrue = ifTrue;
-			this.ifFalse = ifFalse;
+	private class IfNode extends SymbolCallNode<TypedValue> {
+		public IfNode(List<IExprNode<TypedValue>> args) {
+			super(TypedCalcConstants.SYMBOL_IF, args);
 		}
 
 		@Override
 		public void flatten(List<IExecutable<TypedValue>> output) {
+			final List<IExprNode<TypedValue>> args = ImmutableList.copyOf(getChildren());
+			Preconditions.checkState(args.size() == 3, "Expected 3 parameter for 'if', got %s", args.size());
+			final IExprNode<TypedValue> condition = args.get(0);
+			final IExprNode<TypedValue> ifTrue = args.get(1);
+			final IExprNode<TypedValue> ifFalse = args.get(2);
+
 			condition.flatten(output);
 			output.add(Value.create(Code.flattenAndWrap(domain, ifTrue)));
 			output.add(Value.create(Code.flattenAndWrap(domain, ifFalse)));
 			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_IF, 3, 1));
-		}
-
-		@Override
-		@SuppressWarnings("unchecked")
-		public Iterable<IExprNode<TypedValue>> getChildren() {
-			return Lists.newArrayList(condition, ifTrue, ifFalse);
 		}
 
 	}
@@ -56,9 +51,7 @@ public class IfExpressionFactory {
 
 		@Override
 		public IExprNode<TypedValue> createRootNode(final List<IExprNode<TypedValue>> children) {
-			Preconditions.checkState(children.size() == 3, "Expected 3 parameter for 'if', got %s", children.size());
-			return new IfNode(children.get(0), children.get(1), children.get(2));
-
+			return new IfNode(children);
 		}
 	}
 

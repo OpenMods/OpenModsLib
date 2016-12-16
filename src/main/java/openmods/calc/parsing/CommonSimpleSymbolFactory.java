@@ -66,7 +66,7 @@ public class CommonSimpleSymbolFactory<E> {
 			super.configureCompilerStateCommon(compilerState, environment);
 			compilerState.addStateTransition(SYMBOL_LET, createParserTransition(compilerState));
 			compilerState.addStateTransition(SYMBOL_FAIL, new FailStateTransition());
-			compilerState.addStateTransition(SYMBOL_CONSTANT, new ConstantSymbolStateTransition<E>(compilerState, environment));
+			compilerState.addStateTransition(SYMBOL_CONSTANT, new ConstantSymbolStateTransition<E>(compilerState, environment, SYMBOL_CONSTANT));
 		}
 	}
 

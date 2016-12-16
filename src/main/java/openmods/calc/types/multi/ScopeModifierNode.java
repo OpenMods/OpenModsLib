@@ -10,29 +10,32 @@ import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.SquareBracketContainerNode;
+import openmods.calc.parsing.SymbolCallNode;
 
-public abstract class ScopeModifierNode implements IExprNode<TypedValue> {
+public abstract class ScopeModifierNode extends SymbolCallNode<TypedValue> {
 
 	private final TypeDomain domain;
 	private final String symbol;
 	private final BinaryOperator<TypedValue> colonOperator;
 	private final BinaryOperator<TypedValue> assignOperator;
 
-	private final IExprNode<TypedValue> argsNode;
-	private final IExprNode<TypedValue> codeNode;
-
-	public ScopeModifierNode(TypeDomain domain, String symbol, BinaryOperator<TypedValue> colonOperator, BinaryOperator<TypedValue> assignOperator, IExprNode<TypedValue> argsNode, IExprNode<TypedValue> codeNode) {
+	public ScopeModifierNode(TypeDomain domain, String symbol, BinaryOperator<TypedValue> colonOperator, BinaryOperator<TypedValue> assignOperator, List<IExprNode<TypedValue>> args) {
+		super(symbol, args);
 		this.domain = domain;
 		this.symbol = symbol;
 		this.colonOperator = colonOperator;
 		this.assignOperator = assignOperator;
 
-		this.argsNode = argsNode;
-		this.codeNode = codeNode;
 	}
 
 	@Override
 	public void flatten(List<IExecutable<TypedValue>> output) {
+		final List<IExprNode<TypedValue>> args = ImmutableList.copyOf(getChildren());
+
+		Preconditions.checkState(args.size() == 2, "Expected two args for '%s' expression", symbol);
+		final IExprNode<TypedValue> argsNode = args.get(0);
+		final IExprNode<TypedValue> codeNode = args.get(1);
+
 		// expecting [a:...,c:...]. Arg name (symbol) will be transformed into symbol atom
 		Preconditions.checkState(argsNode instanceof SquareBracketContainerNode, "Expected square brackets, got %s", argsNode);
 		final SquareBracketContainerNode<TypedValue> bracketNode = (SquareBracketContainerNode<TypedValue>)argsNode;
@@ -68,9 +71,4 @@ public abstract class ScopeModifierNode implements IExprNode<TypedValue> {
 	}
 
 	protected abstract void flattenNameAndValue(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> name, IExprNode<TypedValue> value);
-
-	@Override
-	public Iterable<IExprNode<TypedValue>> getChildren() {
-		return ImmutableList.of(argsNode, codeNode);
-	}
 }
