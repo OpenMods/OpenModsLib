@@ -5,15 +5,11 @@ import openmods.calc.SymbolMap;
 
 public class BindPatternTranslator {
 
-	public static interface PatternPart {
-		public boolean match(Frame<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value);
+	public interface IBindPatternProvider {
+		public IBindPattern getPattern(BindPatternTranslator translator);
 	}
 
-	public interface IPatternProvider {
-		public PatternPart getPattern(BindPatternTranslator translator);
-	}
-
-	private static class PatternMatchConst implements PatternPart {
+	private static class PatternMatchConst implements IBindPattern {
 		private final TypedValue expected;
 
 		public PatternMatchConst(TypedValue expected) {
@@ -26,11 +22,11 @@ public class BindPatternTranslator {
 		}
 	}
 
-	private static class PatternMatchCons implements PatternPart {
-		private final PatternPart carMatcher;
-		private final PatternPart cdrMatcher;
+	private static class PatternMatchCons implements IBindPattern {
+		private final IBindPattern carMatcher;
+		private final IBindPattern cdrMatcher;
 
-		public PatternMatchCons(PatternPart carMatcher, PatternPart cdrMatcher) {
+		public PatternMatchCons(IBindPattern carMatcher, IBindPattern cdrMatcher) {
 			this.carMatcher = carMatcher;
 			this.cdrMatcher = cdrMatcher;
 		}
@@ -43,16 +39,16 @@ public class BindPatternTranslator {
 		}
 	}
 
-	public PatternPart translatePattern(TypedValue value) {
-		if (value.is(IPatternProvider.class)) {
-			final IPatternProvider p = value.as(IPatternProvider.class);
+	public IBindPattern translatePattern(TypedValue value) {
+		if (value.is(IBindPatternProvider.class)) {
+			final IBindPatternProvider p = value.as(IBindPatternProvider.class);
 			return p.getPattern(this);
 		}
 
 		if (value.is(Cons.class)) {
 			final Cons pair = value.as(Cons.class);
-			final PatternPart carPattern = translatePattern(pair.car);
-			final PatternPart cdrPattern = translatePattern(pair.cdr);
+			final IBindPattern carPattern = translatePattern(pair.car);
+			final IBindPattern cdrPattern = translatePattern(pair.cdr);
 			return new PatternMatchCons(carPattern, cdrPattern);
 		}
 
@@ -60,6 +56,6 @@ public class BindPatternTranslator {
 	}
 
 	public static void registerType(TypeDomain domain) {
-		domain.registerType(IPatternProvider.class, "patternPlaceholder");
+		domain.registerType(IBindPatternProvider.class, "patternPlaceholder");
 	}
 }

@@ -24,7 +24,7 @@ public interface TypedCalcConstants {
 	public static final String SYMBOL_WITH = "with";
 	public static final String SYMBOL_APPLY = "apply";
 	public static final String SYMBOL_SLICE = "slice";
-	public static final String SYMBOL_PATTERN = "pattern";
+	public static final String SYMBOL_CASE = "case";
 	public static final String SYMBOL_MATCH = "match";
 	public static final String SYMBOL_AND_THEN = "andthen";
 	public static final String SYMBOL_OR_ELSE = "orelse";

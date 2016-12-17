@@ -12,8 +12,7 @@ import openmods.calc.ISymbol;
 import openmods.calc.NestedSymbolMap;
 import openmods.calc.SingleReturnCallable;
 import openmods.calc.SymbolMap;
-import openmods.calc.types.multi.BindPatternTranslator.IPatternProvider;
-import openmods.calc.types.multi.BindPatternTranslator.PatternPart;
+import openmods.calc.types.multi.BindPatternTranslator.IBindPatternProvider;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
@@ -25,7 +24,7 @@ public class BindPatternEvaluator {
 		this.domain = domain;
 	}
 
-	private static class PatternAny implements PatternPart {
+	private static class PatternAny implements IBindPattern {
 		public static final PatternAny INSTANCE = new PatternAny();
 
 		@Override
@@ -34,7 +33,7 @@ public class BindPatternEvaluator {
 		}
 	}
 
-	private static class PatternBindName implements PatternPart {
+	private static class PatternBindName implements IBindPattern {
 		private final String name;
 
 		public PatternBindName(String name) {
@@ -48,7 +47,7 @@ public class BindPatternEvaluator {
 		}
 	}
 
-	private static class VarPlaceholder implements IPatternProvider {
+	private static class VarPlaceholder implements IBindPatternProvider {
 		public final String var;
 
 		public VarPlaceholder(String var) {
@@ -56,17 +55,17 @@ public class BindPatternEvaluator {
 		}
 
 		@Override
-		public PatternPart getPattern(BindPatternTranslator translator) {
+		public IBindPattern getPattern(BindPatternTranslator translator) {
 			return var.equals(TypedCalcConstants.MATCH_ANY)
 					? PatternAny.INSTANCE
 					: new PatternBindName(var);
 		}
 	}
 
-	private abstract static class PatternMatchConstructor implements PatternPart {
-		private final List<PatternPart> argMatchers;
+	private abstract static class PatternMatchConstructor implements IBindPattern {
+		private final List<IBindPattern> argMatchers;
 
-		public PatternMatchConstructor(List<PatternPart> argMatchers) {
+		public PatternMatchConstructor(List<IBindPattern> argMatchers) {
 			this.argMatchers = argMatchers;
 		}
 
@@ -86,7 +85,7 @@ public class BindPatternEvaluator {
 				Preconditions.checkState(actualValueCount == expectedValueCount, "Decomposable contract broken - returned different number of values: expected: %s, got %s", expectedValueCount, actualValueCount);
 
 				for (int i = 0; i < actualValueCount; i++) {
-					final PatternPart pattern = argMatchers.get(i);
+					final IBindPattern pattern = argMatchers.get(i);
 					final TypedValue var = decomposition.get(i);
 
 					if (!pattern.match(env, output, var)) return false;
@@ -104,7 +103,7 @@ public class BindPatternEvaluator {
 	private static class PatternMatchLocalConstructor extends PatternMatchConstructor {
 		private final String typeName;
 
-		public PatternMatchLocalConstructor(List<PatternPart> argMatchers, String typeName) {
+		public PatternMatchLocalConstructor(List<IBindPattern> argMatchers, String typeName) {
 			super(argMatchers);
 			this.typeName = typeName;
 		}
@@ -117,7 +116,7 @@ public class BindPatternEvaluator {
 		}
 	}
 
-	private static class CtorPlaceholder implements IPatternProvider {
+	private static class CtorPlaceholder implements IBindPatternProvider {
 		private final String var;
 
 		private final List<TypedValue> args;
@@ -128,7 +127,7 @@ public class BindPatternEvaluator {
 		}
 
 		@Override
-		public PatternPart getPattern(BindPatternTranslator translator) {
+		public IBindPattern getPattern(BindPatternTranslator translator) {
 			return new PatternMatchLocalConstructor(translatePatterns(translator, args), var);
 		}
 	}
@@ -138,7 +137,7 @@ public class BindPatternEvaluator {
 
 		private final List<String> path;
 
-		public PatternMatchNamespaceConstructor(List<PatternPart> argMatchers, String pathStart, List<String> path) {
+		public PatternMatchNamespaceConstructor(List<IBindPattern> argMatchers, String pathStart, List<String> path) {
 			super(argMatchers);
 			this.pathStart = pathStart;
 			this.path = path;
@@ -164,7 +163,7 @@ public class BindPatternEvaluator {
 		}
 	}
 
-	private static class TerminalNamespaceCtorPlaceholder implements IPatternProvider {
+	private static class TerminalNamespaceCtorPlaceholder implements IBindPatternProvider {
 		private final String var;
 		private final List<String> path;
 		private final List<TypedValue> args;
@@ -176,12 +175,12 @@ public class BindPatternEvaluator {
 		}
 
 		@Override
-		public PatternPart getPattern(BindPatternTranslator translator) {
+		public IBindPattern getPattern(BindPatternTranslator translator) {
 			return new PatternMatchNamespaceConstructor(translatePatterns(translator, args), var, path);
 		}
 	}
 
-	private static class NamespaceCtorPlaceholder implements IPatternProvider {
+	private static class NamespaceCtorPlaceholder implements IBindPatternProvider {
 		private final String var;
 		private final List<String> path;
 
@@ -191,23 +190,23 @@ public class BindPatternEvaluator {
 		}
 
 		@Override
-		public PatternPart getPattern(BindPatternTranslator translator) {
+		public IBindPattern getPattern(BindPatternTranslator translator) {
 			throw new IllegalStateException("Unfinished namespace constructor matcher: " + var + "." + Joiner.on(".").join(path));
 		}
 
-		public IPatternProvider extend(String key) {
+		public IBindPatternProvider extend(String key) {
 			final List<String> newPath = Lists.newArrayList(path);
 			newPath.add(key);
 			return new NamespaceCtorPlaceholder(var, newPath);
 		}
 
-		public IPatternProvider terminate(Iterable<TypedValue> args) {
+		public IBindPatternProvider terminate(Iterable<TypedValue> args) {
 			return new TerminalNamespaceCtorPlaceholder(var, path, args);
 		}
 	}
 
-	private static List<PatternPart> translatePatterns(BindPatternTranslator translator, List<TypedValue> args) {
-		final List<PatternPart> varMatchers = Lists.newArrayList();
+	private static List<IBindPattern> translatePatterns(BindPatternTranslator translator, List<TypedValue> args) {
+		final List<IBindPattern> varMatchers = Lists.newArrayList();
 
 		for (TypedValue m : args)
 			varMatchers.add(translator.translatePattern(m));
@@ -219,8 +218,8 @@ public class BindPatternEvaluator {
 			.set(new MetaObject.SlotAttr() {
 				@Override
 				public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
-					final NamespaceCtorPlaceholder placeholder = (NamespaceCtorPlaceholder)self.as(IPatternProvider.class);
-					return Optional.of(domain.create(IPatternProvider.class, placeholder.extend(key), self.getMetaObject()));
+					final NamespaceCtorPlaceholder placeholder = (NamespaceCtorPlaceholder)self.as(IBindPatternProvider.class);
+					return Optional.of(domain.create(IBindPatternProvider.class, placeholder.extend(key), self.getMetaObject()));
 				}
 			})
 			.set(new MetaObject.SlotCall() {
@@ -229,11 +228,11 @@ public class BindPatternEvaluator {
 					Preconditions.checkArgument(argumentsCount.isPresent(), "Type constructor must be always called with arg count");
 					TypedCalcUtils.expectSingleReturn(returnsCount);
 
-					final NamespaceCtorPlaceholder placeholder = (NamespaceCtorPlaceholder)self.as(IPatternProvider.class);
+					final NamespaceCtorPlaceholder placeholder = (NamespaceCtorPlaceholder)self.as(IBindPatternProvider.class);
 					final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.get());
-					final IPatternProvider terminalPlaceholder = placeholder.terminate(stack);
+					final IBindPatternProvider terminalPlaceholder = placeholder.terminate(stack);
 					stack.clear();
-					stack.push(domain.create(IPatternProvider.class, terminalPlaceholder));
+					stack.push(domain.create(IBindPatternProvider.class, terminalPlaceholder));
 				}
 
 			})
@@ -244,16 +243,16 @@ public class BindPatternEvaluator {
 		final Stack<TypedValue> stack = frame.stack().substack(argumentsCount.get());
 		final CtorPlaceholder placeholder = new CtorPlaceholder(name, stack);
 		stack.clear();
-		return domain.create(IPatternProvider.class, placeholder);
+		return domain.create(IBindPatternProvider.class, placeholder);
 	}
 
 	private final MetaObject varPlaceholderMetaObject = MetaObject.builder()
 			.set(new MetaObject.SlotAttr() {
 				@Override
 				public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
-					final VarPlaceholder placeholder = (VarPlaceholder)self.as(IPatternProvider.class);
+					final VarPlaceholder placeholder = (VarPlaceholder)self.as(IBindPatternProvider.class);
 
-					return Optional.of(domain.create(IPatternProvider.class,
+					return Optional.of(domain.create(IBindPatternProvider.class,
 							new NamespaceCtorPlaceholder(placeholder.var, ImmutableList.of(key)),
 							namespaceCtorPlaceholderMetaObject));
 				}
@@ -261,7 +260,7 @@ public class BindPatternEvaluator {
 			.set(new MetaObject.SlotCall() {
 				@Override
 				public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
-					final VarPlaceholder placeholder = (VarPlaceholder)self.as(IPatternProvider.class);
+					final VarPlaceholder placeholder = (VarPlaceholder)self.as(IBindPatternProvider.class);
 
 					TypedCalcUtils.expectSingleReturn(returnsCount);
 					frame.stack().push(createCtorPlaceholder(placeholder.var, frame, argumentsCount));
@@ -279,7 +278,7 @@ public class BindPatternEvaluator {
 
 		@Override
 		public TypedValue get() {
-			return domain.create(IPatternProvider.class, new VarPlaceholder(var), varPlaceholderMetaObject);
+			return domain.create(IBindPatternProvider.class, new VarPlaceholder(var), varPlaceholderMetaObject);
 		}
 
 		@Override
