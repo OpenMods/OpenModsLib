@@ -19,6 +19,7 @@ import openmods.calc.IGettable;
 import openmods.calc.IValuePrinter;
 import openmods.calc.StackValidationException;
 import openmods.calc.types.bigint.BigIntCalculatorFactory;
+import openmods.calc.types.bool.BoolCalculatorFactory;
 import openmods.calc.types.fp.DoubleCalculatorFactory;
 import openmods.calc.types.fraction.FractionCalculatorFactory;
 import openmods.calc.types.multi.TypedValue;
@@ -186,6 +187,12 @@ public class CalcState {
 				final Calculator<TypedValue, ExprType> calculator = TypedValueCalculatorFactory.create();
 				// TODO nice composite object for player
 				return calculator;
+			}
+		},
+		BOOL {
+			@Override
+			protected Calculator<?, ExprType> newCalculator(SenderHolder holder) {
+				return BoolCalculatorFactory.createDefault();
 			}
 		};
 

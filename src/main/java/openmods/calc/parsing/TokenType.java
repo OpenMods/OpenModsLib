@@ -4,17 +4,18 @@ import java.util.EnumSet;
 import java.util.Set;
 
 enum TokenProperties {
+	NUMBER,
 	VALUE,
 	SYMBOL,
 	EXPRESSION_TERMINATOR
 }
 
 public enum TokenType {
-	DEC_NUMBER(TokenProperties.VALUE),
-	HEX_NUMBER(TokenProperties.VALUE),
-	OCT_NUMBER(TokenProperties.VALUE),
-	BIN_NUMBER(TokenProperties.VALUE),
-	QUOTED_NUMBER(TokenProperties.VALUE),
+	DEC_NUMBER(TokenProperties.VALUE, TokenProperties.NUMBER),
+	HEX_NUMBER(TokenProperties.VALUE, TokenProperties.NUMBER),
+	OCT_NUMBER(TokenProperties.VALUE, TokenProperties.NUMBER),
+	BIN_NUMBER(TokenProperties.VALUE, TokenProperties.NUMBER),
+	QUOTED_NUMBER(TokenProperties.VALUE, TokenProperties.NUMBER),
 
 	STRING(TokenProperties.VALUE),
 
@@ -31,6 +32,10 @@ public enum TokenType {
 
 	public boolean isValue() {
 		return properties.contains(TokenProperties.VALUE);
+	}
+
+	public boolean isNumber() {
+		return properties.contains(TokenProperties.NUMBER);
 	}
 
 	public final boolean isSymbol() {
