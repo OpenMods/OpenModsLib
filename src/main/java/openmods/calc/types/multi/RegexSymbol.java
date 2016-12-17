@@ -59,8 +59,8 @@ public class RegexSymbol {
 						final PatternWrapper patternWrapper = self.as(PatternWrapper.class);
 						if (key.equals("pattern")) return Optional.of(domain.create(String.class, patternWrapper.pattern.pattern()));
 						if (key.equals("flags")) return Optional.of(wrap(domain, patternWrapper.pattern.flags()));
-						if (key.equals("partial")) return Optional.of(domain.create(MatcherWrapper.class, patternWrapper.search()));
-						if (key.equals("full")) return Optional.of(domain.create(MatcherWrapper.class, patternWrapper.match()));
+						if (key.equals("search")) return Optional.of(domain.create(MatcherWrapper.class, patternWrapper.search()));
+						if (key.equals("match")) return Optional.of(domain.create(MatcherWrapper.class, patternWrapper.match()));
 
 						return Optional.absent();
 					}
