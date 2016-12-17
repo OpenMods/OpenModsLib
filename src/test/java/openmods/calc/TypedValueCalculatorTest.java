@@ -2602,4 +2602,10 @@ public class TypedValueCalculatorTest {
 		infix("regex('test+').search('testa').get().end").expectResult(i(4));
 		infix("regex('test+').search('testa').get().matched").expectResult(s("test"));
 	}
+
+	@Test
+	public void testComplexUnpack() {
+		infix("let([polar(r,theta) = cartesian(3, 0)], r:theta)").expectResult(cons(d(3), d(0)));
+		infix("let([cartesian(x,y) = polar(3, 0)], x:y)").expectResult(cons(d(3), d(0)));
+	}
 }

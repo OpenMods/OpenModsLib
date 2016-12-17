@@ -1298,12 +1298,61 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("polar", new SimpleTypedFunction(domain) {
-			@Variant
-			public Complex convert(Double r, Double phase) {
-				return Complex.polar(r, phase);
-			}
-		});
+		{
+			final TypedValue polar = domain.create(CallableValue.class, new CallableValue(new SimpleTypedFunction(domain) {
+				@Variant
+				public Complex convert(Double r, Double phase) {
+					return Complex.polar(r, phase);
+				}
+			}),
+					MetaObject.builder()
+							.set(new MetaObject.SlotDecompose() {
+								@Override
+								public Optional<List<TypedValue>> tryDecompose(TypedValue self, TypedValue input, int variableCount, Frame<TypedValue> frame) {
+									Preconditions.checkState(variableCount == 2, "'polar' can provide 2 values, but code expects %s", variableCount);
+									if (input.is(Complex.class)) {
+										final Complex value = input.as(Complex.class);
+										final TypedValue abs = domain.create(Double.class, value.abs());
+										final TypedValue theta = domain.create(Double.class, value.phase());
+										final List<TypedValue> result = ImmutableList.of(abs, theta);
+										return Optional.of(result);
+									}
+
+									return Optional.absent();
+								}
+							})
+							.update(domain.getDefaultMetaObject(CallableValue.class)));
+
+			env.setGlobalSymbol("polar", polar);
+		}
+
+		{
+			final TypedValue cartesian = domain.create(CallableValue.class, new CallableValue(new SimpleTypedFunction(domain) {
+				@Variant
+				public Complex convert(Double x, Double y) {
+					return Complex.cartesian(x, y);
+				}
+			}),
+					MetaObject.builder()
+							.set(new MetaObject.SlotDecompose() {
+								@Override
+								public Optional<List<TypedValue>> tryDecompose(TypedValue self, TypedValue input, int variableCount, Frame<TypedValue> frame) {
+									Preconditions.checkState(variableCount == 2, "'cartesian' can provide 2 values, but code expects %s", variableCount);
+									if (input.is(Complex.class)) {
+										final Complex value = input.as(Complex.class);
+										final TypedValue x = domain.create(Double.class, value.re);
+										final TypedValue y = domain.create(Double.class, value.im);
+										final List<TypedValue> result = ImmutableList.of(x, y);
+										return Optional.of(result);
+									}
+
+									return Optional.absent();
+								}
+							})
+							.update(domain.getDefaultMetaObject(CallableValue.class)));
+
+			env.setGlobalSymbol("cartesian", cartesian);
+		}
 
 		env.setGlobalSymbol("number", new SimpleTypedFunction(domain) {
 			@Variant
