@@ -33,19 +33,20 @@ public interface TypedCalcConstants {
 	public static final String SYMBOL_CONSTANT = "const";
 	public static final String SYMBOL_ALT = "alt";
 	public static final String SYMBOL_DO = "do";
+	public static final String SYMBOL_PATTERN = "pattern";
 
 	public static final String BRACKET_CODE = "{";
 	public static final String BRACKET_ARG_PACK = "(";
 
 	public static final String MATCH_ANY = "_";
 
-	public static final String SLOT_BOOL = "bool"; // [self] -> bool
-	public static final String SLOT_LENGTH = "len";  // [self] -> int
-	public static final String SLOT_ATTRIBUTE = "attribute";  // [self, key] -> *
-	public static final String SLOT_EQUAL = "equal";  // [self] -> bool
-	public static final String SLOT_CALL = "call";  // [args...]! -> *
-	public static final String SLOT_TYPE = "type";  // [self] -> *
-	public static final String SLOT_SLICE = "slice";  // [self, key/range] -> *
-	public static final String SLOT_STR = "str"; // [self] -> str
-	public static final String SLOT_REPR = "repr"; // [self] -> str
+	public static final String SLOT_BOOL = "bool";
+	public static final String SLOT_LENGTH = "len";
+	public static final String SLOT_ATTRIBUTE = "attribute";
+	public static final String SLOT_EQUAL = "equal";
+	public static final String SLOT_CALL = "call";
+	public static final String SLOT_TYPE = "type";
+	public static final String SLOT_SLICE = "slice";
+	public static final String SLOT_STR = "str";
+	public static final String SLOT_REPR = "repr";
 }

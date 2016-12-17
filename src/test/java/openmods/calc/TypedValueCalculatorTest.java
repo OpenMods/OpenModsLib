@@ -1186,12 +1186,6 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testLetSymbolStringVariableNames() {
-		infix("let(['x':2,'y':3], x + y)").expectResult(i(5));
-		prefix("(let [(:'x' 2), (:'y' 3)] (+ x y))").expectResult(i(5));
-	}
-
-	@Test
 	public void testNestedLet() {
 		infix("let([x:2], let([y:x+2], x + y))").expectResult(i(6));
 	}
@@ -1214,6 +1208,21 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testLetUnpacking() {
+		infix("let([x:y = 1:2], x - y)").expectResult(i(-1));
+		infix("let([x:y:z = 1:2:3], x - y + z)").expectResult(i(2));
+		infix("let([x:_:z = 1:2:3], x - z)").expectResult(i(-2));
+		infix("let([int(x):float(y) = 1:2.1], x - y)").expectResult(d(-1.1));
+		infix("let([x:f = 2:((y)->x+y)], f(7))").expectResult(i(9));
+	}
+
+	@Test
+	public void testFailedLetUnpacking() {
+		infix("let([int(x) = 2.1], false)").expectThrow(RuntimeException.class);
+		infix("let([x:y:z = 1:2], false)").expectThrow(RuntimeException.class);
+	}
+
+	@Test
 	public void testLetSeq() {
 		infix("letseq([x:2, y:x+3], y)").expectResult(i(5));
 
@@ -1224,6 +1233,17 @@ public class TypedValueCalculatorTest {
 		infix("let([x:5], letseq([x:2, y:x+3], y))").expectResult(i(5));
 		infix("let([x:5], letseq([y:x+3, x:2], y))").expectResult(i(8));
 		infix("let([x:5], letseq([y:x+3, x:2, y:x+3], y))").expectResult(i(5));
+	}
+
+	@Test
+	public void testLetSeqUnpacking() {
+		infix("letseq([x:y = 1:2, f -> x - y], f())").expectResult(i(-1));
+		infix("letseq([x:xs = 1:2:3, y:z = xs], x - y + z)").expectResult(i(2));
+	}
+
+	@Test
+	public void testLetSeqFailedUnpacking() {
+		infix("letseq([x:xs = 1:2, y:z = xs], false)").expectThrow(RuntimeException.class);
 	}
 
 	@Test(expected = ExecutionErrorException.class)
@@ -1239,6 +1259,16 @@ public class TypedValueCalculatorTest {
 		infix("letrec([odd(v)->if(v==0,false,even(v-1)), even(v)->if(v==0,true,odd(v-1))], even(3))").expectResult(FALSE);
 
 		infix("letrec([x:2], letrec([y:x], x))").expectResult(i(2));
+	}
+
+	@Test
+	public void testLetRecUnpacking() {
+		infix("letrec([x:y = (() -> z() + 'x'):(() -> 'y'), w:z = (()->x() + 'w'):(() -> y() + 'z')], w())").expectResult(s("yzxw"));
+	}
+
+	@Test
+	public void testLetRecFailedUnpacking() {
+		infix("letrec([int(x) = z(), z -> 1.1], false)").expectThrow(RuntimeException.class);
 	}
 
 	@Test(expected = ExecutionErrorException.class)
@@ -1425,7 +1455,6 @@ public class TypedValueCalculatorTest {
 	public void testLetFunctionDefinition() {
 		infix("let([a() -> -5], a())").expectResult(i(-5));
 		infix("let([a -> -5], a())").expectResult(i(-5));
-		infix("let(['a' -> -5], a())").expectResult(i(-5));
 
 		infix("let([a(b,c) -> b-c], a(1,2))").expectResult(i(-1));
 

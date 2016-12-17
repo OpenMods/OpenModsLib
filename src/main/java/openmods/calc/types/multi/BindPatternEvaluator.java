@@ -5,6 +5,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.util.Collection;
 import java.util.List;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
@@ -24,29 +25,6 @@ public class BindPatternEvaluator {
 		this.domain = domain;
 	}
 
-	private static class PatternAny implements IBindPattern {
-		public static final PatternAny INSTANCE = new PatternAny();
-
-		@Override
-		public boolean match(Frame<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value) {
-			return true;
-		}
-	}
-
-	private static class PatternBindName implements IBindPattern {
-		private final String name;
-
-		public PatternBindName(String name) {
-			this.name = name;
-		}
-
-		@Override
-		public boolean match(Frame<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value) {
-			output.put(name, value);
-			return true;
-		}
-	}
-
 	private static class VarPlaceholder implements IBindPatternProvider {
 		public final String var;
 
@@ -56,9 +34,7 @@ public class BindPatternEvaluator {
 
 		@Override
 		public IBindPattern getPattern(BindPatternTranslator translator) {
-			return var.equals(TypedCalcConstants.MATCH_ANY)
-					? PatternAny.INSTANCE
-					: new PatternBindName(var);
+			return BindPatternTranslator.createPatternForVarName(var);
 		}
 	}
 
@@ -95,6 +71,12 @@ public class BindPatternEvaluator {
 			}
 
 			throw new IllegalStateException("Value " + typeValue + " does not describe constructor or type");
+		}
+
+		@Override
+		public void listBoundVars(Collection<String> output) {
+			for (IBindPattern pattern : argMatchers)
+				pattern.listBoundVars(output);
 		}
 
 		protected abstract TypedValue findConstructor(Frame<TypedValue> env);

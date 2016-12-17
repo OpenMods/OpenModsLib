@@ -1864,6 +1864,9 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
+		BindPatternTranslator.registerType(domain);
+		PatternSymbol.register(coreMap, env);
+
 		MetaObjectSymbols.register(env);
 
 		RegexSymbol.register(env);
@@ -1879,8 +1882,6 @@ public class TypedValueCalculatorFactory {
 
 		final PromiseExpressionFactory delayFactory = new PromiseExpressionFactory(domain);
 		delayFactory.registerSymbols(env);
-
-		BindPatternTranslator.registerType(domain);
 
 		final MatchExpressionFactory matchFactory = new MatchExpressionFactory(domain, splitOperator, lambdaOperator);
 		matchFactory.registerSymbols(envMap, coreMap);
