@@ -21,6 +21,8 @@ import openmods.calc.StackValidationException;
 import openmods.calc.types.bigint.BigIntCalculatorFactory;
 import openmods.calc.types.fp.DoubleCalculatorFactory;
 import openmods.calc.types.fraction.FractionCalculatorFactory;
+import openmods.calc.types.multi.TypedValue;
+import openmods.calc.types.multi.TypedValueCalculatorFactory;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 import org.apache.commons.lang3.math.Fraction;
@@ -175,6 +177,14 @@ public class CalcState {
 					}
 				});
 
+				return calculator;
+			}
+		},
+		MULTI {
+			@Override
+			protected Calculator<?, ExprType> newCalculator(SenderHolder holder) {
+				final Calculator<TypedValue, ExprType> calculator = TypedValueCalculatorFactory.create();
+				// TODO nice composite object for player
 				return calculator;
 			}
 		};
