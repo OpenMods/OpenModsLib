@@ -40,56 +40,56 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 
 	@Override
 	protected void configureEnvironment(Environment<Fraction> env) {
-		env.setGlobalSymbol("abs", new UnaryFunction<Fraction>() {
+		env.setGlobalSymbol("abs", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
 				return value.abs();
 			}
 		});
 
-		env.setGlobalSymbol("sgn", new UnaryFunction<Fraction>() {
+		env.setGlobalSymbol("sgn", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
 				return createFraction(Integer.signum(value.getNumerator()));
 			}
 		});
 
-		env.setGlobalSymbol("numerator", new UnaryFunction<Fraction>() {
+		env.setGlobalSymbol("numerator", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
 				return createFraction(value.getNumerator());
 			}
 		});
 
-		env.setGlobalSymbol("denominator", new UnaryFunction<Fraction>() {
+		env.setGlobalSymbol("denominator", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
 				return createFraction(value.getDenominator());
 			}
 		});
 
-		env.setGlobalSymbol("frac", new UnaryFunction<Fraction>() {
+		env.setGlobalSymbol("frac", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
 				return Fraction.getFraction(value.getProperNumerator(), value.getDenominator());
 			}
 		});
 
-		env.setGlobalSymbol("int", new UnaryFunction<Fraction>() {
+		env.setGlobalSymbol("int", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
 				return createFraction(value.getProperWhole());
 			}
 		});
 
-		env.setGlobalSymbol("sqrt", new UnaryFunction<Fraction>() {
+		env.setGlobalSymbol("sqrt", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
 				return Fraction.getFraction(Math.sqrt(value.doubleValue()));
 			}
 		});
 
-		env.setGlobalSymbol("log", new UnaryFunction<Fraction>() {
+		env.setGlobalSymbol("log", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
 				return Fraction.getFraction(Math.log(value.doubleValue()));

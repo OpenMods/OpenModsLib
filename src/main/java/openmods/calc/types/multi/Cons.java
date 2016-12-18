@@ -17,6 +17,10 @@ public class Cons {
 		this.cdr = cdr;
 	}
 
+	public static TypedValue create(TypeDomain domain, TypedValue car, TypedValue cdr) {
+		return domain.create(Cons.class, new Cons(car, cdr));
+	}
+
 	public TypedValue first() {
 		return car;
 	}
@@ -172,5 +176,43 @@ public class Cons {
 		}
 
 		return result;
+	}
+
+	public abstract static class RecursiveVisitor {
+		private final TypedValue nullValue;
+
+		public RecursiveVisitor(TypedValue nullValue) {
+			this.nullValue = nullValue;
+		}
+
+		protected abstract TypedValue processValue(TypedValue head, TypedValue tail);
+
+		protected TypedValue processEnd() {
+			return nullValue;
+		}
+
+		public TypedValue process(TypedValue list) {
+			if (list == nullValue) return processEnd();
+			final Cons cons = list.as(Cons.class);
+			return processValue(cons.car, cons.cdr);
+		}
+	}
+
+	public abstract static class TypedRecursiveVisitor<T> {
+		private final TypedValue nullValue;
+
+		public TypedRecursiveVisitor(TypedValue nullValue) {
+			this.nullValue = nullValue;
+		}
+
+		protected abstract T processValue(TypedValue head, TypedValue tail);
+
+		protected abstract T processEnd();
+
+		public T process(TypedValue list) {
+			if (list == nullValue) return processEnd();
+			final Cons cons = list.as(Cons.class);
+			return processValue(cons.car, cons.cdr);
+		}
 	}
 }

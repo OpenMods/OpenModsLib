@@ -128,19 +128,19 @@ public class DictSymbol {
 
 			members.put("update", CallableValue.wrap(domain, new UpdateMethod()));
 			members.put("remove", CallableValue.wrap(domain, new RemoveMethod()));
-			members.put("hasKey", CallableValue.wrap(domain, new UnaryFunction<TypedValue>() {
+			members.put("hasKey", CallableValue.wrap(domain, new UnaryFunction.Direct<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue key) {
 					return domain.create(Boolean.class, Dict.this.values.containsKey(key));
 				}
 			}));
-			members.put("getOptional", CallableValue.wrap(domain, new UnaryFunction<TypedValue>() {
+			members.put("getOptional", CallableValue.wrap(domain, new UnaryFunction.Direct<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue key) {
 					return OptionalType.wrapNullable(domain, Dict.this.values.get(key));
 				}
 			}));
-			members.put("getOr", CallableValue.wrap(domain, new BinaryFunction<TypedValue>() {
+			members.put("getOr", CallableValue.wrap(domain, new BinaryFunction.Direct<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue key, TypedValue defaultValue) {
 					final TypedValue result = Dict.this.values.get(key);
@@ -162,7 +162,7 @@ public class DictSymbol {
 
 				}
 			}));
-			members.put("hasValue", CallableValue.wrap(domain, new UnaryFunction<TypedValue>() {
+			members.put("hasValue", CallableValue.wrap(domain, new UnaryFunction.Direct<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue value) {
 					return domain.create(Boolean.class, Dict.this.values.containsValue(value));

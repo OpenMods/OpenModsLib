@@ -13,7 +13,7 @@ public class PatternSymbol {
 
 		final TypedValue patternType = domain.create(TypeUserdata.class, new TypeUserdata("pattern", IBindPattern.class),
 				TypeUserdata.defaultMetaObject(domain)
-						.set(MetaObjectUtils.callableAdapter(new UnaryFunction<TypedValue>() {
+						.set(MetaObjectUtils.callableAdapter(new UnaryFunction.Direct<TypedValue>() {
 							@Override
 							protected TypedValue call(TypedValue value) {
 								final Code pattern = value.as(Code.class, "variable pattern");

@@ -108,6 +108,10 @@ public class TypedValueCalculatorTest {
 		return domain.create(Complex.class, Complex.create(real, imag));
 	}
 
+	private TypedValue list() {
+		return nil();
+	}
+
 	private TypedValue list(TypedValue... values) {
 		TypedValue res = nil();
 		for (int i = values.length - 1; i >= 0; i--)
@@ -603,7 +607,7 @@ public class TypedValueCalculatorTest {
 		@Override
 		public Optional<TypedValue> attr(TypedValue self, final String key, Frame<TypedValue> frame) {
 			return Optional.of(domain.create(DummyObject.class, DUMMY,
-					MetaObject.builder().set(MetaObjectUtils.callableAdapter(new UnaryFunction<TypedValue>() {
+					MetaObject.builder().set(MetaObjectUtils.callableAdapter(new UnaryFunction.Direct<TypedValue>() {
 						@Override
 						protected TypedValue call(TypedValue value) {
 							final String result = key + ":" + value.as(String.class);
@@ -684,7 +688,7 @@ public class TypedValueCalculatorTest {
 		@Override
 		public Optional<TypedValue> attr(TypedValue self, final String key, Frame<TypedValue> frame) {
 			return Optional.of(domain.create(DummyObject.class, DUMMY,
-					MetaObject.builder().set(MetaObjectUtils.callableAdapter(new UnaryFunction<TypedValue>() {
+					MetaObject.builder().set(MetaObjectUtils.callableAdapter(new UnaryFunction.Direct<TypedValue>() {
 						@Override
 						protected TypedValue call(TypedValue value) {
 							final String path = key + ":" + value.as(String.class);
@@ -1306,11 +1310,11 @@ public class TypedValueCalculatorTest {
 
 	@Test
 	public void testHighOrderCallable() {
-		sut.environment.setGlobalSymbol("test", new BinaryFunction<TypedValue>() {
+		sut.environment.setGlobalSymbol("test", new BinaryFunction.Direct<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue left, TypedValue right) {
 				final BigInteger closure = left.as(BigInteger.class).subtract(right.as(BigInteger.class));
-				return CallableValue.wrap(domain, new UnaryFunction<TypedValue>() {
+				return CallableValue.wrap(domain, new UnaryFunction.Direct<TypedValue>() {
 					@Override
 					protected TypedValue call(TypedValue value) {
 						final BigInteger arg = value.as(BigInteger.class);
@@ -2608,4 +2612,5 @@ public class TypedValueCalculatorTest {
 		infix("let([polar(r,theta) = cartesian(3, 0)], r:theta)").expectResult(cons(d(3), d(0)));
 		infix("let([cartesian(x,y) = polar(3, 0)], x:y)").expectResult(cons(d(3), d(0)));
 	}
+
 }

@@ -38,14 +38,14 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 
 	@Override
 	protected void configureEnvironment(Environment<BigInteger> env) {
-		env.setGlobalSymbol("abs", new UnaryFunction<BigInteger>() {
+		env.setGlobalSymbol("abs", new UnaryFunction.Direct<BigInteger>() {
 			@Override
 			protected BigInteger call(BigInteger value) {
 				return value.abs();
 			}
 		});
 
-		env.setGlobalSymbol("sgn", new UnaryFunction<BigInteger>() {
+		env.setGlobalSymbol("sgn", new UnaryFunction.Direct<BigInteger>() {
 			@Override
 			protected BigInteger call(BigInteger value) {
 				return BigInteger.valueOf(value.signum());
@@ -86,49 +86,49 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 
 		});
 
-		env.setGlobalSymbol("gcd", new BinaryFunction<BigInteger>() {
+		env.setGlobalSymbol("gcd", new BinaryFunction.Direct<BigInteger>() {
 			@Override
 			protected BigInteger call(BigInteger left, BigInteger right) {
 				return left.gcd(right);
 			}
 		});
 
-		env.setGlobalSymbol("gcd", new BinaryFunction<BigInteger>() {
+		env.setGlobalSymbol("gcd", new BinaryFunction.Direct<BigInteger>() {
 			@Override
 			protected BigInteger call(BigInteger left, BigInteger right) {
 				return left.gcd(right);
 			}
 		});
 
-		env.setGlobalSymbol("modpow", new TernaryFunction<BigInteger>() {
+		env.setGlobalSymbol("modpow", new TernaryFunction.Direct<BigInteger>() {
 			@Override
 			protected BigInteger call(BigInteger first, BigInteger second, BigInteger third) {
 				return first.modPow(second, third);
 			}
 		});
 
-		env.setGlobalSymbol("get", new BinaryFunction<BigInteger>() {
+		env.setGlobalSymbol("get", new BinaryFunction.Direct<BigInteger>() {
 			@Override
 			protected BigInteger call(BigInteger first, BigInteger second) {
 				return first.testBit(second.intValue())? BigInteger.ONE : BigInteger.ZERO;
 			}
 		});
 
-		env.setGlobalSymbol("set", new BinaryFunction<BigInteger>() {
+		env.setGlobalSymbol("set", new BinaryFunction.Direct<BigInteger>() {
 			@Override
 			protected BigInteger call(BigInteger first, BigInteger second) {
 				return first.setBit(second.intValue());
 			}
 		});
 
-		env.setGlobalSymbol("clear", new BinaryFunction<BigInteger>() {
+		env.setGlobalSymbol("clear", new BinaryFunction.Direct<BigInteger>() {
 			@Override
 			protected BigInteger call(BigInteger first, BigInteger second) {
 				return first.clearBit(second.intValue());
 			}
 		});
 
-		env.setGlobalSymbol("flip", new BinaryFunction<BigInteger>() {
+		env.setGlobalSymbol("flip", new BinaryFunction.Direct<BigInteger>() {
 			@Override
 			protected BigInteger call(BigInteger first, BigInteger second) {
 				return first.flipBit(second.intValue());

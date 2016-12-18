@@ -38,14 +38,14 @@ public class OptionalType {
 			this.domain = domain;
 			final ImmutableMap.Builder<String, TypedValue> members = ImmutableMap.builder();
 
-			members.put(MEMBER_GET, wrap(domain, new NullaryFunction<TypedValue>() {
+			members.put(MEMBER_GET, wrap(domain, new NullaryFunction.Direct<TypedValue>() {
 				@Override
 				protected TypedValue call() {
 					return Value.this.getValue();
 				}
 			}));
 
-			members.put(MEMBER_OR, wrap(domain, new UnaryFunction<TypedValue>() {
+			members.put(MEMBER_OR, wrap(domain, new UnaryFunction.Direct<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue value) {
 					return Value.this.or(value);
@@ -61,11 +61,10 @@ public class OptionalType {
 				}
 			}));
 
-			members.put(MEMBER_MAP, wrap(domain, new FixedCallable<TypedValue>(1, 1) {
+			members.put(MEMBER_MAP, wrap(domain, new UnaryFunction.WithFrame<TypedValue>() {
 				@Override
-				public void call(Frame<TypedValue> frame) {
-					final TypedValue arg = frame.stack().pop();
-					frame.stack().push(Value.this.map(frame, arg));
+				public TypedValue call(Frame<TypedValue> frame, TypedValue arg) {
+					return Value.this.map(frame, arg);
 
 				}
 			}));
@@ -241,7 +240,7 @@ public class OptionalType {
 	private static TypedValue createPresentConstructor(final TypeDomain domain) {
 		return domain.create(TypeUserdata.class, new TypeUserdata("optional.present", Value.class),
 				MetaObject.builder()
-						.set(MetaObjectUtils.callableAdapter(new UnaryFunction<TypedValue>() {
+						.set(MetaObjectUtils.callableAdapter(new UnaryFunction.Direct<TypedValue>() {
 							@Override
 							protected TypedValue call(TypedValue value) {
 								return domain.create(Value.class, new Present(domain, value));
@@ -274,7 +273,7 @@ public class OptionalType {
 	private static TypedValue createAbsentConstructor(final TypeDomain domain) {
 		return domain.create(TypeUserdata.class, new TypeUserdata("optional.absent", Value.class),
 				MetaObject.builder()
-						.set(MetaObjectUtils.callableAdapter(new NullaryFunction<TypedValue>() {
+						.set(MetaObjectUtils.callableAdapter(new NullaryFunction.Direct<TypedValue>() {
 							@Override
 							protected TypedValue call() {
 								return absent(domain);
@@ -302,7 +301,7 @@ public class OptionalType {
 	private static TypedValue createOptionalType(final TypedValue nullValue, final TypedValue presentTypeValue, final TypedValue absentTypeValue) {
 		final TypeDomain domain = nullValue.domain;
 		final Map<String, TypedValue> methods = ImmutableMap.<String, TypedValue> builder()
-				.put("from", wrap(domain, new UnaryFunction<TypedValue>() {
+				.put("from", wrap(domain, new UnaryFunction.Direct<TypedValue>() {
 					@Override
 					protected TypedValue call(TypedValue value) {
 						return (value == nullValue)? absent(domain) : present(domain, value);

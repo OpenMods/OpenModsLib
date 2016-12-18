@@ -435,7 +435,7 @@ public class TypedValueCalculatorFactory {
 		{
 			final TypedValue strType = domain.create(TypeUserdata.class, new TypeUserdata("str", String.class),
 					TypeUserdata.defaultMetaObject(domain)
-							.set(MetaObjectUtils.callableAdapter(new UnaryFunction<TypedValue>() {
+							.set(MetaObjectUtils.callableAdapter(new UnaryFunction.Direct<TypedValue>() {
 								@Override
 								protected TypedValue call(TypedValue value) {
 									return value.domain.create(String.class, valuePrinter.str(value));
@@ -550,7 +550,7 @@ public class TypedValueCalculatorFactory {
 		{
 			final TypedValue consType = domain.create(TypeUserdata.class, new TypeUserdata("cons", Cons.class),
 					TypeUserdata.defaultMetaObject(domain)
-							.set(MetaObjectUtils.callableAdapter(new BinaryFunction<TypedValue>() {
+							.set(MetaObjectUtils.callableAdapter(new BinaryFunction.Direct<TypedValue>() {
 								@Override
 								protected TypedValue call(TypedValue left, TypedValue right) {
 									return domain.create(Cons.class, new Cons(left, right));
@@ -1269,14 +1269,14 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("E", domain.create(Double.class, Math.E));
 		env.setGlobalSymbol("PI", domain.create(Double.class, Math.PI));
 
-		env.setGlobalSymbol("iscallable", new UnaryFunction<TypedValue>() {
+		env.setGlobalSymbol("iscallable", new UnaryFunction.Direct<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
 				return value.domain.create(Boolean.class, MetaObjectUtils.isCallable(value));
 			}
 		});
 
-		env.setGlobalSymbol("isnumber", new UnaryFunction<TypedValue>() {
+		env.setGlobalSymbol("isnumber", new UnaryFunction.Direct<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
 				return value.domain.create(Boolean.class, NUMBER_TYPES.contains(value.type));
@@ -1291,7 +1291,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("repr", new UnaryFunction<TypedValue>() {
+		env.setGlobalSymbol("repr", new UnaryFunction.Direct<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
 				return value.domain.create(String.class, valuePrinter.repr(value));
@@ -1754,28 +1754,20 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_SLICE, new FixedCallable<TypedValue>(2, 1) {
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_SLICE, new BinaryFunction.WithFrame<TypedValue>() {
 
 			@Override
-			public void call(Frame<TypedValue> frame) {
-				final Stack<TypedValue> stack = frame.stack();
-				final TypedValue range = stack.pop();
-				final TypedValue target = stack.pop();
-
+			public TypedValue call(Frame<TypedValue> frame, TypedValue target, TypedValue range) {
 				final MetaObject.SlotSlice slotSlice = target.getMetaObject().slotSlice;
-				if (slotSlice != null) {
-					stack.push(slotSlice.slice(target, range, frame));
-					return;
-				}
+				if (slotSlice != null)
+					return slotSlice.slice(target, range, frame);
 
 				if (range.is(String.class)) {
 					final MetaObject.SlotAttr slotAttr = target.getMetaObject().slotAttr;
 					if (slotAttr != null) {
 						final Optional<TypedValue> attr = slotAttr.attr(target, range.as(String.class), frame);
-						if (attr.isPresent()) {
-							stack.push(attr.get());
-							return;
-						}
+						if (attr.isPresent())
+							return attr.get();
 					}
 				}
 
@@ -1899,7 +1891,7 @@ public class TypedValueCalculatorFactory {
 		env.setGlobalSymbol("struct", new StructSymbol(nullValue));
 		env.setGlobalSymbol("dict", new DictSymbol(nullValue).value());
 
-		env.setGlobalSymbol("globals", new NullaryFunction<TypedValue>() {
+		env.setGlobalSymbol("globals", new NullaryFunction.Direct<TypedValue>() {
 			@Override
 			protected TypedValue call() {
 				return domain.create(EnvHolder.class, new EnvHolder(envMap));

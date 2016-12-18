@@ -20,7 +20,7 @@ public class MetaObjectSymbols {
 	private static final String ATTR_INFO = "info";
 	private static final String ATTR_CAPABILITIES = "slots";
 
-	private static class SlotCheckSymbol extends BinaryFunction<TypedValue> {
+	private static class SlotCheckSymbol extends BinaryFunction.Direct<TypedValue> {
 		@Override
 		protected TypedValue call(TypedValue left, TypedValue right) {
 			final MetaObject mo = left.getMetaObject();
@@ -108,14 +108,14 @@ public class MetaObjectSymbols {
 		env.setGlobalSymbol(ATTR_CAPABILITIES, domain.create(SimpleNamespace.class, new SimpleNamespace(slots)));
 		env.setGlobalSymbol("has", new SlotCheckSymbol());
 
-		env.setGlobalSymbol("getmetaobject", new UnaryFunction<TypedValue>() {
+		env.setGlobalSymbol("getmetaobject", new UnaryFunction.Direct<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue value) {
 				return value.domain.create(MetaObject.class, value.getMetaObject());
 			}
 		});
 
-		env.setGlobalSymbol("setmetaobject", new BinaryFunction<TypedValue>() {
+		env.setGlobalSymbol("setmetaobject", new BinaryFunction.Direct<TypedValue>() {
 			@Override
 			protected TypedValue call(TypedValue left, TypedValue right) {
 				final MetaObject mo = right.as(MetaObject.class, "second 'setmetaobject' arg");
