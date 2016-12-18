@@ -1221,6 +1221,12 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testLetCompilationShortcut() {
+		infix("let([x = 2], x)").expectSameAs(postfix("#x {2} : list$1,1 {@x} let$2,1"));
+		infix("let([x:y = 1:2], x + y)").expectSameAs(postfix("{@x @y :} pattern$1,1 {1 2 :} : list$1,1 {@x @y +} let$2,1"));
+	}
+
+	@Test
 	public void testFailedLetUnpacking() {
 		infix("let([int(x) = 2.1], false)").expectThrow(RuntimeException.class);
 		infix("let([x:y:z = 1:2], false)").expectThrow(RuntimeException.class);

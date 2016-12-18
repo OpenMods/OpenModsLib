@@ -59,8 +59,15 @@ public class LetExpressionFactory {
 
 		@Override
 		protected void flattenNameAndValue(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> bindPattern, IExprNode<TypedValue> value) {
-			output.add(Value.create(Code.flattenAndWrap(domain, bindPattern)));
-			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_PATTERN, 1, 1));
+			if (bindPattern instanceof SymbolGetNode) {
+				// optimization - single variable -> use symbol
+				final SymbolGetNode<TypedValue> var = (SymbolGetNode<TypedValue>)bindPattern;
+				output.add(Value.create(Symbol.get(domain, var.symbol())));
+			} else {
+				output.add(Value.create(Code.flattenAndWrap(domain, bindPattern)));
+				output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_PATTERN, 1, 1));
+			}
+
 			output.add(flattenExprToCodeConstant(value));
 		}
 
