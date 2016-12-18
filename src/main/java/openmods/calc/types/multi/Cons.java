@@ -1,6 +1,8 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.AbstractIterator;
+import java.util.Iterator;
 import java.util.List;
 
 public class Cons {
@@ -214,5 +216,28 @@ public class Cons {
 			final Cons cons = list.as(Cons.class);
 			return processValue(cons.car, cons.cdr);
 		}
+	}
+
+	public static Iterable<TypedValue> toIterable(final TypedValue value, final TypedValue nullValue) {
+		return new Iterable<TypedValue>() {
+			@Override
+			public Iterator<TypedValue> iterator() {
+				return new AbstractIterator<TypedValue>() {
+					private TypedValue c = value;
+
+					@Override
+					protected TypedValue computeNext() {
+						if (c == nullValue) return endOfData();
+						if (c.is(Cons.class)) {
+							final Cons next = c.as(Cons.class);
+							c = next.cdr;
+							return next.car;
+						}
+
+						throw new IllegalArgumentException("Not a list: " + c);
+					}
+				};
+			}
+		};
 	}
 }

@@ -2613,4 +2613,126 @@ public class TypedValueCalculatorTest {
 		infix("let([cartesian(x,y) = polar(3, 0)], x:y)").expectResult(cons(d(3), d(0)));
 	}
 
+	@Test
+	public void testMapFunction() {
+		infix("map((x) -> x + 2, [])").expectResult(list());
+		infix("map((x) -> x + 2, [1])").expectResult(list(i(3)));
+		infix("map((x) -> x + 2, [1, 2])").expectResult(list(i(3), i(4)));
+	}
+
+	@Test
+	public void testFilterFunction() {
+		infix("filter((x) -> true, [])").expectResult(list());
+		infix("filter((x) -> false, [1,2,3])").expectResult(list());
+		infix("filter((x) -> true, [1,2,3])").expectResult(list(i(1), i(2), i(3)));
+		infix("filter((x) -> x % 2, [1,2,3,4])").expectResult(list(i(1), i(3)));
+	}
+
+	@Test
+	public void testReduceFunction() {
+		infix("reduce((x,y) -> x + '-' + y, 'a', [])").expectResult(s("a"));
+		infix("reduce((x,y) -> x + '-' + y, 'a', ['b'])").expectResult(s("a-b"));
+		infix("reduce((x,y) -> x + '-' + y, 'a', ['b', 'c'])").expectResult(s("a-b-c"));
+	}
+
+	@Test
+	public void testTakeFunction() {
+		infix("take([1,2,3], 0)").expectResult(list());
+		infix("take([1,2,3], 1)").expectResult(list(i(1)));
+		infix("take([1,2,3], 2)").expectResult(list(i(1), i(2)));
+		infix("take([1,2,3], 3)").expectResult(list(i(1), i(2), i(3)));
+		infix("take([1,2,3], 4)").expectResult(list(i(1), i(2), i(3)));
+	}
+
+	@Test
+	public void testTakeWhileFunction() {
+		infix("takeWhile([1,2,3,4], (x) -> false)").expectResult(list());
+		infix("takeWhile([1,2,3,4], (x) -> true)").expectResult(list(i(1), i(2), i(3), i(4)));
+
+		infix("takeWhile([], (x) -> x <= 2)").expectResult(list());
+		infix("takeWhile([1,2,3,4], (x) -> x <= 2)").expectResult(list(i(1), i(2)));
+	}
+
+	@Test
+	public void testDropFunction() {
+		infix("drop([1,2,3], 0)").expectResult(list(i(1), i(2), i(3)));
+		infix("drop([1,2,3], 1)").expectResult(list(i(2), i(3)));
+		infix("drop([1,2,3], 2)").expectResult(list(i(3)));
+		infix("drop([1,2,3], 3)").expectResult(list());
+		infix("drop([1,2,3], 4)").expectResult(list());
+	}
+
+	@Test
+	public void testDropWhileFunction() {
+		infix("dropWhile([1,2,3,4], (x) -> true)").expectResult(list());
+		infix("dropWhile([1,2,3,4], (x) -> false)").expectResult(list(i(1), i(2), i(3), i(4)));
+
+		infix("dropWhile([], (x) -> x <= 2)").expectResult(list());
+		infix("dropWhile([1,2,3,4], (x) -> x <= 2)").expectResult(list(i(3), i(4)));
+	}
+
+	@Test
+	public void testAnyFunction() {
+		infix("any([])").expectResult(FALSE);
+		infix("any([0])").expectResult(FALSE);
+		infix("any([1])").expectResult(TRUE);
+		infix("any([0, 0])").expectResult(FALSE);
+		infix("any([0, 1])").expectResult(TRUE);
+		infix("any([1, 0])").expectResult(TRUE);
+		infix("any([1, 1])").expectResult(TRUE);
+	}
+
+	@Test
+	public void testAllFunction() {
+		infix("all([])").expectResult(TRUE);
+		infix("all([0])").expectResult(FALSE);
+		infix("all([1])").expectResult(TRUE);
+		infix("all([0, 0])").expectResult(FALSE);
+		infix("all([0, 1])").expectResult(FALSE);
+		infix("all([1, 0])").expectResult(FALSE);
+		infix("all([1, 1])").expectResult(TRUE);
+	}
+
+	@Test
+	public void testEnumerateFunction() {
+		infix("enumerate([])").expectResult(list());
+		infix("enumerate(['a'])").expectResult(list(cons(i(0), s("a"))));
+		infix("enumerate(['a','b','c'])").expectResult(list(cons(i(0), s("a")), cons(i(1), s("b")), cons(i(2), s("c"))));
+	}
+
+	@Test
+	public void testRangeFunction() {
+		infix("range(0)").expectResult(list());
+		infix("range(1)").expectResult(list(i(0)));
+		infix("range(2)").expectResult(list(i(0), i(1)));
+
+		infix("range(1,1)").expectResult(list());
+		infix("range(1,2)").expectResult(list(i(1)));
+		infix("range(1,3)").expectResult(list(i(1), i(2)));
+
+		infix("range(-1,3)").expectResult(list(i(-1), i(0), i(1), i(2)));
+
+		infix("range(0,3,2)").expectResult(list(i(0), i(2)));
+		infix("range(0,4,2)").expectResult(list(i(0), i(2)));
+		infix("range(0,5,2)").expectResult(list(i(0), i(2), i(4)));
+
+		infix("range(3,0)").expectResult(list());
+		infix("range(3,2)").expectResult(list());
+		infix("range(3,0,-1)").expectResult(list(i(3), i(2), i(1)));
+
+		infix("range(3,-3,-2)").expectResult(list(i(3), i(1), i(-1)));
+	}
+
+	@Test
+	public void testZipFunction() {
+		infix("zip([],[])").expectResult(list());
+
+		infix("zip([1],[])").expectResult(list());
+		infix("zip([],['a'])").expectResult(list());
+
+		infix("zip([1],['a'])").expectResult(list(cons(i(1), s("a"))));
+		infix("zip([1, 2],['a'])").expectResult(list(cons(i(1), s("a"))));
+		infix("zip([1],['a', 'b'])").expectResult(list(cons(i(1), s("a"))));
+		infix("zip([1, 2],['a', 'b'])").expectResult(list(cons(i(1), s("a")), cons(i(2), s("b"))));
+	}
 }

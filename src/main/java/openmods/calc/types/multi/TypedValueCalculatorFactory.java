@@ -1905,6 +1905,8 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
+		LibListFunctions.register(env);
+
 		BindPatternTranslator.registerType(domain);
 		PatternSymbol.register(coreMap, env);
 
