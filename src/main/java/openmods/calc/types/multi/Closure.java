@@ -15,9 +15,9 @@ public class Closure implements ICallable<TypedValue> {
 
 	private final SymbolMap<TypedValue> scopeSymbols;
 
-	private final List<String> args;
+	private final List<IBindPattern> args;
 
-	public Closure(SymbolMap<TypedValue> scopeSymbols, Code code, List<String> args) {
+	public Closure(SymbolMap<TypedValue> scopeSymbols, Code code, List<IBindPattern> args) {
 		this.code = code;
 		this.scopeSymbols = scopeSymbols;
 		this.args = ImmutableList.copyOf(args).reverse(); // reverse, since we are pulling from stack
@@ -30,8 +30,11 @@ public class Closure implements ICallable<TypedValue> {
 		final Frame<TypedValue> executionFrame = FrameFactory.newClosureFrame(scopeSymbols, callsite, args.size());
 		final Stack<TypedValue> executionStack = executionFrame.stack();
 
-		for (String arg : args)
-			executionFrame.symbols().put(arg, executionStack.pop());
+		final SymbolMap<TypedValue> executionSymbols = executionFrame.symbols();
+		for (IBindPattern argPattern : args) {
+			final TypedValue argValue = executionStack.pop();
+			TypedCalcUtils.matchPattern(argPattern, executionFrame, executionSymbols, argValue);
+		}
 
 		code.execute(executionFrame);
 

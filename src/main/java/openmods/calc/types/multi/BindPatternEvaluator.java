@@ -80,6 +80,14 @@ public class BindPatternEvaluator {
 		}
 
 		protected abstract TypedValue findConstructor(Frame<TypedValue> env);
+
+		protected String serializeArgNames() {
+			final List<String> args = Lists.newArrayList();
+			for (IBindPattern arg : argMatchers)
+				args.add(arg.serialize());
+
+			return "(" + Joiner.on(",").join(args) + ")";
+		}
 	}
 
 	private static class PatternMatchLocalConstructor extends PatternMatchConstructor {
@@ -95,6 +103,11 @@ public class BindPatternEvaluator {
 			final ISymbol<TypedValue> type = env.symbols().get(typeName);
 			Preconditions.checkState(type != null, "Can't find decomposable constructor %s", typeName);
 			return type.get();
+		}
+
+		@Override
+		public String serialize() {
+			return typeName + serializeArgNames();
 		}
 	}
 
@@ -142,6 +155,11 @@ public class BindPatternEvaluator {
 			}
 
 			return result;
+		}
+
+		@Override
+		public String serialize() {
+			return pathStart + "." + Joiner.on(".").join(path) + serializeArgNames();
 		}
 	}
 

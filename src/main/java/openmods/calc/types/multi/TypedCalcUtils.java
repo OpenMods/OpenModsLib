@@ -2,6 +2,7 @@ package openmods.calc.types.multi;
 
 import openmods.calc.Frame;
 import openmods.calc.StackValidationException;
+import openmods.calc.SymbolMap;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.ValueNode;
@@ -50,5 +51,11 @@ public class TypedCalcUtils {
 		}
 
 		return false;
+	}
+
+	public static void matchPattern(IBindPattern pattern, Frame<TypedValue> executionFrame, SymbolMap<TypedValue> outputSymbols, TypedValue value) {
+		final boolean matchResult = pattern.match(executionFrame, outputSymbols, value);
+		if (!matchResult)
+			throw new IllegalArgumentException("Can't match value " + value + " to pattern '" + pattern.serialize() + "'");
 	}
 }

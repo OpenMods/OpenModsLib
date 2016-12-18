@@ -1,6 +1,7 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.List;
@@ -51,7 +52,7 @@ public class LetExpressionFactory {
 		@Override
 		protected void handlePairOp(List<IExecutable<TypedValue>> output, BinaryOpNode<TypedValue> opNode) {
 			if (opNode.operator == lambdaOperator) {
-				extractLambdaDefinition(output, opNode);
+				flattenLambdaDefinition(output, opNode);
 			} else {
 				throw new UnsupportedOperationException("Expected '=', ':' or '->' as pair separators, got " + opNode.operator);
 			}
@@ -59,6 +60,48 @@ public class LetExpressionFactory {
 
 		@Override
 		protected void flattenNameAndValue(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> bindPattern, IExprNode<TypedValue> value) {
+			flattenBindPattern(output, bindPattern);
+			output.add(Value.create(Code.flattenAndWrap(domain, value)));
+		}
+
+		private void flattenLambdaDefinition(List<IExecutable<TypedValue>> output, BinaryOpNode<TypedValue> opNode) {
+			final IExprNode<TypedValue> nameNode = opNode.left;
+			final IExprNode<TypedValue> lambdaBody = opNode.right;
+
+			final TypedValue varName;
+			final Iterable<IExprNode<TypedValue>> lambdaArgs;
+			if (nameNode instanceof SymbolCallNode) {
+				// f(...) -> <lambda body>
+				final String symbolName = ((SymbolCallNode<TypedValue>)nameNode).symbol();
+				varName = Symbol.get(domain, symbolName);
+				lambdaArgs = nameNode.getChildren();
+			} else if (nameNode instanceof SymbolGetNode) {
+				varName = Symbol.get(domain, ((SymbolGetNode<TypedValue>)nameNode).symbol());
+				lambdaArgs = ImmutableList.of();
+			} else {
+				throw new IllegalArgumentException("Cannot extract value name from " + nameNode);
+			}
+
+			output.add(Value.create(varName));
+			output.add(Value.create(createLambdaWrapperCode(lambdaArgs, lambdaBody)));
+		}
+
+		private TypedValue createLambdaWrapperCode(Iterable<IExprNode<TypedValue>> args, IExprNode<TypedValue> body) {
+			final List<IExecutable<TypedValue>> result = Lists.newArrayList();
+
+			int argCount = 0;
+			for (IExprNode<TypedValue> arg : args) {
+				flattenBindPattern(result, arg);
+				argCount++;
+			}
+
+			result.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, argCount, 1));
+			result.add(Value.create(Code.flattenAndWrap(domain, body)));
+			result.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_CLOSURE, 2, 1));
+			return Code.wrap(domain, result);
+		}
+
+		private void flattenBindPattern(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> bindPattern) {
 			if (bindPattern instanceof SymbolGetNode) {
 				// optimization - single variable -> use symbol
 				final SymbolGetNode<TypedValue> var = (SymbolGetNode<TypedValue>)bindPattern;
@@ -67,54 +110,6 @@ public class LetExpressionFactory {
 				output.add(Value.create(Code.flattenAndWrap(domain, bindPattern)));
 				output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_PATTERN, 1, 1));
 			}
-
-			output.add(flattenExprToCodeConstant(value));
-		}
-
-		private void extractLambdaDefinition(List<IExecutable<TypedValue>> output, BinaryOpNode<TypedValue> opNode) {
-			final IExprNode<TypedValue> nameNode = opNode.left;
-			final IExprNode<TypedValue> lambdaBody = opNode.right;
-
-			final TypedValue varName;
-			final List<TypedValue> argNames;
-			if (nameNode instanceof SymbolCallNode) {
-				// f(...) -> <lambda body>
-				final String symbolName = ((SymbolCallNode<TypedValue>)nameNode).symbol();
-				varName = Symbol.get(domain, symbolName);
-
-				try {
-					argNames = extractArgNames(nameNode.getChildren());
-				} catch (IllegalArgumentException e) {
-					throw new IllegalArgumentException("Cannot extract lambda arg names from " + nameNode);
-				}
-			} else if (nameNode instanceof SymbolGetNode) {
-				varName = Symbol.get(domain, ((SymbolGetNode<TypedValue>)nameNode).symbol());
-				argNames = Lists.newArrayList();
-			} else {
-				throw new IllegalArgumentException("Cannot extract value name from " + nameNode);
-			}
-
-			output.add(Value.create(varName));
-			output.add(Value.create(createLambdaWrapperCode(argNames, lambdaBody)));
-		}
-
-		private TypedValue createLambdaWrapperCode(List<TypedValue> argNames, IExprNode<TypedValue> value) {
-			final List<IExecutable<TypedValue>> result = Lists.newArrayList();
-			result.add(Value.create(Cons.createList(argNames, nullValue)));
-			result.add(flattenExprToCodeConstant(value));
-			result.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_CLOSURE, 2, 1));
-			return Code.wrap(domain, result);
-		}
-
-		private List<TypedValue> extractArgNames(Iterable<IExprNode<TypedValue>> children) {
-			final List<TypedValue> result = Lists.newArrayList();
-			for (IExprNode<TypedValue> child : children)
-				result.add(TypedCalcUtils.extractNameFromNode(domain, child));
-			return result;
-		}
-
-		private IExecutable<TypedValue> flattenExprToCodeConstant(IExprNode<TypedValue> code) {
-			return Value.create(Code.flattenAndWrap(domain, code));
 		}
 	}
 
@@ -259,8 +254,7 @@ public class LetExpressionFactory {
 
 					final TypedValue result = executeForSingleResult(executionFrame, expr);
 
-					final boolean matchResult = pattern.match(executionFrame, outputSymbols, result);
-					Preconditions.checkState(matchResult, "Can't match value %s", result);
+					TypedCalcUtils.matchPattern(pattern, executionFrame, outputSymbols, result);
 
 					// make new values visible to intializer body
 					copySymbols(bindNames, outputSymbols, executionSymbols);
@@ -282,8 +276,7 @@ public class LetExpressionFactory {
 
 					final TypedValue result = executeForSingleResult(executionFrame, expr);
 
-					final boolean matchResult = pattern.match(executionFrame, outputSymbols, result);
-					Preconditions.checkState(matchResult, "Can't match value %s", result);
+					TypedCalcUtils.matchPattern(pattern, executionFrame, outputSymbols, result);
 
 					// make new values visible to intializer body
 					copySymbols(bindNames, outputSymbols, executionFrame.symbols());
@@ -323,8 +316,7 @@ public class LetExpressionFactory {
 			for (PatternInitializerCodePair e : varsToExecute) {
 				final Frame<TypedValue> executionFrame = FrameFactory.newLocalFrame(placeholderSymbols);
 				final TypedValue result = executeForSingleResult(executionFrame, e.code);
-				final boolean matchResult = e.pattern.match(executionFrame, outputSymbols, result);
-				Preconditions.checkState(matchResult, "Can't match value %s", result);
+				TypedCalcUtils.matchPattern(e.pattern, executionFrame, outputSymbols, result);
 			}
 
 			// expose results to namespaces - must be done after evaluations, since all symbols must be executed with dummy values in place

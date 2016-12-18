@@ -1218,6 +1218,9 @@ public class TypedValueCalculatorTest {
 		infix("let([x:_:z = 1:2:3], x - z)").expectResult(i(-2));
 		infix("let([int(x):float(y) = 1:2.1], x - y)").expectResult(d(-1.1));
 		infix("let([x:f = 2:((y)->x+y)], f(7))").expectResult(i(9));
+
+		infix("let([f(int(x)) -> x + 2], f(5))").expectResult(i(7));
+		infix("let([f(w:x,y:z) -> w-x:y-z], f(1:2,4:3))").expectResult(cons(i(-1), i(1)));
 	}
 
 	@Test
@@ -1249,11 +1252,15 @@ public class TypedValueCalculatorTest {
 	public void testLetSeqUnpacking() {
 		infix("letseq([x:y = 1:2, f -> x - y], f())").expectResult(i(-1));
 		infix("letseq([x:xs = 1:2:3, y:z = xs], x - y + z)").expectResult(i(2));
+
+		infix("letseq([f(int(x)) -> x + 2], f(5))").expectResult(i(7));
+		infix("letseq([f(w:x,y:z) -> w-x:y-z], f(1:2,4:3))").expectResult(cons(i(-1), i(1)));
 	}
 
 	@Test
 	public void testLetSeqFailedUnpacking() {
 		infix("letseq([x:xs = 1:2, y:z = xs], false)").expectThrow(RuntimeException.class);
+		infix("letseq([f(int(x)) -> x], f('z'))").expectThrow(RuntimeException.class);
 	}
 
 	@Test(expected = ExecutionErrorException.class)
@@ -1395,7 +1402,6 @@ public class TypedValueCalculatorTest {
 		infix("(a->{a+2})(2)").expectResult(i(4));
 		infix("((a)->a+2)(3)").expectResult(i(5));
 		infix("([a]->a+2)(3)").expectResult(i(5));
-		infix("('a'->a+2)(5)").expectResult(i(7));
 
 		prefix("(apply (-> a (+ a 2)) 2)").expectResult(i(4));
 		prefix("(apply (-> a {(+ a 2)}) 2)").expectResult(i(4));
@@ -1407,16 +1413,39 @@ public class TypedValueCalculatorTest {
 		infix("iscallable((a, b) -> a + b)").expectResult(TRUE);
 
 		infix("((a, b)->a-b)(1, 2)").expectResult(i(-1));
-		infix("(('a', b)->a-b)(1, 3)").expectResult(i(-2));
 
 		prefix("(apply (-> [a, b] (- a b)) 2 3)").expectResult(i(-1));
-		prefix("(apply (-> ['a', b] (- a b)) 3 5)").expectResult(i(-2));
 	}
 
 	@Test
 	public void testLambdaOperatorInLetScope() {
 		infix("let([f = (a,b)->a+b], f(3, 4))").expectResult(i(7));
 		prefix("(let [(= f (-> [a,b] (+ a b)))] (f 4 5))").expectResult(i(9));
+	}
+
+	@Test
+	public void testLambdaUnpacking() {
+		infix("(a:b-> a-b)(1:2)").expectResult(i(-1));
+		infix("((a:b)-> a-b)(1:2)").expectResult(i(-1));
+
+		infix("(int(a)-> a + 2)(5)").expectResult(i(7));
+		infix("((int(a))-> a + 2)(5)").expectResult(i(7));
+
+		infix("((a:b,c:d)-> a-b:c-d)(1:2,4:3)").expectResult(cons(i(-1), i(1)));
+	}
+
+	@Test
+	public void testLambdaUnpackingFailue() {
+		infix("((a:b)-> a-b)(5)").expectThrow(RuntimeException.class);
+		infix("((a:b:c)-> a-b)(1:2)").expectThrow(RuntimeException.class);
+		infix("((int(a))-> a)('z')").expectThrow(RuntimeException.class);
+		infix("((_)-> _)('z')").expectThrow(RuntimeException.class); // wildchar is not bound
+	}
+
+	@Test
+	public void testLambdaCompilation() {
+		infix("(a)->a").expectSameAs(infix("a->a")).expectSameAs(postfix("#a list$1,1 {@a} closure$2,1"));
+		infix("(a:b)->a+b").expectSameAs(infix("a:b->a+b")).expectSameAs(postfix("{@a @b :} pattern$1,1 list$1,1 {@a @b +} closure$2,1"));
 	}
 
 	@Test
@@ -2740,5 +2769,8 @@ public class TypedValueCalculatorTest {
 		infix("zip([1, 2],['a'])").expectResult(list(cons(i(1), s("a"))));
 		infix("zip([1],['a', 'b'])").expectResult(list(cons(i(1), s("a"))));
 		infix("zip([1, 2],['a', 'b'])").expectResult(list(cons(i(1), s("a")), cons(i(2), s("b"))));
+
+		infix("map((a:b)->a*b, zip(['a','b','c'],[1,2,3]))").expectResult(list(s("a"), s("bb"), s("ccc")));
+		infix("map((a:b:c)->b*c+a, zip(['o','m','g'], zip(['a','b','c'],[1,2,3])))").expectResult(list(s("ao"), s("bbm"), s("cccg")));
 	}
 }

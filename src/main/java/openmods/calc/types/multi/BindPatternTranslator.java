@@ -20,6 +20,11 @@ public class BindPatternTranslator {
 
 		@Override
 		public void listBoundVars(Collection<String> output) {}
+
+		@Override
+		public String serialize() {
+			return "_";
+		}
 	}
 
 	private static class PatternBindName implements IBindPattern {
@@ -38,6 +43,11 @@ public class BindPatternTranslator {
 		@Override
 		public void listBoundVars(Collection<String> output) {
 			output.add(name);
+		}
+
+		@Override
+		public String serialize() {
+			return name;
 		}
 	}
 
@@ -61,6 +71,11 @@ public class BindPatternTranslator {
 
 		@Override
 		public void listBoundVars(Collection<String> output) {}
+
+		@Override
+		public String serialize() {
+			return expected.toString();
+		}
 	}
 
 	private static class PatternMatchCons implements IBindPattern {
@@ -83,6 +98,11 @@ public class BindPatternTranslator {
 		public void listBoundVars(Collection<String> output) {
 			carMatcher.listBoundVars(output);
 			cdrMatcher.listBoundVars(output);
+		}
+
+		@Override
+		public String serialize() {
+			return carMatcher.serialize() + ":" + cdrMatcher.serialize();
 		}
 	}
 

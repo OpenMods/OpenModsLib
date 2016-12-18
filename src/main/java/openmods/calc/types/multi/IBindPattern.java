@@ -8,4 +8,6 @@ public interface IBindPattern {
 	public boolean match(Frame<TypedValue> env, SymbolMap<TypedValue> output, TypedValue value);
 
 	public void listBoundVars(Collection<String> output);
+
+	public String serialize();
 }
