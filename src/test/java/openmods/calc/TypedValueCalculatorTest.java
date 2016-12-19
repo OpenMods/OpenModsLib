@@ -254,14 +254,46 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testCompare() {
-		infix("2 < 3").expectResult(TRUE);
+	public void testEquality() {
 		infix("3 != 3").expectResult(FALSE);
-		infix("3 <= 3").expectResult(TRUE);
+		infix("3 == 3").expectResult(TRUE);
 
+		infix("'a' != 'a'").expectResult(FALSE);
+		infix("'a' == 'a'").expectResult(TRUE);
+
+		infix("1 != 'a'").expectResult(TRUE);
+		infix("1 == 'a'").expectResult(FALSE);
+	}
+
+	@Test
+	public void testInequality() {
+		infix("2 < 3").expectResult(TRUE);
+		infix("3 < 2").expectResult(FALSE);
+		infix("2 < 3.1").expectResult(TRUE);
+		infix("3.1 < 2").expectResult(FALSE);
+
+		infix("'a' < 'b'").expectResult(TRUE);
+		infix("'b' < 'a'").expectResult(FALSE);
+
+		infix("3 > 2.9").expectResult(TRUE);
+		infix("2 > 3").expectResult(FALSE);
+
+		infix("3 <= 3").expectResult(TRUE);
+		infix("3 <= 3.1").expectResult(TRUE);
+
+		infix("3.1 >= 3").expectResult(TRUE);
+		infix("3.1 >= 3").expectResult(TRUE);
+	}
+
+	@Test
+	public void testSpaceshipComparision() {
 		infix("3 <=> 3").expectResult(i(0));
 		infix("2 <=> 3").expectResult(i(-1));
 		infix("3 <=> 2").expectResult(i(+1));
+
+		infix("3.1 <=> 3.1").expectResult(i(0));
+		infix("2.1 <=> 3").expectResult(i(-1));
+		infix("3 <=> 2.2").expectResult(i(+1));
 	}
 
 	@Test

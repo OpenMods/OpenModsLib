@@ -157,28 +157,6 @@ public class TypedValueCalculatorFactory {
 		}
 	}
 
-	private interface CompareResultInterpreter {
-		public boolean interpret(int value);
-	}
-
-	private static <T extends Comparable<T>> TypedBinaryOperator.ISimpleCoercedOperation<T, Boolean> createCompareOperation(final CompareResultInterpreter interpreter) {
-		return new TypedBinaryOperator.ISimpleCoercedOperation<T, Boolean>() {
-			@Override
-			public Boolean apply(T left, T right) {
-				return interpreter.interpret(left.compareTo(right));
-			}
-		};
-	}
-
-	private static TypedBinaryOperator createCompareOperator(TypeDomain domain, String id, int priority, final CompareResultInterpreter compareTranslator) {
-		return new TypedBinaryOperator.Builder(id, priority)
-				.registerOperation(BigInteger.class, Boolean.class, TypedValueCalculatorFactory.<BigInteger> createCompareOperation(compareTranslator))
-				.registerOperation(Double.class, Boolean.class, TypedValueCalculatorFactory.<Double> createCompareOperation(compareTranslator))
-				.registerOperation(String.class, Boolean.class, TypedValueCalculatorFactory.<String> createCompareOperation(compareTranslator))
-				.registerOperation(Boolean.class, Boolean.class, TypedValueCalculatorFactory.<Boolean> createCompareOperation(compareTranslator))
-				.build(domain);
-	}
-
 	private static TypedUnaryOperator createUnaryNegation(String id, TypeDomain domain) {
 		return new TypedUnaryOperator.Builder(id)
 				.registerOperation(new TypedUnaryOperator.ISimpleOperation<BigInteger, BigInteger>() {
@@ -1095,21 +1073,39 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		// comparision
+		// comparison
 
-		final BinaryOperator.Direct<TypedValue> ltOperator = operators.registerBinaryOperator(createCompareOperator(domain, "<", PRIORITY_COMPARE, new CompareResultInterpreter() {
+		final TypedValueComparator comparator = new TypedValueComparator();
+
+		abstract class BooleanComparatorOperator extends BinaryOperator.Direct<TypedValue> {
+
+			public BooleanComparatorOperator(String id, int precendence) {
+				super(id, precendence);
+			}
+
 			@Override
-			public boolean interpret(int value) {
+			public TypedValue execute(TypedValue left, TypedValue right) {
+				final int result = comparator.compare(left, right);
+				return domain.create(Boolean.class, interpret(result));
+			}
+
+			protected abstract boolean interpret(int value);
+
+		}
+
+		final BinaryOperator.Direct<TypedValue> ltOperator = operators.registerBinaryOperator(new BooleanComparatorOperator("<", PRIORITY_COMPARE) {
+			@Override
+			protected boolean interpret(int value) {
 				return value < 0;
 			}
-		})).unwrap();
+		}).unwrap();
 
-		final BinaryOperator.Direct<TypedValue> gtOperator = operators.registerBinaryOperator(createCompareOperator(domain, ">", PRIORITY_COMPARE, new CompareResultInterpreter() {
+		final BinaryOperator.Direct<TypedValue> gtOperator = operators.registerBinaryOperator(new BooleanComparatorOperator(">", PRIORITY_COMPARE) {
 			@Override
-			public boolean interpret(int value) {
+			protected boolean interpret(int value) {
 				return value > 0;
 			}
-		})).unwrap();
+		}).unwrap();
 
 		abstract class EqualsOperator extends BinaryOperator.StackBased<TypedValue> {
 
@@ -1143,19 +1139,19 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		operators.registerBinaryOperator(createCompareOperator(domain, "<=", PRIORITY_COMPARE, new CompareResultInterpreter() {
+		operators.registerBinaryOperator(new BooleanComparatorOperator("<=", PRIORITY_COMPARE) {
 			@Override
 			public boolean interpret(int value) {
 				return value <= 0;
 			}
-		}));
+		});
 
-		operators.registerBinaryOperator(createCompareOperator(domain, ">=", PRIORITY_COMPARE, new CompareResultInterpreter() {
+		operators.registerBinaryOperator(new BooleanComparatorOperator(">=", PRIORITY_COMPARE) {
 			@Override
 			public boolean interpret(int value) {
 				return value >= 0;
 			}
-		}));
+		});
 
 		// magic
 
@@ -1181,21 +1177,12 @@ public class TypedValueCalculatorFactory {
 
 		final BinaryOperator<TypedValue> nullAwareDotOperator = operators.registerBinaryOperator(new DotOperator("?.", PRIORITY_MAX)).unwrap();
 
-		{
-			class SpaceshipOperation<T extends Comparable<T>> implements TypedBinaryOperator.ICoercedOperation<T> {
-				@Override
-				public TypedValue apply(TypeDomain domain, T left, T right) {
-					return domain.create(BigInteger.class, BigInteger.valueOf(left.compareTo(right)));
-				}
+		operators.registerBinaryOperator(new BinaryOperator.Direct<TypedValue>("<=>", PRIORITY_SPACESHIP) {
+			@Override
+			public TypedValue execute(TypedValue left, TypedValue right) {
+				return domain.create(BigInteger.class, BigInteger.valueOf(comparator.compare(left, right)));
 			}
-
-			operators.registerBinaryOperator(new TypedBinaryOperator.Builder("<=>", PRIORITY_SPACESHIP)
-					.registerOperation(BigInteger.class, new SpaceshipOperation<BigInteger>())
-					.registerOperation(Double.class, new SpaceshipOperation<Double>())
-					.registerOperation(String.class, new SpaceshipOperation<String>())
-					.registerOperation(Boolean.class, new SpaceshipOperation<Boolean>())
-					.build(domain));
-		}
+		});
 
 		final BinaryOperator<TypedValue> lambdaOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("->", PRIORITY_LAMBDA, Associativity.RIGHT)).unwrap();
 
