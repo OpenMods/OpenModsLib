@@ -2,12 +2,17 @@ package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.math.BigInteger;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import openmods.calc.BinaryFunction;
 import openmods.calc.Environment;
 import openmods.calc.Frame;
+import openmods.calc.SingleReturnCallable;
 import openmods.calc.TernaryFunction;
 import openmods.calc.UnaryFunction;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
@@ -31,6 +36,37 @@ public class LibListFunctions {
 		return stack.pop();
 	}
 
+	private interface KeyFunction {
+		public TypedValue apply(TypedValue value);
+	}
+
+	private static final KeyFunction NULL_KEY_FUNCTION = new KeyFunction() {
+		@Override
+		public TypedValue apply(TypedValue value) {
+			return value;
+		}
+	};
+
+	private static class CompositeComparator implements Comparator<TypedValue> {
+
+		private final KeyFunction keyFunction;
+
+		private final Comparator<TypedValue> compareFunction;
+
+		public CompositeComparator(KeyFunction keyFunction, Comparator<TypedValue> compareFunction) {
+			this.keyFunction = keyFunction;
+			this.compareFunction = compareFunction;
+		}
+
+		@Override
+		public int compare(TypedValue o1, TypedValue o2) {
+			final TypedValue c1 = keyFunction.apply(o1);
+			final TypedValue c2 = keyFunction.apply(o2);
+			return compareFunction.compare(c1, c2);
+		}
+
+	}
+
 	public static void register(Environment<TypedValue> env) {
 		final TypedValue nullValue = env.nullValue();
 		final TypeDomain domain = nullValue.domain;
@@ -50,7 +86,6 @@ public class LibListFunctions {
 					}
 				}.process(list);
 			}
-
 		});
 
 		env.setGlobalSymbol("filter", new BinaryFunction.WithFrame<TypedValue>() {
@@ -281,6 +316,82 @@ public class LibListFunctions {
 				}
 
 				return Cons.createList(result, nullValue);
+			}
+		});
+
+		env.setGlobalSymbol("sort", new SingleReturnCallable<TypedValue>() {
+			@Override
+			public TypedValue call(final Frame<TypedValue> frame, OptionalInt argumentsCount) {
+				final int args = argumentsCount.or(1);
+
+				Preconditions.checkState(args >= 1, "'sort' expects at least one argument");
+
+				final Stack<TypedValue> stack = frame.stack().substack(args);
+
+				final Map<String, TypedValue> kwdArgs = Maps.newHashMap();
+				for (int i = 0; i < args - 1; i++) {
+					final TypedValue arg = stack.pop();
+					final Cons keyValuePair = arg.as(Cons.class, "optional arg");
+					kwdArgs.put(keyValuePair.car.as(Symbol.class, "optional arg name").value, keyValuePair.cdr);
+				}
+
+				final TypedValue list = stack.pop();
+
+				List<TypedValue> elements = Lists.newArrayList(Cons.toIterable(list, nullValue));
+
+				final TypedValue keyFunctionArg = kwdArgs.get("key");
+				final KeyFunction keyFunction = extractKeyFunction(frame, stack, keyFunctionArg);
+
+				final TypedValue compareFunctionArg = kwdArgs.get("cmp");
+				final Comparator<TypedValue> compareFunction = extractCompareFunction(frame, stack, compareFunctionArg);
+
+				Collections.sort(elements, new CompositeComparator(keyFunction, compareFunction));
+
+				final TypedValue reverse = kwdArgs.get("reverse");
+				if (reverse != null && MetaObjectUtils.boolValue(frame, reverse))
+					elements = Lists.reverse(elements);
+
+				return Cons.createList(elements, nullValue);
+			}
+
+			private Comparator<TypedValue> extractCompareFunction(final Frame<TypedValue> frame, final Stack<TypedValue> stack, final TypedValue compareFunctionArg) {
+				if (compareFunctionArg != null) {
+					final MetaObject.SlotCall slotCall = compareFunctionArg.getMetaObject().slotCall;
+					Preconditions.checkState(slotCall != null, "'Compare function' argument %s is not callable", compareFunctionArg);
+					return new Comparator<TypedValue>() {
+						@Override
+						public int compare(TypedValue o1, TypedValue o2) {
+							stack.push(o1);
+							stack.push(o2);
+							slotCall.call(compareFunctionArg, OptionalInt.TWO, OptionalInt.ONE, frame);
+							final TypedValue result = stack.pop();
+							Preconditions.checkState(stack.isEmpty(), "Values left on stack");
+							return result.unwrap(BigInteger.class).intValue();
+						}
+					};
+
+				} else {
+					return new TypedValueComparator();
+				}
+			}
+
+			private KeyFunction extractKeyFunction(final Frame<TypedValue> frame, final Stack<TypedValue> stack, final TypedValue keyFunctionArg) {
+				if (keyFunctionArg != null) {
+					final MetaObject.SlotCall slotCall = keyFunctionArg.getMetaObject().slotCall;
+					Preconditions.checkState(slotCall != null, "'Key function' argument %s is not callable", keyFunctionArg);
+					return new KeyFunction() {
+						@Override
+						public TypedValue apply(TypedValue value) {
+							stack.push(value);
+							slotCall.call(keyFunctionArg, OptionalInt.ONE, OptionalInt.ONE, frame);
+							final TypedValue result = stack.pop();
+							Preconditions.checkState(stack.isEmpty(), "Values left on stack");
+							return result;
+						}
+					};
+				} else {
+					return NULL_KEY_FUNCTION;
+				}
 			}
 		});
 	}

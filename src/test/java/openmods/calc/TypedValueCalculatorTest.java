@@ -2805,4 +2805,27 @@ public class TypedValueCalculatorTest {
 		infix("map((a:b)->a*b, zip(['a','b','c'],[1,2,3]))").expectResult(list(s("a"), s("bb"), s("ccc")));
 		infix("map((a:b:c)->b*c+a, zip(['o','m','g'], zip(['a','b','c'],[1,2,3])))").expectResult(list(s("ao"), s("bbm"), s("cccg")));
 	}
+
+	@Test
+	public void testSortFunction() {
+		infix("sort([])").expectResult(list());
+		infix("sort(['a'])").expectResult(list(s("a")));
+
+		infix("sort([3,2,1])").expectResult(list(i(1), i(2), i(3)));
+		infix("sort([3,2,2,1])").expectResult(list(i(1), i(2), i(2), i(3)));
+		infix("sort([3,2.0,2,1])").expectResult(list(i(1), d(2.0), i(2), i(3)));
+
+		infix("sort([2.1, 3,true])").expectResult(list(TRUE, d(2.1), i(3)));
+		infix("sort(['ab','aa','a'])").expectResult(list(s("a"), s("aa"), s("ab")));
+
+		infix("sort([true,5.1,8,3], #reverse=true)").expectResult(list(i(8), d(5.1), i(3), TRUE));
+
+		infix("sort(['10','20','100'])").expectResult(list(s("10"), s("100"), s("20")));
+		infix("sort(['10','20','100'], #key=(x)->int(x))").expectResult(list(s("10"), s("20"), s("100")));
+
+		infix("sort(['31','12','53'])").expectResult(list(s("12"), s("31"), s("53")));
+		infix("sort(['31','12','53'], #cmp=(a,b)->a[1] <=> b[1])").expectResult(list(s("31"), s("12"), s("53")));
+
+		infix("sort([10.1,20,'30.1','30.0'], #key=(x)->float(x), #cmp=(a,b)->int(b-a))").expectResult(list(s("30.1"), s("30.0"), i(20), d(10.1)));
+	}
 }
