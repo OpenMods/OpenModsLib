@@ -1,6 +1,5 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -37,7 +36,7 @@ public class LetExpressionFactory {
 	private final BinaryOperator<TypedValue> colonOperator;
 	private final BinaryOperator<TypedValue> assignOperator;
 	private final BinaryOperator<TypedValue> lambdaOperator;
-	private final ClosureCompilerHelper lambdaCompiler;
+	private final ClosureCompilerHelper closureCompiler;
 
 	public LetExpressionFactory(TypeDomain domain, TypedValue nullValue, BinaryOperator<TypedValue> colonOperator, BinaryOperator<TypedValue> assignOperator, BinaryOperator<TypedValue> lambdaOperator, UnaryOperator<TypedValue> varArgMarker) {
 		this.domain = domain;
@@ -45,7 +44,7 @@ public class LetExpressionFactory {
 		this.colonOperator = colonOperator;
 		this.assignOperator = assignOperator;
 		this.lambdaOperator = lambdaOperator;
-		this.lambdaCompiler = new ClosureCompilerHelper(domain, varArgMarker);
+		this.closureCompiler = new ClosureCompilerHelper(domain, varArgMarker);
 	}
 
 	private class LetNode extends ScopeModifierNode {
@@ -92,8 +91,7 @@ public class LetExpressionFactory {
 
 		private TypedValue createLambdaWrapperCode(Iterable<IExprNode<TypedValue>> args, IExprNode<TypedValue> body) {
 			final List<IExecutable<TypedValue>> result = Lists.newArrayList();
-			final Optional<String> varArgName = lambdaCompiler.compileMultipleArgs(result, args);
-			lambdaCompiler.compileClosureCall(result, body, varArgName);
+			closureCompiler.compile(result, args, body);
 			return Code.wrap(domain, result);
 		}
 

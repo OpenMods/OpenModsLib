@@ -1,6 +1,6 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.BinaryOperator;
@@ -19,12 +19,12 @@ public class LambdaExpressionFactory {
 
 	private final TypeDomain domain;
 	private final TypedValue nullValue;
-	private final ClosureCompilerHelper argSerializerHelper;
+	private final ClosureCompilerHelper closureCompiler;
 
 	public LambdaExpressionFactory(TypedValue nullValue, UnaryOperator<TypedValue> varArgMarker) {
 		this.nullValue = nullValue;
 		this.domain = nullValue.domain;
-		argSerializerHelper = new ClosureCompilerHelper(domain, varArgMarker);
+		closureCompiler = new ClosureCompilerHelper(domain, varArgMarker);
 	}
 
 	private static IBindPattern extractPatternFromValue(TypedValue arg) {
@@ -86,16 +86,10 @@ public class LambdaExpressionFactory {
 
 		@Override
 		public void flatten(List<IExecutable<TypedValue>> output) {
-			final Optional<String> varArgName = extractArgNamesList(output);
-			argSerializerHelper.compileClosureCall(output, right, varArgName);
-		}
-
-		private Optional<String> extractArgNamesList(List<IExecutable<TypedValue>> output) {
-			// yup, any bracket. I prefer (), but [] are only option in prefix
 			if (left instanceof BracketContainerNode) {
-				return argSerializerHelper.compileMultipleArgs(output, left.getChildren());
+				closureCompiler.compile(output, left.getChildren(), right);
 			} else {
-				return argSerializerHelper.compileSingleArg(output, left);
+				closureCompiler.compile(output, ImmutableList.of(left), right);
 			}
 		}
 	}

@@ -20,11 +20,19 @@ public class ClosureCompilerHelper {
 		this.varArgMarker = varArgMarker;
 	}
 
-	public Optional<String> compileMultipleArgs(List<IExecutable<TypedValue>> output, Iterable<IExprNode<TypedValue>> args) {
+	public void compile(List<IExecutable<TypedValue>> output, Iterable<IExprNode<TypedValue>> args, IExprNode<TypedValue> lambdaBody) {
+		final Optional<String> varArgName = compileArgs(output, args);
+		if (varArgName.isPresent())
+			compileClosureVarCall(output, lambdaBody, varArgName.get());
+		else
+			compileClosureCall(output, lambdaBody);
+	}
+
+	private Optional<String> compileArgs(List<IExecutable<TypedValue>> output, Iterable<IExprNode<TypedValue>> args) {
 		Optional<String> varArgName = Optional.absent();
 		int count = 0;
 		for (IExprNode<TypedValue> arg : args) {
-			final Optional<String> newVarArgName = tryExtractVarArg(arg);
+			final Optional<String> newVarArgName = tryExtractVarArgName(arg);
 
 			if (!newVarArgName.isPresent()) {
 				if (varArgName.isPresent())
@@ -44,31 +52,7 @@ public class ClosureCompilerHelper {
 		return varArgName;
 	}
 
-	public Optional<String> compileSingleArg(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> arg) {
-		Optional<String> varArgName = tryExtractVarArg(arg);
-		if (!varArgName.isPresent()) {
-			extractPatternFromNode(output, arg);
-			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, 1, 1));
-		} else {
-			// dummy arg list
-			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, 0, 1));
-		}
-		return varArgName;
-	}
-
-	public void compileClosureCall(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> lambdaBody, Optional<String> varArgName) {
-		if (varArgName.isPresent())
-			output.add(Value.create(domain.create(String.class, varArgName.get())));
-
-		flattenClosureCode(output, lambdaBody);
-
-		if (varArgName.isPresent())
-			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_CLOSURE_VAR, 3, 1));
-		else
-			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_CLOSURE, 2, 1));
-	}
-
-	private Optional<String> tryExtractVarArg(IExprNode<TypedValue> arg) {
+	private Optional<String> tryExtractVarArgName(IExprNode<TypedValue> arg) {
 		if (arg instanceof UnaryOpNode) {
 			final UnaryOpNode<TypedValue> opNode = (UnaryOpNode<TypedValue>)arg;
 			if (opNode.operator == varArgMarker) {
@@ -88,6 +72,17 @@ public class ClosureCompilerHelper {
 			output.add(Value.create(Code.flattenAndWrap(domain, arg)));
 			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_PATTERN, 1, 1));
 		}
+	}
+
+	private void compileClosureCall(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> lambdaBody) {
+		flattenClosureCode(output, lambdaBody);
+		output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_CLOSURE, 2, 1));
+	}
+
+	private void compileClosureVarCall(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> lambdaBody, String varArgName) {
+		output.add(Value.create(domain.create(String.class, varArgName)));
+		flattenClosureCode(output, lambdaBody);
+		output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_CLOSURE_VAR, 3, 1));
 	}
 
 	private void flattenClosureCode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> lambdaBody) {
