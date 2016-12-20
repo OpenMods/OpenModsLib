@@ -1,5 +1,6 @@
 package openmods.calc.types.multi;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -17,6 +18,7 @@ import openmods.calc.ISymbol;
 import openmods.calc.LocalSymbolMap;
 import openmods.calc.SymbolCall;
 import openmods.calc.SymbolMap;
+import openmods.calc.UnaryOperator;
 import openmods.calc.Value;
 import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.ICompilerState;
@@ -35,13 +37,15 @@ public class LetExpressionFactory {
 	private final BinaryOperator<TypedValue> colonOperator;
 	private final BinaryOperator<TypedValue> assignOperator;
 	private final BinaryOperator<TypedValue> lambdaOperator;
+	private final ClosureCompilerHelper lambdaCompiler;
 
-	public LetExpressionFactory(TypeDomain domain, TypedValue nullValue, BinaryOperator<TypedValue> colonOperator, BinaryOperator<TypedValue> assignOperator, BinaryOperator<TypedValue> lambdaOperator) {
+	public LetExpressionFactory(TypeDomain domain, TypedValue nullValue, BinaryOperator<TypedValue> colonOperator, BinaryOperator<TypedValue> assignOperator, BinaryOperator<TypedValue> lambdaOperator, UnaryOperator<TypedValue> varArgMarker) {
 		this.domain = domain;
 		this.nullValue = nullValue;
 		this.colonOperator = colonOperator;
 		this.assignOperator = assignOperator;
 		this.lambdaOperator = lambdaOperator;
+		this.lambdaCompiler = new ClosureCompilerHelper(domain, varArgMarker);
 	}
 
 	private class LetNode extends ScopeModifierNode {
@@ -88,16 +92,8 @@ public class LetExpressionFactory {
 
 		private TypedValue createLambdaWrapperCode(Iterable<IExprNode<TypedValue>> args, IExprNode<TypedValue> body) {
 			final List<IExecutable<TypedValue>> result = Lists.newArrayList();
-
-			int argCount = 0;
-			for (IExprNode<TypedValue> arg : args) {
-				flattenBindPattern(result, arg);
-				argCount++;
-			}
-
-			result.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, argCount, 1));
-			result.add(Value.create(Code.flattenAndWrap(domain, body)));
-			result.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_CLOSURE, 2, 1));
+			final Optional<String> varArgName = lambdaCompiler.compileMultipleArgs(result, args);
+			lambdaCompiler.compileClosureCall(result, body, varArgName);
 			return Code.wrap(domain, result);
 		}
 

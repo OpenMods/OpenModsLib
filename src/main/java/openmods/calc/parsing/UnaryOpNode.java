@@ -7,9 +7,9 @@ import openmods.calc.UnaryOperator;
 
 public class UnaryOpNode<E> implements IExprNode<E> {
 
-	private final UnaryOperator<E> operator;
+	public final UnaryOperator<E> operator;
 
-	private final IExprNode<E> argument;
+	public final IExprNode<E> argument;
 
 	public UnaryOpNode(UnaryOperator<E> operator, IExprNode<E> argument) {
 		this.operator = operator;

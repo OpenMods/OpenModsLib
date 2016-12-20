@@ -20,6 +20,7 @@ public interface TypedCalcConstants {
 	public static final String SYMBOL_LETREC = "letrec";
 	public static final String SYMBOL_CODE = "code";
 	public static final String SYMBOL_CLOSURE = "closure";
+	public static final String SYMBOL_CLOSURE_VAR = "closurevar";
 	public static final String SYMBOL_DELAY = "delay";
 	public static final String SYMBOL_WITH = "with";
 	public static final String SYMBOL_APPLY = "apply";

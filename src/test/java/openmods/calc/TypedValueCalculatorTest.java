@@ -2828,4 +2828,40 @@ public class TypedValueCalculatorTest {
 
 		infix("sort([10.1,20,'30.1','30.0'], #key=(x)->float(x), #cmp=(a,b)->int(b-a))").expectResult(list(s("30.1"), s("30.0"), i(20), d(10.1)));
 	}
+
+	@Test
+	public void testVarargLambda() {
+		infix("((*arg) -> 'args':arg)()").expectResult(list(s("args")));
+		infix("((*arg) -> 'args':arg)(1)").expectResult(list(s("args"), i(1)));
+		infix("((*arg) -> 'args':arg)(1,2,3)").expectResult(list(s("args"), i(1), i(2), i(3)));
+
+		infix("(*arg -> 'args':arg)()").expectResult(list(s("args")));
+		infix("(*arg -> 'args':arg)(1)").expectResult(list(s("args"), i(1)));
+		infix("(*arg -> 'args':arg)(1,2,3)").expectResult(list(s("args"), i(1), i(2), i(3)));
+
+		infix("((a, *arg) -> a:'var':arg)(1)").expectResult(list(i(1), s("var")));
+		infix("((a, *arg) -> a:'var':arg)(1,2,3)").expectResult(list(i(1), s("var"), i(2), i(3)));
+	}
+
+	@Test
+	public void testVarargLambdaInLet() {
+		infix("let([f = (*arg) -> 'args':arg], f())").expectResult(list(s("args")));
+		infix("let([f = (*arg) -> 'args':arg], f(1,2,3))").expectResult(list(s("args"), i(1), i(2), i(3)));
+
+		infix("let([f(*arg) -> 'args':arg], f())").expectResult(list(s("args")));
+		infix("let([f(*arg) -> 'args':arg], f(1,2,3))").expectResult(list(s("args"), i(1), i(2), i(3)));
+
+		infix("let([f(a, *arg) -> a:'var':arg], f('a'))").expectResult(list(s("a"), s("var")));
+		infix("let([f(a, *arg) -> a:'var':arg], f('b', 1, 2, 3))").expectResult(list(s("b"), s("var"), i(1), i(2), i(3)));
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testVarargLambdaPositionalAfterVararg() {
+		infix("(*arg, a) -> 'fail'").execute();
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testVarargLambdaTwoVarargs() {
+		infix("(*a, *b) -> 'fail'").execute();
+	}
 }

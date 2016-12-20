@@ -52,11 +52,13 @@ import openmods.calc.parsing.MappedCompilerState;
 import openmods.calc.parsing.MappedExprNodeFactory;
 import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
 import openmods.calc.parsing.MappedExprNodeFactory.IBracketExprNodeFactory;
+import openmods.calc.parsing.MappedExprNodeFactory.IUnaryExprNodeFactory;
 import openmods.calc.parsing.SquareBracketContainerNode;
 import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.Tokenizer;
+import openmods.calc.parsing.UnaryOpNode;
 import openmods.calc.parsing.ValueNode;
 import openmods.calc.types.multi.Cons.LinearVisitor;
 import openmods.calc.types.multi.TypeDomain.Coercion;
@@ -99,6 +101,35 @@ public class TypedValueCalculatorFactory {
 	private static final int PRIORITY_SPLIT = 20; // \
 	private static final int PRIORITY_ASSIGN = 10; // =
 
+	private static class MarkerUnaryOperator extends UnaryOperator.Direct<TypedValue> {
+		public MarkerUnaryOperator(String id) {
+			super(id);
+		}
+
+		@Override
+		public TypedValue execute(TypedValue value) {
+			throw new UnsupportedOperationException(); // should be replaced in AST tree modification
+		}
+	}
+
+	private static class MarkerUnaryOperatorNodeFactory implements IUnaryExprNodeFactory<TypedValue> {
+		private final UnaryOperator<TypedValue> op;
+
+		public MarkerUnaryOperatorNodeFactory(UnaryOperator<TypedValue> op) {
+			this.op = op;
+		}
+
+		@Override
+		public IExprNode<TypedValue> create(IExprNode<TypedValue> arg) {
+			return new UnaryOpNode<TypedValue>(op, arg) {
+				@Override
+				public void flatten(List<IExecutable<TypedValue>> output) {
+					throw new UnsupportedOperationException("Operator " + op + " cannot be used in this context"); // should be captured before serialization;
+				}
+			};
+		}
+	}
+
 	private static class MarkerBinaryOperator extends BinaryOperator.Direct<TypedValue> {
 		private MarkerBinaryOperator(String id, int precendence) {
 			super(id, precendence);
@@ -115,7 +146,6 @@ public class TypedValueCalculatorFactory {
 	}
 
 	private static class MarkerBinaryOperatorNodeFactory implements IBinaryExprNodeFactory<TypedValue> {
-
 		private final BinaryOperator<TypedValue> op;
 
 		public MarkerBinaryOperatorNodeFactory(BinaryOperator<TypedValue> op) {
@@ -743,6 +773,8 @@ public class TypedValueCalculatorFactory {
 				return value;
 			}
 		});
+
+		final UnaryOperator<TypedValue> varArgMarker = operators.registerUnaryOperator(new MarkerUnaryOperator("*"));
 
 		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("-", PRIORITY_ADD)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
@@ -1904,10 +1936,10 @@ public class TypedValueCalculatorFactory {
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
 
-		final LetExpressionFactory letFactory = new LetExpressionFactory(domain, nullValue, colonOperator, assignOperator, lambdaOperator);
+		final LetExpressionFactory letFactory = new LetExpressionFactory(domain, nullValue, colonOperator, assignOperator, lambdaOperator, varArgMarker);
 		letFactory.registerSymbol(env);
 
-		final LambdaExpressionFactory lambdaFactory = new LambdaExpressionFactory(domain, nullValue);
+		final LambdaExpressionFactory lambdaFactory = new LambdaExpressionFactory(nullValue, varArgMarker);
 		lambdaFactory.registerSymbol(env);
 
 		final PromiseExpressionFactory delayFactory = new PromiseExpressionFactory(domain);
@@ -1962,6 +1994,7 @@ public class TypedValueCalculatorFactory {
 							}
 						})
 						.addFactory(lambdaOperator, lambdaFactory.createLambdaExprNodeFactory(lambdaOperator))
+						.addFactory(varArgMarker, new MarkerUnaryOperatorNodeFactory(varArgMarker))
 						.addFactory(assignOperator, new SingularBinaryOperatorNodeFactory(assignOperator))
 						.addFactory(splitOperator, new MarkerBinaryOperatorNodeFactory(splitOperator))
 						.addFactory(andOperator, LazyBinaryOperatorNode.createFactory(andOperator, domain, TypedCalcConstants.SYMBOL_AND_THEN))

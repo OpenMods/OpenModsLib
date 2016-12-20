@@ -1,6 +1,6 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Preconditions;
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.calc.BinaryOperator;
@@ -8,22 +8,38 @@ import openmods.calc.Environment;
 import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.IExecutable;
-import openmods.calc.SymbolCall;
-import openmods.calc.Value;
+import openmods.calc.UnaryOperator;
 import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.BracketContainerNode;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
-import openmods.calc.parsing.SymbolGetNode;
+import openmods.utils.Stack;
 
 public class LambdaExpressionFactory {
 
 	private final TypeDomain domain;
 	private final TypedValue nullValue;
+	private final ClosureCompilerHelper argSerializerHelper;
 
-	public LambdaExpressionFactory(TypeDomain domain, TypedValue nullValue) {
-		this.domain = domain;
+	public LambdaExpressionFactory(TypedValue nullValue, UnaryOperator<TypedValue> varArgMarker) {
 		this.nullValue = nullValue;
+		this.domain = nullValue.domain;
+		argSerializerHelper = new ClosureCompilerHelper(domain, varArgMarker);
+	}
+
+	private static IBindPattern extractPatternFromValue(TypedValue arg) {
+		if (arg.is(Symbol.class)) {
+			return BindPatternTranslator.createPatternForVarName(arg.as(Symbol.class).value);
+		} else if (arg.is(IBindPattern.class)) { return arg.as(IBindPattern.class); }
+
+		throw new IllegalArgumentException("Failed to parse lambda arg list, expected symbol or pattern, got " + arg);
+	}
+
+	private List<IBindPattern> extractPatternFromValues(TypedValue argValues) {
+		final List<IBindPattern> args = Lists.newArrayList();
+		for (TypedValue arg : Cons.toIterable(argValues, nullValue))
+			args.add(extractPatternFromValue(arg));
+		return args;
 	}
 
 	private class ClosureSymbol extends FixedCallable<TypedValue> {
@@ -34,39 +50,31 @@ public class LambdaExpressionFactory {
 
 		@Override
 		public void call(Frame<TypedValue> frame) {
-			final TypedValue right = frame.stack().pop();
-			final Code code = right.as(Code.class, "second argument of 'closure'");
+			final Stack<TypedValue> stack = frame.stack();
+			final Code code = stack.pop().as(Code.class, "second argument of 'closure'");
 
-			final TypedValue left = frame.stack().pop();
-
-			final List<IBindPattern> args = Lists.newArrayList();
-			if (left.is(Cons.class)) {
-				final Cons argsList = left.as(Cons.class);
-
-				argsList.visit(new Cons.LinearVisitor() {
-					@Override
-					public void value(TypedValue value, boolean isLast) {
-						if (value.is(Symbol.class)) {
-							args.add(BindPatternTranslator.createPatternForVarName(value.as(Symbol.class).value));
-						} else if (value.is(IBindPattern.class)) {
-							args.add(value.as(IBindPattern.class));
-						} else {
-							throw new IllegalArgumentException("Failed to parse lambda arg list, expected symbol or pattern, got " + value);
-						}
-					}
-
-					@Override
-					public void end(TypedValue terminator) {}
-
-					@Override
-					public void begin() {}
-				});
-			} else {
-				Preconditions.checkState(left == nullValue, "Expected list of symbols as first argument of 'closure', got %s", left);
-				// empty arg list
-			}
+			final TypedValue argValues = stack.pop();
+			final List<IBindPattern> args = extractPatternFromValues(argValues);
 
 			frame.stack().push(CallableValue.wrap(domain, new Closure(frame.symbols(), code, args)));
+		}
+	}
+
+	private class ClosureVarSymbol extends FixedCallable<TypedValue> {
+
+		public ClosureVarSymbol() {
+			super(3, 1);
+		}
+
+		@Override
+		public void call(Frame<TypedValue> frame) {
+			final Stack<TypedValue> stack = frame.stack();
+			final Code code = stack.pop().as(Code.class, "third argument of 'closurevar'");
+			final String varArgName = stack.pop().as(String.class, "second argument of 'closurevar'");
+			final TypedValue argValues = stack.pop();
+
+			final List<IBindPattern> args = extractPatternFromValues(argValues);
+			stack.push(CallableValue.wrap(domain, new ClosureVar(nullValue, frame.symbols(), code, args, varArgName)));
 		}
 	}
 
@@ -78,43 +86,16 @@ public class LambdaExpressionFactory {
 
 		@Override
 		public void flatten(List<IExecutable<TypedValue>> output) {
-			extractArgNamesList(output);
-			flattenClosureCode(output);
-			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_CLOSURE, 2, 1));
+			final Optional<String> varArgName = extractArgNamesList(output);
+			argSerializerHelper.compileClosureCall(output, right, varArgName);
 		}
 
-		private void flattenClosureCode(List<IExecutable<TypedValue>> output) {
-			if (right instanceof RawCodeExprNode) {
-				right.flatten(output);
-			} else {
-				output.add(Value.create(Code.flattenAndWrap(domain, right)));
-			}
-		}
-
-		private void extractArgNamesList(List<IExecutable<TypedValue>> output) {
-
+		private Optional<String> extractArgNamesList(List<IExecutable<TypedValue>> output) {
 			// yup, any bracket. I prefer (), but [] are only option in prefix
 			if (left instanceof BracketContainerNode) {
-				int count = 0;
-				for (IExprNode<TypedValue> arg : left.getChildren()) {
-					extractPatternFromNode(output, arg);
-					count++;
-				}
-				output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, count, 1));
+				return argSerializerHelper.compileMultipleArgs(output, left.getChildren());
 			} else {
-				extractPatternFromNode(output, left);
-				output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_LIST, 1, 1));
-			}
-		}
-
-		private void extractPatternFromNode(List<IExecutable<TypedValue>> output, IExprNode<TypedValue> arg) {
-			if (arg instanceof SymbolGetNode) {
-				// optimization - single variable -> use symbol
-				final SymbolGetNode<TypedValue> var = (SymbolGetNode<TypedValue>)arg;
-				output.add(Value.create(Symbol.get(domain, var.symbol())));
-			} else {
-				output.add(Value.create(Code.flattenAndWrap(domain, arg)));
-				output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_PATTERN, 1, 1));
+				return argSerializerHelper.compileSingleArg(output, left);
 			}
 		}
 	}
@@ -130,6 +111,7 @@ public class LambdaExpressionFactory {
 
 	public void registerSymbol(Environment<TypedValue> env) {
 		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_CLOSURE, new ClosureSymbol());
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_CLOSURE_VAR, new ClosureVarSymbol());
 	}
 
 }
