@@ -37,9 +37,13 @@ public class MappedCompilerState<E> implements ICompilerState<E> {
 
 			@Override
 			public IExprNode<E> createRootNode(List<IExprNode<E>> children) {
-				return new SymbolCallNode<E>(symbol, children);
+				return createDefaultSymbolNode(symbol, children);
 			}
 		};
+	}
+
+	protected IExprNode<E> createDefaultSymbolNode(String symbol, List<IExprNode<E>> children) {
+		return new SymbolCallNode<E>(symbol, children);
 	}
 
 	@Override

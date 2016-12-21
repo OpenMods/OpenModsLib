@@ -2217,14 +2217,7 @@ public class TypedValueCalculatorTest {
 		infix("let([t=a], t?.(c()))").expectResult(cons(s("get"), s("member")));
 		c.checkCallCount(1).resetCallCount();
 
-		// caveat: side effect of not interpreting calls of ?
-		infix("let([t=a], t?.c())").expectResult(cons(s("get"), s("member")));
-		c.checkCallCount(1).resetCallCount();
-
 		infix("let([t=null], t?.(c()))").expectResult(NULL);
-		c.checkCallCount(0);
-
-		infix("let([t=null], t?.c())").expectResult(NULL);
 		c.checkCallCount(0);
 	}
 
@@ -2908,4 +2901,90 @@ public class TypedValueCalculatorTest {
 		infix("applyvar(test, 'a', 'b', 'c', ['x'])").expectResult(s("(a,b,c,x)"));
 		infix("applyvar(test, 'a', 'b', 'c', ['3','2','1'])").expectResult(s("(a,b,c,3,2,1)"));
 	}
+
+	@Test
+	public void testArgUnpackCompilationAndRuntime() {
+		sut.environment.setGlobalSymbol("test", new CallableLogger());
+		infix("test(*[])")
+				.expectSameAs(postfix("@test list$0,1 applyvar$2,1"))
+				.expectResult(s("()"));
+
+		infix("test('a',*[])")
+				.expectSameAs(postfix("@test 'a' list$0,1 applyvar$3,1"))
+				.expectResult(s("(a)"));
+
+		infix("test(*['1'])")
+				.expectSameAs(postfix("@test '1' list$1,1 applyvar$2,1"))
+				.expectResult(s("(1)"));
+
+		infix("test(*['1','2'])")
+				.expectSameAs(postfix("@test '1' '2' list$2,1 applyvar$2,1"))
+				.expectResult(s("(1,2)"));
+
+		infix("test('a',*['1','2'])")
+				.expectSameAs(postfix("@test 'a' '1' '2' list$2,1 applyvar$3,1"))
+				.expectResult(s("(a,1,2)"));
+
+		infix("test(*['1'], 'a')")
+				.expectSameAs(postfix("@test '1' list$1,1 'a' list$1,1 flatten$2,1 applyvar$2,1"))
+				.expectResult(s("(1,a)"));
+
+		infix("test(*['1'], 'a', *['2','3'])")
+				.expectSameAs(postfix("@test '1' list$1,1 'a' list$1,1 '2' '3' list$2,1 flatten$3,1 applyvar$2,1"))
+				.expectResult(s("(1,a,2,3)"));
+
+		infix("test(*['1'], 'a', 'b')")
+				.expectSameAs(postfix("@test '1' list$1,1 'a' 'b' list$2,1 flatten$2,1 applyvar$2,1"))
+				.expectResult(s("(1,a,b)"));
+
+		infix("test('a', *['1'], 'b', 'c', *['2','3'])")
+				.expectSameAs(postfix("@test 'a' '1' list$1,1 'b' 'c' list$2,1 '2' '3' list$2,1 flatten$3,1 applyvar$3,1"))
+				.expectResult(s("(a,1,b,c,2,3)"));
+	}
+
+	@Test
+	public void testArgUnpackOnLocalVars() {
+		sut.environment.setGlobalSymbol("test", new CallableLogger());
+
+		infix("let([v=['1','2']], test(*v))")
+				.expectResult(s("(1,2)"));
+
+		infix("let([a1='a', a2='b', v=['1','2']], test(a1, *v, a2))")
+				.expectResult(s("(a,1,2,b)"));
+	}
+
+	@Test
+	public void testArgUnpackOnSymbolGetCalls() {
+		sut.environment.setGlobalSymbol("test", new CallableLogger());
+
+		infix("@test('a', *['1'], 'b', 'c', *['2','3'])").expectResult(s("(a,1,b,c,2,3)"));
+	}
+
+	@Test
+	public void testArgUnpackOnApply() {
+		sut.environment.setGlobalSymbol("test", new NullaryFunction.Direct<TypedValue>() {
+			@Override
+			protected TypedValue call() {
+				return domain.create(CallableValue.class, new CallableValue(new CallableLogger()));
+			}
+		});
+
+		infix("test()('a', *['1'], 'b', 'c', *['2','3'])").expectResult(s("(a,1,b,c,2,3)"));
+	}
+
+	@Test
+	public void testArgUnpackWithNullAwareCall() {
+		sut.environment.setGlobalSymbol("test", new CallableLogger());
+
+		infix("test?('a', *['1'], 'b', 'c', *['2','3'])").expectResult(s("(a,1,b,c,2,3)"));
+	}
+
+	@Test
+	public void testArgUnpackWithDotCall() {
+		sut.environment.setGlobalSymbol("test", domain.create(DummyObject.class, DUMMY,
+				MetaObject.builder().set(new CallableLoggerStruct()).build()));
+
+		infix("test.f('a', *['1'], 'b', 'c', *['2','3'])").expectResult(s("f(a,1,b,c,2,3)"));
+	}
+
 }

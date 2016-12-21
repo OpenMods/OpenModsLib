@@ -43,6 +43,7 @@ import openmods.calc.parsing.DefaultExecutableListBuilder;
 import openmods.calc.parsing.DefaultExprNodeFactory;
 import openmods.calc.parsing.DefaultPostfixCompiler;
 import openmods.calc.parsing.DefaultPostfixCompiler.IStateProvider;
+import openmods.calc.parsing.IAstParser;
 import openmods.calc.parsing.IExecutableListBuilder;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.IPostfixCompilerState;
@@ -54,7 +55,6 @@ import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
 import openmods.calc.parsing.MappedExprNodeFactory.IBracketExprNodeFactory;
 import openmods.calc.parsing.MappedExprNodeFactory.IUnaryExprNodeFactory;
 import openmods.calc.parsing.SquareBracketContainerNode;
-import openmods.calc.parsing.SymbolCallNode;
 import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.Tokenizer;
@@ -1925,7 +1925,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		env.setGlobalSymbol("applyvar", new ICallable<TypedValue>() {
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_APPLYVAR, new ICallable<TypedValue>() {
 			@Override
 			public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 				Preconditions.checkArgument(argumentsCount.isPresent(), "'applyvar' cannot be called without argument count");
@@ -1983,6 +1983,16 @@ public class TypedValueCalculatorFactory {
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 
 			@Override
+			protected MappedCompilerState<TypedValue> createCompilerState(IAstParser<TypedValue> parser) {
+				return new MappedCompilerState<TypedValue>(parser) {
+					@Override
+					protected IExprNode<TypedValue> createDefaultSymbolNode(String symbol, List<IExprNode<TypedValue>> children) {
+						return new VarArgSymbolCallNode(varArgMarker, symbol, children);
+					}
+				};
+			}
+
+			@Override
 			protected void configureCompilerStateCommon(MappedCompilerState<TypedValue> compilerState, Environment<TypedValue> environment) {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_QUOTE, new QuoteStateTransition.ForSymbol(domain, nullValue, valueParser));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_CODE, new CodeStateTransition(domain, compilerState));
@@ -2010,7 +2020,7 @@ public class TypedValueCalculatorFactory {
 						.addFactory(dotOperator, new IBinaryExprNodeFactory<TypedValue>() {
 							@Override
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
-								return new DotExprNode(leftChild, rightChild, dotOperator, domain);
+								return new DotExprNode.Basic(varArgMarker, leftChild, rightChild, dotOperator, domain);
 							}
 						})
 						.addFactory(nullAwareDotOperator, new IBinaryExprNodeFactory<TypedValue>() {
@@ -2031,16 +2041,16 @@ public class TypedValueCalculatorFactory {
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
 								if (rightChild instanceof SquareBracketContainerNode) {
 									// a[...]
-									return new MethodCallNode(TypedCalcConstants.SYMBOL_SLICE, leftChild, rightChild);
+									return new SliceCallNode(leftChild, rightChild);
 								} else if (rightChild instanceof ArgBracketNode && !isNumericValueNode(leftChild)) {
 									if (leftChild instanceof SymbolGetNode) {
 										// @a(...)
 										final String symbol = ((SymbolGetNode<TypedValue>)leftChild).symbol();
 										final List<? extends IExprNode<TypedValue>> args = ImmutableList.copyOf(rightChild.getChildren());
-										return new SymbolCallNode<TypedValue>(symbol, args);
+										return new VarArgSymbolCallNode(varArgMarker, symbol, args);
 									} else {
 										// (a)(...), a(...)(...)
-										return new MethodCallNode(TypedCalcConstants.SYMBOL_APPLY, leftChild, rightChild);
+										return new ApplyCallNode(varArgMarker, leftChild, rightChild);
 									}
 								} else {
 									// 5I
@@ -2053,10 +2063,10 @@ public class TypedValueCalculatorFactory {
 							public IExprNode<TypedValue> create(IExprNode<TypedValue> leftChild, IExprNode<TypedValue> rightChild) {
 								if (rightChild instanceof SquareBracketContainerNode) {
 									// a?[...]
-									return new MethodCallNode.NullAware(TypedCalcConstants.SYMBOL_SLICE, leftChild, rightChild, domain);
+									return new SliceCallNode.NullAware(leftChild, rightChild, domain);
 								} else if (rightChild instanceof ArgBracketNode) {
 									// a?(...)
-									return new MethodCallNode.NullAware(TypedCalcConstants.SYMBOL_APPLY, leftChild, rightChild, domain);
+									return new ApplyCallNode.NullAware(varArgMarker, leftChild, rightChild, domain);
 								} else throw new UnsupportedOperationException("Operator '?' cannot be used with " + rightChild);
 							}
 						})

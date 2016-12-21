@@ -104,9 +104,13 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 
 	protected void setupPrefixTokenizer(Tokenizer tokenizer) {}
 
+	protected MappedCompilerState<E> createCompilerState(final IAstParser<E> parser) {
+		return new MappedCompilerState<E>(parser);
+	}
+
 	protected MappedCompilerState<E> createPrefixCompilerState(OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
 		final IAstParser<E> prefixParser = new PrefixParser<E>(operators, exprNodeFactory);
-		return new MappedCompilerState<E>(prefixParser);
+		return createCompilerState(prefixParser);
 	}
 
 	protected ITokenStreamCompiler<E> createPrefixParser(ICompilerState<E> compilerState) {
@@ -117,7 +121,7 @@ public class BasicCompilerMapFactory<E> implements ICompilerMapFactory<E, ExprTy
 
 	protected MappedCompilerState<E> createInfixCompilerState(OperatorDictionary<E> operators, IExprNodeFactory<E> exprNodeFactory) {
 		final IAstParser<E> infixParser = new InfixParser<E>(operators, exprNodeFactory);
-		return new MappedCompilerState<E>(infixParser);
+		return createCompilerState(infixParser);
 	}
 
 	protected ITokenStreamCompiler<E> createInfixParser(ICompilerState<E> compilerState) {

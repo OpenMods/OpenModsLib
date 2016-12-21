@@ -35,6 +35,8 @@ public interface TypedCalcConstants {
 	public static final String SYMBOL_ALT = "alt";
 	public static final String SYMBOL_DO = "do";
 	public static final String SYMBOL_PATTERN = "pattern";
+	public static final String SYMBOL_FLATTEN = "flatten";
+	public static final String SYMBOL_APPLYVAR = "applyvar";
 
 	public static final String BRACKET_CODE = "{";
 	public static final String BRACKET_ARG_PACK = "(";

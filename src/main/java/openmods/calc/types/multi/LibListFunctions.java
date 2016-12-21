@@ -320,7 +320,7 @@ public class LibListFunctions {
 			}
 		});
 
-		env.setGlobalSymbol("flatten", new SingleReturnCallable<TypedValue>() {
+		env.setGlobalSymbol(TypedCalcConstants.SYMBOL_FLATTEN, new SingleReturnCallable<TypedValue>() {
 			@Override
 			public TypedValue call(Frame<TypedValue> frame, OptionalInt argumentsCount) {
 				Preconditions.checkArgument(argumentsCount.isPresent(), "'flatten' required argument count");

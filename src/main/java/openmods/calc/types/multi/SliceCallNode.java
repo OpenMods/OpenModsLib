@@ -8,14 +8,12 @@ import openmods.calc.SymbolCall;
 import openmods.calc.Value;
 import openmods.calc.parsing.IExprNode;
 
-public class MethodCallNode implements IExprNode<TypedValue> {
+public class SliceCallNode implements IExprNode<TypedValue> {
 
-	public final String symbol;
 	public final IExprNode<TypedValue> target;
 	public final IExprNode<TypedValue> args;
 
-	public MethodCallNode(String symbol, IExprNode<TypedValue> target, IExprNode<TypedValue> args) {
-		this.symbol = symbol;
+	public SliceCallNode(IExprNode<TypedValue> target, IExprNode<TypedValue> args) {
 		this.target = target;
 		this.args = args;
 	}
@@ -26,14 +24,14 @@ public class MethodCallNode implements IExprNode<TypedValue> {
 		flattenArgsAndSymbol(output);
 	}
 
-	protected void flattenArgsAndSymbol(List<IExecutable<TypedValue>> output) {
+	protected void flattenArgsAndSymbol(final List<IExecutable<TypedValue>> output) {
 		int argCount = 0;
 		for (IExprNode<TypedValue> arg : args.getChildren()) {
 			arg.flatten(output);
 			argCount++;
 		}
 
-		output.add(new SymbolCall<TypedValue>(symbol, argCount + 1, 1));
+		output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_SLICE, argCount + 1, 1));
 	}
 
 	@Override
@@ -44,12 +42,12 @@ public class MethodCallNode implements IExprNode<TypedValue> {
 		return builder.build();
 	}
 
-	public static class NullAware extends MethodCallNode {
+	public static class NullAware extends SliceCallNode {
 
 		private final TypeDomain domain;
 
-		public NullAware(String symbol, IExprNode<TypedValue> target, IExprNode<TypedValue> args, TypeDomain domain) {
-			super(symbol, target, args);
+		public NullAware(IExprNode<TypedValue> target, IExprNode<TypedValue> args, TypeDomain domain) {
+			super(target, args);
 			this.domain = domain;
 		}
 
@@ -64,6 +62,5 @@ public class MethodCallNode implements IExprNode<TypedValue> {
 
 			output.add(new SymbolCall<TypedValue>(TypedCalcConstants.SYMBOL_NULL_EXECUTE, 2, 1));
 		}
-
 	}
 }

@@ -5,7 +5,7 @@ import openmods.utils.Stack;
 
 public abstract class NullaryFunction<E> extends FixedCallable<E> {
 
-	public NullaryFunction() {
+	private NullaryFunction() {
 		super(0, 1);
 	}
 
