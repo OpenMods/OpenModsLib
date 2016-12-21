@@ -668,28 +668,30 @@ public class TypedValueCalculatorTest {
 		infix("test.(key)('b')").expectResult(s("a:b"));
 	}
 
+	private class CallableLoggerStruct implements MetaObject.SlotAttr {
+		@Override
+		public Optional<TypedValue> attr(TypedValue self, final String key, Frame<TypedValue> frame) {
+			return Optional.of(domain.create(DummyObject.class, DUMMY,
+					MetaObject.builder()
+							.set(new MetaObject.SlotCall() {
+								@Override
+								public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
+									final Stack<TypedValue> substack = frame.stack().substack(argumentsCount.get());
+									final List<String> result = Lists.newArrayList();
+									for (TypedValue v : substack)
+										result.add(v.as(String.class));
+									substack.clear();
+									final String args = Joiner.on(",").join(result);
+									substack.push(domain.create(String.class, key + "(" + args + ")"));
+								}
+							})
+							.build()));
+		}
+	}
+
 	private void testCustomSymbolCall(String symbol) {
 		sut.environment.setGlobalSymbol("test", domain.create(DummyObject.class, DUMMY,
-				MetaObject.builder().set(new MetaObject.SlotAttr() {
-					@Override
-					public Optional<TypedValue> attr(TypedValue self, final String key, Frame<TypedValue> frame) {
-						return Optional.of(domain.create(DummyObject.class, DUMMY,
-								MetaObject.builder()
-										.set(new MetaObject.SlotCall() {
-											@Override
-											public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
-												final Stack<TypedValue> substack = frame.stack().substack(argumentsCount.get());
-												final List<String> result = Lists.newArrayList();
-												for (TypedValue v : substack)
-													result.add(v.as(String.class));
-												substack.clear();
-												final String args = Joiner.on(",").join(result);
-												substack.push(domain.create(String.class, key + "(" + args + ")"));
-											}
-										})
-										.build()));
-					}
-				}).build()));
+				MetaObject.builder().set(new CallableLoggerStruct()).build()));
 
 		infix("test." + symbol + "()").expectResult(s(symbol + "()"));
 		infix("test." + symbol + "('a' + 'b' * 3)").expectResult(s(symbol + "(abbb)"));
@@ -2876,5 +2878,34 @@ public class TypedValueCalculatorTest {
 		infix("flatten([1],[2])").expectResult(list(i(1), i(2)));
 		infix("flatten([1,2],[3,4])").expectResult(list(i(1), i(2), i(3), i(4)));
 		infix("flatten([1,2],[],[3,4])").expectResult(list(i(1), i(2), i(3), i(4)));
+	}
+
+	private class CallableLogger implements ICallable<TypedValue> {
+		@Override
+		public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+			final Stack<TypedValue> substack = frame.stack().substack(argumentsCount.get());
+			final List<String> result = Lists.newArrayList();
+			for (TypedValue v : substack)
+				result.add(v.as(String.class));
+			substack.clear();
+			final String args = Joiner.on(",").join(result);
+			substack.push(domain.create(String.class, "(" + args + ")"));
+		}
+	}
+
+	@Test
+	public void testApplyVar() {
+		sut.environment.setGlobalSymbol("test", new CallableLogger());
+		infix("applyvar(test, [])").expectResult(s("()"));
+		infix("applyvar(test, ['x'])").expectResult(s("(x)"));
+		infix("applyvar(test, ['3','2','1'])").expectResult(s("(3,2,1)"));
+
+		infix("applyvar(test, 'a', [])").expectResult(s("(a)"));
+		infix("applyvar(test, 'a', ['x'])").expectResult(s("(a,x)"));
+		infix("applyvar(test, 'a', ['3','2','1'])").expectResult(s("(a,3,2,1)"));
+
+		infix("applyvar(test, 'a', 'b', 'c', [])").expectResult(s("(a,b,c)"));
+		infix("applyvar(test, 'a', 'b', 'c', ['x'])").expectResult(s("(a,b,c,x)"));
+		infix("applyvar(test, 'a', 'b', 'c', ['3','2','1'])").expectResult(s("(a,b,c,3,2,1)"));
 	}
 }

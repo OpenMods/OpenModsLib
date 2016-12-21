@@ -1799,6 +1799,7 @@ public class TypedValueCalculatorFactory {
 			public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
 				Preconditions.checkArgument(argumentsCount.isPresent(), "'apply' cannot be called without argument count");
 				final int args = argumentsCount.get();
+				Preconditions.checkArgument(args >= 1, "'apply' requires at least one argument");
 
 				final TypedValue target = frame.stack().drop(args - 1);
 				try {
@@ -1921,6 +1922,31 @@ public class TypedValueCalculatorFactory {
 			@Override
 			public void call(Frame<TypedValue> frame) {
 				frame.stack().push(domain.create(EnvHolder.class, new EnvHolder(frame.symbols())));
+			}
+		});
+
+		env.setGlobalSymbol("applyvar", new ICallable<TypedValue>() {
+			@Override
+			public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+				Preconditions.checkArgument(argumentsCount.isPresent(), "'applyvar' cannot be called without argument count");
+				final int args = argumentsCount.get();
+				Preconditions.checkArgument(args >= 2, "'applyvar' requires at least two args");
+
+				final Stack<TypedValue> stack = frame.stack();
+				final TypedValue varArgs = stack.pop();
+				final TypedValue target = stack.drop(args - 1 - 1);
+
+				int totalArgs = args - 1 - 1; // stack.size()
+				for (TypedValue varArg : Cons.toIterable(varArgs, nullValue)) {
+					stack.push(varArg);
+					totalArgs++;
+				}
+
+				try {
+					MetaObjectUtils.call(frame, target, OptionalInt.of(totalArgs), returnsCount);
+				} catch (Exception e) {
+					throw new RuntimeException("Failed to execute value " + target, e);
+				}
 			}
 		});
 
