@@ -1,6 +1,7 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.math.BigInteger;
@@ -315,6 +316,22 @@ public class LibListFunctions {
 					result.add(Cons.create(domain, leftIt.next(), rightIt.next()));
 				}
 
+				return Cons.createList(result, nullValue);
+			}
+		});
+
+		env.setGlobalSymbol("flatten", new SingleReturnCallable<TypedValue>() {
+			@Override
+			public TypedValue call(Frame<TypedValue> frame, OptionalInt argumentsCount) {
+				Preconditions.checkArgument(argumentsCount.isPresent(), "'flatten' required argument count");
+				final Stack<TypedValue> values = frame.stack().substack(argumentsCount.get());
+
+				final List<TypedValue> result = Lists.newArrayList();
+
+				for (TypedValue value : values)
+					Iterables.addAll(result, Cons.toIterable(value, nullValue));
+
+				values.clear();
 				return Cons.createList(result, nullValue);
 			}
 		});

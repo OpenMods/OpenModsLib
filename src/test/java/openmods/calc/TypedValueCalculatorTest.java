@@ -2864,4 +2864,17 @@ public class TypedValueCalculatorTest {
 	public void testVarargLambdaTwoVarargs() {
 		infix("(*a, *b) -> 'fail'").execute();
 	}
+
+	@Test
+	public void testFlatten() {
+		infix("flatten()").expectResult(list());
+		infix("flatten([])").expectResult(list());
+		infix("flatten([],[])").expectResult(list());
+		infix("flatten([1])").expectResult(list(i(1)));
+		infix("flatten([],[1])").expectResult(list(i(1)));
+		infix("flatten([1],[])").expectResult(list(i(1)));
+		infix("flatten([1],[2])").expectResult(list(i(1), i(2)));
+		infix("flatten([1,2],[3,4])").expectResult(list(i(1), i(2), i(3), i(4)));
+		infix("flatten([1,2],[],[3,4])").expectResult(list(i(1), i(2), i(3), i(4)));
+	}
 }
