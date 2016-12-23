@@ -1950,6 +1950,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
+		env.setGlobalSymbol("random", new LibRandom(domain).type());
 		LibListFunctions.register(env);
 
 		BindPatternTranslator.registerType(domain);

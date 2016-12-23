@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 import openmods.calc.CalcTestUtils.CalcCheck;
@@ -2985,6 +2986,24 @@ public class TypedValueCalculatorTest {
 				MetaObject.builder().set(new CallableLoggerStruct()).build()));
 
 		infix("test.f('a', *['1'], 'b', 'c', *['2','3'])").expectResult(s("f(a,1,b,c,2,3)"));
+	}
+
+	@Test
+	public void testRandom() {
+		{
+			final Random testRandom = new Random(3071);
+			infix("let([r=random(3071)], r.nextInt():r.nextInt())").expectResult(cons(i(testRandom.nextInt()), i(testRandom.nextInt())));
+		}
+
+		{
+			final Random testRandom = new Random(1103);
+			infix("let([r=random(1103)], r.nextInt(6):r.nextInt(6))").expectResult(cons(i(testRandom.nextInt(6)), i(testRandom.nextInt(6))));
+		}
+
+		{
+			final Random testRandom = new Random(1677);
+			infix("let([r=random(1677)], r.nextBoolean():r.nextBoolean())").expectResult(cons(b(testRandom.nextBoolean()), b(testRandom.nextBoolean())));
+		}
 	}
 
 }
