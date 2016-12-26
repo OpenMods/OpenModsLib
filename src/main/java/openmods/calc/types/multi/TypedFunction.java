@@ -656,8 +656,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			Preconditions.checkState(expectedReturns == actualReturns, "Invalid number of return values, requested %s, got %s", expectedReturns, actualReturns);
 		}
 
-		for (TypedValue v : returns)
-			stack.push(v);
+		stack.pushAll(returns);
 	}
 
 	protected abstract List<TypedValue> execute(List<TypedValue> args);

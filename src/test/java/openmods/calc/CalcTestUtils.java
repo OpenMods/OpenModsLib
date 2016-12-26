@@ -632,8 +632,7 @@ public class CalcTestUtils {
 			for (E expectedArg : expectedArgs)
 				Assert.assertEquals(frame.stack().pop(), expectedArg);
 
-			for (E ret : returns)
-				frame.stack().push(ret);
+			frame.stack().pushAll(returns);
 			callCount++;
 		}
 
@@ -712,8 +711,7 @@ public class CalcTestUtils {
 			for (E expectedArg : expectedArgs)
 				Assert.assertEquals(frame.stack().pop(), expectedArg);
 
-			for (E ret : returns)
-				frame.stack().push(ret);
+			frame.stack().pushAll(returns);
 			callCount++;
 		}
 

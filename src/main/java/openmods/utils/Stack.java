@@ -1,6 +1,7 @@
 package openmods.utils;
 
 import com.google.common.collect.Lists;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,6 +39,10 @@ public class Stack<E> implements Iterable<E> {
 
 	public void push(E value) {
 		data.add(value);
+	}
+
+	public void pushAll(Collection<E> values) {
+		data.addAll(values);
 	}
 
 	private void checkNonEmpty() {

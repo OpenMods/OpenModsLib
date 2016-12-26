@@ -271,8 +271,7 @@ public class MetaObject {
 					final List<TypedValue> args = ImmutableList.copyOf(substack);
 					substack.clear();
 					substack.push(self);
-					for (TypedValue arg : args)
-						substack.push(arg);
+					substack.pushAll(args);
 
 					final Frame<TypedValue> executionFrame = FrameFactory.newLocalFrame(frame, substack);
 					MetaObjectUtils.call(executionFrame, callable, argumentsCount.map(ADD_SELF_TO_COUNT), returnsCount);

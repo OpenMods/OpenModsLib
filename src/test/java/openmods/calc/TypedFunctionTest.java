@@ -80,8 +80,7 @@ public class TypedFunctionTest {
 
 	private static TypedValue execute(ICallable<TypedValue> f, OptionalInt argCount, TypedValue... values) {
 		final Frame<TypedValue> frame = FrameFactory.createTopFrame();
-		for (TypedValue v : values)
-			frame.stack().push(v);
+		frame.stack().pushAll(Arrays.asList(values));
 		f.call(frame, argCount, OptionalInt.absent());
 		final TypedValue result = frame.stack().pop();
 		Assert.assertTrue(frame.stack().isEmpty());
@@ -90,8 +89,7 @@ public class TypedFunctionTest {
 
 	private static List<TypedValue> execute(ICallable<TypedValue> f, OptionalInt argCount, int rets, TypedValue... values) {
 		final Frame<TypedValue> frame = FrameFactory.createTopFrame();
-		for (TypedValue v : values)
-			frame.stack().push(v);
+		frame.stack().pushAll(Arrays.asList(values));
 		f.call(frame, argCount, OptionalInt.of(rets));
 		List<TypedValue> results = Lists.newArrayList();
 		for (int i = 0; i < rets; i++)
