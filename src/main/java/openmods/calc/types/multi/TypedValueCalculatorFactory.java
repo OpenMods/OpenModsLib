@@ -639,7 +639,7 @@ public class TypedValueCalculatorFactory {
 								@Override
 								public void call(TypedValue self, OptionalInt argCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
 									final CallableValue function = self.as(CallableValue.class);
-									function.callable.call(frame, argCount, returnsCount);
+									function.call(self, argCount, returnsCount, frame);
 								}
 							})
 							.set(MetaObjectUtils.BOOL_ALWAYS_TRUE)
@@ -1243,18 +1243,15 @@ public class TypedValueCalculatorFactory {
 		class TypedValueSymbolMap extends TopSymbolMap<TypedValue> {
 			@Override
 			protected ISymbol<TypedValue> createSymbol(ICallable<TypedValue> callable) {
-				final TypedValue value = domain.create(CallableValue.class, new CallableValue(callable));
-				return new CallableWithValue(value, callable);
+				return CallableValue.from(callable).toSymbol(domain);
 			}
 
 			@Override
 			protected ISymbol<TypedValue> createSymbol(TypedValue value) {
-				if (value.is(CallableValue.class)) {
-					final CallableValue function = value.as(CallableValue.class);
-					return new CallableWithValue(value, function.callable);
-				}
+				if (value.is(CallableValue.class))
+					return value.as(CallableValue.class).toSymbol(value);
 
-				if (MetaObjectUtils.isCallable(value)) return new SlotCallableWithValue(value);
+				if (MetaObjectUtils.isCallable(value)) return new SlotCallableValueSymbol(value);
 
 				return super.createSymbol(value);
 			}
@@ -1318,7 +1315,7 @@ public class TypedValueCalculatorFactory {
 		});
 
 		{
-			final TypedValue polar = domain.create(CallableValue.class, new CallableValue(new SimpleTypedFunction(domain) {
+			final TypedValue polar = domain.create(CallableValue.class, CallableValue.from(new SimpleTypedFunction(domain) {
 				@Variant
 				public Complex convert(Double r, Double phase) {
 					return Complex.polar(r, phase);
@@ -1346,7 +1343,7 @@ public class TypedValueCalculatorFactory {
 		}
 
 		{
-			final TypedValue cartesian = domain.create(CallableValue.class, new CallableValue(new SimpleTypedFunction(domain) {
+			final TypedValue cartesian = domain.create(CallableValue.class, CallableValue.from(new SimpleTypedFunction(domain) {
 				@Variant
 				public Complex convert(Double x, Double y) {
 					return Complex.cartesian(x, y);

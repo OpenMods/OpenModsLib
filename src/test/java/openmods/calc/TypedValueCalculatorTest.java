@@ -2966,7 +2966,7 @@ public class TypedValueCalculatorTest {
 		sut.environment.setGlobalSymbol("test", new NullaryFunction.Direct<TypedValue>() {
 			@Override
 			protected TypedValue call() {
-				return domain.create(CallableValue.class, new CallableValue(new CallableLogger()));
+				return domain.create(CallableValue.class, CallableValue.from(new CallableLogger()));
 			}
 		});
 

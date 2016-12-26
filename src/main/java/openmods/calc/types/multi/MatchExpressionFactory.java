@@ -466,7 +466,7 @@ public class MatchExpressionFactory {
 				patterns.add(arg.as(PatternMatcher.class));
 			}
 
-			return domain.create(CallableValue.class, new CallableValue(new MatchingFunction(frame.symbols(), Lists.reverse(patterns))));
+			return CallableValue.wrap(domain, new MatchingFunction(frame.symbols(), Lists.reverse(patterns)));
 		}
 	}
 

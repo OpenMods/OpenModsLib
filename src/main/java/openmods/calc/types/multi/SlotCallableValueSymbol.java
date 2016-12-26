@@ -5,12 +5,12 @@ import openmods.calc.Frame;
 import openmods.calc.ISymbol;
 import openmods.utils.OptionalInt;
 
-public class SlotCallableWithValue implements ISymbol<TypedValue> {
+public class SlotCallableValueSymbol implements ISymbol<TypedValue> {
 
 	private final TypedValue value;
 	private final MetaObject.SlotCall slot;
 
-	public SlotCallableWithValue(TypedValue value) {
+	public SlotCallableValueSymbol(TypedValue value) {
 		this.value = value;
 		this.slot = value.getMetaObject().slotCall;
 		Preconditions.checkState(this.slot != null, "Value %s it not callable", value);
