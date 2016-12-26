@@ -1949,6 +1949,7 @@ public class TypedValueCalculatorFactory {
 
 		env.setGlobalSymbol("random", new LibRandom(domain).type());
 		LibListFunctions.register(env);
+		LibFunctional.register(env);
 
 		BindPatternTranslator.registerType(domain);
 		PatternSymbol.register(coreMap, env);

@@ -3006,4 +3006,26 @@ public class TypedValueCalculatorTest {
 		}
 	}
 
+	@Test
+	public void testCurry() {
+		infix("curry(list, 1, '2', 3.0)()").expectResult(list(i(1), s("2"), d(3.0)));
+		infix("curry(list, 1, '2', 3.0)('5', 6)").expectResult(list(i(1), s("2"), d(3.0), s("5"), i(6)));
+
+		infix("curry(curry(list, 1, '2'), 3.0)()").expectResult(list(i(1), s("2"), d(3.0)));
+		infix("curry(curry(list, 1, '2'), 3.0)('5', 6)").expectResult(list(i(1), s("2"), d(3.0), s("5"), i(6)));
+	}
+
+	@Test
+	public void testChain() {
+		infix("chain(x->x+'a', x->x+'b')('c')").expectResult(s("cba"));
+		infix("chain(chain(x->x+'a', x->x+'b'), x->x+'c')('d')").expectResult(s("dcba"));
+	}
+
+	@Test
+	public void testId() {
+		infix("id('test')").expectResult(s("test"));
+		postfix("1 '2' 3.0 id$3,3").expectResults(i(1), s("2"), d(3.0));
+		postfix("1 2 id$3,3").expectThrow(RuntimeException.class);
+	}
+
 }
