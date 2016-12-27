@@ -17,6 +17,8 @@ import openmods.calc.types.multi.TypedFunction.DispatchArg;
 import openmods.calc.types.multi.TypedFunction.DispatchException;
 import openmods.calc.types.multi.TypedFunction.MultiReturn;
 import openmods.calc.types.multi.TypedFunction.MultipleReturn;
+import openmods.calc.types.multi.TypedFunction.NonCompatibleMethodsPresent;
+import openmods.calc.types.multi.TypedFunction.NonStaticMethodsPresent;
 import openmods.calc.types.multi.TypedFunction.OptionalArgs;
 import openmods.calc.types.multi.TypedFunction.RawArg;
 import openmods.calc.types.multi.TypedFunction.RawDispatchArg;
@@ -100,9 +102,9 @@ public class TypedFunctionTest {
 	}
 
 	private static <T> TypedFunction createFunction(T target, Class<? extends T> cls) {
-		TypedFunction.Builder builder = new TypedFunction.Builder(domain);
-		builder.addVariants(target, cls);
-		return builder.build();
+		TypedFunction.Builder builder = TypedFunction.builder();
+		builder.addVariants(cls);
+		return builder.build(domain, target);
 	}
 
 	@Test
@@ -771,4 +773,89 @@ public class TypedFunctionTest {
 		createFunction(new Intf(), Intf.class);
 	}
 
+	private static class StaticMethodsTests {
+		@Variant
+		public static String test(@DispatchArg Integer v) {
+			return "int";
+		}
+
+		@Variant
+		public static String test(@DispatchArg Boolean v) {
+			return "bool";
+		}
+	}
+
+	@Test
+	public void testStaticMethods() {
+		TypedFunction.Builder builder = TypedFunction.builder();
+		builder.addVariants(StaticMethodsTests.class);
+		final TypedFunction function = builder.build(domain, null);
+
+		assertValueEquals(execute(function, wrap(false)), wrap("bool"));
+		assertValueEquals(execute(function, wrap(3)), wrap("int"));
+	}
+
+	@Test(expected = NonStaticMethodsPresent.class)
+	public void testNotStaticMethodsWithNullTarget() {
+		class Intf {
+			@Variant
+			public String test(@DispatchArg Integer v) {
+				return "int";
+			}
+		}
+
+		TypedFunction.Builder builder = TypedFunction.builder();
+		builder.addVariants(Intf.class);
+		builder.build(domain, null);
+	}
+
+	private interface TestIntfA {
+		@Variant
+		public String test(@DispatchArg Integer v);
+	}
+
+	private interface TestIntfB {
+		@Variant
+		public String test(@DispatchArg Boolean v);
+	}
+
+	@Test
+	public void testMethodsFromDifferentInterfaces() {
+		class Test implements TestIntfA, TestIntfB {
+
+			@Override
+			public String test(Boolean v) {
+				return "bool";
+			}
+
+			@Override
+			public String test(Integer v) {
+				return "int";
+			}
+
+		}
+		TypedFunction.Builder builder = TypedFunction.builder();
+		builder.addVariants(TestIntfA.class);
+		builder.addVariants(TestIntfB.class);
+		final TypedFunction function = builder.build(domain, new Test());
+
+		assertValueEquals(execute(function, wrap(false)), wrap("bool"));
+		assertValueEquals(execute(function, wrap(3)), wrap("int"));
+	}
+
+	@Test(expected = NonCompatibleMethodsPresent.class)
+	public void testIncompatibleMethodsFromDifferentInterfaces() {
+		class Test implements TestIntfB {
+
+			@Override
+			public String test(Boolean v) {
+				return "bool";
+			}
+
+		}
+		TypedFunction.Builder builder = TypedFunction.builder();
+		builder.addVariants(TestIntfA.class);
+		builder.addVariants(TestIntfB.class);
+		builder.build(domain, new Test());
+	}
 }

@@ -9,7 +9,7 @@ public abstract class SimpleTypedFunction implements ICallable<TypedValue> {
 	private final TypedFunction handler;
 
 	public SimpleTypedFunction(TypeDomain domain) {
-		this.handler = TypedFunction.builder(domain).addVariants(this, getClass()).build();
+		this.handler = TypedFunction.builder().addVariants(getClass()).build(domain, this);
 	}
 
 	@Override

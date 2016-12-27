@@ -17,6 +17,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
@@ -30,13 +31,11 @@ import openmods.calc.Frame;
 import openmods.calc.ICallable;
 import openmods.reflection.TypeVariableHolder;
 import openmods.utils.AnnotationMap;
+import openmods.utils.CachedFactory;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
-import org.apache.commons.lang3.tuple.Pair;
 
-public abstract class TypedFunction implements ICallable<TypedValue> {
-
-	// TODO maybe some caching? Variants depend only on class methods
+public class TypedFunction implements ICallable<TypedValue> {
 
 	public static class DispatchException extends RuntimeException {
 		private static final long serialVersionUID = 8096730015947971477L;
@@ -51,6 +50,22 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 
 		public AmbiguousDispatchException(Collection<Method> methods) {
 			super("Cannot always select overload between methods " + methods.toString());
+		}
+	}
+
+	public static class NonStaticMethodsPresent extends RuntimeException {
+		private static final long serialVersionUID = -8854128456679001775L;
+
+		public NonStaticMethodsPresent() {
+			super("Non-static methods detected, but target is null");
+		}
+	}
+
+	public static class NonCompatibleMethodsPresent extends RuntimeException {
+		private static final long serialVersionUID = -3296321220525016125L;
+
+		public NonCompatibleMethodsPresent(Class<?> required, Object target) {
+			super("Target " + target.getClass() + " is not compatible with selected methods from class " + required);
 		}
 	}
 
@@ -106,6 +121,13 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 		public Class<?>[] extra() default {};
 	}
 
+	private static final CachedFactory<Method, TypeVariant> variantsCache = new CachedFactory<Method, TypeVariant>() {
+		@Override
+		protected TypeVariant create(Method key) {
+			return createVariant(key);
+		}
+	};
+
 	public static class Builder {
 		// we want variants with "longer" dispatch list to be matched first
 		private static final Ordering<TypeVariant> VARIANT_ORDERING = Ordering.natural().reverse().onResultOf(new Function<TypeVariant, Integer>() {
@@ -115,71 +137,85 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			}
 		});
 
-		private final TypeDomain domain;
+		private static final CachedFactory<Set<Method>, TypedFunctionBody> bodyCache = new CachedFactory<Set<Method>, TypedFunctionBody>() {
 
-		private final List<Pair<Object, Method>> variants = Lists.newArrayList();
+			@Override
+			protected TypedFunctionBody create(Set<Method> methods) {
+				final List<TypeVariant> variants = Lists.newArrayList();
 
-		public Builder(TypeDomain domain) {
-			this.domain = domain;
-		}
+				for (Method m : methods) {
+					try {
+						variants.add(variantsCache.getOrCreate(m));
+					} catch (Exception e) {
+						throw new RuntimeException("Failed to register method " + m, e);
+					}
+				}
 
-		public Builder addVariant(Object target, Method method) {
-			method.setAccessible(true);
-			variants.add(Pair.of(target, method));
-			return this;
-		}
-
-		public <T> Builder addVariants(T target, Class<? extends T> cls) {
-			for (Method m : cls.getMethods())
-				if (m.isAnnotationPresent(Variant.class))
-					addVariant(target, m);
-
-			return this;
-		}
-
-		public Builder addVariants(Object target) {
-			return addVariants(target, target.getClass());
-		}
-
-		public TypedFunction build() {
-			Preconditions.checkArgument(!this.variants.isEmpty(), "No variants defined");
-
-			final List<TypeVariant> variants = Lists.newArrayList();
-
-			for (Pair<Object, Method> p : this.variants) {
-				try {
-					variants.add(createVariant(domain, p.getLeft(), p.getRight()));
-				} catch (Exception e) {
-					throw new RuntimeException("Failed to register method " + p.getRight(), e);
+				if (variants.size() == 1) {
+					return createSingleFunction(variants.get(0));
+				} else {
+					verifyVariants(variants);
+					Collections.sort(variants, VARIANT_ORDERING);
+					final OptionalInt mandatoryArgNum = calculateMandatoryArgNum(variants);
+					return createMultiFunction(variants, mandatoryArgNum);
 				}
 			}
+		};
 
-			if (variants.size() == 1) {
-				return createSingleFunction(variants.get(0));
-			} else {
-				verifyVariants(variants);
-				Collections.sort(variants, VARIANT_ORDERING);
-				final OptionalInt mandatoryArgNum = calculateMandatoryArgNum(variants);
-				return createMultiFunction(variants, mandatoryArgNum);
-			}
+		private Set<Class<?>> allowedClasses = Sets.newHashSet();
+
+		private final Set<Method> variants = Sets.newHashSet();
+
+		private Builder() {}
+
+		public Builder addVariant(Method method) {
+			if (!Modifier.isStatic(method.getModifiers()))
+				allowedClasses.add(method.getDeclaringClass());
+
+			method.setAccessible(true);
+			variants.add(method);
+			return this;
 		}
 
-		private static TypedFunction createSingleFunction(final TypeVariant variant) {
-			return new TypedFunction(OptionalInt.of(variant.mandatoryArgNum)) {
+		public Builder addVariants(Class<?> cls) {
+			for (Method m : cls.getMethods())
+				if (m.isAnnotationPresent(Variant.class))
+					addVariant(m);
+
+			return this;
+		}
+
+		public TypedFunction build(TypeDomain domain, Object target) {
+			Preconditions.checkArgument(!this.variants.isEmpty(), "No variants defined");
+
+			if (target == null) {
+				if (!this.allowedClasses.isEmpty()) throw new NonStaticMethodsPresent();
+			} else {
+				for (Class<?> cls : this.allowedClasses)
+					if (!cls.isInstance(target))
+						throw new NonCompatibleMethodsPresent(cls, target);
+			}
+
+			final TypedFunctionBody body = bodyCache.getOrCreate(ImmutableSet.copyOf(this.variants));
+			return new TypedFunction(domain, target, body);
+		}
+
+		private static TypedFunctionBody createSingleFunction(final TypeVariant variant) {
+			return new TypedFunctionBody(OptionalInt.of(variant.mandatoryArgNum)) {
 				@Override
-				protected List<TypedValue> execute(List<TypedValue> args) {
+				protected List<TypedValue> execute(TypeDomain domain, Object target, List<TypedValue> args) {
 					if (!variant.matchDispatchArgs(args)) throw new DispatchException(args);
-					return variant.execute(args);
+					return variant.execute(domain, target, args);
 				}
 			};
 		}
 
-		private static TypedFunction createMultiFunction(final List<TypeVariant> variants, final OptionalInt mandatoryArgNum) {
-			return new TypedFunction(mandatoryArgNum) {
+		private static TypedFunctionBody createMultiFunction(final List<TypeVariant> variants, final OptionalInt mandatoryArgNum) {
+			return new TypedFunctionBody(mandatoryArgNum) {
 				@Override
-				protected List<TypedValue> execute(List<TypedValue> args) {
+				protected List<TypedValue> execute(TypeDomain domain, Object target, List<TypedValue> args) {
 					for (TypeVariant v : variants)
-						if (v.matchDispatchArgs(args)) return v.execute(args);
+						if (v.matchDispatchArgs(args)) return v.execute(domain, target, args);
 
 					throw new DispatchException(args);
 				}
@@ -358,10 +394,6 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 	}
 
 	private abstract static class TypeVariant {
-		private final TypeDomain domain;
-
-		private final Object target;
-
 		private final Method method;
 
 		private final Map<Integer, DispatchArgMatcher> dispatchArgMatchers;
@@ -372,9 +404,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 
 		private final int lastDispatchArg;
 
-		public TypeVariant(TypeDomain domain, Object target, Method method, Map<Integer, DispatchArgMatcher> dispatchArgMatchers, List<ArgConverter> argConverters, int mandatoryArgNum) {
-			this.domain = domain;
-			this.target = target;
+		public TypeVariant(Method method, Map<Integer, DispatchArgMatcher> dispatchArgMatchers, List<ArgConverter> argConverters, int mandatoryArgNum) {
 			this.method = method;
 			this.dispatchArgMatchers = ImmutableMap.copyOf(dispatchArgMatchers);
 			this.argConverters = argConverters;
@@ -382,7 +412,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			this.lastDispatchArg = dispatchArgMatchers.isEmpty()? -1 : Ordering.natural().max(dispatchArgMatchers.keySet());
 		}
 
-		public boolean isMatchAmbigous(TypeVariant other) {
+		private boolean isMatchAmbigous(TypeVariant other) {
 			final int thisLength = this.method.getParameterTypes().length;
 			final int otherLength = other.method.getParameterTypes().length;
 			for (int i = 0; i < Math.max(thisLength, otherLength); i++) {
@@ -394,7 +424,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			return true;
 		}
 
-		public boolean matchDispatchArgs(List<TypedValue> args) {
+		private boolean matchDispatchArgs(List<TypedValue> args) {
 			final int argCount = args.size();
 			for (Map.Entry<Integer, DispatchArgMatcher> m : dispatchArgMatchers.entrySet()) {
 				final int matchedArgIndex = m.getKey();
@@ -405,7 +435,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			return true;
 		}
 
-		public List<Object> convertArgs(List<TypedValue> args) {
+		private List<Object> convertArgs(TypeDomain domain, List<TypedValue> args) {
 			final List<Object> results = Lists.newArrayList();
 
 			for (TypedValue v : args)
@@ -422,9 +452,9 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 
 		protected abstract List<TypedValue> convertResult(TypeDomain domain, Object result);
 
-		public List<TypedValue> execute(List<TypedValue> args) {
+		public List<TypedValue> execute(TypeDomain domain, Object target, List<TypedValue> args) {
 			try {
-				final List<Object> unwrappedArgs = convertArgs(args);
+				final List<Object> unwrappedArgs = convertArgs(domain, args);
 				Object result = method.invoke(target, unwrappedArgs.toArray());
 				return convertResult(domain, result);
 			} catch (Exception e) {
@@ -450,7 +480,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 		return new DispatchArgMatcher(dispatchArgsTypes);
 	}
 
-	public static TypeVariant createVariant(final TypeDomain typeDomain, final Object target, final Method method) {
+	public static TypeVariant createVariant(final Method method) {
 		final Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 		final Type[] parameterTypes = method.getGenericParameterTypes();
 		final int parameterCount = parameterTypes.length;
@@ -529,7 +559,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			Preconditions.checkState(!isCollectionReturn, "Method returning MultipleReturn cannot be marked as @MultiReturn");
 			class MultipleReturnVariant extends TypeVariant {
 				public MultipleReturnVariant() {
-					super(typeDomain, target, method, argMatchers, argConverters, mandatoryArgCount);
+					super(method, argMatchers, argConverters, mandatoryArgCount);
 				}
 
 				@Override
@@ -550,7 +580,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 				final Class<?> componentType = returnType.getComponentType();
 				class ArrayReturnVariant extends TypeVariant {
 					public ArrayReturnVariant() {
-						super(typeDomain, target, method, argMatchers, argConverters, mandatoryArgCount);
+						super(method, argMatchers, argConverters, mandatoryArgCount);
 					}
 
 					@Override
@@ -572,7 +602,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 				final Class<?> componentType = IterableTypeHolder.resolve(method.getGenericReturnType());
 				class IterableReturnVariant extends TypeVariant {
 					public IterableReturnVariant() {
-						super(typeDomain, target, method, argMatchers, argConverters, mandatoryArgCount);
+						super(method, argMatchers, argConverters, mandatoryArgCount);
 					}
 
 					@Override
@@ -597,7 +627,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 			class RawSingleReturnVariant extends TypeVariant {
 
 				public RawSingleReturnVariant() {
-					super(typeDomain, target, method, argMatchers, argConverters, mandatoryArgCount);
+					super(method, argMatchers, argConverters, mandatoryArgCount);
 				}
 
 				@Override
@@ -609,7 +639,7 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 		} else {
 			class SingleReturnVariant extends TypeVariant {
 				public SingleReturnVariant() {
-					super(typeDomain, target, method, argMatchers, argConverters, mandatoryArgCount);
+					super(method, argMatchers, argConverters, mandatoryArgCount);
 				}
 
 				@Override
@@ -627,44 +657,60 @@ public abstract class TypedFunction implements ICallable<TypedValue> {
 		}
 	}
 
-	private final OptionalInt mandatoryArgNum;
+	private abstract static class TypedFunctionBody {
+		private final OptionalInt mandatoryArgNum;
 
-	public TypedFunction(OptionalInt mandatoryArgNum) {
-		this.mandatoryArgNum = mandatoryArgNum;
+		public TypedFunctionBody(OptionalInt mandatoryArgNum) {
+			this.mandatoryArgNum = mandatoryArgNum;
+		}
+
+		public void call(TypeDomain domain, Object target, Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+			final int argCount;
+
+			if (argumentsCount.isPresent()) {
+				argCount = argumentsCount.get();
+			} else {
+				Preconditions.checkState(mandatoryArgNum.isPresent(), "Number of arguments not given and function is not fixed");
+				argCount = mandatoryArgNum.get();
+			}
+
+			final List<TypedValue> reversedArgs = Lists.newArrayList();
+			final Stack<TypedValue> stack = frame.stack();
+			for (int i = 0; i < argCount; i++)
+				reversedArgs.add(stack.pop());
+			final List<TypedValue> args = Lists.reverse(reversedArgs);
+
+			final List<TypedValue> returns = execute(domain, target, args);
+
+			if (returnsCount.isPresent()) {
+				final Integer expectedReturns = returnsCount.get();
+				final int actualReturns = returns.size();
+				Preconditions.checkState(expectedReturns == actualReturns, "Invalid number of return values, requested %s, got %s", expectedReturns, actualReturns);
+			}
+
+			stack.pushAll(returns);
+		}
+
+		protected abstract List<TypedValue> execute(TypeDomain domain, Object target, List<TypedValue> args);
+	}
+
+	private final TypeDomain domain;
+	private final Object target;
+	private final TypedFunctionBody body;
+
+	public TypedFunction(TypeDomain domain, Object target, TypedFunctionBody body) {
+		this.domain = domain;
+		this.target = target;
+		this.body = body;
 	}
 
 	@Override
 	public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
-		final int argCount;
-
-		if (argumentsCount.isPresent()) {
-			argCount = argumentsCount.get();
-		} else {
-			Preconditions.checkState(mandatoryArgNum.isPresent(), "Number of arguments not given and function is not fixed");
-			argCount = mandatoryArgNum.get();
-		}
-
-		final List<TypedValue> reversedArgs = Lists.newArrayList();
-		final Stack<TypedValue> stack = frame.stack();
-		for (int i = 0; i < argCount; i++)
-			reversedArgs.add(stack.pop());
-		final List<TypedValue> args = Lists.reverse(reversedArgs);
-
-		final List<TypedValue> returns = execute(args);
-
-		if (returnsCount.isPresent()) {
-			final Integer expectedReturns = returnsCount.get();
-			final int actualReturns = returns.size();
-			Preconditions.checkState(expectedReturns == actualReturns, "Invalid number of return values, requested %s, got %s", expectedReturns, actualReturns);
-		}
-
-		stack.pushAll(returns);
+		body.call(domain, target, frame, argumentsCount, returnsCount);
 	}
 
-	protected abstract List<TypedValue> execute(List<TypedValue> args);
-
-	public static Builder builder(TypeDomain domain) {
-		return new Builder(domain);
+	public static Builder builder() {
+		return new Builder();
 	}
 
 }
