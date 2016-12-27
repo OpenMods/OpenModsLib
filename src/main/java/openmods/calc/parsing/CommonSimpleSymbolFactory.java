@@ -15,10 +15,10 @@ import openmods.calc.ICallable;
 import openmods.calc.ICompilerMapFactory;
 import openmods.calc.IExecutable;
 import openmods.calc.IGettable;
-import openmods.calc.StackValidationException;
 import openmods.calc.SymbolMap;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
+import openmods.utils.StackValidationException;
 
 public class CommonSimpleSymbolFactory<E> {
 
@@ -110,9 +110,7 @@ public class CommonSimpleSymbolFactory<E> {
 						if (!isEvaluated) {
 							final Frame<E> executionFrame = FrameFactory.newLocalFrame(enclosingFrame);
 							exprExecutable.execute(executionFrame);
-							final Stack<E> resultStack = executionFrame.stack();
-							Preconditions.checkState(resultStack.size() == 1, "Expected one value from let expression, got %s", resultStack.size());
-							value = resultStack.pop();
+							value = executionFrame.stack().popAndExpectEmptyStack();
 						}
 
 						return value;

@@ -76,9 +76,7 @@ public class MetaObject {
 		substack.push(arg);
 		final Frame<TypedValue> executionFrame = FrameFactory.newLocalFrame(frame, substack);
 		MetaObjectUtils.call(executionFrame, callable, OptionalInt.TWO, OptionalInt.ONE);
-		final TypedValue result = substack.pop();
-		Preconditions.checkState(substack.isEmpty(), "Values left on stack");
-		return result;
+		return substack.popAndExpectEmptyStack();
 	}
 
 	private static TypedValue callFunction(Frame<TypedValue> frame, TypedValue callable, TypedValue self) {
@@ -86,9 +84,7 @@ public class MetaObject {
 		substack.push(self);
 		final Frame<TypedValue> executionFrame = FrameFactory.newLocalFrame(frame, substack);
 		MetaObjectUtils.call(executionFrame, callable, OptionalInt.ONE, OptionalInt.ONE);
-		final TypedValue result = substack.pop();
-		Preconditions.checkState(substack.isEmpty(), "Values left on stack");
-		return result;
+		return substack.popAndExpectEmptyStack();
 	}
 
 	public static class SlotBoolAdapter implements SlotAdapter<SlotBool> {
@@ -482,8 +478,7 @@ public class MetaObject {
 					final Frame<TypedValue> executionFrame = FrameFactory.newLocalFrame(frame, stack);
 					MetaObjectUtils.call(executionFrame, callable, OptionalInt.of(3), OptionalInt.of(1));
 
-					final TypedValue result = stack.pop();
-					Preconditions.checkState(stack.isEmpty(), "Values left on stack");
+					final TypedValue result = stack.popAndExpectEmptyStack();
 
 					final OptionalType.Value maybeResult = result.as(OptionalType.Value.class);
 					if (maybeResult.isPresent()) {

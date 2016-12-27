@@ -229,9 +229,7 @@ public class LetExpressionFactory {
 
 	private static TypedValue executeForSingleResult(Frame<TypedValue> frame, Code expr) {
 		expr.execute(frame);
-		final Stack<TypedValue> resultStack = frame.stack();
-		Preconditions.checkState(resultStack.size() == 1, "Expected single result from 'let' expression, got %s", resultStack.size());
-		return resultStack.pop();
+		return frame.stack().popAndExpectEmptyStack();
 	}
 
 	private class LetSymbol extends LetSymbolBase {

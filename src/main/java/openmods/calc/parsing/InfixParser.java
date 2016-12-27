@@ -114,7 +114,7 @@ public class InfixParser<E> implements IAstParser<E> {
 			pushOperator(nodeStack, op);
 		}
 
-		if (nodeStack.size() != 1) throw new NonExpressionException();
+		if (nodeStack.size() != 1) throw new NonExpressionException("Stack: " + nodeStack.printContents());
 		return nodeStack.pop();
 	}
 

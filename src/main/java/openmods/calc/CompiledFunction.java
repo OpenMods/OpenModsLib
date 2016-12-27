@@ -18,14 +18,13 @@ public class CompiledFunction<E> extends FixedCallable<E> {
 		final Frame<E> newFrame = FrameFactory.newLocalFrameWithSubstack(scope, argCount);
 
 		final Stack<E> resultStack = newFrame.stack();
-		for (int i = 1; i <= argCount; i++) {
+		for (int i = 0; i < argCount; i++) {
 			E arg = resultStack.pop();
-			newFrame.symbols().put("_" + i, arg);
+			newFrame.symbols().put("_" + (i + 1), arg);
 		}
 
 		body.execute(newFrame);
 
-		final int left = resultStack.size();
-		if (left != 0) throw new StackValidationException("Stack not empty after execution (expected %s, left %s)", this.resultCount, left);
+		resultStack.checkSizeIsExactly(this.resultCount);
 	}
 }

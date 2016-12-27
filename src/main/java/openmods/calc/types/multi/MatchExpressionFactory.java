@@ -119,8 +119,7 @@ public class MatchExpressionFactory {
 
 			for (GuardedAction clause : guardedActions) {
 				clause.guard.execute(clauseEnv);
-				Preconditions.checkState(clauseEnvStack.size() == 1, "Invalid guard expression - expected exactly one result");
-				final TypedValue result = clauseEnvStack.pop();
+				final TypedValue result = clauseEnvStack.popAndExpectEmptyStack();
 				if (MetaObjectUtils.boolValue(env, result)) return clause.action;
 			}
 
@@ -396,7 +395,7 @@ public class MatchExpressionFactory {
 			executionSymbols.put(SYMBOL_DEFAULT_ACTION, new PatternMatcherBuilderDefaultActionSymbol(builder));
 
 			pattern.execute(executionFrame);
-			Preconditions.checkState(executionFrame.stack().isEmpty(), "Leftovers on pattern execution stack: %s", executionFrame.stack());
+			executionFrame.stack().checkIsEmpty();
 			return builder.buildPattern();
 		}
 

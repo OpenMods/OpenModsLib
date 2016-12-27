@@ -308,8 +308,6 @@ public class BindPatternEvaluator {
 	public TypedValue evaluate(SymbolMap<TypedValue> topSymbolMap, Code pattern) {
 		final Frame<TypedValue> patternFrame = FrameFactory.symbolsToFrame(new PatternPlaceholdersSymbolMap(topSymbolMap));
 		pattern.execute(patternFrame);
-		final Stack<TypedValue> resultStack = patternFrame.stack();
-		Preconditions.checkState(resultStack.size() == 1, "Invalid result of pattern compilation");
-		return resultStack.pop();
+		return patternFrame.stack().popAndExpectEmptyStack();
 	}
 }

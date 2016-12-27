@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
+import openmods.utils.StackValidationException;
 
 public class GenericFunctions {
 

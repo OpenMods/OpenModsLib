@@ -82,7 +82,7 @@ public class LibListFunctions {
 					@Override
 					protected TypedValue processValue(TypedValue head, TypedValue tail) {
 						final TypedValue result = executeUnaryCallable(frame, functor, slotCall, head);
-						Preconditions.checkState(stack.isEmpty(), "Values left on stack");
+						stack.checkIsEmpty();
 						return Cons.create(domain, result, process(tail));
 					}
 				}.process(list);
@@ -100,7 +100,7 @@ public class LibListFunctions {
 					protected TypedValue processValue(TypedValue head, TypedValue tail) {
 						final TypedValue result = executeUnaryCallable(frame, predicate, slotCall, head);
 						boolean shouldKeep = MetaObjectUtils.boolValue(frame, result);
-						Preconditions.checkState(stack.isEmpty(), "Values left on stack");
+						stack.checkIsEmpty();
 						return shouldKeep? Cons.create(domain, head, process(tail)) : process(tail);
 					}
 				}.process(list);
@@ -162,7 +162,7 @@ public class LibListFunctions {
 					protected TypedValue processValue(TypedValue head, TypedValue tail) {
 						final TypedValue result = executeUnaryCallable(frame, predicate, slotCall, head);
 						boolean shouldContinue = MetaObjectUtils.boolValue(frame, result);
-						Preconditions.checkState(stack.isEmpty(), "Values left on stack");
+						stack.checkIsEmpty();
 						return shouldContinue? Cons.create(domain, head, process(tail)) : nullValue;
 					}
 				}.process(list);
@@ -202,7 +202,7 @@ public class LibListFunctions {
 					protected TypedValue processValue(TypedValue head, TypedValue tail) {
 						final TypedValue result = executeUnaryCallable(frame, predicate, slotCall, head);
 						boolean shouldDrop = MetaObjectUtils.boolValue(frame, result);
-						Preconditions.checkState(stack.isEmpty(), "Values left on stack");
+						stack.checkIsEmpty();
 						return shouldDrop? process(tail) : Cons.create(domain, head, tail);
 					}
 				}.process(list);
@@ -381,8 +381,7 @@ public class LibListFunctions {
 							stack.push(o1);
 							stack.push(o2);
 							slotCall.call(compareFunctionArg, OptionalInt.TWO, OptionalInt.ONE, frame);
-							final TypedValue result = stack.pop();
-							Preconditions.checkState(stack.isEmpty(), "Values left on stack");
+							final TypedValue result = stack.popAndExpectEmptyStack();
 							return result.unwrap(BigInteger.class).intValue();
 						}
 					};
@@ -401,9 +400,7 @@ public class LibListFunctions {
 						public TypedValue apply(TypedValue value) {
 							stack.push(value);
 							slotCall.call(keyFunctionArg, OptionalInt.ONE, OptionalInt.ONE, frame);
-							final TypedValue result = stack.pop();
-							Preconditions.checkState(stack.isEmpty(), "Values left on stack");
-							return result;
+							return stack.popAndExpectEmptyStack();
 						}
 					};
 				} else {

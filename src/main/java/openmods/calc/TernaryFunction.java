@@ -1,6 +1,5 @@
 package openmods.calc;
 
-import com.google.common.base.Preconditions;
 import openmods.utils.Stack;
 
 public abstract class TernaryFunction<E> extends FixedCallable<E> {
@@ -38,8 +37,7 @@ public abstract class TernaryFunction<E> extends FixedCallable<E> {
 			final E first = stack.pop();
 
 			final E result = call(executionFrame, first, second, third);
-			Preconditions.checkState(stack.isEmpty(), "Values left on stack");
-			stack.push(result);
+			stack.checkIsEmpty().push(result);
 		}
 	}
 }

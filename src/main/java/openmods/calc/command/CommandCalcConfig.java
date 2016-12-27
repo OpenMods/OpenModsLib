@@ -19,7 +19,7 @@ import openmods.calc.ExprType;
 import openmods.calc.command.CalcState.CalculatorType;
 import openmods.calc.command.CalcState.NoSuchNameException;
 import openmods.config.simpler.ConfigurableClassAdapter.NoSuchPropertyException;
-import openmods.utils.Stack.StackUnderflowException;
+import openmods.utils.StackUnderflowException;
 
 public class CommandCalcConfig extends CommandCalcBase {
 	private static final String NAME = "=config";

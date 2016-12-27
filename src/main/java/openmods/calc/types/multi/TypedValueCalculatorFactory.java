@@ -31,7 +31,6 @@ import openmods.calc.LocalSymbolMap;
 import openmods.calc.NullaryFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SingleReturnCallable;
-import openmods.calc.StackValidationException;
 import openmods.calc.SymbolMap;
 import openmods.calc.TopSymbolMap;
 import openmods.calc.UnaryFunction;
@@ -1763,10 +1762,11 @@ public class TypedValueCalculatorFactory {
 				TypedCalcUtils.expectExactArgCount(argumentsCount, 1);
 
 				final Frame<TypedValue> sandboxFrame = FrameFactory.newProtectionFrameWithSubstack(frame, 1);
-				final TypedValue top = sandboxFrame.stack().pop();
+				final Stack<TypedValue> sandboxStack = sandboxFrame.stack();
+				final TypedValue top = sandboxStack.pop();
 				top.as(Code.class, "first argument").execute(sandboxFrame);
 
-				TypedCalcUtils.expectExactReturnCount(returnsCount, sandboxFrame.stack().size());
+				TypedCalcUtils.expectExactReturnCount(returnsCount, sandboxStack.size());
 			}
 		});
 
@@ -1897,8 +1897,7 @@ public class TypedValueCalculatorFactory {
 				if (value != nullValue) {
 					final Frame<TypedValue> executionFrame = FrameFactory.newProtectionFrameWithSubstack(frame, 1);
 					op.execute(executionFrame);
-					final int actualReturns = executionFrame.stack().size();
-					if (actualReturns != 1) throw new StackValidationException("Code must have one return, but returned %s", actualReturns);
+					executionFrame.stack().checkSizeIsExactly(1);
 				}
 			}
 		});

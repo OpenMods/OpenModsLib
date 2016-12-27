@@ -1,6 +1,5 @@
 package openmods.calc;
 
-import com.google.common.base.Preconditions;
 import openmods.utils.Stack;
 
 public abstract class UnaryOperator<E> extends Operator<E> {
@@ -57,7 +56,7 @@ public abstract class UnaryOperator<E> extends Operator<E> {
 		public final void execute(Frame<E> frame) {
 			final Frame<E> executionFrame = FrameFactory.newLocalFrameWithSubstack(frame, 1);
 			executeOnStack(executionFrame);
-			Preconditions.checkState(executionFrame.stack().size() == 1);
+			executionFrame.stack().checkSizeIsExactly(1);
 		}
 	}
 

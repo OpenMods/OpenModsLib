@@ -1,6 +1,5 @@
 package openmods.calc;
 
-import com.google.common.base.Preconditions;
 import openmods.utils.Stack;
 
 public abstract class NullaryFunction<E> extends FixedCallable<E> {
@@ -27,8 +26,7 @@ public abstract class NullaryFunction<E> extends FixedCallable<E> {
 			final Stack<E> stack = executionFrame.stack();
 
 			final E result = callImpl(executionFrame);
-			Preconditions.checkState(stack.isEmpty(), "Values left on stack");
-			frame.stack().push(result);
+			stack.checkIsEmpty().push(result);
 		}
 	}
 

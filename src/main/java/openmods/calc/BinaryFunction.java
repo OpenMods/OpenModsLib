@@ -1,6 +1,5 @@
 package openmods.calc;
 
-import com.google.common.base.Preconditions;
 import openmods.utils.Stack;
 
 public abstract class BinaryFunction<E> extends FixedCallable<E> {
@@ -36,8 +35,7 @@ public abstract class BinaryFunction<E> extends FixedCallable<E> {
 			final E right = stack.pop();
 			final E left = stack.pop();
 			final E result = call(executionFrame, left, right);
-			Preconditions.checkState(stack.isEmpty(), "Values left on stack");
-			stack.push(result);
+			stack.checkIsEmpty().push(result);
 		}
 	}
 

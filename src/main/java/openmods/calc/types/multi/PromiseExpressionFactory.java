@@ -81,9 +81,8 @@ public class PromiseExpressionFactory {
 
 				code.execute(executionFrame);
 
-				final Stack<TypedValue> resultStack = executionFrame.stack();
-				Preconditions.checkState(resultStack.size() == 1, "Expected single result from promise execution, got %s", resultStack.size());
-				value = Optional.of(resultStack.pop());
+				final TypedValue result = executionFrame.stack().popAndExpectEmptyStack();
+				value = Optional.of(result);
 			}
 
 			frame.stack().push(value.get());

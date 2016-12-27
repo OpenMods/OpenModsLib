@@ -1,23 +1,12 @@
 package openmods.utils;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 public class Stack<E> implements Iterable<E> {
-
-	public static class StackUnderflowException extends RuntimeException {
-		private static final long serialVersionUID = 360455673552034663L;
-
-		public StackUnderflowException(String message) {
-			super(message);
-		}
-
-		public StackUnderflowException() {
-			super("stack underflow");
-		}
-	}
 
 	private final List<E> data;
 	private final int bottomElement;
@@ -45,7 +34,7 @@ public class Stack<E> implements Iterable<E> {
 		data.addAll(values);
 	}
 
-	private void checkNonEmpty() {
+	public void checkIsNonEmpty() {
 		if (isEmpty()) throw new StackUnderflowException();
 	}
 
@@ -54,12 +43,17 @@ public class Stack<E> implements Iterable<E> {
 	}
 
 	public E pop() {
-		checkNonEmpty();
+		checkIsNonEmpty();
 		try {
 			return data.remove(data.size() - 1);
 		} catch (IndexOutOfBoundsException e) {
 			throw new StackUnderflowException();
 		}
+	}
+
+	public E popAndExpectEmptyStack() {
+		if (size() != 1) throw new StackUnderflowException("Expected exactly one element, got %d, contents: %s", size(), printContents());
+		return pop();
 	}
 
 	private int indexFromTop(int index) {
@@ -73,7 +67,7 @@ public class Stack<E> implements Iterable<E> {
 	}
 
 	public void dup() {
-		checkNonEmpty();
+		checkIsNonEmpty();
 		E last = data.get(data.size() - 1);
 		data.add(last);
 	}
@@ -111,5 +105,29 @@ public class Stack<E> implements Iterable<E> {
 		final int newBottom = data.size() - depth;
 		if (newBottom < bottomElement) throw new StackUnderflowException(String.format("Not enough elements to create substack: required %s, size %d", depth, size()));
 		return newBottom == 0? this : new Stack<E>(data, newBottom);
+	}
+
+	public Stack<E> checkIsEmpty() {
+		if (!isEmpty()) throw new StackValidationException("Expected empty stack, but actually contains: %s", printContents());
+		return this;
+	}
+
+	public Stack<E> checkSizeIsExactly(int expectedSize) {
+		if (size() != expectedSize) throw new StackUnderflowException("Expected stack size %d, got %d, contents: %s", expectedSize, size(), printContents());
+		return this;
+	}
+
+	public Stack<E> checkSizeIsAtLeast(int expectedSize) {
+		if (size() < expectedSize) throw new StackUnderflowException("Expected stack size >= %d, got %d, contents: %s", expectedSize, size(), printContents());
+		return this;
+	}
+
+	public String printContents() {
+		return Iterables.toString(this);
+	}
+
+	@Override
+	public String toString() {
+		return printContents();
 	}
 }

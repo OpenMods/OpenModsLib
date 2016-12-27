@@ -8,6 +8,7 @@ import openmods.calc.parsing.IPostfixCompilerState;
 import openmods.calc.parsing.Token;
 import openmods.calc.parsing.TokenType;
 import openmods.utils.OptionalInt;
+import openmods.utils.StackUnderflowException;
 import org.junit.Test;
 
 public class PostfixCompilerTest extends CalcTestUtils {
@@ -139,7 +140,7 @@ public class PostfixCompilerTest extends CalcTestUtils {
 		given(LEFT_BRACKET, dec("3"), LEFT_BRACKET, dec("4"), RIGHT_BRACKET, RIGHT_BRACKET).expect(OPEN_BRACKET, c("3"), OPEN_BRACKET, c("4"), CLOSE_BRACKET, CLOSE_BRACKET);
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = StackUnderflowException.class)
 	public void testUnclosedBrackers() {
 		given(LEFT_BRACKET, dec("4"));
 	}

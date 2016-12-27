@@ -1,6 +1,7 @@
 package openmods.calc;
 
 import openmods.utils.OptionalInt;
+import openmods.utils.StackValidationException;
 
 public abstract class FixedCallable<E> implements ICallable<E> {
 

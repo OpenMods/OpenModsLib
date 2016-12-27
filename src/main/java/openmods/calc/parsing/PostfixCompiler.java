@@ -1,6 +1,5 @@
 package openmods.calc.parsing;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.PeekingIterator;
 import openmods.calc.IExecutable;
 import openmods.calc.parsing.IPostfixCompilerState.Result;
@@ -36,8 +35,7 @@ public abstract class PostfixCompiler<E> implements ITokenStreamCompiler<E> {
 			}
 		}
 
-		Preconditions.checkState(stateStack.size() == 1, "Invalid compiler stack state, got %s entries", stateStack.size());
-		final IPostfixCompilerState<E> finalState = stateStack.pop();
+		final IPostfixCompilerState<E> finalState = stateStack.popAndExpectEmptyStack();
 		return finalState.exit();
 	}
 

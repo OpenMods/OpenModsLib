@@ -138,11 +138,7 @@ public class OptionalType {
 
 			MetaObjectUtils.call(executionFrame, arg, OptionalInt.ONE, OptionalInt.ONE);
 
-			final TypedValue result = stack.pop();
-
-			if (!stack.isEmpty())
-				throw new IllegalStateException("Values left on stack: " + Lists.newArrayList(stack));
-
+			final TypedValue result = stack.popAndExpectEmptyStack();
 			return present(domain, result);
 		}
 

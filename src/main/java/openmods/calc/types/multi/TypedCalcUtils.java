@@ -1,12 +1,12 @@
 package openmods.calc.types.multi;
 
 import openmods.calc.Frame;
-import openmods.calc.StackValidationException;
 import openmods.calc.SymbolMap;
 import openmods.calc.parsing.IExprNode;
 import openmods.calc.parsing.SymbolGetNode;
 import openmods.calc.parsing.ValueNode;
 import openmods.utils.OptionalInt;
+import openmods.utils.StackValidationException;
 
 public class TypedCalcUtils {
 

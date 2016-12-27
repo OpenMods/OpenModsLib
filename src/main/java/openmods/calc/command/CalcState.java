@@ -17,7 +17,6 @@ import openmods.calc.Frame;
 import openmods.calc.ICallable;
 import openmods.calc.IGettable;
 import openmods.calc.IValuePrinter;
-import openmods.calc.StackValidationException;
 import openmods.calc.types.bigint.BigIntCalculatorFactory;
 import openmods.calc.types.bool.BoolCalculatorFactory;
 import openmods.calc.types.fp.DoubleCalculatorFactory;
@@ -26,6 +25,7 @@ import openmods.calc.types.multi.TypedValue;
 import openmods.calc.types.multi.TypedValueCalculatorFactory;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
+import openmods.utils.StackValidationException;
 import org.apache.commons.lang3.math.Fraction;
 
 public class CalcState {

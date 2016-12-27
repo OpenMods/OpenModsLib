@@ -1,6 +1,5 @@
 package openmods.calc.types.multi;
 
-import com.google.common.base.Preconditions;
 import java.util.Iterator;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
@@ -33,7 +32,7 @@ public abstract class LogicFunction extends SingleReturnCallable<TypedValue> {
 		do {
 			execute(scratchFrame, it.next());
 			arg = scratchStack.pop();
-			Preconditions.checkState(scratchStack.isEmpty(), "Values left on stack");
+			scratchStack.checkIsEmpty();
 			if (shouldReturn(scratchFrame, arg)) break;
 		} while (it.hasNext());
 
@@ -71,8 +70,7 @@ public abstract class LogicFunction extends SingleReturnCallable<TypedValue> {
 
 			code.execute(scratch);
 
-			final Stack<TypedValue> stack = scratch.stack();
-			Preconditions.checkState(stack.size() == 1, "More than one value returned from %s", code);
+			scratch.stack().checkSizeIsExactly(1);
 		}
 
 	}

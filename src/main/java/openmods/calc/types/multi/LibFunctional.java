@@ -8,7 +8,6 @@ import openmods.calc.BinaryFunction;
 import openmods.calc.Environment;
 import openmods.calc.Frame;
 import openmods.calc.SingleReturnCallable;
-import openmods.calc.StackValidationException;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
@@ -128,7 +127,7 @@ public class LibFunctional {
 				if (argumentsCount.isPresent()) requiredArgs = argumentsCount.get();
 				if (returnsCount.isPresent()) requiredArgs = returnsCount.get();
 
-				if (frame.stack().size() < requiredArgs) throw new StackValidationException("Expected %s args on stack", requiredArgs);
+				frame.stack().checkSizeIsAtLeast(requiredArgs);
 			}
 		}.selfValue(typeDomain));
 	}
