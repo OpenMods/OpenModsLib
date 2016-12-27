@@ -36,6 +36,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public abstract class TypedFunction implements ICallable<TypedValue> {
 
+	// TODO maybe some caching? Variants depend only on class methods
+
 	public static class DispatchException extends RuntimeException {
 		private static final long serialVersionUID = 8096730015947971477L;
 

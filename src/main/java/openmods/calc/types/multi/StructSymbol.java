@@ -142,7 +142,7 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 			super("struct_" + structCounter.incrementAndGet(), StructValue.class);
 			this.fieldNames.addAll(fields);
 
-			final List<TypedValue> wrappedFieldNames = Lists.newArrayList(Iterables.transform(fieldNames, domain.createTransformer(String.class)));
+			final List<TypedValue> wrappedFieldNames = Lists.newArrayList(Iterables.transform(fieldNames, domain.createWrappingTransformer(String.class)));
 			fieldsList = Cons.createList(wrappedFieldNames, nullValue);
 			selfValue = domain.create(StructType.class, this);
 		}

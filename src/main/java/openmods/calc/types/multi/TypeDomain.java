@@ -171,7 +171,7 @@ public class TypeDomain {
 
 	public <T> T unwrap(TypedValue value, Class<T> type) {
 		Preconditions.checkArgument(value.domain == this, "Mixed domain");
-		if (value.type == type) return type.cast(value.value);
+		if (value.type == type) return value.as(type);
 		final RawConverter converter = getConverter(value, type);
 		final Object convertedValue = converter.convert(value.value);
 		return type.cast(convertedValue);
@@ -232,7 +232,7 @@ public class TypeDomain {
 		return create(type, type.cast(value));
 	}
 
-	public <T> Function<T, TypedValue> createTransformer(final Class<T> type) {
+	public <T> Function<T, TypedValue> createWrappingTransformer(final Class<T> type) {
 		checkIsKnownType(type);
 		return new Function<T, TypedValue>() {
 			@Override
@@ -242,13 +242,34 @@ public class TypeDomain {
 		};
 	}
 
-	public <T> Function<T, TypedValue> createTransformer(final Class<T> type, final TypedValue nullValue) {
+	public <T> Function<T, TypedValue> createWrappingTransformer(final Class<T> type, final TypedValue nullValue) {
 		checkIsKnownType(type);
 		Preconditions.checkArgument(nullValue.domain == this, "Different domains");
 		return new Function<T, TypedValue>() {
 			@Override
 			public TypedValue apply(T input) {
 				return input != null? create(type, input) : nullValue;
+			}
+		};
+	}
+
+	public <T> Function<TypedValue, T> createUnwrappingTransformer(final Class<T> type) {
+		checkIsKnownType(type);
+		return new Function<TypedValue, T>() {
+			@Override
+			public T apply(TypedValue input) {
+				return input.as(type);
+			}
+		};
+	}
+
+	public <T> Function<TypedValue, T> createUnwrappingTransformer(final Class<T> type, final TypedValue nullValue) {
+		checkIsKnownType(type);
+		Preconditions.checkArgument(nullValue.domain == this, "Different domains");
+		return new Function<TypedValue, T>() {
+			@Override
+			public T apply(TypedValue input) {
+				return !nullValue.equals(input)? input.as(type) : null;
 			}
 		};
 	}

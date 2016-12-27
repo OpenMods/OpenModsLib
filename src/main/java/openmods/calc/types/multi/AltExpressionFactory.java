@@ -188,7 +188,7 @@ public class AltExpressionFactory {
 			this.type = type;
 			this.members = members;
 
-			final List<TypedValue> convertedMembers = ImmutableList.copyOf(Iterables.transform(members, domain.createTransformer(String.class)));
+			final List<TypedValue> convertedMembers = ImmutableList.copyOf(Iterables.transform(members, domain.createWrappingTransformer(String.class)));
 			this.membersList = Cons.createList(convertedMembers, nullValue);
 		}
 	}

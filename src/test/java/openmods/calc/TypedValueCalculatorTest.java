@@ -3028,4 +3028,77 @@ public class TypedValueCalculatorTest {
 		postfix("1 2 id$3,3").expectThrow(RuntimeException.class);
 	}
 
+	@Test
+	public void testStringLower() {
+		infix("''.lower").expectResult(s(""));
+		infix("'abc'.lower").expectResult(s("abc"));
+		infix("'AbC'.lower").expectResult(s("abc"));
+		infix("'ABC'.lower").expectResult(s("abc"));
+	}
+
+	@Test
+	public void testStringUpper() {
+		infix("''.upper").expectResult(s(""));
+		infix("'abc'.upper").expectResult(s("ABC"));
+		infix("'AbC'.upper").expectResult(s("ABC"));
+		infix("'ABC'.upper").expectResult(s("ABC"));
+	}
+
+	@Test
+	public void testStringStrip() {
+		infix("''.strip").expectResult(s(""));
+		infix("'aA'.strip").expectResult(s("aA"));
+		infix("'    aB'.strip").expectResult(s("aB"));
+		infix("'cB      '.strip").expectResult(s("cB"));
+		infix("'\tdE      '.strip").expectResult(s("dE"));
+	}
+
+	@Test
+	public void testStringStartsWith() {
+		infix("''.startsWith('')").expectResult(TRUE);
+		infix("'abc'.startsWith('ab')").expectResult(TRUE);
+		infix("'abc'.startsWith('bc')").expectResult(FALSE);
+	}
+
+	@Test
+	public void testStringEndsWith() {
+		infix("''.endsWith('')").expectResult(TRUE);
+		infix("'abc'.endsWith('ab')").expectResult(FALSE);
+		infix("'abc'.endsWith('bc')").expectResult(TRUE);
+	}
+
+	@Test
+	public void testStringIndexOf() {
+		infix("''.indexOf('')").expectResult(i(0));
+		infix("'abc'.indexOf('ab')").expectResult(i(0));
+		infix("'abc'.indexOf('bc')").expectResult(i(1));
+		infix("'abc'.indexOf('xyz')").expectResult(i(-1));
+	}
+
+	@Test
+	public void testStringSplit() {
+		infix("''.split()").expectResult(list(s("")));
+		infix("'a bc d'.split()").expectResult(list(s("a"), s("bc"), s("d")));
+		infix("'a|bc|d|ef'.split('|')").expectResult(list(s("a"), s("bc"), s("d"), s("ef")));
+
+		infix("'a|bc|d|ef'.split('|', 1)").expectResult(list(s("a|bc|d|ef")));
+		infix("'a|bc|d|ef'.split('|', 2)").expectResult(list(s("a"), s("bc|d|ef")));
+		infix("'a|bc|d|ef'.split('|', 3)").expectResult(list(s("a"), s("bc"), s("d|ef")));
+	}
+
+	@Test
+	public void testStringJoin() {
+		infix("''.join([])").expectResult(s(""));
+		infix("','.join([])").expectResult(s(""));
+
+		infix("''.join(['a','b','c'])").expectResult(s("abc"));
+		infix("','.join(['a','b','c'])").expectResult(s("a,b,c"));
+	}
+
+	@Test
+	public void testStringOrd() {
+		infix("'a'.ord").expectResult(i('a'));
+		infix("'\\uD83D\\uDE08'.ord").expectResult(i(0x1F608));
+		infix("'\uD83D\uDE08'.ord").expectResult(i(0x1F608));
+	}
 }

@@ -499,6 +499,7 @@ public class TypedValueCalculatorFactory {
 									return !value.as(String.class).isEmpty();
 								}
 							})
+							.set(new StringAttrSlot(nullValue))
 							.set(MetaObjectUtils.typeConst(strType))
 							.set(new MetaObject.SlotStr() {
 								@Override
