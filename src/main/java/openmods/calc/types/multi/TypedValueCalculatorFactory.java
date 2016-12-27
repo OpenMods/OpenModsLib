@@ -339,6 +339,7 @@ public class TypedValueCalculatorFactory {
 									return !value.as(BigInteger.class).equals(BigInteger.ZERO);
 								}
 							})
+							.set(new IntegerAttrSlot())
 							.set(MetaObjectUtils.typeConst(intType))
 							.set(new MetaObject.SlotStr() {
 								@Override

@@ -3101,4 +3101,18 @@ public class TypedValueCalculatorTest {
 		infix("'\\uD83D\\uDE08'.ord").expectResult(i(0x1F608));
 		infix("'\uD83D\uDE08'.ord").expectResult(i(0x1F608));
 	}
+
+	@Test
+	public void testIntBitLength() {
+		infix("0.bitLength").expectResult(i(0));
+		infix("0b100.bitLength").expectResult(i(3));
+		infix("-0b100.bitLength").expectResult(i(2)); // would be 3 in Python...
+	}
+
+	@Test
+	public void testIntOrd() {
+		// note: 0x1chr parses as "0x1c hr". Confusing...
+		infix("(0x20).chr").expectResult(s(" "));
+		infix("(0x1F608).chr").expectResult(s("\uD83D\uDE08"));
+	}
 }
