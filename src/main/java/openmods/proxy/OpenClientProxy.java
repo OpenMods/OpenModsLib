@@ -21,11 +21,9 @@ import openmods.LibConfig;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.block.BlockSelectionHandler;
-import openmods.calc.command.CalcState;
-import openmods.calc.command.CommandCalcConfig;
-import openmods.calc.command.CommandCalcEvaluate;
-import openmods.calc.command.CommandCalcFunction;
-import openmods.calc.command.CommandCalcLet;
+import openmods.calc.command.CommandCalc;
+import openmods.calc.command.CommandCalcFactory;
+import openmods.calc.command.ICommandComponent;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
@@ -91,11 +89,11 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		ClientCommandHandler.instance.registerCommand(new CommandSource("om_source_c", false, OpenMods.instance.getCollector()));
 
 		if (LibConfig.enableCalculatorCommands) {
-			final CalcState state = new CalcState();
-			ClientCommandHandler.instance.registerCommand(new CommandCalcConfig(state));
-			ClientCommandHandler.instance.registerCommand(new CommandCalcEvaluate(state));
-			ClientCommandHandler.instance.registerCommand(new CommandCalcFunction(state));
-			ClientCommandHandler.instance.registerCommand(new CommandCalcLet(state));
+			final ICommandComponent commandRoot = new CommandCalcFactory().getRoot();
+			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "config"));
+			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "eval", "="));
+			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "fun"));
+			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "let"));
 
 		}
 

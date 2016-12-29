@@ -117,7 +117,7 @@ public class TypeVariableHolderHandler {
 		final Map<Field, Class<?>> targetToSource = Maps.newHashMap(classTargetToSource);
 		targetToSource.putAll(fieldTargetToSource);
 
-		fillFields(fieldTargetToSource);
+		fillFields(targetToSource);
 	}
 
 	private void fillFields(Map<Field, Class<?>> fieldTargetToSource) {
