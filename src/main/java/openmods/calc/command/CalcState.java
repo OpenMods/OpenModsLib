@@ -17,6 +17,7 @@ import openmods.calc.Frame;
 import openmods.calc.ICallable;
 import openmods.calc.IGettable;
 import openmods.calc.IValuePrinter;
+import openmods.calc.UnaryFunction;
 import openmods.calc.types.bigint.BigIntCalculatorFactory;
 import openmods.calc.types.bool.BoolCalculatorFactory;
 import openmods.calc.types.fp.DoubleCalculatorFactory;
@@ -80,6 +81,14 @@ public class CalcState {
 
 					final String result = ": " + Joiner.on(" ").join(results);
 					sender.addChatMessage(new ChatComponentText(result));
+				}
+			});
+
+			calculator.environment.setGlobalSymbol("print", new UnaryFunction.Direct<E>() {
+				@Override
+				protected E call(E value) {
+					sender.addChatMessage(new ChatComponentText(printer.str(value)));
+					return value;
 				}
 			});
 			return calculator;
