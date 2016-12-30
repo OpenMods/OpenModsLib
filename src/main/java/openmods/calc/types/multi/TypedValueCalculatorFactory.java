@@ -1959,6 +1959,8 @@ public class TypedValueCalculatorFactory {
 
 		RegexSymbol.register(env);
 
+		StructWrapper.register(env);
+
 		final IfExpressionFactory ifFactory = new IfExpressionFactory(domain);
 		ifFactory.registerSymbol(env);
 

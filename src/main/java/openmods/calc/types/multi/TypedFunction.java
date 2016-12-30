@@ -35,7 +35,7 @@ import openmods.utils.CachedFactory;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
-public class TypedFunction implements ICallable<TypedValue> {
+public class TypedFunction {
 
 	public static class DispatchException extends RuntimeException {
 		private static final long serialVersionUID = 8096730015947971477L;
@@ -185,7 +185,22 @@ public class TypedFunction implements ICallable<TypedValue> {
 			return this;
 		}
 
-		public TypedFunction build(TypeDomain domain, Object target) {
+		public IUnboundCallable build(Class<?> targetCls) {
+			Preconditions.checkArgument(!this.variants.isEmpty(), "No variants defined");
+
+			if (targetCls == null) {
+				if (!this.allowedClasses.isEmpty()) throw new NonStaticMethodsPresent();
+			} else {
+				for (Class<?> cls : this.allowedClasses)
+					if (!cls.isAssignableFrom(targetCls))
+						throw new NonCompatibleMethodsPresent(cls, targetCls);
+			}
+
+			final TypedFunctionBody body = bodyCache.getOrCreate(ImmutableSet.copyOf(this.variants));
+			return new TypedFunction.Unbound(targetCls, body);
+		}
+
+		public ICallable<TypedValue> build(TypeDomain domain, Object target) {
 			Preconditions.checkArgument(!this.variants.isEmpty(), "No variants defined");
 
 			if (target == null) {
@@ -197,7 +212,7 @@ public class TypedFunction implements ICallable<TypedValue> {
 			}
 
 			final TypedFunctionBody body = bodyCache.getOrCreate(ImmutableSet.copyOf(this.variants));
-			return new TypedFunction(domain, target, body);
+			return new TypedFunction.Bound(domain, target, body);
 		}
 
 		private static TypedFunctionBody createSingleFunction(final TypeVariant variant) {
@@ -480,7 +495,7 @@ public class TypedFunction implements ICallable<TypedValue> {
 		return new DispatchArgMatcher(dispatchArgsTypes);
 	}
 
-	public static TypeVariant createVariant(final Method method) {
+	private static TypeVariant createVariant(final Method method) {
 		final Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 		final Type[] parameterTypes = method.getGenericParameterTypes();
 		final int parameterCount = parameterTypes.length;
@@ -660,7 +675,7 @@ public class TypedFunction implements ICallable<TypedValue> {
 	private abstract static class TypedFunctionBody {
 		private final OptionalInt mandatoryArgNum;
 
-		public TypedFunctionBody(OptionalInt mandatoryArgNum) {
+		private TypedFunctionBody(OptionalInt mandatoryArgNum) {
 			this.mandatoryArgNum = mandatoryArgNum;
 		}
 
@@ -694,19 +709,45 @@ public class TypedFunction implements ICallable<TypedValue> {
 		protected abstract List<TypedValue> execute(TypeDomain domain, Object target, List<TypedValue> args);
 	}
 
-	private final TypeDomain domain;
-	private final Object target;
-	private final TypedFunctionBody body;
+	protected final TypedFunctionBody body;
 
-	public TypedFunction(TypeDomain domain, Object target, TypedFunctionBody body) {
-		this.domain = domain;
-		this.target = target;
+	private TypedFunction(TypedFunctionBody body) {
 		this.body = body;
 	}
 
-	@Override
-	public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
-		body.call(domain, target, frame, argumentsCount, returnsCount);
+	public interface IUnboundCallable {
+		public void call(TypeDomain domain, Object target, Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount);
+	}
+
+	public static class Unbound extends TypedFunction implements IUnboundCallable {
+		private final Class<?> targetCls;
+
+		public Unbound(Class<?> targetCls, TypedFunctionBody body) {
+			super(body);
+			this.targetCls = targetCls;
+		}
+
+		@Override
+		public void call(TypeDomain domain, Object target, Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+			Preconditions.checkState(targetCls.isInstance(target));
+			body.call(domain, target, frame, argumentsCount, returnsCount);
+		}
+	}
+
+	public static class Bound extends TypedFunction implements ICallable<TypedValue> {
+		private final TypeDomain domain;
+		private final Object target;
+
+		public Bound(TypeDomain domain, Object target, TypedFunctionBody body) {
+			super(body);
+			this.domain = domain;
+			this.target = target;
+		}
+
+		@Override
+		public void call(Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+			body.call(domain, target, frame, argumentsCount, returnsCount);
+		}
 	}
 
 	public static Builder builder() {

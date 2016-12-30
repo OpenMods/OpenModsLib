@@ -101,7 +101,7 @@ public class TypedFunctionTest {
 		return Lists.reverse(results);
 	}
 
-	private static <T> TypedFunction createFunction(T target, Class<? extends T> cls) {
+	private static <T> ICallable<TypedValue> createFunction(T target, Class<? extends T> cls) {
 		TypedFunction.Builder builder = TypedFunction.builder();
 		builder.addVariants(cls);
 		return builder.build(domain, target);
@@ -115,7 +115,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		final TypedValue arg1 = wrap(true);
 		final TypedValue arg2 = wrap("Hello world");
@@ -135,7 +135,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		final TypedValue arg1 = wrap(true);
 		final TypedValue arg2 = wrap(5);
@@ -154,7 +154,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		final TypedValue arg1 = wrap(true);
 		final TypedValue arg2 = wrap("Hello world");
@@ -174,7 +174,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		final TypedValue arg1 = wrap(true);
 		final TypedValue arg2 = wrap("Hello world");
@@ -201,7 +201,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		final TypedValue arg1 = wrap(true);
 		final TypedValue arg2 = wrap("Hello world");
@@ -228,7 +228,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		final TypedValue arg1 = wrap("Hello world");
 		final TypedValue arg2 = wrap(6);
@@ -248,7 +248,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		final TypedValue arg1 = wrap(false);
 		final TypedValue arg2a = wrap(6);
@@ -276,7 +276,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		final TypedValue arg1 = wrap(false);
 		final TypedValue arg2a = wrap(6);
@@ -304,7 +304,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		final TypedValue arg1 = wrap(false);
 		final TypedValue arg2 = wrap(5);
@@ -337,7 +337,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		final TypedValue ret = wrap("Hello world");
 		Mockito.when(mock.test()).thenReturn(ret);
@@ -355,7 +355,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		final TypedValue ret1 = wrap("Hello world");
 		final TypedValue ret2 = wrap(7);
@@ -375,7 +375,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test()).thenReturn(new Integer[] { 3, 1, 5 });
 		Assert.assertEquals(execute(target, OptionalInt.absent(), 3), Arrays.asList(wrap(3), wrap(1), wrap(5)));
@@ -393,7 +393,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test()).thenReturn(Lists.newArrayList("b", "c", "a", "d"));
 		Assert.assertEquals(execute(target, OptionalInt.absent(), 4), Arrays.asList(wrap("b"), wrap("c"), wrap("a"), wrap("d")));
@@ -413,7 +413,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test(anyInt())).thenReturn(7);
 		Mockito.when(mock.test(anyString())).thenReturn("b");
@@ -438,7 +438,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test(anyInt(), anyBoolean())).thenReturn(7);
 		Mockito.when(mock.test(anyString(), anyBoolean())).thenReturn("b");
@@ -463,7 +463,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test(anyInt())).thenReturn(7);
 		Mockito.when(mock.test(anyString())).thenReturn("b");
@@ -491,7 +491,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test(any(TypedValue.class))).thenReturn(7);
 		Mockito.when(mock.test(anyString())).thenReturn("b");
@@ -519,7 +519,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test(anyInt(), anyBoolean())).thenReturn(7);
 		Mockito.when(mock.test(anyString(), anyInt())).thenReturn("b");
@@ -557,7 +557,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test(anyInt(), anyInt())).thenReturn(2);
 		Mockito.when(mock.test(anyInt())).thenReturn(1);
@@ -586,7 +586,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test(Matchers.<Optional<Integer>> any())).thenReturn(7);
 		Mockito.when(mock.test(anyString())).thenReturn("b");
@@ -620,7 +620,7 @@ public class TypedFunctionTest {
 		}
 
 		final Intf mock = Mockito.mock(Intf.class);
-		TypedFunction target = createFunction(mock, Intf.class);
+		ICallable<TypedValue> target = createFunction(mock, Intf.class);
 
 		Mockito.when(mock.test(anyInt(), anyBoolean())).thenReturn(7);
 		Mockito.when(mock.test(anyInt(), anyString())).thenReturn(8);
@@ -789,7 +789,7 @@ public class TypedFunctionTest {
 	public void testStaticMethods() {
 		TypedFunction.Builder builder = TypedFunction.builder();
 		builder.addVariants(StaticMethodsTests.class);
-		final TypedFunction function = builder.build(domain, null);
+		final ICallable<TypedValue> function = builder.build(domain, (Object)null);
 
 		assertValueEquals(execute(function, wrap(false)), wrap("bool"));
 		assertValueEquals(execute(function, wrap(3)), wrap("int"));
@@ -837,7 +837,7 @@ public class TypedFunctionTest {
 		TypedFunction.Builder builder = TypedFunction.builder();
 		builder.addVariants(TestIntfA.class);
 		builder.addVariants(TestIntfB.class);
-		final TypedFunction function = builder.build(domain, new Test());
+		final ICallable<TypedValue> function = builder.build(domain, new Test());
 
 		assertValueEquals(execute(function, wrap(false)), wrap("bool"));
 		assertValueEquals(execute(function, wrap(3)), wrap("int"));

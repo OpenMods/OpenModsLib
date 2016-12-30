@@ -6,7 +6,7 @@ import openmods.utils.OptionalInt;
 
 public abstract class SimpleTypedFunction implements ICallable<TypedValue> {
 
-	private final TypedFunction handler;
+	private final ICallable<TypedValue> handler;
 
 	public SimpleTypedFunction(TypeDomain domain) {
 		this.handler = TypedFunction.builder().addVariants(getClass()).build(domain, this);

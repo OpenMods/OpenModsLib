@@ -19,11 +19,16 @@ import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.MetaObject;
 import openmods.calc.types.multi.MetaObjectInfo;
 import openmods.calc.types.multi.MetaObjectUtils;
+import openmods.calc.types.multi.StructWrapper;
+import openmods.calc.types.multi.StructWrapper.Expose;
 import openmods.calc.types.multi.Symbol;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedBinaryOperator;
 import openmods.calc.types.multi.TypedCalcConstants;
 import openmods.calc.types.multi.TypedFunction;
+import openmods.calc.types.multi.TypedFunction.DispatchArg;
+import openmods.calc.types.multi.TypedFunction.RawArg;
+import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedUnaryOperator;
 import openmods.calc.types.multi.TypedValue;
 import openmods.calc.types.multi.TypedValueCalculatorFactory;
@@ -3114,5 +3119,132 @@ public class TypedValueCalculatorTest {
 		// note: 0x1chr parses as "0x1c hr". Confusing...
 		infix("(0x20).chr").expectResult(s(" "));
 		infix("(0x1F608).chr").expectResult(s("\uD83D\uDE08"));
+	}
+
+	@Test
+	public void testWrappedObjectFields() {
+		class TestStruct {
+			@Expose
+			public BigInteger intValue = BigInteger.valueOf(4);
+
+			@Expose
+			public String strValue = "blah";
+
+			@Expose
+			public Double floatValue = 4.0;
+		}
+
+		final TestStruct test = new TestStruct();
+		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("test.intValue").expectResult(i(4));
+		infix("test.strValue").expectResult(s("blah"));
+		infix("test.floatValue").expectResult(d(4.0));
+
+		test.floatValue = 5.1;
+		infix("test.floatValue").expectResult(d(5.1));
+	}
+
+	@Test
+	public void testWrappedObjectMethods() {
+		class TestStruct {
+
+			@Expose
+			public String normal(BigInteger i) {
+				return i.toString();
+			}
+
+			@Expose
+			@RawReturn
+			public TypedValue rawReturn() {
+				return domain.create(String.class, "hello");
+			}
+
+			@Expose
+			public String rawArg(@RawArg TypedValue arg) {
+				return arg.typeStr();
+			}
+
+			private int count;
+
+			@Expose
+			public BigInteger internalState() {
+				return BigInteger.valueOf(count++);
+			}
+		}
+
+		final TestStruct test = new TestStruct();
+		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("test.normal(5)").expectResult(s("5"));
+		infix("test.rawReturn()").expectResult(s("hello"));
+		infix("test.rawArg(2.3)").expectResult(s("float"));
+	}
+
+	@Test
+	public void testWrappedObjectMethodsSameArgsDifferentNames() {
+		class TestStruct {
+			@Expose
+			public BigInteger add1(@DispatchArg BigInteger a) {
+				return a.add(BigInteger.valueOf(1));
+			}
+
+			@Expose
+			public BigInteger add2(@DispatchArg BigInteger a) {
+				return a.add(BigInteger.valueOf(2));
+			}
+
+			@Expose
+			public BigInteger add3(@DispatchArg BigInteger a) {
+				return a.add(BigInteger.valueOf(3));
+			}
+		}
+
+		final TestStruct test = new TestStruct();
+		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("test.add1(1)").expectResult(i(2));
+		infix("test.add2(3)").expectResult(i(5));
+		infix("test.add3(5)").expectResult(i(8));
+	}
+
+	@Test
+	public void testWrappedObjectMethodsOverride() {
+		class TestStruct {
+			@Expose
+			public BigInteger override(@DispatchArg BigInteger a, @DispatchArg BigInteger b) {
+				return a.add(b);
+			}
+
+			@Expose
+			public String override(@DispatchArg String a, @DispatchArg String b) {
+				return a + b;
+			}
+		}
+
+		final TestStruct test = new TestStruct();
+		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("test.override(1,2)").expectResult(i(3));
+		infix("test.override('a','bc')").expectResult(s("abc"));
+	}
+
+	@Test
+	public void testWrappedObjectMutatorMethods() {
+		class TestStruct {
+			private int count;
+
+			@Expose
+			public BigInteger internalState() {
+				return BigInteger.valueOf(count++);
+			}
+		}
+
+		final TestStruct test = new TestStruct();
+		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("test.internalState()").expectResult(i(0));
+		infix("test.internalState()").expectResult(i(1));
+		infix("test.internalState()").expectResult(i(2));
 	}
 }
