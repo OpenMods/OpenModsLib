@@ -89,11 +89,12 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		ClientCommandHandler.instance.registerCommand(new CommandSource("om_source_c", false, OpenMods.instance.getCollector()));
 
 		if (LibConfig.enableCalculatorCommands) {
-			final ICommandComponent commandRoot = new CommandCalcFactory().getRoot();
+			final ICommandComponent commandRoot = new CommandCalcFactory(new File(getMinecraftDir(), "scripts")).getRoot();
 			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "config"));
 			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "eval", "="));
 			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "fun"));
 			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "let"));
+			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "execute"));
 
 		}
 

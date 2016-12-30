@@ -24,9 +24,7 @@ public class MapCommandComponent implements ICommandComponent {
 
 		try {
 			subCommand.execute(sender, args);
-		} catch (CommandSyntaxException e) {
-			throw e.pushCommandName(key);
-		} catch (CommandExecutionException e) {
+		} catch (NestedCommandException e) {
 			throw e.pushCommandName(key);
 		} catch (Exception e) {
 			throw new CommandExecutionException(e).pushCommandName(key);

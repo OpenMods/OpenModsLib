@@ -1,16 +1,21 @@
 package openmods.calc.command;
 
-import static openmods.utils.CommandUtils.filterPrefixes;
-
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.io.Closer;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.util.ChatComponentText;
 import openmods.calc.ExprType;
 import openmods.calc.command.CalcState.CalculatorType;
 import openmods.calc.command.CalcState.NoSuchNameException;
@@ -20,7 +25,12 @@ import openmods.utils.StackUnderflowException;
 
 public class CommandCalcFactory {
 
+	private final File scriptDir;
 	private final CalcState state = new CalcState();
+
+	public CommandCalcFactory(File scriptDir) {
+		this.scriptDir = scriptDir.getAbsoluteFile();
+	}
 
 	private final ICommandComponent root = MapCommandComponent.builder()
 			.put("config",
@@ -42,7 +52,7 @@ public class CommandCalcFactory {
 									final String type = args.getNextPart();
 									final Object[] values = CalculatorType.values();
 									final Iterable<String> types = stringifyList(values);
-									return filterPrefixes(type, types);
+									return CommandUtils.filterPrefixes(type, types);
 								}
 							})
 							.put("load", new TerminalCommandComponent("<name>") {
@@ -58,7 +68,7 @@ public class CommandCalcFactory {
 								@Override
 								public List<String> getTabCompletions(IWhitespaceSplitter args) {
 									final String name = args.getNextPart();
-									return filterPrefixes(name, state.getCalculatorsNames());
+									return CommandUtils.filterPrefixes(name, state.getCalculatorsNames());
 								}
 							})
 							.put("store", new TerminalCommandComponent("<name>") {
@@ -87,7 +97,6 @@ public class CommandCalcFactory {
 								}
 							})
 							.put("set", new TerminalCommandComponent("<key> <value>") {
-
 								@Override
 								public void execute(ICommandSender sender, IWhitespaceSplitter args) {
 									final String key = args.getNextPart();
@@ -106,7 +115,7 @@ public class CommandCalcFactory {
 								public List<String> getTabCompletions(IWhitespaceSplitter args) {
 									final String key = args.getNextPart();
 									if (!args.isFinished()) return Lists.newArrayList();
-									return filterPrefixes(key, state.getActiveCalculator().getProperties());
+									return CommandUtils.filterPrefixes(key, state.getActiveCalculator().getProperties());
 								}
 
 							})
@@ -124,7 +133,7 @@ public class CommandCalcFactory {
 								@Override
 								public List<String> getTabCompletions(IWhitespaceSplitter args) {
 									final String key = args.getNextPart();
-									return filterPrefixes(key, state.getActiveCalculator().getProperties());
+									return CommandUtils.filterPrefixes(key, state.getActiveCalculator().getProperties());
 								}
 
 							})
@@ -140,6 +149,40 @@ public class CommandCalcFactory {
 								}
 							})
 							.build())
+			.put("execute", new TerminalCommandComponent("<path>") {
+				@Override
+				public void execute(ICommandSender sender, IWhitespaceSplitter args) {
+					final String path = args.getNextPart();
+					final File scriptFile = new File(scriptDir, path).getAbsoluteFile();
+					if (!checkIsParent(scriptDir, scriptFile))
+						throw new CommandExecutionException("openmodslib.command.calc_not_child", scriptFile, scriptDir);
+					if (!scriptFile.isFile())
+						throw new CommandExecutionException("openmodslib.command.calc_not_file", scriptFile);
+					final int count = executeScript(sender, scriptFile);
+					CommandUtils.respond(sender, "openmodslib.command.calc_executed_count", count);
+				}
+
+				@Override
+				public List<String> getTabCompletions(IWhitespaceSplitter args) {
+					final String path = args.getNextPart().replace("\\", "/");
+					final File scriptFile = new File(scriptDir, path).getAbsoluteFile();
+
+					final File fileToScan = path.isEmpty() || path.endsWith("/")? scriptFile : scriptFile.getParentFile();
+					if (!fileToScan.isDirectory()) return null;
+					final int parentLengthPath = scriptDir.getAbsolutePath().length() + 1; // adding / on end
+					final List<String> propositions = Lists.newArrayList();
+					for (File child : fileToScan.listFiles()) {
+						if (child.isFile())
+							propositions.add(child.getAbsolutePath().substring(parentLengthPath).replace("\\", "/"));
+						else if (child.isDirectory()) {
+							propositions.add(child.getAbsolutePath().substring(parentLengthPath).replace("\\", "/") + "/");
+						}
+					}
+
+					return CommandUtils.filterPrefixes(path, propositions);
+				}
+
+			})
 			.put("let", new TerminalCommandComponent("<name> <initializer expression>") {
 				@Override
 				public void execute(ICommandSender sender, IWhitespaceSplitter args) {
@@ -181,10 +224,55 @@ public class CommandCalcFactory {
 					}
 				}
 			})
+			.put("echo", new TerminalCommandComponent("<str>") {
+				@Override
+				public void execute(ICommandSender sender, IWhitespaceSplitter args) {
+					sender.addChatMessage(new ChatComponentText(args.getTail()));
+				}
+			})
 			.build();
 
 	public ICommandComponent getRoot() {
 		return root;
+	}
+
+	private int executeScript(ICommandSender sender, File scriptFile) {
+		int count = 0;
+		try {
+			final Closer closer = Closer.create();
+			try {
+				final Reader r = closer.register(new FileReader(scriptFile));
+				final BufferedReader br = closer.register(new BufferedReader(r));
+
+				String line;
+				while ((line = br.readLine()) != null) {
+					final IWhitespaceSplitter args = WhitespaceSplitters.fromString(line);
+					root.execute(sender, args);
+					count++;
+				}
+
+			} finally {
+				closer.close();
+			}
+
+			return count;
+		} catch (Exception e) {
+			throw new CommandExecutionException(e);
+		}
+	}
+
+	private static boolean checkIsParent(File dir, File target) {
+		if (!dir.exists()) return false;
+		try {
+			final File canonicalDir = dir.getCanonicalFile();
+			while (target != null) {
+				if (canonicalDir.equals(target)) return true;
+				target = target.getParentFile();
+			}
+		} catch (Throwable t) {
+			throw Throwables.propagate(t);
+		}
+		return false;
 	}
 
 	private static Iterable<String> stringifyList(Object... values) {

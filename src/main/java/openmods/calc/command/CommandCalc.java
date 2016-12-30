@@ -67,7 +67,8 @@ public class CommandCalc implements ICommand {
 		final IWhitespaceSplitter splitArgs = WhitespaceSplitters.fromSplitArray(args);
 		try {
 			commandComponent.execute(sender, splitArgs);
-		} catch (CommandSyntaxException e) {
+		} catch (NestedCommandException e) {
+			e.pushCommandName(name);
 			final IChatComponent message = e.getChatComponent();
 			message.getChatStyle().setColor(EnumChatFormatting.RED);
 			sender.addChatMessage(message);
