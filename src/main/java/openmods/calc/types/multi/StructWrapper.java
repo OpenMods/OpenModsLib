@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Multimap;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,13 +23,15 @@ import openmods.utils.CachedFactory;
 import openmods.utils.OptionalInt;
 
 public class StructWrapper {
-	@Target({ ElementType.METHOD, ElementType.FIELD })
-	@Retention(RetentionPolicy.RUNTIME)
-	public static @interface Expose {}
-
 	@Target({ ElementType.METHOD })
 	@Retention(RetentionPolicy.RUNTIME)
-	public static @interface ExposeProperty {}
+	public static @interface ExposeMethod {}
+
+	@Target({ ElementType.METHOD, ElementType.FIELD })
+	@Retention(RetentionPolicy.RUNTIME)
+	public static @interface ExposeProperty {
+		public boolean raw() default false;
+	}
 
 	private interface MemberValueProvider {
 		public TypedValue getValue(TypeDomain domain, Object target);
@@ -56,18 +59,30 @@ public class StructWrapper {
 			final ImmutableMap.Builder<String, MemberValueProvider> members = ImmutableMap.builder();
 
 			for (Field f : cls.getFields()) {
-				if (f.isAnnotationPresent(Expose.class))
-					appendFieldMember(members, f);
+				final ExposeProperty annotation = f.getAnnotation(ExposeProperty.class);
+				if (annotation != null) {
+					if (annotation.raw()) {
+						appendRawFieldMember(members, f);
+					} else {
+						appendFieldMember(members, f);
+					}
+				}
 			}
 
 			final Multimap<String, Method> methods = HashMultimap.create();
 
-			for (final Method m : cls.getMethods())
-				if (m.isAnnotationPresent(Expose.class)) {
+			for (final Method m : cls.getMethods()) {
+				final ExposeProperty annotation = m.getAnnotation(ExposeProperty.class);
+				if (annotation != null) {
+					if (annotation.raw()) {
+						appendRawGetterMember(members, m);
+					} else {
+						appendGetterMember(members, m);
+					}
+				} else if (m.isAnnotationPresent(ExposeMethod.class)) {
 					methods.put(m.getName(), m);
-				} else if (m.isAnnotationPresent(ExposeProperty.class)) {
-					appendGetterMember(members, m);
 				}
+			}
 
 			for (Map.Entry<String, Collection<Method>> e : methods.asMap().entrySet()) {
 				final TypedFunction.Builder builder = TypedFunction.builder();
@@ -117,6 +132,23 @@ public class StructWrapper {
 		});
 	}
 
+	private static void appendRawGetterMember(Builder<String, MemberValueProvider> members, final Method m) {
+		Preconditions.checkState(m.getParameterTypes().length == 0, "Getter method must have no parameters");
+		Preconditions.checkState(m.getReturnType() == TypedValue.class, "Raw getter must return TypedValue");
+		m.setAccessible(true);
+
+		members.put(m.getName(), new MemberValueProvider() {
+			@Override
+			public TypedValue getValue(TypeDomain domain, Object target) {
+				try {
+					return (TypedValue)m.invoke(target);
+				} catch (Exception e) {
+					throw Throwables.propagate(e);
+				}
+			}
+		});
+	}
+
 	private static void appendFieldMember(ImmutableMap.Builder<String, MemberValueProvider> members, Field f) {
 		final FieldAccess<?> field = FieldAccess.create(f);
 		members.put(f.getName(), new MemberValueProvider() {
@@ -132,14 +164,33 @@ public class StructWrapper {
 		});
 	}
 
-	public static <T> TypedValue create(TypeDomain domain, Class<? super T> cls, T target) {
+	private static void appendRawFieldMember(Builder<String, MemberValueProvider> members, Field f) {
+		Preconditions.checkState(f.getType() == TypedValue.class, "Invalid field %s type", f);
+		final FieldAccess<TypedValue> field = FieldAccess.create(f);
+		members.put(f.getName(), new MemberValueProvider() {
+			@Override
+			public TypedValue getValue(TypeDomain domain, Object target) {
+				return field.get(target);
+			}
+		});
+	}
+
+	public static <T> StructWrapper create(Class<? super T> cls, T target) {
 		final Map<String, MemberValueProvider> members = membersCache.getOrCreate(cls);
-		return domain.create(StructWrapper.class, new StructWrapper(members, target));
+		return new StructWrapper(members, target);
+	}
+
+	public static <T> TypedValue create(TypeDomain domain, Class<? super T> cls, T target) {
+		return domain.create(StructWrapper.class, create(cls, target));
+	}
+
+	public static StructWrapper create(Object target) {
+		final Map<String, MemberValueProvider> members = membersCache.getOrCreate(target.getClass());
+		return new StructWrapper(members, target);
 	}
 
 	public static TypedValue create(TypeDomain domain, Object target) {
-		final Map<String, MemberValueProvider> members = membersCache.getOrCreate(target.getClass());
-		return domain.create(StructWrapper.class, new StructWrapper(members, target));
+		return domain.create(StructWrapper.class, create(target));
 	}
 
 	public static void register(Environment<TypedValue> env) {

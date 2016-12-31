@@ -20,7 +20,7 @@ import openmods.calc.types.multi.MetaObject;
 import openmods.calc.types.multi.MetaObjectInfo;
 import openmods.calc.types.multi.MetaObjectUtils;
 import openmods.calc.types.multi.StructWrapper;
-import openmods.calc.types.multi.StructWrapper.Expose;
+import openmods.calc.types.multi.StructWrapper.ExposeMethod;
 import openmods.calc.types.multi.StructWrapper.ExposeProperty;
 import openmods.calc.types.multi.Symbol;
 import openmods.calc.types.multi.TypeDomain;
@@ -3125,13 +3125,13 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testWrappedObjectFields() {
 		class TestStruct {
-			@Expose
+			@ExposeProperty
 			public BigInteger intValue = BigInteger.valueOf(4);
 
-			@Expose
+			@ExposeProperty
 			public String strValue = "blah";
 
-			@Expose
+			@ExposeProperty
 			public Double floatValue = 4.0;
 		}
 
@@ -3147,28 +3147,48 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testWrappedObjectRawFields() {
+		class TestStruct {
+			@ExposeProperty(raw = true)
+			public TypedValue intValue = i(3);
+
+			@ExposeProperty(raw = true)
+			public TypedValue strValue = s("hi");
+		}
+
+		final TestStruct test = new TestStruct();
+		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("test.intValue").expectResult(i(3));
+		infix("test.strValue").expectResult(s("hi"));
+
+		test.intValue = i(5);
+		infix("test.intValue").expectResult(i(5));
+	}
+
+	@Test
 	public void testWrappedObjectMethods() {
 		class TestStruct {
 
-			@Expose
+			@ExposeMethod
 			public String normal(BigInteger i) {
 				return i.toString();
 			}
 
-			@Expose
+			@ExposeMethod
 			@RawReturn
 			public TypedValue rawReturn() {
 				return domain.create(String.class, "hello");
 			}
 
-			@Expose
+			@ExposeMethod
 			public String rawArg(@RawArg TypedValue arg) {
 				return arg.typeStr();
 			}
 
 			private int count;
 
-			@Expose
+			@ExposeMethod
 			public BigInteger internalState() {
 				return BigInteger.valueOf(count++);
 			}
@@ -3185,17 +3205,17 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testWrappedObjectMethodsSameArgsDifferentNames() {
 		class TestStruct {
-			@Expose
+			@ExposeMethod
 			public BigInteger add1(@DispatchArg BigInteger a) {
 				return a.add(BigInteger.valueOf(1));
 			}
 
-			@Expose
+			@ExposeMethod
 			public BigInteger add2(@DispatchArg BigInteger a) {
 				return a.add(BigInteger.valueOf(2));
 			}
 
-			@Expose
+			@ExposeMethod
 			public BigInteger add3(@DispatchArg BigInteger a) {
 				return a.add(BigInteger.valueOf(3));
 			}
@@ -3212,12 +3232,12 @@ public class TypedValueCalculatorTest {
 	@Test
 	public void testWrappedObjectMethodsOverride() {
 		class TestStruct {
-			@Expose
+			@ExposeMethod
 			public BigInteger override(@DispatchArg BigInteger a, @DispatchArg BigInteger b) {
 				return a.add(b);
 			}
 
-			@Expose
+			@ExposeMethod
 			public String override(@DispatchArg String a, @DispatchArg String b) {
 				return a + b;
 			}
@@ -3235,7 +3255,7 @@ public class TypedValueCalculatorTest {
 		class TestStruct {
 			private int count;
 
-			@Expose
+			@ExposeMethod
 			public BigInteger internalState() {
 				return BigInteger.valueOf(count++);
 			}
@@ -3250,7 +3270,7 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
-	public void testWrappedObjectMutatorProperty() {
+	public void testWrappedObjectPropertyMethods() {
 		class TestStruct {
 
 			@ExposeProperty
@@ -3292,5 +3312,31 @@ public class TypedValueCalculatorTest {
 		infix("test.internalState").expectResult(i(0));
 		infix("test.internalState").expectResult(i(1));
 		infix("test.internalState").expectResult(i(2));
+	}
+
+	@Test
+	public void testWrappedObjectRawPropertyMethods() {
+		class TestStruct {
+
+			@ExposeProperty(raw = true)
+			public TypedValue intValue() {
+				return i(4);
+			}
+
+			private String strValue = "hi";
+
+			@ExposeProperty(raw = true)
+			public TypedValue strValue() {
+				return s(strValue + "!");
+			}
+		}
+
+		final TestStruct test = new TestStruct();
+		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("test.intValue").expectResult(i(4));
+		infix("test.strValue").expectResult(s("hi!"));
+		test.strValue = "hello";
+		infix("test.strValue").expectResult(s("hello!"));
 	}
 }
