@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentText;
 import openmods.calc.Calculator;
 import openmods.calc.ExprType;
@@ -17,11 +18,15 @@ import openmods.calc.Frame;
 import openmods.calc.ICallable;
 import openmods.calc.IGettable;
 import openmods.calc.IValuePrinter;
+import openmods.calc.NullaryFunction;
 import openmods.calc.UnaryFunction;
 import openmods.calc.types.bigint.BigIntCalculatorFactory;
 import openmods.calc.types.bool.BoolCalculatorFactory;
 import openmods.calc.types.fp.DoubleCalculatorFactory;
 import openmods.calc.types.fraction.FractionCalculatorFactory;
+import openmods.calc.types.multi.EntityPlayerWrapper;
+import openmods.calc.types.multi.StructWrapper;
+import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedValue;
 import openmods.calc.types.multi.TypedValueCalculatorFactory;
 import openmods.utils.OptionalInt;
@@ -192,9 +197,25 @@ public class CalcState {
 		},
 		MULTI {
 			@Override
-			protected Calculator<?, ExprType> newCalculator(SenderHolder holder) {
+			protected Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<TypedValue, ExprType> calculator = TypedValueCalculatorFactory.create();
-				// TODO nice composite object for player
+
+				final TypedValue nullValue = calculator.environment.nullValue();
+				final TypeDomain domain = nullValue.domain;
+				calculator.environment.setGlobalSymbol("player", new NullaryFunction.Direct<TypedValue>() {
+
+					@Override
+					protected TypedValue call() {
+						if (holder.sender instanceof EntityPlayer) {
+							final EntityPlayerWrapper wrapper = new EntityPlayerWrapper((EntityPlayer)holder.sender, nullValue);
+							return StructWrapper.create(domain, wrapper);
+						}
+
+						return nullValue;
+					}
+
+				});
+
 				return calculator;
 			}
 		},
