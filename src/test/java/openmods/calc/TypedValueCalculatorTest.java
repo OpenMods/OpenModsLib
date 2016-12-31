@@ -2832,6 +2832,14 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testReverse() {
+		infix("reverse([])").expectResult(list());
+		infix("reverse([1])").expectResult(list(i(1)));
+		infix("reverse([1,'2'])").expectResult(list(s("2"), i(1)));
+		infix("reverse([1,'2',3.0])").expectResult(list(d(3.0), s("2"), i(1)));
+	}
+
+	@Test
 	public void testVarargLambda() {
 		infix("((*arg) -> 'args':arg)()").expectResult(list(s("args")));
 		infix("((*arg) -> 'args':arg)(1)").expectResult(list(s("args"), i(1)));

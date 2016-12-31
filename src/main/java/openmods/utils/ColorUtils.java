@@ -235,13 +235,13 @@ public class ColorUtils {
 			int dG = this.g - other.g;
 			int dB = this.b - other.b;
 
-			int dR2 = dR*dR;
-			int dG2 = dG*dG;
-			int dB2 = dB*dB;
+			int dR2 = dR * dR;
+			int dG2 = dG * dG;
+			int dB2 = dB * dB;
 
-			return Math.abs((((512+meanR)*dR2)>>8)
-					   + (dG2 << 2)
-					   + (((767-meanR)*dB2)>>8));
+			return Math.abs((((512 + meanR) * dR2) >> 8)
+					+ (dG2 << 2)
+					+ (((767 - meanR) * dB2) >> 8));
 		}
 	}
 

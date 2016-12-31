@@ -408,6 +408,17 @@ public class LibListFunctions {
 				}
 			}
 		});
+
+		env.setGlobalSymbol("reverse", new UnaryFunction.Direct<TypedValue>() {
+			@Override
+			protected TypedValue call(TypedValue value) {
+				TypedValue result = nullValue;
+				for (TypedValue v : Cons.toIterable(value, nullValue))
+					result = Cons.create(domain, v, result);
+
+				return result;
+			}
+		});
 	}
 
 }
