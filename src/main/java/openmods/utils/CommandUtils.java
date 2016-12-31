@@ -11,6 +11,7 @@ import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.command.PlayerSelector;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 
 public class CommandUtils {
@@ -37,6 +38,10 @@ public class CommandUtils {
 
 	public static List<String> fiterPlayerNames(String prefix) {
 		return filterPrefixes(prefix, getPlayerNames());
+	}
+
+	public static void respondText(ICommandSender sender, String message) {
+		sender.addChatMessage(new ChatComponentText(message));
 	}
 
 	public static void respond(ICommandSender sender, String format, Object... args) {

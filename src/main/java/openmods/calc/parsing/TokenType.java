@@ -4,41 +4,46 @@ import java.util.EnumSet;
 import java.util.Set;
 
 enum TokenProperties {
+	NUMBER,
 	VALUE,
 	SYMBOL,
-	NEXT_OP_UNARY,
-	INSERT_DEFAULT_OP
+	EXPRESSION_TERMINATOR
 }
 
 public enum TokenType {
-	DEC_NUMBER(TokenProperties.VALUE),
-	HEX_NUMBER(TokenProperties.VALUE),
-	OCT_NUMBER(TokenProperties.VALUE),
-	BIN_NUMBER(TokenProperties.VALUE),
-	QUOTED_NUMBER(TokenProperties.VALUE),
+	DEC_NUMBER(TokenProperties.VALUE, TokenProperties.NUMBER),
+	HEX_NUMBER(TokenProperties.VALUE, TokenProperties.NUMBER),
+	OCT_NUMBER(TokenProperties.VALUE, TokenProperties.NUMBER),
+	BIN_NUMBER(TokenProperties.VALUE, TokenProperties.NUMBER),
+	QUOTED_NUMBER(TokenProperties.VALUE, TokenProperties.NUMBER),
 
-	SYMBOL(TokenProperties.SYMBOL, TokenProperties.INSERT_DEFAULT_OP),
+	STRING(TokenProperties.VALUE),
+
+	SYMBOL(TokenProperties.SYMBOL),
 	SYMBOL_WITH_ARGS(TokenProperties.SYMBOL),
 
-	OPERATOR(TokenProperties.NEXT_OP_UNARY),
-	LEFT_BRACKET(TokenProperties.NEXT_OP_UNARY, TokenProperties.INSERT_DEFAULT_OP),
-	RIGHT_BRACKET(),
-	SEPARATOR(TokenProperties.NEXT_OP_UNARY);
+	OPERATOR(),
+
+	LEFT_BRACKET(),
+	SEPARATOR(TokenProperties.EXPRESSION_TERMINATOR),
+	RIGHT_BRACKET(TokenProperties.EXPRESSION_TERMINATOR),
+
+	MODIFIER();
 
 	public boolean isValue() {
 		return properties.contains(TokenProperties.VALUE);
+	}
+
+	public boolean isNumber() {
+		return properties.contains(TokenProperties.NUMBER);
 	}
 
 	public final boolean isSymbol() {
 		return properties.contains(TokenProperties.SYMBOL);
 	}
 
-	public final boolean isNextOpUnary() {
-		return properties.contains(TokenProperties.NEXT_OP_UNARY);
-	}
-
-	public final boolean canInsertDefaultOp() {
-		return properties.contains(TokenProperties.INSERT_DEFAULT_OP);
+	public boolean isExpressionTerminator() {
+		return properties.contains(TokenProperties.EXPRESSION_TERMINATOR);
 	}
 
 	private final Set<TokenProperties> properties;

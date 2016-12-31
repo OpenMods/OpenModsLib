@@ -1,16 +1,17 @@
 package openmods.calc.parsing;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.BinaryOperator;
 import openmods.calc.IExecutable;
 
 public class BinaryOpNode<E> implements IExprNode<E> {
 
-	private final BinaryOperator<E> operator;
+	public final BinaryOperator<E> operator;
 
-	private final IExprNode<E> left;
+	public final IExprNode<E> left;
 
-	private final IExprNode<E> right;
+	public final IExprNode<E> right;
 
 	public BinaryOpNode(BinaryOperator<E> operator, IExprNode<E> left, IExprNode<E> right) {
 		this.operator = operator;
@@ -28,5 +29,10 @@ public class BinaryOpNode<E> implements IExprNode<E> {
 	@Override
 	public String toString() {
 		return "<op: '" + operator.id + "', l: " + left + ", r: " + right + ">";
+	}
+
+	@Override
+	public Iterable<IExprNode<E>> getChildren() {
+		return ImmutableList.of(left, right);
 	}
 }

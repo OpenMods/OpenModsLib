@@ -1,94 +1,70 @@
 package openmods.calc.parsing;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import java.util.List;
-import openmods.calc.ExecutableList;
+import com.google.common.collect.PeekingIterator;
 import openmods.calc.IExecutable;
-import openmods.calc.IValueParser;
-import openmods.calc.OperatorDictionary;
-import openmods.calc.SymbolReference;
-import openmods.calc.Value;
+import openmods.calc.parsing.IPostfixCompilerState.Result;
+import openmods.utils.Stack;
 
-public class PostfixCompiler<E> implements ICompiler<E> {
-
-	private final IValueParser<E> valueParser;
-
-	private final OperatorDictionary<E> operators;
-
-	public PostfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
-		this.valueParser = valueParser;
-		this.operators = operators;
-	}
+public abstract class PostfixCompiler<E> implements ITokenStreamCompiler<E> {
 
 	@Override
-	public IExecutable<E> compile(Iterable<Token> input) {
-		List<IExecutable<E>> result = Lists.newArrayList();
-		for (Token token : input)
-			result.add(compileToken(token));
+	public IExecutable<E> compile(PeekingIterator<Token> input) {
+		final Stack<IPostfixCompilerState<E>> stateStack = Stack.create();
+		stateStack.push(createInitialState());
 
-		return new ExecutableList<E>(result);
-	}
-
-	private IExecutable<E> compileToken(Token token) {
-		final String value = token.value;
-		if (token.type == TokenType.OPERATOR) {
-			final IExecutable<E> operator = operators.getAnyOperator(value);
-			Preconditions.checkArgument(operator != null, "Invalid operator: " + token);
-			return operator;
-		}
-
-		if (token.type == TokenType.SYMBOL) return new SymbolReference<E>(value);
-
-		if (token.type == TokenType.SYMBOL_WITH_ARGS) return parseSymbolWithArgs(value);
-
-		if (token.type.isValue()) {
-			try {
-				final E parsedValue = valueParser.parseToken(token);
-				return Value.create(parsedValue);
-			} catch (Throwable t) {
-				throw new InvalidTokenException(token, t);
-			}
-		}
-
-		throw new InvalidTokenException(token);
-	}
-
-	private static <E> IExecutable<E> parseSymbolWithArgs(final String value) {
-		final int argsStart = value.indexOf('@');
-		Preconditions.checkArgument(argsStart >= 0, "No args in token '%s'", value);
-		final String id = value.substring(0, argsStart);
-		final SymbolReference<E> ref = new SymbolReference<E>(id);
-
-		try {
-			final String args = value.substring(argsStart + 1, value.length());
-			final int argsSeparator = args.indexOf(',');
-
-			if (argsSeparator >= 0) {
-				{
-					final String argCountStr = args.substring(0, argsSeparator);
-					if (!argCountStr.isEmpty()) {
-						final int argCount = Integer.parseInt(argCountStr);
-						ref.setArgumentsCount(argCount);
-					}
-				}
-
-				{
-					final String retCountStr = args.substring(argsSeparator + 1, args.length());
-					if (!retCountStr.isEmpty()) {
-						final int retCount = Integer.parseInt(retCountStr);
-						ref.setReturnsCount(retCount);
-					}
-				}
+		while (input.hasNext()) {
+			final Token token = input.next();
+			if (token.type == TokenType.MODIFIER) {
+				stateStack.push(createStateForModifier(token.value));
+			} else if (token.type == TokenType.LEFT_BRACKET) {
+				stateStack.push(createStateForBracket(token.value));
 			} else {
-				final int argCount = Integer.parseInt(args);
-				ref.setArgumentsCount(argCount);
-
+				final IPostfixCompilerState<E> currentState = stateStack.peek(0);
+				final Result result = currentState.acceptToken(token);
+				switch (result) {
+					case ACCEPTED_AND_FINISHED:
+						unwindStack(stateStack);
+						// fall-through
+					case ACCEPTED:
+						// NO-OP
+						break;
+					case REJECTED:
+					default:
+						throw new IllegalStateException("Token  " + token + " not accepted in state " + currentState);
+				}
 			}
-		} catch (Exception e) {
-			throw new IllegalArgumentException("Can't parse args on token '" + value + "'", e);
 		}
 
-		return ref;
+		final IPostfixCompilerState<E> finalState = stateStack.popAndExpectEmptyStack();
+		return finalState.exit();
+	}
+
+	private void unwindStack(Stack<IPostfixCompilerState<E>> stateStack) {
+		IPostfixCompilerState<E> currentState = stateStack.pop();
+		UNWIND: while (true) {
+			final IExecutable<E> exitResult = currentState.exit();
+			currentState = stateStack.peek(0);
+			final Result acceptResult = currentState.acceptExecutable(exitResult);
+			switch (acceptResult) {
+				case ACCEPTED_AND_FINISHED:
+					stateStack.pop();
+					continue UNWIND;
+				case ACCEPTED:
+					break UNWIND;
+				case REJECTED:
+				default:
+					throw new IllegalStateException("Executable  " + exitResult + " not accepted in state " + currentState);
+			}
+		}
+	}
+
+	protected abstract IPostfixCompilerState<E> createInitialState();
+
+	protected IPostfixCompilerState<E> createStateForModifier(String modifier) {
+		throw new UnsupportedOperationException(modifier);
+	}
+
+	protected IPostfixCompilerState<E> createStateForBracket(String bracket) {
+		throw new UnsupportedOperationException(bracket);
 	}
 }

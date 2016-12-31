@@ -8,7 +8,7 @@ import org.junit.Test;
 public class BigIntPrinterTest {
 
 	public static void test(String expected, int radix, BigInteger input) {
-		final BigIntPrinter printer = new BigIntPrinter();
+		final PositionalNotationPrinter<BigInteger> printer = new BigIntPrinter.Helper(0);
 		Assert.assertEquals(expected, printer.toString(input, radix));
 	}
 

@@ -1,14 +1,14 @@
 package openmods.calc.types.bigint;
 
 import java.math.BigInteger;
-import openmods.calc.IValueParser;
-import openmods.calc.PositionalNotationParser;
+import openmods.calc.parsing.IValueParser;
+import openmods.calc.parsing.PositionalNotationParser;
 import openmods.calc.parsing.Token;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class BigIntParser implements IValueParser<BigInteger> {
 
-	private static final PositionalNotationParser<BigInteger> PARSER = new PositionalNotationParser<BigInteger>() {
+	private static final PositionalNotationParser<BigInteger, Void> PARSER = new PositionalNotationParser<BigInteger, Void>() {
 		@Override
 		public Accumulator<BigInteger> createIntegerAccumulator(int radix) {
 			final BigInteger bigRadix = BigInteger.valueOf(radix);
@@ -28,14 +28,14 @@ public class BigIntParser implements IValueParser<BigInteger> {
 		}
 
 		@Override
-		public Accumulator<BigInteger> createFractionalAccumulator(int radix) {
+		public Accumulator<Void> createFractionalAccumulator(int radix) {
 			throw new IllegalArgumentException("Fractional part not allowed");
 		}
 	};
 
 	@Override
 	public BigInteger parseToken(Token token) {
-		final Pair<BigInteger, BigInteger> result = PARSER.parseToken(token);
+		final Pair<BigInteger, Void> result = PARSER.parseToken(token);
 		return result.getLeft();
 	}
 

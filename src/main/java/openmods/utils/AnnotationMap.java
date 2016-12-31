@@ -18,10 +18,9 @@ public class AnnotationMap {
 		return annotations.get(cls) != null;
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T extends Annotation> T get(Class<? extends T> cls) {
 		Annotation a = annotations.get(cls);
-		return cls.isInstance(a)? (T)a : null;
+		return cls.cast(a);
 	}
 
 	public void put(Annotation a) {

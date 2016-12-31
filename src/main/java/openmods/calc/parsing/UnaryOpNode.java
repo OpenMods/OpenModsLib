@@ -1,14 +1,15 @@
 package openmods.calc.parsing;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.IExecutable;
 import openmods.calc.UnaryOperator;
 
 public class UnaryOpNode<E> implements IExprNode<E> {
 
-	private final UnaryOperator<E> operator;
+	public final UnaryOperator<E> operator;
 
-	private final IExprNode<E> argument;
+	public final IExprNode<E> argument;
 
 	public UnaryOpNode(UnaryOperator<E> operator, IExprNode<E> argument) {
 		this.operator = operator;
@@ -24,5 +25,10 @@ public class UnaryOpNode<E> implements IExprNode<E> {
 	@Override
 	public String toString() {
 		return "<op: " + operator.id + " a: " + argument + ">";
+	}
+
+	@Override
+	public Iterable<IExprNode<E>> getChildren() {
+		return ImmutableList.of(argument);
 	}
 }

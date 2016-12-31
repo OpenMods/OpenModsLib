@@ -1,220 +1,62 @@
 package openmods.calc;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import java.util.List;
-import javax.annotation.Nullable;
-import openmods.calc.parsing.ExprTokenizerFactory;
-import openmods.calc.parsing.ICompiler;
-import openmods.calc.parsing.InfixCompiler;
-import openmods.calc.parsing.PostfixCompiler;
-import openmods.calc.parsing.Token;
-import openmods.utils.Stack;
+import java.util.Set;
+import openmods.config.simpler.ConfigurableClassAdapter;
 
-public abstract class Calculator<E> {
+public class Calculator<E, M> {
 
-	protected interface Accumulator<E> {
-		public E accumulate(E prev, E value);
+	public final Environment<E> environment;
+
+	public final Compilers<E, M> compilers;
+
+	public final IValuePrinter<E> printer;
+
+	@SuppressWarnings("rawtypes")
+	private final ConfigurableClassAdapter<IValuePrinter> printerConfig;
+
+	public Calculator(Environment<E> environment, Compilers<E, M> compilers, IValuePrinter<E> printer) {
+		this.environment = environment;
+		this.compilers = compilers;
+		this.printer = printer;
+		this.printerConfig = ConfigurableClassAdapter.getFor(printer.getClass());
 	}
 
-	protected abstract class AccumulatorFunction implements ISymbol<E> {
-		@Override
-		public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-			if (returnsCount.isPresent() && returnsCount.get() != 1) throw new StackValidationException("Invalid expected return values count");
-
-			final Stack<E> stack = frame.stack();
-			final int args = argumentsCount.or(2);
-
-			if (args == 0) {
-				stack.push(nullValue);
-			} else {
-				E result = stack.pop();
-
-				for (int i = 1; i < args; i++) {
-					final E value = stack.pop();
-					result = accumulate(result, value);
-				}
-
-				stack.push(result);
-			}
-		}
-
-		protected abstract E accumulate(E result, E value);
+	public Set<String> getProperties() {
+		return printerConfig.keys();
 	}
 
-	public static final String VAR_ANS = "$ans";
-
-	public enum ExprType {
-		POSTFIX,
-		INFIX
+	public String getProperty(String key) {
+		return printerConfig.get(printer, key);
 	}
 
-	private final TopFrame<E> topFrame = new TopFrame<E>();
-
-	private final OperatorDictionary<E> operators;
-
-	private final ExprTokenizerFactory tokenizerFactory = new ExprTokenizerFactory();
-
-	private final ICompiler<E> rpnCompiler;
-
-	private final ICompiler<E> infixCompiler;
-
-	private final E nullValue;
-
-	public Calculator(IValueParser<E> parser, E nullValue) {
-		this.nullValue = nullValue;
-
-		this.operators = createOperatorDictionary();
-		setupOperators(operators);
-
-		for (String operator : operators.allOperators())
-			tokenizerFactory.addOperator(operator);
-
-		this.rpnCompiler = createPostfixCompiler(parser, operators);
-		this.infixCompiler = createInfixCompiler(parser, operators);
-		setupGenericFunctions(topFrame);
-		setupGlobals(topFrame);
+	public void setProperty(String key, String value) {
+		printerConfig.set(printer, key, value);
 	}
 
-	private OperatorDictionary<E> createOperatorDictionary() {
-		return new OperatorDictionary<E>();
+	public void compileAndExecute(M exprType, String expr) {
+		final IExecutable<E> executable = compilers.compile(exprType, expr);
+		environment.execute(executable);
 	}
 
-	protected ICompiler<E> createInfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
-		return new InfixCompiler<E>(valueParser, operators);
+	public E compileExecuteAndPop(M exprType, String expr) {
+		final IExecutable<E> executable = compilers.compile(exprType, expr);
+		return environment.executeAndPop(executable);
 	}
 
-	protected ICompiler<E> createPostfixCompiler(IValueParser<E> valueParser, OperatorDictionary<E> operators) {
-		return new PostfixCompiler<E>(valueParser, operators);
+	public String compileExecuteAndPrint(M exprType, String expr) {
+		final E result = compileExecuteAndPop(exprType, expr);
+		return printer.repr(result);
 	}
 
-	private static <E> void setupGenericFunctions(TopFrame<E> topFrame) {
-		topFrame.setSymbol("swap", new FixedSymbol<E>(2, 2) {
-			@Override
-			public void execute(ICalculatorFrame<E> frame) {
-				final Stack<E> stack = frame.stack();
-
-				final E first = stack.pop();
-				final E second = stack.pop();
-
-				stack.push(first);
-				stack.push(second);
-			}
-		});
-
-		topFrame.setSymbol("pop", new ISymbol<E>() {
-			@Override
-			public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-				if (returnsCount.isPresent() && returnsCount.get() != 0) throw new StackValidationException("Invalid expected return values on 'pop'");
-
-				final Stack<E> stack = frame.stack();
-
-				final int count = argumentsCount.or(1);
-				for (int i = 0; i < count; i++)
-					stack.pop();
-			}
-		});
-
-		topFrame.setSymbol("dup", new ISymbol<E>() {
-			@Override
-			public void execute(ICalculatorFrame<E> frame, Optional<Integer> argumentsCount, Optional<Integer> returnsCount) {
-				final Stack<E> stack = frame.stack();
-
-				List<E> values = Lists.newArrayList();
-
-				final int in = argumentsCount.or(1);
-				for (int i = 0; i < in; i++) {
-					final E value = stack.pop();
-					values.add(value);
-				}
-
-				values = Lists.reverse(values);
-
-				final int out = returnsCount.or(2 * in);
-				for (int i = 0; i < out; i++) {
-					final E value = values.get(i % in);
-					stack.push(value);
-				}
-			}
-		});
+	public E compileAndSetGlobalSymbol(M exprType, String id, String expr) {
+		final E value = compileExecuteAndPop(exprType, expr);
+		environment.setGlobalSymbol(id, value);
+		return value;
 	}
 
-	public abstract String toString(E value);
-
-	protected abstract void setupOperators(OperatorDictionary<E> operators);
-
-	protected abstract void setupGlobals(TopFrame<E> globals);
-
-	public IExecutable<E> compile(ExprType type, String input) {
-		Iterable<Token> tokens = tokenizerFactory.tokenize(input);
-		switch (type) {
-			case INFIX:
-				return infixCompiler.compile(tokens);
-			case POSTFIX:
-				return rpnCompiler.compile(tokens);
-			default:
-				throw new IllegalArgumentException(type.name());
-		}
+	public void compileAndDefineGlobalFunction(M exprType, String id, int argCount, String bodyExpr) {
+		final IExecutable<E> funcBody = compilers.compile(exprType, bodyExpr);
+		environment.setGlobalSymbol(id, new CompiledFunction<E>(argCount, 1, funcBody, environment.topFrame()));
 	}
 
-	public void setGlobalSymbol(String id, ISymbol<E> value) {
-		topFrame.setSymbol(id, value);
-	}
-
-	public int stackSize() {
-		return topFrame.stack().size();
-	}
-
-	public Iterable<E> getStack() {
-		return Iterables.unmodifiableIterable(topFrame.stack());
-	}
-
-	public Iterable<String> printStack() {
-		return Iterables.transform(topFrame.stack(), new Function<E, String>() {
-			@Override
-			@Nullable
-			public String apply(@Nullable E input) {
-				return Calculator.this.toString(input);
-			}
-		});
-	}
-
-	public void execute(IExecutable<E> executable) {
-		executable.execute(topFrame);
-	}
-
-	public E executeAndPop(IExecutable<E> executable) {
-		executable.execute(topFrame);
-		final Stack<E> stack = topFrame.stack();
-
-		if (stack.isEmpty()) {
-			topFrame.setSymbol(VAR_ANS, Constant.create(nullValue));
-			return null;
-		} else {
-			final E result = stack.pop();
-			topFrame.setSymbol(VAR_ANS, Constant.create(result));
-			return result;
-		}
-	}
-
-	public static String decorateBase(boolean allowCustom, int base, String value) {
-		if (allowCustom) {
-			switch (base) {
-				case 2:
-					return "0b" + value;
-				case 8:
-					return "0" + value;
-				case 10:
-					return value;
-				case 16:
-					return "0x" + value;
-				default:
-					return Integer.toString(base) + "#" + value;
-			}
-		} else {
-			return Integer.toString(base) + "#" + value;
-		}
-	}
 }
