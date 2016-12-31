@@ -5,6 +5,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.math.BigInteger;
@@ -297,10 +298,11 @@ public class TypedValueCalculatorFactory {
 							.set(MetaObjectUtils.strConst("null"))
 							.set(MetaObjectUtils.reprConst("null"))
 							.set(MetaObjectUtils.typeConst(nullType))
-							.build());
+							.build(),
+					UnitType.INSTANCE);
 		}
 
-		final TypedValue nullValue = domain.create(UnitType.class, UnitType.INSTANCE);
+		final TypedValue nullValue = domain.getDefault(UnitType.class);
 		final TypedValuePrinter valuePrinter = new TypedValuePrinter(nullValue);
 
 		final Map<String, TypedValue> basicTypes = Maps.newHashMap();
@@ -1945,6 +1947,17 @@ public class TypedValueCalculatorFactory {
 				} catch (Exception e) {
 					throw new RuntimeException("Failed to execute value " + target, e);
 				}
+			}
+		});
+
+		env.setGlobalSymbol("dir", new UnaryFunction.WithFrame<TypedValue>() {
+			@Override
+			protected TypedValue call(Frame<TypedValue> frame, TypedValue value) {
+				final MetaObject.SlotDir slotDir = value.getMetaObject().slotDir;
+				Preconditions.checkState(slotDir != null, "Value %s has no dir slot", value);
+				final List<String> dir = slotDir.dir(value, frame);
+				final List<TypedValue> wrappedResults = ImmutableList.copyOf(Iterables.transform(dir, domain.createWrappingTransformer(String.class)));
+				return Cons.createList(wrappedResults, nullValue);
 			}
 		});
 

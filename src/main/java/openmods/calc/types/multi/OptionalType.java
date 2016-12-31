@@ -18,11 +18,6 @@ import openmods.utils.Stack;
 
 public class OptionalType {
 
-	private static final String MEMBER_MAP = "map";
-	private static final String MEMBER_OR_CALL = "orCall";
-	private static final String MEMBER_OR = "or";
-	private static final String MEMBER_GET = "get";
-
 	public static abstract class Value {
 
 		private final Map<String, TypedValue> members;
@@ -33,21 +28,21 @@ public class OptionalType {
 			this.domain = domain;
 			final ImmutableMap.Builder<String, TypedValue> members = ImmutableMap.builder();
 
-			members.put(MEMBER_GET, CallableValue.wrap(domain, new NullaryFunction.Direct<TypedValue>() {
+			members.put("get", CallableValue.wrap(domain, new NullaryFunction.Direct<TypedValue>() {
 				@Override
 				protected TypedValue call() {
 					return Value.this.getValue();
 				}
 			}));
 
-			members.put(MEMBER_OR, CallableValue.wrap(domain, new UnaryFunction.Direct<TypedValue>() {
+			members.put("or", CallableValue.wrap(domain, new UnaryFunction.Direct<TypedValue>() {
 				@Override
 				protected TypedValue call(TypedValue value) {
 					return Value.this.or(value);
 				}
 			}));
 
-			members.put(MEMBER_OR_CALL, CallableValue.wrap(domain, new FixedCallable<TypedValue>(1, 1) {
+			members.put("orCall", CallableValue.wrap(domain, new FixedCallable<TypedValue>(1, 1) {
 				@Override
 				public void call(Frame<TypedValue> frame) {
 					final TypedValue arg = frame.stack().pop();
@@ -56,7 +51,7 @@ public class OptionalType {
 				}
 			}));
 
-			members.put(MEMBER_MAP, CallableValue.wrap(domain, new UnaryFunction.WithFrame<TypedValue>() {
+			members.put("map", CallableValue.wrap(domain, new UnaryFunction.WithFrame<TypedValue>() {
 				@Override
 				public TypedValue call(Frame<TypedValue> frame, TypedValue arg) {
 					return Value.this.map(frame, arg);

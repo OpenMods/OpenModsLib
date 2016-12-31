@@ -3,6 +3,7 @@ package openmods.calc.types.multi;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -47,6 +48,7 @@ public class MetaObject {
 		this.slotStr = builder.slotStr;
 		this.slotType = builder.slotType;
 		this.slotDecompose = builder.slotDecompose;
+		this.slotDir = builder.slotDir;
 	}
 
 	private static <T extends Slot> T update(T update, T original) {
@@ -64,6 +66,7 @@ public class MetaObject {
 		this.slotStr = update(builder.slotStr, prev.slotStr);
 		this.slotType = update(builder.slotType, prev.slotType);
 		this.slotDecompose = update(builder.slotDecompose, prev.slotDecompose);
+		this.slotDir = update(builder.slotDir, prev.slotDir);
 	}
 
 	public interface SlotBool extends Slot {
@@ -515,6 +518,47 @@ public class MetaObject {
 	@SlotField(adapter = SlotDecomposeAdapter.class)
 	public final SlotDecompose slotDecompose;
 
+	public interface SlotDir extends Slot {
+		public List<String> dir(TypedValue self, Frame<TypedValue> frame);
+	}
+
+	public static class SlotDirAdapter implements SlotAdapter<SlotDir> {
+
+		@Override
+		public void call(SlotDir slot, Frame<TypedValue> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
+			argumentsCount.compareIfPresent(1);
+			returnsCount.compareIfPresent(1);
+			final Stack<TypedValue> stack = frame.stack();
+			final TypedValue self = stack.pop();
+			final List<String> result = slot.dir(self, frame);
+			final TypeDomain domain = self.domain;
+			final List<TypedValue> wrappedResults = ImmutableList.copyOf(Iterables.transform(result, domain.createWrappingTransformer(String.class)));
+			final TypedValue nullValue = domain.getDefault(UnitType.class);
+			stack.push(Cons.createList(wrappedResults, nullValue));
+		}
+
+		@Override
+		public SlotDir wrap(final TypedValue callable) {
+			class WrappedSlot implements SlotDir, SlotWithValue {
+				@Override
+				public List<String> dir(TypedValue self, Frame<TypedValue> frame) {
+					final TypedValue result = callFunction(frame, callable, self);
+					final TypeDomain domain = self.domain;
+					return ImmutableList.copyOf(Iterables.transform(Cons.toIterable(result, domain.getDefault(UnitType.class)), domain.createUnwrappingTransformer(String.class)));
+				}
+
+				@Override
+				public TypedValue getValue() {
+					return callable;
+				}
+			}
+			return new WrappedSlot();
+		}
+	}
+
+	@SlotField(adapter = SlotDirAdapter.class)
+	public final SlotDir slotDir;
+
 	public static class Builder {
 		private SlotBool slotBool;
 
@@ -535,6 +579,8 @@ public class MetaObject {
 		private SlotRepr slotRepr;
 
 		private SlotDecompose slotDecompose;
+
+		private SlotDir slotDir;
 
 		public Builder set(SlotBool slotBool) {
 			Preconditions.checkState(this.slotBool == null);
@@ -593,6 +639,12 @@ public class MetaObject {
 		public Builder set(SlotDecompose slotDecompose) {
 			Preconditions.checkState(this.slotDecompose == null);
 			this.slotDecompose = slotDecompose;
+			return this;
+		}
+
+		public Builder set(SlotDir slotDir) {
+			Preconditions.checkState(this.slotDir == null);
+			this.slotDir = slotDir;
 			return this;
 		}
 

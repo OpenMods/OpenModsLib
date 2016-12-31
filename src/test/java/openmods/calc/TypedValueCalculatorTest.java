@@ -2619,6 +2619,23 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testCustomMetaObjectDirSlot() {
+		infix("letseq([mo = metaobject(slots.dir = (self) -> ['a','b','c']), o=setmetaobject(15, mo)], dir(o))").expectResult(list(s("a"), s("b"), s("c")));
+
+		sut.environment.setGlobalSymbol("test", domain.create(DummyObject.class, DUMMY,
+				MetaObject.builder()
+						.set(new MetaObject.SlotDir() {
+							@Override
+							public List<String> dir(TypedValue self, Frame<TypedValue> frame) {
+								return ImmutableList.of("d", "i", "r");
+							}
+						})
+						.build()));
+
+		infix("getmetaobject(test).dir(test)").expectResult(list(s("d"), s("i"), s("r")));
+	}
+
+	@Test
 	public void testRegexCompilation() {
 		infix("type(regex('test+')) == regex.pattern").expectResult(TRUE);
 

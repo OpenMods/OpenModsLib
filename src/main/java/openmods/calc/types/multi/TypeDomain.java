@@ -70,10 +70,12 @@ public class TypeDomain {
 	private static class TypeInfo {
 		public final String name;
 		public final MetaObject defaultMetaObject;
+		public final TypedValue defaultValue;
 
-		public TypeInfo(String name, MetaObject defaultMetaObject) {
+		public TypeInfo(String name, MetaObject defaultMetaObject, TypedValue defaultValue) {
 			this.name = name;
 			this.defaultMetaObject = defaultMetaObject;
+			this.defaultValue = defaultValue;
 		}
 
 	}
@@ -83,17 +85,24 @@ public class TypeDomain {
 	private final Table<Class<?>, Class<?>, RawConverter> converters = HashBasedTable.create();
 
 	public TypeDomain registerType(Class<?> type) {
-		registerType(type, type.getSimpleName());
-		return this;
+		return registerType(type, type.getSimpleName());
 	}
 
 	public TypeDomain registerType(Class<?> type, String shortName) {
-		registerType(type, shortName, defaultMetaObject);
-		return this;
+		return registerType(type, shortName, defaultMetaObject);
 	}
 
 	public TypeDomain registerType(Class<?> type, String shortName, MetaObject defaultMetaObject) {
-		allowedTypes.put(type, new TypeInfo(shortName, defaultMetaObject));
+		return registerType(type, shortName, defaultMetaObject, null);
+	}
+
+	public <T> TypeDomain registerType(Class<T> type, String shortName, MetaObject defaultMetaObject, T defaultValue) {
+		if (defaultValue == null) {
+			allowedTypes.put(type, new TypeInfo(shortName, defaultMetaObject, null));
+		} else {
+			final TypedValue defaultWrappedValue = new TypedValue(this, type, defaultValue);
+			allowedTypes.put(type, new TypeInfo(shortName, defaultMetaObject, defaultWrappedValue));
+		}
 		return this;
 	}
 
@@ -216,6 +225,13 @@ public class TypeDomain {
 		if (left == right) return Coercion.TO_LEFT;
 		final Coercion result = coercionRules.get(left, right);
 		return result != null? result : Coercion.INVALID;
+	}
+
+	public <T> TypedValue getDefault(Class<T> type) {
+		final TypeInfo typeInfo = allowedTypes.get(type);
+		Preconditions.checkState(typeInfo != null, "Type '%s' is not allowed in domain", type);
+		Preconditions.checkState(typeInfo.defaultValue != null, "Type %s has no default value");
+		return typeInfo.defaultValue;
 	}
 
 	public <T> TypedValue create(Class<T> type, T value) {
