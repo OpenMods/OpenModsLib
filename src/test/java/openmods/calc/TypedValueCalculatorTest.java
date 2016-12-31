@@ -21,6 +21,7 @@ import openmods.calc.types.multi.MetaObjectInfo;
 import openmods.calc.types.multi.MetaObjectUtils;
 import openmods.calc.types.multi.StructWrapper;
 import openmods.calc.types.multi.StructWrapper.Expose;
+import openmods.calc.types.multi.StructWrapper.ExposeProperty;
 import openmods.calc.types.multi.Symbol;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedBinaryOperator;
@@ -3246,5 +3247,50 @@ public class TypedValueCalculatorTest {
 		infix("test.internalState()").expectResult(i(0));
 		infix("test.internalState()").expectResult(i(1));
 		infix("test.internalState()").expectResult(i(2));
+	}
+
+	@Test
+	public void testWrappedObjectMutatorProperty() {
+		class TestStruct {
+
+			@ExposeProperty
+			public BigInteger intValue() {
+				return BigInteger.valueOf(4);
+			}
+
+			private String strValue = "hi";
+
+			@ExposeProperty
+			public String strValue() {
+				return strValue + "!";
+			}
+		}
+
+		final TestStruct test = new TestStruct();
+		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("test.intValue").expectResult(i(4));
+		infix("test.strValue").expectResult(s("hi!"));
+		test.strValue = "hello";
+		infix("test.strValue").expectResult(s("hello!"));
+	}
+
+	@Test
+	public void testWrappedObjectMutatorPropertyMethods() {
+		class TestStruct {
+			private int count;
+
+			@ExposeProperty
+			public BigInteger internalState() {
+				return BigInteger.valueOf(count++);
+			}
+		}
+
+		final TestStruct test = new TestStruct();
+		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("test.internalState").expectResult(i(0));
+		infix("test.internalState").expectResult(i(1));
+		infix("test.internalState").expectResult(i(2));
 	}
 }

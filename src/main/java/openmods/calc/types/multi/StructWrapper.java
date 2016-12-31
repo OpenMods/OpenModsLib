@@ -1,9 +1,10 @@
 package openmods.calc.types.multi;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -24,6 +25,10 @@ public class StructWrapper {
 	@Target({ ElementType.METHOD, ElementType.FIELD })
 	@Retention(RetentionPolicy.RUNTIME)
 	public static @interface Expose {}
+
+	@Target({ ElementType.METHOD })
+	@Retention(RetentionPolicy.RUNTIME)
+	public static @interface ExposeProperty {}
 
 	private interface MemberValueProvider {
 		public TypedValue getValue(TypeDomain domain, Object target);
@@ -48,56 +53,84 @@ public class StructWrapper {
 
 		@Override
 		protected Map<String, MemberValueProvider> create(Class<?> cls) {
-			final Map<String, MemberValueProvider> result = Maps.newHashMap();
+			final ImmutableMap.Builder<String, MemberValueProvider> members = ImmutableMap.builder();
 
 			for (Field f : cls.getFields()) {
-				if (f.isAnnotationPresent(Expose.class)) {
-					final FieldAccess<?> field = FieldAccess.create(f);
-					result.put(f.getName(), new MemberValueProvider() {
-						@Override
-						public TypedValue getValue(TypeDomain domain, Object target) {
-							return wrapFieldValue(field, domain, target);
-						}
-
-						private <T> TypedValue wrapFieldValue(FieldAccess<T> field, TypeDomain domain, Object target) {
-							final T value = field.get(target);
-							return domain.create(field.getType(), value);
-						}
-					});
-				}
+				if (f.isAnnotationPresent(Expose.class))
+					appendFieldMember(members, f);
 			}
 
 			final Multimap<String, Method> methods = HashMultimap.create();
 
-			for (Method m : cls.getMethods())
-				if (m.isAnnotationPresent(Expose.class))
+			for (final Method m : cls.getMethods())
+				if (m.isAnnotationPresent(Expose.class)) {
 					methods.put(m.getName(), m);
+				} else if (m.isAnnotationPresent(ExposeProperty.class)) {
+					appendGetterMember(members, m);
+				}
 
 			for (Map.Entry<String, Collection<Method>> e : methods.asMap().entrySet()) {
 				final TypedFunction.Builder builder = TypedFunction.builder();
 				for (Method m : e.getValue())
 					builder.addVariant(m);
 
-				final IUnboundCallable function = builder.build(cls);
+				appendFunctionMember(members, e.getKey(), builder.build(cls));
+			}
 
-				result.put(e.getKey(), new MemberValueProvider() {
+			return members.build();
+		}
+	};
 
+	private static void appendFunctionMember(ImmutableMap.Builder<String, MemberValueProvider> members, final String name, final IUnboundCallable function) {
+		members.put(name, new MemberValueProvider() {
+			@Override
+			public TypedValue getValue(final TypeDomain domain, final Object target) {
+				return domain.create(CallableValue.class, new CallableValue() {
 					@Override
-					public TypedValue getValue(final TypeDomain domain, final Object target) {
-						return domain.create(CallableValue.class, new CallableValue() {
-							@Override
-							public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
-								function.call(domain, target, frame, argumentsCount, returnsCount);
-							}
-						});
+					public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
+						function.call(domain, target, frame, argumentsCount, returnsCount);
 					}
 				});
 			}
+		});
+	}
 
-			return ImmutableMap.copyOf(result);
-		}
+	private static void appendGetterMember(ImmutableMap.Builder<String, MemberValueProvider> members, final Method m) {
+		Preconditions.checkState(m.getParameterTypes().length == 0, "Getter method must have no parameters");
+		m.setAccessible(true);
+		members.put(m.getName(), new MemberValueProvider() {
+			@Override
+			public TypedValue getValue(TypeDomain domain, Object target) {
+				return wrapMethodValue(m, domain, target);
+			}
 
-	};
+			@SuppressWarnings("unchecked")
+			private <T> TypedValue wrapMethodValue(Method m, TypeDomain domain, Object target) {
+				try {
+					final T value = (T)m.invoke(target);
+					final Class<T> cls = (Class<T>)m.getReturnType();
+					return domain.create(cls, value);
+				} catch (Exception e) {
+					throw Throwables.propagate(e);
+				}
+			}
+		});
+	}
+
+	private static void appendFieldMember(ImmutableMap.Builder<String, MemberValueProvider> members, Field f) {
+		final FieldAccess<?> field = FieldAccess.create(f);
+		members.put(f.getName(), new MemberValueProvider() {
+			@Override
+			public TypedValue getValue(TypeDomain domain, Object target) {
+				return wrapFieldValue(field, domain, target);
+			}
+
+			private <T> TypedValue wrapFieldValue(FieldAccess<T> field, TypeDomain domain, Object target) {
+				final T value = field.get(target);
+				return domain.create(field.getType(), value);
+			}
+		});
+	}
 
 	public static <T> TypedValue create(TypeDomain domain, Class<? super T> cls, T target) {
 		final Map<String, MemberValueProvider> members = membersCache.getOrCreate(cls);
