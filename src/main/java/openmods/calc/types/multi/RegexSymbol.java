@@ -18,6 +18,15 @@ import openmods.utils.OptionalInt;
 
 public class RegexSymbol {
 
+	private static final String ATTR_MATCHER = "matcher";
+	private static final String ATTR_MATCH = "match";
+	private static final String ATTR_SEARCH = "search";
+	private static final String ATTR_FLAGS = "flags";
+	private static final String ATTR_PATTERN = "pattern";
+	private static final String ATTR_MATCHED = "matched";
+	private static final String ATTR_END = "end";
+	private static final String ATTR_START = "start";
+
 	private static TypedValue wrap(TypeDomain domain, int value) {
 		return domain.create(BigInteger.class, BigInteger.valueOf(value));
 	}
@@ -57,14 +66,15 @@ public class RegexSymbol {
 					@Override
 					public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
 						final PatternWrapper patternWrapper = self.as(PatternWrapper.class);
-						if (key.equals("pattern")) return Optional.of(domain.create(String.class, patternWrapper.pattern.pattern()));
-						if (key.equals("flags")) return Optional.of(wrap(domain, patternWrapper.pattern.flags()));
-						if (key.equals("search")) return Optional.of(domain.create(MatcherWrapper.class, patternWrapper.search()));
-						if (key.equals("match")) return Optional.of(domain.create(MatcherWrapper.class, patternWrapper.match()));
+						if (key.equals(ATTR_PATTERN)) return Optional.of(domain.create(String.class, patternWrapper.pattern.pattern()));
+						if (key.equals(ATTR_FLAGS)) return Optional.of(wrap(domain, patternWrapper.pattern.flags()));
+						if (key.equals(ATTR_SEARCH)) return Optional.of(domain.create(MatcherWrapper.class, patternWrapper.search()));
+						if (key.equals(ATTR_MATCH)) return Optional.of(domain.create(MatcherWrapper.class, patternWrapper.match()));
 
 						return Optional.absent();
 					}
 				})
+				.set(MetaObjectUtils.dirFromArray(ATTR_PATTERN, ATTR_FLAGS, ATTR_SEARCH, ATTR_MATCH))
 				.set(MetaObjectUtils.typeConst(patternType))
 				.set(new MetaObject.SlotStr() {
 					@Override
@@ -111,7 +121,7 @@ public class RegexSymbol {
 
 		@Override
 		public String type() {
-			return "match";
+			return ATTR_MATCH;
 		}
 	}
 
@@ -127,7 +137,7 @@ public class RegexSymbol {
 
 		@Override
 		public String type() {
-			return "search";
+			return ATTR_SEARCH;
 		}
 	}
 
@@ -201,13 +211,14 @@ public class RegexSymbol {
 					@Override
 					public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
 						final MatchWrapper s = self.as(MatchWrapper.class);
-						if (key.equals("start")) return Optional.of(wrap(domain, s.matcher.start()));
-						if (key.equals("end")) return Optional.of(wrap(domain, s.matcher.end()));
-						if (key.equals("matched")) return Optional.of(wrap(domain, s.matcher.group()));
+						if (key.equals(ATTR_START)) return Optional.of(wrap(domain, s.matcher.start()));
+						if (key.equals(ATTR_END)) return Optional.of(wrap(domain, s.matcher.end()));
+						if (key.equals(ATTR_MATCHED)) return Optional.of(wrap(domain, s.matcher.group()));
 
 						return Optional.absent();
 					}
 				})
+				.set(MetaObjectUtils.dirFromArray(ATTR_START, ATTR_END, ATTR_MATCHED))
 				.set(new MetaObject.SlotSlice() {
 					@Override
 					public TypedValue slice(TypedValue self, TypedValue range, Frame<TypedValue> frame) {
@@ -241,19 +252,19 @@ public class RegexSymbol {
 
 		{
 			final TypedValue patternType = wrap(domain, new TypeUserdata("regex.pattern", PatternWrapper.class));
-			values.put("pattern", patternType);
+			values.put(ATTR_PATTERN, patternType);
 			domain.registerType(PatternWrapper.class, "regex.pattern", createPatternWrapperMetaObject(domain, patternType));
 		}
 
 		{
 			final TypedValue matcherType = wrap(domain, new TypeUserdata("regex.matcher", MatcherWrapper.class));
-			values.put("matcher", matcherType);
+			values.put(ATTR_MATCHER, matcherType);
 			domain.registerType(MatcherWrapper.class, "regex.matcher", createMatcherWrapperMetaObject(domain, matcherType));
 		}
 
 		{
 			final TypedValue matchType = wrap(domain, new TypeUserdata("regex.match", MatchWrapper.class));
-			values.put("match", matchType);
+			values.put(ATTR_MATCH, matchType);
 			domain.registerType(MatchWrapper.class, "regex.match", createMatchWrapperMetaObject(domain, nullValue, matchType));
 		}
 

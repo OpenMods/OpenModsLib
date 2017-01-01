@@ -1,5 +1,6 @@
 package openmods.calc.types.multi;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.math.BigInteger;
 import java.util.Map;
@@ -82,13 +83,15 @@ public class LibRandom {
 			}
 		}));
 
-		return result;
+		return ImmutableMap.copyOf(result);
 	}
 
 	private MetaObject createRandomValueMetaobject(Random random) {
+		final Map<String, TypedValue> members = createMembers(random);
 		return MetaObject.builder()
 				.set(MetaObjectUtils.typeConst(typeValue))
-				.set(MetaObjectUtils.attrFromMap(createMembers(random)))
+				.set(MetaObjectUtils.attrFromMap(members))
+				.set(MetaObjectUtils.dirFromIterable(members.keySet()))
 				.build();
 	}
 

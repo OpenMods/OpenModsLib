@@ -9,6 +9,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -333,6 +334,7 @@ public class TypedValueCalculatorFactory {
 
 			basicTypes.put("int", intType);
 
+			final IntegerAttrs integerAttrs = new IntegerAttrs();
 			domain.registerType(BigInteger.class, "int",
 					MetaObject.builder()
 							.set(new MetaObject.SlotBool() {
@@ -341,7 +343,8 @@ public class TypedValueCalculatorFactory {
 									return !value.as(BigInteger.class).equals(BigInteger.ZERO);
 								}
 							})
-							.set(new IntegerAttrSlot())
+							.set(integerAttrs.createAttrSlot())
+							.set(integerAttrs.createDirSlot())
 							.set(MetaObjectUtils.typeConst(intType))
 							.set(new MetaObject.SlotStr() {
 								@Override
@@ -455,6 +458,7 @@ public class TypedValueCalculatorFactory {
 
 			basicTypes.put("str", strType);
 
+			final StringAttrs stringAttrs = new StringAttrs(nullValue);
 			domain.registerType(String.class, "str",
 					MetaObject.builder()
 							.set(new MetaObject.SlotLength() {
@@ -502,7 +506,8 @@ public class TypedValueCalculatorFactory {
 									return !value.as(String.class).isEmpty();
 								}
 							})
-							.set(new StringAttrSlot(nullValue))
+							.set(stringAttrs.createAttrSlot())
+							.set(stringAttrs.createDirSlot())
 							.set(MetaObjectUtils.typeConst(strType))
 							.set(new MetaObject.SlotStr() {
 								@Override
@@ -1955,8 +1960,10 @@ public class TypedValueCalculatorFactory {
 			protected TypedValue call(Frame<TypedValue> frame, TypedValue value) {
 				final MetaObject.SlotDir slotDir = value.getMetaObject().slotDir;
 				Preconditions.checkState(slotDir != null, "Value %s has no dir slot", value);
-				final List<String> dir = slotDir.dir(value, frame);
-				final List<TypedValue> wrappedResults = ImmutableList.copyOf(Iterables.transform(dir, domain.createWrappingTransformer(String.class)));
+				final Iterable<String> dir = slotDir.dir(value, frame);
+				final List<String> sortedDir = Lists.newArrayList(dir);
+				Collections.sort(sortedDir);
+				final List<TypedValue> wrappedResults = ImmutableList.copyOf(Iterables.transform(sortedDir, domain.createWrappingTransformer(String.class)));
 				return Cons.createList(wrappedResults, nullValue);
 			}
 		});

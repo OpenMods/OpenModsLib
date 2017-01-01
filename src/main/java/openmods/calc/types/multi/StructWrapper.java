@@ -52,6 +52,10 @@ public class StructWrapper {
 		return Optional.of(valueProvider.getValue(domain, target));
 	}
 
+	public Iterable<String> keys() {
+		return members.keySet();
+	}
+
 	private static final CachedFactory<Class<?>, Map<String, MemberValueProvider>> membersCache = new CachedFactory<Class<?>, Map<String, MemberValueProvider>>() {
 
 		@Override
@@ -208,6 +212,12 @@ public class StructWrapper {
 							public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
 								final TypeDomain domain = self.domain;
 								return self.as(StructWrapper.class).getValue(domain, key);
+							}
+						})
+						.set(new MetaObject.SlotDir() {
+							@Override
+							public Iterable<String> dir(TypedValue self, Frame<TypedValue> frame) {
+								return self.as(StructWrapper.class).keys();
 							}
 						})
 						.build());

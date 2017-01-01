@@ -19,7 +19,7 @@ import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;
 import org.apache.commons.lang3.StringUtils;
 
-public class StringAttrSlot implements MetaObject.SlotAttr {
+public class StringAttrs {
 
 	private interface StringAttr {
 		public TypedValue get(TypeDomain domain, String value);
@@ -29,9 +29,7 @@ public class StringAttrSlot implements MetaObject.SlotAttr {
 
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
-	public StringAttrSlot(final TypedValue nullValue) {
-		// this.nullValue = nullValue;
-
+	public StringAttrs(final TypedValue nullValue) {
 		attrs.put("lower", new StringAttr() {
 			@Override
 			public TypedValue get(TypeDomain domain, String value) {
@@ -153,13 +151,20 @@ public class StringAttrSlot implements MetaObject.SlotAttr {
 		return Cons.createList(result, nullValue);
 	}
 
-	@Override
-	public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
-		final StringAttr attr = attrs.get(key);
-		if (attr == null) return Optional.absent();
+	public MetaObject.SlotAttr createAttrSlot() {
+		return new MetaObject.SlotAttr() {
+			@Override
+			public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
+				final StringAttr attr = attrs.get(key);
+				if (attr == null) return Optional.absent();
 
-		final String value = self.as(String.class);
-		return Optional.of(attr.get(self.domain, value));
+				final String value = self.as(String.class);
+				return Optional.of(attr.get(self.domain, value));
+			}
+		};
 	}
 
+	public MetaObject.SlotDir createDirSlot() {
+		return MetaObjectUtils.dirFromIterable(attrs.keySet());
+	}
 }

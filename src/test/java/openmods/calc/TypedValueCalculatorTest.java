@@ -1847,6 +1847,12 @@ public class TypedValueCalculatorTest {
 		infix("alt([Tree=Leaf(value)\\Node(left, right)], Node(1,2).left)").expectResult(i(1));
 		infix("alt([Tree=Leaf(value)\\Node(left, right)], Node(1,2).right)").expectResult(i(2));
 		infix("alt([Tree=Leaf(value)\\Node(left, right)], Leaf(3).value)").expectResult(i(3));
+
+		infix("alt([Tree=Leaf(value)\\Node(left, right)], dir(Tree))").expectResult(list(s("Leaf"), s("Node"), s("name")));
+		infix("alt([Tree=Leaf(value)\\Node(left, right)], dir(Node))").expectResult(list(s("fields"), s("name")));
+		infix("alt([Tree=Leaf(value)\\Node(left, right)], dir(Node(1,2)))").expectResult(list(s("left"), s("right")));
+		infix("alt([Tree=Leaf(value)\\Node(left, right)], dir(Leaf))").expectResult(list(s("fields"), s("name")));
+		infix("alt([Tree=Leaf(value)\\Node(left, right)], dir(Leaf(null)))").expectResult(list(s("value")));
 	}
 
 	@Test
@@ -2342,6 +2348,8 @@ public class TypedValueCalculatorTest {
 		infix("let([Point=struct(#x,#y,#z)], Point.fields)").expectResult(list(s("x"), s("y"), s("z")));
 		infix("let([Point=struct(#x,#y,#z)], type(Point()).fields)").expectResult(list(s("x"), s("y"), s("z")));
 
+		infix("let([Point=struct(#x,#y,#z)], dir(Point()))").expectResult(list(s("x"), s("y"), s("z")));
+
 		infix("let([Point=struct(#x,#y)], match((Point(x)) -> 'point', (_) -> 'other')(Point()))").expectResult(s("point"));
 		infix("let([Point=struct(#x,#y)], match((Point(x)) -> 'point', (_) -> 'other')(5))").expectResult(s("other"));
 
@@ -2501,6 +2509,8 @@ public class TypedValueCalculatorTest {
 							}
 						})
 						.build()));
+
+		infix("dir(slots)").expectResult(list(s("attr"), s("bool"), s("call"), s("decompose"), s("dir"), s("equals"), s("length"), s("repr"), s("slice"), s("str"), s("type")));
 
 		infix("has(test, slots.str)").expectResult(TRUE);
 		infix("has(test, slots.repr)").expectResult(FALSE);
@@ -3163,6 +3173,8 @@ public class TypedValueCalculatorTest {
 		final TestStruct test = new TestStruct();
 		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
 
+		infix("dir(test)").expectResult(list(s("floatValue"), s("intValue"), s("strValue")));
+
 		infix("test.intValue").expectResult(i(4));
 		infix("test.strValue").expectResult(s("blah"));
 		infix("test.floatValue").expectResult(d(4.0));
@@ -3183,6 +3195,8 @@ public class TypedValueCalculatorTest {
 
 		final TestStruct test = new TestStruct();
 		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("dir(test)").expectResult(list(s("intValue"), s("strValue")));
 
 		infix("test.intValue").expectResult(i(3));
 		infix("test.strValue").expectResult(s("hi"));
@@ -3210,17 +3224,12 @@ public class TypedValueCalculatorTest {
 			public String rawArg(@RawArg TypedValue arg) {
 				return arg.typeStr();
 			}
-
-			private int count;
-
-			@ExposeMethod
-			public BigInteger internalState() {
-				return BigInteger.valueOf(count++);
-			}
 		}
 
 		final TestStruct test = new TestStruct();
 		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("dir(test)").expectResult(list(s("normal"), s("rawArg"), s("rawReturn")));
 
 		infix("test.normal(5)").expectResult(s("5"));
 		infix("test.rawReturn()").expectResult(s("hello"));
@@ -3249,6 +3258,8 @@ public class TypedValueCalculatorTest {
 		final TestStruct test = new TestStruct();
 		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
 
+		infix("dir(test)").expectResult(list(s("add1"), s("add2"), s("add3")));
+
 		infix("test.add1(1)").expectResult(i(2));
 		infix("test.add2(3)").expectResult(i(5));
 		infix("test.add3(5)").expectResult(i(8));
@@ -3270,6 +3281,8 @@ public class TypedValueCalculatorTest {
 
 		final TestStruct test = new TestStruct();
 		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("dir(test)").expectResult(list(s("override")));
 
 		infix("test.override(1,2)").expectResult(i(3));
 		infix("test.override('a','bc')").expectResult(s("abc"));
@@ -3313,6 +3326,8 @@ public class TypedValueCalculatorTest {
 
 		final TestStruct test = new TestStruct();
 		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("dir(test)").expectResult(list(s("intValue"), s("strValue")));
 
 		infix("test.intValue").expectResult(i(4));
 		infix("test.strValue").expectResult(s("hi!"));
@@ -3358,6 +3373,8 @@ public class TypedValueCalculatorTest {
 
 		final TestStruct test = new TestStruct();
 		sut.environment.setGlobalSymbol("test", StructWrapper.create(domain, test));
+
+		infix("dir(test)").expectResult(list(s("intValue"), s("strValue")));
 
 		infix("test.intValue").expectResult(i(4));
 		infix("test.strValue").expectResult(s("hi!"));

@@ -81,10 +81,15 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 	private MetaObject createStructValueMetaObject() {
 		return MetaObject.builder()
 				.set(new MetaObject.SlotAttr() {
-
 					@Override
 					public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
 						return Optional.fromNullable(self.as(StructValue.class).values.get(key));
+					}
+				})
+				.set(new MetaObject.SlotDir() {
+					@Override
+					public Iterable<String> dir(TypedValue self, Frame<TypedValue> frame) {
+						return self.as(StructValue.class).values.keySet();
 					}
 				})
 				.set(new MetaObject.SlotStr() {
@@ -147,19 +152,26 @@ public class StructSymbol extends SingleReturnCallable<TypedValue> {
 			selfValue = domain.create(StructType.class, this);
 		}
 
+		@Override
+		protected Optional<TypedValue> attr(TypeDomain domain, String key) {
+			if (key.equals(ATTR_FIELDS)) return Optional.of(fieldsList);
+			else if (key.equals(TypeUserdata.ATTR_TYPE_NAME)) return Optional.of(domain.create(String.class, "struct"));
+			return super.attr(domain, key);
+		}
+
+		@Override
+		protected Iterable<String> dir() {
+			final List<String> result = Lists.newArrayList(super.dir());
+			result.add(ATTR_FIELDS);
+			return result;
+		}
+
 	}
 
 	private MetaObject createStructTypeMetaObject() {
 		return MetaObject.builder()
-				.set(new MetaObject.SlotAttr() {
-					@Override
-					public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
-						final StructType type = self.as(StructType.class);
-						if (key.equals(ATTR_FIELDS)) return Optional.of(type.fieldsList);
-						else if (key.equals(TypeUserdata.ATTR_TYPE_NAME)) return Optional.of(domain.create(String.class, "struct"));
-						return type.attr(domain, key);
-					}
-				})
+				.set(TypeUserdata.defaultAttrSlot(domain))
+				.set(TypeUserdata.defaultDirSlot())
 				.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
 				.set(new MetaObject.SlotCall() {
 					@Override

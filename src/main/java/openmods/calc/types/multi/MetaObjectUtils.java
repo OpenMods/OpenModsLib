@@ -3,10 +3,12 @@ package openmods.calc.types.multi;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import openmods.calc.Frame;
 import openmods.calc.ICallable;
+import openmods.calc.types.multi.MetaObject.SlotDir;
 import openmods.utils.OptionalInt;
 
 public class MetaObjectUtils {
@@ -73,6 +75,20 @@ public class MetaObjectUtils {
 				return Optional.fromNullable(attrs.get(key));
 			}
 		};
+	}
+
+	public static MetaObject.SlotDir dirFromIterable(Iterable<String> attrs) {
+		final List<String> attrsList = ImmutableList.copyOf(attrs);
+		return new SlotDir() {
+			@Override
+			public Iterable<String> dir(TypedValue self, Frame<TypedValue> frame) {
+				return attrsList;
+			}
+		};
+	}
+
+	public static SlotDir dirFromArray(String... names) {
+		return dirFromIterable(Arrays.asList(names));
 	}
 
 	public static String callStrSlot(Frame<TypedValue> frame, TypedValue value) {

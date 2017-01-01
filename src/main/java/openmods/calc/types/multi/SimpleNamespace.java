@@ -25,6 +25,12 @@ public class SimpleNamespace {
 						final SimpleNamespace ns = self.as(SimpleNamespace.class);
 						return Optional.fromNullable(ns.values.get(key));
 					}
+				})
+				.set(new MetaObject.SlotDir() {
+					@Override
+					public Iterable<String> dir(TypedValue self, Frame<TypedValue> frame) {
+						return self.as(SimpleNamespace.class).values.keySet();
+					}
 				});
 	}
 

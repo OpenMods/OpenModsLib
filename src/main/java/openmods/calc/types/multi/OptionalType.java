@@ -68,6 +68,10 @@ public class OptionalType {
 			return Optional.fromNullable(members.get(key));
 		}
 
+		public Iterable<String> dir() {
+			return members.keySet();
+		}
+
 		public abstract TypedValue or(TypedValue value);
 
 		public abstract void orCall(Frame<TypedValue> frame, TypedValue arg);
@@ -304,6 +308,7 @@ public class OptionalType {
 						.set(TypeUserdata.defaultReprSlot)
 						.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
 						.set(MetaObjectUtils.attrFromMap(methods))
+						.set(MetaObjectUtils.dirFromIterable(methods.keySet()))
 						.build());
 	}
 
@@ -322,6 +327,12 @@ public class OptionalType {
 							@Override
 							public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
 								return self.as(Value.class).attr(key);
+							}
+						})
+						.set(new MetaObject.SlotDir() {
+							@Override
+							public Iterable<String> dir(TypedValue self, Frame<TypedValue> frame) {
+								return self.as(Value.class).dir();
 							}
 						})
 						.set(new MetaObject.SlotStr() {

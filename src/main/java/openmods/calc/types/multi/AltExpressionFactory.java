@@ -147,6 +147,11 @@ public class AltExpressionFactory {
 		public Optional<TypedValue> attr(String key) {
 			return Optional.fromNullable(members.get(key));
 		}
+
+		@Override
+		public Iterable<String> dir() {
+			return members.keySet();
+		}
 	}
 
 	private static MetaObject createAltTypeMetaObject() {
@@ -167,6 +172,12 @@ public class AltExpressionFactory {
 					@Override
 					public Optional<TypedValue> attr(TypedValue self, String key, Frame<TypedValue> frame) {
 						return self.as(AltType.class).attr(key);
+					}
+				})
+				.set(new MetaObject.SlotDir() {
+					@Override
+					public Iterable<String> dir(TypedValue self, Frame<TypedValue> frame) {
+						return self.as(AltType.class).dir();
 					}
 				})
 				.set(MetaObjectUtils.DECOMPOSE_ON_TYPE)
@@ -255,6 +266,7 @@ public class AltExpressionFactory {
 						return Optional.absent();
 					}
 				})
+				.set(MetaObjectUtils.dirFromArray(TypeUserdata.ATTR_TYPE_NAME, ATTR_FIELDS))
 				.build();
 	}
 
@@ -335,6 +347,13 @@ public class AltExpressionFactory {
 						final int memberIndex = value.variant.members.indexOf(key);
 						if (memberIndex == -1) return Optional.absent();
 						return Optional.of(value.values.get(memberIndex));
+					}
+				})
+				.set(new MetaObject.SlotDir() {
+					@Override
+					public List<String> dir(TypedValue self, Frame<TypedValue> frame) {
+						final AltValue value = self.as(AltValue.class);
+						return value.variant.members;
 					}
 				})
 				.build();

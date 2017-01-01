@@ -519,7 +519,7 @@ public class MetaObject {
 	public final SlotDecompose slotDecompose;
 
 	public interface SlotDir extends Slot {
-		public List<String> dir(TypedValue self, Frame<TypedValue> frame);
+		public Iterable<String> dir(TypedValue self, Frame<TypedValue> frame);
 	}
 
 	public static class SlotDirAdapter implements SlotAdapter<SlotDir> {
@@ -530,7 +530,7 @@ public class MetaObject {
 			returnsCount.compareIfPresent(1);
 			final Stack<TypedValue> stack = frame.stack();
 			final TypedValue self = stack.pop();
-			final List<String> result = slot.dir(self, frame);
+			final Iterable<String> result = slot.dir(self, frame);
 			final TypeDomain domain = self.domain;
 			final List<TypedValue> wrappedResults = ImmutableList.copyOf(Iterables.transform(result, domain.createWrappingTransformer(String.class)));
 			final TypedValue nullValue = domain.getDefault(UnitType.class);
@@ -541,10 +541,10 @@ public class MetaObject {
 		public SlotDir wrap(final TypedValue callable) {
 			class WrappedSlot implements SlotDir, SlotWithValue {
 				@Override
-				public List<String> dir(TypedValue self, Frame<TypedValue> frame) {
+				public Iterable<String> dir(TypedValue self, Frame<TypedValue> frame) {
 					final TypedValue result = callFunction(frame, callable, self);
 					final TypeDomain domain = self.domain;
-					return ImmutableList.copyOf(Iterables.transform(Cons.toIterable(result, domain.getDefault(UnitType.class)), domain.createUnwrappingTransformer(String.class)));
+					return Iterables.transform(Cons.toIterable(result, domain.getDefault(UnitType.class)), domain.createUnwrappingTransformer(String.class));
 				}
 
 				@Override

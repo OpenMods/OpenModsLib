@@ -188,6 +188,7 @@ public class MetaObjectSymbols {
 						return Optional.absent();
 					}
 				})
+				.set(MetaObjectUtils.dirFromArray(ATTR_NAME, ATTR_INFO))
 				.set(MetaObjectUtils.typeConst(metaObjectSlotType))
 				.build();
 	}
@@ -215,6 +216,7 @@ public class MetaObjectSymbols {
 						return Optional.of(result);
 					}
 				})
+				.set(MetaObjectUtils.dirFromIterable(MetaObjectInfo.slots.keySet()))
 				.set(new MetaObject.SlotCall() {
 					@Override
 					public void call(TypedValue self, OptionalInt argumentsCount, OptionalInt returnsCount, Frame<TypedValue> frame) {
