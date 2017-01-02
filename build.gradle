@@ -1,18 +1,7 @@
-/*
- * OpenModsLib build file.
- * @author Arkan <arkan@emberwalker.cc>
- * @lastmodified NeverCast <j.nevercast@gmail.com>
- */
-
-//================================================
-// Pre-execute
-
 buildscript {
     repositories {
-        // General deps
         jcenter()
         mavenCentral()
-        // Minecraft Forge
         maven {
             name = 'Forge'
             url = 'http://files.minecraftforge.net/maven'
@@ -24,13 +13,18 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
         classpath 'net.thesilkminer.gradle.translationchecker:TranslationChecker:1.1'
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'java'
+
+sourceCompatibility = targetCompatibility = "1.6"
+compileJava {
+    sourceCompatibility = targetCompatibility = "1.6"
+}
 
 // HACK: we want to add those repos to all including projects, but still be available to compile this project directly
 rootProject.allprojects {
@@ -85,18 +79,13 @@ def String gitBranch() {
     git 'rev-parse', '--abbrev-ref', 'HEAD'
 }
 
-// Environment
-ext.env = System.getenv()
+def env = System.getenv()
 
-//================================================
-// Jar data
-
-mod_version += "." + (env.BUILD_NUMBER ?: 'dev')
 version = mc_ver + "-" + mod_version
 
-ext.in_jenkins = false
-// Get Jenkins metadata
-ext.jenkinsManifest = manifest {
+def in_jenkins = false
+
+def jenkinsManifest = manifest {
     if (env.BUILD_TAG != null) { // If this works, we'll assume we're in Jenkins atleast.
         attributes("Jenkins-Build": "true", "Jenkins-Tag": env.BUILD_TAG, "Jenkins-ID": env.BUILD_ID)
         in_jenkins = true
@@ -108,14 +97,20 @@ ext.jenkinsManifest = manifest {
 def branch = in_jenkins ? env.GIT_BRANCH.minus("origin/") : gitBranch()
 def hash = gitHash()
 
-// Get Git metadata (if in Jenkins)
-ext.gitManifest = manifest {
-    if (env.GIT_BRANCH != null) {
+if (branch != null && !branch.equals("master")) {
+    version += "-" + branch
+}
+
+if (env.BUILD_NUMBER != null) {
+    version += "-snapshot-" + env.BUILD_NUMBER
+}
+
+def gitManifest = manifest {
+    if (branch != null) {
         attributes("Git-Branch": branch, "Git-Hash": hash)
     }
 }
 
-// Setup Forge plugin
 minecraft {
     version = mc_ver + "-" + forge_ver
     runDir = "run"
@@ -144,15 +139,10 @@ processResources {
     }
 }
 
-//================================================
-// Jar tasks
-
-// Generate FML Coremod manifest
-ext.fmlManifest = manifest {
+def fmlManifest = manifest {
     attributes("FMLCorePlugin": "openmods.core.OpenModsCorePlugin", "FMLCorePluginContainsFMLMod": "true")
 }
 
-// Merge Jenkins and Git manifests to form final manifest in final release jar
 jar {
     manifest {
         from jenkinsManifest, gitManifest, fmlManifest
@@ -175,5 +165,5 @@ task checkTranslations(type: net.thesilkminer.gradle.plugin.translationchecker.t
 }
 
 task wrapper (type: Wrapper) {
-    gradleVersion = "2.12"
+    gradleVersion = "2.14"
 }
