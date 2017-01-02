@@ -7,11 +7,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetHandlerPlayServer;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.network.IGuiHandler;
+import net.minecraftforge.fml.server.FMLServerHandler;
 import openmods.gui.CommonGuiHandler;
 
 public final class OpenServerProxy implements IOpenModsProxy {
@@ -43,7 +43,8 @@ public final class OpenServerProxy implements IOpenModsProxy {
 
 	@Override
 	public File getMinecraftDir() {
-		return MinecraftServer.getServer().getFile("");
+		// TODO may as well be used for client side
+		return FMLServerHandler.instance().getServer().getFile("");
 	}
 
 	@Override

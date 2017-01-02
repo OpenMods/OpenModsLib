@@ -1,20 +1,20 @@
 package openmods.utils;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import openmods.reflection.FieldAccess;
 
 public class EntityUtils {
 
-	public static Vec3 getPredictedPosition(Entity entity) {
+	public static Vec3d getPredictedPosition(Entity entity) {
 		return entity.getPositionVector().addVector(
 				entity.motionX,
 				entity.motionY,
 				entity.motionZ);
 	}
 
-	public static MovingObjectPosition raytraceEntity(Entity entity) {
+	public static RayTraceResult raytraceEntity(Entity entity) {
 
 		if (entity == null || entity.worldObj == null) { return null; }
 

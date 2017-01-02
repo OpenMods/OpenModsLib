@@ -9,7 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent;
@@ -26,7 +26,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 	public BreakBlockAction(World worldObj, BlockPos blockPos) {
 		this.worldObj = worldObj;
 		this.blockPos = blockPos;
-		this.stackToUse = new ItemStack(Items.diamond_pickaxe, 0, 0);
+		this.stackToUse = new ItemStack(Items.DIAMOND_PICKAXE, 0, 0);
 	}
 
 	public BreakBlockAction setStackToUse(ItemStack stack) {
@@ -37,7 +37,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 	private boolean removeBlock(EntityPlayer player, BlockPos pos, IBlockState state, boolean canHarvest) {
 		final Block block = state.getBlock();
 		block.onBlockHarvested(worldObj, pos, state, player);
-		final boolean result = block.removedByPlayer(worldObj, pos, player, canHarvest);
+		final boolean result = block.removedByPlayer(state, worldObj, pos, player, canHarvest);
 		if (result) block.onBlockDestroyedByPlayer(worldObj, pos, state);
 		return result;
 	}
@@ -64,8 +64,8 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 			boolean canHarvest = state.getBlock().canHarvestBlock(worldObj, blockPos, fakePlayer);
 			boolean isRemoved = removeBlock(fakePlayer, blockPos, state, canHarvest);
 			if (isRemoved && canHarvest) {
-				state.getBlock().harvestBlock(worldObj, fakePlayer, blockPos, state, te);
-				worldObj.playAuxSFXAtEntity(fakePlayer, 2001, blockPos, Block.getStateId(state));
+				state.getBlock().harvestBlock(worldObj, fakePlayer, blockPos, state, te, stackToUse);
+				worldObj.playEvent(fakePlayer, 2001, blockPos, Block.getStateId(state));
 			}
 
 		} finally {

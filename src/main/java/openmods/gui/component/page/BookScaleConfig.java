@@ -1,12 +1,12 @@
 package openmods.gui.component.page;
 
-import net.minecraft.util.StatCollector;
 import openmods.Log;
+import openmods.utils.TranslationUtils;
 
 public class BookScaleConfig {
 
 	private static float getValue(String name, float defaultValue) {
-		final String value = StatCollector.translateToLocal(name);
+		final String value = TranslationUtils.translateToLocal(name);
 		try {
 			return Float.parseFloat(value);
 		} catch (NumberFormatException e) {
@@ -16,7 +16,7 @@ public class BookScaleConfig {
 	}
 
 	private static int getValue(String name, int defaultValue) {
-		final String value = StatCollector.translateToLocal(name);
+		final String value = TranslationUtils.translateToLocal(name);
 		try {
 			return Integer.parseInt(value);
 		} catch (NumberFormatException e) {

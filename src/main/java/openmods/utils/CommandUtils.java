@@ -5,15 +5,12 @@ import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.command.PlayerNotFoundException;
-import net.minecraft.command.PlayerSelector;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class CommandUtils {
 
@@ -32,7 +29,7 @@ public class CommandUtils {
 	}
 
 	public static List<String> getPlayerNames() {
-		MinecraftServer server = MinecraftServer.getServer();
+		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 		if (server != null) return ImmutableList.copyOf(server.getAllUsernames());
 		return ImmutableList.of();
 	}
@@ -42,30 +39,15 @@ public class CommandUtils {
 	}
 
 	public static void respondText(ICommandSender sender, String message) {
-		sender.addChatMessage(new ChatComponentText(message));
+		sender.addChatMessage(new TextComponentString(message));
 	}
 
 	public static void respond(ICommandSender sender, String format, Object... args) {
-		sender.addChatMessage(new ChatComponentTranslation(format, args));
+		sender.addChatMessage(new TextComponentTranslation(format, args));
 	}
 
 	public static CommandException error(String format, Object... args) throws CommandException {
 		throw new CommandException(format, args);
 	}
 
-	public static EntityPlayerMP getPlayer(ICommandSender sender, String playerName) throws PlayerNotFoundException {
-		EntityPlayerMP player = PlayerSelector.matchOnePlayer(sender, playerName);
-		if (player != null) return player;
-
-		try {
-			player = MinecraftServer.getServer().getConfigurationManager().getPlayerByUUID(UUID.fromString(playerName));
-		} catch (IllegalArgumentException e) {}
-
-		if (player != null) return player;
-
-		player = MinecraftServer.getServer().getConfigurationManager().getPlayerByUsername(playerName);
-		if (player != null) return player;
-
-		throw new PlayerNotFoundException();
-	}
 }

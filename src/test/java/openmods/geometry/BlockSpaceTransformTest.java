@@ -1,6 +1,6 @@
 package openmods.geometry;
 
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,14 +10,14 @@ public class BlockSpaceTransformTest {
 
 	public void testCoordinates(Orientation orientation, double x, double y, double z, double tx, double ty, double tz) {
 		{
-			final Vec3 v = BlockSpaceTransform.instance.mapWorldToBlock(orientation, x, y, z);
+			final Vec3d v = BlockSpaceTransform.instance.mapWorldToBlock(orientation, x, y, z);
 			Assert.assertEquals(tx, v.xCoord, DELTA);
 			Assert.assertEquals(ty, v.yCoord, DELTA);
 			Assert.assertEquals(tz, v.zCoord, DELTA);
 		}
 
 		{
-			final Vec3 v = BlockSpaceTransform.instance.mapBlockToWorld(orientation, tx, ty, tz);
+			final Vec3d v = BlockSpaceTransform.instance.mapBlockToWorld(orientation, tx, ty, tz);
 			Assert.assertEquals(x, v.xCoord, DELTA);
 			Assert.assertEquals(y, v.yCoord, DELTA);
 			Assert.assertEquals(z, v.zCoord, DELTA);

@@ -3,11 +3,11 @@ package openmods.utils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.WorldType;
-import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.biome.Biome;
 
 public class FakeBlockAccess implements IBlockAccess {
 	private final IBlockState state;
@@ -30,7 +30,7 @@ public class FakeBlockAccess implements IBlockAccess {
 
 	@Override
 	public IBlockState getBlockState(BlockPos blockPos) {
-		return isOrigin(blockPos)? state : Blocks.air.getDefaultState();
+		return isOrigin(blockPos)? state : Blocks.AIR.getDefaultState();
 	}
 
 	@Override
@@ -54,18 +54,13 @@ public class FakeBlockAccess implements IBlockAccess {
 	}
 
 	@Override
-	public BiomeGenBase getBiomeGenForCoords(BlockPos pos) {
-		return BiomeGenBase.desert;
-	}
-
-	@Override
-	public boolean extendedLevelsInChunkCache() {
-		return false;
+	public Biome getBiome(BlockPos pos) {
+		return Biome.getBiome(2); // 'desert', see Biome.registerBiomes
 	}
 
 	@Override
 	public boolean isSideSolid(BlockPos blockPos, EnumFacing side, boolean _default) {
-		return (isOrigin(blockPos))? state.getBlock().isSideSolid(this, blockPos, side) : _default;
+		return (isOrigin(blockPos))? state.isSideSolid(this, blockPos, side) : _default;
 	}
 
 	@Override

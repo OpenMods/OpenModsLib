@@ -1,9 +1,9 @@
 package openmods.gui;
 
-import net.minecraft.util.StatCollector;
 import openmods.container.ContainerBase;
 import openmods.gui.component.BaseComposite;
 import openmods.gui.component.GuiComponentPanel;
+import openmods.utils.TranslationUtils;
 
 public abstract class BaseGuiContainer<T extends ContainerBase<?>> extends ComponentGui {
 	protected final String name;
@@ -26,10 +26,10 @@ public abstract class BaseGuiContainer<T extends ContainerBase<?>> extends Compo
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
 		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-		String machineName = StatCollector.translateToLocal(name);
+		String machineName = TranslationUtils.translateToLocal(name);
 		int x = this.xSize / 2 - (fontRendererObj.getStringWidth(machineName) / 2);
 		fontRendererObj.drawString(machineName, x, 6, 4210752);
-		String translatedName = StatCollector.translateToLocal("container.inventory");
+		String translatedName = TranslationUtils.translateToLocal("container.inventory");
 		fontRendererObj.drawString(translatedName, 8, this.ySize - 96 + 2, 4210752);
 	}
 

@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -55,7 +55,7 @@ public class DropCapture {
 
 	@SubscribeEvent
 	public void onEntityConstruct(EntityJoinWorldEvent evt) {
-		final Entity e = evt.entity;
+		final Entity e = evt.getEntity();
 		if (e != null
 				&& e.getClass() == EntityItem.class
 				&& !e.worldObj.isRemote) {

@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -86,23 +86,13 @@ public class GenericTank extends FluidTank {
 		return result;
 	}
 
-	public FluidStack drain(FluidStack resource, boolean doDrain) {
-		if (resource == null ||
-				fluid == null ||
-				fluid.isFluidEqual(resource))
-			return null;
-
-		return drain(resource.amount, doDrain);
-	}
-
 	public int getSpace() {
 		return getCapacity() - getFluidAmount();
 	}
 
 	@Override
-	public int fill(FluidStack resource, boolean doFill) {
-		if (resource == null || !filter.canAcceptFluid(resource)) return 0;
-		return super.fill(resource, doFill);
+	public boolean canFillFluidType(FluidStack fluid) {
+		return fluid != null && filter.canAcceptFluid(fluid);
 	}
 
 	public void updateNeighbours(World world, BlockPos coord, Set<EnumFacing> sides) {

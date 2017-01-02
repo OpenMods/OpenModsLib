@@ -16,7 +16,7 @@ public class ConfigChangeListener {
 
 	@SubscribeEvent
 	public void onConfigChange(OnConfigChangedEvent evt) {
-		if (modId.equals(evt.modID)) config.save();
+		if (modId.equals(evt.getModID())) config.save();
 	}
 
 }

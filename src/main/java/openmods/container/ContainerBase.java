@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
-import net.minecraft.inventory.ICrafting;
+import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
@@ -175,7 +176,7 @@ public abstract class ContainerBase<T> extends Container {
 
 	public Set<EntityPlayer> getPlayers() {
 		Set<EntityPlayer> players = new HashSet<EntityPlayer>();
-		for (ICrafting crafter : crafters) {
+		for (IContainerListener crafter : listeners) {
 			if (crafter instanceof EntityPlayerMP) {
 				players.add((EntityPlayerMP)crafter);
 			}
@@ -192,13 +193,13 @@ public abstract class ContainerBase<T> extends Container {
 	}
 
 	@Override
-	public ItemStack slotClick(int slotId, int key, int modifier, EntityPlayer player) {
+	public ItemStack slotClick(int slotId, int dragType, ClickType clickType, EntityPlayer player) {
 		if (slotId >= 0 && slotId < inventorySlots.size()) {
 			Slot slot = getSlot(slotId);
-			if (slot instanceof ICustomSlot) return ((ICustomSlot)slot).onClick(player, key, modifier);
+			if (slot instanceof ICustomSlot) return ((ICustomSlot)slot).onClick(player, dragType, clickType);
 		}
 
-		return super.slotClick(slotId, key, modifier, player);
+		return super.slotClick(slotId, dragType, clickType, player);
 	}
 
 	@Override

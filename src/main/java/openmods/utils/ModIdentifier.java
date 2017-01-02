@@ -8,7 +8,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.common.registry.GameData;
 
 public class ModIdentifier {
 
@@ -43,12 +42,12 @@ public class ModIdentifier {
 	}
 
 	private static ModContainer identifyBlock(Block block) {
-		final ResourceLocation id = GameData.getBlockRegistry().getNameForObject(block);
+		final ResourceLocation id = Block.REGISTRY.getNameForObject(block);
 		return findModContainer(id);
 	}
 
 	private static ModContainer identifyItem(Item item) {
-		final ResourceLocation id = GameData.getItemRegistry().getNameForObject(item);
+		final ResourceLocation id = Item.REGISTRY.getNameForObject(item);
 		return findModContainer(id);
 	}
 

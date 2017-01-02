@@ -8,9 +8,10 @@ import java.util.List;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextFormatting;
 import openmods.Log;
 
 public class CommandCalc implements ICommand {
@@ -41,7 +42,7 @@ public class CommandCalc implements ICommand {
 	}
 
 	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender sender) {
+	public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 		return true;
 	}
 
@@ -59,19 +60,19 @@ public class CommandCalc implements ICommand {
 	}
 
 	@Override
-	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		return commandComponent.getTabCompletions(WhitespaceSplitters.fromSplitArray(args));
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		final IWhitespaceSplitter splitArgs = WhitespaceSplitters.fromSplitArray(args);
 		try {
 			commandComponent.execute(sender, splitArgs);
 		} catch (NestedCommandException e) {
 			e.pushCommandName(name);
-			final IChatComponent message = e.getChatComponent();
-			message.getChatStyle().setColor(EnumChatFormatting.RED);
+			final ITextComponent message = e.getChatComponent();
+			message.getStyle().setColor(TextFormatting.RED);
 			sender.addChatMessage(message);
 		} catch (Exception e) {
 			Log.info(e, "Failed to execute command");

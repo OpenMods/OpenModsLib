@@ -61,12 +61,12 @@ public class FakePlayerPool {
 
 	@SubscribeEvent
 	public void onWorldLoad(WorldEvent.Load evt) {
-		worldPools.put(evt.world, new WorldPool());
+		worldPools.put(evt.getWorld(), new WorldPool());
 	}
 
 	@SubscribeEvent
 	public void onWorldUnload(WorldEvent.Unload evt) {
-		worldPools.remove(evt.world);
+		worldPools.remove(evt.getWorld());
 	}
 
 	public void executeOnPlayer(WorldServer world, PlayerUser user) {

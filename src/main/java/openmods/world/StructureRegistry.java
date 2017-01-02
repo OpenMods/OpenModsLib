@@ -10,12 +10,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraft.world.chunk.IChunkGenerator;
+import net.minecraft.world.gen.ChunkProviderEnd;
 import net.minecraft.world.gen.ChunkProviderFlat;
-import net.minecraft.world.gen.ChunkProviderGenerate;
 import net.minecraft.world.gen.ChunkProviderHell;
+import net.minecraft.world.gen.ChunkProviderOverworld;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.gen.structure.MapGenStructure;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
@@ -38,30 +39,31 @@ public class StructureRegistry {
 
 		builder.add(new IStructureGenProvider() {
 			@Override
-			public boolean canUseOnProvider(IChunkProvider provider) {
-				return provider instanceof ChunkProviderGenerate;
+			public boolean canUseOnProvider(IChunkGenerator provider) {
+				return provider instanceof ChunkProviderOverworld;
 			}
 
 			@Override
-			public Collection<MapGenStructure> listProviders(IChunkProvider provider) {
-				ChunkProviderGenerate cp = (ChunkProviderGenerate)provider;
+			public Collection<MapGenStructure> listProviders(IChunkGenerator provider) {
+				ChunkProviderOverworld cp = (ChunkProviderOverworld)provider;
 				List<MapGenStructure> result = Lists.newArrayList();
-				addMapGen(result, ChunkProviderGenerate.class, cp, "strongholdGenerator", "field_73225_u");
-				addMapGen(result, ChunkProviderGenerate.class, cp, "villageGenerator", "field_73224_v");
-				addMapGen(result, ChunkProviderGenerate.class, cp, "mineshaftGenerator", "field_73223_w");
-				addMapGen(result, ChunkProviderGenerate.class, cp, "scatteredFeatureGenerator", "field_73233_x");
+				addMapGen(result, ChunkProviderOverworld.class, cp, "strongholdGenerator", "field_186004_w");
+				addMapGen(result, ChunkProviderOverworld.class, cp, "villageGenerator", "field_186005_x");
+				addMapGen(result, ChunkProviderOverworld.class, cp, "mineshaftGenerator", "field_186006_y");
+				addMapGen(result, ChunkProviderOverworld.class, cp, "scatteredFeatureGenerator", "field_186007_z");
+				addMapGen(result, ChunkProviderOverworld.class, cp, "oceanMonumentGenerator", "field_185980_B");
 				return result;
 			}
 		});
 
 		builder.add(new IStructureGenProvider() {
 			@Override
-			public boolean canUseOnProvider(IChunkProvider provider) {
+			public boolean canUseOnProvider(IChunkGenerator provider) {
 				return provider instanceof ChunkProviderFlat;
 			}
 
 			@Override
-			public Collection<MapGenStructure> listProviders(IChunkProvider provider) {
+			public Collection<MapGenStructure> listProviders(IChunkGenerator provider) {
 				ChunkProviderFlat cp = (ChunkProviderFlat)provider;
 				List<MapGenStructure> result = Lists.newArrayList();
 				try {
@@ -76,15 +78,30 @@ public class StructureRegistry {
 
 		builder.add(new IStructureGenProvider() {
 			@Override
-			public boolean canUseOnProvider(IChunkProvider provider) {
+			public boolean canUseOnProvider(IChunkGenerator provider) {
 				return provider instanceof ChunkProviderHell;
 			}
 
 			@Override
-			public Collection<MapGenStructure> listProviders(IChunkProvider provider) {
+			public Collection<MapGenStructure> listProviders(IChunkGenerator provider) {
 				ChunkProviderHell cp = (ChunkProviderHell)provider;
 				List<MapGenStructure> result = Lists.newArrayList();
 				addMapGen(result, ChunkProviderHell.class, cp, "genNetherBridge", "field_73172_c");
+				return result;
+			}
+		});
+
+		builder.add(new IStructureGenProvider() {
+			@Override
+			public boolean canUseOnProvider(IChunkGenerator provider) {
+				return provider instanceof ChunkProviderEnd;
+			}
+
+			@Override
+			public Collection<MapGenStructure> listProviders(IChunkGenerator provider) {
+				ChunkProviderEnd cp = (ChunkProviderEnd)provider;
+				List<MapGenStructure> result = Lists.newArrayList();
+				addMapGen(result, ChunkProviderEnd.class, cp, "endCityGen", "field_185972_n");
 				return result;
 			}
 		});
@@ -97,9 +114,9 @@ public class StructureRegistry {
 
 	private List<IStructureGenProvider> providers;
 
-	private static IChunkProvider getWrappedChunkProvider(ChunkProviderServer provider) {
+	private static IChunkGenerator getWrappedChunkProvider(ChunkProviderServer provider) {
 		try {
-			return ReflectionHelper.getPrivateValue(ChunkProviderServer.class, provider, "currentChunkProvider", "field_73246_d");
+			return ReflectionHelper.getPrivateValue(ChunkProviderServer.class, provider, "chunkGenerator", "field_186029_c");
 		} catch (UnableToAccessFieldException e) {
 			Log.warn(e, "Can't access chunk provider data. No structures will be detected");
 			return null;
@@ -111,8 +128,8 @@ public class StructureRegistry {
 	}
 
 	private void visitStructures(WorldServer world, IStructureVisitor visitor) {
-		ChunkProviderServer provider = world.theChunkProviderServer;
-		IChunkProvider inner = getWrappedChunkProvider(provider);
+		ChunkProviderServer provider = world.getChunkProvider();
+		IChunkGenerator inner = getWrappedChunkProvider(provider);
 
 		if (inner != null) {
 			for (IStructureGenProvider p : providers)

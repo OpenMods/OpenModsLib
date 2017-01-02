@@ -2,7 +2,7 @@ package openmods.gui.component;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
 import org.lwjgl.opengl.GL11;

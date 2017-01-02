@@ -3,7 +3,6 @@ package openmods.gui.component.page;
 import com.google.common.base.Strings;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.util.StatCollector;
 import openmods.gui.Icon;
 import openmods.gui.component.GuiComponentCraftingGrid;
 import openmods.gui.component.GuiComponentHCenter;
@@ -11,6 +10,7 @@ import openmods.gui.component.GuiComponentItemStackSpinner;
 import openmods.gui.component.GuiComponentLabel;
 import openmods.gui.component.GuiComponentSprite;
 import openmods.utils.RecipeUtils;
+import openmods.utils.TranslationUtils;
 
 public class StandardRecipePage extends PageBase {
 
@@ -30,14 +30,14 @@ public class StandardRecipePage extends PageBase {
 		}
 
 		{
-			String translatedTitle = StatCollector.translateToLocal(title);
+			String translatedTitle = TranslationUtils.translateToLocal(title);
 			final GuiComponentLabel titleLabel = new GuiComponentLabel(0, 0, translatedTitle);
 			titleLabel.setScale(BookScaleConfig.getPageTitleScale());
 			addComponent(new GuiComponentHCenter(0, 2, getWidth()).addComponent(titleLabel));
 		}
 
 		{
-			String translatedDescription = StatCollector.translateToLocal(description).replaceAll("\\\\n", "\n");
+			String translatedDescription = TranslationUtils.translateToLocal(description).replaceAll("\\\\n", "\n");
 			GuiComponentLabel lblDescription = new GuiComponentLabel(10, 80, getWidth() - 5, 200, translatedDescription);
 			lblDescription.setScale(BookScaleConfig.getPageContentScale());
 			lblDescription.setAdditionalLineHeight(BookScaleConfig.getRecipePageSeparator());

@@ -3,7 +3,7 @@ package openmods.network.rpc.targets;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import openmods.network.rpc.IRpcTarget;
 import openmods.utils.WorldUtils;
@@ -25,7 +25,7 @@ public class TileEntityRpcTarget implements IRpcTarget {
 
 	@Override
 	public void writeToStream(PacketBuffer output) {
-		output.writeInt(te.getWorld().provider.getDimensionId());
+		output.writeInt(te.getWorld().provider.getDimension());
 		output.writeBlockPos(te.getPos());
 	}
 

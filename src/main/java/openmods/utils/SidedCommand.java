@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
 
 public abstract class SidedCommand implements ICommand {
 
@@ -31,7 +32,7 @@ public abstract class SidedCommand implements ICommand {
 	}
 
 	@Override
-	public boolean canCommandSenderUseCommand(ICommandSender sender) {
+	public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
 		return restricted? sender.canCommandSenderUseCommand(4, name) : true;
 	}
 }

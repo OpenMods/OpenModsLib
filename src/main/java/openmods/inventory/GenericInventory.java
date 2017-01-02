@@ -9,9 +9,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import openmods.api.IInventoryCallback;
 
 public class GenericInventory implements IInventory {
@@ -205,11 +205,11 @@ public class GenericInventory implements IInventory {
 	public void closeInventory(EntityPlayer player) {}
 
 	@Override
-	public IChatComponent getDisplayName() {
+	public ITextComponent getDisplayName() {
 		final String name = getName();
 		return hasCustomName()
-				? new ChatComponentText(name)
-				: new ChatComponentTranslation(name);
+				? new TextComponentString(name)
+				: new TextComponentTranslation(name);
 	}
 
 	// TODO: figure if it's usable

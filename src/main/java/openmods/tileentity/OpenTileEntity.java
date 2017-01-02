@@ -5,10 +5,11 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import openmods.api.IInventoryCallback;
 import openmods.block.OpenBlock;
@@ -29,7 +30,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	public void setup() {}
 
 	public DimCoord getDimCoords() {
-		return new DimCoord(worldObj.provider.getDimensionId(), pos);
+		return new DimCoord(worldObj.provider.getDimension(), pos);
 	}
 
 	public Orientation getOrientation() {
@@ -56,7 +57,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return worldObj != null && worldObj.isAirBlock(getPos().offset(direction));
 	}
 
-	protected void playSoundAtBlock(String sound, float volume, float pitch) {
+	protected void playSoundAtBlock(SoundEvent sound, float volume, float pitch) {
 		BlockUtils.playSoundAtPos(worldObj, pos, sound, volume, pitch);
 	}
 

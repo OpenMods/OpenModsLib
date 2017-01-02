@@ -1,10 +1,11 @@
 package openmods.gui.component;
 
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager.CullFace;
 import net.minecraft.client.renderer.ItemModelMesher;
-import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.client.renderer.RenderItem;
+import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.resources.model.IBakedModel;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
@@ -45,7 +46,7 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 	}
 
 	private void renderItem(ItemStack itemStack) {
-		parent.bindTexture(TextureMap.locationBlocksTexture);
+		parent.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
 		final RenderItem itemRenderer = parent.getItemRenderer();
 		final ItemModelMesher itemModelMesher = itemRenderer.getItemModelMesher();
@@ -57,7 +58,7 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 		GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
 		GlStateManager.pushMatrix();
 		itemRenderer.renderItem(stack, model);
-		GlStateManager.cullFace(GL11.GL_BACK);
+		GlStateManager.cullFace(CullFace.BACK);
 		GlStateManager.popMatrix();
 		GlStateManager.disableRescaleNormal();
 		GlStateManager.disableBlend();

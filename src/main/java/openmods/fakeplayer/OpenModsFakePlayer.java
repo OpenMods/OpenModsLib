@@ -2,18 +2,19 @@ package openmods.fakeplayer;
 
 import com.mojang.authlib.GameProfile;
 import java.util.UUID;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.common.eventhandler.Event.Result;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import openmods.Log;
 
 public class OpenModsFakePlayer extends FakePlayer {
@@ -35,38 +36,44 @@ public class OpenModsFakePlayer extends FakePlayer {
 		isDead = true;
 	}
 
-	public boolean rightClick(ItemStack itemStack, BlockPos pos, EnumFacing face, float hitX, float hitY, float hitZ) {
-		// mimics ItemInworldObjManager.activateBlockOrUseItem
+	public EnumActionResult rightClick(ItemStack itemStack, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		// mimics PlayerInteractionManager.processRightClickBlock
 
-		if (itemStack == null) return false;
+		if (itemStack == null) return EnumActionResult.PASS;
 
-		PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(this, PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK, worldObj, pos, face, new Vec3(hitX, hitY, hitZ));
-		if (event.isCanceled()) return false;
-
-		final IBlockState iblockstate = worldObj.getBlockState(pos);
+		final PlayerInteractEvent.RightClickBlock event = ForgeHooks.onRightClickBlock(this, hand, itemStack, pos, facing, new Vec3d(hitX, hitY, hitZ));
+		if (event.isCanceled()) return EnumActionResult.PASS;
 
 		final Item usedItem = itemStack.getItem();
 
-		if (!isSneaking() || usedItem.doesSneakBypassUse(worldObj, pos, this)) {
-			if (event.useBlock != Result.DENY) {
-				final Block block = iblockstate.getBlock();
+		final EnumActionResult firstUseResult = usedItem.onItemUseFirst(itemStack, this, worldObj, pos, facing, hitX, hitY, hitZ, hand);
+		if (firstUseResult != EnumActionResult.PASS) return firstUseResult;
+
+		boolean bypass = itemStack.getItem().doesSneakBypassUse(itemStack, worldObj, pos, this);
+		EnumActionResult result = EnumActionResult.PASS;
+
+		if (!isSneaking() || bypass || event.getUseBlock() == Event.Result.ALLOW) {
+			IBlockState iblockstate = worldObj.getBlockState(pos);
+			if (event.getUseBlock() != Event.Result.DENY) {
 				try {
-					if (block.onBlockActivated(worldObj, pos, iblockstate, this, face, hitX, hitY, hitZ)) return true;
+					if (iblockstate.getBlock().onBlockActivated(worldObj, pos, iblockstate, this, hand, itemStack, facing, hitX, hitY, hitZ)) {
+						result = EnumActionResult.SUCCESS;
+					}
 				} catch (Throwable t) {
-					Log.warn(t, "Invalid use of fake player on block %s @ (%s), aborting. Don't do it again", block, pos);
+					Log.warn(t, "Invalid use of fake player on block %s @ (%s), aborting. Don't do it again", iblockstate, pos);
 				}
 			}
-
 		}
-		if (event.useItem != net.minecraftforge.fml.common.eventhandler.Event.Result.DENY) {
+
+		if ((result != EnumActionResult.SUCCESS && event.getUseItem() != Event.Result.DENY)
+				|| (result == EnumActionResult.SUCCESS && event.getUseItem() == Event.Result.ALLOW)) {
 			try {
-				return itemStack.onItemUse(this, worldObj, pos, face, hitX, hitY, hitZ);
+				return itemStack.onItemUse(this, worldObj, pos, hand, facing, hitX, hitY, hitZ);
 			} catch (Throwable t) {
 				Log.warn(t, "Invalid use of fake player with item %s @ (%s), aborting. Don't do it again", usedItem, pos);
-				return false;
+				return EnumActionResult.PASS;
 			}
 		}
-
-		return false;
+		return result;
 	}
 }

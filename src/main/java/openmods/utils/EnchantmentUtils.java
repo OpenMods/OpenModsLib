@@ -9,7 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 
@@ -50,21 +50,22 @@ public class EnchantmentUtils {
 		player.experience = (float)(experience - expForLevel) / (float)player.xpBarCap();
 	}
 
-	public static boolean enchantItem(ItemStack itemstack, int level, Random rand) {
+	// Similar to ContainerEnchanter.enchantItem
+	public static boolean enchantItem(ItemStack itemstack, int level, Random rand, boolean allowTresure) {
 		if (itemstack == null) return false;
 
-		List<EnchantmentData> enchantments = EnchantmentHelper.buildEnchantmentList(rand, itemstack, level);
+		List<EnchantmentData> enchantments = EnchantmentHelper.buildEnchantmentList(rand, itemstack, level, allowTresure);
 		if (enchantments == null || enchantments.isEmpty()) return false;
 
-		boolean isBook = itemstack.getItem() == Items.book;
+		boolean isBook = itemstack.getItem() == Items.BOOK;
 
 		if (isBook) {
-			itemstack.setItem(Items.enchanted_book);
+			itemstack.setItem(Items.ENCHANTED_BOOK);
 
 			final int count = enchantments.size();
 			int ignored = count > 1? rand.nextInt(count) : -1;
 			for (int i = 0; i < count; i++)
-				if (i != ignored) Items.enchanted_book.addEnchantment(itemstack, enchantments.get(i));
+				if (i != ignored) Items.ENCHANTED_BOOK.addEnchantment(itemstack, enchantments.get(i));
 		} else {
 			for (EnchantmentData enchantment : enchantments)
 				itemstack.addEnchantment(enchantment.enchantmentobj, enchantment.enchantmentLevel);
@@ -131,6 +132,6 @@ public class EnchantmentUtils {
 
 	public static void addAllBooks(Enchantment enchantment, List<ItemStack> items) {
 		for (int i = enchantment.getMinLevel(); i <= enchantment.getMaxLevel(); i++)
-			items.add(Items.enchanted_book.getEnchantedItemStack(new EnchantmentData(enchantment, i)));
+			items.add(Items.ENCHANTED_BOOK.getEnchantedItemStack(new EnchantmentData(enchantment, i)));
 	}
 }

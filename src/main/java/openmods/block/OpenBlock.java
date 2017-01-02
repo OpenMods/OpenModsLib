@@ -5,23 +5,25 @@ import com.google.common.collect.Lists;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.BlockState;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Enchantments;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -191,16 +193,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return (state.getBlock() instanceof OpenBlock)? state.getValue(propertyOrientation) : Orientation.XP_YP;
 	}
 
-	public void setBlockBounds(AxisAlignedBB aabb) {
-		this.maxX = aabb.maxX;
-		this.maxY = aabb.maxY;
-		this.maxZ = aabb.maxZ;
-
-		this.minX = aabb.minX;
-		this.minY = aabb.minY;
-		this.minZ = aabb.minZ;
-	}
-
 	public boolean shouldDropFromTeAfterBreak() {
 		return true;
 	}
@@ -241,13 +233,13 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public ItemStack getPickBlock(MovingObjectPosition target, World world, BlockPos blockPos, EntityPlayer player) {
+	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
 		if (hasCapability(TileEntityCapability.CUSTOM_PICK_ITEM)) {
-			TileEntity te = world.getTileEntity(blockPos);
+			TileEntity te = world.getTileEntity(pos);
 			if (te instanceof ICustomPickItem) return ((ICustomPickItem)te).getPickBlock(player);
 		}
 
-		return suppressPickBlock()? null : super.getPickBlock(target, world, blockPos, player);
+		return suppressPickBlock()? null : super.getPickBlock(state, target, world, pos, player);
 	}
 
 	private static List<ItemStack> getTileBreakDrops(TileEntity te) {
@@ -274,20 +266,20 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te) {
-		player.triggerAchievement(StatList.mineBlockStatArray[getIdFromBlock(this)]);
+	public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te, ItemStack stack) {
+		player.addStat(StatList.getBlockStats(this));
 		player.addExhaustion(0.025F);
 
-		if (canSilkHarvest(world, pos, state, player) && EnchantmentHelper.getSilkTouchModifier(player)) {
+		if (canSilkHarvest(world, pos, state, player) && EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0) {
 			handleSilkTouchDrops(world, player, pos, state, te);
 		} else {
-			handleNormalDrops(world, player, pos, state, te);
+			handleNormalDrops(world, player, pos, state, te, stack);
 		}
 	}
 
-	protected void handleNormalDrops(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te) {
+	protected void handleNormalDrops(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te, ItemStack stack) {
 		harvesters.set(player);
-		final int fortune = EnchantmentHelper.getFortuneModifier(player);
+		final int fortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, stack);
 
 		boolean addNormalDrops = true;
 
@@ -297,8 +289,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 			dropper.addHarvestDrops(player, drops, fortune, false);
 
 			ForgeEventFactory.fireBlockHarvesting(drops, world, pos, state, fortune, 1.0f, false, player);
-			for (ItemStack stack : drops)
-				spawnAsEntity(world, pos, stack);
+			for (ItemStack drop : drops)
+				spawnAsEntity(world, pos, drop);
 
 			addNormalDrops = !dropper.suppressBlockHarvestDrops();
 		}
@@ -360,7 +352,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void onNeighborBlockChange(World world, BlockPos blockPos, IBlockState state, Block neighbour) {
+	@SuppressWarnings("deprecation") // TODO think about replacing?
+	public void neighborChanged(IBlockState state, World world, BlockPos blockPos, Block neighbour) {
 		if (hasCapabilities(TileEntityCapability.NEIGBOUR_LISTENER, TileEntityCapability.SURFACE_ATTACHEMENT)) {
 			final TileEntity te = world.getTileEntity(blockPos);
 			if (te instanceof INeighbourAwareTile) ((INeighbourAwareTile)te).onNeighbourChanged(neighbour);
@@ -388,7 +381,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState state, EntityPlayer player, EnumFacing side, float hitX, float hitY, float hitZ) {
+	public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState state, EntityPlayer player, EnumHand hand, @Nullable ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ) {
 		if (hasCapabilities(TileEntityCapability.GUI_PROVIDER, TileEntityCapability.ACTIVATE_LISTENER)) {
 			final TileEntity te = world.getTileEntity(blockPos);
 
@@ -397,14 +390,16 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 				return true;
 			}
 
+			// TODO Expand for new args
 			if (te instanceof IActivateAwareTile) return ((IActivateAwareTile)te).onBlockActivated(player, side, hitX, hitY, hitZ);
 		}
 
 		return false;
 	}
 
+	@SuppressWarnings("deprecation") // TODO review
 	@Override
-	public boolean onBlockEventReceived(World world, BlockPos blockPos, IBlockState state, int eventId, int eventParam) {
+	public boolean eventReceived(IBlockState state, World world, BlockPos blockPos, int eventId, int eventParam) {
 		if (eventId < 0 && !world.isRemote) {
 			switch (eventId) {
 				case EVENT_ADDED: {
@@ -419,25 +414,12 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 			return false;
 		}
 		if (isBlockContainer) {
-			super.onBlockEventReceived(world, blockPos, state, eventId, eventParam);
+			super.eventReceived(state, world, blockPos, eventId, eventParam);
 			TileEntity te = world.getTileEntity(blockPos);
 			return te != null? te.receiveClientEvent(eventId, eventParam) : false;
 		} else {
-			return super.onBlockEventReceived(world, blockPos, state, eventId, eventParam);
+			return super.eventReceived(state, world, blockPos, eventId, eventParam);
 		}
-	}
-
-	protected void setupDimensionsFromCenter(float x, float y, float z, float width, float height, float depth) {
-		setupDimensions(x - width, y, z - depth, x + width, y + height, z + depth);
-	}
-
-	protected void setupDimensions(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
-		this.minX = minX;
-		this.minY = minY;
-		this.minZ = minZ;
-		this.maxX = maxX;
-		this.maxY = maxY;
-		this.maxZ = maxZ;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -461,10 +443,11 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		}
 	}
 
-	public boolean canBlockBePlaced(World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, int itemMetadata, EntityPlayer player) {
+	public boolean canBlockBePlaced(World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ, int itemMetadata, EntityPlayer player) {
 		return true;
 	}
 
+	@SuppressWarnings("deprecation") // TODO review
 	@Override
 	public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
 		final Orientation orientation = calculateOrientationAfterPlace(pos, facing, placer);
@@ -498,6 +481,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return rotationMode.toValue(orientation);
 	}
 
+	@SuppressWarnings("deprecation") // TODO review
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
 		return getDefaultState()
@@ -516,15 +500,9 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	protected BlockState createBlockState() {
+	protected BlockStateContainer createBlockState() {
 		// WARNING: this is called from superclass, so rotationMode is not set yet
-		return new BlockState(this, getPropertyOrientation());
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)
-	public IBlockState getStateForEntityRender(IBlockState state) {
-		return getDefaultState().withProperty(propertyOrientation, getInventoryRenderOrientation());
+		return new BlockStateContainer(this, getPropertyOrientation());
 	}
 
 	@Override

@@ -3,10 +3,10 @@ package openmods.utils;
 import com.google.common.base.Objects;
 import java.util.UUID;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.common.util.Constants;
 
 public class NbtUtils {
@@ -80,7 +80,7 @@ public class NbtUtils {
 		return store(new NBTTagCompound(), uuid);
 	}
 
-	public static NBTTagCompound store(Vec3 vec) {
+	public static NBTTagCompound store(Vec3d vec) {
 		return store(vec.xCoord, vec.yCoord, vec.zCoord);
 	}
 
@@ -108,11 +108,11 @@ public class NbtUtils {
 		return new BlockPos(x, y, z);
 	}
 
-	public static Vec3 readVec(NBTTagCompound tag) {
+	public static Vec3d readVec(NBTTagCompound tag) {
 		final double x = tag.getDouble(TAG_X);
 		final double y = tag.getDouble(TAG_Y);
 		final double z = tag.getDouble(TAG_Z);
-		return new Vec3(x, y, z);
+		return new Vec3d(x, y, z);
 	}
 
 	public static UUID readUuid(NBTTagCompound tag) {

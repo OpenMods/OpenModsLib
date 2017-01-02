@@ -10,8 +10,11 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -52,17 +55,19 @@ public abstract class ItemGeneric extends Item {
 	}
 
 	@Override
-	public boolean onItemUse(ItemStack itemStack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ) {
+	public EnumActionResult onItemUse(ItemStack itemStack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		IMetaItem meta = getMeta(itemStack.getItemDamage());
-		if (meta != null) { return meta.onItemUse(itemStack, player, world, pos, side, hitX, hitY, hitZ); }
-		return true;
+		return (meta != null)
+				? meta.onItemUse(itemStack, player, world, pos, hand, facing, hitX, hitY, hitZ)
+				: EnumActionResult.PASS;
 	}
 
 	@Override
-	public ItemStack onItemRightClick(ItemStack itemStack, World world, EntityPlayer player) {
+	public ActionResult<ItemStack> onItemRightClick(ItemStack itemStack, World world, EntityPlayer player, EnumHand hand) {
 		IMetaItem meta = getMeta(itemStack.getItemDamage());
-		if (meta != null) { return meta.onItemRightClick(itemStack, player, world); }
-		return itemStack;
+		return meta != null
+				? meta.onItemRightClick(itemStack, world, player, hand)
+				: ActionResult.newResult(EnumActionResult.PASS, itemStack);
 	}
 
 	@Override

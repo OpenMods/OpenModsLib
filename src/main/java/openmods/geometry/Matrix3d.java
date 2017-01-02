@@ -1,7 +1,7 @@
 package openmods.geometry;
 
 import com.google.common.base.Objects;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 public class Matrix3d {
 
@@ -149,11 +149,11 @@ public class Matrix3d {
 		return m02 * x + m12 * y + m22 * z;
 	}
 
-	public Vec3 transform(Vec3 vec) {
+	public Vec3d transform(Vec3d vec) {
 		final double tx = transformX(vec.xCoord, vec.yCoord, vec.zCoord);
 		final double ty = transformY(vec.xCoord, vec.yCoord, vec.zCoord);
 		final double tz = transformZ(vec.xCoord, vec.yCoord, vec.zCoord);
-		return new Vec3(tx, ty, tz);
+		return new Vec3d(tx, ty, tz);
 	}
 
 	public Matrix3d transpose() {

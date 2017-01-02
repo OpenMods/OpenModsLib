@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
@@ -21,9 +21,9 @@ public class RenderUtils {
 	public static class FogColorUpdater {
 		@SubscribeEvent(priority = EventPriority.LOWEST)
 		public void onFogColor(EntityViewRenderEvent.FogColors evt) {
-			fogRed = evt.red;
-			fogGreen = evt.green;
-			fogBlue = evt.blue;
+			fogRed = evt.getRed();
+			fogGreen = evt.getGreen();
+			fogBlue = evt.getBlue();
 		}
 	}
 
@@ -111,7 +111,7 @@ public class RenderUtils {
 	}
 
 	public static void renderSolidCube(Tessellator tes, double x1, double y1, double z1, double x2, double y2, double z2) {
-		final WorldRenderer wr = tes.getWorldRenderer();
+		final VertexBuffer wr = tes.getBuffer();
 		wr.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
 		renderCube(new IVertexSink() {
 			@Override

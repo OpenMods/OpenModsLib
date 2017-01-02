@@ -8,7 +8,7 @@ import openmods.gui.Icon;
 public class GuiComponentSprite extends BaseComponent {
 
 	public static Icon adaptSprite(TextureAtlasSprite icon) {
-		return new Icon(TextureMap.locationBlocksTexture, icon.getMinU(), icon.getMaxU(), icon.getMinV(), icon.getMaxV(), icon.getIconWidth(), icon.getIconHeight());
+		return new Icon(TextureMap.LOCATION_BLOCKS_TEXTURE, icon.getMinU(), icon.getMaxU(), icon.getMinV(), icon.getMaxV(), icon.getIconWidth(), icon.getIconHeight());
 	}
 
 	protected Icon icon;

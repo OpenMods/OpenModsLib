@@ -1,11 +1,8 @@
 package openmods.tileentity;
 
-import java.io.IOException;
 import java.util.Set;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.Packet;
-import net.minecraft.network.PacketBuffer;
-import openmods.Log;
+import net.minecraft.util.math.BlockPos;
 import openmods.network.rpc.IRpcTarget;
 import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.SyncRpcTarget;
@@ -14,7 +11,6 @@ import openmods.reflection.TypeUtils;
 import openmods.sync.ISyncListener;
 import openmods.sync.ISyncMapProvider;
 import openmods.sync.ISyncableObject;
-import openmods.sync.SyncChannelHolder;
 import openmods.sync.SyncMap;
 import openmods.sync.SyncMapTile;
 import openmods.sync.SyncObjectScanner;
@@ -48,7 +44,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		return new ISyncListener() {
 			@Override
 			public void onSync(Set<ISyncableObject> changes) {
-				worldObj.markBlockForUpdate(getPos());
+				markBlockForRenderUpdate(getPos());
 			}
 		};
 	}
@@ -57,9 +53,16 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		return new ISyncListener() {
 			@Override
 			public void onSync(Set<ISyncableObject> changes) {
-				if (changes.contains(target)) worldObj.markBlockForUpdate(getPos());
+				if (changes.contains(target)) markBlockForRenderUpdate(getPos());
 			}
 		};
+	}
+
+	protected void markBlockForRenderUpdate(final BlockPos pos) {
+		final int x = pos.getX();
+		final int y = pos.getY();
+		final int z = pos.getZ();
+		worldObj.markBlockRangeForRenderUpdate(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
 	}
 
 	protected abstract void createSyncedFields();
@@ -77,21 +80,13 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		return syncMap;
 	}
 
-	@Override
-	public Packet<?> getDescriptionPacket() {
-		try {
-			PacketBuffer payload = syncMap.createPayload(true);
-			return SyncChannelHolder.createPacket(payload);
-		} catch (IOException e) {
-			Log.severe(e, "Error during description packet creation");
-			return null;
-		}
-	}
+	// TODO verify if initial NBT send is enough
 
 	@Override
-	public void writeToNBT(NBTTagCompound tag) {
+	public NBTTagCompound writeToNBT(NBTTagCompound tag) {
 		super.writeToNBT(tag);
 		syncMap.writeToNBT(tag);
+		return tag;
 	}
 
 	@Override

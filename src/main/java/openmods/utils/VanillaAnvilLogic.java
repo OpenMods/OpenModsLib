@@ -21,191 +21,181 @@ public class VanillaAnvilLogic {
 		this.outputStack = null;
 
 		final String repairedItemName = itemName.orNull();
-		// almost vanilla logic, with few renames and minor variable declaration cleanup
+
+		// adapted/copied from ContainerRepair.updateRepairOutput
 		this.maximumCost = 1;
-		int l1 = 0;
-		int i2 = 0;
-		int j2 = 0;
+		int i = 0;
+		int j = 0;
+		int k = 0;
 
 		if (inputStack == null) {
 			this.outputStack = null;
 			this.maximumCost = 0;
-			return;
-		}
+		} else {
+			ItemStack itemstack1 = inputStack.copy();
+			ItemStack itemstack2 = modifierStack;
+			Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(itemstack1);
+			j = j + inputStack.getRepairCost() + (itemstack2 == null? 0 : itemstack2.getRepairCost());
+			this.materialCost = 0;
+			boolean flag = false;
 
-		ItemStack itemstack1 = inputStack.copy();
+			if (itemstack2 != null) {
+				if (!onAnvilChange(inputStack, itemstack2, repairedItemName, j)) return;
+				flag = itemstack2.getItem() == Items.ENCHANTED_BOOK && !Items.ENCHANTED_BOOK.getEnchantments(itemstack2).hasNoTags();
 
-		Map<Integer, Integer> map = EnchantmentHelper.getEnchantments(itemstack1);
-		boolean flag = false;
-		i2 = i2 + inputStack.getRepairCost() + (modifierStack == null? 0 : modifierStack.getRepairCost());
-		this.materialCost = 0;
+				if (itemstack1.isItemStackDamageable() && itemstack1.getItem().getIsRepairable(inputStack, itemstack2)) {
+					int j2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
 
-		if (modifierStack != null) {
-			if (!onAnvilChange(inputStack, modifierStack, repairedItemName, i2)) return;
-			flag = modifierStack.getItem() == Items.enchanted_book && Items.enchanted_book.getEnchantments(modifierStack).tagCount() > 0;
-
-			if (itemstack1.isItemStackDamageable() && itemstack1.getItem().getIsRepairable(inputStack, modifierStack)) {
-				int j4 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
-
-				if (j4 <= 0) {
-					this.outputStack = null;
-					this.maximumCost = 0;
-					return;
-				}
-
-				int l4;
-
-				for (l4 = 0; j4 > 0 && l4 < modifierStack.stackSize; ++l4) {
-					int j5 = itemstack1.getItemDamage() - j4;
-					itemstack1.setItemDamage(j5);
-					++l1;
-					j4 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
-				}
-
-				this.materialCost = l4;
-			} else {
-				if (!flag && (itemstack1.getItem() != modifierStack.getItem() || !itemstack1.isItemStackDamageable())) { return; }
-
-				if (itemstack1.isItemStackDamageable() && !flag) {
-					int k2 = inputStack.getMaxDamage() - inputStack.getItemDamage();
-					int l2 = modifierStack.getMaxDamage() - modifierStack.getItemDamage();
-					int i3 = l2 + itemstack1.getMaxDamage() * 12 / 100;
-					int j3 = k2 + i3;
-					int k3 = itemstack1.getMaxDamage() - j3;
-
-					if (k3 < 0) {
-						k3 = 0;
+					if (j2 <= 0) {
+						this.outputStack = null;
+						this.maximumCost = 0;
+						return;
 					}
 
-					if (k3 < itemstack1.getMetadata()) {
-						itemstack1.setItemDamage(k3);
-						l1 += 2;
+					int k2;
+
+					for (k2 = 0; j2 > 0 && k2 < itemstack2.stackSize; ++k2) {
+						int l2 = itemstack1.getItemDamage() - j2;
+						itemstack1.setItemDamage(l2);
+						++i;
+						j2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
 					}
-				}
 
-				Map<Integer, Integer> map1 = EnchantmentHelper.getEnchantments(modifierStack);
-				for (int i5 : map1.keySet()) {
-					Enchantment enchantment = Enchantment.getEnchantmentById(i5);
+					this.materialCost = k2;
+				} else {
+					if (!flag && (itemstack1.getItem() != itemstack2.getItem() || !itemstack1.isItemStackDamageable())) {
+						this.outputStack = null;
+						this.maximumCost = 0;
+						return;
+					}
 
-					if (enchantment != null) {
-						int k5 = map.containsKey(i5)? map.get(i5).intValue() : 0;
-						int l3 = map1.get(i5).intValue();
-						int i6;
+					if (itemstack1.isItemStackDamageable() && !flag) {
+						int l = inputStack.getMaxDamage() - inputStack.getItemDamage();
+						int i1 = itemstack2.getMaxDamage() - itemstack2.getItemDamage();
+						int j1 = i1 + itemstack1.getMaxDamage() * 12 / 100;
+						int k1 = l + j1;
+						int l1 = itemstack1.getMaxDamage() - k1;
 
-						if (k5 == l3) {
-							++l3;
-							i6 = l3;
-						} else {
-							i6 = Math.max(l3, k5);
+						if (l1 < 0) {
+							l1 = 0;
 						}
 
-						l3 = i6;
-						boolean flag1 = enchantment.canApply(inputStack);
-
-						if (isCreativeMode || inputStack.getItem() == Items.enchanted_book) {
-							flag1 = true;
+						if (l1 < itemstack1.getMetadata()) {
+							itemstack1.setItemDamage(l1);
+							i += 2;
 						}
+					}
 
-						for (int i4 : map.keySet()) {
-							Enchantment e2 = Enchantment.getEnchantmentById(i4);
-							if (i4 != i5 && !(enchantment.canApplyTogether(e2) && e2.canApplyTogether(enchantment))) {// Forge BugFix: Let Both enchantments veto being together
-								flag1 = false;
-								++l1;
-							}
-						}
+					Map<Enchantment, Integer> map1 = EnchantmentHelper.getEnchantments(itemstack2);
 
-						if (flag1) {
-							if (l3 > enchantment.getMaxLevel()) {
-								l3 = enchantment.getMaxLevel();
-							}
+					for (Enchantment enchantment1 : map1.keySet()) {
+						if (enchantment1 != null) {
+							int i3 = map.containsKey(enchantment1)? map.get(enchantment1).intValue() : 0;
+							int j3 = map1.get(enchantment1).intValue();
+							j3 = i3 == j3? j3 + 1 : Math.max(j3, i3);
+							boolean flag1 = enchantment1.canApply(inputStack);
 
-							map.put(Integer.valueOf(i5), Integer.valueOf(l3));
-							int l5 = 0;
-
-							switch (enchantment.getWeight()) {
-								case 1:
-									l5 = 8;
-									break;
-								case 2:
-									l5 = 4;
-								case 3:
-								case 4:
-								case 6:
-								case 7:
-								case 8:
-								case 9:
-								default:
-									break;
-								case 5:
-									l5 = 2;
-									break;
-								case 10:
-									l5 = 1;
+							if (isCreativeMode || inputStack.getItem() == Items.ENCHANTED_BOOK) {
+								flag1 = true;
 							}
 
-							if (flag) {
-								l5 = Math.max(1, l5 / 2);
+							for (Enchantment enchantment : map.keySet()) {
+								if (enchantment != enchantment1 && !(enchantment1.canApplyTogether(enchantment) && enchantment.canApplyTogether(enchantment1)))  // Forge BugFix: Let Both enchantments veto being together
+								{
+									flag1 = false;
+									++i;
+								}
 							}
 
-							l1 += l5 * l3;
+							if (flag1) {
+								if (j3 > enchantment1.getMaxLevel()) {
+									j3 = enchantment1.getMaxLevel();
+								}
+
+								map.put(enchantment1, Integer.valueOf(j3));
+								int k3 = 0;
+
+								switch (enchantment1.getRarity()) {
+									case COMMON:
+										k3 = 1;
+										break;
+									case UNCOMMON:
+										k3 = 2;
+										break;
+									case RARE:
+										k3 = 4;
+										break;
+									case VERY_RARE:
+										k3 = 8;
+								}
+
+								if (flag) {
+									k3 = Math.max(1, k3 / 2);
+								}
+
+								i += k3 * j3;
+							}
 						}
 					}
 				}
 			}
-		}
 
-		if (flag && !itemstack1.getItem().isBookEnchantable(itemstack1, modifierStack)) itemstack1 = null;
+			if (flag && !itemstack1.getItem().isBookEnchantable(itemstack1, itemstack2)) itemstack1 = null;
 
-		if (itemstack1 != null) {
-			if (StringUtils.isBlank(repairedItemName)) {
-				if (inputStack.hasDisplayName()) {
-					j2 = 1;
-					l1 += j2;
-					itemstack1.clearCustomName();
+			if (itemstack1 != null) {
+				if (StringUtils.isBlank(repairedItemName)) {
+					if (inputStack.hasDisplayName()) {
+						k = 1;
+						i += k;
+						itemstack1.clearCustomName();
+					}
+				} else if (!repairedItemName.equals(inputStack.getDisplayName())) {
+					k = 1;
+					i += k;
+					itemstack1.setStackDisplayName(repairedItemName);
 				}
-			} else if (!repairedItemName.equals(inputStack.getDisplayName())) {
-				j2 = 1;
-				l1 += j2;
-				itemstack1.setStackDisplayName(repairedItemName);
-			}
-		}
-
-		this.maximumCost = i2 + l1;
-
-		if (l1 <= 0) {
-			itemstack1 = null;
-		}
-
-		if (j2 == l1 && j2 > 0 && this.maximumCost >= 40) {
-			this.maximumCost = 39;
-		}
-
-		if (this.maximumCost >= 40 && !isCreativeMode) {
-			itemstack1 = null;
-		}
-
-		if (itemstack1 != null) {
-			int k4 = itemstack1.getRepairCost();
-
-			if (modifierStack != null && k4 < modifierStack.getRepairCost()) {
-				k4 = modifierStack.getRepairCost();
 			}
 
-			k4 = k4 * 2 + 1;
-			itemstack1.setRepairCost(k4);
-			EnchantmentHelper.setEnchantments(map, itemstack1);
-		}
+			this.maximumCost = j + i;
 
-		outputStack = itemstack1;
+			if (i <= 0) {
+				itemstack1 = null;
+			}
+
+			if (k == i && k > 0 && this.maximumCost >= 40) {
+				this.maximumCost = 39;
+			}
+
+			if (this.maximumCost >= 40 && !isCreativeMode) {
+				itemstack1 = null;
+			}
+
+			if (itemstack1 != null) {
+				int i2 = itemstack1.getRepairCost();
+
+				if (itemstack2 != null && i2 < itemstack2.getRepairCost()) {
+					i2 = itemstack2.getRepairCost();
+				}
+
+				if (k != i || k == 0) {
+					i2 = i2 * 2 + 1;
+				}
+
+				itemstack1.setRepairCost(i2);
+				EnchantmentHelper.setEnchantments(map, itemstack1);
+			}
+
+			this.outputStack = itemstack1;
+		}
 	}
 
 	private boolean onAnvilChange(ItemStack inputItem, ItemStack modifierItem, String itemName, int baseCost) {
 		AnvilUpdateEvent e = new AnvilUpdateEvent(inputItem, modifierItem, itemName, baseCost);
 		if (MinecraftForge.EVENT_BUS.post(e)) return false;
-		if (e.output != null) {
-			this.outputStack = e.output;
-			this.maximumCost = e.cost;
-			this.materialCost = e.materialCost;
+		if (e.getOutput() != null) {
+			this.outputStack = e.getOutput();
+			this.maximumCost = e.getCost();
+			this.materialCost = e.getMaterialCost();
 			return false;
 		}
 		return true;

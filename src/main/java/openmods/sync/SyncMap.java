@@ -18,7 +18,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import openmods.Log;
 import openmods.utils.ByteUtils;
@@ -41,7 +41,6 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 
 	public enum HandlerType {
 		TILE_ENTITY {
-
 			@Override
 			public ISyncMapProvider findHandler(World world, PacketBuffer input) {
 				final BlockPos pos = input.readBlockPos();

@@ -11,8 +11,9 @@ import java.util.Set;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentTranslation;
 import openmods.Log;
 import openmods.source.ClassSourceCollector.ApiInfo;
 import openmods.source.ClassSourceCollector.ClassMeta;
@@ -37,7 +38,7 @@ public class CommandSource extends SidedCommand {
 	}
 
 	@Override
-	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		if (args.length < 1) throw new SyntaxErrorException();
 
 		final String subCommand = args[0];
@@ -47,16 +48,16 @@ public class CommandSource extends SidedCommand {
 			final String clsName = args[1];
 			final ClassMeta meta = getMeta(clsName);
 
-			sender.addChatMessage(new ChatComponentTranslation("openmodslib.command.class_source", meta.cls.getName(), meta.source()));
+			sender.addChatMessage(new TextComponentTranslation("openmodslib.command.class_source", meta.cls.getName(), meta.source()));
 
 			final ApiInfo api = meta.api;
 			if (api != null) {
-				sender.addChatMessage(new ChatComponentTranslation("openmodslib.command.api_class",
+				sender.addChatMessage(new TextComponentTranslation("openmodslib.command.api_class",
 						api.api, api.owner, api.version));
 			}
 
 			for (Map.Entry<File, Set<String>> e : meta.providerMods.entrySet())
-				sender.addChatMessage(new ChatComponentTranslation("openmodslib.command.class_provider",
+				sender.addChatMessage(new TextComponentTranslation("openmodslib.command.class_provider",
 						e.getKey().getAbsolutePath(),
 						Joiner.on(',').join(e.getValue())));
 		}
@@ -74,7 +75,7 @@ public class CommandSource extends SidedCommand {
 	}
 
 	@Override
-	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		if (args.length == 1) return filterPrefixes(args[0], subcommands);
 
 		return null;

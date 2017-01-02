@@ -8,8 +8,9 @@ import io.netty.channel.ChannelHandlerContext;
 import java.util.Set;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.management.PlayerManager;
+import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -20,7 +21,7 @@ import openmods.Log;
 public class NetUtils {
 
 	public static NetworkDispatcher getPlayerDispatcher(EntityPlayerMP player) {
-		NetworkDispatcher dispatcher = player.playerNetServerHandler.netManager.channel().attr(NetworkDispatcher.FML_DISPATCHER).get();
+		NetworkDispatcher dispatcher = player.connection.netManager.channel().attr(NetworkDispatcher.FML_DISPATCHER).get();
 		return dispatcher;
 	}
 
@@ -33,12 +34,12 @@ public class NetUtils {
 	}
 
 	public static Set<EntityPlayerMP> getPlayersWatchingChunk(WorldServer world, int chunkX, int chunkZ) {
-		PlayerManager manager = world.getPlayerManager();
+		final PlayerChunkMapEntry playerChunkMap = world.getPlayerChunkMap().getEntry(chunkX, chunkZ);
 
 		Set<EntityPlayerMP> playerList = Sets.newHashSet();
-		for (Object o : world.playerEntities) {
+		for (EntityPlayer o : world.playerEntities) {
 			EntityPlayerMP player = (EntityPlayerMP)o;
-			if (manager.isPlayerWatchingChunk(player, chunkX, chunkZ)) playerList.add(player);
+			if (playerChunkMap.containsPlayer(player)) playerList.add(player);
 		}
 		return playerList;
 	}

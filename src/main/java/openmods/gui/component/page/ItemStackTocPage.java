@@ -1,7 +1,7 @@
 package openmods.gui.component.page;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 import openmods.gui.component.GuiComponentItemStack;
 import openmods.gui.listener.IMouseDownListener;
 

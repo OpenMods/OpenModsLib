@@ -3,7 +3,7 @@ package openmods.gui.component;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentItemStack extends BaseComponent {

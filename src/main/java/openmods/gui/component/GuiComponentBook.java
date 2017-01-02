@@ -4,14 +4,15 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.StatCollector;
+import net.minecraft.util.SoundEvent;
 import openmods.gui.Icon;
 import openmods.gui.component.page.BookScaleConfig;
 import openmods.gui.listener.IMouseDownListener;
+import openmods.utils.TranslationUtils;
 
 public class GuiComponentBook extends BaseComposite {
 
-	private static final ResourceLocation PAGETURN = new ResourceLocation("openmodslib", "pageturn");
+	private static final SoundEvent PAGETURN = new SoundEvent(new ResourceLocation("openmodslib", "pageturn"));
 
 	public static final ResourceLocation BOOK_WIDGETS = new ResourceLocation("openmodslib:textures/gui/book.png");
 
@@ -113,8 +114,8 @@ public class GuiComponentBook extends BaseComposite {
 
 		imgNext.setEnabled(index < pages.size() - 2);
 		imgPrev.setEnabled(index > 0);
-		pageNumberLeft.setText(StatCollector.translateToLocalFormatted("openblocks.misc.page", index + 1, totalPageCount));
-		pageNumberRight.setText(StatCollector.translateToLocalFormatted("openblocks.misc.page", index + 2, totalPageCount));
+		pageNumberLeft.setText(TranslationUtils.translateToLocalFormatted("openblocks.misc.page", index + 1, totalPageCount));
+		pageNumberRight.setText(TranslationUtils.translateToLocalFormatted("openblocks.misc.page", index + 2, totalPageCount));
 	}
 
 	public void changePage(int newPage) {
@@ -127,7 +128,7 @@ public class GuiComponentBook extends BaseComposite {
 	}
 
 	private void playPageTurnSound() {
-		parent.getSoundHandler().playSound(PositionedSoundRecord.create(PAGETURN, 1.0f));
+		parent.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(PAGETURN, 1.0f));
 	}
 
 	public IMouseDownListener createBookmarkListener(final int index) {

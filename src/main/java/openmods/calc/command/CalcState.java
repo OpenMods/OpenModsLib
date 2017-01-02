@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.text.TextComponentString;
 import openmods.calc.Calculator;
 import openmods.calc.ExprType;
 import openmods.calc.Frame;
@@ -85,14 +85,14 @@ public class CalcState {
 					}
 
 					final String result = ": " + Joiner.on(" ").join(results);
-					sender.addChatMessage(new ChatComponentText(result));
+					sender.addChatMessage(new TextComponentString(result));
 				}
 			});
 
 			calculator.environment.setGlobalSymbol("print", new UnaryFunction.Direct<E>() {
 				@Override
 				protected E call(E value) {
-					sender.addChatMessage(new ChatComponentText(printer.str(value)));
+					sender.addChatMessage(new TextComponentString(printer.str(value)));
 					return value;
 				}
 			});

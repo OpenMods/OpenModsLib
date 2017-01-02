@@ -5,13 +5,14 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import openmods.geometry.Orientation;
 import openmods.inventory.IInventoryProvider;
@@ -83,7 +84,7 @@ public class BlockUtils {
 		EntityItem entityitem = new EntityItem(worldObj, x + d0, y + d1, z + d2, stack);
 		entityitem.setDefaultPickupDelay();
 		if (stack.hasTagCompound()) {
-			entityitem.getEntityItem().setTagCompound((NBTTagCompound)stack.getTagCompound().copy());
+			entityitem.getEntityItem().setTagCompound(stack.getTagCompound().copy());
 		}
 		worldObj.spawnEntityInWorld(entityitem);
 		return entityitem;
@@ -155,7 +156,7 @@ public class BlockUtils {
 		return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1);
 	}
 
-	public static void playSoundAtPos(World world, BlockPos pos, String sound, float volume, float pitch) {
-		world.playSoundEffect(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, sound, volume, pitch);
+	public static void playSoundAtPos(World world, BlockPos pos, SoundEvent sound, float volume, float pitch) {
+		world.playSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, sound, SoundCategory.BLOCKS, volume, pitch, false);
 	}
 }

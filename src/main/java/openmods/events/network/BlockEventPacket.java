@@ -3,7 +3,7 @@ package openmods.events.network;
 import java.util.List;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import openmods.network.DimCoord;
 import openmods.network.event.NetworkEvent;
@@ -22,7 +22,7 @@ public abstract class BlockEventPacket extends NetworkEvent {
 	}
 
 	public BlockEventPacket(TileEntity tile) {
-		this(tile.getWorld().provider.getDimensionId(), tile.getPos());
+		this(tile.getWorld().provider.getDimension(), tile.getPos());
 	}
 
 	@Override

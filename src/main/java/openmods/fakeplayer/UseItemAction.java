@@ -1,9 +1,10 @@
 package openmods.fakeplayer;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import openmods.fakeplayer.FakePlayerPool.PlayerUserReturning;
 import openmods.utils.InventoryUtils;
 import openmods.utils.MathUtils;
@@ -12,17 +13,20 @@ public class UseItemAction implements PlayerUserReturning<ItemStack> {
 
 	private final ItemStack stack;
 
-	private final Vec3 playerPos;
-	private final Vec3 clickPos;
-	private final Vec3 hitPos;
+	private final Vec3d playerPos;
+	private final Vec3d clickPos;
+	private final Vec3d hitPos;
 	private final EnumFacing side;
+	private final EnumHand hand;
 
-	public UseItemAction(ItemStack stack, Vec3 playerPos, Vec3 clickPos, Vec3 hitPos, EnumFacing side) {
+	public UseItemAction(ItemStack stack, Vec3d playerPos, Vec3d clickPos, Vec3d hitPos, EnumFacing side, EnumHand hand) {
+		super();
 		this.stack = stack;
 		this.playerPos = playerPos;
 		this.clickPos = clickPos;
 		this.hitPos = hitPos;
 		this.side = side;
+		this.hand = hand;
 	}
 
 	@Override
@@ -43,6 +47,7 @@ public class UseItemAction implements PlayerUserReturning<ItemStack> {
 		player.rightClick(
 				stack,
 				new BlockPos(clickPos.xCoord, clickPos.yCoord, clickPos.zCoord),
+				hand,
 				side,
 				(float)hitPos.xCoord, (float)hitPos.yCoord, (float)hitPos.zCoord);
 

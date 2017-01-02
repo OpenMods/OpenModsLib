@@ -8,14 +8,14 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.resources.model.IBakedModel;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IListenerBase;
 import openmods.gui.misc.SidePicker;
@@ -100,13 +100,13 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 	private void drawBlock() {
 		final Tessellator tessellator = Tessellator.getInstance();
-		final WorldRenderer wr = tessellator.getWorldRenderer();
+		final VertexBuffer wr = tessellator.getBuffer();
 		wr.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
 
 		FakeBlockAccess access = new FakeBlockAccess(blockState);
 
 		final BlockRendererDispatcher dispatcher = parent.getMinecraft().getBlockRendererDispatcher();
-		final IBakedModel model = dispatcher.getModelFromBlockState(blockState, access, FakeBlockAccess.ORIGIN);
+		final IBakedModel model = dispatcher.getModelForState(blockState);
 		dispatcher.getBlockModelRenderer().renderModel(access, model, blockState, FakeBlockAccess.ORIGIN, wr, false);
 		wr.setTranslation(0.0D, 0.0D, 0.0D);
 		tessellator.draw();

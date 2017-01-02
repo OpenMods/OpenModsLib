@@ -11,7 +11,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.util.text.ITextComponent;
 import openmods.utils.bitmap.IReadableBitMap;
 
 public class SidedInventoryAdapter implements ISidedInventory {
@@ -174,7 +174,7 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public IChatComponent getDisplayName() {
+	public ITextComponent getDisplayName() {
 		return inventory.getDisplayName();
 	}
 }

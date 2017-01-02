@@ -4,8 +4,9 @@ import com.google.common.base.Preconditions;
 import javax.annotation.Nonnull;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
@@ -79,7 +80,7 @@ public class BlockManipulator {
 		return world.setBlockToAir(blockPos);
 	}
 
-	public boolean place(IBlockState state, EnumFacing direction) {
+	public boolean place(IBlockState state, EnumFacing direction, EnumHand hand) {
 		if (!world.isBlockLoaded(blockPos)) return false;
 
 		if (spawnProtection) {
@@ -90,7 +91,7 @@ public class BlockManipulator {
 
 		if (!world.setBlockState(blockPos, state, blockPlaceFlags)) return false;
 
-		if (ForgeEventFactory.onPlayerBlockPlace(player, snapshot, direction).isCanceled()) {
+		if (ForgeEventFactory.onPlayerBlockPlace(player, snapshot, direction, hand).isCanceled()) {
 			world.restoringBlockSnapshots = true;
 			snapshot.restore(true, false);
 			world.restoringBlockSnapshots = false;

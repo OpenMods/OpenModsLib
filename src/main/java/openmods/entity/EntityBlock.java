@@ -11,10 +11,11 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.Constants;
@@ -32,6 +33,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	private static final String TAG_BLOCK_ID = "BlockId";
 
 	public static final EnumFacing[] PLACE_DIRECTIONS = { EnumFacing.UP, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST, EnumFacing.DOWN };
+	private static final String TAG_BLOCK_STATE_ID = "BlockState";
 
 	private boolean hasGravity = false;
 	/* Should this entity return to a block on the ground? */
@@ -49,10 +51,6 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	public EntityBlock(World world, IBlockState state, NBTTagCompound tileEntity) {
 		super(world);
 		setSize(0.925F, 0.925F);
-	}
-
-	private void setHeight(float height) {
-		this.height = height;
 	}
 
 	public interface EntityFactory {
@@ -77,8 +75,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 		final TileEntity te = world.getTileEntity(pos);
 		if (te != null) {
-			entity.tileEntity = new NBTTagCompound();
-			te.writeToNBT(entity.tileEntity);
+			entity.tileEntity = te.writeToNBT(new NBTTagCompound());
 		}
 
 		final boolean blockRemoved = new BlockManipulator(world, player, pos).setSilentTeRemove(true).remove();
@@ -102,23 +99,25 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	protected void readEntityFromNBT(NBTTagCompound tag) {
-		int meta = tag.getByte(TAG_BLOCK_META) & 255;
+		if (tag.hasKey(TAG_BLOCK_STATE_ID)) {
+			final int blockStateId = tag.getInteger(TAG_BLOCK_STATE_ID);
+			this.blockState = Block.getStateById(blockStateId);
+		} else {
+			int meta = tag.getByte(TAG_BLOCK_META) & 255;
 
-		final ResourceLocation blockId = NbtUtils.readResourceLocation(tag.getCompoundTag(TAG_BLOCK_ID));
-		final Block block = Block.blockRegistry.getObject(blockId);
-		this.blockState = block.getStateFromMeta(meta);
-
+			final ResourceLocation blockId = NbtUtils.readResourceLocation(tag.getCompoundTag(TAG_BLOCK_ID));
+			final Block block = Block.REGISTRY.getObject(blockId);
+			this.blockState = block.getStateFromMeta(meta);
+		}
 		if (tag.hasKey(TAG_TILE_ENTITY, Constants.NBT.TAG_COMPOUND)) this.tileEntity = tag.getCompoundTag(TAG_TILE_ENTITY);
 		else this.tileEntity = null;
 	}
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound tag) {
-		final Block block = blockState.getBlock();
-		final ResourceLocation blockId = Block.blockRegistry.getNameForObject(block);
-		tag.setTag(TAG_BLOCK_ID, NbtUtils.store(blockId));
-		tag.setByte(TAG_BLOCK_META, (byte)block.getMetaFromState(this.blockState));
+		tag.setInteger(TAG_BLOCK_STATE_ID, Block.getStateId(blockState));
 		if (tileEntity != null) tag.setTag(TAG_TILE_ENTITY, tileEntity.copy());
 	}
 
@@ -158,7 +157,8 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 		final Block block = blockState.getBlock();
 		if (block == null) setDead();
-		else setHeight((float)block.getBlockBoundsMaxY());
+		// TODO missing functionality, fix (fake world access?)
+		// setHeight((float)block.getBlockBoundsMaxY());
 
 		if (worldObj instanceof WorldServer && shouldPlaceBlock()) {
 			final BlockPos dropPos = new BlockPos(posX, posY, posZ);
@@ -191,7 +191,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	private boolean tryPlaceBlock(EntityPlayer player, WorldServer world, BlockPos pos, EnumFacing fromSide) {
 		if (!worldObj.isAirBlock(pos)) return false;
 
-		boolean blockPlaced = new BlockManipulator(worldObj, player, pos).place(blockState, fromSide);
+		boolean blockPlaced = new BlockManipulator(worldObj, player, pos).place(blockState, fromSide, EnumHand.MAIN_HAND);
 		if (!blockPlaced) return false;
 
 		if (tileEntity != null) {

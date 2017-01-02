@@ -9,7 +9,6 @@ import net.minecraft.client.gui.GuiConfirmOpenLink;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.StatCollector;
 import openmods.Log;
 import openmods.gui.Icon;
 import openmods.gui.component.BaseComponent;
@@ -18,6 +17,7 @@ import openmods.gui.component.EmptyComposite;
 import openmods.gui.component.GuiComponentLabel;
 import openmods.gui.component.GuiComponentSprite;
 import openmods.gui.listener.IMouseDownListener;
+import openmods.utils.TranslationUtils;
 import org.apache.logging.log4j.Level;
 
 public abstract class PageBase extends BaseComposite {
@@ -56,7 +56,7 @@ public abstract class PageBase extends BaseComposite {
 	protected BaseComponent createActionButton(int x, int y, final String link, Icon icon, String text, final IConfirmListener listener) {
 		EmptyComposite result = new EmptyComposite(x, y, 50, 8);
 
-		GuiComponentLabel label = new GuiComponentLabel(15, 2, StatCollector.translateToLocal(text));
+		GuiComponentLabel label = new GuiComponentLabel(15, 2, TranslationUtils.translateToLocal(text));
 		label.setScale(BookScaleConfig.getPageContentScale());
 		result.addComponent(label);
 

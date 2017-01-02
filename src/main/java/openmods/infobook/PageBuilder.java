@@ -14,9 +14,7 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.StatCollector;
-import net.minecraftforge.fml.common.registry.FMLControlledNamespacedRegistry;
-import net.minecraftforge.fml.common.registry.GameData;
+import net.minecraft.util.registry.RegistryNamespaced;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.gui.component.BaseComponent;
@@ -25,6 +23,7 @@ import openmods.gui.component.page.ItemStackTocPage;
 import openmods.gui.component.page.StandardRecipePage;
 import openmods.gui.listener.IMouseDownListener;
 import openmods.utils.CachedInstanceFactory;
+import openmods.utils.TranslationUtils;
 
 public class PageBuilder {
 	public interface StackProvider<T> {
@@ -69,7 +68,7 @@ public class PageBuilder {
 		return "https://videos.openmods.info/" + lang + "/tutorial." + modId + "." + type + "." + id;
 	}
 
-	public <T> void addPages(String type, FMLControlledNamespacedRegistry<T> registry, StackProvider<T> provider) {
+	public <T> void addPages(String type, RegistryNamespaced<ResourceLocation, T> registry, StackProvider<T> provider) {
 		Set<ResourceLocation> ids = registry.getKeys();
 
 		for (ResourceLocation id : ids) {
@@ -149,7 +148,7 @@ public class PageBuilder {
 		final String nameKey = getTranslationKey(id, modId, type, "name");
 		final String descriptionKey = getTranslationKey(id, modId, type, "description");
 
-		final String translatedName = StatCollector.translateToLocal(nameKey);
+		final String translatedName = TranslationUtils.translateToLocal(nameKey);
 
 		if (hasVideo) {
 			final String mediaKey = getMediaLink(modId, type, id);
@@ -169,7 +168,7 @@ public class PageBuilder {
 	}
 
 	public void addItemPages(StackProvider<Item> provider) {
-		addPages("item", GameData.getItemRegistry(), provider);
+		addPages("item", Item.REGISTRY, provider);
 	}
 
 	public void createItemPages() {
@@ -182,7 +181,7 @@ public class PageBuilder {
 	}
 
 	public void addBlockPages(StackProvider<Block> provider) {
-		addPages("tile", GameData.getBlockRegistry(), provider);
+		addPages("tile", Block.REGISTRY, provider);
 	}
 
 	public void createBlockPages() {

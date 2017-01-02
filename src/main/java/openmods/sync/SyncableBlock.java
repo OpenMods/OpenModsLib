@@ -8,7 +8,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.common.registry.GameData;
 import openmods.utils.NbtUtils;
 
 public class SyncableBlock extends SyncableObjectBase implements ISyncableValueProvider<Block> {
@@ -30,7 +29,7 @@ public class SyncableBlock extends SyncableObjectBase implements ISyncableValueP
 
 	@Override
 	public void writeToNBT(NBTTagCompound nbt, String name) {
-		ResourceLocation location = GameData.getBlockRegistry().getNameForObject(this.block);
+		ResourceLocation location = Block.REGISTRY.getNameForObject(this.block);
 		if (location != null) {
 			final NBTTagCompound entry = NbtUtils.store(location);
 			nbt.setTag(name, entry);
@@ -43,12 +42,12 @@ public class SyncableBlock extends SyncableObjectBase implements ISyncableValueP
 			final String blockName = nbt.getString(name);
 			if (!Strings.isNullOrEmpty(blockName)) {
 				final ResourceLocation blockLocation = new ResourceLocation(blockName);
-				this.block = GameData.getBlockRegistry().getObject(blockLocation);
+				this.block = Block.REGISTRY.getObject(blockLocation);
 			}
 		} else if (nbt.hasKey(name, Constants.NBT.TAG_COMPOUND)) {
 			final NBTTagCompound entry = nbt.getCompoundTag(name);
 			final ResourceLocation blockLocation = NbtUtils.readResourceLocation(entry);
-			this.block = GameData.getBlockRegistry().getObject(blockLocation);
+			this.block = Block.REGISTRY.getObject(blockLocation);
 		} else {
 			this.block = null;
 		}
@@ -56,17 +55,17 @@ public class SyncableBlock extends SyncableObjectBase implements ISyncableValueP
 
 	@Override
 	public Block getValue() {
-		return Objects.firstNonNull(block, Blocks.air);
+		return Objects.firstNonNull(block, Blocks.AIR);
 	}
 
 	public void setValue(Block block) {
 		if (this.block != block) {
-			this.block = Objects.firstNonNull(block, Blocks.air);
+			this.block = Objects.firstNonNull(block, Blocks.AIR);
 			markDirty();
 		}
 	}
 
 	public boolean containsValidBlock() {
-		return block != null && block != Blocks.air;
+		return block != null && block != Blocks.AIR;
 	}
 }

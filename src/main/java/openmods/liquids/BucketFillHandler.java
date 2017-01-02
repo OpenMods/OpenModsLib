@@ -5,8 +5,7 @@ import java.util.Set;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidStack;
@@ -59,15 +58,15 @@ public class BucketFillHandler {
 	public void onBucketFill(FillBucketEvent evt) {
 		if (evt.getResult() != Result.DEFAULT) return;
 
-		final MovingObjectPosition target = evt.target;
-		if (target.typeOfHit != MovingObjectType.BLOCK) return;
+		final RayTraceResult target = evt.getTarget();
+		if (target.typeOfHit != RayTraceResult.Type.BLOCK) return;
 
-		TileEntity te = evt.world.getTileEntity(target.getBlockPos());
+		TileEntity te = evt.getWorld().getTileEntity(target.getBlockPos());
 
 		if (shouldFill(te)) {
-			ItemStack result = fillTank((IFluidHandler)te, target.sideHit, evt.current);
+			ItemStack result = fillTank((IFluidHandler)te, target.sideHit, evt.getEmptyBucket());
 			if (result != null) {
-				evt.result = result;
+				evt.setFilledBucket(result);
 				evt.setResult(Result.ALLOW);
 			}
 		}

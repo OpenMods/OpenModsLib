@@ -4,7 +4,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import openmods.LibConfig;
 import openmods.Log;
@@ -19,7 +19,7 @@ public class TessellatorPool {
 	private TessellatorPool() {}
 
 	public static interface WorldRendererUser {
-		public void execute(WorldRenderer wr);
+		public void execute(VertexBuffer wr);
 	}
 
 	private Tessellator reserveTessellator() {
@@ -37,7 +37,7 @@ public class TessellatorPool {
 	public void startDrawing(int primitive, VertexFormat vertexFormat, WorldRendererUser user) {
 		final Tessellator tes = reserveTessellator();
 
-		final WorldRenderer wr = tes.getWorldRenderer();
+		final VertexBuffer wr = tes.getBuffer();
 		wr.begin(primitive, vertexFormat);
 		user.execute(wr);
 		tes.draw();

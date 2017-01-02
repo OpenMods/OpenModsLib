@@ -3,8 +3,8 @@ package openmods.calc.command;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import java.util.List;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
 
 public abstract class NestedCommandException extends RuntimeException {
 	private static final long serialVersionUID = 601967437864511783L;
@@ -33,8 +33,8 @@ public abstract class NestedCommandException extends RuntimeException {
 
 	protected abstract String contents();
 
-	public IChatComponent getChatComponent() {
-		return new ChatComponentTranslation(contents(), getPath())
-				.appendSibling(new ChatComponentTranslation(getMessage(), args));
+	public ITextComponent getChatComponent() {
+		return new TextComponentTranslation(contents(), getPath())
+				.appendSibling(new TextComponentTranslation(getMessage(), args));
 	}
 }

@@ -5,8 +5,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Vec3;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import openmods.shapes.IShapeable;
 import openmods.utils.Coord;
 import openmods.utils.MathUtils;
@@ -365,7 +365,7 @@ public class GeometryUtils {
 		}
 	}
 
-	public static void line3D(Vec3 start, Vec3 end, IShapeable shapeable) {
+	public static void line3D(Vec3d start, Vec3d end, IShapeable shapeable) {
 		line3D((int)start.xCoord, (int)start.yCoord, (int)start.zCoord, (int)end.xCoord, (int)end.yCoord, (int)end.zCoord, shapeable);
 	}
 

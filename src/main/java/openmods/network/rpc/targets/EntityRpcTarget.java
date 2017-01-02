@@ -24,7 +24,7 @@ public class EntityRpcTarget implements IRpcTarget {
 
 	@Override
 	public void writeToStream(PacketBuffer output) {
-		output.writeInt(entity.worldObj.provider.getDimensionId());
+		output.writeInt(entity.worldObj.provider.getDimension());
 		output.writeInt(entity.getEntityId());
 	}
 

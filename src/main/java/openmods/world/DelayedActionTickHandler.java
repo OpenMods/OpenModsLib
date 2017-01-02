@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
+// TODO maybe replace with IThreadListener?
 public class DelayedActionTickHandler {
 
 	public static final DelayedActionTickHandler INSTANCE = new DelayedActionTickHandler();
@@ -32,14 +33,14 @@ public class DelayedActionTickHandler {
 	}
 
 	public void addTickCallback(World world, Runnable callback) {
-		int worldId = world.provider.getDimensionId();
+		int worldId = world.provider.getDimension();
 		getWorldQueue(worldId).add(callback);
 	}
 
 	@SubscribeEvent
 	public void onWorldTick(WorldTickEvent evt) {
 		if (evt.side == Side.SERVER && evt.phase == Phase.END) {
-			int worldId = evt.world.provider.getDimensionId();
+			int worldId = evt.world.provider.getDimension();
 			Queue<Runnable> callbacks = getWorldQueue(worldId);
 
 			Runnable callback;

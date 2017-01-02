@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.renderer.ItemModelMesher;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -30,7 +30,6 @@ import openmods.calc.command.ICommandComponent;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
-import openmods.renderer.CustomModelLoader;
 import openmods.source.CommandSource;
 import openmods.utils.render.RenderUtils;
 
@@ -101,8 +100,6 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		RenderUtils.registerFogUpdater();
 
 		MinecraftForge.EVENT_BUS.register(new BlockSelectionHandler());
-
-		MinecraftForge.EVENT_BUS.register(CustomModelLoader.instance);
 	}
 
 	@Override

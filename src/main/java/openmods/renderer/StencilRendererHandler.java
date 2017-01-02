@@ -29,6 +29,6 @@ public abstract class StencilRendererHandler {
 		if (!renderThisTick) return;
 		renderThisTick = false;
 
-		render(evt.context, evt.partialTicks);
+		render(evt.getContext(), evt.getPartialTicks());
 	}
 }

@@ -3,8 +3,8 @@ package openmods.fakeplayer;
 import com.google.common.base.Preconditions;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import openmods.Log;
 import openmods.fakeplayer.FakePlayerPool.PlayerUser;
 
@@ -36,7 +36,7 @@ public class DropItemAction implements PlayerUser {
 		Preconditions.checkArgument(side == EnumFacing.DOWN, "Other directions than down are not implemented");
 		player.setPositionAndRotation(x + 0.5F, y - 1.5, z + 0.5F, 0, 90);
 
-		EntityItem entityItem = player.dropPlayerItemWithRandomChoice(stack.copy(), false);
+		EntityItem entityItem = player.dropItem(stack.copy(), false);
 		if (entityItem != null) {
 			entityItem.motionX = 0;
 			entityItem.motionY = 0;

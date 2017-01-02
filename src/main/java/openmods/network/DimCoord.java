@@ -1,6 +1,6 @@
 package openmods.network;
 
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 
 public class DimCoord {
 	public final int dimension;

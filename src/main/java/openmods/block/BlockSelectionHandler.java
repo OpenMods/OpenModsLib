@@ -1,9 +1,8 @@
 package openmods.block;
 
 import net.minecraft.block.Block;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -13,11 +12,11 @@ public class BlockSelectionHandler {
 
 	@SubscribeEvent
 	public void onHighlightDraw(DrawBlockHighlightEvent evt) {
-		final MovingObjectPosition mop = evt.target;
+		final RayTraceResult mop = evt.getTarget();
 
-		if (mop != null && mop.typeOfHit == MovingObjectType.BLOCK) {
+		if (mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK) {
 
-			final World world = evt.player.worldObj;
+			final World world = evt.getPlayer().worldObj;
 			final BlockPos blockPos = mop.getBlockPos();
 			final Block block = world.getBlockState(blockPos).getBlock();
 

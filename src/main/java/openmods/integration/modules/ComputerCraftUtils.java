@@ -59,12 +59,12 @@ public final class ComputerCraftUtils {
 	private static void addTurtlesForUpgrade(List<ItemStack> result, IRecipe recipe, Item turtle, ItemStack upgrade) {
 		final ItemStack turtleStack = new ItemStack(turtle);
 		addTurtleForUpgrade(result, recipe, turtleStack, null, upgrade);
-		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Blocks.crafting_table), upgrade);
-		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.diamond_sword), upgrade);
-		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.diamond_shovel), upgrade);
-		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.diamond_pickaxe), upgrade);
-		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.diamond_axe), upgrade);
-		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.diamond_hoe), upgrade);
+		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Blocks.CRAFTING_TABLE), upgrade);
+		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.DIAMOND_SWORD), upgrade);
+		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.DIAMOND_SHOVEL), upgrade);
+		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.DIAMOND_PICKAXE), upgrade);
+		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.DIAMOND_AXE), upgrade);
+		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.DIAMOND_HOE), upgrade);
 	}
 
 	private static void addTurtleForUpgrade(List<ItemStack> result, IRecipe recipe, ItemStack turtle, ItemStack left, ItemStack right) {

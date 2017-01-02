@@ -127,10 +127,7 @@ public class EntityPlayerWrapper {
 		return player().isBurning();
 	}
 
-	@ExposeProperty
-	public Boolean blocking() {
-		return player().isBlocking();
-	}
+	// TODO blocking and other attrs
 
 	public static class WorldWrapper {
 		private final WeakReference<World> world;
@@ -157,7 +154,7 @@ public class EntityPlayerWrapper {
 
 		@ExposeProperty
 		public BigInteger dimension() {
-			return BigInteger.valueOf(world().provider.getDimensionId());
+			return BigInteger.valueOf(world().provider.getDimension());
 		}
 
 		@ExposeProperty
@@ -229,13 +226,11 @@ public class EntityPlayerWrapper {
 		public TypedValue enchantments() {
 			final List<TypedValue> result = Lists.newArrayList();
 
-			final Map<Integer, Integer> enchantments = EnchantmentHelper.getEnchantments(itemStack);
+			final Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(itemStack);
 
-			for (Map.Entry<Integer, Integer> e : enchantments.entrySet()) {
-				final Enchantment enchantment = Enchantment.getEnchantmentById(e.getKey());
-				if (enchantment != null)
-					result.add(StructWrapper.create(nullValue.domain, new EnchantmentWrapper(enchantment, e.getValue())));
-			}
+			for (Map.Entry<Enchantment, Integer> e : enchantments.entrySet())
+				if (e.getKey() != null)
+					result.add(StructWrapper.create(nullValue.domain, new EnchantmentWrapper(e.getKey(), e.getValue())));
 
 			return Cons.createList(result, nullValue);
 		}

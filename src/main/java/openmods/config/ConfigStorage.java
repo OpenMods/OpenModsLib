@@ -35,6 +35,6 @@ public class ConfigStorage {
 
 	@SubscribeEvent
 	public void onConfigChange(ConfigChangedEvent.PostConfigChangedEvent evt) {
-		saveAll(evt.modID);
+		saveAll(evt.getModID());
 	}
 }

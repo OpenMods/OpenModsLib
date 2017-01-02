@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.text.TextComponentString;
 import openmods.calc.ExprType;
 import openmods.calc.command.CalcState.CalculatorType;
 import openmods.calc.command.CalcState.NoSuchNameException;
@@ -227,7 +227,7 @@ public class CommandCalcFactory {
 			.put("echo", new TerminalCommandComponent("<str>") {
 				@Override
 				public void execute(ICommandSender sender, IWhitespaceSplitter args) {
-					sender.addChatMessage(new ChatComponentText(args.getTail()));
+					sender.addChatMessage(new TextComponentString(args.getTail()));
 				}
 			})
 			.build();

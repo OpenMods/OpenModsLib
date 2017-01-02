@@ -1,8 +1,8 @@
 package openmods.geometry;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3d;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -86,7 +86,7 @@ public abstract class BlockSpaceTransform {
 		}
 
 		{
-			final String createVectorDesc = Type.getMethodDescriptor(Type.getType(Vec3.class), Type.DOUBLE_TYPE, Type.DOUBLE_TYPE, Type.DOUBLE_TYPE);
+			final String createVectorDesc = Type.getMethodDescriptor(Type.getType(Vec3d.class), Type.DOUBLE_TYPE, Type.DOUBLE_TYPE, Type.DOUBLE_TYPE);
 			final String selfType = Type.getInternalName(BlockSpaceTransform.class);
 			for (int i = 0; i < orientations.length; i++) {
 				mv.visitLabel(targets[i]);
@@ -128,7 +128,7 @@ public abstract class BlockSpaceTransform {
 			mv.visitEnd();
 		}
 
-		final String transformMethod = Type.getMethodDescriptor(Type.getType(Vec3.class), Type.getType(Orientation.class), Type.DOUBLE_TYPE, Type.DOUBLE_TYPE, Type.DOUBLE_TYPE);
+		final String transformMethod = Type.getMethodDescriptor(Type.getType(Vec3d.class), Type.getType(Orientation.class), Type.DOUBLE_TYPE, Type.DOUBLE_TYPE, Type.DOUBLE_TYPE);
 
 		{
 			final MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, "mapWorldToBlock", transformMethod, null, null);
@@ -160,24 +160,24 @@ public abstract class BlockSpaceTransform {
 
 	public static final BlockSpaceTransform instance = createTransformInstance();
 
-	public abstract Vec3 mapWorldToBlock(Orientation orientation, double x, double y, double z);
+	public abstract Vec3d mapWorldToBlock(Orientation orientation, double x, double y, double z);
 
-	public abstract Vec3 mapBlockToWorld(Orientation orientation, double x, double y, double z);
+	public abstract Vec3d mapBlockToWorld(Orientation orientation, double x, double y, double z);
 
 	// wrapper over obfuscated method
-	protected static Vec3 createVector(double x, double y, double z) {
-		return new Vec3(x, y, z);
+	protected static Vec3d createVector(double x, double y, double z) {
+		return new Vec3d(x, y, z);
 	}
 
 	public AxisAlignedBB mapWorldToBlock(Orientation orientation, AxisAlignedBB aabb) {
-		final Vec3 min = mapWorldToBlock(orientation, aabb.minX, aabb.minY, aabb.minZ);
-		final Vec3 max = mapWorldToBlock(orientation, aabb.maxX, aabb.maxY, aabb.maxZ);
+		final Vec3d min = mapWorldToBlock(orientation, aabb.minX, aabb.minY, aabb.minZ);
+		final Vec3d max = mapWorldToBlock(orientation, aabb.maxX, aabb.maxY, aabb.maxZ);
 		return AabbUtils.createAabb(min.xCoord, min.yCoord, min.zCoord, max.xCoord, max.yCoord, max.zCoord);
 	}
 
 	public AxisAlignedBB mapBlockToWorld(Orientation orientation, AxisAlignedBB aabb) {
-		final Vec3 min = mapBlockToWorld(orientation, aabb.minX, aabb.minY, aabb.minZ);
-		final Vec3 max = mapBlockToWorld(orientation, aabb.maxX, aabb.maxY, aabb.maxZ);
+		final Vec3d min = mapBlockToWorld(orientation, aabb.minX, aabb.minY, aabb.minZ);
+		final Vec3d max = mapBlockToWorld(orientation, aabb.maxX, aabb.maxY, aabb.maxZ);
 		return AabbUtils.createAabb(min.xCoord, min.yCoord, min.zCoord, max.xCoord, max.yCoord, max.zCoord);
 	}
 }

@@ -3,7 +3,7 @@ package openmods.utils;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.math.Vec3i;
 
 public enum Diagonal {
 	NW(EnumFacing.NORTH, EnumFacing.WEST),

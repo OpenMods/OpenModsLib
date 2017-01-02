@@ -16,16 +16,16 @@ public class SyncableNBT extends SyncableObjectBase implements ISyncableValuePro
 	}
 
 	public SyncableNBT(NBTTagCompound nbt) {
-		tag = (NBTTagCompound)nbt.copy();
+		tag = nbt.copy();
 	}
 
 	@Override
 	public NBTTagCompound getValue() {
-		return (NBTTagCompound)tag.copy();
+		return tag.copy();
 	}
 
 	public void setValue(NBTTagCompound tag) {
-		this.tag = (NBTTagCompound)tag.copy();
+		this.tag = tag.copy();
 	}
 
 	@Override
