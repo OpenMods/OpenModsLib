@@ -1,9 +1,10 @@
 package openmods.block;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -17,7 +18,10 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stats.StatList;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.*;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -25,16 +29,22 @@ import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import openmods.Log;
-import openmods.api.*;
+import openmods.api.IActivateAwareTile;
+import openmods.api.IAddAwareTile;
+import openmods.api.IBreakAwareTile;
+import openmods.api.ICustomBreakDrops;
+import openmods.api.ICustomHarvestDrops;
+import openmods.api.ICustomPickItem;
+import openmods.api.IHasGui;
+import openmods.api.INeighbourAwareTile;
+import openmods.api.IPlaceAwareTile;
+import openmods.api.ISurfaceAttachment;
 import openmods.config.game.IRegisterableBlock;
 import openmods.geometry.Orientation;
 import openmods.inventory.IInventoryProvider;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.BlockNotifyFlags;
 import openmods.utils.BlockUtils;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 public class OpenBlock extends Block implements IRegisterableBlock {
 

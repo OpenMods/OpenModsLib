@@ -3,7 +3,6 @@ package openmods.structured;
 import gnu.trove.impl.Constants;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-
 import java.lang.reflect.Field;
 
 public abstract class FieldContainer implements IStructureContainer<IStructureElement> {

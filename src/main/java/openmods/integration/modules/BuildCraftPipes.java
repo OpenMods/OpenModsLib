@@ -1,6 +1,8 @@
 package openmods.integration.modules;
 
 import static openmods.integration.IntegrationConditions.classExists;
+
+import buildcraft.api.transport.IInjectable;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -8,7 +10,6 @@ import openmods.integration.IntegrationModule;
 import openmods.inventory.legacy.CustomSinks;
 import openmods.inventory.legacy.CustomSinks.ICustomSink;
 import openmods.inventory.legacy.CustomSinks.ICustomSinkProvider;
-import buildcraft.api.transport.IInjectable;
 
 public class BuildCraftPipes extends IntegrationModule {
 

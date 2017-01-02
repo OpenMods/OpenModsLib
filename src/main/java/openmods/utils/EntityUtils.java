@@ -11,8 +11,7 @@ public class EntityUtils {
 		return entity.getPositionVector().addVector(
 				entity.motionX,
 				entity.motionY,
-				entity.motionZ
-				);
+				entity.motionZ);
 	}
 
 	public static MovingObjectPosition raytraceEntity(Entity entity) {

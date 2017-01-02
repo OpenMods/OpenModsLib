@@ -1,8 +1,14 @@
 package openmods.structured;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import java.io.IOException;
-import java.util.*;
-
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 import net.minecraft.network.PacketBuffer;
 import openmods.structured.Command.ConsistencyCheck;
 import openmods.structured.Command.ContainerInfo;
@@ -10,11 +16,6 @@ import openmods.structured.Command.Create;
 import openmods.structured.Command.Delete;
 import openmods.structured.Command.Reset;
 import openmods.structured.Command.Update;
-
-import com.google.common.base.Throwables;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E extends IStructureElement> extends StructuredData<C, E> {
 
@@ -73,7 +74,8 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 							msg.maxContainerId != maxContainerId ||
 							msg.elementCount != elementCount ||
 							msg.minElementId != minElementId ||
-							msg.maxElementId != maxElementId) throw new ConsistencyCheckFailed("Validation packet not matched");
+							msg.maxElementId != maxElementId)
+						throw new ConsistencyCheckFailed("Validation packet not matched");
 				} else if (c instanceof Reset) {
 					removeAll();
 					isStructureUpdated = true;

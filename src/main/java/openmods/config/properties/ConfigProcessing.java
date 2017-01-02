@@ -1,15 +1,16 @@
 package openmods.config.properties;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.util.*;
-
-import net.minecraftforge.common.config.Configuration;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Map;
+import net.minecraftforge.common.config.Configuration;
 
 public class ConfigProcessing {
 

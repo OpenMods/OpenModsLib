@@ -3,7 +3,6 @@ package openmods.gui.component.page;
 import net.minecraft.util.StatCollector;
 import openmods.gui.component.GuiComponentHCenter;
 import openmods.gui.component.GuiComponentLabel;
-
 import org.apache.commons.lang3.StringEscapeUtils;
 
 public class TitledPage extends PageBase {

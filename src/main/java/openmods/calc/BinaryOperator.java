@@ -4,6 +4,8 @@ import openmods.utils.Stack;
 
 public abstract class BinaryOperator<E> extends Operator<E> {
 
+	public static final Associativity DEFAULT_ASSOCIATIVITY = Associativity.LEFT;
+
 	public enum Associativity {
 		LEFT {
 			@Override
@@ -25,25 +27,77 @@ public abstract class BinaryOperator<E> extends Operator<E> {
 
 	public final Associativity associativity;
 
-	public BinaryOperator(int precedence, Associativity associativity) {
+	private BinaryOperator(String id, int precedence, Associativity associativity) {
+		super(id);
 		this.precedence = precedence;
 		this.associativity = associativity;
 	}
 
-	public BinaryOperator(int precendence) {
-		this(precendence, Associativity.LEFT);
+	private BinaryOperator(String id, int precendence) {
+		this(id, precendence, DEFAULT_ASSOCIATIVITY);
 	}
 
-	protected abstract E execute(E left, E right);
+	public abstract static class Direct<E> extends BinaryOperator<E> {
+		public Direct(String id, int precedence, Associativity associativity) {
+			super(id, precedence, associativity);
+		}
 
-	@Override
-	public final void execute(ICalculatorFrame<E> frame) {
-		final Stack<E> stack = frame.stack();
+		public Direct(String id, int precendence) {
+			super(id, precendence);
+		}
 
-		final E right = stack.pop();
-		final E left = stack.pop();
-		final E result = execute(left, right);
-		stack.push(result);
+		public abstract E execute(E left, E right);
+
+		@Override
+		public final void execute(Frame<E> frame) {
+			final Stack<E> stack = frame.stack();
+
+			final E right = stack.pop();
+			final E left = stack.pop();
+			final E result = execute(left, right);
+			stack.push(result);
+		}
+	}
+
+	public abstract static class Scoped<E> extends BinaryOperator<E> {
+		public Scoped(String id, int precedence, Associativity associativity) {
+			super(id, precedence, associativity);
+		}
+
+		public Scoped(String id, int precendence) {
+			super(id, precendence);
+		}
+
+		public abstract E execute(SymbolMap<E> symbols, E left, E right);
+
+		@Override
+		public final void execute(Frame<E> frame) {
+			final Stack<E> stack = frame.stack();
+
+			final E right = stack.pop();
+			final E left = stack.pop();
+			final E result = execute(frame.symbols(), left, right);
+			stack.push(result);
+		}
+	}
+
+	public abstract static class StackBased<E> extends BinaryOperator<E> {
+		public StackBased(String id, int precedence, Associativity associativity) {
+			super(id, precedence, associativity);
+		}
+
+		public StackBased(String id, int precendence) {
+			super(id, precendence);
+		}
+
+		public abstract void executeOnStack(Frame<E> frame);
+
+		@Override
+		public final void execute(Frame<E> frame) {
+			final Frame<E> executionFrame = FrameFactory.newLocalFrameWithSubstack(frame, 2);
+			executeOnStack(executionFrame);
+			executionFrame.stack().checkSizeIsExactly(1);
+		}
 	}
 
 	@Override
@@ -52,6 +106,11 @@ public abstract class BinaryOperator<E> extends Operator<E> {
 
 		final BinaryOperator<E> o = (BinaryOperator<E>)other;
 		return associativity.isLessThan(precedence, o.precedence);
+	}
+
+	@Override
+	public String toString() {
+		return "BinaryOperator [" + id + "]";
 	}
 
 }

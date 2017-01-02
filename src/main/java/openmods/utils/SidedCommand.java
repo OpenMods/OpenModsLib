@@ -2,7 +2,6 @@ package openmods.utils;
 
 import java.util.Collections;
 import java.util.List;
-
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 

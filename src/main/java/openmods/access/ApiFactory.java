@@ -1,25 +1,22 @@
 package openmods.access;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Set;
-
 import net.minecraftforge.common.util.EnumHelper;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.discovery.ASMDataTable;
 import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData;
 import openmods.Log;
 import openmods.utils.CachedFactory;
-
 import org.objectweb.asm.Type;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class ApiFactory {
 
@@ -101,12 +98,10 @@ public class ApiFactory {
 	private static class ClassInfoCache extends CachedFactory<String, ClassInfo> {
 		@Override
 		protected ClassInfo create(String className) {
-			try
-			{
+			try {
 				final Class<?> cls = Class.forName(className, true, getClass().getClassLoader());
 				return new ClassInfo(cls);
-			} catch (Exception ex)
-			{
+			} catch (Exception ex) {
 				throw Throwables.propagate(ex);
 			}
 		}
@@ -140,8 +135,7 @@ public class ApiFactory {
 					Loader.instance().activeModContainer().getModId(),
 					targetClassName,
 					targetObjectName,
-					data.getCandidate().getModContainer()
-					);
+					data.getCandidate().getModContainer());
 		} else {
 			Log.info("Can't set API field %s:%s - no API for type %s",
 					targetClassName, targetObjectName, castAcceptedType);

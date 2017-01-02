@@ -6,7 +6,6 @@ import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.model.IBakedModel;
 import net.minecraft.item.ItemStack;
-
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentItemStackSpinner extends BaseComponent {

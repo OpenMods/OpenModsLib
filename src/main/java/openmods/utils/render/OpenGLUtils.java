@@ -1,19 +1,16 @@
 package openmods.utils.render;
 
-import java.nio.FloatBuffer;
-import java.util.Set;
-
-import openmods.Log;
-
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.Util;
-import org.lwjgl.util.vector.Matrix4f;
-
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import java.nio.FloatBuffer;
+import java.util.Set;
+import openmods.Log;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.Util;
+import org.lwjgl.util.vector.Matrix4f;
 
 public class OpenGLUtils {
 

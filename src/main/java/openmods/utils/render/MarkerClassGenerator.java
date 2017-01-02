@@ -1,6 +1,9 @@
 package openmods.utils.render;
 
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 // just don't ask about this, ok? And yes, it should be in render stuff
 public class MarkerClassGenerator {

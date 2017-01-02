@@ -1,7 +1,6 @@
 package openmods.datastore;
 
 import java.io.IOException;
-
 import net.minecraft.network.PacketBuffer;
 import openmods.utils.io.IStreamWriter;
 

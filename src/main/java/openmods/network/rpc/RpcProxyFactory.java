@@ -1,14 +1,11 @@
 package openmods.network.rpc;
 
+import com.google.common.base.Preconditions;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-
 import openmods.network.senders.IPacketSender;
-
 import org.apache.commons.lang3.ArrayUtils;
-
-import com.google.common.base.Preconditions;
 
 public class RpcProxyFactory {
 

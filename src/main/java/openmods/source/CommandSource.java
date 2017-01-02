@@ -2,11 +2,12 @@ package openmods.source;
 
 import static openmods.utils.CommandUtils.filterPrefixes;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
@@ -16,9 +17,6 @@ import openmods.Log;
 import openmods.source.ClassSourceCollector.ApiInfo;
 import openmods.source.ClassSourceCollector.ClassMeta;
 import openmods.utils.SidedCommand;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 
 public class CommandSource extends SidedCommand {
 
@@ -60,8 +58,7 @@ public class CommandSource extends SidedCommand {
 			for (Map.Entry<File, Set<String>> e : meta.providerMods.entrySet())
 				sender.addChatMessage(new ChatComponentTranslation("openmodslib.command.class_provider",
 						e.getKey().getAbsolutePath(),
-						Joiner.on(',').join(e.getValue()))
-						);
+						Joiner.on(',').join(e.getValue())));
 		}
 	}
 

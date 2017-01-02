@@ -1,11 +1,14 @@
 package openmods.gui.component;
 
+import com.google.common.collect.Lists;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.BlockRendererDispatcher;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.model.IBakedModel;
@@ -15,7 +18,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IListenerBase;
-import openmods.gui.misc.*;
+import openmods.gui.misc.SidePicker;
 import openmods.gui.misc.SidePicker.HitCoord;
 import openmods.gui.misc.SidePicker.Side;
 import openmods.gui.misc.Trackball.TrackballWrapper;
@@ -23,12 +26,9 @@ import openmods.utils.FakeBlockAccess;
 import openmods.utils.MathUtils;
 import openmods.utils.bitmap.IReadableBitMap;
 import openmods.utils.render.RenderUtils;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
-
-import com.google.common.collect.Lists;
 
 public class GuiComponentSideSelector extends BaseComponent implements IValueReceiver<Set<EnumFacing>> {
 

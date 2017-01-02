@@ -3,10 +3,12 @@ package openmods.container;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.*;
+import net.minecraft.inventory.Container;
+import net.minecraft.inventory.ICrafting;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import openmods.utils.InventoryUtils;
 

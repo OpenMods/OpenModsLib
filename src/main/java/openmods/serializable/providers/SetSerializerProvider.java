@@ -1,16 +1,14 @@
 package openmods.serializable.providers;
 
+import com.google.common.collect.Sets;
+import com.google.common.reflect.TypeToken;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Set;
-
 import net.minecraft.network.PacketBuffer;
 import openmods.reflection.TypeUtils;
 import openmods.serializable.IGenericSerializerProvider;
 import openmods.utils.io.IStreamSerializer;
-
-import com.google.common.collect.Sets;
-import com.google.common.reflect.TypeToken;
 
 public class SetSerializerProvider implements IGenericSerializerProvider {
 

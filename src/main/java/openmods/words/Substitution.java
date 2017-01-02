@@ -1,10 +1,9 @@
 package openmods.words;
 
+import com.google.common.base.Objects;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.Random;
-
-import com.google.common.base.Objects;
 
 public class Substitution implements IGenerator {
 

@@ -1,13 +1,11 @@
 package openmods.renderer;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.util.ResourceLocation;
 import openmods.utils.ByteUtils;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 public class DynamicTextureAtlas {
 

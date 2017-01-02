@@ -1,11 +1,9 @@
 package openmods.gui.component;
 
-import java.util.List;
-
-import openmods.gui.IComponentParent;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.util.List;
+import openmods.gui.IComponentParent;
 
 public abstract class BaseComposite extends BaseComponent {
 

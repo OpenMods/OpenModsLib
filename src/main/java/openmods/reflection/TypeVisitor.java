@@ -2,10 +2,9 @@ package openmods.reflection;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.reflect.TypeToken;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-
-import com.google.common.reflect.TypeToken;
 
 public abstract class TypeVisitor<T> {
 	private final Class<?> selectedClass;

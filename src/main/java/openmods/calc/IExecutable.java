@@ -1,5 +1,5 @@
 package openmods.calc;
 
 public interface IExecutable<E> {
-	public void execute(ICalculatorFrame<E> frame);
+	public void execute(Frame<E> frame);
 }

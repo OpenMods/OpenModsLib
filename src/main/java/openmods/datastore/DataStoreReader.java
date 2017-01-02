@@ -1,12 +1,10 @@
 package openmods.datastore;
 
+import com.google.common.collect.Maps;
 import java.io.IOException;
 import java.util.Map;
-
 import net.minecraft.network.PacketBuffer;
 import openmods.utils.io.IStreamReader;
-
-import com.google.common.collect.Maps;
 
 public class DataStoreReader<K, V> {
 	private final IStreamReader<K> keyReader;

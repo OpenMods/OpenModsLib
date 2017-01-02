@@ -1,8 +1,13 @@
 package openmods.utils.io;
 
 import io.netty.buffer.ByteBuf;
-
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class StreamAdapters {
 	public static IByteSink createSink(final DataOutput output) {

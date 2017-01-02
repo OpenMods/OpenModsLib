@@ -1,11 +1,10 @@
 package openmods.network.rpc;
 
-import openmods.datastore.IDataVisitor;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import openmods.datastore.IDataVisitor;
 
 public class TargetWrapperRegistry implements IDataVisitor<String, Integer> {
 

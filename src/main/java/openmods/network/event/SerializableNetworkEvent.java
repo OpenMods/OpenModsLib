@@ -1,7 +1,6 @@
 package openmods.network.event;
 
 import java.io.IOException;
-
 import net.minecraft.network.PacketBuffer;
 import openmods.serializable.cls.ClassSerializersProvider;
 

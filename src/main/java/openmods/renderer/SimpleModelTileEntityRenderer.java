@@ -4,7 +4,6 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.util.ResourceLocation;
 import openmods.tileentity.OpenTileEntity;
 import openmods.utils.BlockUtils;
-
 import org.lwjgl.opengl.GL11;
 
 public class SimpleModelTileEntityRenderer<T extends OpenTileEntity> extends TileEntitySpecialRenderer<T> {

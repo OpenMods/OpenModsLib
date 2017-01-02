@@ -1,13 +1,11 @@
 package openmods.utils.io;
 
-import java.util.UUID;
-
-import net.minecraft.network.PacketBuffer;
-
 import com.google.common.base.Strings;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
+import java.util.UUID;
+import net.minecraft.network.PacketBuffer;
 
 public class GameProfileSerializer implements IStreamSerializer<GameProfile> {
 	public static final IStreamSerializer<GameProfile> INSTANCE = new GameProfileSerializer();

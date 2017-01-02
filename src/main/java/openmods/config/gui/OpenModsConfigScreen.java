@@ -1,22 +1,22 @@
 package openmods.config.gui;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fml.client.config.DummyConfigElement.DummyCategoryElement;
-import net.minecraftforge.fml.client.config.*;
+import net.minecraftforge.fml.client.config.GuiConfig;
+import net.minecraftforge.fml.client.config.GuiConfigEntries;
 import net.minecraftforge.fml.client.config.GuiConfigEntries.CategoryEntry;
 import net.minecraftforge.fml.client.config.GuiConfigEntries.IConfigEntry;
+import net.minecraftforge.fml.client.config.IConfigElement;
 import openmods.config.game.AbstractFeatureManager;
 import openmods.config.game.FeatureRegistry;
 import openmods.config.properties.ConfigProcessing;
 import openmods.config.properties.ConfigProcessing.ModConfig;
 import openmods.config.properties.ConfigPropertyMeta;
-
-import com.google.common.collect.Lists;
 
 public class OpenModsConfigScreen extends GuiConfig {
 
@@ -42,21 +42,25 @@ public class OpenModsConfigScreen extends GuiConfig {
 
 		@Override
 		protected GuiScreen buildChildScreen() {
-			return new GuiConfig(this.owningScreen, this.configElement.getChildElements(), this.owningScreen.modID,
+			return new GuiConfig(this.owningScreen,
+					this.configElement.getChildElements(),
+					this.owningScreen.modID,
 					owningScreen.allRequireWorldRestart || this.configElement.requiresWorldRestart(),
-					owningScreen.allRequireMcRestart || this.configElement.requiresMcRestart(), this.owningScreen.title,
-					I18n.format("openmodslib.config.update_warning"));
+					owningScreen.allRequireMcRestart || this.configElement.requiresMcRestart(),
+					this.owningScreen.title, I18n.format("openmodslib.config.update_warning"));
 		}
 
 	}
 
 	public OpenModsConfigScreen(GuiScreen parent, String modId, String title) {
-		super(parent, createConfigElements(modId), modId, false, true, title);
+		super(parent, createDefaultConfigElements(modId, Lists.<IConfigElement> newArrayList()), modId, false, true, title);
 	}
 
-	private static List<IConfigElement> createConfigElements(String modId) {
-		List<IConfigElement> result = Lists.newArrayList();
+	public OpenModsConfigScreen(GuiScreen parent, String modId, String title, List<IConfigElement> customElements) {
+		super(parent, createDefaultConfigElements(modId, customElements), modId, false, true, title);
+	}
 
+	private static List<IConfigElement> createDefaultConfigElements(String modId, List<IConfigElement> result) {
 		{
 			final IConfigElement features = createFeatureEntries(modId);
 			if (features != null) result.add(features);

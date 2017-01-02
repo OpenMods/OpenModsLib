@@ -1,11 +1,11 @@
 package openmods.utils;
 
+import com.google.common.base.Throwables;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.Item;
@@ -13,11 +13,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
-
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.output.NullOutputStream;
-
-import com.google.common.base.Throwables;
 
 public class ItemUtils {
 
@@ -65,4 +62,5 @@ public class ItemUtils {
 			throw Throwables.propagate(e);
 		}
 	}
+
 }

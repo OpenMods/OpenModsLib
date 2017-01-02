@@ -1,13 +1,15 @@
 package openmods.utils.io;
 
-import java.io.*;
-import java.util.Map;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.common.primitives.UnsignedBytes;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 public class PacketChunker {
 

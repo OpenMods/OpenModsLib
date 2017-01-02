@@ -1,10 +1,9 @@
 package openmods.inventory.comparator;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 
 public class ComparatorComponents {
 

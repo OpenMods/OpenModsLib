@@ -1,5 +1,7 @@
 package openmods.utils;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -7,9 +9,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import openmods.OpenMods;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 
 public class WorldUtils {
 

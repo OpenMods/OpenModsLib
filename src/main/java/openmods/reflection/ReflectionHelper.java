@@ -1,22 +1,19 @@
 package openmods.reflection;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import openmods.Log;
-import openmods.utils.SneakyThrower;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.logging.log4j.Level;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import openmods.Log;
+import openmods.utils.SneakyThrower;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.Level;
 
 public class ReflectionHelper {
 

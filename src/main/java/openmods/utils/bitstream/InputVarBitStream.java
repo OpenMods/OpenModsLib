@@ -2,9 +2,7 @@ package openmods.utils.bitstream;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-
 import java.io.IOException;
-
 import openmods.utils.io.IByteSource;
 
 public abstract class InputVarBitStream extends InputBitStreamBase {

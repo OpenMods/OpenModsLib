@@ -1,15 +1,12 @@
 package openmods.network.event;
 
-import gnu.trove.map.hash.TIntObjectHashMap;
-
-import java.lang.reflect.Constructor;
-import java.util.Map;
-
-import openmods.datastore.IDataVisitor;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import java.lang.reflect.Constructor;
+import java.util.Map;
+import openmods.datastore.IDataVisitor;
 
 public class NetworkEventRegistry implements IDataVisitor<String, Integer> {
 

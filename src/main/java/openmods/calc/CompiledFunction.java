@@ -2,35 +2,29 @@ package openmods.calc;
 
 import openmods.utils.Stack;
 
-public class CompiledFunction<E> extends FixedSymbol<E> {
+public class CompiledFunction<E> extends FixedCallable<E> {
 
 	private final IExecutable<E> body;
+	private final Frame<E> scope;
 
-	public CompiledFunction(int argCount, int resultCount, IExecutable<E> body) {
+	public CompiledFunction(int argCount, int resultCount, IExecutable<E> body, Frame<E> scope) {
 		super(argCount, resultCount);
 		this.body = body;
+		this.scope = scope;
 	}
 
 	@Override
-	public void execute(ICalculatorFrame<E> frame) {
-		final LocalFrame<E> newFrame = new LocalFrame<E>(frame);
-		final Stack<E> argumentStack = frame.stack();
+	public void call(Frame<E> frame) {
+		final Frame<E> newFrame = FrameFactory.newLocalFrameWithSubstack(scope, argCount);
 
-		for (int i = 1; i <= argCount; i++) {
-			E arg = argumentStack.pop();
-			newFrame.setLocalSymbol("$" + i, Constant.create(arg));
+		final Stack<E> resultStack = newFrame.stack();
+		for (int i = 0; i < argCount; i++) {
+			E arg = resultStack.pop();
+			newFrame.symbols().put("_" + (i + 1), arg);
 		}
 
 		body.execute(newFrame);
 
-		final Stack<E> resultStack = newFrame.stack();
-
-		for (int i = 0; i < resultCount; i++) {
-			final E result = resultStack.pop();
-			argumentStack.push(result);
-		}
-
-		final int left = resultStack.size();
-		if (left != 0) throw new StackValidationException("Stack not empty after execution (expected %s, left %s)", this.resultCount, left);
+		resultStack.checkSizeIsExactly(this.resultCount);
 	}
 }

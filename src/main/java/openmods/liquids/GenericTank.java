@@ -1,20 +1,24 @@
 package openmods.liquids;
 
-import java.util.*;
-
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
-
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.*;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidTank;
+import net.minecraftforge.fluids.FluidTankInfo;
+import net.minecraftforge.fluids.IFluidHandler;
 import openmods.utils.BlockUtils;
 import openmods.utils.CollectionUtils;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class GenericTank extends FluidTank {
 
@@ -85,7 +89,8 @@ public class GenericTank extends FluidTank {
 	public FluidStack drain(FluidStack resource, boolean doDrain) {
 		if (resource == null ||
 				fluid == null ||
-				fluid.isFluidEqual(resource)) return null;
+				fluid.isFluidEqual(resource))
+			return null;
 
 		return drain(resource.amount, doDrain);
 	}

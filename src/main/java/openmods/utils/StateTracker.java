@@ -1,13 +1,11 @@
 package openmods.utils;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-
 import openmods.Log;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 public class StateTracker<T extends Enum<T>> {
 

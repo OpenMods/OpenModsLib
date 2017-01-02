@@ -1,16 +1,14 @@
 package openmods.config.simpler;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
-
 import openmods.reflection.FieldAccess;
 import openmods.utils.CachedFactory;
 import openmods.utils.io.IStringSerializer;
 import openmods.utils.io.TypeRW;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 
 public class ConfigurableClassAdapter<T> {
 

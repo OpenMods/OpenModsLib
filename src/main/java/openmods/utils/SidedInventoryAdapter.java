@@ -1,9 +1,11 @@
 package openmods.utils;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
@@ -11,10 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IChatComponent;
 import openmods.utils.bitmap.IReadableBitMap;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class SidedInventoryAdapter implements ISidedInventory {
 

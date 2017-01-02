@@ -2,7 +2,6 @@ package openmods.words;
 
 import openmods.words.Sequence.Phrase;
 import openmods.words.Sequence.Word;
-
 import org.apache.commons.lang3.text.WordUtils;
 
 public class Words {

@@ -7,7 +7,6 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueReceiver;
 import openmods.gui.misc.BoxRenderer;
-
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentTankLevel extends GuiComponentResizable {

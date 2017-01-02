@@ -1,7 +1,7 @@
 package openmods.utils;
 
+import com.google.common.collect.Maps;
 import java.util.Map;
-
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -9,8 +9,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.GameData;
-
-import com.google.common.collect.Maps;
 
 public class ModIdentifier {
 

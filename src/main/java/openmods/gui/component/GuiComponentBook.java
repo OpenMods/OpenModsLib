@@ -1,15 +1,13 @@
 package openmods.gui.component;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 import openmods.gui.Icon;
 import openmods.gui.component.page.BookScaleConfig;
 import openmods.gui.listener.IMouseDownListener;
-
-import com.google.common.collect.Lists;
 
 public class GuiComponentBook extends BaseComposite {
 

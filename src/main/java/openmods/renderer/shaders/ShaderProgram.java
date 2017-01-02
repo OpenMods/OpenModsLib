@@ -1,11 +1,9 @@
 package openmods.renderer.shaders;
 
+import com.google.common.collect.ImmutableList;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-
 import java.util.List;
-
-import com.google.common.collect.ImmutableList;
 
 public class ShaderProgram {
 	private final int program;

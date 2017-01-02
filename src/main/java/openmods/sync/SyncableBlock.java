@@ -1,5 +1,7 @@
 package openmods.sync;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
@@ -8,9 +10,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.registry.GameData;
 import openmods.utils.NbtUtils;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 
 public class SyncableBlock extends SyncableObjectBase implements ISyncableValueProvider<Block> {
 

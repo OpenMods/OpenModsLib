@@ -1,16 +1,14 @@
 package openmods.geometry;
 
+import com.google.common.base.Preconditions;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
-
 import java.util.Locale;
-
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
 
-import com.google.common.base.Preconditions;
-
 public enum Orientation implements IStringSerializable {
+
 	XN_YN(HalfAxis.NEG_X, HalfAxis.NEG_Y),
 	XN_YP(HalfAxis.NEG_X, HalfAxis.POS_Y),
 	XN_ZN(HalfAxis.NEG_X, HalfAxis.NEG_Z),

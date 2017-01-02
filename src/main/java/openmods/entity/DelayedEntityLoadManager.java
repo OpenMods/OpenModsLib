@@ -1,16 +1,17 @@
 package openmods.entity;
 
-import java.util.*;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.world.World;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-
 import com.google.common.base.Supplier;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.WeakHashMap;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class DelayedEntityLoadManager {
 	public static final DelayedEntityLoadManager instance = new DelayedEntityLoadManager();

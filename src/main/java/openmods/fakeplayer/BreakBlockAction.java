@@ -1,7 +1,7 @@
 package openmods.fakeplayer;
 
+import com.google.common.collect.Lists;
 import java.util.List;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
@@ -16,8 +16,6 @@ import net.minecraftforge.event.world.BlockEvent;
 import openmods.fakeplayer.FakePlayerPool.PlayerUserReturning;
 import openmods.world.DropCapture;
 import openmods.world.DropCapture.CaptureContext;
-
-import com.google.common.collect.Lists;
 
 public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 	private final World worldObj;

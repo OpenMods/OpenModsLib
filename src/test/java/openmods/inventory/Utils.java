@@ -2,7 +2,6 @@ package openmods.inventory;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;

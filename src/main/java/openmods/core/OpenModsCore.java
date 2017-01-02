@@ -1,13 +1,15 @@
 package openmods.core;
 
-import java.util.Arrays;
-
-import net.minecraftforge.fml.common.*;
-import net.minecraftforge.fml.common.event.FMLConstructionEvent;
-import openmods.injector.InjectorSanityChecker;
-
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import java.util.Arrays;
+import net.minecraftforge.fml.common.DummyModContainer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.ICrashCallable;
+import net.minecraftforge.fml.common.LoadController;
+import net.minecraftforge.fml.common.ModMetadata;
+import net.minecraftforge.fml.common.event.FMLConstructionEvent;
+import openmods.injector.InjectorSanityChecker;
 
 public class OpenModsCore extends DummyModContainer {
 

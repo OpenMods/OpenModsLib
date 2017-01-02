@@ -1,9 +1,8 @@
 package openmods.sync;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
-
-import com.google.common.base.Preconditions;
 
 public class SyncableVarInt extends SyncableObjectBase implements ISyncableValueProvider<Integer> {
 

@@ -1,7 +1,6 @@
 package openmods.core;
 
 import java.util.Map;
-
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin.SortingIndex;

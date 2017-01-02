@@ -1,7 +1,6 @@
 package openmods.serializable;
 
 import java.io.IOException;
-
 import net.minecraft.network.PacketBuffer;
 import openmods.reflection.ConstructorAccess;
 import openmods.utils.io.IStreamReader;

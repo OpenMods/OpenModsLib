@@ -1,7 +1,6 @@
 package openmods.events.network;
 
 import java.util.List;
-
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;

@@ -1,13 +1,12 @@
 package openmods.fakeplayer;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import openmods.Log;
 import openmods.fakeplayer.FakePlayerPool.PlayerUser;
-
-import com.google.common.base.Preconditions;
 
 public class DropItemAction implements PlayerUser {
 

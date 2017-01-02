@@ -1,15 +1,17 @@
 package openmods.reflection;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.*;
-
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.reflect.TypeToken;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class TypeUtils {
 

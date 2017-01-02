@@ -1,7 +1,6 @@
 package openmods.gui;
 
 import java.util.List;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.FontRenderer;

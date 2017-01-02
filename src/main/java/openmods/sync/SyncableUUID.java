@@ -1,13 +1,11 @@
 package openmods.sync;
 
+import com.google.common.base.Objects;
 import java.util.UUID;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.util.Constants;
 import openmods.api.IValueProvider;
-
-import com.google.common.base.Objects;
 
 public class SyncableUUID extends SyncableObjectBase implements IValueProvider<UUID> {
 

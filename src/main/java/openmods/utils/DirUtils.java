@@ -1,7 +1,6 @@
 package openmods.utils;
 
 import java.util.Iterator;
-
 import net.minecraft.util.EnumFacing;
 import openmods.utils.ByteUtils.CountingBitIterator;
 

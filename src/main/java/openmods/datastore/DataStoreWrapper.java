@@ -1,12 +1,10 @@
 package openmods.datastore;
 
+import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
-
 import openmods.utils.io.IStreamReader;
 import openmods.utils.io.IStreamWriter;
-
-import com.google.common.collect.Sets;
 
 public class DataStoreWrapper<K, V> {
 

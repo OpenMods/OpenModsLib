@@ -1,13 +1,12 @@
 package openmods.network.event;
 
+import com.google.common.base.Preconditions;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.LoaderState;
 import openmods.datastore.DataStoreBuilder;
 import openmods.datastore.IDataVisitor;
 import openmods.network.IdSyncManager;
 import openmods.utils.io.TypeRW;
-
-import com.google.common.base.Preconditions;
 
 public class NetworkEventManager {
 

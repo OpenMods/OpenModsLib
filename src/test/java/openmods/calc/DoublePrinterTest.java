@@ -1,11 +1,12 @@
 package openmods.calc;
 
+import openmods.calc.types.fp.DoublePrinter;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class DoublePrinterTest {
 	public static void test(String expected, int radix, double input) {
-		final DoublePrinter printer = new DoublePrinter(5);
+		final PositionalNotationPrinter<Double> printer = new DoublePrinter.Helper(5);
 		Assert.assertEquals(expected, printer.toString(input, radix));
 	}
 

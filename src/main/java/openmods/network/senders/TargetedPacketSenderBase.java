@@ -1,10 +1,7 @@
 package openmods.network.senders;
 
 import io.netty.channel.Channel;
-
 import java.util.Collection;
-
-import net.minecraftforge.fml.common.network.FMLOutboundHandler;
 import openmods.utils.NetUtils;
 
 public class TargetedPacketSenderBase<T> implements ITargetedPacketSender<T> {
@@ -17,14 +14,13 @@ public class TargetedPacketSenderBase<T> implements ITargetedPacketSender<T> {
 
 	protected void configureChannel(Channel channel, T target) {}
 
-	protected void setTargetAttr(Channel channel, Object attr) {
-		channel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(attr);
-	}
+	protected void cleanupChannel(Channel channel) {}
 
 	@Override
 	public void sendMessage(Object msg, T target) {
 		configureChannel(channel, target);
 		channel.writeAndFlush(msg).addListener(NetUtils.LOGGING_LISTENER);
+		cleanupChannel(channel);
 	}
 
 	@Override
@@ -35,6 +31,7 @@ public class TargetedPacketSenderBase<T> implements ITargetedPacketSender<T> {
 			channel.write(msg).addListener(NetUtils.LOGGING_LISTENER);
 
 		channel.flush();
+		cleanupChannel(channel);
 	}
 
 	@Override

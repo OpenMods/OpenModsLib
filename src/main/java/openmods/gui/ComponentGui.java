@@ -1,8 +1,8 @@
 package openmods.gui;
 
+import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.List;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.FontRenderer;
@@ -16,10 +16,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import openmods.gui.component.BaseComposite;
-
 import org.lwjgl.opengl.GL11;
-
-import com.google.common.base.Preconditions;
 
 public abstract class ComponentGui extends GuiContainer {
 

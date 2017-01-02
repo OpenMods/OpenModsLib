@@ -1,17 +1,14 @@
 package openmods.utils;
 
+import com.google.common.base.Optional;
 import java.util.Map;
-
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AnvilUpdateEvent;
-
 import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.base.Optional;
 
 public class VanillaAnvilLogic {
 
@@ -166,8 +163,7 @@ public class VanillaAnvilLogic {
 					l1 += j2;
 					itemstack1.clearCustomName();
 				}
-			}
-			else if (!repairedItemName.equals(inputStack.getDisplayName())) {
+			} else if (!repairedItemName.equals(inputStack.getDisplayName())) {
 				j2 = 1;
 				l1 += j2;
 				itemstack1.setStackDisplayName(repairedItemName);

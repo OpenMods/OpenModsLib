@@ -1,12 +1,11 @@
 package openmods.network;
 
+import com.google.common.base.Preconditions;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-
 import java.util.Map;
-
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
@@ -18,9 +17,12 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import openmods.Log;
 import openmods.OpenMods;
-import openmods.datastore.*;
-
-import com.google.common.base.Preconditions;
+import openmods.datastore.DataStoreBuilder;
+import openmods.datastore.DataStoreKey;
+import openmods.datastore.DataStoreManager;
+import openmods.datastore.DataStoreReader;
+import openmods.datastore.DataStoreWrapper;
+import openmods.datastore.DataStoreWriter;
 
 // TODO compression!
 public class IdSyncManager extends DataStoreManager {

@@ -1,7 +1,7 @@
 package openmods.proxy;
 
+import com.google.common.base.Optional;
 import java.io.File;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -24,15 +24,15 @@ import openmods.LibConfig;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.block.BlockSelectionHandler;
-import openmods.calc.command.*;
+import openmods.calc.command.CommandCalc;
+import openmods.calc.command.CommandCalcFactory;
+import openmods.calc.command.ICommandComponent;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
 import openmods.movement.PlayerMovementManager;
 import openmods.renderer.CustomModelLoader;
 import openmods.source.CommandSource;
 import openmods.utils.render.RenderUtils;
-
-import com.google.common.base.Optional;
 
 public final class OpenClientProxy implements IOpenModsProxy {
 
@@ -90,11 +90,12 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		ClientCommandHandler.instance.registerCommand(new CommandSource("om_source_c", false, OpenMods.instance.getCollector()));
 
 		if (LibConfig.enableCalculatorCommands) {
-			final CalcState state = new CalcState();
-			ClientCommandHandler.instance.registerCommand(new CommandCalcConfig(state));
-			ClientCommandHandler.instance.registerCommand(new CommandCalcEvaluate(state));
-			ClientCommandHandler.instance.registerCommand(new CommandCalcFunction(state));
-			ClientCommandHandler.instance.registerCommand(new CommandCalcLet(state));
+			final ICommandComponent commandRoot = new CommandCalcFactory(new File(getMinecraftDir(), "scripts")).getRoot();
+			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "config"));
+			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "eval", "="));
+			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "fun"));
+			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "let"));
+			ClientCommandHandler.instance.registerCommand(new CommandCalc(commandRoot, "execute"));
 		}
 
 		RenderUtils.registerFogUpdater();

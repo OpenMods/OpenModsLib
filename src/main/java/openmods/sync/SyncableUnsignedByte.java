@@ -1,9 +1,8 @@
 package openmods.sync;
 
+import com.google.common.primitives.UnsignedBytes;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
-
-import com.google.common.primitives.UnsignedBytes;
 
 public class SyncableUnsignedByte extends SyncableObjectBase implements ISyncableValueProvider<Integer> {
 

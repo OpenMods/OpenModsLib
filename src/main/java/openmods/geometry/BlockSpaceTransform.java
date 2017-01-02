@@ -1,11 +1,13 @@
 package openmods.geometry;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.Vec3;
-
-import org.objectweb.asm.*;
-
-import com.google.common.base.Preconditions;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 public abstract class BlockSpaceTransform {
 	// Ok, so it's needlessly complicated, but I was trying to relax after trying to remember how to build transformation matrices from my linear algebra course

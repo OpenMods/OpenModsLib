@@ -1,15 +1,14 @@
 package openmods.network.event;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.List;
-
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 public abstract class NetworkEvent extends Event {
 
@@ -41,6 +40,10 @@ public abstract class NetworkEvent extends Event {
 
 	public void sendToPlayer(EntityPlayer player) {
 		NetworkEventManager.INSTANCE.dispatcher().senders.player.sendMessage(this, player);
+	}
+
+	public void sendToEntity(Entity entity) {
+		NetworkEventManager.INSTANCE.dispatcher().senders.entity.sendMessage(this, entity);
 	}
 
 	public List<Object> serialize() {

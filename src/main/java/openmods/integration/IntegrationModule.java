@@ -1,8 +1,7 @@
 package openmods.integration;
 
-import openmods.conditions.ICondition;
-
 import com.google.common.base.Preconditions;
+import openmods.conditions.ICondition;
 
 public abstract class IntegrationModule implements IIntegrationModule {
 	private final ICondition condition;

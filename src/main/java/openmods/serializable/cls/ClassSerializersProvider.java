@@ -1,15 +1,13 @@
 package openmods.serializable.cls;
 
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
-
 import net.minecraft.network.PacketBuffer;
 import openmods.serializable.IObjectSerializer;
 import openmods.utils.CachedFactory;
 import openmods.utils.FieldsSelector;
-
-import com.google.common.collect.Lists;
 
 public class ClassSerializersProvider {
 	public static final ClassSerializersProvider instance = new ClassSerializersProvider();

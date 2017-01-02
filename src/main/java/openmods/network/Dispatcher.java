@@ -1,17 +1,17 @@
 package openmods.network;
 
+import com.google.common.collect.ImmutableList;
 import io.netty.channel.embedded.EmbeddedChannel;
-
 import java.util.List;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.network.FMLOutboundHandler.OutboundTarget;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
-import openmods.network.senders.*;
-
-import com.google.common.collect.ImmutableList;
+import openmods.network.senders.ExtPacketSenderFactory;
+import openmods.network.senders.FmlPacketSenderFactory;
+import openmods.network.senders.IPacketSender;
+import openmods.network.senders.ITargetedPacketSender;
 
 public abstract class Dispatcher {
 

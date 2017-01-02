@@ -3,7 +3,6 @@ package openmods.geometry;
 import net.minecraft.util.EnumFacing;
 import openmods.geometry.BlockTextureTransform.TexCoords;
 import openmods.geometry.BlockTextureTransform.WorldCoords;
-
 import org.junit.Assert;
 import org.junit.Test;
 

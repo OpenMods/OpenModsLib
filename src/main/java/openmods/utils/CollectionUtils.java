@@ -1,21 +1,24 @@
 package openmods.utils;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.*;
-import java.util.Map.Entry;
-
-import net.minecraft.network.PacketBuffer;
-import openmods.reflection.TypeUtils;
-import openmods.utils.io.IStreamReader;
-import openmods.utils.io.IStreamWriter;
-
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.reflect.TypeToken;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import net.minecraft.network.PacketBuffer;
+import openmods.reflection.TypeUtils;
+import openmods.utils.io.IStreamReader;
+import openmods.utils.io.IStreamWriter;
 
 public class CollectionUtils {
 
@@ -174,5 +177,10 @@ public class CollectionUtils {
 		}
 
 		return (B[])result;
+	}
+
+	public static <K, V> void putOnce(Map<K, V> map, K key, V value) {
+		final V prev = map.put(key, value);
+		Preconditions.checkState(prev == null, "Duplicate value on key %s: %s -> %s", key, prev, value);
 	}
 }

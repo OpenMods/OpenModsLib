@@ -72,8 +72,8 @@ public class FieldAccess<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Class<? extends T> getType() {
-		return (Class<? extends T>)field.getType();
+	public Class<T> getType() {
+		return (Class<T>)field.getType();
 	}
 
 	@SuppressWarnings("unchecked")

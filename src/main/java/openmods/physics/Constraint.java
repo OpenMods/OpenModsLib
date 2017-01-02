@@ -7,9 +7,7 @@ public class Constraint {
 	public Constraint(Point p1, Point p2, double r1) {
 		this.p1 = p1;
 		this.p2 = p2;
-		this.rest_length = Double.isNaN(r1)?
-				p1.getCurrent().subtract(p2.getCurrent()).length() :
-				r1;
+		this.rest_length = Double.isNaN(r1)? p1.getCurrent().subtract(p2.getCurrent()).length() : r1;
 		this.squared_rest_length = this.rest_length * this.rest_length;
 	}
 

@@ -1,13 +1,11 @@
 package openmods;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.fml.client.IModGuiFactory;
 import openmods.config.gui.OpenModsConfigScreen;
-
-import com.google.common.collect.ImmutableSet;
 
 public class GuiFactory implements IModGuiFactory {
 

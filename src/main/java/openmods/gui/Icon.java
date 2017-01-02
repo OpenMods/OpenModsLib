@@ -1,8 +1,7 @@
 package openmods.gui;
 
-import net.minecraft.util.ResourceLocation;
-
 import com.google.common.base.Preconditions;
+import net.minecraft.util.ResourceLocation;
 
 public class Icon {
 

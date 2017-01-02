@@ -1,15 +1,12 @@
 package openmods.gui.component;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
-
 import net.minecraft.client.gui.FontRenderer;
 import openmods.api.IValueReceiver;
 import openmods.gui.IComponentParent;
-
 import org.lwjgl.opengl.GL11;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 
 public class GuiComponentLabel extends BaseComponent implements IValueReceiver<String> {
 

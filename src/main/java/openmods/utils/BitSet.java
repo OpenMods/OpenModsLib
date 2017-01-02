@@ -3,7 +3,6 @@ package openmods.utils;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 

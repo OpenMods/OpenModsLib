@@ -1,7 +1,7 @@
 package openmods.calc;
 
 import openmods.calc.CalcTestUtils.ValueParserHelper;
-
+import openmods.calc.types.fraction.FractionParser;
 import org.apache.commons.lang3.math.Fraction;
 import org.junit.Test;
 
@@ -22,9 +22,13 @@ public class FractionParserTest {
 	@Test
 	public void testBinary() {
 		helper.testBin(Fraction.ZERO, "0");
-		helper.testBin(Fraction.ONE, "1");
 		helper.testBin(Fraction.ZERO, "00");
+		helper.testBin(Fraction.ZERO, "0_0");
+		helper.testBin(Fraction.ZERO, "0__0");
+		helper.testBin(Fraction.ONE, "1");
 		helper.testBin(Fraction.ONE, "01");
+		helper.testBin(Fraction.ONE, "0_1");
+		helper.testBin(Fraction.ONE, "0__1");
 		helper.testBin(f(2), "10");
 		helper.testBin(f(3), "11");
 		helper.testBin(f(4), "100");
@@ -35,14 +39,21 @@ public class FractionParserTest {
 		helper.testBin(f(1, 4), "0.01");
 		helper.testBin(f(7, 8), "0.111");
 		helper.testBin(f(1, 8), "0.001");
+
+		helper.testBin(f(1, 8), "0.0_01");
+		helper.testBin(f(1, 8), "0.0_0_1");
 	}
 
 	@Test
 	public void testOctal() {
 		helper.testOct(Fraction.ZERO, "0");
 		helper.testOct(Fraction.ZERO, "00");
+		helper.testOct(Fraction.ZERO, "0_0");
+		helper.testOct(Fraction.ZERO, "0__0");
 		helper.testOct(Fraction.ONE, "1");
 		helper.testOct(Fraction.ONE, "01");
+		helper.testOct(Fraction.ONE, "0_1");
+		helper.testOct(Fraction.ONE, "0__1");
 		helper.testOct(f(2), "2");
 		helper.testOct(f(7), "7");
 		helper.testOct(f(8), "10");
@@ -55,14 +66,20 @@ public class FractionParserTest {
 		helper.testOct(f(7, 8), "0.7");
 		helper.testOct(f(1, 64), "0.01");
 		helper.testOct(f(63, 64), "0.77");
+
+		helper.testOct(f(63, 64), "0.7_7");
 	}
 
 	@Test
 	public void testDecimal() {
 		helper.testDec(Fraction.ZERO, "0");
 		helper.testDec(Fraction.ZERO, "00");
+		helper.testDec(Fraction.ZERO, "0_0");
+		helper.testDec(Fraction.ZERO, "0__0");
 		helper.testDec(Fraction.ONE, "1");
 		helper.testDec(Fraction.ONE, "01");
+		helper.testDec(Fraction.ONE, "0_1");
+		helper.testDec(Fraction.ONE, "0__1");
 		helper.testDec(f(2), "2");
 		helper.testDec(f(9), "9");
 		helper.testDec(f(10), "10");
@@ -75,14 +92,20 @@ public class FractionParserTest {
 		helper.testDec(f(9, 10), "0.9");
 		helper.testDec(f(1, 100), "0.01");
 		helper.testDec(f(99, 100), "0.99");
+
+		helper.testDec(f(99, 100), "0.9_9");
 	}
 
 	@Test
 	public void testHexadecimal() {
 		helper.testHex(Fraction.ZERO, "0");
 		helper.testHex(Fraction.ZERO, "00");
+		helper.testHex(Fraction.ZERO, "0_0");
+		helper.testHex(Fraction.ZERO, "0__0");
 		helper.testHex(Fraction.ONE, "1");
 		helper.testHex(Fraction.ONE, "01");
+		helper.testHex(Fraction.ONE, "0_1");
+		helper.testHex(Fraction.ONE, "0__1");
 		helper.testHex(f(2), "2");
 		helper.testHex(f(10), "A");
 		helper.testHex(f(15), "F");
@@ -96,13 +119,14 @@ public class FractionParserTest {
 		helper.testHex(f(15, 16), "0.F");
 		helper.testHex(f(1, 256), "0.01");
 		helper.testHex(f(255, 256), "0.FF");
+
+		helper.testHex(f(255, 256), "0.F_F");
 	}
 
 	@Test
 	public void testQuotedDecimalZeros() {
 		helper.testQuoted(Fraction.ZERO, "2#0");
 		helper.testQuoted(Fraction.ZERO, "2#00");
-
 		helper.testQuoted(Fraction.ZERO, "3#0");
 		helper.testQuoted(Fraction.ZERO, "8#0");
 	}
@@ -111,7 +135,6 @@ public class FractionParserTest {
 	public void testQuotedIntegerOnes() {
 		helper.testQuoted(Fraction.ONE, "2#1");
 		helper.testQuoted(Fraction.ONE, "2#01");
-
 		helper.testQuoted(Fraction.ONE, "3#1");
 		helper.testQuoted(Fraction.ONE, "8#1");
 	}
@@ -164,6 +187,17 @@ public class FractionParserTest {
 		helper.testQuoted(f(10, 14), "14#0.'10'");
 		helper.testQuoted(f(10, 15), "15#0.'10'");
 		helper.testQuoted(f(10, 16), "16#0.'10'");
+	}
+
+	@Test
+	public void testQuotedFractionSeparators() {
+		helper.testQuoted(Fraction.ZERO, "2#0_0");
+		helper.testQuoted(Fraction.ZERO, "2#0__0");
+		helper.testQuoted(Fraction.ONE, "2#0_1");
+		helper.testQuoted(Fraction.ONE, "2#0__1");
+
+		helper.testQuoted(f(123, 100), "10#1.2_3");
+		helper.testQuoted(f(14 * 16 + 5, 256), "16#0.'14'_5");
 	}
 
 	@Test

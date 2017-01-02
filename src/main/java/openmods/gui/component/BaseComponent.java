@@ -1,21 +1,24 @@
 package openmods.gui.component;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
-
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import openmods.gui.IComponentParent;
 import openmods.gui.Icon;
-import openmods.gui.listener.*;
-
+import openmods.gui.listener.IKeyTypedListener;
+import openmods.gui.listener.IMouseDownListener;
+import openmods.gui.listener.IMouseDragListener;
+import openmods.gui.listener.IMouseUpListener;
 import org.lwjgl.opengl.GL11;
-
-import com.google.common.collect.ImmutableList;
 
 public abstract class BaseComponent extends Gui {
 

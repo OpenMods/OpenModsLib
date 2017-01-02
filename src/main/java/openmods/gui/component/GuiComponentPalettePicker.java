@@ -1,11 +1,9 @@
 package openmods.gui.component;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Iterator;
 import java.util.List;
-
 import openmods.gui.listener.IValueChangedListener;
-
-import com.google.common.collect.ImmutableList;
 
 public class GuiComponentPalettePicker extends BaseComponent {
 

@@ -1,11 +1,18 @@
 package openmods.sync;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import io.netty.buffer.Unpooled;
-
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-
+import java.util.NoSuchElementException;
+import java.util.Set;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -15,11 +22,6 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import openmods.Log;
 import openmods.utils.ByteUtils;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public abstract class SyncMap<H extends ISyncMapProvider> {
 
@@ -71,7 +73,7 @@ public abstract class SyncMap<H extends ISyncMapProvider> {
 				int entityId = input.readInt();
 				Entity entity = world.getEntityByID(entityId);
 				if (entity instanceof ISyncMapProvider)
-				return (ISyncMapProvider)entity;
+					return (ISyncMapProvider)entity;
 
 				Log.warn("Invalid handler info: can't find ISyncHandler entity id %d", entityId);
 				return null;

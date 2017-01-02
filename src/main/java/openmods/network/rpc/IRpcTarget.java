@@ -1,7 +1,6 @@
 package openmods.network.rpc;
 
 import java.io.IOException;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
 

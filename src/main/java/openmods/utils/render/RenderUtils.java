@@ -1,7 +1,10 @@
 package openmods.utils.render;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
@@ -11,7 +14,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import openmods.colors.RGB;
-
 import org.lwjgl.opengl.GL11;
 
 public class RenderUtils {
@@ -124,7 +126,6 @@ public class RenderUtils {
 		final float r = (float)((rgb >> 16) & 0xFF) / 255;
 		final float g = (float)((rgb >> 8) & 0xFF) / 255;
 		final float b = (float)((rgb >> 0) & 0xFF) / 255;
-
 		GlStateManager.color(r, g, b);
 	}
 

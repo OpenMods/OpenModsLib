@@ -1,9 +1,8 @@
 package openmods.calc;
 
 import java.math.BigInteger;
-
 import openmods.calc.CalcTestUtils.ValueParserHelper;
-
+import openmods.calc.types.bigint.BigIntParser;
 import org.junit.Test;
 
 public class BigIntParserTest {
@@ -17,7 +16,11 @@ public class BigIntParserTest {
 		helper.testBin(BigInteger.ZERO, "0");
 		helper.testBin(BigInteger.ONE, "1");
 		helper.testBin(BigInteger.ZERO, "00");
+		helper.testBin(BigInteger.ZERO, "0_0");
+		helper.testBin(BigInteger.ZERO, "0__0");
 		helper.testBin(BigInteger.ONE, "01");
+		helper.testBin(BigInteger.ONE, "0_1");
+		helper.testBin(BigInteger.ONE, "0__1");
 		helper.testBin(BigInteger.valueOf(2), "10");
 		helper.testBin(BigInteger.valueOf(3), "11");
 		helper.testBin(BigInteger.valueOf(4), "100");
@@ -28,8 +31,12 @@ public class BigIntParserTest {
 	public void testOctal() {
 		helper.testOct(BigInteger.ZERO, "0");
 		helper.testOct(BigInteger.ZERO, "00");
+		helper.testOct(BigInteger.ZERO, "0_0");
+		helper.testOct(BigInteger.ZERO, "0__0");
 		helper.testOct(BigInteger.ONE, "1");
 		helper.testOct(BigInteger.ONE, "01");
+		helper.testOct(BigInteger.ONE, "0_1");
+		helper.testOct(BigInteger.ONE, "0__1");
 		helper.testOct(BigInteger.valueOf(2), "2");
 		helper.testOct(BigInteger.valueOf(7), "7");
 		helper.testOct(BigInteger.valueOf(8), "10");
@@ -43,8 +50,12 @@ public class BigIntParserTest {
 	public void testDecimal() {
 		helper.testDec(BigInteger.ZERO, "0");
 		helper.testDec(BigInteger.ZERO, "00");
+		helper.testDec(BigInteger.ZERO, "0_0");
+		helper.testDec(BigInteger.ZERO, "0__0");
 		helper.testDec(BigInteger.ONE, "1");
 		helper.testDec(BigInteger.ONE, "01");
+		helper.testDec(BigInteger.ONE, "0_1");
+		helper.testDec(BigInteger.ONE, "0__1");
 		helper.testDec(BigInteger.valueOf(2), "2");
 		helper.testDec(BigInteger.valueOf(9), "9");
 		helper.testDec(BigInteger.valueOf(10), "10");
@@ -55,11 +66,15 @@ public class BigIntParserTest {
 	}
 
 	@Test
-	public void testHexatestDecimal() {
+	public void testHexadecimal() {
 		helper.testHex(BigInteger.ZERO, "0");
 		helper.testHex(BigInteger.ZERO, "00");
+		helper.testHex(BigInteger.ZERO, "0_0");
+		helper.testHex(BigInteger.ZERO, "0__0");
 		helper.testHex(BigInteger.ONE, "1");
 		helper.testHex(BigInteger.ONE, "01");
+		helper.testHex(BigInteger.ONE, "0_1");
+		helper.testHex(BigInteger.ONE, "0__1");
 		helper.testHex(BigInteger.valueOf(2), "2");
 		helper.testHex(BigInteger.valueOf(10), "A");
 		helper.testHex(BigInteger.valueOf(15), "F");
@@ -98,6 +113,13 @@ public class BigIntParserTest {
 		helper.testQuoted(BigInteger.valueOf(16), "16#10");
 
 		helper.testQuoted(BigInteger.valueOf(100), "100#10");
+	}
+
+	@Test
+	public void testQuotedSeparators() {
+		helper.testQuoted(BigInteger.valueOf(2), "2#1_0");
+		helper.testQuoted(BigInteger.valueOf(2), "2#1__0");
+		helper.testQuoted(BigInteger.valueOf(4), "2#1_0_0");
 	}
 
 	@Test

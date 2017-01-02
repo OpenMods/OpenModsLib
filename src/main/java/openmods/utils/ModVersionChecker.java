@@ -1,13 +1,11 @@
 package openmods.utils;
 
+import com.google.common.collect.Ordering;
 import java.io.File;
 import java.net.URL;
-
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import openmods.Log;
-
-import com.google.common.collect.Ordering;
 
 /**
  * This class retrieves a version string from a text file at a given URL and

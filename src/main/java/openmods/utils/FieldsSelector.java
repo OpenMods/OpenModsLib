@@ -1,12 +1,11 @@
 package openmods.utils;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.primitives.Ints;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.primitives.Ints;
 
 public abstract class FieldsSelector {
 

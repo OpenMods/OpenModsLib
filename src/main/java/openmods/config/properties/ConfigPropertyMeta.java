@@ -1,10 +1,14 @@
 package openmods.config.properties;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Map;
-
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
@@ -13,11 +17,7 @@ import openmods.Log;
 import openmods.utils.io.IStringSerializer;
 import openmods.utils.io.StringConversionException;
 import openmods.utils.io.TypeRW;
-
 import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.base.*;
-import com.google.common.collect.ImmutableMap;
 
 public abstract class ConfigPropertyMeta {
 	public enum Result {

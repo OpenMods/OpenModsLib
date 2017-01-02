@@ -1,12 +1,15 @@
 package openmods.config.game;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -25,11 +28,6 @@ import openmods.config.ItemInstances;
 import openmods.config.game.RegisterBlock.RegisterTileEntity;
 import openmods.utils.CachedFactory;
 import openmods.utils.SneakyThrower;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 
 public class GameConfigProvider {
 

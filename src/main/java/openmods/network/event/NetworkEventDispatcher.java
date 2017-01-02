@@ -1,7 +1,6 @@
 package openmods.network.event;
 
 import java.util.Map;
-
 import net.minecraftforge.fml.common.network.FMLEmbeddedChannel;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;

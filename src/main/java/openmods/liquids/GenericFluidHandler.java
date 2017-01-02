@@ -1,7 +1,11 @@
 package openmods.liquids;
 
 import net.minecraft.util.EnumFacing;
-import net.minecraftforge.fluids.*;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidTankInfo;
+import net.minecraftforge.fluids.IFluidHandler;
+import net.minecraftforge.fluids.IFluidTank;
 
 public class GenericFluidHandler implements IFluidHandler {
 

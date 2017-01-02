@@ -2,7 +2,6 @@ package openmods.gui.component;
 
 import net.minecraft.client.renderer.GlStateManager;
 import openmods.gui.Icon;
-
 import org.lwjgl.input.Mouse;
 
 public class GuiComponentSpriteButton extends GuiComponentSprite {

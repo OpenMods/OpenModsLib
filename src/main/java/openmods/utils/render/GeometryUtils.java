@@ -1,17 +1,15 @@
 package openmods.utils.render;
 
+import com.google.common.collect.ImmutableList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Vec3;
 import net.minecraft.util.Vec3i;
 import openmods.shapes.IShapeable;
 import openmods.utils.Coord;
 import openmods.utils.MathUtils;
-
-import com.google.common.collect.ImmutableList;
 
 public class GeometryUtils {
 
@@ -104,11 +102,12 @@ public class GeometryUtils {
 		if (length < 0) return;
 		final Vec3i v = direction.getDirectionVec();
 		for (int offset = 0; offset <= length; offset++)
-			/* Create a line in the direction of direction, length in size */
+			// Create a line in the direction of direction, length in size
 			shapeable.setBlock(
 					startX + (offset * v.getX()),
 					startY + (offset * v.getY()),
 					startZ + (offset * v.getZ()));
+
 	}
 
 	public static void makePlane(int startX, int startY, int startZ, int width, int height, Axis right, Axis up, IShapeable shapeable) {

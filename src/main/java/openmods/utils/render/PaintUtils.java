@@ -1,7 +1,7 @@
 package openmods.utils.render;
 
+import com.google.common.collect.Sets;
 import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
@@ -9,8 +9,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import openmods.Mods;
-
-import com.google.common.collect.Sets;
 
 public class PaintUtils {
 

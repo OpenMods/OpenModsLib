@@ -1,20 +1,17 @@
 package openmods.network.rpc;
 
+import com.google.common.base.Preconditions;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
-
 import java.lang.reflect.Method;
 import java.util.List;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import openmods.OpenMods;
-
-import com.google.common.base.Preconditions;
 
 @Sharable
 public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall> {

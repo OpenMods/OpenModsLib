@@ -1,19 +1,15 @@
 package openmods.structured;
 
-import gnu.trove.impl.Constants;
-import gnu.trove.map.hash.TIntIntHashMap;
-
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.SortedSet;
-
-import openmods.structured.IStructureContainer.IElementAddCallback;
-
-import org.apache.commons.lang3.mutable.MutableInt;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.TreeMultimap;
+import gnu.trove.impl.Constants;
+import gnu.trove.map.hash.TIntIntHashMap;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import openmods.structured.IStructureContainer.IElementAddCallback;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 public abstract class StructuredData<C extends IStructureContainer<E>, E extends IStructureElement> {
 	protected static final int NULL = -1;

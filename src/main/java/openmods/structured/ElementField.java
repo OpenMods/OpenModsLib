@@ -1,16 +1,14 @@
 package openmods.structured;
 
+import com.google.common.base.Preconditions;
+import com.google.common.reflect.TypeToken;
 import java.io.IOException;
 import java.lang.reflect.Field;
-
 import net.minecraft.network.PacketBuffer;
 import openmods.reflection.InstanceFieldAccess;
 import openmods.reflection.TypeUtils;
 import openmods.serializable.SerializerRegistry;
 import openmods.utils.io.IStreamSerializer;
-
-import com.google.common.base.Preconditions;
-import com.google.common.reflect.TypeToken;
 
 public class ElementField extends InstanceFieldAccess<Object> implements IStructureElement {
 

@@ -1,15 +1,12 @@
 package openmods.gui.component;
 
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import java.util.Random;
-
 import javax.annotation.Nullable;
-
 import net.minecraft.item.ItemStack;
 import openmods.gui.Icon;
 import openmods.utils.CollectionUtils;
-
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 
 public class GuiComponentCraftingGrid extends GuiComponentSprite {
 

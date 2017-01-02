@@ -1,16 +1,17 @@
 package openmods.structured;
 
-import io.netty.buffer.ByteBuf;
-
-import java.io.IOException;
-import java.util.*;
-
-import net.minecraft.network.PacketBuffer;
-import openmods.utils.CollectionUtils;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.netty.buffer.ByteBuf;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.SortedSet;
+import net.minecraft.network.PacketBuffer;
+import openmods.utils.CollectionUtils;
 
 public abstract class Command {
 

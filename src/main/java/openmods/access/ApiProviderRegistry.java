@@ -1,12 +1,14 @@
 package openmods.access;
 
-import java.lang.reflect.Modifier;
-import java.util.*;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 public class ApiProviderRegistry<A> {
 

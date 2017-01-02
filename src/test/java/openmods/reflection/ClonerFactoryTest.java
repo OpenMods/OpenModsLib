@@ -1,7 +1,6 @@
 package openmods.reflection;
 
 import openmods.reflection.ClonerFactory.ICloner;
-
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -1,6 +1,10 @@
 package openmods.renderer.shaders;
 
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.ARBShaderObjects;
+import org.lwjgl.opengl.ARBVertexShader;
+import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GLContext;
 
 public class ShaderHelper {
 	/**

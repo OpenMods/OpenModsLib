@@ -1,10 +1,13 @@
 package openmods.serializable.providers;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import com.google.common.reflect.TypeToken;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-
 import net.minecraft.network.PacketBuffer;
 import openmods.reflection.TypeUtils;
 import openmods.serializable.IGenericSerializerProvider;
@@ -14,11 +17,6 @@ import openmods.utils.bitstream.OutputBitStream;
 import openmods.utils.io.IStreamSerializer;
 import openmods.utils.io.StreamAdapters;
 import openmods.utils.io.StreamUtils;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import com.google.common.reflect.TypeToken;
 
 public class MapSerializerProvider implements IGenericSerializerProvider {
 

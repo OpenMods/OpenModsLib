@@ -1,7 +1,6 @@
 package openmods.utils.bitstream;
 
 import java.io.IOException;
-
 import openmods.utils.io.IByteSink;
 
 public class OutputBitStream {

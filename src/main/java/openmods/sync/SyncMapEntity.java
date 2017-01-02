@@ -1,7 +1,6 @@
 package openmods.sync;
 
 import java.util.Set;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;

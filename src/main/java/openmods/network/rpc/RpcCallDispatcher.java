@@ -1,7 +1,7 @@
 package openmods.network.rpc;
 
+import com.google.common.base.Preconditions;
 import java.util.Map;
-
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.LoaderState;
 import net.minecraftforge.fml.common.network.FMLEmbeddedChannel;
@@ -10,8 +10,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import openmods.network.Dispatcher;
 import openmods.network.ExtendedOutboundHandler;
 import openmods.network.senders.IPacketSender;
-
-import com.google.common.base.Preconditions;
 
 public class RpcCallDispatcher extends Dispatcher {
 

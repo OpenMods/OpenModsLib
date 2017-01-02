@@ -1,18 +1,19 @@
 package openmods.liquids;
 
+import com.google.common.collect.Sets;
 import java.util.Set;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
-import net.minecraftforge.fluids.*;
+import net.minecraftforge.fluids.FluidContainerRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidTankInfo;
+import net.minecraftforge.fluids.IFluidHandler;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-
-import com.google.common.collect.Sets;
 
 public class BucketFillHandler {
 

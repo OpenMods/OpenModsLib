@@ -1,14 +1,11 @@
 package openmods.gui.misc;
 
+import com.google.common.collect.Maps;
 import java.util.Map;
-
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.Vec3;
 import openmods.utils.render.ProjectionHelper;
-
 import org.lwjgl.input.Mouse;
-
-import com.google.common.collect.Maps;
 
 public class SidePicker {
 

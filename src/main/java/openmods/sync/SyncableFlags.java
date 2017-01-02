@@ -1,12 +1,11 @@
 package openmods.sync;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import openmods.utils.ByteUtils;
 import openmods.utils.bitmap.IBitMap;
 import openmods.utils.bitmap.IRpcIntBitMap;
-
-import com.google.common.base.Preconditions;
 
 public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIntBitMap, IBitMap<Integer> {
 

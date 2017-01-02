@@ -1,14 +1,13 @@
 package openmods.network.event;
 
+import com.google.common.base.Preconditions;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
-
 import java.io.IOException;
 import java.util.List;
-
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -16,8 +15,6 @@ import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import net.minecraftforge.fml.relauncher.Side;
 import openmods.Log;
 import openmods.OpenMods;
-
-import com.google.common.base.Preconditions;
 
 // TODO compression
 @Sharable

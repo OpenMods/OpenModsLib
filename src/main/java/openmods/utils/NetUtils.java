@@ -1,11 +1,11 @@
 package openmods.utils;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-
 import java.util.Set;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -16,9 +16,6 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
 import openmods.Log;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 public class NetUtils {
 

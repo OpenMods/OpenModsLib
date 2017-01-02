@@ -1,9 +1,15 @@
 package openmods.core;
 
+import com.google.common.base.Functions;
+import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraftforge.fml.common.discovery.ASMDataTable;
 import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData;
@@ -14,6 +20,7 @@ import openmods.asm.VisitorHelper;
 import openmods.asm.VisitorHelper.TransformProvider;
 import openmods.config.simple.ConfigProcessor;
 import openmods.config.simple.ConfigProcessor.UpdateListener;
+import openmods.entity.PlayerDamageEventInjector;
 import openmods.include.IncludingClassVisitor;
 import openmods.injector.InjectedClassesManager;
 import openmods.movement.MovementPatcher;
@@ -21,14 +28,8 @@ import openmods.renderer.PlayerRendererHookVisitor;
 import openmods.utils.StateTracker;
 import openmods.utils.StateTracker.StateUpdater;
 import openmods.world.MapGenStructureVisitor;
-
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-
-import com.google.common.base.Functions;
-import com.google.common.base.Joiner;
-import com.google.common.base.Throwables;
-import com.google.common.collect.*;
 
 public class OpenModsClassTransformer implements IClassTransformer {
 
@@ -42,8 +43,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 			"com.google.",
 			"com.mojang.",
 			"joptsimple.",
-			"tv.twitch."
-			);
+			"tv.twitch.");
 
 	private final Map<String, TransformProvider> vanillaPatches = Maps.newHashMap();
 
@@ -146,6 +146,24 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				"Modified class: net.minecraft.client.renderer.entity.RenderPlayer",
 				"Known users: OpenBlocks hangglider",
 				"When disabled: code may fallback to less compatible mechanism (like replacing renderer)");
+
+		config.addEntry("activate_player_damage_hook", 0, "true", new ConfigOption("player_damage_hook") {
+			@Override
+			protected void onActivate(final StateUpdater<TransformerState> state) {
+				vanillaPatches.put("net.minecraft.entity.player.EntityPlayer", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
+					@Override
+					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
+						Log.debug("Trying to patch EntityPlayer (class: %s)", name);
+						state.update(TransformerState.ACTIVATED);
+						return new PlayerDamageEventInjector(name, cv, createResultListener(state));
+					}
+				});
+			}
+		},
+				"Purpose: hook for capturing damage to player (after armor and potion calculations)",
+				"Modified class: net.minecraft.entity.player.EntityPlayer",
+				"Known users: Last Stand enchantment",
+				"When disabled: Last Stand enchantment will not work");
 	}
 
 	private final static TransformProvider INCLUDING_CV = new TransformProvider(0) {

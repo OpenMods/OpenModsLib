@@ -1,7 +1,8 @@
 package openmods.block;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-
 import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.BlockPos;
@@ -10,9 +11,6 @@ import openmods.geometry.BlockTextureTransform;
 import openmods.geometry.HalfAxis;
 import openmods.geometry.Orientation;
 import openmods.utils.BlockUtils;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 
 public enum BlockRotationMode {
 	/**

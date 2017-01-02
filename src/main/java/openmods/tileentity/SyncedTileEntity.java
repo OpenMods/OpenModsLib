@@ -2,7 +2,6 @@ package openmods.tileentity;
 
 import java.io.IOException;
 import java.util.Set;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketBuffer;
@@ -12,7 +11,13 @@ import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.SyncRpcTarget;
 import openmods.network.senders.IPacketSender;
 import openmods.reflection.TypeUtils;
-import openmods.sync.*;
+import openmods.sync.ISyncListener;
+import openmods.sync.ISyncMapProvider;
+import openmods.sync.ISyncableObject;
+import openmods.sync.SyncChannelHolder;
+import openmods.sync.SyncMap;
+import openmods.sync.SyncMapTile;
+import openmods.sync.SyncObjectScanner;
 import openmods.sync.drops.DropTagSerializer;
 
 public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMapProvider {

@@ -5,8 +5,11 @@ import openmods.api.IResultListener;
 import openmods.asm.MappedType;
 import openmods.asm.MethodMatcher;
 import openmods.asm.VisitorHelper;
-
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 public class MapGenStructureVisitor extends ClassVisitor {
 
@@ -29,7 +32,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 		 * checkcast class net/minecraft/world/gen/structure/StructureStart
 		 * astore X
 		 * aload X
-		 * 
+		 *
 		 * We use that to get id of local variable that stores 'structurestart'
 		 */
 
@@ -59,7 +62,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 		 * to
 		 * if (structurestart.isSizeableStructure() &&
 		 * !structurestart.getComponents().isEmpty())
-		 * 
+		 *
 		 * Again, we assume that compilator places IFEQ jump just after calling
 		 * isSizeableStructure from first expression. We can then reuse label
 		 * for second part
@@ -80,8 +83,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 
 			if (markerMethodFound && localVarId != null && opcode == Opcodes.IFEQ) {
 				Log.debug("All conditions matched, inserting extra condition");
-				super.visitVarInsn(Opcodes.ALOAD, localVarId); // hopefully
-																// 'structurestart'
+				super.visitVarInsn(Opcodes.ALOAD, localVarId); // hopefully 'structurestart'
 				String getComponentsMethodName = VisitorHelper.useSrgNames()? "func_75073_b" : "getComponents";
 				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, structureStartCls.name(), getComponentsMethodName, "()Ljava/util/LinkedList;", false);
 				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/LinkedList", "isEmpty", "()Z", false);

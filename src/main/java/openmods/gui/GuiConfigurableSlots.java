@@ -1,15 +1,19 @@
 package openmods.gui;
 
 import java.util.Set;
-
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;
 import openmods.container.ContainerBase;
-import openmods.gui.component.*;
+import openmods.gui.component.BaseComposite;
+import openmods.gui.component.GuiComponentCheckbox;
+import openmods.gui.component.GuiComponentLabel;
+import openmods.gui.component.GuiComponentSideSelector;
 import openmods.gui.component.GuiComponentSideSelector.ISideSelectedListener;
+import openmods.gui.component.GuiComponentTab;
+import openmods.gui.component.GuiComponentTabWrapper;
 import openmods.gui.listener.IValueChangedListener;
 import openmods.gui.logic.ValueCopyAction;
 import openmods.gui.misc.IConfigurableGuiSlots;

@@ -1,19 +1,26 @@
 package openmods.include;
 
-import java.lang.reflect.Modifier;
-import java.util.*;
-
-import openmods.Log;
-import openmods.asm.StopTransforming;
-
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.Method;
-
-import com.google.common.base.*;
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import openmods.Log;
+import openmods.asm.StopTransforming;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.Method;
 
 public class IncludingClassVisitor extends ClassVisitor {
 

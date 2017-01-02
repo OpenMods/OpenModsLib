@@ -3,10 +3,8 @@ package openmods.utils.io;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import openmods.utils.bitstream.InputBitStream;
 import openmods.utils.bitstream.OutputBitStream;
-
 import org.junit.Assert;
 import org.junit.Test;
 

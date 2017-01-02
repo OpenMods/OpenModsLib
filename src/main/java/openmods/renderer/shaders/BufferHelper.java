@@ -1,8 +1,10 @@
 package openmods.renderer.shaders;
 
 import java.nio.ByteBuffer;
-
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.ARBBufferObject;
+import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GLContext;
 
 public class BufferHelper {
 	static {

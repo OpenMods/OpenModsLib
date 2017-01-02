@@ -1,8 +1,9 @@
 package openmods.serializable.providers;
 
+import com.google.common.base.Preconditions;
+import com.google.common.reflect.TypeToken;
 import java.io.IOException;
 import java.lang.reflect.Type;
-
 import net.minecraft.network.PacketBuffer;
 import openmods.serializable.SerializerRegistry;
 import openmods.utils.bitstream.InputBitStream;
@@ -10,9 +11,6 @@ import openmods.utils.bitstream.OutputBitStream;
 import openmods.utils.io.IStreamSerializer;
 import openmods.utils.io.StreamAdapters;
 import openmods.utils.io.StreamUtils;
-
-import com.google.common.base.Preconditions;
-import com.google.common.reflect.TypeToken;
 
 public abstract class NullableCollectionSerializer<T> implements IStreamSerializer<T> {
 

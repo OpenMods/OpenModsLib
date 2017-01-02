@@ -1,14 +1,19 @@
 package openmods.utils;
 
-import java.util.*;
-
-import net.minecraft.command.*;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentTranslation;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.command.PlayerNotFoundException;
+import net.minecraft.command.PlayerSelector;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
 
 public class CommandUtils {
 
@@ -34,6 +39,10 @@ public class CommandUtils {
 
 	public static List<String> fiterPlayerNames(String prefix) {
 		return filterPrefixes(prefix, getPlayerNames());
+	}
+
+	public static void respondText(ICommandSender sender, String message) {
+		sender.addChatMessage(new ChatComponentText(message));
 	}
 
 	public static void respond(ICommandSender sender, String format, Object... args) {

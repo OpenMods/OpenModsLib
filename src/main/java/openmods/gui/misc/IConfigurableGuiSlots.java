@@ -1,7 +1,6 @@
 package openmods.gui.misc;
 
 import java.util.Set;
-
 import net.minecraft.util.EnumFacing;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;

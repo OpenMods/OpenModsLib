@@ -1,10 +1,9 @@
 package openmods.config.game;
 
-import java.util.Map;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
+import java.util.Map;
 
 public class FactoryRegistry<T> {
 

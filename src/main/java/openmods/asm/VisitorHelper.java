@@ -1,13 +1,11 @@
 package openmods.asm;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
-
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-
-import com.google.common.base.Preconditions;
 
 public class VisitorHelper {
 

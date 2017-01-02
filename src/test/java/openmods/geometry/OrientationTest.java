@@ -1,16 +1,14 @@
 package openmods.geometry;
 
-import java.util.Collection;
-import java.util.Map;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import java.util.Collection;
+import java.util.Map;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class OrientationTest {
 

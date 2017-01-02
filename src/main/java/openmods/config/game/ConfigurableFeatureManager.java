@@ -1,17 +1,15 @@
 package openmods.config.game;
 
-import java.lang.reflect.Field;
-import java.util.Set;
-
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
-import openmods.config.BlockInstances;
-import openmods.config.ItemInstances;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
+import java.lang.reflect.Field;
+import java.util.Set;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
+import openmods.config.BlockInstances;
+import openmods.config.ItemInstances;
 
 public class ConfigurableFeatureManager extends AbstractFeatureManager {
 

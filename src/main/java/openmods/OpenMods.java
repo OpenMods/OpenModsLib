@@ -1,14 +1,18 @@
 package openmods;
 
 import java.io.File;
-
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.common.*;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.event.*;
+import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
+import openmods.config.ConfigChangeListener;
 import openmods.config.ConfigStorage;
 import openmods.config.properties.CommandConfig;
 import openmods.config.properties.ConfigProcessing;
@@ -25,6 +29,7 @@ import openmods.network.rpc.targets.EntityRpcTarget;
 import openmods.network.rpc.targets.SyncRpcTarget;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.proxy.IOpenModsProxy;
+import openmods.reflection.TypeVariableHolderHandler;
 import openmods.source.ClassSourceCollector;
 import openmods.source.CommandSource;
 import openmods.sync.SyncChannelHolder;
@@ -54,6 +59,7 @@ public class OpenMods {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent evt) {
+		new TypeVariableHolderHandler().fillAllHolders(evt.getAsmData());
 		SyncChannelHolder.ensureLoaded();
 
 		NetworkEventManager.INSTANCE.startRegistration();
@@ -69,6 +75,8 @@ public class OpenMods {
 		final File configFile = evt.getSuggestedConfigurationFile();
 		Configuration config = new Configuration(configFile);
 		ConfigProcessing.processAnnotations(MODID, config, LibConfig.class);
+		MinecraftForge.EVENT_BUS.register(new ConfigChangeListener(MODID, config));
+
 		if (config.hasChanged()) config.save();
 
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);

@@ -1,7 +1,7 @@
 package openmods.fakeplayer;
 
+import com.mojang.authlib.GameProfile;
 import java.util.UUID;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.Item;
@@ -15,8 +15,6 @@ import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import openmods.Log;
-
-import com.mojang.authlib.GameProfile;
 
 public class OpenModsFakePlayer extends FakePlayer {
 
@@ -60,8 +58,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 			}
 
 		}
-		if (event.useItem != net.minecraftforge.fml.common.eventhandler.Event.Result.DENY)
-		{
+		if (event.useItem != net.minecraftforge.fml.common.eventhandler.Event.Result.DENY) {
 			try {
 				return itemStack.onItemUse(this, worldObj, pos, face, hitX, hitY, hitZ);
 			} catch (Throwable t) {

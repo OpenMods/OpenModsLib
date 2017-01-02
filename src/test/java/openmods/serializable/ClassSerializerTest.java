@@ -1,13 +1,10 @@
 package openmods.serializable;
 
 import io.netty.buffer.Unpooled;
-
 import java.io.IOException;
-
 import net.minecraft.network.PacketBuffer;
 import openmods.serializable.cls.ClassSerializersProvider;
 import openmods.serializable.cls.Serialize;
-
 import org.junit.Assert;
 import org.junit.Test;
 

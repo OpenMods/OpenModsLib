@@ -1,9 +1,8 @@
 package openmods.sync;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
-
-import com.google.common.base.Preconditions;
 
 public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implements ISyncableValueProvider<E> {
 

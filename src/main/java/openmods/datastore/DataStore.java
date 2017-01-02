@@ -1,8 +1,7 @@
 package openmods.datastore;
 
-import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 
 public class DataStore<K, V> {
 	private final Map<K, V> values;

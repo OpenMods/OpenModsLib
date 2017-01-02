@@ -1,7 +1,6 @@
 package openmods.sync;
 
 import java.util.Arrays;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 

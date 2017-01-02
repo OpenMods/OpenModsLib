@@ -1,8 +1,7 @@
 package openmods.utils;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
+import java.util.Map;
 
 public abstract class CachedFactory<K, V> {
 

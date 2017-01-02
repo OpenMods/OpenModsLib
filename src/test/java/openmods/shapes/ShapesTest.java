@@ -1,14 +1,11 @@
 package openmods.shapes;
 
-import java.util.Collection;
-
-import openmods.utils.Coord;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import java.util.Collection;
+import openmods.utils.Coord;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class ShapesTest {
 

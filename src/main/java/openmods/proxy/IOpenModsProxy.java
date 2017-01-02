@@ -1,7 +1,7 @@
 package openmods.proxy;
 
+import com.google.common.base.Optional;
 import java.io.File;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -9,8 +9,6 @@ import net.minecraft.network.INetHandler;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
-
-import com.google.common.base.Optional;
 
 public interface IOpenModsProxy {
 

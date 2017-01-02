@@ -4,10 +4,10 @@ import static openmods.utils.CommandUtils.error;
 import static openmods.utils.CommandUtils.filterPrefixes;
 import static openmods.utils.CommandUtils.respond;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.BlockPos;
@@ -15,10 +15,7 @@ import openmods.Log;
 import openmods.config.properties.ConfigProcessing.ModConfig;
 import openmods.utils.SidedCommand;
 import openmods.utils.io.StringConversionException;
-
 import org.apache.commons.lang3.ArrayUtils;
-
-import com.google.common.collect.ImmutableSet;
 
 public class CommandConfig extends SidedCommand {
 

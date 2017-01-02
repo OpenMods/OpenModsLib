@@ -1,16 +1,17 @@
 package openmods.renderer;
 
+import com.google.common.base.Throwables;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraftforge.common.MinecraftForge;
 import openmods.Log;
 import openmods.api.IResultListener;
 import openmods.asm.MappedType;
 import openmods.asm.MethodMatcher;
-
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
-
-import com.google.common.base.Throwables;
 
 public class PlayerRendererHookVisitor extends ClassVisitor {
 

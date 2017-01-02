@@ -1,9 +1,10 @@
 package openmods.item;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,9 +16,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import openmods.OpenMods;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 public abstract class ItemGeneric extends Item {
 

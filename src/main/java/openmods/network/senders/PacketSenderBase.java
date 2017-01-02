@@ -1,9 +1,7 @@
 package openmods.network.senders;
 
 import io.netty.channel.Channel;
-
 import java.util.Collection;
-
 import openmods.utils.NetUtils;
 
 public class PacketSenderBase implements IPacketSender {
@@ -15,6 +13,8 @@ public class PacketSenderBase implements IPacketSender {
 	}
 
 	protected void configureChannel(Channel channel) {}
+
+	protected void cleanupChannel(Channel channel) {}
 
 	@Override
 	public void sendMessage(Object msg) {
@@ -30,5 +30,7 @@ public class PacketSenderBase implements IPacketSender {
 			channel.write(msg).addListener(NetUtils.LOGGING_LISTENER);
 
 		channel.flush();
+
+		cleanupChannel(channel);
 	}
 }
