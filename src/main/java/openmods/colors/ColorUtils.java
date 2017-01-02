@@ -15,7 +15,7 @@ public class ColorUtils {
 		int distSq = Integer.MAX_VALUE;
 
 		for (ColorMeta meta : ColorMeta.VALUES) {
-			final int currentDistSq = meta.rgbWrap.distanceSq(target);
+			final int currentDistSq = meta.rgbWrap.distance(target);
 			if (currentDistSq < distSq) {
 				result = meta;
 				distSq = currentDistSq;
