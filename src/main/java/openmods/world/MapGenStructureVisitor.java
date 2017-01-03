@@ -84,9 +84,9 @@ public class MapGenStructureVisitor extends ClassVisitor {
 			if (markerMethodFound && localVarId != null && opcode == Opcodes.IFEQ) {
 				Log.debug("All conditions matched, inserting extra condition");
 				super.visitVarInsn(Opcodes.ALOAD, localVarId); // hopefully 'structurestart'
-				String getComponentsMethodName = VisitorHelper.useSrgNames()? "func_75073_b" : "getComponents";
-				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, structureStartCls.name(), getComponentsMethodName, "()Ljava/util/LinkedList;", false);
-				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/util/LinkedList", "isEmpty", "()Z", false);
+				String getComponentsMethodName = VisitorHelper.useSrgNames()? "func_186161_c" : "getComponents";
+				super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, structureStartCls.name(), getComponentsMethodName, "()Ljava/util/List;", false);
+				super.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/Collection", "isEmpty", "()Z", true);
 				super.visitJumpInsn(Opcodes.IFNE, label);
 				listener.onSuccess();
 				markerMethodFound = false;
@@ -100,7 +100,7 @@ public class MapGenStructureVisitor extends ClassVisitor {
 		this.listener = listener;
 
 		structureStartCls = MappedType.of("net/minecraft/world/gen/structure/StructureStart");
-		MappedType blockPosCls = MappedType.of("net/minecraft/util/BlockPos");
+		MappedType blockPosCls = MappedType.of("net/minecraft/util/math/BlockPos");
 		MappedType worldCls = MappedType.of("net/minecraft/world/World");
 
 		String descriptor = Type.getMethodDescriptor(blockPosCls.type(), worldCls.type(), blockPosCls.type());
