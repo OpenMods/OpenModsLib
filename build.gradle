@@ -130,7 +130,7 @@ processResources {
     // Process mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         include '**/*.info'
-        expand 'version':mod_version,'MCVersion':mc_ver
+        expand 'version':mod_version, 'mc_version':mc_ver
     }
 
     // Copy anything else directly

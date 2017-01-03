@@ -16,11 +16,11 @@ public class OpenModsCore extends DummyModContainer {
 	public OpenModsCore() {
 		super(new ModMetadata());
 		ModMetadata meta = getMetadata();
-		meta.modId = "OpenModsCore";
-		meta.name = "OpenModsCore";
+		meta.modId = "openmodscore";
+		meta.name = "OpenModsLib Core";
 		meta.version = "$LIB-VERSION$";
 		meta.authorList = Arrays.asList("Mikee", "NeverCast", "boq");
-		meta.url = "http://openmods.info/";
+		meta.url = "https://openmods.info/";
 		meta.description = "This is where the magic happens";
 	}
 

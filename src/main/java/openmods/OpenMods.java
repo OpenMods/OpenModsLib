@@ -38,10 +38,11 @@ import openmods.utils.bitmap.IRpcIntBitMap;
 import openmods.world.DelayedActionTickHandler;
 import openmods.world.DropCapture;
 
-@Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = "$LIB-VERSION$", dependencies = "required-after:OpenModsCore", guiFactory = "openmods.GuiFactory")
+@Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = "$LIB-VERSION$", dependencies = "required-after:openmodscore", guiFactory = "openmods.GuiFactory")
 public class OpenMods {
 
-	public static final String MODID = "OpenMods";
+	public static final String MODID = "openmods";
+	public static final String MODNAME = "OpenModsLib";
 
 	private static final int ENTITY_BLOCK_ID = 804;
 

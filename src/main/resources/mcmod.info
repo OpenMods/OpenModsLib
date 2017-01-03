@@ -1,11 +1,12 @@
 [
 {
-  "modid" : "OpenMods",
-  "name" : "OpenMods",
+  "modid" : "openmods",
+  "name" : "OpenModsLib",
   "version" : "${version}",
-  "url" : "http://openmods.info/",
+  "mcversion": "${mc_version}",
+  "url" : "https://openmods.info/",
   "credits" : "",
-  "authors": [
+  "authorList": [
     "Mikee",
     "NeverCast",
     "boq",
