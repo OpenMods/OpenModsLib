@@ -20,7 +20,9 @@ public @interface RegisterBlock {
 		public Class<? extends TileEntity> cls();
 	}
 
-	public String name();
+	public String id();
+
+	public boolean registerItemBlock() default true;
 
 	public Class<? extends ItemBlock> itemBlock() default ItemOpenBlock.class;
 
@@ -39,4 +41,6 @@ public @interface RegisterBlock {
 	public boolean addToModCreativeTab() default true;
 
 	public Class<? extends ICustomItemModelProvider> customItemModels() default ICustomItemModelProvider.class;
+
+	public String[] legacyIds() default {};
 }

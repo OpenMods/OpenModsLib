@@ -18,10 +18,10 @@ public class ModStartupHelper {
 	private final Set<Class<? extends BlockInstances>> blockHolders = Sets.newHashSet();
 
 	private final Set<Class<? extends ItemInstances>> itemHolders = Sets.newHashSet();
-	private final GameConfigProvider gameConfig;
+	private final GameRegistryObjectsProvider gameObjectsProvider;
 
 	public ModStartupHelper(String modId) {
-		this.gameConfig = new GameConfigProvider(modId);
+		this.gameObjectsProvider = new GameRegistryObjectsProvider(modId);
 	}
 
 	public void registerBlocksHolder(Class<? extends BlockInstances> holder) {
@@ -54,29 +54,29 @@ public class ModStartupHelper {
 
 		ConfigStorage.instance.register(config);
 
-		gameConfig.setFeatures(features);
+		gameObjectsProvider.setFeatures(features);
 
-		setupConfigPre(gameConfig);
+		setupConfigPre(gameObjectsProvider);
 
-		setupBlockFactory(gameConfig.getBlockFactory());
+		setupBlockFactory(gameObjectsProvider.getBlockFactory());
 
-		setupItemFactory(gameConfig.getItemFactory());
+		setupItemFactory(gameObjectsProvider.getItemFactory());
 
 		for (Class<? extends BlockInstances> blockHolder : blockHolders)
-			gameConfig.registerBlocks(blockHolder);
+			gameObjectsProvider.registerBlocks(blockHolder);
 
 		for (Class<? extends ItemInstances> itemHolder : itemHolders)
-			gameConfig.registerItems(itemHolder);
+			gameObjectsProvider.registerItems(itemHolder);
 
-		setupConfigPost(gameConfig);
+		setupConfigPost(gameObjectsProvider);
 	}
 
 	public void init() {
-		gameConfig.registerItemModels();
+		gameObjectsProvider.registerItemModels();
 	}
 
 	public void handleRenames(FMLMissingMappingsEvent event) {
-		gameConfig.handleRemaps(event.get());
+		gameObjectsProvider.handleRemaps(gameObjectsProvider.hasIntraModRenames()? event.getAll() : event.get());
 	}
 
 	protected void setupItemFactory(FactoryRegistry<Item> itemFactory) {}
@@ -87,7 +87,7 @@ public class ModStartupHelper {
 
 	protected void registerCustomFeatures(ConfigurableFeatureManager features) {}
 
-	protected void setupConfigPre(GameConfigProvider gameConfig) {}
+	protected void setupConfigPre(GameRegistryObjectsProvider gameConfig) {}
 
-	protected void setupConfigPost(GameConfigProvider gameConfig) {}
+	protected void setupConfigPost(GameRegistryObjectsProvider gameConfig) {}
 }

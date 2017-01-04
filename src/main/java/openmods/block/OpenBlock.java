@@ -323,7 +323,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void setupBlock(ModContainer container, String blockName, Class<? extends TileEntity> tileEntity, Class<? extends ItemBlock> itemClass) {
+	public void setupBlock(ModContainer container, String id, Class<? extends TileEntity> tileEntity, ItemBlock itemBlock) {
 		this.modInstance = container.getMod();
 
 		if (tileEntity != null) {

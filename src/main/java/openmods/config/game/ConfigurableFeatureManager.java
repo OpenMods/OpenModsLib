@@ -35,7 +35,7 @@ public class ConfigurableFeatureManager extends AbstractFeatureManager {
 		for (Field f : itemContainer.getFields()) {
 			RegisterItem item = f.getAnnotation(RegisterItem.class);
 			if (item == null) continue;
-			features.put(CATEGORY_ITEMS, item.name(), new FeatureEntry(item.isEnabled(), item.isConfigurable()));
+			features.put(CATEGORY_ITEMS, item.id(), new FeatureEntry(item.isEnabled(), item.isConfigurable()));
 		}
 	}
 
@@ -43,7 +43,7 @@ public class ConfigurableFeatureManager extends AbstractFeatureManager {
 		for (Field f : blockContainer.getFields()) {
 			RegisterBlock item = f.getAnnotation(RegisterBlock.class);
 			if (item == null) continue;
-			features.put(CATEGORY_BLOCKS, item.name(), new FeatureEntry(item.isEnabled(), item.isConfigurable()));
+			features.put(CATEGORY_BLOCKS, item.id(), new FeatureEntry(item.isEnabled(), item.isConfigurable()));
 		}
 	}
 

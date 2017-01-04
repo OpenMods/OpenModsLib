@@ -11,7 +11,7 @@ public @interface RegisterItem {
 	public static final String DEFAULT = "[default]";
 	public static final String NONE = "[none]";
 
-	public String name();
+	public String id();
 
 	public String unlocalizedName() default DEFAULT;
 
@@ -24,4 +24,6 @@ public @interface RegisterItem {
 	public boolean addToModCreativeTab() default true;
 
 	public Class<? extends ICustomItemModelProvider> customItemModels() default ICustomItemModelProvider.class;
+
+	public String[] legacyIds() default {};
 }
