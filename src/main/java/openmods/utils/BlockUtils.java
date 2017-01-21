@@ -139,6 +139,13 @@ public class BlockUtils {
 		return world.getTileEntity(targetX, targetY, targetZ);
 	}
 
+	public static TileEntity getTileInDirectionSafe(World world, Coord coord, ForgeDirection direction) {
+		int targetX = coord.x + direction.offsetX;
+		int targetY = coord.y + direction.offsetY;
+		int targetZ = coord.z + direction.offsetZ;
+		return world.blockExists(targetX, targetY, targetZ)? world.getTileEntity(targetX, targetY, targetZ) : null;
+	}
+
 	public static int getFirstNonAirBlockFromTop(World world, int x, int z) {
 		int y;
 		for (y = world.getActualHeight(); world.isAirBlock(x, y - 1, z) && y > 0; y--) {}

@@ -73,7 +73,7 @@ public class GenericTank extends FluidTank {
 	}
 
 	private static boolean isNeighbourTank(World world, Coord coord, ForgeDirection dir) {
-		TileEntity tile = BlockUtils.getTileInDirection(world, coord, dir);
+		TileEntity tile = BlockUtils.getTileInDirectionSafe(world, coord, dir);
 		return tile instanceof IFluidHandler;
 	}
 
