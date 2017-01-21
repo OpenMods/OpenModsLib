@@ -33,6 +33,7 @@ import openmods.api.ICustomPickItem;
 import openmods.api.IHasGui;
 import openmods.api.IIconProvider;
 import openmods.api.INeighbourAwareTile;
+import openmods.api.INeighbourTeAwareTile;
 import openmods.api.IPlaceAwareTile;
 import openmods.api.IPlacerAwareTile;
 import openmods.api.ISurfaceAttachment;
@@ -62,7 +63,8 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 		CUSTOM_HARVEST_DROPS(ICustomHarvestDrops.class),
 		INVENTORY(IInventory.class),
 		INVENTORY_PROVIDER(IInventoryProvider.class),
-		NEIGBOUR_LISTENER(INeighbourAwareTile.class);
+		NEIGBOUR_LISTENER(INeighbourAwareTile.class),
+		NEIGBOUR_TE_LISTENER(INeighbourTeAwareTile.class);
 
 		public final Class<?> intf;
 
@@ -348,6 +350,15 @@ public abstract class OpenBlock extends Block implements IRegisterableBlock {
 				final ForgeDirection direction = ((ISurfaceAttachment)te).getSurfaceDirection();
 				breakBlockIfSideNotSolid(world, x, y, z, direction);
 			}
+		}
+	}
+
+	@Override
+	public void onNeighborChange(IBlockAccess world, int x, int y, int z, int tileX, int tileY, int tileZ) {
+		if (hasCapability(TileEntityCapability.NEIGBOUR_TE_LISTENER)) {
+			final TileEntity te = world.getTileEntity(x, y, z);
+			if (te instanceof INeighbourTeAwareTile)
+				((INeighbourTeAwareTile)te).onNeighbourTeChanged(tileX, tileY, tileZ);
 		}
 	}
 
