@@ -49,7 +49,7 @@ public class BoolCalculatorFactory<M> extends SimpleCalculatorFactory<Boolean, M
 	private static final int PRIORITY_AND = 4; // &
 	private static final int PRIORITY_OR = 3; // |
 	private static final int PRIORITY_COMPARE = 2; // ^, =, =>
-	private static final int PRIORITY_COLON = 1;
+	private static final int PRIORITY_ASSIGN = 1;
 
 	private static class OpAnd extends BinaryOperator.Direct<Boolean> {
 		private OpAnd(String id) {
@@ -146,13 +146,13 @@ public class BoolCalculatorFactory<M> extends SimpleCalculatorFactory<Boolean, M
 	}
 
 	public static Calculator<Boolean, ExprType> createDefault() {
-		final CommonSimpleSymbolFactory<Boolean> letFactory = new CommonSimpleSymbolFactory<Boolean>(":", PRIORITY_COLON);
+		final CommonSimpleSymbolFactory<Boolean> letFactory = new CommonSimpleSymbolFactory<Boolean>(PRIORITY_ASSIGN, ":");
 
 		return new BoolCalculatorFactory<ExprType>() {
 			@Override
 			protected void configureOperators(OperatorDictionary<Boolean> operators) {
 				super.configureOperators(operators);
-				operators.registerBinaryOperator(letFactory.getKeyValueSeparator());
+				letFactory.registerSeparators(operators);
 			}
 		}.create(letFactory.createCompilerFactory());
 	}

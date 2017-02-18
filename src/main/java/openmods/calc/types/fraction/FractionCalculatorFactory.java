@@ -151,7 +151,7 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 
 	private static final int PRIORITY_MULTIPLY = 2;
 	private static final int PRIORITY_ADD = 1;
-	private static final int PRIORITY_COLON = 0;
+	private static final int PRIORITY_ASSIGN = 0;
 
 	@Override
 	protected void configureOperators(OperatorDictionary<Fraction> operators) {
@@ -210,13 +210,13 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 	}
 
 	public static Calculator<Fraction, ExprType> createDefault() {
-		final CommonSimpleSymbolFactory<Fraction> letFactory = new CommonSimpleSymbolFactory<Fraction>(":", PRIORITY_COLON);
+		final CommonSimpleSymbolFactory<Fraction> letFactory = new CommonSimpleSymbolFactory<Fraction>(PRIORITY_ASSIGN, ":", "=");
 
 		return new FractionCalculatorFactory<ExprType>() {
 			@Override
 			protected void configureOperators(OperatorDictionary<Fraction> operators) {
 				super.configureOperators(operators);
-				operators.registerBinaryOperator(letFactory.getKeyValueSeparator());
+				letFactory.registerSeparators(operators);
 			}
 		}.create(letFactory.createCompilerFactory());
 	}

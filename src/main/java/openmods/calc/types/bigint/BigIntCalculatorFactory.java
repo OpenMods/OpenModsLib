@@ -152,7 +152,7 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 	private static final int PRIORITY_ADD = 4;
 	private static final int PRIORITY_BITSHIFT = 3;
 	private static final int PRIORITY_BITWISE = 2;
-	private static final int PRIORITY_COLON = 1;
+	private static final int PRIORITY_ASSIGN = 1;
 
 	@Override
 	protected void configureOperators(OperatorDictionary<BigInteger> operators) {
@@ -267,13 +267,13 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 	}
 
 	public static Calculator<BigInteger, ExprType> createDefault() {
-		final CommonSimpleSymbolFactory<BigInteger> letFactory = new CommonSimpleSymbolFactory<BigInteger>(":", PRIORITY_COLON);
+		final CommonSimpleSymbolFactory<BigInteger> letFactory = new CommonSimpleSymbolFactory<BigInteger>(PRIORITY_ASSIGN, ":", "=");
 
 		return new BigIntCalculatorFactory<ExprType>() {
 			@Override
 			protected void configureOperators(OperatorDictionary<BigInteger> operators) {
 				super.configureOperators(operators);
-				operators.registerBinaryOperator(letFactory.getKeyValueSeparator());
+				letFactory.registerSeparators(operators);
 			}
 		}.create(letFactory.createCompilerFactory());
 	}

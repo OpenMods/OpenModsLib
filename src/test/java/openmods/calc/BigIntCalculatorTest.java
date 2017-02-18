@@ -246,7 +246,10 @@ public class BigIntCalculatorTest {
 	@Test
 	public void testSimpleLet() {
 		infix("let([x:2,y:3], x + y)").expectResult(v(5));
+		infix("let([x=2,y=3], x + y)").expectResult(v(5));
+
 		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(v(5));
+		prefix("(let [(=x 2) (=y 3)] (+ x y))").expectResult(v(5));
 	}
 
 	@Test

@@ -264,7 +264,7 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 	private static final int PRIORITY_POWER = 4;
 	private static final int PRIORITY_MULTIPLY = 3;
 	private static final int PRIORITY_ADD = 2;
-	private static final int PRIORITY_COLON = 1;
+	private static final int PRIORITY_ASSIGN = 1;
 
 	@Override
 	protected void configureOperators(OperatorDictionary<Double> operators) {
@@ -344,13 +344,13 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 	}
 
 	public static Calculator<Double, ExprType> createDefault() {
-		final CommonSimpleSymbolFactory<Double> letFactory = new CommonSimpleSymbolFactory<Double>(":", PRIORITY_COLON);
+		final CommonSimpleSymbolFactory<Double> letFactory = new CommonSimpleSymbolFactory<Double>(PRIORITY_ASSIGN, ":", "=");
 
 		return new DoubleCalculatorFactory<ExprType>() {
 			@Override
 			protected void configureOperators(OperatorDictionary<Double> operators) {
 				super.configureOperators(operators);
-				operators.registerBinaryOperator(letFactory.getKeyValueSeparator());
+				letFactory.registerSeparators(operators);
 			}
 		}.create(letFactory.createCompilerFactory());
 	}
