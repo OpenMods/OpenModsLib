@@ -1,5 +1,6 @@
 package openmods.calc.types.fp;
 
+import java.util.Random;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
@@ -7,6 +8,7 @@ import openmods.calc.Environment;
 import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.IValuePrinter;
+import openmods.calc.NullaryFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.UnaryFunction;
@@ -239,6 +241,22 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 			@Override
 			protected Double call(Double value) {
 				return Math.toDegrees(value);
+			}
+		});
+
+		final Random random = new Random();
+
+		env.setGlobalSymbol("rand", new NullaryFunction.Direct<Double>() {
+			@Override
+			protected Double call() {
+				return random.nextDouble();
+			}
+		});
+
+		env.setGlobalSymbol("gauss", new NullaryFunction.Direct<Double>() {
+			@Override
+			protected Double call() {
+				return random.nextGaussian();
 			}
 		});
 	}

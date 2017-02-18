@@ -1,6 +1,7 @@
 package openmods.calc.types.bigint;
 
 import java.math.BigInteger;
+import java.util.Random;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
@@ -8,6 +9,7 @@ import openmods.calc.Environment;
 import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.IValuePrinter;
+import openmods.calc.NullaryFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.TernaryFunction;
@@ -132,6 +134,15 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 			@Override
 			protected BigInteger call(BigInteger first, BigInteger second) {
 				return first.flipBit(second.intValue());
+			}
+		});
+
+		final Random random = new Random();
+
+		env.setGlobalSymbol("rand", new NullaryFunction.Direct<BigInteger>() {
+			@Override
+			protected BigInteger call() {
+				return BigInteger.valueOf(random.nextLong());
 			}
 		});
 	}

@@ -1,10 +1,12 @@
 package openmods.calc.types.bool;
 
+import java.util.Random;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Environment;
 import openmods.calc.ExprType;
 import openmods.calc.IValuePrinter;
+import openmods.calc.NullaryFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.UnaryOperator;
@@ -33,6 +35,15 @@ public class BoolCalculatorFactory<M> extends SimpleCalculatorFactory<Boolean, M
 	protected void configureEnvironment(Environment<Boolean> env) {
 		env.setGlobalSymbol("true", Boolean.TRUE);
 		env.setGlobalSymbol("false", Boolean.FALSE);
+
+		final Random random = new Random();
+
+		env.setGlobalSymbol("rand", new NullaryFunction.Direct<Boolean>() {
+			@Override
+			protected Boolean call() {
+				return random.nextBoolean();
+			}
+		});
 	}
 
 	private static final int PRIORITY_AND = 4; // &
