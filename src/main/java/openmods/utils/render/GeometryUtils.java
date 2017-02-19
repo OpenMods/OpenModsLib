@@ -1,6 +1,7 @@
 package openmods.utils.render;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -33,21 +34,26 @@ public class GeometryUtils {
 	}
 
 	public enum Octant {
-		TopSouthWest(-1, 1, 1, "Top South West"),
-		TopNorthEast(1, 1, -1, "Top North East"),
-		TopNorthWest(1, 1, 1, "Top North West"),
-		TopSouthEast(-1, 1, -1, "Top South East"),
-		BottomSouthWest(-1, -1, 1, "Bottom South West"),
-		BottomNorthEast(1, -1, -1, "Bottom North East"),
-		BottomNorthWest(1, -1, 1, "Bottom North West"),
-		BottomSouthEast(-1, -1, -1, "Bottom South East");
+		TopSouthWest("Top South West", ForgeDirection.WEST, ForgeDirection.UP, ForgeDirection.SOUTH),
+		TopNorthEast("Top North East", ForgeDirection.EAST, ForgeDirection.UP, ForgeDirection.NORTH),
+		TopNorthWest("Top North West", ForgeDirection.WEST, ForgeDirection.UP, ForgeDirection.NORTH),
+		TopSouthEast("Top South East", ForgeDirection.EAST, ForgeDirection.UP, ForgeDirection.SOUTH),
+		BottomSouthWest("Bottom South West", ForgeDirection.WEST, ForgeDirection.DOWN, ForgeDirection.SOUTH),
+		BottomNorthEast("Bottom North East", ForgeDirection.EAST, ForgeDirection.DOWN, ForgeDirection.NORTH),
+		BottomNorthWest("Bottom North West", ForgeDirection.WEST, ForgeDirection.DOWN, ForgeDirection.NORTH),
+		BottomSouthEast("Bottom South East", ForgeDirection.EAST, ForgeDirection.DOWN, ForgeDirection.SOUTH);
 
 		public static final EnumSet<Octant> ALL = EnumSet.allOf(Octant.class);
-		public static final EnumSet<Octant> TOP = EnumSet.of(Octant.TopSouthEast, Octant.TopSouthWest, Octant.TopNorthEast, Octant.TopNorthWest);
-		public static final EnumSet<Octant> BOTTOM = EnumSet.of(Octant.BottomSouthEast, Octant.BottomSouthWest, Octant.BottomNorthEast, Octant.BottomNorthWest);
+		public static final EnumSet<Octant> TOP = select(ForgeDirection.UP);
+		public static final EnumSet<Octant> BOTTOM = select(ForgeDirection.DOWN);
+		public static final EnumSet<Octant> NORTH = select(ForgeDirection.NORTH);
+		public static final EnumSet<Octant> SOUTH = select(ForgeDirection.SOUTH);
+		public static final EnumSet<Octant> EAST = select(ForgeDirection.EAST);
+		public static final EnumSet<Octant> WEST = select(ForgeDirection.WEST);
 
+		public final EnumSet<ForgeDirection> dirs;
 		public final int x, y, z;
-		private final String name;
+		public final String name;
 
 		public int getXOffset() {
 			return x;
@@ -65,19 +71,29 @@ public class GeometryUtils {
 			return name;
 		}
 
-		Octant(int x, int y, int z, String friendlyName) {
-			this.x = x;
-			this.y = y;
-			this.z = z;
+		private Octant(String friendlyName, ForgeDirection dirX, ForgeDirection dirY, ForgeDirection dirZ) {
+			this.x = dirX.offsetX + dirY.offsetX + dirZ.offsetX;
+			this.y = dirX.offsetY + dirY.offsetY + dirZ.offsetY;
+			this.z = dirX.offsetZ + dirY.offsetZ + dirZ.offsetZ;
+			this.dirs = EnumSet.of(dirX, dirY, dirZ);
 			this.name = friendlyName;
+		}
+
+		private static EnumSet<Octant> select(ForgeDirection dir) {
+			Set<Octant> result = Sets.newIdentityHashSet();
+			for (Octant o : values())
+				if (o.dirs.contains(dir))
+					result.add(o);
+
+			return EnumSet.copyOf(result);
 		}
 	}
 
 	public enum Quadrant {
 		TopSouthWest(-1, 1),
 		TopNorthEast(1, -1),
-		TopNorthWest(1, 1),
-		TopSouthEast(-1, -1);
+		TopNorthWest(-1, -1),
+		TopSouthEast(1, 1);
 
 		public static final EnumSet<Quadrant> ALL = EnumSet.allOf(Quadrant.class);
 
