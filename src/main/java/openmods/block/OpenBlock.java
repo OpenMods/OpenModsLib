@@ -39,6 +39,7 @@ import openmods.api.ICustomHarvestDrops;
 import openmods.api.ICustomPickItem;
 import openmods.api.IHasGui;
 import openmods.api.INeighbourAwareTile;
+import openmods.api.INeighbourTeAwareTile;
 import openmods.api.IPlaceAwareTile;
 import openmods.api.ISurfaceAttachment;
 import openmods.config.game.IRegisterableBlock;
@@ -109,7 +110,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		CUSTOM_HARVEST_DROPS(ICustomHarvestDrops.class),
 		INVENTORY(IInventory.class),
 		INVENTORY_PROVIDER(IInventoryProvider.class),
-		NEIGBOUR_LISTENER(INeighbourAwareTile.class);
+		NEIGBOUR_LISTENER(INeighbourAwareTile.class),
+		NEIGBOUR_TE_LISTENER(INeighbourTeAwareTile.class);
 
 		public final Class<?> intf;
 
@@ -146,7 +148,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	public boolean hasCapabilities(TileEntityCapability... capabilities) {
 		for (TileEntityCapability capability : capabilities)
-			if (teCapabilities.contains(capability)) return true;
+			if (teCapabilities.contains(capability))
+				return true;
 
 		return false;
 	}
@@ -202,21 +205,25 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public static OpenBlock getOpenBlock(IBlockAccess world, BlockPos blockPos) {
-		if (world == null) return null;
+		if (world == null)
+			return null;
 		Block block = world.getBlockState(blockPos).getBlock();
-		if (block instanceof OpenBlock) return (OpenBlock)block;
+		if (block instanceof OpenBlock)
+			return (OpenBlock)block;
 		return null;
 	}
 
 	@Override
 	public TileEntity createTileEntity(World world, IBlockState state) {
 		final TileEntity te = createTileEntity();
-		if (te instanceof OpenTileEntity) ((OpenTileEntity)te).setup();
+		if (te instanceof OpenTileEntity)
+			((OpenTileEntity)te).setup();
 		return te;
 	}
 
 	protected TileEntity createTileEntity() {
-		if (teClass == null) return null;
+		if (teClass == null)
+			return null;
 		try {
 			return teClass.newInstance();
 		} catch (Exception ex) {
@@ -236,7 +243,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
 		if (hasCapability(TileEntityCapability.CUSTOM_PICK_ITEM)) {
 			TileEntity te = world.getTileEntity(pos);
-			if (te instanceof ICustomPickItem) return ((ICustomPickItem)te).getPickBlock(player);
+			if (te instanceof ICustomPickItem)
+				return ((ICustomPickItem)te).getPickBlock(player);
 		}
 
 		return suppressPickBlock()? null : super.getPickBlock(state, target, world, pos, player);
@@ -245,7 +253,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	private static List<ItemStack> getTileBreakDrops(TileEntity te) {
 		List<ItemStack> breakDrops = Lists.newArrayList();
 		BlockUtils.getTileInventoryDrops(te, breakDrops);
-		if (te instanceof ICustomBreakDrops) ((ICustomBreakDrops)te).addDrops(breakDrops);
+		if (te instanceof ICustomBreakDrops)
+			((ICustomBreakDrops)te).addDrops(breakDrops);
 		return breakDrops;
 	}
 
@@ -254,7 +263,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		if (shouldDropFromTeAfterBreak()) {
 			final TileEntity te = world.getTileEntity(pos);
 			if (te != null) {
-				if (te instanceof IBreakAwareTile) ((IBreakAwareTile)te).onBlockBroken();
+				if (te instanceof IBreakAwareTile)
+					((IBreakAwareTile)te).onBlockBroken();
 
 				for (ItemStack stack : getTileBreakDrops(te))
 					BlockUtils.dropItemStackInWorld(world, pos, stack);
@@ -295,7 +305,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 			addNormalDrops = !dropper.suppressBlockHarvestDrops();
 		}
 
-		if (addNormalDrops) dropBlockAsItem(world, pos, state, fortune);
+		if (addNormalDrops)
+			dropBlockAsItem(world, pos, state, fortune);
 
 		harvesters.set(null);
 	}
@@ -314,7 +325,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 		if (addNormalDrops) {
 			final ItemStack drop = createStackedBlock(state);
-			if (drop != null) items.add(drop);
+			if (drop != null)
+				items.add(drop);
 		}
 
 		ForgeEventFactory.fireBlockHarvesting(items, world, pos, state, 0, 1.0f, true, player);
@@ -331,7 +343,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 			isBlockContainer = true;
 
 			for (TileEntityCapability capability : TileEntityCapability.values())
-				if (capability.intf.isAssignableFrom(teClass)) teCapabilities.add(capability);
+				if (capability.intf.isAssignableFrom(teClass))
+					teCapabilities.add(capability);
 		}
 	}
 
@@ -346,7 +359,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	public final static boolean areNeighborBlocksSolid(World world, BlockPos blockPos, EnumFacing... sides) {
 		for (EnumFacing side : sides) {
-			if (isNeighborBlockSolid(world, blockPos, side)) return true;
+			if (isNeighborBlockSolid(world, blockPos, side))
+				return true;
 		}
 		return false;
 	}
@@ -356,7 +370,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	public void neighborChanged(IBlockState state, World world, BlockPos blockPos, Block neighbour) {
 		if (hasCapabilities(TileEntityCapability.NEIGBOUR_LISTENER, TileEntityCapability.SURFACE_ATTACHEMENT)) {
 			final TileEntity te = world.getTileEntity(blockPos);
-			if (te instanceof INeighbourAwareTile) ((INeighbourAwareTile)te).onNeighbourChanged(neighbour);
+			if (te instanceof INeighbourAwareTile)
+				((INeighbourAwareTile)te).onNeighbourChanged(neighbour);
 
 			if (te instanceof ISurfaceAttachment) {
 				final EnumFacing direction = ((ISurfaceAttachment)te).getSurfaceDirection();
@@ -368,6 +383,15 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	protected void breakBlockIfSideNotSolid(World world, BlockPos blockPos, EnumFacing direction) {
 		if (!isNeighborBlockSolid(world, blockPos, direction)) {
 			world.destroyBlock(blockPos, true);
+		}
+	}
+
+	@Override
+	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+		if (hasCapability(TileEntityCapability.NEIGBOUR_TE_LISTENER)) {
+			final TileEntity te = world.getTileEntity(pos);
+			if (te instanceof INeighbourTeAwareTile)
+				((INeighbourTeAwareTile)te).onNeighbourTeChanged(pos);
 		}
 	}
 
@@ -386,12 +410,14 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 			final TileEntity te = world.getTileEntity(blockPos);
 
 			if (te instanceof IHasGui && ((IHasGui)te).canOpenGui(player) && !player.isSneaking()) {
-				if (!world.isRemote) openGui(player, world, blockPos);
+				if (!world.isRemote)
+					openGui(player, world, blockPos);
 				return true;
 			}
 
 			// TODO Expand for new args
-			if (te instanceof IActivateAwareTile) return ((IActivateAwareTile)te).onBlockActivated(player, side, hitX, hitY, hitZ);
+			if (te instanceof IActivateAwareTile)
+				return ((IActivateAwareTile)te).onBlockActivated(player, side, hitX, hitY, hitZ);
 		}
 
 		return false;
@@ -405,7 +431,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 				case EVENT_ADDED: {
 					if (hasCapability(TileEntityCapability.ADD_LISTENER)) {
 						final IAddAwareTile te = getTileEntity(world, blockPos, IAddAwareTile.class);
-						if (te != null) te.onAdded();
+						if (te != null)
+							te.onAdded();
 					}
 				}
 					break;
@@ -460,7 +487,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 		if (hasCapability(TileEntityCapability.PLACE_LISTENER)) {
 			final TileEntity te = world.getTileEntity(blockPos);
-			if (te instanceof IPlaceAwareTile) ((IPlaceAwareTile)te).onBlockPlacedBy(state, placer, stack);
+			if (te instanceof IPlaceAwareTile)
+				((IPlaceAwareTile)te).onBlockPlacedBy(state, placer, stack);
 		}
 	}
 
@@ -507,7 +535,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public boolean rotateBlock(World worldObj, BlockPos blockPos, EnumFacing axis) {
-		if (!canRotateWithTool()) return false;
+		if (!canRotateWithTool())
+			return false;
 
 		final IBlockState currentState = worldObj.getBlockState(blockPos);
 
@@ -527,7 +556,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 		if (teCapabilities.contains(TileEntityCapability.SURFACE_ATTACHEMENT)) {
 			final ISurfaceAttachment te = getTileEntity(worldObj, blockPos, ISurfaceAttachment.class);
-			if (te == null) return false;
+			if (te == null)
+				return false;
 
 			breakBlockIfSideNotSolid(worldObj, blockPos, te.getSurfaceDirection());
 		}
@@ -546,7 +576,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	public EnumFacing[] getValidRotations(World worldObj, BlockPos pos) {
-		if (!canRotateWithTool()) return RotationAxis.NO_AXIS;
+		if (!canRotateWithTool())
+			return RotationAxis.NO_AXIS;
 		return rotationMode.rotationAxes;
 	}
 }

@@ -1,5 +1,6 @@
 package openmods.calc.types.fp;
 
+import java.util.Random;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
@@ -7,6 +8,7 @@ import openmods.calc.Environment;
 import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.IValuePrinter;
+import openmods.calc.NullaryFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.UnaryFunction;
@@ -241,12 +243,28 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 				return Math.toDegrees(value);
 			}
 		});
+
+		final Random random = new Random();
+
+		env.setGlobalSymbol("rand", new NullaryFunction.Direct<Double>() {
+			@Override
+			protected Double call() {
+				return random.nextDouble();
+			}
+		});
+
+		env.setGlobalSymbol("gauss", new NullaryFunction.Direct<Double>() {
+			@Override
+			protected Double call() {
+				return random.nextGaussian();
+			}
+		});
 	}
 
 	private static final int PRIORITY_POWER = 4;
 	private static final int PRIORITY_MULTIPLY = 3;
 	private static final int PRIORITY_ADD = 2;
-	private static final int PRIORITY_COLON = 1;
+	private static final int PRIORITY_ASSIGN = 1;
 
 	@Override
 	protected void configureOperators(OperatorDictionary<Double> operators) {
@@ -326,13 +344,13 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 	}
 
 	public static Calculator<Double, ExprType> createDefault() {
-		final CommonSimpleSymbolFactory<Double> letFactory = new CommonSimpleSymbolFactory<Double>(":", PRIORITY_COLON);
+		final CommonSimpleSymbolFactory<Double> letFactory = new CommonSimpleSymbolFactory<Double>(PRIORITY_ASSIGN, ":", "=");
 
 		return new DoubleCalculatorFactory<ExprType>() {
 			@Override
 			protected void configureOperators(OperatorDictionary<Double> operators) {
 				super.configureOperators(operators);
-				operators.registerBinaryOperator(letFactory.getKeyValueSeparator());
+				letFactory.registerSeparators(operators);
 			}
 		}.create(letFactory.createCompilerFactory());
 	}

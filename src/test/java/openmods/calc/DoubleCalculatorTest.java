@@ -245,7 +245,10 @@ public class DoubleCalculatorTest {
 	@Test
 	public void testSimpleLet() {
 		infix("let([x:2,y:3], x + y)").expectResult(5.0);
+		infix("let([x=2,y=3], x + y)").expectResult(5.0);
+
 		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(5.0);
+		prefix("(let [(=x 2) (=y 3)] (+ x y))").expectResult(5.0);
 	}
 
 	@Test

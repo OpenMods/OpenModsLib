@@ -230,7 +230,10 @@ public class FractionCalculatorTest {
 	@Test
 	public void testSimpleLet() {
 		infix("let([x:2,y:3], x + y)").expectResult(f(5));
+		infix("let([x=2,y=3], x + y)").expectResult(f(5));
+
 		prefix("(let [(:x 2) (:y 3)] (+ x y))").expectResult(f(5));
+		prefix("(let [(=x 2) (=y 3)] (+ x y))").expectResult(f(5));
 	}
 
 	@Test

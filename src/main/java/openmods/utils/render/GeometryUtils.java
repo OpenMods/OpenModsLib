@@ -1,6 +1,7 @@
 package openmods.utils.render;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -34,21 +35,26 @@ public class GeometryUtils {
 	}
 
 	public enum Octant {
-		TopSouthWest(-1, 1, 1, "Top South West"),
-		TopNorthEast(1, 1, -1, "Top North East"),
-		TopNorthWest(1, 1, 1, "Top North West"),
-		TopSouthEast(-1, 1, -1, "Top South East"),
-		BottomSouthWest(-1, -1, 1, "Bottom South West"),
-		BottomNorthEast(1, -1, -1, "Bottom North East"),
-		BottomNorthWest(1, -1, 1, "Bottom North West"),
-		BottomSouthEast(-1, -1, -1, "Bottom South East");
+		TopSouthWest("Top South West", EnumFacing.WEST, EnumFacing.UP, EnumFacing.SOUTH),
+		TopNorthEast("Top North East", EnumFacing.EAST, EnumFacing.UP, EnumFacing.NORTH),
+		TopNorthWest("Top North West", EnumFacing.WEST, EnumFacing.UP, EnumFacing.NORTH),
+		TopSouthEast("Top South East", EnumFacing.EAST, EnumFacing.UP, EnumFacing.SOUTH),
+		BottomSouthWest("Bottom South West", EnumFacing.WEST, EnumFacing.DOWN, EnumFacing.SOUTH),
+		BottomNorthEast("Bottom North East", EnumFacing.EAST, EnumFacing.DOWN, EnumFacing.NORTH),
+		BottomNorthWest("Bottom North West", EnumFacing.WEST, EnumFacing.DOWN, EnumFacing.NORTH),
+		BottomSouthEast("Bottom South East", EnumFacing.EAST, EnumFacing.DOWN, EnumFacing.SOUTH);
 
 		public static final EnumSet<Octant> ALL = EnumSet.allOf(Octant.class);
-		public static final EnumSet<Octant> TOP = EnumSet.of(Octant.TopSouthEast, Octant.TopSouthWest, Octant.TopNorthEast, Octant.TopNorthWest);
-		public static final EnumSet<Octant> BOTTOM = EnumSet.of(Octant.BottomSouthEast, Octant.BottomSouthWest, Octant.BottomNorthEast, Octant.BottomNorthWest);
+		public static final EnumSet<Octant> TOP = select(EnumFacing.UP);
+		public static final EnumSet<Octant> BOTTOM = select(EnumFacing.DOWN);
+		public static final EnumSet<Octant> NORTH = select(EnumFacing.NORTH);
+		public static final EnumSet<Octant> SOUTH = select(EnumFacing.SOUTH);
+		public static final EnumSet<Octant> EAST = select(EnumFacing.EAST);
+		public static final EnumSet<Octant> WEST = select(EnumFacing.WEST);
 
+		public final EnumSet<EnumFacing> dirs;
 		public final int x, y, z;
-		private final String name;
+		public final String name;
 
 		public int getXOffset() {
 			return x;
@@ -66,19 +72,29 @@ public class GeometryUtils {
 			return name;
 		}
 
-		Octant(int x, int y, int z, String friendlyName) {
-			this.x = x;
-			this.y = y;
-			this.z = z;
+		private Octant(String friendlyName, EnumFacing dirX, EnumFacing dirY, EnumFacing dirZ) {
+			this.x = dirX.getFrontOffsetX() + dirY.getFrontOffsetX() + dirZ.getFrontOffsetX();
+			this.y = dirX.getFrontOffsetY() + dirY.getFrontOffsetY() + dirZ.getFrontOffsetY();
+			this.z = dirX.getFrontOffsetZ() + dirY.getFrontOffsetZ() + dirZ.getFrontOffsetZ();
+			this.dirs = EnumSet.of(dirX, dirY, dirZ);
 			this.name = friendlyName;
+		}
+
+		private static EnumSet<Octant> select(EnumFacing dir) {
+			Set<Octant> result = Sets.newIdentityHashSet();
+			for (Octant o : values())
+				if (o.dirs.contains(dir))
+					result.add(o);
+
+			return EnumSet.copyOf(result);
 		}
 	}
 
 	public enum Quadrant {
 		TopSouthWest(-1, 1),
 		TopNorthEast(1, -1),
-		TopNorthWest(1, 1),
-		TopSouthEast(-1, -1);
+		TopNorthWest(-1, -1),
+		TopSouthEast(1, 1);
 
 		public static final EnumSet<Quadrant> ALL = EnumSet.allOf(Quadrant.class);
 

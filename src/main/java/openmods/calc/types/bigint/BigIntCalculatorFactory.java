@@ -1,6 +1,7 @@
 package openmods.calc.types.bigint;
 
 import java.math.BigInteger;
+import java.util.Random;
 import openmods.calc.BinaryFunction;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
@@ -8,6 +9,7 @@ import openmods.calc.Environment;
 import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.IValuePrinter;
+import openmods.calc.NullaryFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.TernaryFunction;
@@ -134,6 +136,15 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 				return first.flipBit(second.intValue());
 			}
 		});
+
+		final Random random = new Random();
+
+		env.setGlobalSymbol("rand", new NullaryFunction.Direct<BigInteger>() {
+			@Override
+			protected BigInteger call() {
+				return BigInteger.valueOf(random.nextLong());
+			}
+		});
 	}
 
 	private static final int PRIORITY_EXP = 6;
@@ -141,7 +152,7 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 	private static final int PRIORITY_ADD = 4;
 	private static final int PRIORITY_BITSHIFT = 3;
 	private static final int PRIORITY_BITWISE = 2;
-	private static final int PRIORITY_COLON = 1;
+	private static final int PRIORITY_ASSIGN = 1;
 
 	@Override
 	protected void configureOperators(OperatorDictionary<BigInteger> operators) {
@@ -256,13 +267,13 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 	}
 
 	public static Calculator<BigInteger, ExprType> createDefault() {
-		final CommonSimpleSymbolFactory<BigInteger> letFactory = new CommonSimpleSymbolFactory<BigInteger>(":", PRIORITY_COLON);
+		final CommonSimpleSymbolFactory<BigInteger> letFactory = new CommonSimpleSymbolFactory<BigInteger>(PRIORITY_ASSIGN, ":", "=");
 
 		return new BigIntCalculatorFactory<ExprType>() {
 			@Override
 			protected void configureOperators(OperatorDictionary<BigInteger> operators) {
 				super.configureOperators(operators);
-				operators.registerBinaryOperator(letFactory.getKeyValueSeparator());
+				letFactory.registerSeparators(operators);
 			}
 		}.create(letFactory.createCompilerFactory());
 	}

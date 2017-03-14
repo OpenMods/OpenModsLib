@@ -1,10 +1,12 @@
 package openmods.calc.types.bool;
 
+import java.util.Random;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Environment;
 import openmods.calc.ExprType;
 import openmods.calc.IValuePrinter;
+import openmods.calc.NullaryFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.UnaryOperator;
@@ -33,12 +35,21 @@ public class BoolCalculatorFactory<M> extends SimpleCalculatorFactory<Boolean, M
 	protected void configureEnvironment(Environment<Boolean> env) {
 		env.setGlobalSymbol("true", Boolean.TRUE);
 		env.setGlobalSymbol("false", Boolean.FALSE);
+
+		final Random random = new Random();
+
+		env.setGlobalSymbol("rand", new NullaryFunction.Direct<Boolean>() {
+			@Override
+			protected Boolean call() {
+				return random.nextBoolean();
+			}
+		});
 	}
 
 	private static final int PRIORITY_AND = 4; // &
 	private static final int PRIORITY_OR = 3; // |
 	private static final int PRIORITY_COMPARE = 2; // ^, =, =>
-	private static final int PRIORITY_COLON = 1;
+	private static final int PRIORITY_ASSIGN = 1;
 
 	private static class OpAnd extends BinaryOperator.Direct<Boolean> {
 		private OpAnd(String id) {
@@ -135,13 +146,13 @@ public class BoolCalculatorFactory<M> extends SimpleCalculatorFactory<Boolean, M
 	}
 
 	public static Calculator<Boolean, ExprType> createDefault() {
-		final CommonSimpleSymbolFactory<Boolean> letFactory = new CommonSimpleSymbolFactory<Boolean>(":", PRIORITY_COLON);
+		final CommonSimpleSymbolFactory<Boolean> letFactory = new CommonSimpleSymbolFactory<Boolean>(PRIORITY_ASSIGN, ":");
 
 		return new BoolCalculatorFactory<ExprType>() {
 			@Override
 			protected void configureOperators(OperatorDictionary<Boolean> operators) {
 				super.configureOperators(operators);
-				operators.registerBinaryOperator(letFactory.getKeyValueSeparator());
+				letFactory.registerSeparators(operators);
 			}
 		}.create(letFactory.createCompilerFactory());
 	}

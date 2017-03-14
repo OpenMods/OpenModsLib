@@ -1,12 +1,14 @@
 package openmods.calc.types.fraction;
 
 import com.google.common.collect.Ordering;
+import java.util.Random;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Environment;
 import openmods.calc.ExprType;
 import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.IValuePrinter;
+import openmods.calc.NullaryFunction;
 import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
 import openmods.calc.UnaryFunction;
@@ -19,7 +21,7 @@ import org.apache.commons.lang3.math.Fraction;
 public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fraction, M> {
 	public static final Fraction NULL_VALUE = Fraction.ZERO;
 
-	private static Fraction createFraction(int value) {
+	private static Fraction int2frac(int value) {
 		return Fraction.getFraction(value, 1);
 	}
 
@@ -50,21 +52,21 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 		env.setGlobalSymbol("sgn", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
-				return createFraction(Integer.signum(value.getNumerator()));
+				return int2frac(Integer.signum(value.getNumerator()));
 			}
 		});
 
 		env.setGlobalSymbol("numerator", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
-				return createFraction(value.getNumerator());
+				return int2frac(value.getNumerator());
 			}
 		});
 
 		env.setGlobalSymbol("denominator", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
-				return createFraction(value.getDenominator());
+				return int2frac(value.getDenominator());
 			}
 		});
 
@@ -78,7 +80,7 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 		env.setGlobalSymbol("int", new UnaryFunction.Direct<Fraction>() {
 			@Override
 			protected Fraction call(Fraction value) {
-				return createFraction(value.getProperWhole());
+				return int2frac(value.getProperWhole());
 			}
 		});
 
@@ -129,11 +131,27 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 			}
 
 		});
+
+		final Random random = new Random();
+
+		env.setGlobalSymbol("rand", new NullaryFunction.Direct<Fraction>() {
+			@Override
+			protected Fraction call() {
+				return Fraction.getFraction(random.nextDouble());
+			}
+		});
+
+		env.setGlobalSymbol("gauss", new NullaryFunction.Direct<Fraction>() {
+			@Override
+			protected Fraction call() {
+				return Fraction.getFraction(random.nextGaussian());
+			}
+		});
 	}
 
 	private static final int PRIORITY_MULTIPLY = 2;
 	private static final int PRIORITY_ADD = 1;
-	private static final int PRIORITY_COLON = 0;
+	private static final int PRIORITY_ASSIGN = 0;
 
 	@Override
 	protected void configureOperators(OperatorDictionary<Fraction> operators) {
@@ -192,13 +210,13 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 	}
 
 	public static Calculator<Fraction, ExprType> createDefault() {
-		final CommonSimpleSymbolFactory<Fraction> letFactory = new CommonSimpleSymbolFactory<Fraction>(":", PRIORITY_COLON);
+		final CommonSimpleSymbolFactory<Fraction> letFactory = new CommonSimpleSymbolFactory<Fraction>(PRIORITY_ASSIGN, ":", "=");
 
 		return new FractionCalculatorFactory<ExprType>() {
 			@Override
 			protected void configureOperators(OperatorDictionary<Fraction> operators) {
 				super.configureOperators(operators);
-				operators.registerBinaryOperator(letFactory.getKeyValueSeparator());
+				letFactory.registerSeparators(operators);
 			}
 		}.create(letFactory.createCompilerFactory());
 	}

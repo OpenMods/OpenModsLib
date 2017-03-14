@@ -136,6 +136,11 @@ public class BlockUtils {
 		return world.getTileEntity(coord.offset(direction));
 	}
 
+	public static TileEntity getTileInDirectionSafe(World world, BlockPos coord, EnumFacing direction) {
+		BlockPos n = coord.offset(direction);
+		return world.isBlockLoaded(n)? world.getTileEntity(n) : null;
+	}
+
 	public static AxisAlignedBB expandAround(BlockPos pos, int x, int y, int z) {
 		return new AxisAlignedBB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + x, pos.getY() + y, pos.getZ() + z);
 	}

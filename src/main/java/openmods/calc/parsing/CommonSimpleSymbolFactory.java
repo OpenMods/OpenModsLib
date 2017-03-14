@@ -1,10 +1,14 @@
 package openmods.calc.parsing;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import openmods.calc.BinaryOperator;
 import openmods.calc.Environment;
 import openmods.calc.ExecutionErrorException;
@@ -15,6 +19,7 @@ import openmods.calc.ICallable;
 import openmods.calc.ICompilerMapFactory;
 import openmods.calc.IExecutable;
 import openmods.calc.IGettable;
+import openmods.calc.OperatorDictionary;
 import openmods.calc.SymbolMap;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
@@ -81,14 +86,20 @@ public class CommonSimpleSymbolFactory<E> {
 		}
 	}
 
-	private final BinaryOperator<E> keyValueSeparator;
+	private final Set<BinaryOperator<E>> keyValueSeparators;
 
-	public CommonSimpleSymbolFactory(String keyValueSeparatorId, int keyValueSeparatorPriority) {
-		this.keyValueSeparator = new KeyValueSeparator<E>(keyValueSeparatorId, keyValueSeparatorPriority);
+	private final String keyValueSeparatorsIds;
+
+	public CommonSimpleSymbolFactory(int keyValueSeparatorPriority, String... keyValueSeparatorIds) {
+		final ImmutableSet.Builder<BinaryOperator<E>> separators = ImmutableSet.builder();
+		for (String opId : keyValueSeparatorIds)
+			separators.add(new KeyValueSeparator<E>(opId, keyValueSeparatorPriority));
+		this.keyValueSeparators = separators.build();
+		this.keyValueSeparatorsIds = Joiner.on(',').join(keyValueSeparatorIds);
 	}
 
-	public BinaryOperator<E> getKeyValueSeparator() {
-		return keyValueSeparator;
+	public Collection<BinaryOperator<E>> getKeyValueSeparators() {
+		return keyValueSeparators;
 	}
 
 	private interface ISymbolBinder<E> {
@@ -212,7 +223,7 @@ public class CommonSimpleSymbolFactory<E> {
 		private void flattenArgNode(ImmutableList.Builder<ISymbolBinder<E>> output, IExprNode<E> argNode) {
 			Preconditions.checkState(argNode instanceof BinaryOpNode, "Expected expression in from <name>:<expr>, got %s", argNode);
 			final BinaryOpNode<E> opNode = (BinaryOpNode<E>)argNode;
-			Preconditions.checkState(opNode.operator == keyValueSeparator, "Expected operator %s as separator, got %s", keyValueSeparator.id, opNode.operator.id);
+			Preconditions.checkState(keyValueSeparators.contains(opNode.operator), "Expected operators %s as separator, got %s", keyValueSeparatorsIds, opNode.operator.id);
 
 			final IExprNode<E> nameNode = opNode.left;
 			final IExprNode<E> valueExprNode = opNode.right;
@@ -251,6 +262,11 @@ public class CommonSimpleSymbolFactory<E> {
 
 	public ICompilerMapFactory<E, ExprType> createCompilerFactory() {
 		return new ExtendedCompilerMapFactory();
+	}
+
+	public void registerSeparators(OperatorDictionary<E> operators) {
+		for (BinaryOperator<E> separator : keyValueSeparators)
+			operators.registerBinaryOperator(separator);
 	}
 
 }
