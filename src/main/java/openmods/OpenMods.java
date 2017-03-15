@@ -1,6 +1,7 @@
 package openmods;
 
 import java.io.File;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
@@ -58,6 +59,10 @@ public class OpenMods {
 		return collector;
 	}
 
+	public static ResourceLocation location(String id) {
+		return new ResourceLocation(MODID, id);
+	}
+
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent evt) {
 		new TypeVariableHolderHandler().fillAllHolders(evt.getAsmData());
@@ -95,6 +100,8 @@ public class OpenMods {
 		collector = new ClassSourceCollector(evt.getAsmData());
 
 		EntityRegistry.registerModEntity(EntityBlock.class, "Block", ENTITY_BLOCK_ID, instance, 64, 1, true);
+
+		Sounds.register();
 
 		proxy.preInit();
 	}

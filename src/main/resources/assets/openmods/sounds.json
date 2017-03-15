@@ -2,7 +2,7 @@
     "pageturn": {
         "category": "master",
         "sounds": [
-            "pageturn"
+            "openmods:pageturn"
         ]
     }
 }

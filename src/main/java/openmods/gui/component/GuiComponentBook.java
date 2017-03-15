@@ -4,7 +4,8 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
+import openmods.OpenMods;
+import openmods.Sounds;
 import openmods.gui.Icon;
 import openmods.gui.component.page.BookScaleConfig;
 import openmods.gui.listener.IMouseDownListener;
@@ -12,9 +13,7 @@ import openmods.utils.TranslationUtils;
 
 public class GuiComponentBook extends BaseComposite {
 
-	private static final SoundEvent PAGETURN = new SoundEvent(new ResourceLocation("openmodslib", "pageturn"));
-
-	public static final ResourceLocation BOOK_WIDGETS = new ResourceLocation("openmodslib:textures/gui/book.png");
+	public static final ResourceLocation BOOK_WIDGETS = OpenMods.location("openmodslib:textures/gui/book.png");
 
 	public static final Icon iconPageLeft = Icon.createSheetIcon(BOOK_WIDGETS, 211, 0, -211, 180);
 	public static final Icon iconPageRight = Icon.createSheetIcon(BOOK_WIDGETS, 0, 0, 211, 180);
@@ -128,7 +127,7 @@ public class GuiComponentBook extends BaseComposite {
 	}
 
 	private void playPageTurnSound() {
-		parent.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(PAGETURN, 1.0f));
+		parent.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(Sounds.PAGE_TURN, 1.0f));
 	}
 
 	public IMouseDownListener createBookmarkListener(final int index) {

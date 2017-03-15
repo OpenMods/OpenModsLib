@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import openmods.OpenMods;
 import openmods.gui.IComponentParent;
 import openmods.gui.Icon;
 import openmods.gui.listener.IKeyTypedListener;
@@ -22,7 +23,7 @@ import org.lwjgl.opengl.GL11;
 
 public abstract class BaseComponent extends Gui {
 
-	public final static ResourceLocation WIDGETS = new ResourceLocation("openmodslib", "textures/gui/components.png");
+	public final static ResourceLocation WIDGETS = OpenMods.location("textures/gui/components.png");
 
 	protected void bindComponentsSheet() {
 		parent.bindTexture(WIDGETS);
