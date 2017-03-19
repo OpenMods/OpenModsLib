@@ -366,7 +366,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	@SuppressWarnings("deprecation") // TODO think about replacing?
 	public void neighborChanged(IBlockState state, World world, BlockPos blockPos, Block neighbour) {
 		if (hasCapabilities(TileEntityCapability.NEIGBOUR_LISTENER, TileEntityCapability.SURFACE_ATTACHEMENT)) {
 			final TileEntity te = world.getTileEntity(blockPos);
@@ -474,7 +473,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return true;
 	}
 
-	@SuppressWarnings("deprecation") // TODO review
 	@Override
 	public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
 		final Orientation orientation = calculateOrientationAfterPlace(pos, facing, placer);
@@ -509,7 +507,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return rotationMode.toValue(orientation);
 	}
 
-	@SuppressWarnings("deprecation") // TODO review
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
 		return getDefaultState()

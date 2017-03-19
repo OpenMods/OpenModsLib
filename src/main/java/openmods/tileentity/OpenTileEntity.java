@@ -7,6 +7,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -57,8 +58,12 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return worldObj != null && worldObj.isAirBlock(getPos().offset(direction));
 	}
 
+	protected void playSoundAtBlock(SoundEvent sound, SoundCategory category, float volume, float pitch) {
+		BlockUtils.playSoundAtPos(worldObj, pos, sound, category, volume, pitch);
+	}
+
 	protected void playSoundAtBlock(SoundEvent sound, float volume, float pitch) {
-		BlockUtils.playSoundAtPos(worldObj, pos, sound, volume, pitch);
+		playSoundAtBlock(sound, SoundCategory.BLOCKS, volume, pitch);
 	}
 
 	protected void spawnParticle(EnumParticleTypes particle, double dx, double dy, double dz, double vx, double vy, double vz, int... args) {

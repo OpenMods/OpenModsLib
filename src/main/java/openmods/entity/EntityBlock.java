@@ -5,6 +5,7 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -66,8 +67,12 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		});
 	}
 
-	public static EntityBlock create(EntityPlayer player, World world, BlockPos pos, EntityFactory factory) {
+	public static EntityBlock create(EntityLivingBase creator, World world, BlockPos pos, EntityFactory factory) {
 		if (world.isAirBlock(pos)) return null;
+
+		if (!(creator instanceof EntityPlayer)) return null;
+
+		final EntityPlayer player = (EntityPlayer)creator;
 
 		final EntityBlock entity = factory.create(world);
 
