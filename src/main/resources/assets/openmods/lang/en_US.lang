@@ -69,6 +69,8 @@ openmodslib.locale.book.scale.pageContent=0.5
 openmodslib.locale.book.lineSpace.titledPage=2
 openmodslib.locale.book.lineSpace.recipePage=4
 
+openmodslib.book.page=Page %d of %d
+
 openmodslib.config.features=Enable/disable features
 openmodslib.config.features.blocks=Enable/disable blocks
 openmodslib.config.features.items=Enable/disable items

@@ -113,8 +113,8 @@ public class GuiComponentBook extends BaseComposite {
 
 		imgNext.setEnabled(index < pages.size() - 2);
 		imgPrev.setEnabled(index > 0);
-		pageNumberLeft.setText(TranslationUtils.translateToLocalFormatted("openblocks.misc.page", index + 1, totalPageCount));
-		pageNumberRight.setText(TranslationUtils.translateToLocalFormatted("openblocks.misc.page", index + 2, totalPageCount));
+		pageNumberLeft.setText(TranslationUtils.translateToLocalFormatted("openmodslib.book.page", index + 1, totalPageCount));
+		pageNumberRight.setText(TranslationUtils.translateToLocalFormatted("openmodslib.book.page", index + 2, totalPageCount));
 	}
 
 	public void changePage(int newPage) {
