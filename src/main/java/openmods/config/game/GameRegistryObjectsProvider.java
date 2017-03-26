@@ -289,7 +289,7 @@ public class GameRegistryObjectsProvider {
 						}
 
 						if (creativeTab != null && annotation.addToModCreativeTab())
-							Preconditions.checkNotNull(creativeTab, "Trying to set creative tab, but none provided");
+							item.setCreativeTab(creativeTab);
 					}
 				});
 	}
