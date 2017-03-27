@@ -296,7 +296,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		if (te instanceof ICustomHarvestDrops) {
 			final ICustomHarvestDrops dropper = (ICustomHarvestDrops)te;
 			final List<ItemStack> drops = Lists.newArrayList();
-			dropper.addHarvestDrops(player, drops, fortune, false);
+			dropper.addHarvestDrops(player, drops, state, fortune, false);
 
 			ForgeEventFactory.fireBlockHarvesting(drops, world, pos, state, fortune, 1.0f, false, player);
 			for (ItemStack drop : drops)
@@ -319,7 +319,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		if (te instanceof ICustomHarvestDrops) {
 			final ICustomHarvestDrops dropper = (ICustomHarvestDrops)te;
 
-			dropper.addHarvestDrops(player, items, 0, true);
+			dropper.addHarvestDrops(player, items, state, 0, true);
 			addNormalDrops = !dropper.suppressBlockHarvestDrops();
 		}
 

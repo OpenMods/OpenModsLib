@@ -21,22 +21,23 @@ public abstract class DroppableTileEntity extends SyncedTileEntity implements IP
 		return true;
 	}
 
-	protected ItemStack getRawDrop() {
-		return new ItemStack(getBlockType());
+	protected ItemStack getRawDrop(IBlockState blockState) {
+		return new ItemStack(blockState.getBlock());
 	}
 
 	@Override
-	public void addHarvestDrops(EntityPlayer player, List<ItemStack> drops, int fortune, boolean isSilkTouch) {
-		drops.add(getDropStack());
+	public void addHarvestDrops(EntityPlayer player, List<ItemStack> drops, IBlockState blockState, int fortune, boolean isSilkTouch) {
+		drops.add(getDropStack(blockState));
 	}
 
 	@Override
 	public ItemStack getPickBlock(EntityPlayer player) {
-		return getDropStack();
+		final IBlockState state = worldObj.getBlockState(pos);
+		return getDropStack(state);
 	}
 
-	protected ItemStack getDropStack() {
-		return getDropSerializer().write(getRawDrop());
+	protected ItemStack getDropStack(IBlockState blockState) {
+		return getDropSerializer().write(getRawDrop(blockState));
 	}
 
 	@Override
