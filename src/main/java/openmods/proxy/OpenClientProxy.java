@@ -16,6 +16,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -29,6 +30,7 @@ import openmods.calc.command.CommandCalcFactory;
 import openmods.calc.command.ICommandComponent;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
+import openmods.model.variant.VariantModelLoader;
 import openmods.movement.PlayerMovementManager;
 import openmods.source.CommandSource;
 import openmods.utils.render.RenderUtils;
@@ -100,6 +102,8 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		RenderUtils.registerFogUpdater();
 
 		MinecraftForge.EVENT_BUS.register(new BlockSelectionHandler());
+
+		ModelLoaderRegistry.registerLoader(new VariantModelLoader());
 	}
 
 	@Override
