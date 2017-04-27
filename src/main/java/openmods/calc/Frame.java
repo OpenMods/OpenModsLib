@@ -1,5 +1,6 @@
 package openmods.calc;
 
+import openmods.calc.symbol.SymbolMap;
 import openmods.utils.Stack;
 
 public class Frame<E> {

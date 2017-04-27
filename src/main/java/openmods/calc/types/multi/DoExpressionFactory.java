@@ -5,15 +5,15 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.Environment;
 import openmods.calc.Frame;
-import openmods.calc.ICallable;
-import openmods.calc.IExecutable;
-import openmods.calc.SymbolCall;
-import openmods.calc.Value;
-import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.ISymbolCallStateTransition;
-import openmods.calc.parsing.SameStateSymbolTransition;
-import openmods.calc.parsing.SymbolCallNode;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.SymbolCall;
+import openmods.calc.executable.Value;
+import openmods.calc.parsing.ast.IParserState;
+import openmods.calc.parsing.ast.ISymbolCallStateTransition;
+import openmods.calc.parsing.ast.SameStateSymbolTransition;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.SymbolCallNode;
+import openmods.calc.symbol.ICallable;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
@@ -44,9 +44,9 @@ public class DoExpressionFactory {
 		}
 	}
 
-	private class DoExpr extends SameStateSymbolTransition<TypedValue> {
+	private class DoExpr extends SameStateSymbolTransition<IExprNode<TypedValue>> {
 
-		public DoExpr(ICompilerState<TypedValue> parentState) {
+		public DoExpr(IParserState<IExprNode<TypedValue>> parentState) {
 			super(parentState);
 		}
 
@@ -56,7 +56,7 @@ public class DoExpressionFactory {
 		}
 	}
 
-	public ISymbolCallStateTransition<TypedValue> createStateTransition(ICompilerState<TypedValue> compilerState) {
+	public ISymbolCallStateTransition<IExprNode<TypedValue>> createStateTransition(IParserState<IExprNode<TypedValue>> compilerState) {
 		return new DoExpr(compilerState);
 	}
 

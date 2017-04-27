@@ -1,5 +1,7 @@
 package openmods.calc.parsing;
 
+import openmods.calc.parsing.token.Token;
+
 public class InvalidTokenException extends IllegalArgumentException {
 	private static final long serialVersionUID = -3774868349671963161L;
 

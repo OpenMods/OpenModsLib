@@ -1,10 +1,10 @@
 package openmods.calc.types.multi;
 
 import openmods.calc.Frame;
-import openmods.calc.SymbolMap;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.SymbolGetNode;
-import openmods.calc.parsing.ValueNode;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.SymbolGetNode;
+import openmods.calc.parsing.node.ValueNode;
+import openmods.calc.symbol.SymbolMap;
 import openmods.utils.OptionalInt;
 import openmods.utils.StackValidationException;
 

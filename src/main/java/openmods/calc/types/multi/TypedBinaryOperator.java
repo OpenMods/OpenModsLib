@@ -10,7 +10,7 @@ import com.google.common.collect.Table;
 import com.google.common.reflect.TypeToken;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
-import openmods.calc.BinaryOperator;
+import openmods.calc.executable.BinaryOperator;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.reflection.TypeVariableHolder;
 

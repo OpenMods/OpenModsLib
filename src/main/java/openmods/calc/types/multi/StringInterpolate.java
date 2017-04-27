@@ -9,16 +9,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
 import java.util.List;
 import openmods.calc.Frame;
-import openmods.calc.IExecutable;
-import openmods.calc.ISymbol;
 import openmods.calc.IValuePrinter;
-import openmods.calc.SymbolMap;
-import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.SingleStateTransition;
-import openmods.calc.parsing.SingleTokenPostfixCompilerState;
-import openmods.calc.parsing.Token;
-import openmods.calc.parsing.TokenType;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.parsing.ast.IParserState;
+import openmods.calc.parsing.ast.SingleStateTransition;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.postfix.SingleTokenPostfixParserState;
+import openmods.calc.parsing.token.Token;
+import openmods.calc.parsing.token.TokenType;
+import openmods.calc.symbol.ISymbol;
+import openmods.calc.symbol.SymbolMap;
 
 public class StringInterpolate {
 
@@ -230,7 +230,7 @@ public class StringInterpolate {
 		}
 	}
 
-	public static class StringInterpolateModifier extends SingleStateTransition.ForModifier<TypedValue> {
+	public static class StringInterpolateModifier extends SingleStateTransition.ForModifier<IExprNode<TypedValue>> {
 		private final TypeDomain domain;
 		private final IValuePrinter<TypedValue> printer;
 
@@ -245,7 +245,7 @@ public class StringInterpolate {
 		}
 
 		@Override
-		public IExprNode<TypedValue> parseSymbol(ICompilerState<TypedValue> state, PeekingIterator<Token> input) {
+		public IExprNode<TypedValue> parseSymbol(IParserState<IExprNode<TypedValue>> state, PeekingIterator<Token> input) {
 			final Token token = input.next();
 			Preconditions.checkState(token.type == TokenType.STRING, "Expected string token, got %s", token);
 
@@ -265,7 +265,7 @@ public class StringInterpolate {
 		}
 	}
 
-	public static class StringInterpolatePostfixCompilerState extends SingleTokenPostfixCompilerState<TypedValue> {
+	public static class StringInterpolatePostfixCompilerState extends SingleTokenPostfixParserState<IExecutable<TypedValue>> {
 
 		private final TypeDomain domain;
 		private final IValuePrinter<TypedValue> printer;

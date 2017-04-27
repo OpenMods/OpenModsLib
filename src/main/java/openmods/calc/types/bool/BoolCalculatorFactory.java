@@ -1,18 +1,19 @@
 package openmods.calc.types.bool;
 
 import java.util.Random;
-import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Environment;
 import openmods.calc.ExprType;
 import openmods.calc.IValuePrinter;
-import openmods.calc.NullaryFunction;
-import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
-import openmods.calc.UnaryOperator;
+import openmods.calc.executable.BinaryOperator;
+import openmods.calc.executable.Operator;
+import openmods.calc.executable.OperatorDictionary;
+import openmods.calc.executable.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
 import openmods.calc.parsing.CommonSimpleSymbolFactory;
 import openmods.calc.parsing.IValueParser;
+import openmods.calc.symbol.NullaryFunction;
 
 public class BoolCalculatorFactory<M> extends SimpleCalculatorFactory<Boolean, M> {
 
@@ -118,27 +119,27 @@ public class BoolCalculatorFactory<M> extends SimpleCalculatorFactory<Boolean, M
 	}
 
 	@Override
-	protected void configureOperators(OperatorDictionary<Boolean> operators) {
-		operators.registerUnaryOperator(new OpNot("~"));
-		operators.registerUnaryOperator(new OpNot("not"));
+	protected void configureOperators(OperatorDictionary<Operator<Boolean>> operators) {
+		operators.registerOperator(new OpNot("~"));
+		operators.registerOperator(new OpNot("not"));
 
-		operators.registerBinaryOperator(new OpXor("^"));
-		operators.registerBinaryOperator(new OpXor("xor"));
-		operators.registerBinaryOperator(new OpXor("!="));
+		operators.registerOperator(new OpXor("^"));
+		operators.registerOperator(new OpXor("xor"));
+		operators.registerOperator(new OpXor("!="));
 
-		operators.registerBinaryOperator(new OpIff("="));
-		operators.registerBinaryOperator(new OpIff("<=>"));
-		operators.registerBinaryOperator(new OpIff("eq"));
-		operators.registerBinaryOperator(new OpIff("iff"));
+		operators.registerOperator(new OpIff("="));
+		operators.registerOperator(new OpIff("<=>"));
+		operators.registerOperator(new OpIff("eq"));
+		operators.registerOperator(new OpIff("iff"));
 
-		operators.registerBinaryOperator(new OpImplies("=>"));
-		operators.registerBinaryOperator(new OpImplies("implies"));
+		operators.registerOperator(new OpImplies("=>"));
+		operators.registerOperator(new OpImplies("implies"));
 
-		operators.registerBinaryOperator(new OpOr("|"));
-		operators.registerBinaryOperator(new OpOr("or"));
+		operators.registerOperator(new OpOr("|"));
+		operators.registerOperator(new OpOr("or"));
 
-		operators.registerBinaryOperator(new OpAnd("&"));
-		operators.registerBinaryOperator(new OpAnd("and"));
+		operators.registerOperator(new OpAnd("&"));
+		operators.registerOperator(new OpAnd("and"));
 	}
 
 	public static Calculator<Boolean, ExprType> createSimple() {
@@ -150,7 +151,7 @@ public class BoolCalculatorFactory<M> extends SimpleCalculatorFactory<Boolean, M
 
 		return new BoolCalculatorFactory<ExprType>() {
 			@Override
-			protected void configureOperators(OperatorDictionary<Boolean> operators) {
+			protected void configureOperators(OperatorDictionary<Operator<Boolean>> operators) {
 				super.configureOperators(operators);
 				letFactory.registerSeparators(operators);
 			}

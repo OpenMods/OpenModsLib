@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import openmods.calc.Frame;
-import openmods.calc.ICallable;
+import openmods.calc.symbol.ICallable;
 import openmods.reflection.TypeVariableHolder;
 import openmods.utils.AnnotationMap;
 import openmods.utils.CachedFactory;

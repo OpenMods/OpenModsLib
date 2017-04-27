@@ -1,12 +1,12 @@
 package openmods.calc.types.multi;
 
 import java.util.List;
-import openmods.calc.IExecutable;
-import openmods.calc.SymbolCall;
-import openmods.calc.SymbolGet;
-import openmods.calc.UnaryOperator;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.SymbolCallNode;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.SymbolCall;
+import openmods.calc.executable.SymbolGet;
+import openmods.calc.executable.UnaryOperator;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.SymbolCallNode;
 
 public class VarArgSymbolCallNode extends SymbolCallNode<TypedValue> {
 

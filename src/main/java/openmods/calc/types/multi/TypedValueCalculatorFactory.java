@@ -13,54 +13,59 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import openmods.calc.BinaryFunction;
-import openmods.calc.BinaryOperator;
-import openmods.calc.BinaryOperator.Associativity;
 import openmods.calc.Calculator;
 import openmods.calc.Compilers;
 import openmods.calc.Environment;
 import openmods.calc.ExecutionErrorException;
 import openmods.calc.ExprType;
-import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
-import openmods.calc.GenericFunctions;
-import openmods.calc.GenericFunctions.AccumulatorFunction;
-import openmods.calc.ICallable;
-import openmods.calc.IExecutable;
-import openmods.calc.ISymbol;
-import openmods.calc.LocalSymbolMap;
-import openmods.calc.NullaryFunction;
-import openmods.calc.OperatorDictionary;
-import openmods.calc.SingleReturnCallable;
-import openmods.calc.SymbolMap;
-import openmods.calc.TopSymbolMap;
-import openmods.calc.UnaryFunction;
-import openmods.calc.UnaryOperator;
+import openmods.calc.executable.BinaryOperator;
+import openmods.calc.executable.BinaryOperator.Associativity;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.Operator;
+import openmods.calc.executable.OperatorDictionary;
+import openmods.calc.executable.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
-import openmods.calc.parsing.BinaryOpNode;
 import openmods.calc.parsing.ConstantSymbolStateTransition;
 import openmods.calc.parsing.DefaultExecutableListBuilder;
-import openmods.calc.parsing.DefaultExprNodeFactory;
-import openmods.calc.parsing.DefaultPostfixCompiler;
-import openmods.calc.parsing.DefaultPostfixCompiler.IStateProvider;
-import openmods.calc.parsing.IAstParser;
-import openmods.calc.parsing.IExecutableListBuilder;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.IPostfixCompilerState;
 import openmods.calc.parsing.ITokenStreamCompiler;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.MappedCompilerState;
-import openmods.calc.parsing.MappedExprNodeFactory;
-import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
-import openmods.calc.parsing.MappedExprNodeFactory.IBracketExprNodeFactory;
-import openmods.calc.parsing.MappedExprNodeFactory.IUnaryExprNodeFactory;
-import openmods.calc.parsing.SquareBracketContainerNode;
-import openmods.calc.parsing.SymbolGetNode;
-import openmods.calc.parsing.Token;
-import openmods.calc.parsing.Tokenizer;
-import openmods.calc.parsing.UnaryOpNode;
-import openmods.calc.parsing.ValueNode;
+import openmods.calc.parsing.PostfixCompiler;
+import openmods.calc.parsing.ast.IAstParser;
+import openmods.calc.parsing.ast.IModifierStateTransition;
+import openmods.calc.parsing.ast.IOperatorDictionary;
+import openmods.calc.parsing.ast.MappedParserState;
+import openmods.calc.parsing.node.BinaryOpNode;
+import openmods.calc.parsing.node.DefaultExprNodeFactory;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.MappedExprNodeFactory;
+import openmods.calc.parsing.node.MappedExprNodeFactory.IBinaryExprNodeFactory;
+import openmods.calc.parsing.node.MappedExprNodeFactory.IBracketExprNodeFactory;
+import openmods.calc.parsing.node.MappedExprNodeFactory.IUnaryExprNodeFactory;
+import openmods.calc.parsing.node.SquareBracketContainerNode;
+import openmods.calc.parsing.node.SymbolGetNode;
+import openmods.calc.parsing.node.UnaryOpNode;
+import openmods.calc.parsing.node.ValueNode;
+import openmods.calc.parsing.postfix.IExecutableListBuilder;
+import openmods.calc.parsing.postfix.IPostfixParserState;
+import openmods.calc.parsing.postfix.MappedPostfixParser;
+import openmods.calc.parsing.postfix.MappedPostfixParser.IStateProvider;
+import openmods.calc.parsing.postfix.PostfixParser;
+import openmods.calc.parsing.token.Token;
+import openmods.calc.parsing.token.Tokenizer;
+import openmods.calc.symbol.BinaryFunction;
+import openmods.calc.symbol.FixedCallable;
+import openmods.calc.symbol.GenericFunctions;
+import openmods.calc.symbol.GenericFunctions.AccumulatorFunction;
+import openmods.calc.symbol.ICallable;
+import openmods.calc.symbol.ISymbol;
+import openmods.calc.symbol.LocalSymbolMap;
+import openmods.calc.symbol.NullaryFunction;
+import openmods.calc.symbol.SingleReturnCallable;
+import openmods.calc.symbol.SymbolMap;
+import openmods.calc.symbol.TopSymbolMap;
+import openmods.calc.symbol.UnaryFunction;
 import openmods.calc.types.multi.Cons.LinearVisitor;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
@@ -737,10 +742,10 @@ public class TypedValueCalculatorFactory {
 
 		domain.registerSymmetricCoercionRule(Double.class, Complex.class, Coercion.TO_RIGHT);
 
-		final OperatorDictionary<TypedValue> operators = new OperatorDictionary<TypedValue>();
+		final OperatorDictionary<Operator<TypedValue>> operators = new OperatorDictionary<Operator<TypedValue>>();
 
 		// arithmetic
-		final BinaryOperator.Direct<TypedValue> addOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("+", PRIORITY_ADD)
+		final BinaryOperator.Direct<TypedValue> addOperator = operators.registerOperator(new TypedBinaryOperator.Builder("+", PRIORITY_ADD)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
 					@Override
 					public BigInteger apply(BigInteger left, BigInteger right) {
@@ -774,7 +779,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain)).unwrap();
 
-		operators.registerUnaryOperator(new UnaryOperator.Direct<TypedValue>("+") {
+		operators.registerOperator(new UnaryOperator.Direct<TypedValue>("+") {
 			@Override
 			public TypedValue execute(TypedValue value) {
 				Preconditions.checkState(NUMBER_TYPES.contains(value.type), "Not a number: %s", value);
@@ -782,9 +787,9 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		final UnaryOperator<TypedValue> varArgMarker = operators.registerUnaryOperator(new MarkerUnaryOperator("*"));
+		final UnaryOperator<TypedValue> varArgMarker = operators.registerOperator(new MarkerUnaryOperator("*")).unwrap();
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("-", PRIORITY_ADD)
+		operators.registerOperator(new TypedBinaryOperator.Builder("-", PRIORITY_ADD)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
 					@Override
 					public BigInteger apply(BigInteger left, BigInteger right) {
@@ -811,11 +816,11 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerUnaryOperator(createUnaryNegation("-", domain));
+		operators.registerOperator(createUnaryNegation("-", domain));
 
-		operators.registerUnaryOperator(createUnaryNegation("neg", domain));
+		operators.registerOperator(createUnaryNegation("neg", domain));
 
-		final BinaryOperator<TypedValue> multiplyOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("*", PRIORITY_MULTIPLY)
+		final BinaryOperator<TypedValue> multiplyOperator = operators.registerOperator(new TypedBinaryOperator.Builder("*", PRIORITY_MULTIPLY)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<BigInteger, BigInteger>() {
 					@Override
 					public BigInteger apply(BigInteger left, BigInteger right) {
@@ -849,7 +854,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain)).unwrap();
 
-		final BinaryOperator.Direct<TypedValue> divideOperator = operators.registerBinaryOperator(new TypedBinaryOperator.Builder("/", PRIORITY_MULTIPLY)
+		final BinaryOperator.Direct<TypedValue> divideOperator = operators.registerOperator(new TypedBinaryOperator.Builder("/", PRIORITY_MULTIPLY)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Double, Double>() {
 					@Override
 					public Double apply(Double left, Double right) {
@@ -876,7 +881,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain)).unwrap();
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("%", PRIORITY_MULTIPLY)
+		operators.registerOperator(new TypedBinaryOperator.Builder("%", PRIORITY_MULTIPLY)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -909,7 +914,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("//", PRIORITY_MULTIPLY)
+		operators.registerOperator(new TypedBinaryOperator.Builder("//", PRIORITY_MULTIPLY)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -930,7 +935,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("**", PRIORITY_EXP)
+		operators.registerOperator(new TypedBinaryOperator.Builder("**", PRIORITY_EXP)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -954,7 +959,7 @@ public class TypedValueCalculatorFactory {
 
 		// logic
 
-		operators.registerUnaryOperator(new UnaryOperator.StackBased<TypedValue>("!") {
+		operators.registerOperator(new UnaryOperator.StackBased<TypedValue>("!") {
 			@Override
 			public void executeOnStack(Frame<TypedValue> frame) {
 				final TypedValue selfValue = frame.stack().pop();
@@ -983,7 +988,7 @@ public class TypedValueCalculatorFactory {
 			protected abstract TypedValue select(boolean firstBool, TypedValue first, TypedValue second);
 		}
 
-		final BinaryOperator<TypedValue> andOperator = operators.registerBinaryOperator(new BinaryLogicOperator("&&", PRIORITY_LOGIC_AND) {
+		final BinaryOperator<TypedValue> andOperator = operators.registerOperator(new BinaryLogicOperator("&&", PRIORITY_LOGIC_AND) {
 			@Override
 			public TypedValue select(boolean firstBool, TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
@@ -991,7 +996,7 @@ public class TypedValueCalculatorFactory {
 			}
 		}).unwrap();
 
-		final BinaryOperator<TypedValue> orOperator = operators.registerBinaryOperator(new BinaryLogicOperator("||", PRIORITY_LOGIC_OR) {
+		final BinaryOperator<TypedValue> orOperator = operators.registerOperator(new BinaryLogicOperator("||", PRIORITY_LOGIC_OR) {
 			@Override
 			public TypedValue select(boolean firstBool, TypedValue left, TypedValue right) {
 				Preconditions.checkArgument(left.domain == right.domain, "Values from different domains: %s, %s", left, right);
@@ -999,7 +1004,7 @@ public class TypedValueCalculatorFactory {
 			}
 		}).unwrap();
 
-		operators.registerBinaryOperator(new BinaryOperator.StackBased<TypedValue>("^^", PRIORITY_LOGIC_XOR) {
+		operators.registerOperator(new BinaryOperator.StackBased<TypedValue>("^^", PRIORITY_LOGIC_XOR) {
 
 			@Override
 			public void executeOnStack(Frame<TypedValue> frame) {
@@ -1014,7 +1019,7 @@ public class TypedValueCalculatorFactory {
 			}
 		});
 
-		final BinaryOperator<TypedValue> nonNullOperator = operators.registerBinaryOperator(new BinaryOperator.Direct<TypedValue>("??", PRIORITY_NULL_AWARE) {
+		final BinaryOperator<TypedValue> nonNullOperator = operators.registerOperator(new BinaryOperator.Direct<TypedValue>("??", PRIORITY_NULL_AWARE) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				return left != nullValue? left : right;
@@ -1023,7 +1028,7 @@ public class TypedValueCalculatorFactory {
 
 		// bitwise
 
-		operators.registerUnaryOperator(new TypedUnaryOperator.Builder("~")
+		operators.registerOperator(new TypedUnaryOperator.Builder("~")
 				.registerOperation(new TypedUnaryOperator.ISimpleOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean value) {
@@ -1038,7 +1043,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("&", PRIORITY_BITWISE_AND)
+		operators.registerOperator(new TypedBinaryOperator.Builder("&", PRIORITY_BITWISE_AND)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, Boolean>() {
 					@Override
 					public Boolean apply(Boolean left, Boolean right) {
@@ -1053,7 +1058,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("|", PRIORITY_BITWISE_OR)
+		operators.registerOperator(new TypedBinaryOperator.Builder("|", PRIORITY_BITWISE_OR)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, Boolean>() {
 					@Override
 					public Boolean apply(Boolean left, Boolean right) {
@@ -1068,7 +1073,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("^", PRIORITY_BITWISE_XOR)
+		operators.registerOperator(new TypedBinaryOperator.Builder("^", PRIORITY_BITWISE_XOR)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, Boolean>() {
 					@Override
 					public Boolean apply(Boolean left, Boolean right) {
@@ -1083,7 +1088,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder("<<", PRIORITY_BITSHIFT)
+		operators.registerOperator(new TypedBinaryOperator.Builder("<<", PRIORITY_BITSHIFT)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -1098,7 +1103,7 @@ public class TypedValueCalculatorFactory {
 				})
 				.build(domain));
 
-		operators.registerBinaryOperator(new TypedBinaryOperator.Builder(">>", PRIORITY_BITSHIFT)
+		operators.registerOperator(new TypedBinaryOperator.Builder(">>", PRIORITY_BITSHIFT)
 				.registerOperation(new TypedBinaryOperator.ISimpleCoercedOperation<Boolean, BigInteger>() {
 					@Override
 					public BigInteger apply(Boolean left, Boolean right) {
@@ -1133,14 +1138,14 @@ public class TypedValueCalculatorFactory {
 
 		}
 
-		final BinaryOperator.Direct<TypedValue> ltOperator = operators.registerBinaryOperator(new BooleanComparatorOperator("<", PRIORITY_COMPARE) {
+		final BinaryOperator.Direct<TypedValue> ltOperator = operators.registerOperator(new BooleanComparatorOperator("<", PRIORITY_COMPARE) {
 			@Override
 			protected boolean interpret(int value) {
 				return value < 0;
 			}
 		}).unwrap();
 
-		final BinaryOperator.Direct<TypedValue> gtOperator = operators.registerBinaryOperator(new BooleanComparatorOperator(">", PRIORITY_COMPARE) {
+		final BinaryOperator.Direct<TypedValue> gtOperator = operators.registerOperator(new BooleanComparatorOperator(">", PRIORITY_COMPARE) {
 			@Override
 			protected boolean interpret(int value) {
 				return value > 0;
@@ -1165,28 +1170,28 @@ public class TypedValueCalculatorFactory {
 			public abstract boolean interpret(boolean isEqual);
 		}
 
-		operators.registerBinaryOperator(new EqualsOperator("==", PRIORITY_EQUALS) {
+		operators.registerOperator(new EqualsOperator("==", PRIORITY_EQUALS) {
 			@Override
 			public boolean interpret(boolean isEqual) {
 				return isEqual;
 			}
 		});
 
-		operators.registerBinaryOperator(new EqualsOperator("!=", PRIORITY_EQUALS) {
+		operators.registerOperator(new EqualsOperator("!=", PRIORITY_EQUALS) {
 			@Override
 			public boolean interpret(boolean isEqual) {
 				return !isEqual;
 			}
 		});
 
-		operators.registerBinaryOperator(new BooleanComparatorOperator("<=", PRIORITY_COMPARE) {
+		operators.registerOperator(new BooleanComparatorOperator("<=", PRIORITY_COMPARE) {
 			@Override
 			public boolean interpret(int value) {
 				return value <= 0;
 			}
 		});
 
-		operators.registerBinaryOperator(new BooleanComparatorOperator(">=", PRIORITY_COMPARE) {
+		operators.registerOperator(new BooleanComparatorOperator(">=", PRIORITY_COMPARE) {
 			@Override
 			public boolean interpret(int value) {
 				return value >= 0;
@@ -1213,22 +1218,22 @@ public class TypedValueCalculatorFactory {
 			}
 		}
 
-		final BinaryOperator<TypedValue> dotOperator = operators.registerBinaryOperator(new DotOperator(".", PRIORITY_MAX)).unwrap();
+		final BinaryOperator<TypedValue> dotOperator = operators.registerOperator(new DotOperator(".", PRIORITY_MAX)).unwrap();
 
-		final BinaryOperator<TypedValue> nullAwareDotOperator = operators.registerBinaryOperator(new DotOperator("?.", PRIORITY_MAX)).unwrap();
+		final BinaryOperator<TypedValue> nullAwareDotOperator = operators.registerOperator(new DotOperator("?.", PRIORITY_MAX)).unwrap();
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<TypedValue>("<=>", PRIORITY_SPACESHIP) {
+		operators.registerOperator(new BinaryOperator.Direct<TypedValue>("<=>", PRIORITY_SPACESHIP) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				return domain.create(BigInteger.class, BigInteger.valueOf(comparator.compare(left, right)));
 			}
 		});
 
-		final BinaryOperator<TypedValue> lambdaOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("->", PRIORITY_LAMBDA, Associativity.RIGHT)).unwrap();
+		final BinaryOperator<TypedValue> lambdaOperator = operators.registerOperator(new MarkerBinaryOperator("->", PRIORITY_LAMBDA, Associativity.RIGHT)).unwrap();
 
-		final BinaryOperator<TypedValue> splitOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("\\", PRIORITY_SPLIT, Associativity.RIGHT)).unwrap();
+		final BinaryOperator<TypedValue> splitOperator = operators.registerOperator(new MarkerBinaryOperator("\\", PRIORITY_SPLIT, Associativity.RIGHT)).unwrap();
 
-		final BinaryOperator<TypedValue> colonOperator = operators.registerBinaryOperator(new BinaryOperator.Direct<TypedValue>(":", PRIORITY_CONS, Associativity.RIGHT) {
+		final BinaryOperator<TypedValue> colonOperator = operators.registerOperator(new BinaryOperator.Direct<TypedValue>(":", PRIORITY_CONS, Associativity.RIGHT) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				return domain.create(Cons.class, new Cons(left, right));
@@ -1236,7 +1241,7 @@ public class TypedValueCalculatorFactory {
 		}).unwrap();
 
 		// this is just sugar - but low priority op is handy for functions that use pairs as named args
-		final BinaryOperator<TypedValue> assignOperator = operators.registerBinaryOperator(new BinaryOperator.Direct<TypedValue>("=", PRIORITY_ASSIGN) {
+		final BinaryOperator<TypedValue> assignOperator = operators.registerOperator(new BinaryOperator.Direct<TypedValue>("=", PRIORITY_ASSIGN) {
 			@Override
 			public TypedValue execute(TypedValue left, TypedValue right) {
 				return domain.create(Cons.class, new Cons(left, right));
@@ -1246,7 +1251,7 @@ public class TypedValueCalculatorFactory {
 		// NOTE: this operator won't be available in prefix and postfix
 		final BinaryOperator<TypedValue> defaultOperator = operators.registerDefaultOperator(new MarkerBinaryOperator("<?>", PRIORITY_MAX));
 
-		final BinaryOperator<TypedValue> nullAwareOperator = operators.registerBinaryOperator(new MarkerBinaryOperator("?", PRIORITY_MAX)).unwrap();
+		final BinaryOperator<TypedValue> nullAwareOperator = operators.registerOperator(new MarkerBinaryOperator("?", PRIORITY_MAX)).unwrap();
 
 		class TypedValueSymbolMap extends TopSymbolMap<TypedValue> {
 			@Override
@@ -2005,17 +2010,22 @@ public class TypedValueCalculatorFactory {
 		class TypedValueCompilersFactory extends BasicCompilerMapFactory<TypedValue> {
 
 			@Override
-			protected MappedCompilerState<TypedValue> createCompilerState(IAstParser<TypedValue> parser) {
-				return new MappedCompilerState<TypedValue>(parser) {
+			protected MappedParserState<IExprNode<TypedValue>> createCompilerState(IAstParser<IExprNode<TypedValue>> parser) {
+				return new MappedParserState<IExprNode<TypedValue>>(parser) {
 					@Override
 					protected IExprNode<TypedValue> createDefaultSymbolNode(String symbol, List<IExprNode<TypedValue>> children) {
 						return new VarArgSymbolCallNode(varArgMarker, symbol, children);
+					}
+
+					@Override
+					protected IModifierStateTransition<IExprNode<TypedValue>> createDefaultModifierStateTransition(String modifier) {
+						throw new UnsupportedOperationException(modifier);
 					}
 				};
 			}
 
 			@Override
-			protected void configureCompilerStateCommon(MappedCompilerState<TypedValue> compilerState, Environment<TypedValue> environment) {
+			protected void configureCompilerStateCommon(MappedParserState<IExprNode<TypedValue>> compilerState, Environment<TypedValue> environment) {
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_QUOTE, new QuoteStateTransition.ForSymbol(domain, nullValue, valueParser));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_CODE, new CodeStateTransition(domain, compilerState));
 				compilerState.addStateTransition(TypedCalcConstants.SYMBOL_IF, ifFactory.createStateTransition(compilerState));
@@ -2114,34 +2124,42 @@ public class TypedValueCalculatorFactory {
 			}
 
 			@Override
-			protected ITokenStreamCompiler<TypedValue> createPostfixParser(final IValueParser<TypedValue> valueParser, final OperatorDictionary<TypedValue> operators, Environment<TypedValue> env) {
-				return addConstantEvaluatorState(valueParser, operators, env,
-						new DefaultPostfixCompiler<TypedValue>(valueParser, operators))
-								.addModifierStateProvider(TypedCalcConstants.MODIFIER_QUOTE, new IStateProvider<TypedValue>() {
+			protected ITokenStreamCompiler<TypedValue> createPostfixParser(final IValueParser<TypedValue> valueParser, final IOperatorDictionary<Operator<TypedValue>> operators, Environment<TypedValue> env) {
+				final PostfixParser<IExecutable<TypedValue>> parser = addConstantEvaluatorState(valueParser, operators, env,
+						new MappedPostfixParser<IExecutable<TypedValue>>() {
+							@Override
+							protected IExecutableListBuilder<IExecutable<TypedValue>> createListBuilder() {
+								return new DefaultExecutableListBuilder<TypedValue>(valueParser, operators);
+							}
+
+						})
+								.addModifierStateProvider(TypedCalcConstants.MODIFIER_QUOTE, new IStateProvider<IExecutable<TypedValue>>() {
 									@Override
-									public IPostfixCompilerState<TypedValue> createState() {
+									public IPostfixParserState<IExecutable<TypedValue>> createState() {
 										return new QuotePostfixCompilerState(valueParser, domain);
 									}
 								})
-								.addBracketStateProvider(TypedCalcConstants.BRACKET_CODE, new IStateProvider<TypedValue>() {
+								.addBracketStateProvider(TypedCalcConstants.BRACKET_CODE, new IStateProvider<IExecutable<TypedValue>>() {
 									@Override
-									public IPostfixCompilerState<TypedValue> createState() {
-										final IExecutableListBuilder<TypedValue> listBuilder = new DefaultExecutableListBuilder<TypedValue>(valueParser, operators);
+									public IPostfixParserState<IExecutable<TypedValue>> createState() {
+										final IExecutableListBuilder<IExecutable<TypedValue>> listBuilder = new DefaultExecutableListBuilder<TypedValue>(valueParser, operators);
 										return new CodePostfixCompilerState(domain, listBuilder, TypedCalcConstants.BRACKET_CODE);
 									}
 								})
-								.addModifierStateProvider(BasicCompilerMapFactory.MODIFIER_SYMBOL_GET, new IStateProvider<TypedValue>() {
+								.addModifierStateProvider(BasicCompilerMapFactory.MODIFIER_SYMBOL_GET, new IStateProvider<IExecutable<TypedValue>>() {
 									@Override
-									public IPostfixCompilerState<TypedValue> createState() {
+									public IPostfixParserState<IExecutable<TypedValue>> createState() {
 										return new CallableGetPostfixCompilerState(operators, domain);
 									}
 								})
-								.addModifierStateProvider(TypedCalcConstants.MODIFIER_INTERPOLATE, new IStateProvider<TypedValue>() {
+								.addModifierStateProvider(TypedCalcConstants.MODIFIER_INTERPOLATE, new IStateProvider<IExecutable<TypedValue>>() {
 									@Override
-									public IPostfixCompilerState<TypedValue> createState() {
+									public IPostfixParserState<IExecutable<TypedValue>> createState() {
 										return new StringInterpolate.StringInterpolatePostfixCompilerState(domain, valuePrinter);
 									}
 								});
+
+				return new PostfixCompiler<TypedValue>(parser);
 			}
 
 			@Override

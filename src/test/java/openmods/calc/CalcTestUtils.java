@@ -1,27 +1,16 @@
 package openmods.calc;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
 import java.util.Arrays;
 import java.util.List;
-import openmods.calc.BinaryOperator.Associativity;
-import openmods.calc.parsing.ContainerNode;
-import openmods.calc.parsing.DummyNode;
-import openmods.calc.parsing.IAstParser;
-import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.IModifierStateTransition;
-import openmods.calc.parsing.ISymbolCallStateTransition;
-import openmods.calc.parsing.ITokenStreamCompiler;
+import openmods.calc.executable.IExecutable;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.QuotedParser;
-import openmods.calc.parsing.QuotedParser.IQuotedExprNodeFactory;
-import openmods.calc.parsing.SymbolCallNode;
-import openmods.calc.parsing.Token;
-import openmods.calc.parsing.TokenType;
+import openmods.calc.parsing.token.Token;
+import openmods.calc.parsing.token.TokenType;
+import openmods.calc.symbol.ICallable;
+import openmods.calc.symbol.ISymbol;
 import openmods.calc.types.multi.TypedCalcConstants;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
@@ -141,135 +130,16 @@ public class CalcTestUtils {
 
 	public static final Token QUOTE_SYMBOL = symbol(TypedCalcConstants.SYMBOL_QUOTE);
 
-	public static class DummyBinaryOperator<E> extends BinaryOperator.Direct<E> {
-
-		public DummyBinaryOperator(int precendence, String id) {
-			super(id, precendence);
-		}
-
-		public DummyBinaryOperator(int precendence, String id, Associativity associativity) {
-			super(id, precendence, associativity);
-		}
-
-		@Override
-		public E execute(E left, E right) {
-			return null;
-		}
-	}
-
-	public static class DummyUnaryOperator<E> extends UnaryOperator.Direct<E> {
-		public DummyUnaryOperator(String id) {
-			super(id);
-		}
-
-		@Override
-		public E execute(E value) {
-			return null;
-		}
-	}
-
-	public static final BinaryOperator<String> PLUS = new DummyBinaryOperator<String>(1, "+");
-
 	public static final Token OP_PLUS = op("+");
 
-	public static final UnaryOperator<String> UNARY_PLUS = new DummyUnaryOperator<String>("+");
-
-	public static final BinaryOperator<String> MINUS = new DummyBinaryOperator<String>(1, "-");
-
+	public static final Token OP_MULTIPLY = op("*");
 	public static final Token OP_MINUS = op("-");
-
-	public static final UnaryOperator<String> UNARY_MINUS = new DummyUnaryOperator<String>("-");
-
-	public static final UnaryOperator<String> UNARY_NEG = new DummyUnaryOperator<String>("!");
 
 	public static final Token OP_NEG = op("!");
 
-	public static final BinaryOperator<String> MULTIPLY = new DummyBinaryOperator<String>(2, "*");
-
-	public static final Token OP_MULTIPLY = op("*");
-
-	public static final BinaryOperator<String> DEFAULT = new DummyBinaryOperator<String>(2, "<*>");
-
 	public static final Token OP_DEFAULT = op("<*>");
 
-	public static final BinaryOperator<String> ASSIGN = new DummyBinaryOperator<String>(1, "=", Associativity.RIGHT);
-
 	public static final Token OP_ASSIGN = op("=");
-
-	public static IExecutable<String> c(String value) {
-		return new Value<String>(value);
-	}
-
-	public static SymbolGet<String> get(String value) {
-		return new SymbolGet<String>(value);
-	}
-
-	public static SymbolCall<String> call(String value) {
-		return new SymbolCall<String>(value);
-	}
-
-	public static SymbolCall<String> call(String value, int args) {
-		return new SymbolCall<String>(value, args, 1);
-	}
-
-	public static SymbolCall<String> call(String value, int args, int rets) {
-		return new SymbolCall<String>(value, args, rets);
-	}
-
-	public static SymbolCall<String> call(String value, OptionalInt args, OptionalInt rets) {
-		return new SymbolCall<String>(value, args, rets);
-	}
-
-	public static ExecutableList<String> list(IExecutable<String>... elements) {
-		return new ExecutableList<String>(elements);
-	}
-
-	public static class MarkerExecutable<E> implements IExecutable<E> {
-
-		public String tag;
-
-		public MarkerExecutable(String tag) {
-			this.tag = Strings.nullToEmpty(tag);
-		}
-
-		@Override
-		public void execute(Frame<E> frame) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int hashCode() {
-			return tag.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) return true;
-			return obj instanceof MarkerExecutable
-					&& ((MarkerExecutable<?>)obj).tag.equals(this.tag);
-		}
-
-		@Override
-		public String toString() {
-			return "!!!" + tag;
-		}
-
-	}
-
-	public static IExecutable<String> marker(String tag) {
-		return new MarkerExecutable<String>(tag);
-	}
-
-	public static final IValueParser<String> VALUE_PARSER = new IValueParser<String>() {
-		@Override
-		public String parseToken(Token token) {
-			return token.value;
-		}
-	};
-
-	public interface Acceptor<E> {
-		public void accept(E value);
-	}
 
 	public static class StackCheck<E> {
 		private final Calculator<E, ExprType> sut;
@@ -377,211 +247,6 @@ public class CalcTestUtils {
 
 	public static PeekingIterator<Token> tokenIterator(Token... inputs) {
 		return Iterators.peekingIterator(Iterators.forArray(inputs));
-	}
-
-	public static class CompilerResultTester {
-		private final List<IExecutable<String>> actual;
-		private final ITokenStreamCompiler<String> compiler;
-
-		@SuppressWarnings("unchecked")
-		public CompilerResultTester(ITokenStreamCompiler<String> compiler, Token... inputs) {
-			this.compiler = compiler;
-			final IExecutable<String> result = compiler.compile(tokenIterator(inputs));
-			if (result instanceof NoopExecutable) {
-				this.actual = Lists.newArrayList();
-			} else if (result instanceof ExecutableList) {
-				this.actual = ((ExecutableList<String>)result).getCommands();
-			} else {
-				this.actual = Arrays.asList(result);
-			}
-		}
-
-		public CompilerResultTester expectSameAs(Token... inputs) {
-			final IExecutable<?> result = compiler.compile(tokenIterator(inputs));
-			Assert.assertTrue(result instanceof ExecutableList);
-			Assert.assertEquals(((ExecutableList<?>)result).getCommands(), actual);
-			return this;
-		}
-
-		public CompilerResultTester expect(IExecutable<?>... expected) {
-			Assert.assertEquals(Arrays.asList(expected), actual);
-			return this;
-		}
-	}
-
-	public static final IExecutable<String> CLOSE_QUOTE = rightBracketMarker(")");
-	public static final IExecutable<String> OPEN_QUOTE = leftBracketMarker("(");
-	public static final IExecutable<String> OPEN_ROOT_QUOTE_M = marker("<<" + TypedCalcConstants.MODIFIER_QUOTE);
-	public static final IExecutable<String> CLOSE_ROOT_QUOTE_M = marker(TypedCalcConstants.MODIFIER_QUOTE + ">>");
-
-	public static final IExecutable<String> OPEN_ROOT_QUOTE_S = marker("((" + TypedCalcConstants.SYMBOL_QUOTE);
-	public static final IExecutable<String> CLOSE_ROOT_QUOTE_S = marker(TypedCalcConstants.SYMBOL_QUOTE + "))");
-
-	public static IExecutable<String> leftBracketMarker(String value) {
-		return marker("<" + value);
-	}
-
-	public static IExecutable<String> rightBracketMarker(String value) {
-		return marker(value + ">");
-	}
-
-	public static IExecutable<String> valueMarker(String value) {
-		return marker("value:" + value);
-	}
-
-	public static IExecutable<String> rawValueMarker(Token token) {
-		return rawValueMarker(token.type, token.value);
-	}
-
-	public static IExecutable<String> rawValueMarker(TokenType type, String value) {
-		return marker("raw:" + type + ":" + value);
-	}
-
-	public static class MarkerNode implements IExprNode<String> {
-		private final IExecutable<String> value;
-
-		public MarkerNode(IExecutable<String> value) {
-			this.value = value;
-		}
-
-		@Override
-		public void flatten(List<IExecutable<String>> output) {
-			output.add(value);
-		}
-
-		@Override
-		public Iterable<IExprNode<String>> getChildren() {
-			return ImmutableList.of();
-		}
-	}
-
-	public static class QuoteNodeTestFactory implements IQuotedExprNodeFactory<String> {
-
-		@Override
-		public IExprNode<String> createValueNode(String value) {
-			return new MarkerNode(valueMarker(value));
-		}
-
-		@Override
-		public IExprNode<String> createValueNode(Token token) {
-			return new MarkerNode(token.type.isValue()? valueMarker(token.value) : rawValueMarker(token));
-		}
-
-		@Override
-		public IExprNode<String> createBracketNode(final String openingBracket, final String closingBracket, final List<IExprNode<String>> children) {
-			return new IExprNode<String>() {
-
-				@Override
-				public void flatten(List<IExecutable<String>> output) {
-					output.add(leftBracketMarker(openingBracket));
-					for (IExprNode<String> child : children)
-						child.flatten(output);
-					output.add(rightBracketMarker(closingBracket));
-				}
-
-				@Override
-				public Iterable<IExprNode<String>> getChildren() {
-					return children;
-				}
-			};
-		}
-	}
-
-	public static class QuotedCompilerState implements ICompilerState<String> {
-		private final QuotedParser<String> quotedParser = new QuotedParser<String>(VALUE_PARSER, new QuoteNodeTestFactory());
-
-		@Override
-		public IAstParser<String> getParser() {
-			return quotedParser;
-		}
-
-		@Override
-		public ISymbolCallStateTransition<String> getStateForSymbolCall(String symbol) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public IModifierStateTransition<String> getStateForModifier(String modifier) {
-			throw new UnsupportedOperationException();
-		}
-
-	}
-
-	public static class ModifierQuoteTransition implements IModifierStateTransition<String> {
-		private final String modifier;
-
-		public ModifierQuoteTransition(String modifier) {
-			this.modifier = modifier;
-		}
-
-		@Override
-		public IExprNode<String> createRootNode(IExprNode<String> child) {
-			return new DummyNode<String>(child) {
-				@Override
-				public void flatten(List<IExecutable<String>> output) {
-					output.add(marker("<<" + modifier));
-					super.flatten(output);
-					output.add(marker(modifier + ">>"));
-				}
-			};
-		}
-
-		@Override
-		public ICompilerState<String> getState() {
-			return new QuotedCompilerState();
-		}
-	}
-
-	public static class SymbolQuoteTransition implements ISymbolCallStateTransition<String> {
-		private final String symbol;
-
-		public SymbolQuoteTransition(String symbol) {
-			this.symbol = symbol;
-		}
-
-		@Override
-		public IExprNode<String> createRootNode(List<IExprNode<String>> children) {
-			return new ContainerNode<String>(children) {
-				@Override
-				public void flatten(List<IExecutable<String>> output) {
-					output.add(marker("((" + symbol));
-					for (IExprNode<String> child : args)
-						child.flatten(output);
-					output.add(marker(symbol + "))"));
-				}
-
-			};
-		}
-
-		@Override
-		public ICompilerState<String> getState() {
-			return new QuotedCompilerState();
-		}
-	}
-
-	public abstract static class TestCompilerState implements ICompilerState<String> {
-
-		@Override
-		public IModifierStateTransition<String> getStateForModifier(String modifier) {
-			if (modifier.equals(QUOTE_MODIFIER.value)) return new ModifierQuoteTransition(modifier);
-			throw new UnsupportedOperationException(modifier);
-		}
-
-		@Override
-		public ISymbolCallStateTransition<String> getStateForSymbolCall(final String symbol) {
-			if (symbol.equals(QUOTE_SYMBOL.value)) return new SymbolQuoteTransition(symbol);
-			return new ISymbolCallStateTransition<String>() {
-				@Override
-				public ICompilerState<String> getState() {
-					return TestCompilerState.this;
-				}
-
-				@Override
-				public IExprNode<String> createRootNode(List<IExprNode<String>> children) {
-					return new SymbolCallNode<String>(symbol, children);
-				}
-			};
-		}
 	}
 
 	public static class SymbolStub<E> implements ISymbol<E> {

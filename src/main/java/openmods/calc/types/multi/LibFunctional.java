@@ -4,10 +4,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
-import openmods.calc.BinaryFunction;
 import openmods.calc.Environment;
 import openmods.calc.Frame;
-import openmods.calc.SingleReturnCallable;
+import openmods.calc.symbol.BinaryFunction;
+import openmods.calc.symbol.SingleReturnCallable;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 

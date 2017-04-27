@@ -7,7 +7,7 @@ import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeToken;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
-import openmods.calc.UnaryOperator;
+import openmods.calc.executable.UnaryOperator;
 import openmods.reflection.TypeVariableHolder;
 
 public class TypedUnaryOperator extends UnaryOperator.Direct<TypedValue> {

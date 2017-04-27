@@ -1,5 +1,9 @@
 package openmods.calc;
 
+import openmods.calc.executable.IExecutable;
+import openmods.calc.symbol.ICallable;
+import openmods.calc.symbol.IGettable;
+import openmods.calc.symbol.ISymbol;
 import openmods.utils.Stack;
 
 public class Environment<E> {

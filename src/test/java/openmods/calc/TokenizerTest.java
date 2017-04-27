@@ -5,8 +5,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
 import java.util.Collection;
 import java.util.Iterator;
-import openmods.calc.parsing.Token;
-import openmods.calc.parsing.Tokenizer;
+import openmods.calc.parsing.token.Token;
+import openmods.calc.parsing.token.Tokenizer;
 import org.junit.Assert;
 import org.junit.Test;
 

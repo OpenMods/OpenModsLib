@@ -5,18 +5,18 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.Environment;
-import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
-import openmods.calc.IExecutable;
-import openmods.calc.SymbolCall;
-import openmods.calc.SymbolMap;
-import openmods.calc.Value;
-import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.ISymbolCallStateTransition;
-import openmods.calc.parsing.SameStateSymbolTransition;
-import openmods.calc.parsing.SymbolCallNode;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.SymbolCall;
+import openmods.calc.executable.Value;
+import openmods.calc.parsing.ast.IParserState;
+import openmods.calc.parsing.ast.ISymbolCallStateTransition;
+import openmods.calc.parsing.ast.SameStateSymbolTransition;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.SymbolCallNode;
+import openmods.calc.symbol.FixedCallable;
+import openmods.calc.symbol.SymbolMap;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
@@ -43,9 +43,9 @@ public class PromiseExpressionFactory {
 		}
 	}
 
-	private class DelayStateTransition extends SameStateSymbolTransition<TypedValue> {
+	private class DelayStateTransition extends SameStateSymbolTransition<IExprNode<TypedValue>> {
 
-		public DelayStateTransition(ICompilerState<TypedValue> compilerState) {
+		public DelayStateTransition(IParserState<IExprNode<TypedValue>> compilerState) {
 			super(compilerState);
 		}
 
@@ -56,7 +56,7 @@ public class PromiseExpressionFactory {
 
 	}
 
-	public ISymbolCallStateTransition<TypedValue> createStateTransition(ICompilerState<TypedValue> compilerState) {
+	public ISymbolCallStateTransition<IExprNode<TypedValue>> createStateTransition(IParserState<IExprNode<TypedValue>> compilerState) {
 		return new DelayStateTransition(compilerState);
 	}
 

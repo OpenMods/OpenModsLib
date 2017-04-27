@@ -2,20 +2,21 @@ package openmods.calc.types.fraction;
 
 import com.google.common.collect.Ordering;
 import java.util.Random;
-import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Environment;
 import openmods.calc.ExprType;
-import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.IValuePrinter;
-import openmods.calc.NullaryFunction;
-import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
-import openmods.calc.UnaryFunction;
-import openmods.calc.UnaryOperator;
+import openmods.calc.executable.BinaryOperator;
+import openmods.calc.executable.Operator;
+import openmods.calc.executable.OperatorDictionary;
+import openmods.calc.executable.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
 import openmods.calc.parsing.CommonSimpleSymbolFactory;
 import openmods.calc.parsing.IValueParser;
+import openmods.calc.symbol.GenericFunctions.AccumulatorFunction;
+import openmods.calc.symbol.NullaryFunction;
+import openmods.calc.symbol.UnaryFunction;
 import org.apache.commons.lang3.math.Fraction;
 
 public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fraction, M> {
@@ -154,50 +155,50 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 	private static final int PRIORITY_ASSIGN = 0;
 
 	@Override
-	protected void configureOperators(OperatorDictionary<Fraction> operators) {
-		operators.registerUnaryOperator(new UnaryOperator.Direct<Fraction>("neg") {
+	protected void configureOperators(OperatorDictionary<Operator<Fraction>> operators) {
+		operators.registerOperator(new UnaryOperator.Direct<Fraction>("neg") {
 			@Override
 			public Fraction execute(Fraction value) {
 				return value.negate();
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<Fraction>("+", PRIORITY_ADD) {
+		operators.registerOperator(new BinaryOperator.Direct<Fraction>("+", PRIORITY_ADD) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.add(right);
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator.Direct<Fraction>("+") {
+		operators.registerOperator(new UnaryOperator.Direct<Fraction>("+") {
 			@Override
 			public Fraction execute(Fraction value) {
 				return value;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<Fraction>("-", PRIORITY_ADD) {
+		operators.registerOperator(new BinaryOperator.Direct<Fraction>("-", PRIORITY_ADD) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.subtract(right);
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator.Direct<Fraction>("-") {
+		operators.registerOperator(new UnaryOperator.Direct<Fraction>("-") {
 			@Override
 			public Fraction execute(Fraction value) {
 				return value.negate();
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<Fraction>("*", PRIORITY_MULTIPLY) {
+		operators.registerOperator(new BinaryOperator.Direct<Fraction>("*", PRIORITY_MULTIPLY) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.multiplyBy(right);
 			}
 		}).setDefault();
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<Fraction>("/", PRIORITY_MULTIPLY) {
+		operators.registerOperator(new BinaryOperator.Direct<Fraction>("/", PRIORITY_MULTIPLY) {
 			@Override
 			public Fraction execute(Fraction left, Fraction right) {
 				return left.divideBy(right);
@@ -214,7 +215,7 @@ public class FractionCalculatorFactory<M> extends SimpleCalculatorFactory<Fracti
 
 		return new FractionCalculatorFactory<ExprType>() {
 			@Override
-			protected void configureOperators(OperatorDictionary<Fraction> operators) {
+			protected void configureOperators(OperatorDictionary<Operator<Fraction>> operators) {
 				super.configureOperators(operators);
 				letFactory.registerSeparators(operators);
 			}

@@ -1,6 +1,8 @@
 package openmods.calc;
 
 import java.util.Set;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.symbol.CompiledFunction;
 import openmods.config.simpler.ConfigurableClassAdapter;
 
 public class Calculator<E, M> {

@@ -3,16 +3,16 @@ package openmods.calc.types.multi;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
-import openmods.calc.BinaryOperator;
 import openmods.calc.Environment;
-import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
-import openmods.calc.IExecutable;
-import openmods.calc.UnaryOperator;
-import openmods.calc.parsing.BinaryOpNode;
-import openmods.calc.parsing.BracketContainerNode;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
+import openmods.calc.executable.BinaryOperator;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.UnaryOperator;
+import openmods.calc.parsing.node.BinaryOpNode;
+import openmods.calc.parsing.node.BracketContainerNode;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.MappedExprNodeFactory.IBinaryExprNodeFactory;
+import openmods.calc.symbol.FixedCallable;
 import openmods.utils.Stack;
 
 public class LambdaExpressionFactory {

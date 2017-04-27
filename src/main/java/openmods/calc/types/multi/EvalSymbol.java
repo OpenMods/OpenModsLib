@@ -6,8 +6,8 @@ import openmods.calc.Compilers;
 import openmods.calc.ExprType;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
-import openmods.calc.ICallable;
-import openmods.calc.IExecutable;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.symbol.ICallable;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 

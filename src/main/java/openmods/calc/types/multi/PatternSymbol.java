@@ -1,8 +1,8 @@
 package openmods.calc.types.multi;
 
 import openmods.calc.Environment;
-import openmods.calc.SymbolMap;
-import openmods.calc.UnaryFunction;
+import openmods.calc.symbol.SymbolMap;
+import openmods.calc.symbol.UnaryFunction;
 
 public class PatternSymbol {
 

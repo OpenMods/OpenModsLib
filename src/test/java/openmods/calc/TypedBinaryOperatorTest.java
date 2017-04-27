@@ -1,6 +1,7 @@
 package openmods.calc;
 
 import com.google.common.base.Optional;
+import openmods.calc.executable.BinaryOperator;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypeDomain.Coercion;
 import openmods.calc.types.multi.TypedBinaryOperator;

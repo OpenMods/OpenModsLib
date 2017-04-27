@@ -3,6 +3,7 @@ package openmods.calc;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import openmods.calc.executable.IExecutable;
 
 public class Compilers<E, M> {
 	public interface ICompiler<E> {

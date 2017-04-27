@@ -9,18 +9,33 @@ import com.google.common.collect.PeekingIterator;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import openmods.calc.BinaryOperator;
 import openmods.calc.Environment;
 import openmods.calc.ExecutionErrorException;
 import openmods.calc.ExprType;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
-import openmods.calc.ICallable;
 import openmods.calc.ICompilerMapFactory;
-import openmods.calc.IExecutable;
-import openmods.calc.IGettable;
-import openmods.calc.OperatorDictionary;
-import openmods.calc.SymbolMap;
+import openmods.calc.executable.BinaryOperator;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.Operator;
+import openmods.calc.executable.OperatorDictionary;
+import openmods.calc.parsing.ast.IParserState;
+import openmods.calc.parsing.ast.ISymbolCallStateTransition;
+import openmods.calc.parsing.ast.MappedParserState;
+import openmods.calc.parsing.ast.SingleStateTransition;
+import openmods.calc.parsing.node.BinaryOpNode;
+import openmods.calc.parsing.node.DefaultExprNodeFactory;
+import openmods.calc.parsing.node.ExprUtils;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.MappedExprNodeFactory;
+import openmods.calc.parsing.node.SingleExecutableNode;
+import openmods.calc.parsing.node.SquareBracketContainerNode;
+import openmods.calc.parsing.node.SymbolCallNode;
+import openmods.calc.parsing.node.SymbolGetNode;
+import openmods.calc.parsing.token.Token;
+import openmods.calc.symbol.ICallable;
+import openmods.calc.symbol.IGettable;
+import openmods.calc.symbol.SymbolMap;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 import openmods.utils.StackValidationException;
@@ -31,7 +46,7 @@ public class CommonSimpleSymbolFactory<E> {
 	public static final String SYMBOL_FAIL = "fail";
 	public static final String SYMBOL_CONSTANT = "const";
 
-	private class FailStateTransition extends SingleStateTransition.ForSymbol<E> {
+	private class FailStateTransition extends SingleStateTransition.ForSymbol<IExprNode<E>> {
 		@Override
 		public IExprNode<E> createRootNode(List<IExprNode<E>> children) {
 			Preconditions.checkState(children.size() <= 1, "'fail' expects at most single argument, got %s", children.size());
@@ -48,7 +63,7 @@ public class CommonSimpleSymbolFactory<E> {
 		}
 
 		@Override
-		public IExprNode<E> parseSymbol(ICompilerState<E> state, PeekingIterator<Token> input) {
+		public IExprNode<E> parseSymbol(IParserState<IExprNode<E>> state, PeekingIterator<Token> input) {
 			final Token arg = input.next();
 			final String failCause = arg.value;
 			return new SingleExecutableNode<E>(new IExecutable<E>() {
@@ -67,7 +82,7 @@ public class CommonSimpleSymbolFactory<E> {
 		}
 
 		@Override
-		protected void configureCompilerStateCommon(MappedCompilerState<E> compilerState, Environment<E> environment) {
+		protected void configureCompilerStateCommon(MappedParserState<IExprNode<E>> compilerState, Environment<E> environment) {
 			super.configureCompilerStateCommon(compilerState, environment);
 			compilerState.addStateTransition(SYMBOL_LET, createParserTransition(compilerState));
 			compilerState.addStateTransition(SYMBOL_FAIL, new FailStateTransition());
@@ -244,11 +259,11 @@ public class CommonSimpleSymbolFactory<E> {
 		}
 	}
 
-	public ISymbolCallStateTransition<E> createParserTransition(final ICompilerState<E> currentState) {
-		return new ISymbolCallStateTransition<E>() {
+	public ISymbolCallStateTransition<IExprNode<E>> createParserTransition(final IParserState<IExprNode<E>> currentState) {
+		return new ISymbolCallStateTransition<IExprNode<E>>() {
 
 			@Override
-			public ICompilerState<E> getState() {
+			public IParserState<IExprNode<E>> getState() {
 				return currentState;
 			}
 
@@ -264,9 +279,9 @@ public class CommonSimpleSymbolFactory<E> {
 		return new ExtendedCompilerMapFactory();
 	}
 
-	public void registerSeparators(OperatorDictionary<E> operators) {
+	public void registerSeparators(OperatorDictionary<Operator<E>> operators) {
 		for (BinaryOperator<E> separator : keyValueSeparators)
-			operators.registerBinaryOperator(separator);
+			operators.registerOperator(separator);
 	}
 
 }

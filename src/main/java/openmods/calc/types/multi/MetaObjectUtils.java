@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import openmods.calc.Frame;
-import openmods.calc.ICallable;
+import openmods.calc.symbol.ICallable;
 import openmods.calc.types.multi.MetaObject.SlotDir;
 import openmods.utils.OptionalInt;
 

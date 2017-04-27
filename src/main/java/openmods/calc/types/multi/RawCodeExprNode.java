@@ -2,9 +2,9 @@ package openmods.calc.types.multi;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import openmods.calc.IExecutable;
-import openmods.calc.Value;
-import openmods.calc.parsing.IExprNode;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.Value;
+import openmods.calc.parsing.node.IExprNode;
 
 public class RawCodeExprNode implements IExprNode<TypedValue> {
 	private final TypeDomain domain;

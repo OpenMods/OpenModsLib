@@ -14,6 +14,11 @@ import java.util.regex.Pattern;
 import openmods.calc.CalcTestUtils.CalcCheck;
 import openmods.calc.CalcTestUtils.CallableStub;
 import openmods.calc.CalcTestUtils.SymbolStub;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.symbol.BinaryFunction;
+import openmods.calc.symbol.ICallable;
+import openmods.calc.symbol.NullaryFunction;
+import openmods.calc.symbol.UnaryFunction;
 import openmods.calc.types.multi.CallableValue;
 import openmods.calc.types.multi.Cons;
 import openmods.calc.types.multi.MetaObject;
@@ -1436,6 +1441,11 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testPrefixNullaryLambdaApply() {
+		prefix("((-> [] 2))").expectResult(i(2));
+	}
+
+	@Test
 	public void testUnaryLambdaOperator() {
 		infix("iscallable(a->a+2)").expectResult(TRUE);
 
@@ -1450,12 +1460,22 @@ public class TypedValueCalculatorTest {
 	}
 
 	@Test
+	public void testPrefixUnaryLambdaApply() {
+		prefix("((-> [a] (+ a 2)) 2)").expectResult(i(4));
+	}
+
+	@Test
 	public void testBinaryArgLambdaOperator() {
 		infix("iscallable((a, b) -> a + b)").expectResult(TRUE);
 
 		infix("((a, b)->a-b)(1, 2)").expectResult(i(-1));
 
 		prefix("(apply (-> [a, b] (- a b)) 2 3)").expectResult(i(-1));
+	}
+
+	@Test
+	public void testPrefixBinaryLambdaApply() {
+		prefix("((-> [a, b] (- a b)) 2 3)").expectResult(i(-1));
 	}
 
 	@Test

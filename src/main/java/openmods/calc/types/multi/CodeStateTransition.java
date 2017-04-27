@@ -2,18 +2,18 @@ package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
 import java.util.List;
-import openmods.calc.IExecutable;
-import openmods.calc.Value;
-import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.SameStateSymbolTransition;
-import openmods.calc.parsing.SymbolCallNode;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.Value;
+import openmods.calc.parsing.ast.IParserState;
+import openmods.calc.parsing.ast.SameStateSymbolTransition;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.SymbolCallNode;
 
-public class CodeStateTransition extends SameStateSymbolTransition<TypedValue> {
+public class CodeStateTransition extends SameStateSymbolTransition<IExprNode<TypedValue>> {
 
 	private TypeDomain domain;
 
-	public CodeStateTransition(TypeDomain domain, ICompilerState<TypedValue> parentParserState) {
+	public CodeStateTransition(TypeDomain domain, IParserState<IExprNode<TypedValue>> parentParserState) {
 		super(parentParserState);
 		this.domain = domain;
 	}

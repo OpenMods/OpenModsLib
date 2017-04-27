@@ -2,22 +2,23 @@ package openmods.calc.types.bigint;
 
 import java.math.BigInteger;
 import java.util.Random;
-import openmods.calc.BinaryFunction;
-import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Environment;
 import openmods.calc.ExprType;
-import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.IValuePrinter;
-import openmods.calc.NullaryFunction;
-import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
-import openmods.calc.TernaryFunction;
-import openmods.calc.UnaryFunction;
-import openmods.calc.UnaryOperator;
+import openmods.calc.executable.BinaryOperator;
+import openmods.calc.executable.Operator;
+import openmods.calc.executable.OperatorDictionary;
+import openmods.calc.executable.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
 import openmods.calc.parsing.CommonSimpleSymbolFactory;
 import openmods.calc.parsing.IValueParser;
+import openmods.calc.symbol.BinaryFunction;
+import openmods.calc.symbol.GenericFunctions.AccumulatorFunction;
+import openmods.calc.symbol.NullaryFunction;
+import openmods.calc.symbol.TernaryFunction;
+import openmods.calc.symbol.UnaryFunction;
 
 public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteger, M> {
 
@@ -155,106 +156,106 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 	private static final int PRIORITY_ASSIGN = 1;
 
 	@Override
-	protected void configureOperators(OperatorDictionary<BigInteger> operators) {
-		operators.registerUnaryOperator(new UnaryOperator.Direct<BigInteger>("~") {
+	protected void configureOperators(OperatorDictionary<Operator<BigInteger>> operators) {
+		operators.registerOperator(new UnaryOperator.Direct<BigInteger>("~") {
 			@Override
 			public BigInteger execute(BigInteger value) {
 				return value.not();
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator.Direct<BigInteger>("neg") {
+		operators.registerOperator(new UnaryOperator.Direct<BigInteger>("neg") {
 			@Override
 			public BigInteger execute(BigInteger value) {
 				return value.negate();
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("^", PRIORITY_BITWISE) {
+		operators.registerOperator(new BinaryOperator.Direct<BigInteger>("^", PRIORITY_BITWISE) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.xor(right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("|", PRIORITY_BITWISE) {
+		operators.registerOperator(new BinaryOperator.Direct<BigInteger>("|", PRIORITY_BITWISE) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.or(right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("&", PRIORITY_BITWISE) {
+		operators.registerOperator(new BinaryOperator.Direct<BigInteger>("&", PRIORITY_BITWISE) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.and(right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("+", PRIORITY_ADD) {
+		operators.registerOperator(new BinaryOperator.Direct<BigInteger>("+", PRIORITY_ADD) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.add(right);
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator.Direct<BigInteger>("+") {
+		operators.registerOperator(new UnaryOperator.Direct<BigInteger>("+") {
 			@Override
 			public BigInteger execute(BigInteger value) {
 				return value;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("-", PRIORITY_ADD) {
+		operators.registerOperator(new BinaryOperator.Direct<BigInteger>("-", PRIORITY_ADD) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.subtract(right);
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator.Direct<BigInteger>("-") {
+		operators.registerOperator(new UnaryOperator.Direct<BigInteger>("-") {
 			@Override
 			public BigInteger execute(BigInteger value) {
 				return value.negate();
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("*", PRIORITY_MULTIPLY) {
+		operators.registerOperator(new BinaryOperator.Direct<BigInteger>("*", PRIORITY_MULTIPLY) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.multiply(right);
 			}
 		}).setDefault();
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("/", PRIORITY_MULTIPLY) {
+		operators.registerOperator(new BinaryOperator.Direct<BigInteger>("/", PRIORITY_MULTIPLY) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.divide(right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("%", PRIORITY_MULTIPLY) {
+		operators.registerOperator(new BinaryOperator.Direct<BigInteger>("%", PRIORITY_MULTIPLY) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.mod(right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("**", PRIORITY_EXP) {
+		operators.registerOperator(new BinaryOperator.Direct<BigInteger>("**", PRIORITY_EXP) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.pow(right.intValue());
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>("<<", PRIORITY_BITSHIFT) {
+		operators.registerOperator(new BinaryOperator.Direct<BigInteger>("<<", PRIORITY_BITSHIFT) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.shiftLeft(right.intValue());
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<BigInteger>(">>", PRIORITY_BITSHIFT) {
+		operators.registerOperator(new BinaryOperator.Direct<BigInteger>(">>", PRIORITY_BITSHIFT) {
 			@Override
 			public BigInteger execute(BigInteger left, BigInteger right) {
 				return left.shiftRight(right.intValue());
@@ -271,7 +272,7 @@ public class BigIntCalculatorFactory<M> extends SimpleCalculatorFactory<BigInteg
 
 		return new BigIntCalculatorFactory<ExprType>() {
 			@Override
-			protected void configureOperators(OperatorDictionary<BigInteger> operators) {
+			protected void configureOperators(OperatorDictionary<Operator<BigInteger>> operators) {
 				super.configureOperators(operators);
 				letFactory.registerSeparators(operators);
 			}

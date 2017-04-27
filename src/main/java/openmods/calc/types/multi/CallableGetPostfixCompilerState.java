@@ -1,22 +1,22 @@
 package openmods.calc.types.multi;
 
-import openmods.calc.BinaryOperator;
-import openmods.calc.ICallable;
-import openmods.calc.IExecutable;
-import openmods.calc.OperatorDictionary;
-import openmods.calc.UnaryOperator;
-import openmods.calc.Value;
-import openmods.calc.parsing.CallableOperatorWrappers;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.Operator;
+import openmods.calc.executable.Value;
 import openmods.calc.parsing.SymbolGetPostfixCompilerState;
-import openmods.calc.parsing.Token;
-import openmods.calc.parsing.TokenType;
+import openmods.calc.parsing.ast.IOperatorDictionary;
+import openmods.calc.parsing.ast.OperatorArity;
+import openmods.calc.parsing.token.Token;
+import openmods.calc.parsing.token.TokenType;
+import openmods.calc.symbol.CallableOperatorWrapper;
+import openmods.calc.symbol.ICallable;
 
 public class CallableGetPostfixCompilerState extends SymbolGetPostfixCompilerState<TypedValue> {
 
-	private final OperatorDictionary<TypedValue> operators;
+	private final IOperatorDictionary<Operator<TypedValue>> operators;
 	private final TypeDomain domain;
 
-	public CallableGetPostfixCompilerState(OperatorDictionary<TypedValue> operators, TypeDomain domain) {
+	public CallableGetPostfixCompilerState(IOperatorDictionary<Operator<TypedValue>> operators, TypeDomain domain) {
 		this.operators = operators;
 		this.domain = domain;
 	}
@@ -24,13 +24,10 @@ public class CallableGetPostfixCompilerState extends SymbolGetPostfixCompilerSta
 	@Override
 	protected IExecutable<TypedValue> parseToken(Token token) {
 		if (token.type == TokenType.OPERATOR) {
-			final BinaryOperator<TypedValue> binaryOp = operators.getBinaryOperator(token.value);
-			if (binaryOp != null) return createGetter(new CallableOperatorWrappers.Binary(binaryOp));
-
-			final UnaryOperator<TypedValue> unaryOp = operators.getUnaryOperator(token.value);
-			if (unaryOp != null) return createGetter(new CallableOperatorWrappers.Unary(unaryOp));
-
-			return rejectToken();
+			Operator<TypedValue> op = operators.getOperator(token.value, OperatorArity.BINARY);
+			if (op == null) op = operators.getOperator(token.value, OperatorArity.UNARY);
+			if (op == null) return rejectToken();
+			return createGetter(new CallableOperatorWrapper(op));
 		}
 
 		return super.parseToken(token);

@@ -1,5 +1,9 @@
 package openmods.calc;
 
+import openmods.calc.symbol.LocalSymbolMap;
+import openmods.calc.symbol.ProtectionSymbolMap;
+import openmods.calc.symbol.SymbolMap;
+import openmods.calc.symbol.TopSymbolMap;
 import openmods.utils.Stack;
 
 public class FrameFactory {

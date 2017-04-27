@@ -2,13 +2,13 @@ package openmods.calc.types.multi;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import openmods.calc.BinaryOperator;
-import openmods.calc.IExecutable;
-import openmods.calc.SymbolCall;
-import openmods.calc.Value;
-import openmods.calc.parsing.BinaryOpNode;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.MappedExprNodeFactory.IBinaryExprNodeFactory;
+import openmods.calc.executable.BinaryOperator;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.SymbolCall;
+import openmods.calc.executable.Value;
+import openmods.calc.parsing.node.BinaryOpNode;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.MappedExprNodeFactory.IBinaryExprNodeFactory;
 
 public class LazyBinaryOperatorNode extends BinaryOpNode<TypedValue> {
 

@@ -2,11 +2,11 @@ package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
 import java.util.List;
-import openmods.calc.ExecutableList;
 import openmods.calc.Frame;
-import openmods.calc.IExecutable;
-import openmods.calc.parsing.ExprUtils;
-import openmods.calc.parsing.IExprNode;
+import openmods.calc.executable.ExecutableList;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.parsing.node.ExprUtils;
+import openmods.calc.parsing.node.IExprNode;
 
 public class Code {
 	private final IExecutable<TypedValue> code;

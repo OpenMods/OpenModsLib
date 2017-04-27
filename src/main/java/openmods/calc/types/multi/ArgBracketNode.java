@@ -2,9 +2,9 @@ package openmods.calc.types.multi;
 
 import com.google.common.base.Preconditions;
 import java.util.List;
-import openmods.calc.IExecutable;
-import openmods.calc.parsing.BracketContainerNode;
-import openmods.calc.parsing.IExprNode;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.parsing.node.BracketContainerNode;
+import openmods.calc.parsing.node.IExprNode;
 
 public class ArgBracketNode extends BracketContainerNode<TypedValue> {
 

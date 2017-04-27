@@ -13,7 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 import openmods.calc.Frame;
-import openmods.calc.UnaryFunction;
+import openmods.calc.symbol.UnaryFunction;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
 import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;

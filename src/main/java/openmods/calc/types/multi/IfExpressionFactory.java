@@ -4,16 +4,16 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import openmods.calc.Environment;
-import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
-import openmods.calc.IExecutable;
-import openmods.calc.SymbolCall;
-import openmods.calc.Value;
-import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.ISymbolCallStateTransition;
-import openmods.calc.parsing.SameStateSymbolTransition;
-import openmods.calc.parsing.SymbolCallNode;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.SymbolCall;
+import openmods.calc.executable.Value;
+import openmods.calc.parsing.ast.IParserState;
+import openmods.calc.parsing.ast.ISymbolCallStateTransition;
+import openmods.calc.parsing.ast.SameStateSymbolTransition;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.SymbolCallNode;
+import openmods.calc.symbol.FixedCallable;
 
 public class IfExpressionFactory {
 
@@ -44,8 +44,8 @@ public class IfExpressionFactory {
 
 	}
 
-	private class IfStateTransition extends SameStateSymbolTransition<TypedValue> {
-		public IfStateTransition(ICompilerState<TypedValue> parentState) {
+	private class IfStateTransition extends SameStateSymbolTransition<IExprNode<TypedValue>> {
+		public IfStateTransition(IParserState<IExprNode<TypedValue>> parentState) {
 			super(parentState);
 		}
 
@@ -55,7 +55,7 @@ public class IfExpressionFactory {
 		}
 	}
 
-	public ISymbolCallStateTransition<TypedValue> createStateTransition(ICompilerState<TypedValue> parentState) {
+	public ISymbolCallStateTransition<IExprNode<TypedValue>> createStateTransition(IParserState<IExprNode<TypedValue>> parentState) {
 		return new IfStateTransition(parentState);
 	}
 

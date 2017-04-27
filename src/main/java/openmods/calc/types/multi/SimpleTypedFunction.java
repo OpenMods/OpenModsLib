@@ -1,7 +1,7 @@
 package openmods.calc.types.multi;
 
 import openmods.calc.Frame;
-import openmods.calc.ICallable;
+import openmods.calc.symbol.ICallable;
 import openmods.utils.OptionalInt;
 
 public abstract class SimpleTypedFunction implements ICallable<TypedValue> {

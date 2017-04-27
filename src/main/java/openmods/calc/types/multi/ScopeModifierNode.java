@@ -3,14 +3,14 @@ package openmods.calc.types.multi;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import openmods.calc.BinaryOperator;
-import openmods.calc.IExecutable;
-import openmods.calc.SymbolCall;
-import openmods.calc.Value;
-import openmods.calc.parsing.BinaryOpNode;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.SquareBracketContainerNode;
-import openmods.calc.parsing.SymbolCallNode;
+import openmods.calc.executable.BinaryOperator;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.SymbolCall;
+import openmods.calc.executable.Value;
+import openmods.calc.parsing.node.BinaryOpNode;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.SquareBracketContainerNode;
+import openmods.calc.parsing.node.SymbolCallNode;
 
 public abstract class ScopeModifierNode extends SymbolCallNode<TypedValue> {
 

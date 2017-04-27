@@ -1,6 +1,9 @@
 package openmods.calc;
 
+import openmods.calc.executable.Operator;
+import openmods.calc.executable.OperatorDictionary;
 import openmods.calc.parsing.IValueParser;
+import openmods.calc.symbol.GenericFunctions;
 
 public abstract class SimpleCalculatorFactory<E, M> {
 
@@ -16,10 +19,10 @@ public abstract class SimpleCalculatorFactory<E, M> {
 
 	protected abstract void configureEnvironment(Environment<E> env);
 
-	protected abstract void configureOperators(OperatorDictionary<E> operators);
+	protected abstract void configureOperators(OperatorDictionary<Operator<E>> operators);
 
 	public Calculator<E, M> create(ICompilerMapFactory<E, M> compilersFactory) {
-		final OperatorDictionary<E> operators = new OperatorDictionary<E>();
+		final OperatorDictionary<Operator<E>> operators = new OperatorDictionary<Operator<E>>();
 		configureOperators(operators);
 		final Environment<E> env = createEnvironment();
 		GenericFunctions.createStackManipulationFunctions(env);

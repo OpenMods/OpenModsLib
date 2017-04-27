@@ -3,6 +3,7 @@ package openmods.calc;
 import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import openmods.Log;
+import openmods.calc.executable.IExecutable;
 
 public class SingleExprEvaluator<E, M> {
 

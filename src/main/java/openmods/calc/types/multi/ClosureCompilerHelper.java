@@ -3,13 +3,13 @@ package openmods.calc.types.multi;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import java.util.List;
-import openmods.calc.IExecutable;
-import openmods.calc.SymbolCall;
-import openmods.calc.UnaryOperator;
-import openmods.calc.Value;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.SymbolGetNode;
-import openmods.calc.parsing.UnaryOpNode;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.SymbolCall;
+import openmods.calc.executable.UnaryOperator;
+import openmods.calc.executable.Value;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.SymbolGetNode;
+import openmods.calc.parsing.node.UnaryOpNode;
 
 public class ClosureCompilerHelper {
 	private final TypeDomain domain;

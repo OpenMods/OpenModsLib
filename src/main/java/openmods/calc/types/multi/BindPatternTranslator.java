@@ -2,7 +2,7 @@ package openmods.calc.types.multi;
 
 import java.util.Collection;
 import openmods.calc.Frame;
-import openmods.calc.SymbolMap;
+import openmods.calc.symbol.SymbolMap;
 
 public class BindPatternTranslator {
 

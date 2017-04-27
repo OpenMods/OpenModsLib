@@ -1,13 +1,13 @@
 package openmods.calc.types.multi;
 
-import openmods.calc.IExecutable;
-import openmods.calc.Value;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.Value;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.SingleTokenPostfixCompilerState;
-import openmods.calc.parsing.Token;
-import openmods.calc.parsing.TokenType;
+import openmods.calc.parsing.postfix.SingleTokenPostfixParserState;
+import openmods.calc.parsing.token.Token;
+import openmods.calc.parsing.token.TokenType;
 
-public class QuotePostfixCompilerState extends SingleTokenPostfixCompilerState<TypedValue> {
+public class QuotePostfixCompilerState extends SingleTokenPostfixParserState<IExecutable<TypedValue>> {
 
 	private final IValueParser<TypedValue> valueParser;
 	private final TypeDomain domain;

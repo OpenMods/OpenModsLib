@@ -1,6 +1,7 @@
 package openmods.calc;
 
 import com.google.common.base.Optional;
+import openmods.calc.executable.UnaryOperator;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedUnaryOperator;
 import openmods.calc.types.multi.TypedUnaryOperator.IDefaultOperation;

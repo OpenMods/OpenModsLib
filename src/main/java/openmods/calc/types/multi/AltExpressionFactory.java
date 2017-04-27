@@ -9,22 +9,22 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
-import openmods.calc.BinaryOperator;
 import openmods.calc.Environment;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
-import openmods.calc.ICallable;
-import openmods.calc.IExecutable;
-import openmods.calc.SymbolCall;
-import openmods.calc.SymbolMap;
-import openmods.calc.Value;
-import openmods.calc.parsing.BinaryOpNode;
-import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.ISymbolCallStateTransition;
-import openmods.calc.parsing.SameStateSymbolTransition;
-import openmods.calc.parsing.SymbolCallNode;
-import openmods.calc.parsing.SymbolGetNode;
+import openmods.calc.executable.BinaryOperator;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.SymbolCall;
+import openmods.calc.executable.Value;
+import openmods.calc.parsing.ast.IParserState;
+import openmods.calc.parsing.ast.ISymbolCallStateTransition;
+import openmods.calc.parsing.ast.SameStateSymbolTransition;
+import openmods.calc.parsing.node.BinaryOpNode;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.SymbolCallNode;
+import openmods.calc.parsing.node.SymbolGetNode;
+import openmods.calc.symbol.ICallable;
+import openmods.calc.symbol.SymbolMap;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
@@ -118,9 +118,9 @@ public class AltExpressionFactory {
 
 	}
 
-	public ISymbolCallStateTransition<TypedValue> createStateTransition(ICompilerState<TypedValue> parentState) {
-		class AltStateTransition extends SameStateSymbolTransition<TypedValue> {
-			public AltStateTransition(ICompilerState<TypedValue> parentState) {
+	public ISymbolCallStateTransition<IExprNode<TypedValue>> createStateTransition(IParserState<IExprNode<TypedValue>> parentState) {
+		class AltStateTransition extends SameStateSymbolTransition<IExprNode<TypedValue>> {
+			public AltStateTransition(IParserState<IExprNode<TypedValue>> parentState) {
 				super(parentState);
 			}
 

@@ -1,21 +1,22 @@
 package openmods.calc.types.fp;
 
 import java.util.Random;
-import openmods.calc.BinaryFunction;
-import openmods.calc.BinaryOperator;
 import openmods.calc.Calculator;
 import openmods.calc.Environment;
 import openmods.calc.ExprType;
-import openmods.calc.GenericFunctions.AccumulatorFunction;
 import openmods.calc.IValuePrinter;
-import openmods.calc.NullaryFunction;
-import openmods.calc.OperatorDictionary;
 import openmods.calc.SimpleCalculatorFactory;
-import openmods.calc.UnaryFunction;
-import openmods.calc.UnaryOperator;
+import openmods.calc.executable.BinaryOperator;
+import openmods.calc.executable.Operator;
+import openmods.calc.executable.OperatorDictionary;
+import openmods.calc.executable.UnaryOperator;
 import openmods.calc.parsing.BasicCompilerMapFactory;
 import openmods.calc.parsing.CommonSimpleSymbolFactory;
 import openmods.calc.parsing.IValueParser;
+import openmods.calc.symbol.BinaryFunction;
+import openmods.calc.symbol.GenericFunctions.AccumulatorFunction;
+import openmods.calc.symbol.NullaryFunction;
+import openmods.calc.symbol.UnaryFunction;
 
 public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, M> {
 	public static final double NULL_VALUE = 0.0;
@@ -267,71 +268,71 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 	private static final int PRIORITY_ASSIGN = 1;
 
 	@Override
-	protected void configureOperators(OperatorDictionary<Double> operators) {
-		operators.registerUnaryOperator(new UnaryOperator.Direct<Double>("neg") {
+	protected void configureOperators(OperatorDictionary<Operator<Double>> operators) {
+		operators.registerOperator(new UnaryOperator.Direct<Double>("neg") {
 			@Override
 			public Double execute(Double value) {
 				return -value;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("+", PRIORITY_ADD) {
+		operators.registerOperator(new BinaryOperator.Direct<Double>("+", PRIORITY_ADD) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left + right;
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator.Direct<Double>("+") {
+		operators.registerOperator(new UnaryOperator.Direct<Double>("+") {
 			@Override
 			public Double execute(Double value) {
 				return +value;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("-", PRIORITY_ADD) {
+		operators.registerOperator(new BinaryOperator.Direct<Double>("-", PRIORITY_ADD) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left - right;
 			}
 		});
 
-		operators.registerUnaryOperator(new UnaryOperator.Direct<Double>("-") {
+		operators.registerOperator(new UnaryOperator.Direct<Double>("-") {
 			@Override
 			public Double execute(Double value) {
 				return -value;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("*", PRIORITY_MULTIPLY) {
+		operators.registerOperator(new BinaryOperator.Direct<Double>("*", PRIORITY_MULTIPLY) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left * right;
 			}
 		}).setDefault();
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("/", PRIORITY_MULTIPLY) {
+		operators.registerOperator(new BinaryOperator.Direct<Double>("/", PRIORITY_MULTIPLY) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left / right;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("%", PRIORITY_MULTIPLY) {
+		operators.registerOperator(new BinaryOperator.Direct<Double>("%", PRIORITY_MULTIPLY) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return left % right;
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("^", PRIORITY_POWER) {
+		operators.registerOperator(new BinaryOperator.Direct<Double>("^", PRIORITY_POWER) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return Math.pow(left, right);
 			}
 		});
 
-		operators.registerBinaryOperator(new BinaryOperator.Direct<Double>("**", PRIORITY_POWER) {
+		operators.registerOperator(new BinaryOperator.Direct<Double>("**", PRIORITY_POWER) {
 			@Override
 			public Double execute(Double left, Double right) {
 				return Math.pow(left, right);
@@ -348,7 +349,7 @@ public class DoubleCalculatorFactory<M> extends SimpleCalculatorFactory<Double, 
 
 		return new DoubleCalculatorFactory<ExprType>() {
 			@Override
-			protected void configureOperators(OperatorDictionary<Double> operators) {
+			protected void configureOperators(OperatorDictionary<Operator<Double>> operators) {
 				super.configureOperators(operators);
 				letFactory.registerSeparators(operators);
 			}

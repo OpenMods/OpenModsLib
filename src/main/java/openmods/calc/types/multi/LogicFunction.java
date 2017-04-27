@@ -3,7 +3,7 @@ package openmods.calc.types.multi;
 import java.util.Iterator;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
-import openmods.calc.SingleReturnCallable;
+import openmods.calc.symbol.SingleReturnCallable;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 

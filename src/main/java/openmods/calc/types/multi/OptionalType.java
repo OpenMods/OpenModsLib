@@ -8,11 +8,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import openmods.calc.Environment;
-import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
-import openmods.calc.NullaryFunction;
-import openmods.calc.UnaryFunction;
+import openmods.calc.symbol.FixedCallable;
+import openmods.calc.symbol.NullaryFunction;
+import openmods.calc.symbol.UnaryFunction;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 

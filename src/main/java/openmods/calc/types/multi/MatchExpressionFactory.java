@@ -7,24 +7,24 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import java.util.List;
-import openmods.calc.BinaryOperator;
-import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
-import openmods.calc.ICallable;
-import openmods.calc.IExecutable;
-import openmods.calc.LocalSymbolMap;
-import openmods.calc.SingleReturnCallable;
-import openmods.calc.SymbolCall;
-import openmods.calc.SymbolMap;
-import openmods.calc.Value;
-import openmods.calc.parsing.BinaryOpNode;
-import openmods.calc.parsing.BracketContainerNode;
-import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.ISymbolCallStateTransition;
-import openmods.calc.parsing.SameStateSymbolTransition;
-import openmods.calc.parsing.SymbolCallNode;
+import openmods.calc.executable.BinaryOperator;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.SymbolCall;
+import openmods.calc.executable.Value;
+import openmods.calc.parsing.ast.IParserState;
+import openmods.calc.parsing.ast.ISymbolCallStateTransition;
+import openmods.calc.parsing.ast.SameStateSymbolTransition;
+import openmods.calc.parsing.node.BinaryOpNode;
+import openmods.calc.parsing.node.BracketContainerNode;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.SymbolCallNode;
+import openmods.calc.symbol.FixedCallable;
+import openmods.calc.symbol.ICallable;
+import openmods.calc.symbol.LocalSymbolMap;
+import openmods.calc.symbol.SingleReturnCallable;
+import openmods.calc.symbol.SymbolMap;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 
@@ -262,9 +262,9 @@ public class MatchExpressionFactory {
 		}
 	};
 
-	private class MatchStateTransition extends SameStateSymbolTransition<TypedValue> {
+	private class MatchStateTransition extends SameStateSymbolTransition<IExprNode<TypedValue>> {
 
-		public MatchStateTransition(ICompilerState<TypedValue> compilerState) {
+		public MatchStateTransition(IParserState<IExprNode<TypedValue>> compilerState) {
 			super(compilerState);
 		}
 
@@ -274,7 +274,7 @@ public class MatchExpressionFactory {
 		}
 	}
 
-	public ISymbolCallStateTransition<TypedValue> createStateTransition(ICompilerState<TypedValue> compilerState) {
+	public ISymbolCallStateTransition<IExprNode<TypedValue>> createStateTransition(IParserState<IExprNode<TypedValue>> compilerState) {
 		return new MatchStateTransition(compilerState);
 	}
 

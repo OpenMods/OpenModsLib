@@ -9,6 +9,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.List;
+import openmods.calc.symbol.ICallable;
 import openmods.calc.types.multi.IConverter;
 import openmods.calc.types.multi.TypeDomain;
 import openmods.calc.types.multi.TypedFunction;

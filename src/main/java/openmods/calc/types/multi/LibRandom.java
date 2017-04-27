@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.Random;
-import openmods.calc.NullaryFunction;
+import openmods.calc.symbol.NullaryFunction;
 import openmods.calc.types.multi.TypedFunction.DispatchArg;
 import openmods.calc.types.multi.TypedFunction.RawReturn;
 import openmods.calc.types.multi.TypedFunction.Variant;

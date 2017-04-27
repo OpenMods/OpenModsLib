@@ -11,11 +11,11 @@ import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import openmods.calc.BinaryFunction;
-import openmods.calc.FixedCallable;
 import openmods.calc.Frame;
-import openmods.calc.SingleReturnCallable;
-import openmods.calc.UnaryFunction;
+import openmods.calc.symbol.BinaryFunction;
+import openmods.calc.symbol.FixedCallable;
+import openmods.calc.symbol.SingleReturnCallable;
+import openmods.calc.symbol.UnaryFunction;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 

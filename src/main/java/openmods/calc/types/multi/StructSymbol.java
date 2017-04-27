@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import openmods.calc.Frame;
-import openmods.calc.SingleReturnCallable;
+import openmods.calc.symbol.SingleReturnCallable;
 import openmods.utils.OptionalInt;
 import openmods.utils.Stack;
 

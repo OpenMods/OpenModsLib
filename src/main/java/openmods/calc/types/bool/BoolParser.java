@@ -2,7 +2,7 @@ package openmods.calc.types.bool;
 
 import com.google.common.base.Preconditions;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.Token;
+import openmods.calc.parsing.token.Token;
 
 public class BoolParser implements IValueParser<Boolean> {
 

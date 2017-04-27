@@ -3,9 +3,9 @@ package openmods.calc.types.multi;
 import com.google.common.base.Optional;
 import openmods.calc.Frame;
 import openmods.calc.FrameFactory;
-import openmods.calc.ISymbol;
-import openmods.calc.NestedSymbolMap;
-import openmods.calc.SymbolMap;
+import openmods.calc.symbol.ISymbol;
+import openmods.calc.symbol.NestedSymbolMap;
+import openmods.calc.symbol.SymbolMap;
 
 public class CompositeSymbolMap extends NestedSymbolMap<TypedValue> {
 	private final TypedValue target;

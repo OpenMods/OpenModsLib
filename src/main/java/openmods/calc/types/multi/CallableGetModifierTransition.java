@@ -1,40 +1,37 @@
 package openmods.calc.types.multi;
 
 import com.google.common.collect.PeekingIterator;
-import openmods.calc.BinaryOperator;
-import openmods.calc.ICallable;
-import openmods.calc.OperatorDictionary;
-import openmods.calc.UnaryOperator;
-import openmods.calc.parsing.CallableOperatorWrappers;
-import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.SingleStateTransition;
-import openmods.calc.parsing.SymbolGetNode;
-import openmods.calc.parsing.Token;
-import openmods.calc.parsing.TokenType;
-import openmods.calc.parsing.ValueNode;
+import openmods.calc.executable.Operator;
+import openmods.calc.parsing.ast.IOperatorDictionary;
+import openmods.calc.parsing.ast.IParserState;
+import openmods.calc.parsing.ast.OperatorArity;
+import openmods.calc.parsing.ast.SingleStateTransition;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.SymbolGetNode;
+import openmods.calc.parsing.node.ValueNode;
+import openmods.calc.parsing.token.Token;
+import openmods.calc.parsing.token.TokenType;
+import openmods.calc.symbol.CallableOperatorWrapper;
+import openmods.calc.symbol.ICallable;
 
-public class CallableGetModifierTransition extends SingleStateTransition.ForModifier<TypedValue> {
+public class CallableGetModifierTransition extends SingleStateTransition.ForModifier<IExprNode<TypedValue>> {
 
 	private final TypeDomain domain;
-	private final OperatorDictionary<TypedValue> operators;
+	private final IOperatorDictionary<Operator<TypedValue>> operators;
 
-	public CallableGetModifierTransition(TypeDomain domain, OperatorDictionary<TypedValue> operators) {
+	public CallableGetModifierTransition(TypeDomain domain, IOperatorDictionary<Operator<TypedValue>> operators) {
 		this.domain = domain;
 		this.operators = operators;
 	}
 
 	@Override
-	public IExprNode<TypedValue> parseSymbol(ICompilerState<TypedValue> state, PeekingIterator<Token> input) {
+	public IExprNode<TypedValue> parseSymbol(IParserState<IExprNode<TypedValue>> state, PeekingIterator<Token> input) {
 		final Token token = input.next();
 		if (token.type == TokenType.OPERATOR) {
-			final BinaryOperator<TypedValue> binaryOp = operators.getBinaryOperator(token.value);
-			if (binaryOp != null) return createGetter(new CallableOperatorWrappers.Binary(binaryOp));
-
-			final UnaryOperator<TypedValue> unaryOp = operators.getUnaryOperator(token.value);
-			if (unaryOp != null) return createGetter(new CallableOperatorWrappers.Unary(unaryOp));
-
-			throw new IllegalArgumentException("Unknown operator: " + token.value);
+			Operator<TypedValue> op = operators.getOperator(token.value, OperatorArity.BINARY);
+			if (op == null) op = operators.getOperator(token.value, OperatorArity.UNARY);
+			if (op == null) throw new IllegalArgumentException("Unknown operator: " + token.value);
+			return createGetter(new CallableOperatorWrapper(op));
 		} else if (token.type == TokenType.SYMBOL) { return new SymbolGetNode<TypedValue>(token.value); }
 
 		throw new IllegalStateException("Expected operator or symbol token, got " + token);

@@ -4,21 +4,21 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
-import openmods.calc.IExecutable;
-import openmods.calc.Value;
-import openmods.calc.parsing.ContainerNode;
-import openmods.calc.parsing.IAstParser;
-import openmods.calc.parsing.ICompilerState;
-import openmods.calc.parsing.IExprNode;
-import openmods.calc.parsing.IModifierStateTransition;
-import openmods.calc.parsing.ISymbolCallStateTransition;
+import openmods.calc.executable.IExecutable;
+import openmods.calc.executable.Value;
 import openmods.calc.parsing.IValueParser;
-import openmods.calc.parsing.NullNode;
-import openmods.calc.parsing.QuotedParser;
-import openmods.calc.parsing.QuotedParser.IQuotedExprNodeFactory;
-import openmods.calc.parsing.Token;
-import openmods.calc.parsing.TokenType;
-import openmods.calc.parsing.ValueNode;
+import openmods.calc.parsing.ast.IAstParser;
+import openmods.calc.parsing.ast.IModifierStateTransition;
+import openmods.calc.parsing.ast.IParserState;
+import openmods.calc.parsing.ast.ISymbolCallStateTransition;
+import openmods.calc.parsing.ast.QuotedParser;
+import openmods.calc.parsing.ast.QuotedParser.IQuotedExprNodeFactory;
+import openmods.calc.parsing.node.ContainerNode;
+import openmods.calc.parsing.node.IExprNode;
+import openmods.calc.parsing.node.NullNode;
+import openmods.calc.parsing.node.ValueNode;
+import openmods.calc.parsing.token.Token;
+import openmods.calc.parsing.token.TokenType;
 
 public class QuoteStateTransition {
 
@@ -91,7 +91,7 @@ public class QuoteStateTransition {
 		}
 	}
 
-	private class QuotedExprNodeFactory implements IQuotedExprNodeFactory<TypedValue> {
+	private class QuotedExprNodeFactory implements IQuotedExprNodeFactory<IExprNode<TypedValue>> {
 
 		@Override
 		public IExprNode<TypedValue> createValueNode(Token token) {
@@ -100,14 +100,9 @@ public class QuoteStateTransition {
 			if (token.type == TokenType.SEPARATOR) return new NullNode<TypedValue>();
 			if (token.type.isValue()) {
 				final TypedValue value = valueParser.parseToken(token);
-				return createValueNode(value);
+				return new ValueNode<TypedValue>(value);
 			}
 			return new ValueNode<TypedValue>(Symbol.get(domain, token.value));
-		}
-
-		@Override
-		public IExprNode<TypedValue> createValueNode(TypedValue value) {
-			return new ValueNode<TypedValue>(value);
 		}
 
 		@Override
@@ -116,22 +111,22 @@ public class QuoteStateTransition {
 		}
 	}
 
-	private class QuotedState implements ICompilerState<TypedValue> {
+	private class QuotedState implements IParserState<IExprNode<TypedValue>> {
 
-		private final QuotedParser<TypedValue> quotedParser = new QuotedParser<TypedValue>(valueParser, new QuotedExprNodeFactory());
+		private final QuotedParser<IExprNode<TypedValue>> quotedParser = new QuotedParser<IExprNode<TypedValue>>(new QuotedExprNodeFactory());
 
 		@Override
-		public IAstParser<TypedValue> getParser() {
+		public IAstParser<IExprNode<TypedValue>> getParser() {
 			return quotedParser;
 		}
 
 		@Override
-		public ISymbolCallStateTransition<TypedValue> getStateForSymbolCall(String symbol) {
+		public ISymbolCallStateTransition<IExprNode<TypedValue>> getStateForSymbolCall(String symbol) {
 			throw new UnsupportedOperationException(symbol);
 		}
 
 		@Override
-		public IModifierStateTransition<TypedValue> getStateForModifier(String modifier) {
+		public IModifierStateTransition<IExprNode<TypedValue>> getStateForModifier(String modifier) {
 			throw new UnsupportedOperationException(modifier);
 		}
 
@@ -147,13 +142,13 @@ public class QuoteStateTransition {
 		this.valueParser = valueParser;
 	}
 
-	public static class ForSymbol extends QuoteStateTransition implements ISymbolCallStateTransition<TypedValue> {
+	public static class ForSymbol extends QuoteStateTransition implements ISymbolCallStateTransition<IExprNode<TypedValue>> {
 		public ForSymbol(TypeDomain domain, TypedValue terminatorValue, IValueParser<TypedValue> valueParser) {
 			super(domain, terminatorValue, valueParser);
 		}
 
 		@Override
-		public ICompilerState<TypedValue> getState() {
+		public IParserState<IExprNode<TypedValue>> getState() {
 			return new QuotedState();
 		}
 
@@ -164,13 +159,13 @@ public class QuoteStateTransition {
 		}
 	}
 
-	public static class ForModifier extends QuoteStateTransition implements IModifierStateTransition<TypedValue> {
+	public static class ForModifier extends QuoteStateTransition implements IModifierStateTransition<IExprNode<TypedValue>> {
 		public ForModifier(TypeDomain domain, TypedValue terminatorValue, IValueParser<TypedValue> valueParser) {
 			super(domain, terminatorValue, valueParser);
 		}
 
 		@Override
-		public ICompilerState<TypedValue> getState() {
+		public IParserState<IExprNode<TypedValue>> getState() {
 			return new QuotedState();
 		}
 
