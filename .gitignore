@@ -15,13 +15,14 @@
 .gradle/
 build/
 run/
-bin/
+repo/
 
 # Eclipse
 .classpath
 .project
 .settings/
 *.launch
+bin/
 
 # IntelliJ IDEA
 *.iml

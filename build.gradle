@@ -54,7 +54,24 @@ rootProject.allprojects {
     }
 }
 
+/*
+repositories {
+    maven {
+        name "local"
+        url ('file:/' + project.file('repo').getAbsolutePath())
+    }
+}
+*/
+
+configurations {
+    pack {
+        transitive = false
+    }
+    compile.extendsFrom pack
+}
+
 dependencies {
+    pack group: 'info.openmods', name: 'calc', version: '0.1'
     compile name: 'buildcraft', version: '7.2.6', classifier: 'api', ext: 'jar'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -139,14 +156,22 @@ processResources {
     }
 }
 
+def packagedJars = configurations.pack.collect({f -> f.getName()}).join(" ")
+
 def fmlManifest = manifest {
-    attributes("FMLCorePlugin": "openmods.core.OpenModsCorePlugin", "FMLCorePluginContainsFMLMod": "true")
+    attributes(
+        "FMLCorePlugin": "openmods.core.OpenModsCorePlugin",
+        "FMLCorePluginContainsFMLMod": "true",
+        "ContainedDeps": packagedJars
+    )
 }
 
 jar {
     manifest {
         from jenkinsManifest, gitManifest, fmlManifest
     }
+
+    configurations.pack.each { dep -> from(dep) }
 }
 
 javadoc {
