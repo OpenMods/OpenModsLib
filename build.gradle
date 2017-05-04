@@ -162,7 +162,7 @@ def fmlManifest = manifest {
     attributes(
         "FMLCorePlugin": "openmods.core.OpenModsCorePlugin",
         "FMLCorePluginContainsFMLMod": "true",
-        "ContainedDeps": packagedJars
+        "JarJars": packagedJars
     )
 }
 

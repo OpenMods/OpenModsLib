@@ -31,7 +31,7 @@ public class OpenModsCorePlugin implements IFMLLoadingPlugin {
 
 	@Override
 	public String getSetupClass() {
-		return null;
+		return "openmods.core.OpenModsHook";
 	}
 
 	@Override
