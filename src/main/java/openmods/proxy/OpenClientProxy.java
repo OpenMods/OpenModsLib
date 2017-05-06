@@ -30,6 +30,7 @@ import openmods.calc.CommandCalcFactory;
 import openmods.calc.ICommandComponent;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
+import openmods.model.textureditem.TexturedItemModelLoader;
 import openmods.model.variant.VariantModelLoader;
 import openmods.movement.PlayerMovementManager;
 import openmods.source.CommandSource;
@@ -104,6 +105,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		MinecraftForge.EVENT_BUS.register(new BlockSelectionHandler());
 
 		ModelLoaderRegistry.registerLoader(new VariantModelLoader());
+		ModelLoaderRegistry.registerLoader(new TexturedItemModelLoader());
 	}
 
 	@Override

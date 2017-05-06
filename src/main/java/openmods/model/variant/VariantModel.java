@@ -13,11 +13,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import javax.vecmath.Matrix4f;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -34,25 +32,20 @@ import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.fml.common.FMLLog;
-import org.apache.commons.lang3.tuple.Pair;
+import openmods.model.BakedModelAdapter;
 
 public class VariantModel implements IModelCustomData {
 
-	private static class BakedModel implements IPerspectiveAwareModel {
-
-		private final IBakedModel base;
+	private static class BakedModel extends BakedModelAdapter {
 
 		private final VariantModelData modelData;
 
 		private final Map<ResourceLocation, IBakedModel> bakedSubModels;
 
-		private final ImmutableMap<TransformType, TRSRTransformation> cameraTransforms;
-
 		public BakedModel(IBakedModel base, VariantModelData modelData, Map<ResourceLocation, IBakedModel> bakedSubModels, ImmutableMap<TransformType, TRSRTransformation> cameraTransforms) {
-			this.base = base;
+			super(base, cameraTransforms);
 			this.modelData = modelData;
 			this.bakedSubModels = bakedSubModels;
-			this.cameraTransforms = cameraTransforms;
 		}
 
 		@Override
@@ -83,40 +76,9 @@ public class VariantModel implements IModelCustomData {
 		}
 
 		@Override
-		public boolean isAmbientOcclusion() {
-			return base.isAmbientOcclusion();
-		}
-
-		@Override
-		public boolean isGui3d() {
-			return base.isGui3d();
-		}
-
-		@Override
-		public boolean isBuiltInRenderer() {
-			return base.isBuiltInRenderer();
-		}
-
-		@Override
-		public TextureAtlasSprite getParticleTexture() {
-			return base.getParticleTexture();
-		}
-
-		@Override
-		public ItemCameraTransforms getItemCameraTransforms() {
-			return ItemCameraTransforms.DEFAULT;
-		}
-
-		@Override
 		public ItemOverrideList getOverrides() {
 			return ItemOverrideList.NONE;
 		}
-
-		@Override
-		public Pair<? extends IBakedModel, Matrix4f> handlePerspective(TransformType cameraTransformType) {
-			return IPerspectiveAwareModel.MapWrapper.handlePerspective(this, cameraTransforms, cameraTransformType);
-		}
-
 	}
 
 	private static final String KEY_VARIANTS = "variants";
