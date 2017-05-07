@@ -1,7 +1,5 @@
 package openmods.calc;
 
-import openmods.calc.IWhitespaceSplitter;
-import openmods.calc.WhitespaceSplitters;
 import org.junit.Assert;
 import org.junit.Test;
 

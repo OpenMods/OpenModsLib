@@ -83,9 +83,11 @@ public class VariantModel implements IModelCustomData {
 
 	private static final String KEY_VARIANTS = "variants";
 
+	private static final String KEY_EXPANSIONS = "expansions";
+
 	private static final String KEY_BASE = "base";
 
-	static final VariantModel INSTANCE = new VariantModel(Optional.<ResourceLocation> absent(), new VariantModelData(new VariantSelectorData()));
+	static final VariantModel EMPTY_MODEL = new VariantModel(Optional.<ResourceLocation> absent(), new VariantModelData());
 
 	private final Optional<ResourceLocation> base;
 
@@ -134,9 +136,11 @@ public class VariantModel implements IModelCustomData {
 			base = Optional.of(getLocation(customData.get(KEY_BASE)));
 		}
 
-		if (customData.containsKey(KEY_VARIANTS)) {
+		if (customData.containsKey(KEY_VARIANTS) || customData.containsKey(KEY_EXPANSIONS)) {
 			hasChanged = true;
-			modelData = VariantModelData.load(customData.get(KEY_VARIANTS));
+			Optional<String> variants = Optional.fromNullable(customData.get(KEY_VARIANTS));
+			Optional<String> expansions = Optional.fromNullable(customData.get(KEY_EXPANSIONS));
+			modelData = modelData.update(variants, expansions);
 		}
 
 		return hasChanged? new VariantModel(base, modelData) : this;

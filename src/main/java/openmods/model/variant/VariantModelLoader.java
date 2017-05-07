@@ -26,7 +26,7 @@ public class VariantModelLoader implements ICustomModelLoader {
 
 	@Override
 	public IModel loadModel(ResourceLocation modelLocation) throws Exception {
-		return VariantModel.INSTANCE;
+		return VariantModel.EMPTY_MODEL;
 	}
 
 }
