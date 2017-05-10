@@ -3,6 +3,7 @@ package openmods.model.variant;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
+import java.util.Set;
 import net.minecraftforge.common.property.IUnlistedProperty;
 
 public class VariantModelState {
@@ -60,6 +61,14 @@ public class VariantModelState {
 
 	public VariantModelState withKey(String key) {
 		return withKey(key, DEFAULT_MARKER);
+	}
+
+	public VariantModelState withKeys(Set<String> keys) {
+		Map<String, String> copy = Maps.newHashMap(selectors);
+		for (String key : keys)
+			copy.put(key, DEFAULT_MARKER);
+
+		return new VariantModelState(copy);
 	}
 
 	Map<String, String> getSelectors() {
