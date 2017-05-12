@@ -275,14 +275,27 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
-	public void testFunctionNamespacesArgHiding() {
+	public void testFunctionNamespacesGlobalParamVisibility() {
 		Evaluator ev = new Evaluator();
 		ev.addStatement("f(x) := x | global");
 		ev.addStatement("result := f(a)");
 
 		start().run(ev).validate();
 		start().put("a").run(ev).put("result").validate();
-		start().put("global").run(ev).validate();
+		start().put("global").run(ev).put("result").validate();
 		start().put("a").put("global").run(ev).put("result").validate();
+	}
+
+	@Test
+	public void testFunctionNamespacesArgKeyValue() {
+		Evaluator ev = new Evaluator();
+		ev.addStatement("f(a) := a.test");
+		ev.addStatement("result := f(b)");
+
+		start().run(ev).validate();
+		start().put("a").run(ev).validate();
+		start().put("a", "test").run(ev).validate();
+		start().put("b", "not_test").run(ev).validate();
+		start().put("b", "test").run(ev).put("result").validate();
 	}
 }

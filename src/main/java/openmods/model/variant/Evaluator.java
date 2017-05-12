@@ -143,70 +143,157 @@ public class Evaluator {
 
 	private static final OperatorDictionary<Operator> operators = new OperatorDictionary<Operator>();
 
+	private static abstract class UnaryOperatorExpr implements IExpr {
+		protected final IExpr value;
+
+		private UnaryOperatorExpr(IExpr value) {
+			this.value = value;
+		}
+
+		protected abstract IExpr create(IExpr value);
+
+		@Override
+		public IExpr rebind(Map<String, IExpr> vars) {
+			return create(value.rebind(vars));
+		}
+	}
+
+	private static class OperatorNot extends UnaryOperatorExpr {
+		private OperatorNot(IExpr value) {
+			super(value);
+		}
+
+		@Override
+		public boolean evaluate(Map<String, String> vars) {
+			return !value.evaluate(vars);
+		}
+
+		@Override
+		protected IExpr create(IExpr value) {
+			return new OperatorNot(value);
+		}
+	}
+
+	private static abstract class BinaryOperatorExpr implements IExpr {
+		protected final IExpr left;
+		protected final IExpr right;
+
+		public BinaryOperatorExpr(IExpr left, IExpr right) {
+			this.left = left;
+			this.right = right;
+		}
+
+		protected abstract IExpr create(IExpr left, IExpr right);
+
+		@Override
+		public IExpr rebind(Map<String, IExpr> vars) {
+			return create(left.rebind(vars), right.rebind(vars));
+		}
+	}
+
+	private static class AndOperator extends BinaryOperatorExpr {
+		public AndOperator(IExpr left, IExpr right) {
+			super(left, right);
+		}
+
+		@Override
+		public boolean evaluate(Map<String, String> vars) {
+			return left.evaluate(vars) && right.evaluate(vars);
+		}
+
+		@Override
+		protected IExpr create(IExpr left, IExpr right) {
+			return new AndOperator(left, right);
+		}
+	}
+
+	private static class OrOperator extends BinaryOperatorExpr {
+		public OrOperator(IExpr left, IExpr right) {
+			super(left, right);
+		}
+
+		@Override
+		public boolean evaluate(Map<String, String> vars) {
+			return left.evaluate(vars) || right.evaluate(vars);
+		}
+
+		@Override
+		protected IExpr create(IExpr left, IExpr right) {
+			return new OrOperator(left, right);
+		}
+	}
+
+	private static class EqOperator extends BinaryOperatorExpr {
+		public EqOperator(IExpr left, IExpr right) {
+			super(left, right);
+		}
+
+		@Override
+		public boolean evaluate(Map<String, String> vars) {
+			return left.evaluate(vars) == right.evaluate(vars);
+		}
+
+		@Override
+		protected IExpr create(IExpr left, IExpr right) {
+			return new EqOperator(left, right);
+		}
+	}
+
+	private static class XorOperator extends BinaryOperatorExpr {
+		public XorOperator(IExpr left, IExpr right) {
+			super(left, right);
+		}
+
+		@Override
+		public boolean evaluate(Map<String, String> vars) {
+			return left.evaluate(vars) ^ right.evaluate(vars);
+		}
+
+		@Override
+		protected IExpr create(IExpr left, IExpr right) {
+			return new XorOperator(left, right);
+		}
+	}
+
 	static {
 		operators.registerOperator(new UnaryOperator(OPERATOR_NOT, PRIORITY_NOT) {
 			@Override
-			protected IExpr createNode(final IExpr value) {
-				return new IExpr() {
-					@Override
-					public boolean evaluate(Map<String, String> vars) {
-						return !value.evaluate(vars);
-					}
-				};
+			protected IExpr createNode(IExpr value) {
+				return new OperatorNot(value);
 			}
 		});
 
 		operators.registerOperator(new BinaryOperator(OPERATOR_AND, PRIORITY_AND) {
 			@Override
-			protected IExpr createNode(final IExpr left, final IExpr right) {
-				return new IExpr() {
-					@Override
-					public boolean evaluate(Map<String, String> vars) {
-						return left.evaluate(vars) && right.evaluate(vars);
-					}
-				};
+			protected IExpr createNode(IExpr left, IExpr right) {
+				return new AndOperator(left, right);
 			}
 		});
 
 		operators.registerOperator(new BinaryOperator(OPERATOR_OR, PRIORITY_OR) {
 			@Override
-			protected IExpr createNode(final IExpr left, final IExpr right) {
-				return new IExpr() {
-					@Override
-					public boolean evaluate(Map<String, String> vars) {
-						return left.evaluate(vars) || right.evaluate(vars);
-					}
-				};
+			protected IExpr createNode(IExpr left, IExpr right) {
+				return new OrOperator(left, right);
 			}
 		});
 
 		operators.registerOperator(new BinaryOperator(OPERATOR_EQ, PRIORITY_COMPARE) {
 			@Override
-			protected IExpr createNode(final IExpr left, final IExpr right) {
-				return new IExpr() {
-					@Override
-					public boolean evaluate(Map<String, String> vars) {
-						return left.evaluate(vars) == right.evaluate(vars);
-					}
-				};
+			protected IExpr createNode(IExpr left, IExpr right) {
+				return new EqOperator(left, right);
 			}
 		});
 
 		operators.registerOperator(new BinaryOperator(OPERATOR_XOR, PRIORITY_COMPARE) {
 			@Override
-			protected IExpr createNode(final IExpr left, final IExpr right) {
-				return new IExpr() {
-					@Override
-					public boolean evaluate(Map<String, String> vars) {
-						return left.evaluate(vars) ^ right.evaluate(vars);
-					}
-				};
+			protected IExpr createNode(IExpr left, IExpr right) {
+				return new XorOperator(left, right);
 			}
 		});
 
 		operators.registerOperator(new BinaryOperator(OPERATOR_DOT, PRIORITY_DOT) {
 			@Override
-			protected IExpr createNode(final IExpr left, final IExpr right) {
+			protected IExpr createNode(IExpr left, IExpr right) {
 				Preconditions.checkState(left instanceof KeyGet, "Expected symbol on left side of dot");
 				Preconditions.checkState(right instanceof KeyGet, "Expected symbol on right side of dot");
 				final String key = ((KeyGet)left).key;
@@ -218,31 +305,8 @@ public class Evaluator {
 
 	private static interface IExpr {
 		public boolean evaluate(Map<String, String> vars);
-	}
 
-	private static class FunctionCall implements IExpr {
-
-		private final List<IExpr> args;
-
-		private final Function function;
-
-		public FunctionCall(Function function, List<IExpr> args) {
-			final int expectedArgGot = function.args.size();
-			final int providedArgCount = args.size();
-			Preconditions.checkState(expectedArgGot == providedArgCount, "Invalid number of arguments to function %s, expected %s, got %s", expectedArgGot, providedArgCount);
-
-			this.function = function;
-			this.args = args;
-		}
-
-		@Override
-		public boolean evaluate(Map<String, String> vars) {
-			final List<Boolean> params = Lists.newArrayList();
-			for (IExpr arg : this.args)
-				params.add(arg.evaluate(vars));
-
-			return function.execute(params);
-		}
+		public IExpr rebind(Map<String, IExpr> vars);
 	}
 
 	private static class KeyGet implements IExpr {
@@ -255,6 +319,12 @@ public class Evaluator {
 		@Override
 		public boolean evaluate(Map<String, String> vars) {
 			return vars.containsKey(key);
+		}
+
+		@Override
+		public IExpr rebind(Map<String, IExpr> vars) {
+			final IExpr var = vars.get(key);
+			return var != null? var : this;
 		}
 	}
 
@@ -273,6 +343,16 @@ public class Evaluator {
 			final String value = vars.get(key);
 			return Objects.equal(value, this.value);
 		}
+
+		@Override
+		public IExpr rebind(Map<String, IExpr> vars) {
+			final IExpr var = vars.get(key);
+			if (var == null) return this;
+
+			Preconditions.checkState(var instanceof KeyGet, "Tried to extract value '%s' from expression expanded from key '%s'", value, key);
+			final String newKey = ((KeyGet)var).key;
+			return new KeyValueGet(newKey, value);
+		}
 	}
 
 	private static class SeparatorExpr implements IExpr {
@@ -285,6 +365,11 @@ public class Evaluator {
 		@Override
 		public boolean evaluate(Map<String, String> vars) {
 			return expr.evaluate(vars);
+		}
+
+		@Override
+		public IExpr rebind(Map<String, IExpr> vars) {
+			return expr.rebind(vars);
 		}
 	}
 
@@ -333,7 +418,7 @@ public class Evaluator {
 					public IExpr createRootNode(List<IExpr> children) {
 						final Function function = functions.get(symbol);
 						Preconditions.checkState(function != null, "Can't find function %s", symbol);
-						return new FunctionCall(function, children);
+						return function.rebind(children);
 					}
 				};
 			}
@@ -351,15 +436,15 @@ public class Evaluator {
 			this.body = body;
 		}
 
-		public boolean execute(List<Boolean> params) {
-			final Map<String, String> env = Maps.newHashMap();
+		public IExpr rebind(List<IExpr> children) {
+			final Map<String, IExpr> env = Maps.newHashMap();
 			for (int i = 0; i < args.size(); i++) {
 				final String arg = args.get(i);
-				final Boolean value = params.get(i);
-				if (value == Boolean.TRUE) env.put(arg, VariantModelState.DEFAULT_MARKER); // TODO somehow pass whole values
+				final IExpr value = children.get(i);
+				env.put(arg, value);
 			}
 
-			return body.evaluate(env);
+			return body.rebind(env);
 		}
 	}
 
