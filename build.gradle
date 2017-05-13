@@ -71,7 +71,7 @@ configurations {
 }
 
 dependencies {
-    pack group: 'info.openmods', name: 'calc', version: '0.1'
+    pack group: 'info.openmods', name: 'calc', version: '0.2'
     compile name: 'buildcraft', version: '7.2.6', classifier: 'api', ext: 'jar'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'

@@ -7,15 +7,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.PeekingIterator;
 import info.openmods.calc.executable.OperatorDictionary;
-import info.openmods.calc.parsing.ast.IAstParser;
-import info.openmods.calc.parsing.ast.IModifierStateTransition;
 import info.openmods.calc.parsing.ast.INodeFactory;
 import info.openmods.calc.parsing.ast.IOperator;
-import info.openmods.calc.parsing.ast.IParserState;
-import info.openmods.calc.parsing.ast.ISymbolCallStateTransition;
 import info.openmods.calc.parsing.ast.InfixParser;
 import info.openmods.calc.parsing.ast.OperatorArity;
-import info.openmods.calc.parsing.ast.SameStateSymbolTransition;
+import info.openmods.calc.parsing.ast.SimpleParserState;
 import info.openmods.calc.parsing.token.Token;
 import info.openmods.calc.parsing.token.TokenType;
 import info.openmods.calc.parsing.token.Tokenizer;
@@ -399,33 +395,22 @@ public class Evaluator {
 
 	private static final InfixParser<IExpr, Operator> parser = new InfixParser<IExpr, Operator>(operators, nodeFactory);
 
-	private final IParserState<IExpr> parserState = new IParserState<IExpr>() {
-
+	private final SimpleParserState<IExpr> parserState = new SimpleParserState<IExpr>(parser) {
 		@Override
-		public IAstParser<IExpr> getParser() {
-			return parser;
-		}
-
-		@Override
-		public IModifierStateTransition<IExpr> getStateForModifier(String modifier) {
+		protected IExpr createModifierNode(String modifier, IExpr child) {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public ISymbolCallStateTransition<IExpr> getStateForSymbolCall(final String symbol) {
-			return new SameStateSymbolTransition<IExpr>(this) {
-				@Override
-				public IExpr createRootNode(List<IExpr> children) {
-					final Macro macro = macros.get(symbol);
-					Preconditions.checkState(macro != null, "Can't find macro %s", symbol);
-					return macro.rebind(children);
-				}
-			};
+		protected IExpr createSymbolNode(String symbol, List<IExpr> children) {
+			final Macro macro = macros.get(symbol);
+			Preconditions.checkState(macro != null, "Can't find macro %s", symbol);
+			return macro.rebind(children);
 		}
 	};
 
 	private IExpr parseExpression(PeekingIterator<Token> tokens) {
-		return parserState.getParser().parse(parserState, tokens);
+		return parserState.parse(tokens);
 	}
 
 	private static class Macro {
