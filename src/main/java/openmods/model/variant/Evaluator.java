@@ -397,34 +397,35 @@ public class Evaluator {
 		}
 	};
 
+	private static final InfixParser<IExpr, Operator> parser = new InfixParser<IExpr, Operator>(operators, nodeFactory);
+
+	private final IParserState<IExpr> parserState = new IParserState<IExpr>() {
+
+		@Override
+		public IAstParser<IExpr> getParser() {
+			return parser;
+		}
+
+		@Override
+		public IModifierStateTransition<IExpr> getStateForModifier(String modifier) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public ISymbolCallStateTransition<IExpr> getStateForSymbolCall(final String symbol) {
+			return new SameStateSymbolTransition<IExpr>(this) {
+				@Override
+				public IExpr createRootNode(List<IExpr> children) {
+					final Macro macro = macros.get(symbol);
+					Preconditions.checkState(macro != null, "Can't find macro %s", symbol);
+					return macro.rebind(children);
+				}
+			};
+		}
+	};
+
 	private IExpr parseExpression(PeekingIterator<Token> tokens) {
-		final InfixParser<IExpr, Operator> parser = new InfixParser<IExpr, Operator>(operators, nodeFactory);
-
-		final IParserState<IExpr> parserState = new IParserState<IExpr>() {
-			@Override
-			public IAstParser<IExpr> getParser() {
-				return parser;
-			}
-
-			@Override
-			public IModifierStateTransition<IExpr> getStateForModifier(String modifier) {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public ISymbolCallStateTransition<IExpr> getStateForSymbolCall(final String symbol) {
-				return new SameStateSymbolTransition<IExpr>(this) {
-					@Override
-					public IExpr createRootNode(List<IExpr> children) {
-						final Macro macro = macros.get(symbol);
-						Preconditions.checkState(macro != null, "Can't find macro %s", symbol);
-						return macro.rebind(children);
-					}
-				};
-			}
-		};
-
-		return parser.parse(parserState, tokens);
+		return parserState.getParser().parse(parserState, tokens);
 	}
 
 	private static class Macro {
@@ -437,8 +438,12 @@ public class Evaluator {
 		}
 
 		public IExpr rebind(List<IExpr> children) {
+			final int actualArgCount = children.size();
+			final int expectedArgCount = args.size();
+			Preconditions.checkState(actualArgCount == expectedArgCount, "Invalid numer of arguments: expected %s, got %s", expectedArgCount, actualArgCount);
+
 			final Map<String, IExpr> env = Maps.newHashMap();
-			for (int i = 0; i < args.size(); i++) {
+			for (int i = 0; i < expectedArgCount; i++) {
 				final String arg = args.get(i);
 				final IExpr value = children.get(i);
 				env.put(arg, value);
