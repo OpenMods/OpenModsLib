@@ -30,6 +30,7 @@ import openmods.calc.CommandCalcFactory;
 import openmods.calc.ICommandComponent;
 import openmods.config.properties.CommandConfig;
 import openmods.gui.ClientGuiHandler;
+import openmods.model.multilayer.MultiLayerModelLoader;
 import openmods.model.textureditem.TexturedItemModelLoader;
 import openmods.model.variant.VariantModelLoader;
 import openmods.movement.PlayerMovementManager;
@@ -106,6 +107,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 
 		ModelLoaderRegistry.registerLoader(new VariantModelLoader());
 		ModelLoaderRegistry.registerLoader(new TexturedItemModelLoader());
+		ModelLoaderRegistry.registerLoader(new MultiLayerModelLoader());
 	}
 
 	@Override
