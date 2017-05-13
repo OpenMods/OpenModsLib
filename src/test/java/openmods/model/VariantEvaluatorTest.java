@@ -136,7 +136,7 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
-	public void testSingleFunction() {
+	public void testSingleMacro() {
 		Evaluator ev = new Evaluator();
 		ev.addStatement("f(x,y) := !x & y");
 		ev.addStatement("result := f(a,b)");
@@ -148,7 +148,7 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
-	public void testSingleFunctionWithKeyValueArgs() {
+	public void testSingleMacroWithKeyValueArgs() {
 		Evaluator ev = new Evaluator();
 		ev.addStatement("f(x,y) := x | y");
 		ev.addStatement("result := f(v.a, v.b)");
@@ -160,7 +160,7 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
-	public void testSingleFunctionNegation() {
+	public void testSingleMacroNegation() {
 		Evaluator ev = new Evaluator();
 		ev.addStatement("f(x,y) := !x & y");
 		ev.addStatement("result := !f(a,b)");
@@ -172,7 +172,7 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
-	public void testFunctionsInExpressions() {
+	public void testMacrosInExpressions() {
 		Evaluator ev = new Evaluator();
 		ev.addStatement("f(x,y) := !x & y");
 		ev.addStatement("g(x,y) := x & !y");
@@ -198,7 +198,7 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
-	public void testNestedFunctions() {
+	public void testNestedMacros() {
 		Evaluator ev = new Evaluator();
 		ev.addStatement("f(x,y) := !x & y");
 		ev.addStatement("g(x,y) := x & !y");
@@ -212,7 +212,7 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
-	public void testFunctionSymbolSeparation() {
+	public void testMacroSymbolSeparation() {
 		Evaluator ev = new Evaluator();
 		ev.addStatement("a(a,b) := a | b");
 		ev.addStatement("b(a,b) := a & b");
@@ -250,7 +250,7 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
-	public void testFunctionOverride() {
+	public void testMacroOverride() {
 		Evaluator ev = new Evaluator();
 		ev.addStatement("f(x,y) := x & y");
 		ev.addStatement("f(x,y) := !f(x,y)");
@@ -263,7 +263,7 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
-	public void testFunctionNamespacesArgRename() {
+	public void testMacroNamespacesArgRename() {
 		Evaluator ev = new Evaluator();
 		ev.addStatement("f(a,b) := !a & b");
 		ev.addStatement("result := f(b, a)");
@@ -275,7 +275,7 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
-	public void testFunctionNamespacesGlobalParamVisibility() {
+	public void testMacroNamespacesGlobalParamVisibility() {
 		Evaluator ev = new Evaluator();
 		ev.addStatement("f(x) := x | global");
 		ev.addStatement("result := f(a)");
@@ -287,7 +287,7 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
-	public void testFunctionNamespacesArgKeyValue() {
+	public void testMacroNamespacesArgKeyValue() {
 		Evaluator ev = new Evaluator();
 		ev.addStatement("f(a) := a.test");
 		ev.addStatement("result := f(b)");

@@ -397,7 +397,7 @@ public class Evaluator {
 		}
 	};
 
-	private static IExpr parseExpression(final Map<String, Function> functions, PeekingIterator<Token> tokens) {
+	private IExpr parseExpression(PeekingIterator<Token> tokens) {
 		final InfixParser<IExpr, Operator> parser = new InfixParser<IExpr, Operator>(operators, nodeFactory);
 
 		final IParserState<IExpr> parserState = new IParserState<IExpr>() {
@@ -416,9 +416,9 @@ public class Evaluator {
 				return new SameStateSymbolTransition<IExpr>(this) {
 					@Override
 					public IExpr createRootNode(List<IExpr> children) {
-						final Function function = functions.get(symbol);
-						Preconditions.checkState(function != null, "Can't find function %s", symbol);
-						return function.rebind(children);
+						final Macro macro = macros.get(symbol);
+						Preconditions.checkState(macro != null, "Can't find macro %s", symbol);
+						return macro.rebind(children);
 					}
 				};
 			}
@@ -427,11 +427,11 @@ public class Evaluator {
 		return parser.parse(parserState, tokens);
 	}
 
-	private static class Function {
+	private static class Macro {
 		private final List<String> args;
 		private final IExpr body;
 
-		public Function(List<String> args, IExpr body) {
+		public Macro(List<String> args, IExpr body) {
 			this.args = args;
 			this.body = body;
 		}
@@ -448,7 +448,7 @@ public class Evaluator {
 		}
 	}
 
-	private static Function parseFunction(Map<String, Function> functions, PeekingIterator<Token> tokens) {
+	private Macro parseMacro(PeekingIterator<Token> tokens) {
 		final List<String> args = Lists.newArrayList();
 
 		while (true) {
@@ -463,8 +463,8 @@ public class Evaluator {
 
 		expectToken(tokens, TokenType.MODIFIER, MODIFIER_ASSIGN);
 
-		final IExpr body = parseExpression(functions, tokens);
-		return new Function(args, body);
+		final IExpr body = parseExpression(tokens);
+		return new Macro(args, body);
 	}
 
 	private static interface IStatement {
@@ -529,7 +529,7 @@ public class Evaluator {
 
 	private final List<IStatement> program = Lists.newArrayList();
 
-	private Map<String, Function> visibleFunctions = Maps.newHashMap();
+	private Map<String, Macro> macros = Maps.newHashMap();
 
 	public void addStatement(String statement) {
 		try {
@@ -539,16 +539,16 @@ public class Evaluator {
 
 			if (token.type == TokenType.LEFT_BRACKET) {
 				Preconditions.checkState(token.value.equals("("), "Invalid bracket: '%s'", token.value);
-				visibleFunctions.put(definedSymbol, parseFunction(visibleFunctions, tokens));
+				macros.put(definedSymbol, parseMacro(tokens));
 			} else if (token.type == TokenType.OPERATOR) {
 				Preconditions.checkState(token.value.equals(OPERATOR_DOT), "Invalid token: ", token);
 				final String value = expectToken(tokens, TokenType.SYMBOL);
 				expectToken(tokens, TokenType.MODIFIER, MODIFIER_ASSIGN);
-				final IExpr expr = parseExpression(visibleFunctions, tokens);
+				final IExpr expr = parseExpression(tokens);
 				program.add(new SetKeyValueVar(expr, definedSymbol, value));
 			} else if (token.type == TokenType.MODIFIER) {
 				Preconditions.checkState(token.value.equals(MODIFIER_ASSIGN), "Invalid token: ", token);
-				final IExpr expr = parseExpression(visibleFunctions, tokens);
+				final IExpr expr = parseExpression(tokens);
 				program.add(new SetKeyOnlyVar(expr, definedSymbol));
 			} else {
 				throw new IllegalArgumentException("Unexpected token: " + token);
