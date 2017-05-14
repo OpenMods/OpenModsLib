@@ -1,0 +1,21 @@
+{
+    forge_marker: 1,
+    defaults : { model: "opentest:test_cube" },
+    variants: {
+    	inventory :  { y : 0 },
+    	"orientation=xp_yp" : { y : 0 },
+    	"orientation=zp_yp" : { y : 90 },
+    	"orientation=xn_yp" : { y : 180 },
+    	"orientation=zn_yp" : { y : 270 },
+    	
+    	"orientation=xp_yn" : { x : 180},
+    	"orientation=zn_yn" : { x : 180, y : 270 },
+    	"orientation=zp_yn" : { x : 180, y : 90 },
+    	"orientation=xn_yn" : { x : 180, y : 180 },
+    	
+    	"orientation=xp_zp" : { x : 270 },
+    	"orientation=xn_zn" : [{ transform : { rotation : [{ x : 90 }, { z : 180 }] } }],
+    	"orientation=zn_xp" : [{ transform : { rotation : [{ x : 90 }, { z : 270 }] } }],
+    	"orientation=zp_xn" : [{ transform : { rotation : [{ x : 90 }, { z : 90 }] } }]
+    }
+}

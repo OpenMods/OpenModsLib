@@ -1,0 +1,9 @@
+{
+    forge_marker: 1,
+    defaults : { model: "opentest:test_cube" },
+    variants: {
+    	inventory :  { y : 0 },
+        "orientation=xp_yp": { y : 0 },
+        "orientation=zn_yp": { y : 270 }
+    }
+}
