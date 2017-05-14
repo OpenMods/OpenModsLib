@@ -7,6 +7,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -29,6 +30,7 @@ import openmods.calc.CommandCalc;
 import openmods.calc.CommandCalcFactory;
 import openmods.calc.ICommandComponent;
 import openmods.config.properties.CommandConfig;
+import openmods.geometry.HitboxManager;
 import openmods.gui.ClientGuiHandler;
 import openmods.model.multilayer.MultiLayerModelLoader;
 import openmods.model.textureditem.TexturedItemModelLoader;
@@ -108,6 +110,8 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		ModelLoaderRegistry.registerLoader(new VariantModelLoader());
 		ModelLoaderRegistry.registerLoader(new TexturedItemModelLoader());
 		ModelLoaderRegistry.registerLoader(new MultiLayerModelLoader());
+
+		((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(HitboxManager.INSTANCE);
 	}
 
 	@Override
