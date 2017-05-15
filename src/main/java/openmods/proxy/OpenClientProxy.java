@@ -32,6 +32,7 @@ import openmods.calc.ICommandComponent;
 import openmods.config.properties.CommandConfig;
 import openmods.geometry.HitboxManager;
 import openmods.gui.ClientGuiHandler;
+import openmods.model.DependencyModelLoader;
 import openmods.model.multilayer.MultiLayerModelLoader;
 import openmods.model.textureditem.TexturedItemModelLoader;
 import openmods.model.variant.VariantModelLoader;
@@ -110,6 +111,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		ModelLoaderRegistry.registerLoader(new VariantModelLoader());
 		ModelLoaderRegistry.registerLoader(new TexturedItemModelLoader());
 		ModelLoaderRegistry.registerLoader(new MultiLayerModelLoader());
+		ModelLoaderRegistry.registerLoader(new DependencyModelLoader());
 
 		((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(HitboxManager.INSTANCE);
 	}
