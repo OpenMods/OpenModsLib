@@ -1,10 +1,10 @@
 package openmods.utils;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.util.Collection;
 import java.util.List;
-import javax.annotation.Nullable;
+import java.util.Map;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -21,41 +21,65 @@ public class RecipeUtils {
 	public static class InputBuilder {
 		private static final ItemStack[] EMPTY_SLOT = new ItemStack[0];
 
-		private static final Function<ItemStack, ItemStack> COPY_TRANSFORM = new Function<ItemStack, ItemStack>() {
-			@Override
-			@Nullable
-			public ItemStack apply(@Nullable ItemStack input) {
-				return input != null? input.copy() : null;
+		private final Map<Integer, List<ItemStack>> slots = Maps.newHashMap();
+
+		public InputBuilder() {}
+
+		private List<ItemStack> getSlot(int slot) {
+			List<ItemStack> result = slots.get(slot);
+			if (result == null) {
+				result = Lists.newArrayList();
+				slots.put(slot, result);
 			}
-		};
+			return result;
+		}
 
-		private final ItemStack[][] slots;
-
-		public InputBuilder(int size) {
-			slots = new ItemStack[size][];
+		private static void addItemStack(final List<ItemStack> slot, ItemStack stack) {
+			if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+				final Item item = stack.getItem();
+				item.getSubItems(item, null, slot);
+			} else {
+				slot.add(stack.copy());
+			}
 		}
 
 		public void add(int slot, ItemStack stack) {
-			slots[slot] = stack == null? EMPTY_SLOT : new ItemStack[] { stack.copy() };
+			if (stack != null) {
+				final List<ItemStack> slotContents = getSlot(slot);
+				addItemStack(slotContents, stack);
+			}
 		}
 
 		public void add(int slot, ItemStack[] stacks) {
-			slots[slot] = CollectionUtils.transform(stacks, COPY_TRANSFORM);
+			final List<ItemStack> slotContents = getSlot(slot);
+			for (ItemStack stack : stacks) {
+				if (stack != null)
+					addItemStack(slotContents, stack);
+			}
 		}
 
 		public void add(int slot, Collection<ItemStack> stacks) {
-			slots[slot] = CollectionUtils.transform(stacks, COPY_TRANSFORM);
+			final List<ItemStack> slotContents = getSlot(slot);
+			for (ItemStack stack : stacks) {
+				if (stack != null)
+					addItemStack(slotContents, stack);
+			}
 		}
 
-		public ItemStack[][] build() {
-			for (int i = 0; i < slots.length; i++)
-				if (slots[i] == null) slots[i] = EMPTY_SLOT;
+		public ItemStack[][] build(int slotCount) {
+			ItemStack[][] result = new ItemStack[slotCount][];
+			for (int i = 0; i < slotCount; i++) {
+				final List<ItemStack> slot = slots.get(i);
+				if (slot != null) {
+					result[i] = slot.toArray(new ItemStack[slot.size()]);
+				} else {
+					result[i] = EMPTY_SLOT;
+				}
+			}
 
-			return slots;
+			return result;
 		}
 	}
-
-	private static final ItemStack[] EMPTY_ITEM_STACK_ARRAY = new ItemStack[0];
 
 	private static FieldAccess<Integer> shapedOreRecipeWidth = FieldAccess.create(ShapedOreRecipe.class, "width");
 
@@ -77,83 +101,10 @@ public class RecipeUtils {
 		return null;
 	}
 
-	public static ItemStack[] getFirstRecipeForItem(ItemStack resultingItem) {
-		final IRecipe recipe = getFirstRecipeForItemStack(resultingItem);
-		if (recipe == null) return null;
-
-		Object[] input = getRecipeInput(recipe);
-		return input != null? convertToStacks(input) : null;
-	}
-
-	public static ItemStack[] convertToStacks(Object[] input) {
-		ItemStack[] result = new ItemStack[input.length];
-		for (int i = 0; i < input.length; i++)
-			result[i] = convertToStack(input[i]);
-
-		return result;
-	}
-
-	public static ItemStack convertToStack(Object obj) {
-		ItemStack entry = null;
-
-		if (obj instanceof ItemStack) {
-			entry = (ItemStack)obj;
-		} else if (obj instanceof List) {
-			@SuppressWarnings("unchecked")
-			List<ItemStack> list = (List<ItemStack>)obj;
-			entry = CollectionUtils.getRandom(list);
-		}
-
-		if (entry == null) return null;
-		entry = entry.copy();
-		if (entry.getItemDamage() == OreDictionary.WILDCARD_VALUE) entry.setItemDamage(0);
-		return entry;
-	}
-
-	public static Object[] getRecipeInput(IRecipe recipe) {
-		if (recipe instanceof ShapelessOreRecipe) return ((ShapelessOreRecipe)recipe).getInput().toArray();
-		else if (recipe instanceof ShapedOreRecipe) return getShapedOreRecipe((ShapedOreRecipe)recipe);
-		else if (recipe instanceof ShapedRecipes) return ((ShapedRecipes)recipe).recipeItems;
-		else if (recipe instanceof ShapelessRecipes) return ((ShapelessRecipes)recipe).recipeItems.toArray(EMPTY_ITEM_STACK_ARRAY);
-		return null;
-	}
-
-	private static Object[] getShapedOreRecipe(ShapedOreRecipe recipe) {
-		final int width = shapedOreRecipeWidth.get(recipe);
-
-		Object[] input = recipe.getInput();
-		int inputIndex = 0;
-		Object[] grid = new Object[9];
-		for (int y = 0; y < 3; y++) {
-			for (int x = 0; x < 3; x++) {
-				final int outputIndex = y * 3 + x;
-				if (x < width && inputIndex < input.length) {
-					grid[outputIndex] = input[inputIndex];
-					inputIndex++;
-				} else {
-					grid[outputIndex] = null;
-				}
-			}
-		}
-		return grid;
-	}
-
 	@SuppressWarnings("unchecked")
 	private static void addOreRecipeEntry(InputBuilder builder, int slot, Object value) {
 		if (value instanceof ItemStack) builder.add(slot, (ItemStack)value);
-		else if (value instanceof Collection) {
-			List<ItemStack> variants = Lists.newArrayList();
-			for (ItemStack stack : (Collection<ItemStack>)value) {
-				if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-					final Item item = stack.getItem();
-					item.getSubItems(item, null, variants);
-				} else {
-					variants.add(stack);
-				}
-			}
-
-			builder.add(slot, variants);
-		}
+		else if (value instanceof Collection) builder.add(slot, (Collection<ItemStack>)value);
 	}
 
 	public static ItemStack[][] getFullRecipeInput(IRecipe recipe) {
@@ -168,18 +119,18 @@ public class RecipeUtils {
 		final List<Object> inputs = recipe.getInput();
 
 		final int size = inputs.size();
-		InputBuilder builder = new InputBuilder(size);
+		InputBuilder builder = new InputBuilder();
 
 		for (int i = 0; i < size; i++) {
 			final Object input = inputs.get(i);
 			addOreRecipeEntry(builder, i, input);
 		}
 
-		return builder.build();
+		return builder.build(size);
 	}
 
 	public static ItemStack[][] getFullRecipeInput(ShapedOreRecipe recipe) {
-		final InputBuilder builder = new InputBuilder(9);
+		final InputBuilder builder = new InputBuilder();
 		final int width = shapedOreRecipeWidth.get(recipe);
 		final int height = shapedOreRecipeHeight.get(recipe);
 
@@ -195,11 +146,11 @@ public class RecipeUtils {
 			}
 		}
 
-		return builder.build();
+		return builder.build(9);
 	}
 
 	public static ItemStack[][] getFullRecipeInput(ShapedRecipes recipe) {
-		final InputBuilder builder = new InputBuilder(9);
+		final InputBuilder builder = new InputBuilder();
 
 		final ItemStack[] input = recipe.recipeItems;
 		int inputIndex = 0;
@@ -212,17 +163,18 @@ public class RecipeUtils {
 			}
 		}
 
-		return builder.build();
+		return builder.build(9);
 	}
 
 	public static ItemStack[][] getFullRecipeInput(ShapelessRecipes recipe) {
-		final InputBuilder builder = new InputBuilder(9);
+		final InputBuilder builder = new InputBuilder();
 		final List<ItemStack> input = recipe.recipeItems;
 
-		for (int i = 0; i < recipe.getRecipeSize(); i++)
+		final int size = recipe.getRecipeSize();
+		for (int i = 0; i < size; i++)
 			builder.add(i, input.get(i));
 
-		return builder.build();
+		return builder.build(size);
 	}
 
 }

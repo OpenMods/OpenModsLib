@@ -3,24 +3,21 @@ package openmods.gui.component;
 import com.google.common.collect.Lists;
 import java.util.List;
 import net.minecraft.client.audio.PositionedSoundRecord;
-import net.minecraft.util.ResourceLocation;
-import openmods.OpenMods;
 import openmods.Sounds;
 import openmods.gui.Icon;
 import openmods.gui.component.page.BookScaleConfig;
+import openmods.gui.component.page.PageBase;
 import openmods.gui.listener.IMouseDownListener;
 import openmods.utils.TranslationUtils;
 
 public class GuiComponentBook extends BaseComposite {
 
-	public static final ResourceLocation BOOK_WIDGETS = OpenMods.location("openmodslib:textures/gui/book.png");
-
-	public static final Icon iconPageLeft = Icon.createSheetIcon(BOOK_WIDGETS, 211, 0, -211, 180);
-	public static final Icon iconPageRight = Icon.createSheetIcon(BOOK_WIDGETS, 0, 0, 211, 180);
-	public static final Icon iconPrev = Icon.createSheetIcon(BOOK_WIDGETS, 57, 226, 18, 10);
-	public static final Icon iconNext = Icon.createSheetIcon(BOOK_WIDGETS, 57, 213, 18, 10);
-	public static final Icon iconPrevHover = Icon.createSheetIcon(BOOK_WIDGETS, 80, 226, 18, 10);
-	public static final Icon iconNextHover = Icon.createSheetIcon(BOOK_WIDGETS, 80, 213, 18, 10);
+	public static final Icon iconPageLeft = Icon.createSheetIcon(PageBase.BOOK_TEXTURE, 211, 0, -211, 180);
+	public static final Icon iconPageRight = Icon.createSheetIcon(PageBase.BOOK_TEXTURE, 0, 0, 211, 180);
+	public static final Icon iconPrev = Icon.createSheetIcon(PageBase.BOOK_TEXTURE, 57, 226, 18, 10);
+	public static final Icon iconNext = Icon.createSheetIcon(PageBase.BOOK_TEXTURE, 57, 213, 18, 10);
+	public static final Icon iconPrevHover = Icon.createSheetIcon(PageBase.BOOK_TEXTURE, 80, 226, 18, 10);
+	public static final Icon iconNextHover = Icon.createSheetIcon(PageBase.BOOK_TEXTURE, 80, 213, 18, 10);
 
 	private GuiComponentSpriteButton imgPrev;
 	private GuiComponentSpriteButton imgNext;

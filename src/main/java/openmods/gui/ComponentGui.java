@@ -1,6 +1,5 @@
 package openmods.gui;
 
-import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -28,8 +27,6 @@ public abstract class ComponentGui extends GuiContainer {
 		this.ySize = height;
 		this.root = createRoot();
 	}
-
-	private ResourceLocation currentTexture = null;
 
 	private IComponentParent createParent() {
 		return new IComponentParent() {
@@ -81,11 +78,7 @@ public abstract class ComponentGui extends GuiContainer {
 
 			@Override
 			public void bindTexture(ResourceLocation texture) {
-				Preconditions.checkNotNull(texture);
-				if (currentTexture == null || !currentTexture.equals(texture)) {
-					mc.renderEngine.bindTexture(texture);
-					currentTexture = texture;
-				}
+				mc.renderEngine.bindTexture(texture);
 			}
 		};
 	}
@@ -150,12 +143,11 @@ public abstract class ComponentGui extends GuiContainer {
 	}
 
 	@Override
-	public void drawScreen(int par1, int par2, float par3) {
-		super.drawScreen(par1, par2, par3);
-		currentTexture = null;
+	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		super.drawScreen(mouseX, mouseY, partialTicks);
 		prepareRenderState();
 		GL11.glPushMatrix();
-		root.renderOverlay(this.guiLeft, this.guiTop, par1 - this.guiLeft, par2 - this.guiTop);
+		root.renderOverlay(this.guiLeft, this.guiTop, mouseX - this.guiLeft, mouseY - this.guiTop);
 		GL11.glPopMatrix();
 		restoreRenderState();
 	}

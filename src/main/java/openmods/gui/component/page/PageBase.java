@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.util.ResourceLocation;
 import openmods.Log;
+import openmods.OpenMods;
 import openmods.gui.Icon;
 import openmods.gui.component.BaseComponent;
 import openmods.gui.component.BaseComposite;
@@ -33,7 +34,7 @@ public abstract class PageBase extends BaseComposite {
 		public final Icon icon;
 	}
 
-	public static final ResourceLocation BOOK_TEXTURE = new ResourceLocation("openmodslib:textures/gui/book.png");
+	public static final ResourceLocation BOOK_TEXTURE = OpenMods.location("textures/gui/book.png");
 
 	public PageBase() {
 		super(0, 15); // x is set on page turn
