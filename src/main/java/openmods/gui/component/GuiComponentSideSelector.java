@@ -9,11 +9,12 @@ import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.VertexBuffer;
-import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.MathHelper;
 import openmods.api.IValueReceiver;
@@ -52,6 +53,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 	private IBlockState blockState;
 	private TileEntity te;
+	private final FakeBlockAccess access;
 
 	public GuiComponentSideSelector(int x, int y, double scale, IBlockState blockState, TileEntity te, boolean highlightSelectedSides) {
 		super(x, y);
@@ -59,6 +61,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		this.diameter = MathHelper.ceiling_double_int(scale * SQRT_3);
 		this.blockState = blockState;
 		this.te = te;
+		this.access = new FakeBlockAccess(blockState, te);
 		this.highlightSelectedSides = highlightSelectedSides;
 	}
 
@@ -77,6 +80,10 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		GL11.glTranslatef(offsetX + x + width / 2, offsetY + y + height / 2, diameter);
 		GL11.glScaled(scale, -scale, scale);
 		trackball.update(mouseX - width, -(mouseY - height));
+
+		parent.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+		GlStateManager.enableTexture2D();
+
 		if (te != null) TileEntityRendererDispatcher.instance.renderTileEntityAt(te, -0.5, -0.5, -0.5, 0.0F);
 		if (blockState != null) drawBlock();
 
@@ -101,28 +108,32 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	private void drawBlock() {
 		final Tessellator tessellator = Tessellator.getInstance();
 		final VertexBuffer wr = tessellator.getBuffer();
-		wr.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-
-		FakeBlockAccess access = new FakeBlockAccess(blockState);
-
 		final BlockRendererDispatcher dispatcher = parent.getMinecraft().getBlockRendererDispatcher();
-		final IBakedModel model = dispatcher.getModelForState(blockState);
-		dispatcher.getBlockModelRenderer().renderModel(access, model, blockState, FakeBlockAccess.ORIGIN, wr, false);
+		for (BlockRenderLayer layer : BlockRenderLayer.values()) {
+			if (blockState.getBlock().canRenderInLayer(blockState, layer)) {
+				net.minecraftforge.client.ForgeHooksClient.setRenderLayer(layer);
+				wr.setTranslation(-0.5, -0.5, -0.5);
+				wr.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+				dispatcher.renderBlock(blockState, FakeBlockAccess.ORIGIN, access, wr);
+				tessellator.draw();
+			}
+		}
 		wr.setTranslation(0.0D, 0.0D, 0.0D);
-		tessellator.draw();
+
+		net.minecraftforge.client.ForgeHooksClient.setRenderLayer(null);
 	}
 
 	private static void drawHighlight(List<Pair<Side, Integer>> selections) {
 		GlStateManager.disableLighting();
-		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GlStateManager.enableBlend();
+		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GlStateManager.disableDepth();
 		GlStateManager.disableTexture2D();
 
 		GL11.glBegin(GL11.GL_QUADS);
 		for (Pair<Side, Integer> p : selections) {
 			final Integer color = p.getRight();
-			RenderUtils.setColor(color);
+			RenderUtils.setColor(color, 0.5f);
 
 			switch (p.getLeft()) {
 				case XPos:

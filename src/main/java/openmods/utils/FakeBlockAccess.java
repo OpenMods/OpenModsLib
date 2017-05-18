@@ -4,6 +4,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.WorldType;
@@ -12,6 +13,9 @@ import net.minecraft.world.biome.Biome;
 public class FakeBlockAccess implements IBlockAccess {
 	private final IBlockState state;
 	private final TileEntity tileEntity;
+
+	private static final ResourceLocation BIOME_DESERT = new ResourceLocation("desert");
+	private final Biome biome = Biome.REGISTRY.getObject(BIOME_DESERT);
 
 	public FakeBlockAccess(IBlockState state, TileEntity tileEntity) {
 		this.state = state;
@@ -55,7 +59,7 @@ public class FakeBlockAccess implements IBlockAccess {
 
 	@Override
 	public Biome getBiome(BlockPos pos) {
-		return Biome.getBiome(2); // 'desert', see Biome.registerBiomes
+		return biome;
 	}
 
 	@Override
