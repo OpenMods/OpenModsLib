@@ -28,8 +28,6 @@ import openmods.config.BlockInstances;
 import openmods.config.InstanceContainer;
 import openmods.config.ItemInstances;
 import openmods.config.game.RegisterBlock.RegisterTileEntity;
-import openmods.utils.CachedFactory;
-import openmods.utils.SneakyThrower;
 
 public class GameRegistryObjectsProvider {
 
@@ -57,18 +55,6 @@ public class GameRegistryObjectsProvider {
 		@Override
 		public Set<String> getFeaturesInCategory(String category) {
 			return ImmutableSet.of();
-		}
-	};
-
-	private static final CachedFactory<Class<? extends ICustomItemModelProvider>, ICustomItemModelProvider> customItemModelProviders = new CachedFactory<Class<? extends ICustomItemModelProvider>, ICustomItemModelProvider>() {
-
-		@Override
-		protected ICustomItemModelProvider create(Class<? extends ICustomItemModelProvider> key) {
-			try {
-				return key.newInstance();
-			} catch (Exception e) {
-				throw SneakyThrower.sneakyThrow(e);
-			}
 		}
 	};
 
@@ -294,15 +280,8 @@ public class GameRegistryObjectsProvider {
 				});
 	}
 
-	private static void registerCustomItemModels(final Item item, ResourceLocation itemLocation, Class<? extends ICustomItemModelProvider> providerCls) {
-
-		final ICustomItemModelProvider provider = customItemModelProviders.getOrCreate(providerCls);
-		provider.addCustomItemModels(item, itemLocation, new ICustomItemModelProvider.IModelRegistrationSink() {
-			@Override
-			public void register(int meta, ResourceLocation modelLocation) {
-				OpenMods.proxy.registerCustomItemModel(item, meta, modelLocation);
-			}
-		});
+	private static void registerCustomItemModels(Item item, ResourceLocation itemLocation, Class<? extends ICustomItemModelProvider> providerCls) {
+		OpenMods.proxy.runCustomItemModelProvider(itemLocation, item, providerCls);
 	}
 
 	private static void setBlockPrefixedId(String id, String blockName, IdDecorator decorator, IdSetter setter) {

@@ -12,6 +12,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.server.FMLServerHandler;
+import openmods.config.game.ICustomItemModelProvider;
 import openmods.gui.CommonGuiHandler;
 
 public final class OpenServerProxy implements IOpenModsProxy {
@@ -86,4 +87,7 @@ public final class OpenServerProxy implements IOpenModsProxy {
 
 	@Override
 	public void registerCustomItemModel(Item item, int metadata, ResourceLocation resourceLocation) {}
+
+	@Override
+	public void runCustomItemModelProvider(ResourceLocation itemLocation, Item item, Class<? extends ICustomItemModelProvider> providerCls) {}
 }

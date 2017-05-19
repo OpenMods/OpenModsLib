@@ -29,6 +29,7 @@ import openmods.block.BlockSelectionHandler;
 import openmods.calc.CommandCalc;
 import openmods.calc.CommandCalcFactory;
 import openmods.calc.ICommandComponent;
+import openmods.config.game.ICustomItemModelProvider;
 import openmods.config.properties.CommandConfig;
 import openmods.geometry.HitboxManager;
 import openmods.gui.ClientGuiHandler;
@@ -38,6 +39,8 @@ import openmods.model.textureditem.TexturedItemModelLoader;
 import openmods.model.variant.VariantModelLoader;
 import openmods.movement.PlayerMovementManager;
 import openmods.source.CommandSource;
+import openmods.utils.CachedFactory;
+import openmods.utils.SneakyThrower;
 import openmods.utils.render.RenderUtils;
 
 public final class OpenClientProxy implements IOpenModsProxy {
@@ -149,7 +152,32 @@ public final class OpenClientProxy implements IOpenModsProxy {
 
 	@Override
 	public void registerCustomItemModel(Item item, int metadata, ResourceLocation resourceLocation) {
-		ModelLoader.setCustomModelResourceLocation(item, metadata, new ModelResourceLocation(resourceLocation, "inventory"));
+		final ModelResourceLocation modelLoc = (resourceLocation instanceof ModelResourceLocation)
+				? (ModelResourceLocation)resourceLocation
+				: new ModelResourceLocation(resourceLocation, "inventory");
+		ModelLoader.setCustomModelResourceLocation(item, metadata, modelLoc);
+	}
+
+	private static final CachedFactory<Class<? extends ICustomItemModelProvider>, ICustomItemModelProvider> customItemModelProviders = new CachedFactory<Class<? extends ICustomItemModelProvider>, ICustomItemModelProvider>() {
+		@Override
+		protected ICustomItemModelProvider create(Class<? extends ICustomItemModelProvider> key) {
+			try {
+				return key.newInstance();
+			} catch (Exception e) {
+				throw SneakyThrower.sneakyThrow(e);
+			}
+		}
+	};
+
+	@Override
+	public void runCustomItemModelProvider(final ResourceLocation location, final Item item, Class<? extends ICustomItemModelProvider> providerCls) {
+		final ICustomItemModelProvider provider = customItemModelProviders.getOrCreate(providerCls);
+		provider.addCustomItemModels(item, location, new ICustomItemModelProvider.IModelRegistrationSink() {
+			@Override
+			public void register(int meta, ResourceLocation modelLocation) {
+				OpenMods.proxy.registerCustomItemModel(item, meta, modelLocation);
+			}
+		});
 	}
 
 }

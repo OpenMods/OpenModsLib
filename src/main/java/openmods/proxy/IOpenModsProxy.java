@@ -9,6 +9,7 @@ import net.minecraft.network.INetHandler;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
+import openmods.config.game.ICustomItemModelProvider;
 
 public interface IOpenModsProxy {
 
@@ -43,4 +44,6 @@ public interface IOpenModsProxy {
 	public void bindItemModelToItemMeta(Item item, int metadata, ResourceLocation resourceLocation);
 
 	public void registerCustomItemModel(Item item, int metadata, ResourceLocation resourceLocation);
+
+	public void runCustomItemModelProvider(ResourceLocation itemLocation, Item item, Class<? extends ICustomItemModelProvider> providerCls);
 }
