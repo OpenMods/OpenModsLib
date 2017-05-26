@@ -28,8 +28,6 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import openmods.Log;
 import openmods.api.IActivateAwareTile;
 import openmods.api.IAddAwareTile;
@@ -463,7 +461,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	protected Orientation calculateOrientationAfterPlace(BlockPos pos, EnumFacing facing, EntityLivingBase placer) {
 		if (blockPlacementMode == BlockPlacementMode.SURFACE) {
-			return rotationMode.getPlacementOrientationFromSurface(pos, facing);
+			return rotationMode.getPlacementOrientationFromSurface(facing);
 		} else {
 			return rotationMode.getPlacementOrientationFromEntity(pos, placer);
 		}
@@ -517,11 +515,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	public int getMetaFromState(IBlockState state) {
 		final Orientation orientation = state.getValue(propertyOrientation);
 		return getMetaFromOrientation(orientation);
-	}
-
-	@SideOnly(Side.CLIENT)
-	public Orientation getInventoryRenderOrientation() {
-		return inventoryRenderOrientation != null? inventoryRenderOrientation : rotationMode.getInventoryRenderOrientation();
 	}
 
 	@Override

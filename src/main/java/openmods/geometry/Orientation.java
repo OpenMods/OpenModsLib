@@ -216,4 +216,5 @@ public enum Orientation implements IStringSerializable {
 	public String getName() {
 		return name;
 	}
+
 }

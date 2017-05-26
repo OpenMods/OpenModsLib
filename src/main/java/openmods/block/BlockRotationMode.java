@@ -33,7 +33,7 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return Orientation.XP_YP;
 		}
 
@@ -73,7 +73,7 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
@@ -120,7 +120,7 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
@@ -157,7 +157,7 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
@@ -183,18 +183,52 @@ public enum BlockRotationMode {
 					return null;
 			}
 		}
+	},
+	/**
+	 * Rotations in every cardinal direction.
+	 * Horizontal directions are created by rotating over X to get north, and then rotating around Y (so local north/-z will always be down).
+	 * Placement side will become local bottom.
+	 * Tool rotation will set top to clicked side.
+	 */
+	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YP, Orientation.XP_YN, Orientation.XP_ZN, Orientation.ZP_XP, Orientation.ZN_XN, Orientation.XN_ZP) {
+		public Orientation directionToOrientation(EnumFacing localTop) {
+			switch (localTop) {
+				case DOWN:
+					return Orientation.XP_YN;
+				case EAST:
+					return Orientation.ZP_XP;
+				case NORTH:
+					return Orientation.XP_ZN;
+				case SOUTH:
+					return Orientation.XN_ZP;
+				case WEST:
+					return Orientation.ZN_XN;
+				case UP:
+				default:
+					return Orientation.XP_YP;
+			}
+		}
 
 		@Override
-		public Orientation getInventoryRenderOrientation() {
-			return Orientation.XN_YP;
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
+			return directionToOrientation(side);
+		}
+
+		@Override
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+			final EnumFacing localTop = BlockUtils.get3dOrientation(player, pos).getOpposite();
+			return directionToOrientation(localTop);
+		}
+
+		@Override
+		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
+			return directionToOrientation(axis);
 		}
 	},
 	/**
-	 * Rotations in every direction.
-	 * Placement side will become local top.
-	 * Tool rotation will set top to clicked side.
+	 * Like {@link #SIX_DIRECTIONS}, but with horizontal orientations used in 1.7.10 (single rotation from top)
 	 */
-	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XN_YN, Orientation.XP_YP, Orientation.XP_ZN, Orientation.XP_ZP, Orientation.YP_XN, Orientation.YN_XP) {
+	SIX_DIRECTIONS_LEGACY(RotationAxis.THREE_AXIS, Orientation.XN_YN, Orientation.XP_YP, Orientation.XP_ZN, Orientation.XP_ZP, Orientation.YP_XN, Orientation.YN_XP) {
 		public Orientation directionToOrientation(EnumFacing localTop) {
 			switch (localTop) {
 				case DOWN:
@@ -214,7 +248,7 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
@@ -227,11 +261,6 @@ public enum BlockRotationMode {
 		@Override
 		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			return directionToOrientation(axis);
-		}
-
-		@Override
-		public Orientation getInventoryRenderOrientation() {
-			return Orientation.YN_XP;
 		}
 	},
 
@@ -262,7 +291,7 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
@@ -284,11 +313,6 @@ public enum BlockRotationMode {
 			} else {
 				return directionToOrientation(axis);
 			}
-		}
-
-		@Override
-		public Orientation getInventoryRenderOrientation() {
-			return Orientation.XN_YP;
 		}
 	},
 	/**
@@ -332,7 +356,7 @@ public enum BlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side) {
+		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
 			return directionToOrientation(side);
 		}
 
@@ -447,7 +471,7 @@ public enum BlockRotationMode {
 		return validDirections.contains(dir);
 	}
 
-	public abstract Orientation getPlacementOrientationFromSurface(BlockPos pos, EnumFacing side);
+	public abstract Orientation getPlacementOrientationFromSurface(EnumFacing side);
 
 	public abstract Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player);
 
@@ -456,8 +480,4 @@ public enum BlockRotationMode {
 	}
 
 	public abstract Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis);
-
-	public Orientation getInventoryRenderOrientation() {
-		return Orientation.XP_YP;
-	}
 }
