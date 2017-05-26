@@ -1,5 +1,6 @@
 package openmods.tileentity;
 
+import com.google.common.collect.Sets;
 import java.util.Set;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
@@ -58,11 +59,17 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		};
 	}
 
-	protected void markBlockForRenderUpdate(final BlockPos pos) {
-		final int x = pos.getX();
-		final int y = pos.getY();
-		final int z = pos.getZ();
-		worldObj.markBlockRangeForRenderUpdate(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
+	protected ISyncListener createRenderUpdateListener(final Set<ISyncableObject> targets) {
+		return new ISyncListener() {
+			@Override
+			public void onSync(Set<ISyncableObject> changes) {
+				if (!Sets.intersection(changes, targets).isEmpty()) markBlockForRenderUpdate(getPos());
+			}
+		};
+	}
+
+	protected void markBlockForRenderUpdate(BlockPos pos) {
+		worldObj.markBlockRangeForRenderUpdate(pos, pos);
 	}
 
 	protected abstract void createSyncedFields();
