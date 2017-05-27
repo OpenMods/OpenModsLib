@@ -23,7 +23,6 @@ import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
 import openmods.liquids.BucketFillHandler;
-import openmods.network.IdSyncManager;
 import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.EntityRpcTarget;
 import openmods.network.rpc.targets.SyncRpcTarget;
@@ -113,9 +112,6 @@ public class OpenMods {
 		Integration.addModule(new BuildCraftPipes());
 		Integration.loadModules();
 		proxy.postInit();
-
-		// must be after all builders are done
-		IdSyncManager.INSTANCE.finishLoading();
 	}
 
 	@EventHandler
