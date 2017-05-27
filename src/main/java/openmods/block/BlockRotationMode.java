@@ -190,7 +190,7 @@ public enum BlockRotationMode {
 	 * Placement side will become local bottom.
 	 * Tool rotation will set top to clicked side.
 	 */
-	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YP, Orientation.XP_YN, Orientation.XP_ZN, Orientation.ZP_XP, Orientation.ZN_XN, Orientation.XN_ZP) {
+	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YN, Orientation.XP_YP, Orientation.XP_ZN, Orientation.XN_ZP, Orientation.ZN_XN, Orientation.ZP_XP) {
 		public Orientation directionToOrientation(EnumFacing localTop) {
 			switch (localTop) {
 				case DOWN:
