@@ -1,26 +1,28 @@
 package openmods.network.rpc;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.BiMap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
-import java.lang.reflect.Method;
 import java.util.List;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import openmods.OpenMods;
+import openmods.utils.CommonRegistryCallbacks;
 
 @Sharable
 public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall> {
 
-	private final TargetWrapperRegistry targetRegistry;
+	private final IForgeRegistry<TargetTypeProvider> targetRegistry;
 
-	private final MethodIdRegistry methodRegistry;
+	private final IForgeRegistry<MethodEntry> methodRegistry;
 
-	public RpcCallCodec(TargetWrapperRegistry targetRegistry, MethodIdRegistry methodRegistry) {
+	public RpcCallCodec(IForgeRegistry<TargetTypeProvider> targetRegistry, IForgeRegistry<MethodEntry> methodRegistry) {
 		this.targetRegistry = targetRegistry;
 		this.methodRegistry = methodRegistry;
 	}
@@ -31,16 +33,16 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 
 		{
 			final IRpcTarget targetWrapper = call.target;
-			int targetId = targetRegistry.getWrapperId(targetWrapper.getClass());
+			int targetId = CommonRegistryCallbacks.mapObjectToId(targetRegistry, targetWrapper.getClass());
 			output.writeVarIntToBuffer(targetId);
 			targetWrapper.writeToStream(output);
 		}
 
 		{
-			final Method method = call.method;
-			int methodId = methodRegistry.methodToId(method);
+			final BiMap<MethodEntry, Integer> eventIdMap = CommonRegistryCallbacks.getEntryIdMap(methodRegistry);
+			int methodId = eventIdMap.get(call.method);
 			output.writeVarIntToBuffer(methodId);
-			MethodParamsCodec paramsCodec = MethodParamsCodec.create(method);
+			MethodParamsCodec paramsCodec = call.method.paramsCodec;
 			paramsCodec.writeArgs(output, call.args);
 		}
 
@@ -50,24 +52,26 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 
 	@Override
 	protected void decode(ChannelHandlerContext ctx, FMLProxyPacket msg, List<Object> out) throws Exception {
-		PacketBuffer input = new PacketBuffer(msg.payload());
+		final PacketBuffer input = new PacketBuffer(msg.payload());
 
 		final IRpcTarget target;
-		final Method method;
+		final MethodEntry method;
 		final Object[] args;
 
 		{
 			final int targetId = input.readVarIntFromBuffer();
-			target = targetRegistry.createWrapperFromId(targetId);
+			final BiMap<Integer, TargetTypeProvider> idToEntryMap = CommonRegistryCallbacks.getEntryIdMap(targetRegistry).inverse();
+			final TargetTypeProvider entry = idToEntryMap.get(targetId);
+			target = entry.createRpcTarget();
 			EntityPlayer player = getPlayer(msg);
 			target.readFromStreamStream(player, input);
 		}
 
 		{
+			final BiMap<MethodEntry, Integer> eventIdMap = CommonRegistryCallbacks.getEntryIdMap(methodRegistry);
 			final int methodId = input.readVarIntFromBuffer();
-			method = methodRegistry.idToMethod(methodId);
-			MethodParamsCodec paramsCodec = MethodParamsCodec.create(method);
-			args = paramsCodec.readArgs(input);
+			method = eventIdMap.inverse().get(methodId);
+			args = method.paramsCodec.readArgs(input);
 		}
 
 		int bufferJunkSize = input.readableBytes();

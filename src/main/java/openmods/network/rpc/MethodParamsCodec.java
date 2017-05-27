@@ -9,7 +9,6 @@ import java.lang.reflect.Type;
 import net.minecraft.network.PacketBuffer;
 import openmods.serializable.SerializerRegistry;
 import openmods.utils.AnnotationMap;
-import openmods.utils.CachedFactory;
 import openmods.utils.io.IStreamReader;
 import openmods.utils.io.IStreamSerializer;
 import openmods.utils.io.IStreamWriter;
@@ -58,8 +57,17 @@ public class MethodParamsCodec {
 		Class<?>[] types = method.getParameterTypes();
 
 		this.params = new MethodParam[types.length];
-		for (int i = 0; i < params.length; i++)
-			this.params[i] = new MethodParam(types[i], annotations[i]);
+		for (int i = 0; i < params.length; i++) {
+			final MethodParam param = new MethodParam(types[i], annotations[i]);
+
+			try {
+				param.validate();
+			} catch (Exception e) {
+				throw new IllegalStateException(String.format("Failed to validate arg %d of method %s", i, method), e);
+			}
+
+			this.params[i] = param;
+		}
 	}
 
 	public void writeArgs(PacketBuffer output, Object... args) {
@@ -120,24 +128,4 @@ public class MethodParamsCodec {
 		return reader.readFromStream(input);
 	}
 
-	public void validate() {
-		for (int i = 0; i < params.length; i++) {
-			try {
-				params[i].validate();
-			} catch (Exception e) {
-				throw new IllegalStateException(String.format("Failed to validate arg %d of method %s", i, method), e);
-			}
-		}
-	}
-
-	private static final CachedFactory<Method, MethodParamsCodec> INSTANCES = new CachedFactory<Method, MethodParamsCodec>() {
-		@Override
-		protected MethodParamsCodec create(Method key) {
-			return new MethodParamsCodec(key);
-		}
-	};
-
-	public static synchronized MethodParamsCodec create(Method method) {
-		return INSTANCES.getOrCreate(method);
-	}
 }

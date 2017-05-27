@@ -12,17 +12,19 @@ import net.minecraft.network.INetHandler;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import openmods.Log;
 import openmods.OpenMods;
+import openmods.utils.CommonRegistryCallbacks;
 
 @Sharable
 public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, NetworkEvent> {
 
-	private final NetworkEventManager manager;
+	private final IForgeRegistry<NetworkEventEntry> registry;
 
-	public NetworkEventCodec(NetworkEventManager manager) {
-		this.manager = manager;
+	public NetworkEventCodec(IForgeRegistry<NetworkEventEntry> registry) {
+		this.registry = registry;
 	}
 
 	@Override
@@ -30,9 +32,9 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 		final Channel channel = ctx.channel();
 		final Side side = channel.attr(NetworkRegistry.CHANNEL_SOURCE).get();
 
-		final NetworkEventEntry entry = manager.getClassToEntryMap().get(msg.getClass());
+		final NetworkEventEntry entry = CommonRegistryCallbacks.getObjectToEntryMap(registry).get(msg.getClass());
 		Preconditions.checkState(entry != null, "Can't find registration for class %s", msg.getClass());
-		final int id = manager.getEventIdMap().get(entry);
+		final int id = CommonRegistryCallbacks.getEntryIdMap(registry).get(entry);
 
 		final EventDirection validator = entry.getDirection();
 		Preconditions.checkState(validator != null && validator.validateSend(side),
@@ -54,7 +56,7 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 
 		final PacketBuffer payload = new PacketBuffer(msg.payload());
 		final int typeId = payload.readVarIntFromBuffer();
-		final NetworkEventEntry type = manager.getEventIdMap().inverse().get(typeId);
+		final NetworkEventEntry type = CommonRegistryCallbacks.getEntryIdMap(registry).inverse().get(typeId);
 
 		final EventDirection validator = type.getDirection();
 		Preconditions.checkState(validator != null && validator.validateReceive(side),

@@ -3,6 +3,7 @@ package openmods.network.event;
 import java.util.Map;
 import net.minecraftforge.fml.common.network.FMLEmbeddedChannel;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.registry.IForgeRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import openmods.network.Dispatcher;
 import openmods.network.ExtendedOutboundHandler;
@@ -15,8 +16,8 @@ public class NetworkEventDispatcher extends Dispatcher {
 
 	public final Senders senders;
 
-	public NetworkEventDispatcher(NetworkEventManager manager) {
-		this.channels = NetworkRegistry.INSTANCE.newChannel(CHANNEL_NAME, new NetworkEventCodec(manager), new NetworkEventInboundHandler());
+	public NetworkEventDispatcher(IForgeRegistry<NetworkEventEntry> registry) {
+		this.channels = NetworkRegistry.INSTANCE.newChannel(CHANNEL_NAME, new NetworkEventCodec(registry), new NetworkEventInboundHandler());
 		ExtendedOutboundHandler.install(this.channels);
 
 		this.senders = new Senders();

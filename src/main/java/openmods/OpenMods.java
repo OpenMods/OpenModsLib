@@ -67,7 +67,7 @@ public class OpenMods {
 		new TypeVariableHolderHandler().fillAllHolders(evt.getAsmData());
 		SyncChannelHolder.ensureLoaded();
 
-		RpcCallDispatcher.INSTANCE.startRegistration()
+		RpcCallDispatcher.INSTANCE
 				.registerInterface(IRpcDirectionBitMap.class)
 				.registerInterface(IRpcIntBitMap.class)
 				.registerTargetWrapper(EntityRpcTarget.class)
@@ -113,8 +113,6 @@ public class OpenMods {
 		Integration.addModule(new BuildCraftPipes());
 		Integration.loadModules();
 		proxy.postInit();
-
-		RpcCallDispatcher.INSTANCE.finishRegistration();
 
 		// must be after all builders are done
 		IdSyncManager.INSTANCE.finishLoading();

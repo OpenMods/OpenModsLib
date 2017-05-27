@@ -18,7 +18,7 @@ public class RpcCallInboundHandler extends SimpleChannelInboundHandler<RpcCall> 
 				try {
 					Object target = msg.target.getTarget();
 					Preconditions.checkNotNull(target, "Target wrapper %s returned null object");
-					msg.method.invoke(target, msg.args);
+					msg.method.method.invoke(target, msg.args);
 					msg.target.afterCall();
 				} catch (Throwable t) {
 					throw SneakyThrower.sneakyThrow(t);
