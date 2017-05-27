@@ -24,7 +24,6 @@ import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
 import openmods.liquids.BucketFillHandler;
 import openmods.network.IdSyncManager;
-import openmods.network.event.NetworkEventManager;
 import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.EntityRpcTarget;
 import openmods.network.rpc.targets.SyncRpcTarget;
@@ -67,8 +66,6 @@ public class OpenMods {
 	public void preInit(FMLPreInitializationEvent evt) {
 		new TypeVariableHolderHandler().fillAllHolders(evt.getAsmData());
 		SyncChannelHolder.ensureLoaded();
-
-		NetworkEventManager.INSTANCE.startRegistration();
 
 		RpcCallDispatcher.INSTANCE.startRegistration()
 				.registerInterface(IRpcDirectionBitMap.class)
@@ -117,7 +114,6 @@ public class OpenMods {
 		Integration.loadModules();
 		proxy.postInit();
 
-		NetworkEventManager.INSTANCE.finalizeRegistration();
 		RpcCallDispatcher.INSTANCE.finishRegistration();
 
 		// must be after all builders are done

@@ -15,8 +15,8 @@ public class NetworkEventDispatcher extends Dispatcher {
 
 	public final Senders senders;
 
-	public NetworkEventDispatcher(NetworkEventRegistry registry) {
-		this.channels = NetworkRegistry.INSTANCE.newChannel(CHANNEL_NAME, new NetworkEventCodec(registry), new NetworkEventInboundHandler());
+	public NetworkEventDispatcher(NetworkEventManager manager) {
+		this.channels = NetworkRegistry.INSTANCE.newChannel(CHANNEL_NAME, new NetworkEventCodec(manager), new NetworkEventInboundHandler());
 		ExtendedOutboundHandler.install(this.channels);
 
 		this.senders = new Senders();

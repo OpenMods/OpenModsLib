@@ -62,11 +62,13 @@ public class IdSyncManager extends DataStoreManager {
 		NetworkRegistry.INSTANCE.newChannel(CHANNEL_NAME, new InboundHandler());
 	}
 
+	@Deprecated
 	public <K, V> DataStoreBuilder<K, V> createDataStore(String domain, String id, Class<? extends K> keyClass, Class<? extends V> valueClass) {
 		final String fullId = domain + ":" + id;
 		return createDataStore(fullId, keyClass, valueClass);
 	}
 
+	@Deprecated
 	@Override
 	public <K, V> DataStoreBuilder<K, V> createDataStore(String id, Class<? extends K> keyClass, Class<? extends V> valueClass) {
 		Preconditions.checkState(!Loader.instance().hasReachedState(LoaderState.POSTINITIALIZATION), "This method cannot be called in post-initialization state and later");

@@ -16,14 +16,13 @@ import net.minecraftforge.fml.relauncher.Side;
 import openmods.Log;
 import openmods.OpenMods;
 
-// TODO compression
 @Sharable
 public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, NetworkEvent> {
 
-	private final NetworkEventRegistry registry;
+	private final NetworkEventManager manager;
 
-	public NetworkEventCodec(NetworkEventRegistry registry) {
-		this.registry = registry;
+	public NetworkEventCodec(NetworkEventManager manager) {
+		this.manager = manager;
 	}
 
 	@Override
@@ -31,10 +30,11 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 		final Channel channel = ctx.channel();
 		final Side side = channel.attr(NetworkRegistry.CHANNEL_SOURCE).get();
 
-		final int id = registry.getIdForClass(msg.getClass());
-		final INetworkEventType type = registry.getTypeForId(id);
+		final NetworkEventEntry entry = manager.getClassToEntryMap().get(msg.getClass());
+		Preconditions.checkState(entry != null, "Can't find registration for class %s", msg.getClass());
+		final int id = manager.getEventIdMap().get(entry);
 
-		final EventDirection validator = type.getDirection();
+		final EventDirection validator = entry.getDirection();
 		Preconditions.checkState(validator != null && validator.validateSend(side),
 				"Invalid direction: sending packet %s on side %s", msg.getClass(), side);
 
@@ -54,7 +54,7 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 
 		final PacketBuffer payload = new PacketBuffer(msg.payload());
 		final int typeId = payload.readVarIntFromBuffer();
-		final INetworkEventType type = registry.getTypeForId(typeId);
+		final NetworkEventEntry type = manager.getEventIdMap().inverse().get(typeId);
 
 		final EventDirection validator = type.getDirection();
 		Preconditions.checkState(validator != null && validator.validateReceive(side),
