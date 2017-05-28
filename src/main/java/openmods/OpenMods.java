@@ -32,6 +32,26 @@ import openmods.reflection.TypeVariableHolderHandler;
 import openmods.source.ClassSourceCollector;
 import openmods.source.CommandSource;
 import openmods.sync.SyncChannelHolder;
+import openmods.sync.SyncableBlock;
+import openmods.sync.SyncableBoolean;
+import openmods.sync.SyncableByte;
+import openmods.sync.SyncableByteArray;
+import openmods.sync.SyncableDouble;
+import openmods.sync.SyncableEnum;
+import openmods.sync.SyncableFlags;
+import openmods.sync.SyncableFloat;
+import openmods.sync.SyncableInt;
+import openmods.sync.SyncableIntArray;
+import openmods.sync.SyncableItemStack;
+import openmods.sync.SyncableNBT;
+import openmods.sync.SyncableObjectTypeRegistry;
+import openmods.sync.SyncableShort;
+import openmods.sync.SyncableSides;
+import openmods.sync.SyncableString;
+import openmods.sync.SyncableTank;
+import openmods.sync.SyncableUUID;
+import openmods.sync.SyncableUnsignedByte;
+import openmods.sync.SyncableVarInt;
 import openmods.utils.bitmap.IRpcDirectionBitMap;
 import openmods.utils.bitmap.IRpcIntBitMap;
 import openmods.world.DelayedActionTickHandler;
@@ -64,6 +84,29 @@ public class OpenMods {
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent evt) {
 		new TypeVariableHolderHandler().fillAllHolders(evt.getAsmData());
+
+		SyncableObjectTypeRegistry.register(SyncableTank.class);
+		SyncableObjectTypeRegistry.register(SyncableBlock.class);
+		SyncableObjectTypeRegistry.register(SyncableBoolean.class);
+		SyncableObjectTypeRegistry.register(SyncableByte.class);
+		SyncableObjectTypeRegistry.register(SyncableByteArray.class);
+		SyncableObjectTypeRegistry.register(SyncableDouble.class);
+		SyncableObjectTypeRegistry.register(SyncableEnum.class, SyncableEnum.DUMMY_SUPPLIER);
+		SyncableObjectTypeRegistry.register(SyncableFlags.ByteFlags.class);
+		SyncableObjectTypeRegistry.register(SyncableFlags.ShortFlags.class);
+		SyncableObjectTypeRegistry.register(SyncableFlags.IntFlags.class);
+		SyncableObjectTypeRegistry.register(SyncableFloat.class);
+		SyncableObjectTypeRegistry.register(SyncableInt.class);
+		SyncableObjectTypeRegistry.register(SyncableIntArray.class);
+		SyncableObjectTypeRegistry.register(SyncableItemStack.class);
+		SyncableObjectTypeRegistry.register(SyncableNBT.class);
+		SyncableObjectTypeRegistry.register(SyncableShort.class);
+		SyncableObjectTypeRegistry.register(SyncableSides.class);
+		SyncableObjectTypeRegistry.register(SyncableString.class);
+		SyncableObjectTypeRegistry.register(SyncableUnsignedByte.class);
+		SyncableObjectTypeRegistry.register(SyncableUUID.class);
+		SyncableObjectTypeRegistry.register(SyncableVarInt.class);
+
 		SyncChannelHolder.ensureLoaded();
 
 		RpcCallDispatcher.INSTANCE

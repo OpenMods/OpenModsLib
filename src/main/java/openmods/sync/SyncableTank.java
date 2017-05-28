@@ -14,6 +14,10 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 
 	private boolean dirty = false;
 
+	public SyncableTank() {
+		super(0);
+	}
+
 	public SyncableTank(int capacity) {
 		super(capacity);
 	}

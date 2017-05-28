@@ -23,10 +23,10 @@ public abstract class SyncRpcTarget implements IRpcTarget {
 		this.syncProvider = syncProvider;
 	}
 
-	protected SyncRpcTarget(IRpcTarget syncProvider, SyncMap<?> map, ISyncableObject object) {
+	protected SyncRpcTarget(IRpcTarget syncProvider, SyncMap map, ISyncableObject object) {
 		this(syncProvider);
 		this.object = object;
-		this.objectId = map.getId(object);
+		this.objectId = map.getObjectId(object);
 	}
 
 	protected <P extends ISyncMapProvider & IRpcTargetProvider> SyncRpcTarget(P provider, ISyncableObject object) {
@@ -44,7 +44,7 @@ public abstract class SyncRpcTarget implements IRpcTarget {
 		output.writeVarIntToBuffer(objectId);
 	}
 
-	private SyncMap<?> getSyncMap() {
+	private SyncMap getSyncMap() {
 		ISyncMapProvider provider = (ISyncMapProvider)syncProvider.getTarget();
 		return provider.getSyncMap();
 	}
@@ -53,14 +53,14 @@ public abstract class SyncRpcTarget implements IRpcTarget {
 	public void readFromStreamStream(EntityPlayer player, PacketBuffer input) throws IOException {
 		syncProvider.readFromStreamStream(player, input);
 
-		SyncMap<?> map = getSyncMap();
+		SyncMap map = getSyncMap();
 		objectId = input.readVarIntFromBuffer();
-		object = map.get(objectId);
+		object = map.getObjectById(objectId);
 	}
 
 	@Override
 	public void afterCall() {
-		getSyncMap().sync();
+		getSyncMap().sendUpdates();
 	}
 
 	public static class SyncTileEntityRpcTarget extends SyncRpcTarget {

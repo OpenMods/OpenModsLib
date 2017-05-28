@@ -9,7 +9,7 @@ import openmods.utils.bitmap.IRpcIntBitMap;
 
 public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIntBitMap, IBitMap<Integer> {
 
-	private static class ByteFlags extends SyncableFlags {
+	public static class ByteFlags extends SyncableFlags {
 		@Override
 		public void readFromStream(PacketBuffer stream) {
 			value = stream.readByte();
@@ -31,7 +31,7 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 		}
 	}
 
-	private static class ShortFlags extends SyncableFlags {
+	public static class ShortFlags extends SyncableFlags {
 		@Override
 		public void readFromStream(PacketBuffer stream) {
 			value = stream.readShort();
@@ -53,7 +53,7 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 		}
 	}
 
-	private static class IntFlags extends SyncableFlags {
+	public static class IntFlags extends SyncableFlags {
 		@Override
 		public void readFromStream(PacketBuffer stream) {
 			value = stream.readInt();

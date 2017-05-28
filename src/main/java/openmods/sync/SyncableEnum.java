@@ -1,10 +1,35 @@
 package openmods.sync;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 
 public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implements ISyncableValueProvider<E> {
+
+	public static final Supplier<ISyncableObject> DUMMY_SUPPLIER = new Supplier<ISyncableObject>() {
+		@Override
+		public ISyncableObject get() {
+			return new SyncableObjectBase() {
+
+				@Override
+				public void writeToStream(PacketBuffer buf) {
+					buf.writeVarIntToBuffer(0);
+				}
+
+				@Override
+				public void readFromStream(PacketBuffer buf) {
+					buf.readVarIntFromBuffer();
+				}
+
+				@Override
+				public void writeToNBT(NBTTagCompound nbt, String name) {}
+
+				@Override
+				public void readFromNBT(NBTTagCompound nbt, String name) {}
+			};
+		}
+	};
 
 	private final E[] values;
 

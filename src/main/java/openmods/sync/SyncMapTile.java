@@ -2,36 +2,60 @@ package openmods.sync;
 
 import java.util.Set;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import openmods.tileentity.SyncedTileEntity;
 import openmods.utils.NetUtils;
 
-public class SyncMapTile<H extends TileEntity & ISyncMapProvider> extends SyncMap<H> {
+public class SyncMapTile extends SyncMapServer {
 
-	public SyncMapTile(H handler) {
-		super(handler);
+	private final SyncedTileEntity owner;
+
+	public SyncMapTile(SyncedTileEntity owner) {
+		this.owner = owner;
+	}
+
+	public static final int OWNER_TYPE = 1;
+
+	public static ISyncMapProvider findOwner(World world, PacketBuffer input) {
+		final BlockPos pos = input.readBlockPos();
+		if (world != null) {
+			if (world.isBlockLoaded(pos)) {
+				final TileEntity tile = world.getTileEntity(pos);
+				if (tile instanceof ISyncMapProvider) return (ISyncMapProvider)tile;
+			}
+		}
+
+		return null;
 	}
 
 	@Override
-	protected SyncMap.HandlerType getHandlerType() {
-		return HandlerType.TILE_ENTITY;
+	protected int getOwnerType() {
+		return OWNER_TYPE;
+	}
+
+	@Override
+	protected void writeOwnerData(PacketBuffer output) {
+		output.writeBlockPos(owner.getPos());
 	}
 
 	@Override
 	protected Set<EntityPlayerMP> getPlayersWatching() {
-		final BlockPos pos = handler.getPos();
-		return NetUtils.getPlayersWatchingBlock((WorldServer)handler.getWorld(), pos.getX(), pos.getZ());
-	}
-
-	@Override
-	protected World getWorld() {
-		return handler.getWorld();
+		final BlockPos pos = owner.getPos();
+		return NetUtils.getPlayersWatchingBlock((WorldServer)owner.getWorld(), pos.getX(), pos.getZ());
 	}
 
 	@Override
 	protected boolean isInvalid() {
-		return handler.isInvalid();
+		return owner.isInvalid();
 	}
+
+	@Override
+	protected IUpdateStrategy createUpdateStrategy() {
+		return new AutomaticInitialPacketStrategy();
+	}
+
 }

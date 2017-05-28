@@ -25,16 +25,31 @@ public class InboundSyncHandler extends SimpleChannelInboundHandler<FMLProxyPack
 		NetUtils.executeSynchronized(ctx, new Runnable() {
 			@Override
 			public void run() {
-				World world = OpenMods.proxy.getClientWorld();
-
 				PacketBuffer payload = new PacketBuffer(msg.payload());
 
-				ISyncMapProvider provider = SyncMap.findSyncMap(world, payload);
+				final ISyncMapProvider provider = findSyncMapProvider(payload);
+
 				try {
-					if (provider != null) provider.getSyncMap().readFromStream(payload);
+					if (provider != null) provider.getSyncMap().readUpdate(payload);
 				} catch (Throwable e) {
 					throw new SyncException(e, provider);
 				}
+			}
+
+			private ISyncMapProvider findSyncMapProvider(PacketBuffer payload) {
+				final int ownerType = payload.readVarIntFromBuffer();
+
+				final World world = OpenMods.proxy.getClientWorld();
+
+				switch (ownerType) {
+					case SyncMapEntity.OWNER_TYPE:
+						return SyncMapEntity.findOwner(world, payload);
+					case SyncMapTile.OWNER_TYPE:
+						return SyncMapTile.findOwner(world, payload);
+					default:
+						throw new IllegalArgumentException("Unknown sync map owner type: " + ownerType);
+				}
+
 			}
 		});
 	}

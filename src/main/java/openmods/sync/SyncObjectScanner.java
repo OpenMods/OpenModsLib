@@ -24,7 +24,7 @@ public class SyncObjectScanner extends FieldsSelector {
 		return result;
 	}
 
-	public void registerAllFields(SyncMap<?> map, Object target) {
+	public void registerAllFields(SyncMap map, Object target) {
 		for (Field field : getFields(target.getClass())) {
 			ISyncableObject obj;
 			try {
@@ -36,7 +36,7 @@ public class SyncObjectScanner extends FieldsSelector {
 			}
 
 			final String fieldName = field.getName();
-			map.put(fieldName, obj);
+			map.registerObject(fieldName, obj);
 		}
 	}
 
