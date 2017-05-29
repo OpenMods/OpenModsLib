@@ -1,7 +1,9 @@
 package openmods.proxy;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 import java.io.File;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -31,6 +33,7 @@ import openmods.calc.CommandCalcFactory;
 import openmods.calc.ICommandComponent;
 import openmods.config.game.ICustomItemModelProvider;
 import openmods.config.properties.CommandConfig;
+import openmods.geometry.Hitbox;
 import openmods.geometry.HitboxManager;
 import openmods.gui.ClientGuiHandler;
 import openmods.model.DependencyModelLoader;
@@ -44,6 +47,8 @@ import openmods.utils.SneakyThrower;
 import openmods.utils.render.RenderUtils;
 
 public final class OpenClientProxy implements IOpenModsProxy {
+
+	private final HitboxManager hitboxManager = new HitboxManager();
 
 	@Override
 	public EntityPlayer getThePlayer() {
@@ -116,7 +121,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		ModelLoaderRegistry.registerLoader(new MultiLayerModelLoader());
 		ModelLoaderRegistry.registerLoader(new DependencyModelLoader());
 
-		((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(HitboxManager.INSTANCE);
+		((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(hitboxManager);
 	}
 
 	@Override
@@ -178,6 +183,11 @@ public final class OpenClientProxy implements IOpenModsProxy {
 				OpenMods.proxy.registerCustomItemModel(item, meta, modelLocation);
 			}
 		});
+	}
+
+	@Override
+	public Supplier<List<Hitbox>> getHitboxes(ResourceLocation location) {
+		return hitboxManager.get(location);
 	}
 
 }

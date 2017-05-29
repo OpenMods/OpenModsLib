@@ -1,7 +1,9 @@
 package openmods.proxy;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 import java.io.File;
+import java.util.List;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -13,6 +15,7 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.server.FMLServerHandler;
 import openmods.config.game.ICustomItemModelProvider;
+import openmods.geometry.Hitbox;
 import openmods.gui.CommonGuiHandler;
 
 public final class OpenServerProxy implements IOpenModsProxy {
@@ -90,4 +93,16 @@ public final class OpenServerProxy implements IOpenModsProxy {
 
 	@Override
 	public void runCustomItemModelProvider(ResourceLocation itemLocation, Item item, Class<? extends ICustomItemModelProvider> providerCls) {}
+
+	private static final Supplier<List<Hitbox>> DUMMY_HITBOX_SUPPLIER = new Supplier<List<Hitbox>>() {
+		@Override
+		public List<Hitbox> get() {
+			throw new UnsupportedOperationException("Not available on server");
+		}
+	};
+
+	@Override
+	public Supplier<List<Hitbox>> getHitboxes(ResourceLocation location) {
+		return DUMMY_HITBOX_SUPPLIER;
+	}
 }

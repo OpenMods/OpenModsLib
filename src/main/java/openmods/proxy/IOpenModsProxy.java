@@ -1,7 +1,9 @@
 package openmods.proxy;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
 import java.io.File;
+import java.util.List;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -10,6 +12,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import openmods.config.game.ICustomItemModelProvider;
+import openmods.geometry.Hitbox;
 
 public interface IOpenModsProxy {
 
@@ -46,4 +49,6 @@ public interface IOpenModsProxy {
 	public void registerCustomItemModel(Item item, int metadata, ResourceLocation resourceLocation);
 
 	public void runCustomItemModelProvider(ResourceLocation itemLocation, Item item, Class<? extends ICustomItemModelProvider> providerCls);
+
+	public Supplier<List<Hitbox>> getHitboxes(ResourceLocation location);
 }

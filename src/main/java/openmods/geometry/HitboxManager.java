@@ -1,6 +1,7 @@
 package openmods.geometry;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
@@ -29,10 +30,6 @@ import net.minecraft.util.math.Vec3d;
 
 public class HitboxManager implements IResourceManagerReloadListener {
 
-	public static final HitboxManager INSTANCE = new HitboxManager();
-
-	private HitboxManager() {}
-
 	@SuppressWarnings("serial")
 	private static class HitboxList extends ArrayList<Hitbox> {}
 
@@ -51,7 +48,7 @@ public class HitboxManager implements IResourceManagerReloadListener {
 		}
 	}).create();
 
-	public class Holder {
+	private class Holder implements Supplier<List<Hitbox>> {
 		private final ResourceLocation location;
 
 		private List<Hitbox> hitboxes;
@@ -60,6 +57,7 @@ public class HitboxManager implements IResourceManagerReloadListener {
 			this.location = new ResourceLocation(location.getResourceDomain(), "hitboxes/" + location.getResourcePath() + ".json");
 		}
 
+		@Override
 		public List<Hitbox> get() {
 			if (hitboxes == null)
 				reload();
