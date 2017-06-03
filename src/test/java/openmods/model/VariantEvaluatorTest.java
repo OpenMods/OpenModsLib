@@ -1,6 +1,9 @@
 package openmods.model;
 
+import com.google.common.collect.ForwardingMap;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multiset;
 import java.util.Map;
 import openmods.model.variant.Evaluator;
 import openmods.model.variant.VariantModelState;
@@ -9,10 +12,40 @@ import org.junit.Test;
 
 public class VariantEvaluatorTest {
 
+	private static class AccessCountingMap extends ForwardingMap<String, String> {
+		private final Map<String, String> parent;
+
+		private final Multiset<String> accessCounters;
+
+		public AccessCountingMap(Map<String, String> parent, Multiset<String> accessCounters) {
+			this.parent = parent;
+			this.accessCounters = accessCounters;
+		}
+
+		@Override
+		protected Map<String, String> delegate() {
+			return parent;
+		}
+
+		@Override
+		public String get(Object key) {
+			accessCounters.add((String)key);
+			return super.get(key);
+		}
+
+		@Override
+		public boolean containsKey(Object key) {
+			accessCounters.add((String)key);
+			return super.containsKey(key);
+		}
+	}
+
 	private static class Tester {
 		private final Map<String, String> state = Maps.newHashMap();
 
 		private Map<String, String> result;
+
+		private Multiset<String> accessCount;
 
 		public Tester put(String key, String value) {
 			state.put(key, value);
@@ -31,13 +64,20 @@ public class VariantEvaluatorTest {
 
 		public Tester run(Evaluator evaluator) {
 			final Map<String, String> result = Maps.newHashMap(state);
-			evaluator.expandVars(result);
+			final Multiset<String> counters = HashMultiset.create();
+			evaluator.expandVars(new AccessCountingMap(result, counters));
 			this.result = result;
+			this.accessCount = counters;
 			return this;
 		}
 
 		public Tester validate() {
 			Assert.assertEquals(this.state, this.result);
+			return this;
+		}
+
+		public Tester checkAccessCount(String value, int count) {
+			Assert.assertEquals(count, this.accessCount.count(value));
 			return this;
 		}
 	}
@@ -298,4 +338,218 @@ public class VariantEvaluatorTest {
 		start().put("b", "not_test").run(ev).validate();
 		start().put("b", "test").run(ev).put("result").validate();
 	}
+
+	@Test
+	public void testConstantsInExpression() {
+		Evaluator ev = new Evaluator();
+		ev.addStatement("a := 1");
+		ev.addStatement("b := 0");
+		ev.addStatement("c := !1");
+		ev.addStatement("d := !0");
+
+		start().run(ev).put("a").put("c");
+	}
+
+	@Test
+	public void testConstantsInMacro() {
+		Evaluator ev = new Evaluator();
+		ev.addStatement("true() := 1");
+		ev.addStatement("false() := 0");
+		ev.addStatement("a := true()");
+		ev.addStatement("b := false()");
+		ev.addStatement("c := !true()");
+		ev.addStatement("d := !false()");
+
+		start().run(ev).put("a").put("d");
+	}
+
+	@Test
+	public void testAndConstantFolding() {
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a & 0");
+			start().put("a").run(ev).validate().checkAccessCount("a", 0);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a & 1");
+			start().put("a").run(ev).put("result").validate().checkAccessCount("a", 1);
+		}
+	}
+
+	@Test
+	public void testAndSymbolMerging() {
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a & a");
+			start().run(ev).validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := (a & 1) & a");
+			start().run(ev).validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a & a.x");
+			start().put("a").run(ev).put("result").validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a & a.x");
+			start().put("a", "x").run(ev).put("result").validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !a & !a");
+			start().run(ev).put("result").validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !!a & a");
+			start().run(ev).validate().checkAccessCount("a", 1);
+		}
+	}
+
+	@Test
+	public void testOrConstantFolding() {
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a | 1");
+			start().put("a").run(ev).put("result").validate().checkAccessCount("a", 0);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a | 0");
+			start().put("a").run(ev).put("result").validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !a | !a");
+			start().run(ev).put("result").validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !!a | a");
+			start().run(ev).validate().checkAccessCount("a", 1);
+		}
+	}
+
+	@Test
+	public void testOrSymbolMerging() {
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a | a");
+			start().run(ev).validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := (a | 0) | a");
+			start().run(ev).validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a | a.x");
+			start().put("a").run(ev).validate().put("result").checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a | a.x");
+			start().put("a", "x").run(ev).put("result").validate().checkAccessCount("a", 1);
+		}
+	}
+
+	@Test
+	public void testXorSymbolMerging() {
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a ^ a");
+			start().run(ev).validate().checkAccessCount("a", 0);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a ^ a ^ a");
+			start().run(ev).validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !a ^ !a");
+			start().run(ev).validate().checkAccessCount("a", 0);
+		}
+	}
+
+	@Test
+	public void testEqSymbolMerging() {
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a = a");
+			start().run(ev).put("result").validate().checkAccessCount("a", 0);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a = a = a");
+			start().run(ev).validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !a = !a");
+			start().run(ev).put("result").validate().checkAccessCount("a", 0);
+		}
+	}
+
+	@Test
+	public void checkConstantFoldingPropagation() {
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := (a & 0) & a");
+			start().put("a").run(ev).validate().checkAccessCount("a", 0);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := a & (a & 0)");
+			start().put("a").run(ev).validate().checkAccessCount("a", 0);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !(a & 0)");
+			start().put("a").run(ev).put("result").validate().checkAccessCount("a", 0);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !!(a & 0)");
+			start().put("a").run(ev).validate().checkAccessCount("a", 0);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := (a & !1) & a");
+			start().put("a").run(ev).validate().checkAccessCount("a", 0);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := (a | 1) & a");
+			start().put("a").run(ev).put("result").validate().checkAccessCount("a", 1);
+		}
+	}
+
 }

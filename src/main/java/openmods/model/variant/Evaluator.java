@@ -1,6 +1,7 @@
 package openmods.model.variant;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -89,11 +90,6 @@ public class Evaluator {
 		public String id() {
 			return id;
 		}
-
-		@Override
-		public boolean isLowerPriority(Operator other) {
-			return precedence <= other.precedence; // all binary operators are left associative here
-		}
 	}
 
 	private abstract static class UnaryOperator extends Operator {
@@ -113,6 +109,11 @@ public class Evaluator {
 		public IExpr createNode(List<IExpr> children) {
 			Preconditions.checkArgument(children.size() == 1, "Invalid arguments for unary operator %s", id());
 			return createNode(children.get(0));
+		}
+
+		@Override
+		public boolean isLowerPriority(Operator other) {
+			return precedence < other.precedence;
 		}
 	}
 
@@ -135,9 +136,62 @@ public class Evaluator {
 			Preconditions.checkArgument(children.size() == 2, "Invalid arguments for binary operator %s", id());
 			return createNode(children.get(0), children.get(1));
 		}
+
+		@Override
+		public boolean isLowerPriority(Operator other) {
+			return precedence <= other.precedence; // all binary operators are left associative here
+		}
 	}
 
 	private static final OperatorDictionary<Operator> operators = new OperatorDictionary<Operator>();
+
+	private static abstract class Constant implements IExpr {
+
+		protected abstract boolean value();
+
+		@Override
+		public boolean evaluate(Map<String, String> vars) {
+			return value();
+		}
+
+		@Override
+		public IExpr rebind(Map<String, IExpr> vars) {
+			return this;
+		}
+
+		@Override
+		public Optional<Boolean> getConstantValue() {
+			return Optional.of(value());
+		}
+
+		@Override
+		public IExpr fold() {
+			return this;
+		}
+
+		@Override
+		public boolean equals(IExpr other) {
+			return other == this;
+		}
+	}
+
+	private static final IExpr TRUE = new Constant() {
+		@Override
+		protected boolean value() {
+			return true;
+		}
+	};
+
+	private static final IExpr FALSE = new Constant() {
+		@Override
+		protected boolean value() {
+			return false;
+		}
+	};
+
+	public static IExpr constant(boolean value) {
+		return value? TRUE : FALSE;
+	}
 
 	private static abstract class UnaryOperatorExpr implements IExpr {
 		protected final IExpr value;
@@ -151,6 +205,23 @@ public class Evaluator {
 		@Override
 		public IExpr rebind(Map<String, IExpr> vars) {
 			return create(value.rebind(vars));
+		}
+
+		@Override
+		public Optional<Boolean> getConstantValue() {
+			return Optional.absent();
+		}
+
+		@Override
+		public boolean equals(IExpr other) {
+			if (this == other) return true;
+
+			if (other.getClass() == this.getClass()) {
+				final UnaryOperatorExpr otherOp = (UnaryOperatorExpr)other;
+				return otherOp.value.equals(this.value);
+			}
+
+			return false;
 		}
 	}
 
@@ -168,6 +239,18 @@ public class Evaluator {
 		protected IExpr create(IExpr value) {
 			return new OperatorNot(value);
 		}
+
+		@Override
+		public IExpr fold() {
+			final IExpr foldedArg = value.fold();
+
+			if (foldedArg instanceof OperatorNot) return ((OperatorNot)value).value;
+
+			final Optional<Boolean> argValue = foldedArg.getConstantValue();
+			if (argValue.isPresent()) return constant(!argValue.get());
+
+			return create(foldedArg);
+		}
 	}
 
 	private static abstract class BinaryOperatorExpr implements IExpr {
@@ -181,9 +264,74 @@ public class Evaluator {
 
 		protected abstract IExpr create(IExpr left, IExpr right);
 
+		protected abstract boolean evaluate(boolean left, boolean right);
+
+		protected abstract IExpr fold(boolean value, IExpr arg);
+
+		protected abstract IExpr foldSameExpr(IExpr var);
+
+		protected abstract IExpr foldLessSpecific(IVar lessSpecificVar, IVar moreSpecificVar);
+
 		@Override
-		public IExpr rebind(Map<String, IExpr> vars) {
+		public final boolean evaluate(Map<String, String> vars) {
+			return evaluate(left.evaluate(vars), right.evaluate(vars));
+		}
+
+		@Override
+		public final IExpr rebind(Map<String, IExpr> vars) {
 			return create(left.rebind(vars), right.rebind(vars));
+		}
+
+		@Override
+		public final IExpr fold() {
+			final IExpr foldedLeft = left.fold();
+			final IExpr foldedRight = right.fold();
+
+			final Optional<Boolean> leftValue = foldedLeft.getConstantValue();
+			final Optional<Boolean> rightValue = foldedRight.getConstantValue();
+
+			if (leftValue.isPresent()) {
+				if (rightValue.isPresent()) {
+					return constant(evaluate(leftValue.get(), rightValue.get()));
+				} else {
+					return fold(leftValue.get(), foldedRight);
+				}
+			} else {
+				if (rightValue.isPresent()) return fold(rightValue.get(), foldedLeft);
+			}
+
+			if (foldedLeft.equals(foldedRight)) return foldSameExpr(foldedLeft);
+
+			if ((foldedLeft instanceof IVar) && (foldedRight instanceof IVar)) {
+				final IVar leftVar = (IVar)foldedLeft;
+				final IVar rightVar = (IVar)foldedRight;
+
+				if (leftVar.isLessSpecific(rightVar))
+					return foldLessSpecific(leftVar, rightVar);
+
+				if (rightVar.isLessSpecific(leftVar))
+					return foldLessSpecific(rightVar, leftVar);
+			}
+
+			return create(foldedLeft, foldedRight);
+		}
+
+		@Override
+		public Optional<Boolean> getConstantValue() {
+			return Optional.absent();
+		}
+
+		@Override
+		public boolean equals(IExpr other) {
+			if (this == other) return true;
+
+			if (other.getClass() == this.getClass()) {
+				final BinaryOperatorExpr otherOp = (BinaryOperatorExpr)other;
+				return otherOp.left.equals(this.left) &&
+						otherOp.right.equals(this.right);
+			}
+
+			return false;
 		}
 	}
 
@@ -193,14 +341,30 @@ public class Evaluator {
 		}
 
 		@Override
-		public boolean evaluate(Map<String, String> vars) {
-			return left.evaluate(vars) && right.evaluate(vars);
-		}
-
-		@Override
 		protected IExpr create(IExpr left, IExpr right) {
 			return new AndOperator(left, right);
 		}
+
+		@Override
+		protected IExpr fold(boolean arg, IExpr node) {
+			return arg? node : FALSE;
+		}
+
+		@Override
+		protected IExpr foldSameExpr(IExpr expr) {
+			return expr;
+		}
+
+		@Override
+		protected IExpr foldLessSpecific(IVar lessSpecificVar, IVar moreSpecificVar) {
+			return moreSpecificVar;
+		}
+
+		@Override
+		protected boolean evaluate(boolean left, boolean right) {
+			return left && right;
+		}
+
 	}
 
 	private static class OrOperator extends BinaryOperatorExpr {
@@ -209,13 +373,28 @@ public class Evaluator {
 		}
 
 		@Override
-		public boolean evaluate(Map<String, String> vars) {
-			return left.evaluate(vars) || right.evaluate(vars);
+		protected IExpr create(IExpr left, IExpr right) {
+			return new OrOperator(left, right);
 		}
 
 		@Override
-		protected IExpr create(IExpr left, IExpr right) {
-			return new OrOperator(left, right);
+		protected IExpr fold(boolean arg, IExpr node) {
+			return arg? TRUE : node;
+		}
+
+		@Override
+		protected IExpr foldSameExpr(IExpr expr) {
+			return expr;
+		}
+
+		@Override
+		protected IExpr foldLessSpecific(IVar lessSpecificVar, IVar moreSpecificVar) {
+			return lessSpecificVar;
+		}
+
+		@Override
+		protected boolean evaluate(boolean left, boolean right) {
+			return left || right;
 		}
 	}
 
@@ -225,14 +404,30 @@ public class Evaluator {
 		}
 
 		@Override
-		public boolean evaluate(Map<String, String> vars) {
-			return left.evaluate(vars) == right.evaluate(vars);
-		}
-
-		@Override
 		protected IExpr create(IExpr left, IExpr right) {
 			return new EqOperator(left, right);
 		}
+
+		@Override
+		protected IExpr fold(boolean arg, IExpr node) {
+			return arg? node : new OperatorNot(node);
+		}
+
+		@Override
+		protected IExpr foldSameExpr(IExpr expr) {
+			return TRUE;
+		}
+
+		@Override
+		protected IExpr foldLessSpecific(IVar lessSpecificVar, IVar moreSpecificVar) {
+			return create(lessSpecificVar, moreSpecificVar);
+		}
+
+		@Override
+		protected boolean evaluate(boolean left, boolean right) {
+			return left == right;
+		}
+
 	}
 
 	private static class XorOperator extends BinaryOperatorExpr {
@@ -241,14 +436,30 @@ public class Evaluator {
 		}
 
 		@Override
-		public boolean evaluate(Map<String, String> vars) {
-			return left.evaluate(vars) ^ right.evaluate(vars);
-		}
-
-		@Override
 		protected IExpr create(IExpr left, IExpr right) {
 			return new XorOperator(left, right);
 		}
+
+		@Override
+		protected IExpr fold(boolean value, IExpr arg) {
+			return value? new OperatorNot(arg) : arg;
+		}
+
+		@Override
+		protected IExpr foldSameExpr(IExpr expr) {
+			return FALSE;
+		}
+
+		@Override
+		protected IExpr foldLessSpecific(IVar lessSpecificVar, IVar moreSpecificVar) {
+			return create(lessSpecificVar, moreSpecificVar);
+		}
+
+		@Override
+		protected boolean evaluate(boolean left, boolean right) {
+			return left ^ right;
+		}
+
 	}
 
 	static {
@@ -303,9 +514,19 @@ public class Evaluator {
 		public boolean evaluate(Map<String, String> vars);
 
 		public IExpr rebind(Map<String, IExpr> vars);
+
+		public Optional<Boolean> getConstantValue();
+
+		public IExpr fold();
+
+		public boolean equals(IExpr other);
 	}
 
-	private static class KeyGet implements IExpr {
+	private interface IVar extends IExpr {
+		public boolean isLessSpecific(IVar other);
+	}
+
+	private static class KeyGet implements IVar {
 		private final String key;
 
 		public KeyGet(String key) {
@@ -322,9 +543,34 @@ public class Evaluator {
 			final IExpr var = vars.get(key);
 			return var != null? var : this;
 		}
+
+		@Override
+		public Optional<Boolean> getConstantValue() {
+			return Optional.absent();
+		}
+
+		@Override
+		public IExpr fold() {
+			return this;
+		}
+
+		@Override
+		public boolean equals(IExpr other) {
+			if (other == this) return true;
+
+			if (other instanceof KeyGet)
+				return ((KeyGet)other).key.equals(this.key);
+
+			return false;
+		}
+
+		@Override
+		public boolean isLessSpecific(IVar other) {
+			return false;
+		}
 	}
 
-	private static class KeyValueGet implements IExpr {
+	private static class KeyValueGet implements IVar {
 		private final String key;
 
 		private final String value;
@@ -349,6 +595,37 @@ public class Evaluator {
 			final String newKey = ((KeyGet)var).key;
 			return new KeyValueGet(newKey, value);
 		}
+
+		@Override
+		public Optional<Boolean> getConstantValue() {
+			return Optional.absent();
+		}
+
+		@Override
+		public IExpr fold() {
+			return this;
+		}
+
+		@Override
+		public boolean equals(IExpr other) {
+			if (other == this) return true;
+
+			if (other instanceof KeyValueGet) {
+				final KeyValueGet o = (KeyValueGet)other;
+				return o.key.equals(this.key)
+						&& o.value.equals(this.value);
+			}
+
+			return false;
+		}
+
+		@Override
+		public boolean isLessSpecific(IVar other) {
+			if (other instanceof KeyGet)
+				return ((KeyGet)other).key.equals(this.key);
+
+			return false;
+		}
 	}
 
 	private static class SeparatorExpr implements IExpr {
@@ -360,12 +637,28 @@ public class Evaluator {
 
 		@Override
 		public boolean evaluate(Map<String, String> vars) {
-			return expr.evaluate(vars);
+			throw new AssertionError(); // should be optimized before use
 		}
 
 		@Override
 		public IExpr rebind(Map<String, IExpr> vars) {
 			return expr.rebind(vars);
+		}
+
+		@Override
+		public Optional<Boolean> getConstantValue() {
+			return Optional.absent();
+		}
+
+		@Override
+		public IExpr fold() {
+			return expr.fold();
+		}
+
+		@Override
+		public boolean equals(IExpr other) {
+			if (this == other) return true;
+			return (other instanceof SeparatorExpr) && ((SeparatorExpr)other).expr.equals(this.expr);
 		}
 	}
 
@@ -389,6 +682,13 @@ public class Evaluator {
 
 		@Override
 		public IExpr createValueNode(Token token) {
+			if (token.type.isNumber()) {
+				if (token.value.equals("1"))
+					return TRUE;
+				else if (token.value.equals("0"))
+					return FALSE;
+			}
+
 			throw new UnsupportedOperationException();
 		}
 	};
@@ -410,7 +710,7 @@ public class Evaluator {
 	};
 
 	private IExpr parseExpression(PeekingIterator<Token> tokens) {
-		return parserState.parse(tokens);
+		return parserState.parse(tokens).fold();
 	}
 
 	private static class Macro {
@@ -438,19 +738,32 @@ public class Evaluator {
 		}
 	}
 
-	private Macro parseMacro(PeekingIterator<Token> tokens) {
+	private static List<String> parseMacroArgList(PeekingIterator<Token> tokens) {
+		final Token firstToken = expectTokens(tokens, TokenType.SYMBOL, TokenType.RIGHT_BRACKET);
+
 		final List<String> args = Lists.newArrayList();
+		if (firstToken.type == TokenType.RIGHT_BRACKET) {
+			Preconditions.checkState(firstToken.value.equals(")"), "Unexpected bracket: '%s'", firstToken.value);
+			return args;
+		}
+
+		args.add(firstToken.value);
 
 		while (true) {
-			final String arg = expectToken(tokens, TokenType.SYMBOL);
-			args.add(arg);
 			final Token token = expectTokens(tokens, TokenType.SEPARATOR, TokenType.RIGHT_BRACKET);
 			if (token.type == TokenType.RIGHT_BRACKET) {
 				Preconditions.checkState(token.value.equals(")"), "Unexpected bracket: '%s'", token.value);
 				break;
 			}
-		}
 
+			final String arg = expectToken(tokens, TokenType.SYMBOL);
+			args.add(arg);
+		}
+		return args;
+	}
+
+	private Macro parseMacro(PeekingIterator<Token> tokens) {
+		final List<String> args = parseMacroArgList(tokens);
 		expectToken(tokens, TokenType.MODIFIER, MODIFIER_ASSIGN);
 
 		final IExpr body = parseExpression(tokens);
