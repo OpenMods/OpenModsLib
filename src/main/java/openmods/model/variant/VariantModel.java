@@ -87,7 +87,7 @@ public class VariantModel implements IModelCustomData {
 
 	private static final String KEY_BASE = "base";
 
-	static final VariantModel EMPTY_MODEL = new VariantModel(Optional.<ResourceLocation> absent(), new VariantModelData());
+	public static final VariantModel EMPTY_MODEL = new VariantModel(Optional.<ResourceLocation> absent(), new VariantModelData());
 
 	private final Optional<ResourceLocation> base;
 

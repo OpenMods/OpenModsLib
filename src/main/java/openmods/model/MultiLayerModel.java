@@ -1,4 +1,4 @@
-package openmods.model.multilayer;
+package openmods.model;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -34,7 +34,6 @@ import net.minecraftforge.client.model.ModelStateComposition;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 import openmods.Log;
-import openmods.model.BakedModelAdapter;
 
 // This is more or less Forge's multi-layer model, but this one changes order of quads renderes without any layer (solid first, then translucent)
 public final class MultiLayerModel implements IModelCustomData {

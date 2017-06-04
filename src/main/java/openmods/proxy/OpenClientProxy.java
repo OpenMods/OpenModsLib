@@ -36,10 +36,11 @@ import openmods.config.properties.CommandConfig;
 import openmods.geometry.Hitbox;
 import openmods.geometry.HitboxManager;
 import openmods.gui.ClientGuiHandler;
-import openmods.model.DependencyModelLoader;
-import openmods.model.multilayer.MultiLayerModelLoader;
-import openmods.model.textureditem.TexturedItemModelLoader;
-import openmods.model.variant.VariantModelLoader;
+import openmods.model.MappedModelLoader;
+import openmods.model.ModelWithDependencies;
+import openmods.model.MultiLayerModel;
+import openmods.model.textureditem.TexturedItemModel;
+import openmods.model.variant.VariantModel;
 import openmods.movement.PlayerMovementManager;
 import openmods.source.CommandSource;
 import openmods.utils.CachedFactory;
@@ -116,10 +117,12 @@ public final class OpenClientProxy implements IOpenModsProxy {
 
 		MinecraftForge.EVENT_BUS.register(new BlockSelectionHandler());
 
-		ModelLoaderRegistry.registerLoader(new VariantModelLoader());
-		ModelLoaderRegistry.registerLoader(new TexturedItemModelLoader());
-		ModelLoaderRegistry.registerLoader(new MultiLayerModelLoader());
-		ModelLoaderRegistry.registerLoader(new DependencyModelLoader());
+		ModelLoaderRegistry.registerLoader(MappedModelLoader.builder()
+				.put("with-dependencies", ModelWithDependencies.EMPTY)
+				.put("multi-layer", MultiLayerModel.EMPTY)
+				.put("variantmodel", VariantModel.EMPTY_MODEL)
+				.put("textureditem", TexturedItemModel.INSTANCE)
+				.build(OpenMods.MODID));
 
 		((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(hitboxManager);
 	}
