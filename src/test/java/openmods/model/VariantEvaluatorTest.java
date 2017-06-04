@@ -514,6 +514,69 @@ public class VariantEvaluatorTest {
 	}
 
 	@Test
+	public void testInterOpSymbolMerging() {
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := (a ^ 0) & a");
+			start().run(ev).validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := (a = 1) | a");
+			start().run(ev).validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := (a ^ 1) | !a");
+			start().run(ev).put("result").validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := (a = 0) & !a");
+			start().run(ev).put("result").validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !!a | a");
+			start().run(ev).validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !!a | a");
+			start().put("a").run(ev).put("result").validate().checkAccessCount("a", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !(a ^ b) | (a = b)");
+			start().run(ev).put("result").validate().checkAccessCount("a", 1).checkAccessCount("b", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !(a = b) & (a ^ b)");
+			start().run(ev).validate().checkAccessCount("a", 1).checkAccessCount("b", 1);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := (a & !!b) = (!!a & b)");
+			start().run(ev).put("result").validate().checkAccessCount("a", 0).checkAccessCount("b", 0);
+		}
+
+		{
+			Evaluator ev = new Evaluator();
+			ev.addStatement("result := !(a ^ !!b) ^ (!!a = b)");
+			start().run(ev).validate().checkAccessCount("a", 0).checkAccessCount("b", 0);
+		}
+	}
+
+	@Test
 	public void checkConstantFoldingPropagation() {
 		{
 			Evaluator ev = new Evaluator();

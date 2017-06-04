@@ -225,7 +225,11 @@ public class Evaluator {
 		}
 	}
 
-	private static class OperatorNot extends UnaryOperatorExpr {
+	private interface NegatableOperator {
+		public IExpr negation();
+	}
+
+	private static class OperatorNot extends UnaryOperatorExpr implements NegatableOperator {
 		private OperatorNot(IExpr value) {
 			super(value);
 		}
@@ -244,12 +248,17 @@ public class Evaluator {
 		public IExpr fold() {
 			final IExpr foldedArg = value.fold();
 
-			if (foldedArg instanceof OperatorNot) return ((OperatorNot)value).value;
+			if (foldedArg instanceof NegatableOperator) return ((NegatableOperator)foldedArg).negation();
 
 			final Optional<Boolean> argValue = foldedArg.getConstantValue();
 			if (argValue.isPresent()) return constant(!argValue.get());
 
 			return create(foldedArg);
+		}
+
+		@Override
+		public IExpr negation() {
+			return value;
 		}
 	}
 
@@ -398,7 +407,7 @@ public class Evaluator {
 		}
 	}
 
-	private static class EqOperator extends BinaryOperatorExpr {
+	private static class EqOperator extends BinaryOperatorExpr implements NegatableOperator {
 		public EqOperator(IExpr left, IExpr right) {
 			super(left, right);
 		}
@@ -428,9 +437,13 @@ public class Evaluator {
 			return left == right;
 		}
 
+		@Override
+		public IExpr negation() {
+			return new XorOperator(left, right);
+		}
 	}
 
-	private static class XorOperator extends BinaryOperatorExpr {
+	private static class XorOperator extends BinaryOperatorExpr implements NegatableOperator {
 		public XorOperator(IExpr left, IExpr right) {
 			super(left, right);
 		}
@@ -458,6 +471,11 @@ public class Evaluator {
 		@Override
 		protected boolean evaluate(boolean left, boolean right) {
 			return left ^ right;
+		}
+
+		@Override
+		public IExpr negation() {
+			return new EqOperator(left, right);
 		}
 
 	}
