@@ -7,8 +7,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +16,6 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
@@ -31,8 +28,8 @@ import net.minecraftforge.client.model.ModelStateComposition;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.property.IExtendedBlockState;
-import net.minecraftforge.fml.common.FMLLog;
 import openmods.model.BakedModelAdapter;
+import openmods.model.ModelUpdater;
 
 public class VariantModel implements IModelCustomData {
 
@@ -127,32 +124,19 @@ public class VariantModel implements IModelCustomData {
 
 	@Override
 	public IModel process(ImmutableMap<String, String> customData) {
-		boolean hasChanged = false;
-		Optional<ResourceLocation> base = this.base;
+		final ModelUpdater updater = new ModelUpdater(customData);
+
+		final Optional<ResourceLocation> base = updater.get(KEY_BASE, ModelUpdater.MODEL_LOCATION, this.base);
+
 		VariantModelData modelData = this.modelData;
-
-		if (customData.containsKey(KEY_BASE)) {
-			hasChanged = true;
-			base = Optional.of(getLocation(customData.get(KEY_BASE)));
-		}
-
 		if (customData.containsKey(KEY_VARIANTS) || customData.containsKey(KEY_EXPANSIONS)) {
-			hasChanged = true;
+			updater.markChanged();
 			Optional<String> variants = Optional.fromNullable(customData.get(KEY_VARIANTS));
 			Optional<String> expansions = Optional.fromNullable(customData.get(KEY_EXPANSIONS));
 			modelData = modelData.update(variants, expansions);
 		}
 
-		return hasChanged? new VariantModel(base, modelData) : this;
-	}
-
-	private static ResourceLocation getLocation(String json) {
-		JsonElement e = new JsonParser().parse(json);
-		if (e.isJsonPrimitive())
-			return new ModelResourceLocation(e.getAsString());
-
-		FMLLog.severe("Expect ModelResourceLocation, got: ", json);
-		return new ModelResourceLocation("builtin/missing", "missing");
+		return updater.hasChanged()? new VariantModel(base, modelData) : this;
 	}
 
 	@Override

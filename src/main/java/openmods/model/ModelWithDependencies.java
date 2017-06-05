@@ -6,12 +6,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import java.util.Collection;
 import java.util.Set;
 import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
@@ -62,41 +59,12 @@ public class ModelWithDependencies implements IModelCustomData {
 
 	@Override
 	public IModel process(ImmutableMap<String, String> customData) {
-		boolean changed = false;
-		Optional<ResourceLocation> base = this.base;
-		Set<ResourceLocation> dependencies = this.dependencies;
+		final ModelUpdater updater = new ModelUpdater(customData);
 
-		final String baseJson = customData.get("base");
-		if (baseJson != null) {
-			final JsonElement parsedBase = new JsonParser().parse(baseJson);
-			base = Optional.of(getLocation(parsedBase));
-			changed = true;
-		}
+		final Optional<ResourceLocation> base = updater.get("base", ModelUpdater.MODEL_LOCATION, this.base);
+		final Set<ResourceLocation> dependencies = updater.get("dependencies", ModelUpdater.MODEL_LOCATION, this.dependencies);
 
-		final String dependenciesJson = customData.get("dependencies");
-		if (dependenciesJson != null) {
-
-			final JsonElement parsedDependenies = new JsonParser().parse(dependenciesJson);
-
-			final ImmutableSet.Builder<ResourceLocation> newDependencies = ImmutableSet.builder();
-			if (parsedDependenies.isJsonArray()) {
-				for (JsonElement e : parsedDependenies.getAsJsonArray())
-					newDependencies.add(getLocation(e));
-			} else if (parsedDependenies.isJsonPrimitive()) {
-				newDependencies.add(getLocation(parsedDependenies));
-			} else {
-				throw new IllegalArgumentException("Invalid dependencies specification:  " + dependenciesJson);
-			}
-
-			dependencies = newDependencies.build();
-			changed = true;
-		}
-
-		return changed? new ModelWithDependencies(base, dependencies) : this;
+		return updater.hasChanged()? new ModelWithDependencies(base, dependencies) : this;
 	}
 
-	private static ResourceLocation getLocation(JsonElement e) {
-		if (e.isJsonPrimitive() && e.getAsJsonPrimitive().isString()) return new ModelResourceLocation(e.getAsString());
-		throw new IllegalArgumentException("Not model location: " + e);
-	}
 }

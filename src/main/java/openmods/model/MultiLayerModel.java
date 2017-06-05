@@ -8,8 +8,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +17,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.BlockRenderLayer;
@@ -33,7 +30,6 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.ModelStateComposition;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
-import openmods.Log;
 
 // This is more or less Forge's multi-layer model, but this one changes order of quads renderes without any layer (solid first, then translucent)
 public final class MultiLayerModel implements IModelCustomData {
@@ -45,7 +41,7 @@ public final class MultiLayerModel implements IModelCustomData {
 
 	public MultiLayerModel(Optional<ResourceLocation> base, Map<BlockRenderLayer, ResourceLocation> models) {
 		this.base = base;
-		this.models = models;
+		this.models = ImmutableMap.copyOf(models);
 	}
 
 	@Override
@@ -58,7 +54,7 @@ public final class MultiLayerModel implements IModelCustomData {
 		return ImmutableList.of();
 	}
 
-	private static IBakedModel bakeModel(ResourceLocation model, IModelState state, final VertexFormat format, final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+	private static IBakedModel bakeModel(ResourceLocation model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
 		IModel baseModel = ModelLoaderRegistry.getModelOrLogError(model, "Couldn't load MultiLayerModel dependency: " + model);
 		return baseModel.bake(new ModelStateComposition(state, baseModel.getDefaultState()), format, bakedTextureGetter);
 	}
@@ -97,33 +93,18 @@ public final class MultiLayerModel implements IModelCustomData {
 
 	@Override
 	public MultiLayerModel process(ImmutableMap<String, String> customData) {
-		boolean changed = false;
-		Optional<ResourceLocation> base = this.base;
-		Map<BlockRenderLayer, ResourceLocation> models = Maps.newHashMap(this.models);
+		final ModelUpdater updater = new ModelUpdater(customData);
 
-		final String baseValue = customData.get("base");
-		if (baseValue != null) {
-			base = Optional.<ResourceLocation> of(getLocation(baseValue));
-			changed = true;
-		}
+		final Optional<ResourceLocation> base = updater.get("base", ModelUpdater.MODEL_LOCATION, this.base);
 
+		final Map<BlockRenderLayer, ResourceLocation> models = Maps.newHashMap();
 		for (BlockRenderLayer layer : BlockRenderLayer.values()) {
-			final String layerModel = customData.get(layer.toString());
-			if (layerModel != null) {
-				models.put(layer, getLocation(layerModel));
-				changed = true;
-			}
+			final ResourceLocation result = updater.get(layer.toString(), ModelUpdater.MODEL_LOCATION, this.models.get(layer));
+			if (result != null) models.put(layer, result);
 		}
 
-		return changed? new MultiLayerModel(base, models) : this;
+		return updater.hasChanged()? new MultiLayerModel(base, models) : this;
 
-	}
-
-	private static ResourceLocation getLocation(String json) {
-		JsonElement e = new JsonParser().parse(json);
-		if (e.isJsonPrimitive() && e.getAsJsonPrimitive().isString()) { return new ModelResourceLocation(e.getAsString()); }
-		Log.severe("Expect ModelResourceLocation, got: ", json);
-		return new ModelResourceLocation("builtin/missing", "missing");
 	}
 
 	private static final class MultiLayerBakedModel extends BakedModelAdapter {

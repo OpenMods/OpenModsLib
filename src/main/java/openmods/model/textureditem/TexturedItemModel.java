@@ -5,8 +5,6 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import java.util.Collection;
 import java.util.Set;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -23,6 +21,7 @@ import net.minecraftforge.client.model.ModelStateComposition;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 import openmods.model.BakedModelAdapter;
+import openmods.model.ModelUpdater;
 
 public class TexturedItemModel implements IModelCustomData {
 
@@ -98,46 +97,13 @@ public class TexturedItemModel implements IModelCustomData {
 
 	@Override
 	public IModel process(ImmutableMap<String, String> customData) {
+		final ModelUpdater updater = new ModelUpdater(customData);
 
-		boolean changed = false;
-		Optional<ResourceLocation> empty = this.untexturedModel;
-		Optional<ResourceLocation> filled = this.texturedModel;
-		Set<String> textures = Sets.newHashSet();
+		final Optional<ResourceLocation> untexturedModel = updater.get("untexturedModel", ModelUpdater.MODEL_LOCATION, this.untexturedModel);
+		final Optional<ResourceLocation> filled = updater.get("texturedModel", ModelUpdater.MODEL_LOCATION, this.texturedModel);
+		final Set<String> textures = updater.get("textures", ModelUpdater.TO_STRING, this.textures);
 
-		{
-			final String value = customData.get("untexturedModel");
-			if (value != null) {
-				empty = Optional.of(parseAsResourceLocation(value));
-				changed = true;
-			}
-		}
-
-		{
-			final String value = customData.get("texturedModel");
-			if (value != null) {
-				filled = Optional.of(parseAsResourceLocation(value));
-				changed = true;
-			}
-		}
-
-		{
-			final String value = customData.get("textures");
-			if (value != null) {
-				final JsonElement texturesElement = new JsonParser().parse(value);
-				for (JsonElement el : texturesElement.getAsJsonArray()) {
-					textures.add(el.getAsString());
-				}
-
-				changed = true;
-			}
-		}
-
-		return changed? new TexturedItemModel(empty, filled, textures) : this;
-	}
-
-	private static ResourceLocation parseAsResourceLocation(final String json) {
-		final JsonElement element = new JsonParser().parse(json);
-		return new ResourceLocation(element.getAsString());
+		return updater.hasChanged()? new TexturedItemModel(untexturedModel, filled, textures) : this;
 	}
 
 }
