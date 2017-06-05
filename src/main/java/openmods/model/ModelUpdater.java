@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -44,6 +45,23 @@ public class ModelUpdater {
 		@Override
 		public String convert(String name, JsonElement element) {
 			return JsonUtils.getString(element, name);
+		}
+	};
+
+	public static final ValueConverter<Integer> TO_INT = new ValueConverter<Integer>() {
+		@Override
+		public Integer convert(String name, JsonElement element) {
+			return JsonUtils.getInt(element, name);
+		}
+	};
+
+	public static final ValueConverter<Long> TO_LONG = new ValueConverter<Long>() {
+		@Override
+		public Long convert(String name, JsonElement element) {
+			if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isNumber())
+				return element.getAsLong();
+
+			throw new JsonSyntaxException("Expected " + name + " to be a Int, was " + JsonUtils.toString(element));
 		}
 	};
 
