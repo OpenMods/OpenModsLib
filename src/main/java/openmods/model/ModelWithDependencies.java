@@ -2,7 +2,6 @@ package openmods.model;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -14,20 +13,24 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.IModelCustomData;
+import net.minecraftforge.client.model.IRetexturableModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 
-public class ModelWithDependencies implements IModelCustomData {
-	public static final ModelWithDependencies EMPTY = new ModelWithDependencies(Optional.<ResourceLocation> absent(), ImmutableSet.<ResourceLocation> of());
+public class ModelWithDependencies implements IModelCustomData, IRetexturableModel {
+	public static final ModelWithDependencies EMPTY = new ModelWithDependencies(Optional.<ResourceLocation> absent(), ImmutableSet.<ResourceLocation> of(), new ModelTextureMap());
 
 	private final Optional<ResourceLocation> base;
 
 	private final Set<ResourceLocation> dependencies;
 
-	public ModelWithDependencies(Optional<ResourceLocation> base, Set<ResourceLocation> dependencies) {
+	private final ModelTextureMap textures;
+
+	private ModelWithDependencies(Optional<ResourceLocation> base, Set<ResourceLocation> dependencies, ModelTextureMap textures) {
 		this.base = base;
 		this.dependencies = ImmutableSet.copyOf(dependencies);
+		this.textures = textures;
 	}
 
 	@Override
@@ -37,7 +40,7 @@ public class ModelWithDependencies implements IModelCustomData {
 
 	@Override
 	public Collection<ResourceLocation> getTextures() {
-		return ImmutableList.of();
+		return textures.getTextures();
 	}
 
 	@Override
@@ -64,7 +67,13 @@ public class ModelWithDependencies implements IModelCustomData {
 		final Optional<ResourceLocation> base = updater.get("base", ModelUpdater.MODEL_LOCATION, this.base);
 		final Set<ResourceLocation> dependencies = updater.get("dependencies", ModelUpdater.MODEL_LOCATION, this.dependencies);
 
-		return updater.hasChanged()? new ModelWithDependencies(base, dependencies) : this;
+		return updater.hasChanged()? new ModelWithDependencies(base, dependencies, this.textures) : this;
+	}
+
+	@Override
+	public IModel retexture(ImmutableMap<String, String> updates) {
+		final Optional<ModelTextureMap> newTextures = textures.update(updates);
+		return newTextures.isPresent()? new ModelWithDependencies(base, dependencies, newTextures.get()) : this;
 	}
 
 }
