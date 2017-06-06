@@ -15,10 +15,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
-import net.minecraftforge.fluids.FluidTankInfo;
-import net.minecraftforge.fluids.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import openmods.utils.BlockUtils;
 import openmods.utils.CollectionUtils;
+import openmods.utils.CompatibilityUtils;
 
 public class GenericTank extends FluidTank {
 
@@ -74,7 +75,7 @@ public class GenericTank extends FluidTank {
 
 	private static boolean isNeighbourTank(World world, BlockPos coord, EnumFacing dir) {
 		TileEntity tile = BlockUtils.getTileInDirectionSafe(world, coord, dir);
-		return tile instanceof IFluidHandler;
+		return CompatibilityUtils.isFluidHandler(tile, dir);
 	}
 
 	private static Set<EnumFacing> getSurroundingTanks(World world, BlockPos coord) {
@@ -107,11 +108,11 @@ public class GenericTank extends FluidTank {
 		final FluidStack toFill = drainedFluid.copy();
 		final EnumFacing fillSide = side.getOpposite();
 
-		if (otherTank instanceof IFluidHandler) return ((IFluidHandler)otherTank).fill(fillSide, toFill, true);
-		return 0;
+		final IFluidHandler fluidHandler = CompatibilityUtils.getFluidHandler(otherTank, fillSide);
+		return fluidHandler != null? fluidHandler.fill(toFill, true) : 0;
 	}
 
-	public void distributeToSides(int amountPerTick, World world, BlockPos coord, Set<EnumFacing> allowedSides) {
+	public void distributeToSides(int amount, World world, BlockPos coord, Set<EnumFacing> allowedSides) {
 		if (world == null) return;
 
 		if (getFluidAmount() <= 0) return;
@@ -125,7 +126,7 @@ public class GenericTank extends FluidTank {
 			if (sides.isEmpty()) return;
 		}
 
-		FluidStack drainedFluid = drain(amountPerTick, false);
+		FluidStack drainedFluid = drain(amount, false);
 
 		if (drainedFluid != null && drainedFluid.amount > 0) {
 			int startingAmount = drainedFluid.amount;
@@ -188,16 +189,17 @@ public class GenericTank extends FluidTank {
 		int drain = 0;
 		final TileEntity otherTank = BlockUtils.getTileInDirection(world, coord, side);
 
-		if (otherTank instanceof IFluidHandler) {
-			final EnumFacing drainSide = side.getOpposite();
-			final IFluidHandler handler = (IFluidHandler)otherTank;
-			final FluidTankInfo[] infos = handler.getTankInfo(drainSide);
+		final EnumFacing drainSide = side.getOpposite();
+		IFluidHandler handler = CompatibilityUtils.getFluidHandler(otherTank, drainSide);
+
+		if (handler != null) {
+			final IFluidTankProperties[] infos = handler.getTankProperties();
 
 			if (infos == null) return 0;
 
-			for (FluidTankInfo info : infos) {
-				if (filter.canAcceptFluid(info.fluid)) {
-					final FluidStack drained = handler.drain(drainSide, maxDrain, true);
+			for (IFluidTankProperties info : infos) {
+				if (filter.canAcceptFluid(info.getContents())) {
+					final FluidStack drained = handler.drain(maxDrain, true);
 
 					if (drained != null) {
 						fill(drained, true);

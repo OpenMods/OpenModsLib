@@ -11,13 +11,20 @@ import net.minecraftforge.fluids.capability.wrappers.FluidHandlerWrapper;
 public class CompatibilityUtils {
 
 	@Nullable
-	public static IFluidHandler getFluidHandler(TileEntity te) {
-		final IFluidHandler nativeCapability = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, EnumFacing.UP);
+	public static IFluidHandler getFluidHandler(TileEntity te, EnumFacing side) {
+		if (te == null) return null;
+		final IFluidHandler nativeCapability = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side);
 		if (nativeCapability != null) return nativeCapability;
 
-		if (te instanceof net.minecraftforge.fluids.IFluidHandler) return new FluidHandlerWrapper((net.minecraftforge.fluids.IFluidHandler)te, EnumFacing.UP);
+		if (te instanceof net.minecraftforge.fluids.IFluidHandler) return new FluidHandlerWrapper((net.minecraftforge.fluids.IFluidHandler)te, side);
 
 		return null;
+	}
+
+	@Nullable
+	public static boolean isFluidHandler(TileEntity te, EnumFacing side) {
+		return te != null && (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side) ||
+				(te instanceof net.minecraftforge.fluids.IFluidHandler));
 	}
 
 }

@@ -1,6 +1,7 @@
 package openmods.sync;
 
 import java.io.IOException;
+import javax.annotation.Nullable;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.util.Constants;
@@ -119,4 +120,9 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 		return stack != null? stack.copy() : null;
 	}
 
+	@Override
+	public void setFluid(@Nullable FluidStack fluid) {
+		super.setFluid(fluid);
+		markDirty();
+	}
 }

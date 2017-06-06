@@ -3,6 +3,7 @@ package openmods.utils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -107,11 +108,7 @@ public class SidedInventoryAdapter implements ISidedInventory {
 			if (entry.getValue().canAccessFromSide(dir)) result.add(entry.getKey());
 		}
 
-		int tmp[] = new int[result.size()];
-		int i = 0;
-		for (Integer value : result)
-			tmp[i++] = value;
-		return tmp;
+		return Ints.toArray(result);
 	}
 
 	@Override

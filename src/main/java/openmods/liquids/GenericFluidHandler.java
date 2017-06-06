@@ -7,6 +7,7 @@ import net.minecraftforge.fluids.FluidTankInfo;
 import net.minecraftforge.fluids.IFluidHandler;
 import net.minecraftforge.fluids.IFluidTank;
 
+@Deprecated
 public class GenericFluidHandler implements IFluidHandler {
 
 	public static class Source extends GenericFluidHandler {

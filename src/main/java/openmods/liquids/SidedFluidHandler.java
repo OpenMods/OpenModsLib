@@ -6,6 +6,7 @@ import net.minecraftforge.fluids.IFluidTank;
 import openmods.sync.SyncableFlags;
 import openmods.utils.bitmap.IReadableBitMap;
 
+@Deprecated
 public class SidedFluidHandler extends GenericFluidHandler {
 
 	public static class Source extends GenericFluidHandler.Source {
