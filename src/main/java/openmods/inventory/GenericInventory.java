@@ -86,6 +86,7 @@ public class GenericInventory implements IInventory {
 		if (this.inventoryContents[slot] != null) {
 			ItemStack itemstack = this.inventoryContents[slot];
 			this.inventoryContents[slot] = null;
+			onInventoryChanged(slot);
 			return itemstack;
 		}
 		return null;

@@ -4,10 +4,12 @@ import openmods.gui.Icon;
 
 public class GuiComponentIconButton extends GuiComponentButton {
 
+	public static final int BORDER_SIZE = 4;
+
 	private final Icon icon;
 
 	public GuiComponentIconButton(int x, int y, int color, Icon icon) {
-		super(x, y, icon.width + 4, icon.height + 4, color);
+		super(x, y, icon.width + BORDER_SIZE, icon.height + BORDER_SIZE, color);
 		this.icon = icon;
 	}
 

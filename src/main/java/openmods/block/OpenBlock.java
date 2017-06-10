@@ -252,7 +252,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		List<ItemStack> breakDrops = Lists.newArrayList();
 		BlockUtils.getTileInventoryDrops(te, breakDrops);
 		if (te instanceof ICustomBreakDrops)
-			((ICustomBreakDrops)te).addDrops(breakDrops);
+			breakDrops = ((ICustomBreakDrops)te).getDrops(breakDrops);
 		return breakDrops;
 	}
 

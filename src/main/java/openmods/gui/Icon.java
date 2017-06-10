@@ -43,4 +43,12 @@ public class Icon {
 	public float getInterpolatedV(double p) {
 		return minV + (maxV - minV) * (float)p / 16.0f;
 	}
+
+	public Icon mirrorVertical() {
+		return new Icon(texture, maxU, minU, minV, maxV, width, height);
+	}
+
+	public Icon mirrorHorizontal() {
+		return new Icon(texture, minU, maxU, maxV, minV, width, height);
+	}
 }
