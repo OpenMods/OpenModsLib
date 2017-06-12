@@ -42,6 +42,18 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return openBlock.getOrientation(state);
 	}
 
+	public EnumFacing getFront() {
+		final IBlockState state = worldObj.getBlockState(pos);
+		final Block block = state.getBlock();
+		if (!(block instanceof OpenBlock)) return EnumFacing.NORTH;
+		final OpenBlock openBlock = (OpenBlock)block;
+		return openBlock.getFront(state);
+	}
+
+	public EnumFacing getBack() {
+		return getFront().getOpposite();
+	}
+
 	public boolean isAddedToWorld() {
 		return worldObj != null;
 	}

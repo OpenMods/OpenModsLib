@@ -18,4 +18,60 @@ public class BlockRotationModeTest {
 		}
 	}
 
+	// front should be on the same axis as placement side
+	private static void testSurfacePlacementFrontWeakConsistency(BlockRotationMode mode) {
+		for (EnumFacing facing : EnumFacing.values()) {
+			Orientation orientation = mode.getPlacementOrientationFromSurface(facing);
+			if (orientation != null) {
+				Assert.assertEquals("Orientation " + orientation + " has invalid placement/front combination",
+						facing.getAxis(), mode.getFront(orientation).getAxis());
+			}
+		}
+	}
+
+	// front should be on the same direction as placement side
+	private static void testSurfacePlacementFrontStrongConsistency(BlockRotationMode mode) {
+		for (EnumFacing facing : EnumFacing.values()) {
+			Orientation orientation = mode.getPlacementOrientationFromSurface(facing);
+			if (orientation != null) {
+				Assert.assertEquals("Orientation " + orientation + " has invalid placement/front combination",
+						facing, mode.getFront(orientation));
+			}
+		}
+	}
+
+	@Test
+	public void testSurfacePlacementFrontConsistencyTwoDirections() {
+		testSurfacePlacementFrontWeakConsistency(BlockRotationMode.TWO_DIRECTIONS);
+	}
+
+	@Test
+	public void testSurfacePlacementFrontConsistencyThreeDirections() {
+		testSurfacePlacementFrontWeakConsistency(BlockRotationMode.THREE_DIRECTIONS);
+	}
+
+	@Test
+	public void testSurfacePlacementFrontConsistencyFourDirections() {
+		testSurfacePlacementFrontStrongConsistency(BlockRotationMode.FOUR_DIRECTIONS);
+	}
+
+	@Test
+	public void testSurfacePlacementFrontConsistencySixDirections() {
+		testSurfacePlacementFrontStrongConsistency(BlockRotationMode.SIX_DIRECTIONS);
+	}
+
+	@Test
+	public void testSurfacePlacementFrontConsistencySixDirectionsLegacy() {
+		testSurfacePlacementFrontStrongConsistency(BlockRotationMode.SIX_DIRECTIONS_LEGACY);
+	}
+
+	@Test
+	public void testSurfacePlacementFrontConsistencyThreeFourDirections() {
+		testSurfacePlacementFrontWeakConsistency(BlockRotationMode.THREE_FOUR_DIRECTIONS);
+	}
+
+	@Test
+	public void testSurfacePlacementFrontConsistencyTwelveDirections() {
+		testSurfacePlacementFrontStrongConsistency(BlockRotationMode.TWELVE_DIRECTIONS);
+	}
 }

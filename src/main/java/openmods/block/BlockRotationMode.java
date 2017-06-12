@@ -52,6 +52,11 @@ public enum BlockRotationMode {
 			return null;
 		}
 
+		@Override
+		public EnumFacing getFront(Orientation orientation) {
+			return orientation.up();
+		}
+
 	},
 	/**
 	 * Two orientations - either N-S or W-E. Top side remains unchanged.
@@ -97,6 +102,11 @@ public enum BlockRotationMode {
 					return null;
 			}
 		}
+
+		@Override
+		public EnumFacing getFront(Orientation orientation) {
+			return orientation.north();
+		}
 	},
 	/**
 	 * Three orientations: N-S, W-E, T-B.
@@ -134,6 +144,11 @@ public enum BlockRotationMode {
 		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			return directionToOrientation(axis);
 		}
+
+		@Override
+		public EnumFacing getFront(Orientation orientation) {
+			return orientation.up();
+		}
 	},
 	/**
 	 * Rotate around Y in for directions: N,S,W,E.
@@ -144,13 +159,13 @@ public enum BlockRotationMode {
 		private Orientation directionToOrientation(EnumFacing side) {
 			switch (side) {
 				case SOUTH:
-					return Orientation.XP_YP;
-				case WEST:
-					return Orientation.ZP_YP;
-				case NORTH:
 					return Orientation.XN_YP;
-				case EAST:
+				case WEST:
 					return Orientation.ZN_YP;
+				case NORTH:
+					return Orientation.XP_YP;
+				case EAST:
+					return Orientation.ZP_YP;
 				default:
 					return null;
 			}
@@ -182,6 +197,11 @@ public enum BlockRotationMode {
 				default:
 					return null;
 			}
+		}
+
+		@Override
+		public EnumFacing getFront(Orientation orientation) {
+			return orientation.north();
 		}
 	},
 	/**
@@ -224,6 +244,11 @@ public enum BlockRotationMode {
 		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			return directionToOrientation(axis);
 		}
+
+		@Override
+		public EnumFacing getFront(Orientation orientation) {
+			return orientation.up();
+		}
 	},
 	/**
 	 * Like {@link #SIX_DIRECTIONS}, but with horizontal orientations used in 1.7.10 (single rotation from top)
@@ -261,6 +286,11 @@ public enum BlockRotationMode {
 		@Override
 		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
 			return directionToOrientation(axis);
+		}
+
+		@Override
+		public EnumFacing getFront(Orientation orientation) {
+			return orientation.up();
 		}
 	},
 
@@ -313,6 +343,11 @@ public enum BlockRotationMode {
 			} else {
 				return directionToOrientation(axis);
 			}
+		}
+
+		@Override
+		public EnumFacing getFront(Orientation orientation) {
+			return orientation.up();
 		}
 	},
 	/**
@@ -389,6 +424,11 @@ public enum BlockRotationMode {
 				default:
 					return null;
 			}
+		}
+
+		@Override
+		public EnumFacing getFront(Orientation orientation) {
+			return orientation.up();
 		}
 
 	};
@@ -480,4 +520,8 @@ public enum BlockRotationMode {
 	}
 
 	public abstract Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis);
+
+	// per Minecraft convention, front should be same as placement side - unless not possible, where it's on the same axis
+	public abstract EnumFacing getFront(Orientation orientation);
+
 }

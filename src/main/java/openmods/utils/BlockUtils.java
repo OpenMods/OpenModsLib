@@ -28,9 +28,9 @@ public class BlockUtils {
 	public static float getRotationFromDirection(EnumFacing direction) {
 		switch (direction) {
 			case NORTH:
-				return 0F;
-			case SOUTH:
 				return 180F;
+			case SOUTH:
+				return 0F;
 			case WEST:
 				return 90F;
 			case EAST:
@@ -47,13 +47,13 @@ public class BlockUtils {
 	public static float getRotationFromOrientation(Orientation orientation) {
 		switch (orientation.x) {
 			case POS_X:
-				return 0f;
-			case NEG_X:
 				return 180f;
+			case NEG_X:
+				return 0f;
 			case NEG_Z:
-				return 90f;
-			case POS_Z:
 				return -90f;
+			case POS_Z:
+				return 90f;
 			default:
 				return 0f;
 		}

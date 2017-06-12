@@ -190,8 +190,17 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public Orientation getOrientation(IBlockState state) {
-		// TODO fix semi-hack
-		return (state.getBlock() instanceof OpenBlock)? state.getValue(propertyOrientation) : Orientation.XP_YP;
+		// sometimes we get air block...
+		if (state.getBlock() != this) return Orientation.XP_YP;
+		return state.getValue(propertyOrientation);
+	}
+
+	public EnumFacing getFront(IBlockState state) {
+		return rotationMode.getFront(getOrientation(state));
+	}
+
+	public EnumFacing getBack(IBlockState state) {
+		return getFront(state).getOpposite();
 	}
 
 	public boolean shouldDropFromTeAfterBreak() {
