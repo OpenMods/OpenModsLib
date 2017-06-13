@@ -131,7 +131,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	private BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
 
-	public final BlockRotationMode rotationMode;
+	public final IBlockRotationMode rotationMode;
 
 	public final IProperty<Orientation> propertyOrientation;
 
@@ -162,19 +162,19 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 		this.rotationMode = getRotationMode();
 		Preconditions.checkNotNull(this.rotationMode);
-		this.propertyOrientation = this.rotationMode.property;
+		this.propertyOrientation = this.rotationMode.getProperty();
 	}
 
 	protected void setPlacementMode(BlockPlacementMode mode) {
 		this.blockPlacementMode = mode;
 	}
 
-	protected BlockRotationMode getRotationMode() {
+	protected IBlockRotationMode getRotationMode() {
 		return BlockRotationMode.NONE;
 	}
 
 	protected IProperty<Orientation> getPropertyOrientation() {
-		return getRotationMode().property;
+		return getRotationMode().getProperty();
 	}
 
 	protected BlockPlacementMode getPlacementMode() {
@@ -512,7 +512,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public Orientation getOrientationFromMeta(int meta) {
-		return rotationMode.fromValue(meta & rotationMode.mask);
+		return rotationMode.fromValue(meta & rotationMode.getMask());
 	}
 
 	public int getMetaFromOrientation(Orientation orientation) {
@@ -549,7 +549,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		final Orientation newOrientation = rotationMode.calculateToolRotation(orientation, axis);
 
 		if (newOrientation != null) {
-			if (rotationMode.isPlacementValid(newOrientation)) {
+			if (rotationMode.isOrientationValid(newOrientation)) {
 				final IBlockState newState = createNewStateAfterRotation(worldObj, blockPos, currentState, propertyOrientation, newOrientation);
 				worldObj.setBlockState(blockPos, newState, BlockNotifyFlags.ALL);
 			} else {
@@ -582,6 +582,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	public EnumFacing[] getValidRotations(World worldObj, BlockPos pos) {
 		if (!canRotateWithTool())
 			return RotationAxis.NO_AXIS;
-		return rotationMode.rotationAxes;
+		return rotationMode.getToolRotationAxes();
 	}
 }

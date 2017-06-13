@@ -32,7 +32,7 @@ public class BlockRotationModeTest {
 				Orientation orientation = mode.getOrientationFacing(facing);
 				if (orientation != null)
 					Assert.assertTrue("Orientation " + orientation + " is not valid",
-							mode.validDirections.contains(orientation));
+							mode.getValidDirections().contains(orientation));
 			}
 		}
 
@@ -48,10 +48,10 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void testSerializationConsistency() {
-			for (Orientation o : mode.validDirections) {
+			for (Orientation o : mode.getValidDirections()) {
 				final int value = mode.toValue(o);
 				Assert.assertTrue(o.toString(), value >= 0);
-				Assert.assertTrue(o.toString(), value < mode.validDirections.size());
+				Assert.assertTrue(o.toString(), value < mode.getValidDirections().size());
 
 				final Orientation deserialized = mode.fromValue(value);
 				Assert.assertEquals(o.toString(), o, deserialized);

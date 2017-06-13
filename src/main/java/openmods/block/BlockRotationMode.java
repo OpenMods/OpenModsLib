@@ -3,23 +3,23 @@ package openmods.block;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import openmods.geometry.BlockTextureTransform;
 import openmods.geometry.HalfAxis;
 import openmods.geometry.LocalDirections;
 import openmods.geometry.Orientation;
 import openmods.utils.BlockUtils;
 
-public enum BlockRotationMode {
+public enum BlockRotationMode implements IBlockRotationMode {
 	/**
 	 * No rotations - always oriented by world directions
 	 */
 	NONE(RotationAxis.NO_AXIS, Orientation.XP_YP) {
 		@Override
-		public boolean isPlacementValid(Orientation dir) {
+		public boolean isOrientationValid(Orientation dir) {
 			return true;
 		}
 
@@ -437,30 +437,23 @@ public enum BlockRotationMode {
 			for (int i = count; i < idToOrientation.length; i++)
 				idToOrientation[i] = idToOrientation[0];
 		}
-
-		this.textureTransform = setupTextureTransform(BlockTextureTransform.builder()).build();
 	}
 
 	private final Orientation[] idToOrientation;
 
 	private final int[] orientationToId;
 
-	public final EnumFacing[] rotationAxes;
+	private final EnumFacing[] rotationAxes;
 
-	public final Set<Orientation> validDirections;
+	private final Set<Orientation> validDirections;
 
-	public final int bitCount;
+	private final int bitCount;
 
-	public final int mask;
+	private final int mask;
 
-	public final BlockTextureTransform textureTransform;
+	private final PropertyEnum<Orientation> property;
 
-	public final PropertyEnum<Orientation> property;
-
-	protected BlockTextureTransform.Builder setupTextureTransform(BlockTextureTransform.Builder builder) {
-		return builder.mirrorU(EnumFacing.NORTH).mirrorU(EnumFacing.EAST).mirrorV(EnumFacing.DOWN);
-	}
-
+	@Override
 	public Orientation fromValue(int value) {
 		try {
 			return idToOrientation[value];
@@ -469,6 +462,7 @@ public enum BlockRotationMode {
 		}
 	}
 
+	@Override
 	public int toValue(Orientation dir) {
 		try {
 			return orientationToId[dir.ordinal()];
@@ -477,28 +471,38 @@ public enum BlockRotationMode {
 		}
 	}
 
-	public boolean isPlacementValid(Orientation dir) {
+	@Override
+	public boolean isOrientationValid(Orientation dir) {
 		return validDirections.contains(dir);
 	}
 
-	public abstract Orientation getOrientationFacing(EnumFacing side);
-
-	public abstract Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player);
-
+	@Override
 	public boolean toolRotationAllowed() {
 		return true;
 	}
 
-	public abstract Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis);
-
-	// per Minecraft convention, front should be same as placement side - unless not possible, where it's on the same axis
-	public abstract EnumFacing getFront(Orientation orientation);
-
-	// When front ='north', top should be 'up'. Also, for most modes for n|s|w|e top = 'up'
-	public abstract EnumFacing getTop(Orientation orientation);
-
+	@Override
 	public LocalDirections getLocalDirections(Orientation orientation) {
 		return LocalDirections.fromFrontAndTop(getFront(orientation), getTop(orientation));
 	}
 
+	@Override
+	public IProperty<Orientation> getProperty() {
+		return property;
+	}
+
+	@Override
+	public int getMask() {
+		return mask;
+	}
+
+	@Override
+	public EnumFacing[] getToolRotationAxes() {
+		return rotationAxes;
+	}
+
+	@Override
+	public Set<Orientation> getValidDirections() {
+		return validDirections;
+	}
 }
