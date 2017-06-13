@@ -54,7 +54,12 @@ public enum BlockRotationMode {
 
 		@Override
 		public EnumFacing getFront(Orientation orientation) {
-			return orientation.up();
+			return EnumFacing.NORTH;
+		}
+
+		@Override
+		public EnumFacing getTop(Orientation orientation) {
+			return EnumFacing.UP;
 		}
 
 	},
@@ -107,18 +112,23 @@ public enum BlockRotationMode {
 		public EnumFacing getFront(Orientation orientation) {
 			return orientation.north();
 		}
+
+		@Override
+		public EnumFacing getTop(Orientation orientation) {
+			return orientation.up();
+		}
 	},
 	/**
 	 * Three orientations: N-S, W-E, T-B.
 	 * Placement side will become local top or bottom.
 	 * Tool rotation will set top direction to clicked side.
 	 */
-	THREE_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YP, Orientation.YP_XN, Orientation.XP_ZN) {
+	THREE_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YP, Orientation.ZN_XN, Orientation.XP_ZN) {
 		private Orientation directionToOrientation(EnumFacing dir) {
 			switch (dir) {
 				case EAST:
 				case WEST:
-					return Orientation.YP_XN;
+					return Orientation.ZN_XN;
 				case NORTH:
 				case SOUTH:
 					return Orientation.XP_ZN;
@@ -148,6 +158,11 @@ public enum BlockRotationMode {
 		@Override
 		public EnumFacing getFront(Orientation orientation) {
 			return orientation.up();
+		}
+
+		@Override
+		public EnumFacing getTop(Orientation orientation) {
+			return orientation.south();
 		}
 	},
 	/**
@@ -203,6 +218,11 @@ public enum BlockRotationMode {
 		public EnumFacing getFront(Orientation orientation) {
 			return orientation.north();
 		}
+
+		@Override
+		public EnumFacing getTop(Orientation orientation) {
+			return orientation.up();
+		}
 	},
 	/**
 	 * Rotations in every cardinal direction.
@@ -249,51 +269,12 @@ public enum BlockRotationMode {
 		public EnumFacing getFront(Orientation orientation) {
 			return orientation.up();
 		}
-	},
-	/**
-	 * Like {@link #SIX_DIRECTIONS}, but with horizontal orientations used in 1.7.10 (single rotation from top)
-	 */
-	SIX_DIRECTIONS_LEGACY(RotationAxis.THREE_AXIS, Orientation.XN_YN, Orientation.XP_YP, Orientation.XP_ZN, Orientation.XP_ZP, Orientation.YP_XN, Orientation.YN_XP) {
-		public Orientation directionToOrientation(EnumFacing localTop) {
-			switch (localTop) {
-				case DOWN:
-					return Orientation.XN_YN;
-				case EAST:
-					return Orientation.YN_XP;
-				case NORTH:
-					return Orientation.XP_ZN;
-				case SOUTH:
-					return Orientation.XP_ZP;
-				case WEST:
-					return Orientation.YP_XN;
-				case UP:
-				default:
-					return Orientation.XP_YP;
-			}
-		}
 
 		@Override
-		public Orientation getPlacementOrientationFromSurface(EnumFacing side) {
-			return directionToOrientation(side);
-		}
-
-		@Override
-		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
-			final EnumFacing localTop = BlockUtils.get3dOrientation(player, pos).getOpposite();
-			return directionToOrientation(localTop);
-		}
-
-		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
-			return directionToOrientation(axis);
-		}
-
-		@Override
-		public EnumFacing getFront(Orientation orientation) {
-			return orientation.up();
+		public EnumFacing getTop(Orientation orientation) {
+			return orientation.south();
 		}
 	},
-
 	/**
 	 * And now it's time for weird ones...
 	 * Three orientations: N-S, W-E, T-B.
@@ -309,7 +290,7 @@ public enum BlockRotationMode {
 			switch (dir) {
 				case EAST:
 				case WEST:
-					return Orientation.YP_XN;
+					return Orientation.ZN_XN;
 				case NORTH:
 				case SOUTH:
 					return Orientation.XP_ZN;
@@ -349,6 +330,11 @@ public enum BlockRotationMode {
 		public EnumFacing getFront(Orientation orientation) {
 			return orientation.up();
 		}
+
+		@Override
+		public EnumFacing getTop(Orientation orientation) {
+			return orientation.south();
+		}
 	},
 	/**
 	 * Yet another weird one.
@@ -359,10 +345,10 @@ public enum BlockRotationMode {
 			Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.NEG_Z), // first two TOP/BOTTOM orientation are here for easy migration from SIX_DIRECTIONS
 			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_Z),
 
-			Orientation.lookupYZ(HalfAxis.NEG_Z, HalfAxis.NEG_Y),
-			Orientation.lookupYZ(HalfAxis.POS_Z, HalfAxis.NEG_Y),
-			Orientation.lookupYZ(HalfAxis.NEG_X, HalfAxis.NEG_Y),
-			Orientation.lookupYZ(HalfAxis.POS_X, HalfAxis.NEG_Y),
+			Orientation.lookupYZ(HalfAxis.NEG_Z, HalfAxis.POS_Y),
+			Orientation.lookupYZ(HalfAxis.POS_Z, HalfAxis.POS_Y),
+			Orientation.lookupYZ(HalfAxis.NEG_X, HalfAxis.POS_Y),
+			Orientation.lookupYZ(HalfAxis.POS_X, HalfAxis.POS_Y),
 
 			Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.POS_Z),
 			Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.NEG_X),
@@ -377,13 +363,13 @@ public enum BlockRotationMode {
 				case DOWN:
 					return Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.NEG_Z);
 				case EAST:
-					return Orientation.lookupYZ(HalfAxis.POS_X, HalfAxis.NEG_Y);
+					return Orientation.lookupYZ(HalfAxis.POS_X, HalfAxis.POS_Y);
 				case NORTH:
-					return Orientation.lookupYZ(HalfAxis.NEG_Z, HalfAxis.NEG_Y);
+					return Orientation.lookupYZ(HalfAxis.NEG_Z, HalfAxis.POS_Y);
 				case SOUTH:
-					return Orientation.lookupYZ(HalfAxis.POS_Z, HalfAxis.NEG_Y);
+					return Orientation.lookupYZ(HalfAxis.POS_Z, HalfAxis.POS_Y);
 				case WEST:
-					return Orientation.lookupYZ(HalfAxis.NEG_X, HalfAxis.NEG_Y);
+					return Orientation.lookupYZ(HalfAxis.NEG_X, HalfAxis.POS_Y);
 				case UP:
 				default:
 					return Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_Z);
@@ -403,7 +389,7 @@ public enum BlockRotationMode {
 			} else if (player.rotationPitch < -45.5F) {
 				return Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.fromEnumFacing(playerDir));
 			} else {
-				return Orientation.lookupYZ(HalfAxis.fromEnumFacing(playerDir), HalfAxis.NEG_Y);
+				return Orientation.lookupYZ(HalfAxis.fromEnumFacing(playerDir), HalfAxis.POS_Y);
 			}
 		}
 
@@ -414,7 +400,7 @@ public enum BlockRotationMode {
 				case SOUTH:
 				case EAST:
 				case WEST:
-					return Orientation.lookupYZ(HalfAxis.fromEnumFacing(axis), HalfAxis.NEG_Y);
+					return Orientation.lookupYZ(HalfAxis.fromEnumFacing(axis), HalfAxis.POS_Y);
 				case UP:
 					if (currentOrientation.y != HalfAxis.POS_Y) return Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_Z);
 					else return currentOrientation.rotateAround(HalfAxis.POS_Y);
@@ -431,6 +417,10 @@ public enum BlockRotationMode {
 			return orientation.up();
 		}
 
+		@Override
+		public EnumFacing getTop(Orientation orientation) {
+			return orientation.south();
+		}
 	};
 
 	private static final int MAX_ORIENTATIONS = 16;
@@ -523,5 +513,8 @@ public enum BlockRotationMode {
 
 	// per Minecraft convention, front should be same as placement side - unless not possible, where it's on the same axis
 	public abstract EnumFacing getFront(Orientation orientation);
+
+	// When front ='north', top should be 'up'. Also, for most modes for n|s|w|e top = 'up'
+	public abstract EnumFacing getTop(Orientation orientation);
 
 }
