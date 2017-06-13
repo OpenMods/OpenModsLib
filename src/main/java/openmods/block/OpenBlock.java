@@ -41,6 +41,7 @@ import openmods.api.INeighbourTeAwareTile;
 import openmods.api.IPlaceAwareTile;
 import openmods.api.ISurfaceAttachment;
 import openmods.config.game.IRegisterableBlock;
+import openmods.geometry.LocalDirections;
 import openmods.geometry.Orientation;
 import openmods.inventory.IInventoryProvider;
 import openmods.tileentity.OpenTileEntity;
@@ -201,6 +202,10 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	public EnumFacing getBack(IBlockState state) {
 		return getFront(state).getOpposite();
+	}
+
+	public LocalDirections getLocalDirections(IBlockState state) {
+		return rotationMode.getLocalDirections(getOrientation(state));
 	}
 
 	public boolean shouldDropFromTeAfterBreak() {

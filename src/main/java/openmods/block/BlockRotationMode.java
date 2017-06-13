@@ -9,6 +9,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import openmods.geometry.BlockTextureTransform;
 import openmods.geometry.HalfAxis;
+import openmods.geometry.LocalDirections;
 import openmods.geometry.Orientation;
 import openmods.utils.BlockUtils;
 
@@ -516,5 +517,9 @@ public enum BlockRotationMode {
 
 	// When front ='north', top should be 'up'. Also, for most modes for n|s|w|e top = 'up'
 	public abstract EnumFacing getTop(Orientation orientation);
+
+	public LocalDirections getLocalDirections(Orientation orientation) {
+		return LocalDirections.fromFrontAndTop(getFront(orientation), getTop(orientation));
+	}
 
 }

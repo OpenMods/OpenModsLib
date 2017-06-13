@@ -14,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import openmods.api.IInventoryCallback;
 import openmods.block.OpenBlock;
+import openmods.geometry.LocalDirections;
 import openmods.geometry.Orientation;
 import openmods.inventory.GenericInventory;
 import openmods.network.DimCoord;
@@ -52,6 +53,14 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 
 	public EnumFacing getBack() {
 		return getFront().getOpposite();
+	}
+
+	public LocalDirections getLocalDirections() {
+		final IBlockState state = worldObj.getBlockState(pos);
+		final Block block = state.getBlock();
+		if (!(block instanceof OpenBlock)) return LocalDirections.fromFrontAndTop(EnumFacing.NORTH, EnumFacing.UP);
+		final OpenBlock openBlock = (OpenBlock)block;
+		return openBlock.getLocalDirections(state);
 	}
 
 	public boolean isAddedToWorld() {

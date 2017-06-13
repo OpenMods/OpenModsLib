@@ -17,7 +17,7 @@ public class BlockRotationModeTest {
 	private static final Set<EnumFacing> HORIZONTALS = Sets.newHashSet(EnumFacing.HORIZONTALS);
 
 	@RunWith(Parameterized.class)
-	public static class PlacementConsistency {
+	public static class BasicProperties {
 		@Parameters(name = "{0}")
 		public static Iterable<BlockRotationMode> dirs() {
 			return Arrays.asList(BlockRotationMode.values());
@@ -30,8 +30,19 @@ public class BlockRotationModeTest {
 		public void testSurfacePlacementConsistency() {
 			for (EnumFacing facing : EnumFacing.values()) {
 				Orientation orientation = mode.getPlacementOrientationFromSurface(facing);
-				Assert.assertTrue("Orientation " + orientation + " is not valid",
-						orientation == null || mode.validDirections.contains(orientation));
+				if (orientation != null)
+					Assert.assertTrue("Orientation " + orientation + " is not valid",
+							mode.validDirections.contains(orientation));
+			}
+		}
+
+		@Test
+		public void testLocalDirections() {
+			for (EnumFacing facing : EnumFacing.values()) {
+				Orientation orientation = mode.getPlacementOrientationFromSurface(facing);
+				if (orientation != null)
+					Assert.assertNotNull("Orientation " + orientation + " is not valid",
+							mode.getLocalDirections(orientation));
 			}
 		}
 	}
