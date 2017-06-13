@@ -29,7 +29,7 @@ public class BlockRotationModeTest {
 		@Test
 		public void testSurfacePlacementConsistency() {
 			for (EnumFacing facing : EnumFacing.values()) {
-				Orientation orientation = mode.getPlacementOrientationFromSurface(facing);
+				Orientation orientation = mode.getOrientationFacing(facing);
 				if (orientation != null)
 					Assert.assertTrue("Orientation " + orientation + " is not valid",
 							mode.validDirections.contains(orientation));
@@ -39,10 +39,79 @@ public class BlockRotationModeTest {
 		@Test
 		public void testLocalDirections() {
 			for (EnumFacing facing : EnumFacing.values()) {
-				Orientation orientation = mode.getPlacementOrientationFromSurface(facing);
+				Orientation orientation = mode.getOrientationFacing(facing);
 				if (orientation != null)
 					Assert.assertNotNull("Orientation " + orientation + " is not valid",
 							mode.getLocalDirections(orientation));
+			}
+		}
+
+		@Test
+		public void testSerializationConsistency() {
+			for (Orientation o : mode.validDirections) {
+				final int value = mode.toValue(o);
+				Assert.assertTrue(o.toString(), value >= 0);
+				Assert.assertTrue(o.toString(), value < mode.validDirections.size());
+
+				final Orientation deserialized = mode.fromValue(value);
+				Assert.assertEquals(o.toString(), o, deserialized);
+			}
+		}
+	}
+
+	@RunWith(Parameterized.class)
+	public static class OnlyHorizontalsSupported {
+		@Parameters(name = "{0}")
+		public static Iterable<BlockRotationMode> dirs() {
+			return Arrays.asList(
+					BlockRotationMode.FOUR_DIRECTIONS,
+					BlockRotationMode.TWO_DIRECTIONS);
+		}
+
+		@Parameter
+		public BlockRotationMode mode;
+
+		@Test
+		public void testHorizontals() {
+			for (EnumFacing facing : EnumFacing.HORIZONTALS) {
+				Orientation orientation = mode.getOrientationFacing(facing);
+				Assert.assertNotNull(facing.toString(), orientation);
+			}
+		}
+
+		@Test
+		public void testUp() {
+			Orientation orientation = mode.getOrientationFacing(EnumFacing.UP);
+			Assert.assertNull(orientation);
+		}
+
+		@Test
+		public void testDown() {
+			Orientation orientation = mode.getOrientationFacing(EnumFacing.DOWN);
+			Assert.assertNull(orientation);
+		}
+	}
+
+	@RunWith(Parameterized.class)
+	public static class AllDirectionsSupported {
+		@Parameters(name = "{0}")
+		public static Iterable<BlockRotationMode> dirs() {
+			return Arrays.asList(
+					BlockRotationMode.NONE,
+					BlockRotationMode.THREE_DIRECTIONS,
+					BlockRotationMode.SIX_DIRECTIONS,
+					BlockRotationMode.THREE_FOUR_DIRECTIONS,
+					BlockRotationMode.TWELVE_DIRECTIONS);
+		}
+
+		@Parameter
+		public BlockRotationMode mode;
+
+		@Test
+		public void testAllDirectionsNonNull() {
+			for (EnumFacing facing : EnumFacing.values()) {
+				Orientation orientation = mode.getOrientationFacing(facing);
+				Assert.assertNotNull(facing.toString(), orientation);
 			}
 		}
 	}
@@ -62,7 +131,7 @@ public class BlockRotationModeTest {
 		public BlockRotationMode mode;
 
 		private static void testTopIsHorizontalForVerticalFacing(BlockRotationMode mode, EnumFacing facing) {
-			final Orientation orientation = mode.getPlacementOrientationFromSurface(facing);
+			final Orientation orientation = mode.getOrientationFacing(facing);
 			Assert.assertNotNull(facing.toString(), orientation);
 			Assert.assertTrue(HORIZONTALS.contains(mode.getTop(orientation)));
 		}
@@ -96,7 +165,7 @@ public class BlockRotationModeTest {
 		@Test
 		public void testSurfacePlacementFrontWeakConsistency() {
 			for (EnumFacing facing : EnumFacing.values()) {
-				Orientation orientation = mode.getPlacementOrientationFromSurface(facing);
+				Orientation orientation = mode.getOrientationFacing(facing);
 				if (orientation != null) {
 					Assert.assertEquals("Orientation " + orientation + " has invalid placement/front combination",
 							facing.getAxis(), mode.getFront(orientation).getAxis());
@@ -123,7 +192,7 @@ public class BlockRotationModeTest {
 		@Test
 		public void testSurfacePlacementFrontStrongConsistency() {
 			for (EnumFacing facing : EnumFacing.values()) {
-				Orientation orientation = mode.getPlacementOrientationFromSurface(facing);
+				Orientation orientation = mode.getOrientationFacing(facing);
 				if (orientation != null) {
 					Assert.assertEquals("Orientation " + orientation + " has invalid placement/front combination",
 							facing, mode.getFront(orientation));
@@ -152,7 +221,7 @@ public class BlockRotationModeTest {
 		@Test
 		public void testTopEqualsUpForAllHorizontals() {
 			for (EnumFacing facing : EnumFacing.HORIZONTALS) {
-				final Orientation orientation = mode.getPlacementOrientationFromSurface(facing);
+				final Orientation orientation = mode.getOrientationFacing(facing);
 				Assert.assertNotNull(facing.toString(), orientation);
 				Assert.assertEquals(facing.toString(), EnumFacing.UP, mode.getTop(orientation));
 			}

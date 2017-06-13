@@ -475,7 +475,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	protected Orientation calculateOrientationAfterPlace(BlockPos pos, EnumFacing facing, EntityLivingBase placer) {
 		if (blockPlacementMode == BlockPlacementMode.SURFACE) {
-			return rotationMode.getPlacementOrientationFromSurface(facing);
+			return rotationMode.getOrientationFacing(facing);
 		} else {
 			return rotationMode.getPlacementOrientationFromEntity(pos, placer);
 		}

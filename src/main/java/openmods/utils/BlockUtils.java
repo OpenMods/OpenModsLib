@@ -22,7 +22,10 @@ public class BlockUtils {
 	@Deprecated
 	public static EnumFacing get2dOrientation(EntityLivingBase entity) {
 		return entity.getHorizontalFacing();
+	}
 
+	public static EnumFacing get2dOrientation(double yaw) {
+		return EnumFacing.getHorizontal(MathHelper.floor_double((yaw * 4.0 / 360.0) + 0.5) & 3);
 	}
 
 	public static float getRotationFromDirection(EnumFacing direction) {
