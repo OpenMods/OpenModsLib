@@ -2,6 +2,8 @@ package openmods.geometry;
 
 import com.google.common.base.Objects;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class Matrix3d {
 
@@ -19,6 +21,35 @@ public class Matrix3d {
 
 	public Matrix3d(Matrix3d m) {
 		copy(m);
+	}
+
+	public Matrix3d(javax.vecmath.Matrix3f m) {
+		m00 = m.m00;
+		m01 = m.m01;
+		m02 = m.m02;
+
+		m10 = m.m10;
+		m11 = m.m11;
+		m12 = m.m12;
+
+		m20 = m.m20;
+		m21 = m.m21;
+		m22 = m.m22;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public Matrix3d(org.lwjgl.util.vector.Matrix3f m) {
+		m00 = m.m00;
+		m01 = m.m01;
+		m02 = m.m02;
+
+		m10 = m.m10;
+		m11 = m.m11;
+		m12 = m.m12;
+
+		m20 = m.m20;
+		m21 = m.m21;
+		m22 = m.m22;
 	}
 
 	public Matrix3d copy(Matrix3d src) {
@@ -314,4 +345,25 @@ public class Matrix3d {
 		return false;
 	}
 
+	public javax.vecmath.Matrix3f toVecmath() {
+		return new javax.vecmath.Matrix3f((float)m00, (float)m01, (float)m02, (float)m10, (float)m11, (float)m12, (float)m20, (float)m21, (float)m22);
+	}
+
+	@SideOnly(Side.CLIENT)
+	public org.lwjgl.util.vector.Matrix3f toLwjgl() {
+		final org.lwjgl.util.vector.Matrix3f result = new org.lwjgl.util.vector.Matrix3f();
+		result.m00 = (float)m00;
+		result.m01 = (float)m01;
+		result.m02 = (float)m02;
+
+		result.m10 = (float)m10;
+		result.m11 = (float)m11;
+		result.m12 = (float)m12;
+
+		result.m20 = (float)m20;
+		result.m21 = (float)m21;
+		result.m22 = (float)m22;
+
+		return result;
+	}
 }

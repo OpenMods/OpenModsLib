@@ -192,3 +192,8 @@ task checkTranslations(type: net.thesilkminer.gradle.plugin.translationchecker.t
 task wrapper (type: Wrapper) {
     gradleVersion = "2.14"
 }
+
+task generateOrientationDetails(type: JavaExec, dependsOn: compileJava) {
+   main = "openmods.geometry.OrientationInfoGenerator"
+   classpath = sourceSets.main.runtimeClasspath + files(sourceSets.main.output.classesDir)
+}

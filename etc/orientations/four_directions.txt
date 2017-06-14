@@ -1,0 +1,4 @@
+"xn_yp": {"y": 180}, // front: south, top: up
+"xp_yp": {}, // front: north, top: up
+"zn_yp": {"y": 270}, // front: west, top: up
+"zp_yp": {"y": 90}, // front: east, top: up
