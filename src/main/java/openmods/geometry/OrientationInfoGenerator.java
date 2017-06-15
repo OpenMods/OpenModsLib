@@ -20,37 +20,18 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.vecmath.AxisAngle4f;
+import javax.vecmath.Matrix3f;
+import javax.vecmath.Matrix4f;
+import javax.vecmath.Quat4f;
 import net.minecraft.client.renderer.block.model.ModelRotation;
+import net.minecraftforge.common.model.TRSRTransformation;
 import openmods.block.BlockRotationMode;
 import org.apache.commons.io.IOUtils;
-import org.lwjgl.util.vector.Matrix4f;
 
 // NOTE: this class is supposed to be called by Gradle task or manually
 public class OrientationInfoGenerator {
 
 	private static final File OUTPUT_DIR = new File(new File("etc"), "orientations");
-
-	private static Matrix3d convertMatrix(org.lwjgl.util.vector.Matrix4f m) {
-		Preconditions.checkState(m.m03 == 0);
-		Preconditions.checkState(m.m13 == 0);
-		Preconditions.checkState(m.m23 == 0);
-		Preconditions.checkState(m.m33 == 1);
-		return new Matrix3d(
-				Math.round(m.m00), Math.round(m.m01), Math.round(m.m02),
-				Math.round(m.m10), Math.round(m.m11), Math.round(m.m12),
-				Math.round(m.m20), Math.round(m.m21), Math.round(m.m22));
-	}
-
-	private static Matrix3d convertMatrix(javax.vecmath.Matrix4f m) {
-		Preconditions.checkState(m.m03 == 0);
-		Preconditions.checkState(m.m13 == 0);
-		Preconditions.checkState(m.m23 == 0);
-		Preconditions.checkState(m.m33 == 1);
-		return new Matrix3d(
-				Math.round(m.m00), Math.round(m.m01), Math.round(m.m02),
-				Math.round(m.m10), Math.round(m.m11), Math.round(m.m12),
-				Math.round(m.m20), Math.round(m.m21), Math.round(m.m22));
-	}
 
 	private enum Rotation {
 		R0(0), R90(90), R180(180), R270(270);
@@ -95,10 +76,10 @@ public class OrientationInfoGenerator {
 
 		@Override
 		public int compareTo(XYZRotation o) {
-			int result = Ints.compare(this.componentCount(), o.componentCount());
+			int result = Ints.compare(componentCount(), o.componentCount());
 			if (result != 0) return result;
 
-			return Floats.compare(this.angleSum(), o.angleSum());
+			return Floats.compare(angleSum(), o.angleSum());
 		}
 
 		@Override
@@ -150,9 +131,9 @@ public class OrientationInfoGenerator {
 
 	private static String forgeRotationToJson(XYZRotation f) {
 		List<String> result = Lists.newArrayList();
-		if (f.x != Rotation.R0) result.add("{\"x\": " + f.x.toString() + "}");
-		if (f.y != Rotation.R0) result.add("{\"y\": " + f.y.toString() + "}");
 		if (f.z != Rotation.R0) result.add("{\"z\": " + f.z.toString() + "}");
+		if (f.y != Rotation.R0) result.add("{\"y\": " + f.y.toString() + "}");
+		if (f.x != Rotation.R0) result.add("{\"x\": " + f.x.toString() + "}");
 
 		return "{ \"transform\": { \"rotation\": [" + Joiner.on(", ").join(result) + "]}}";
 	}
@@ -171,27 +152,28 @@ public class OrientationInfoGenerator {
 		return Joiner.on(", ").join(result);
 	}
 
-	private static Multimap<Orientation, XYZRotation> calculateXyzRotations(Map<Matrix3d, Orientation> fromMatrix) {
+	private static Multimap<Orientation, XYZRotation> calculateXyzRotations(Map<Matrix3f, Orientation> fromMatrix) {
 		final Multimap<Orientation, XYZRotation> toXYZRotation = HashMultimap.create();
 		for (Rotation x : Rotation.values())
 			for (Rotation y : Rotation.values())
 				for (Rotation z : Rotation.values()) {
 					final XYZRotation rotation = new XYZRotation(x, y, z);
-					javax.vecmath.Matrix4f m = new javax.vecmath.Matrix4f();
-					m.setIdentity();
+					Quat4f q = new Quat4f(0, 0, 0, 1);
 
-					javax.vecmath.Matrix4f tmp = new javax.vecmath.Matrix4f();
-					tmp.set(new AxisAngle4f(1, 0, 0, x.angle));
-					m.mul(tmp);
+					Quat4f tmp = new Quat4f();
+					tmp.set(new AxisAngle4f(0, 0, 1, z.angle));
+					q.mul(tmp);
 
 					tmp.set(new AxisAngle4f(0, 1, 0, y.angle));
-					m.mul(tmp);
+					q.mul(tmp);
 
-					tmp.set(new AxisAngle4f(0, 0, 1, z.angle));
-					m.mul(tmp);
+					tmp.set(new AxisAngle4f(1, 0, 0, x.angle));
+					q.mul(tmp);
 
-					final Matrix3d key = convertMatrix(m);
-					final Orientation orientation = fromMatrix.get(key);
+					Matrix3f m = new Matrix3f();
+					m.set(q);
+					roundMatrixElements(m);
+					final Orientation orientation = fromMatrix.get(m);
 					Preconditions.checkNotNull(orientation, rotation);
 					toXYZRotation.put(orientation, rotation);
 				}
@@ -199,12 +181,52 @@ public class OrientationInfoGenerator {
 		return toXYZRotation;
 	}
 
-	private static Multimap<Orientation, ModelRotation> calculateVanillaRotations(Map<Matrix3d, Orientation> fromMatrix) {
+	private static void roundMatrixElements(Matrix3f m) {
+		m.m00 = Math.round(m.m00);
+		m.m01 = Math.round(m.m01);
+		m.m02 = Math.round(m.m02);
+
+		m.m10 = Math.round(m.m10);
+		m.m11 = Math.round(m.m11);
+		m.m12 = Math.round(m.m12);
+
+		m.m20 = Math.round(m.m20);
+		m.m21 = Math.round(m.m21);
+		m.m22 = Math.round(m.m22);
+	}
+
+	private static Matrix3f roundAndReduceMatrixElements(Matrix4f m) {
+		Preconditions.checkArgument(m.m30 == 0);
+		Preconditions.checkArgument(m.m31 == 0);
+		Preconditions.checkArgument(m.m32 == 0);
+
+		Preconditions.checkArgument(m.m03 == 0);
+		Preconditions.checkArgument(m.m13 == 0);
+		Preconditions.checkArgument(m.m23 == 0);
+
+		Preconditions.checkArgument(m.m33 == 1);
+
+		final Matrix3f result = new Matrix3f();
+		result.m00 = Math.round(m.m00);
+		result.m01 = Math.round(m.m01);
+		result.m02 = Math.round(m.m02);
+
+		result.m10 = Math.round(m.m10);
+		result.m11 = Math.round(m.m11);
+		result.m12 = Math.round(m.m12);
+
+		result.m20 = Math.round(m.m20);
+		result.m21 = Math.round(m.m21);
+		result.m22 = Math.round(m.m22);
+		return result;
+	}
+
+	private static Multimap<Orientation, ModelRotation> calculateVanillaRotations(Map<Matrix3f, Orientation> fromMatrix) {
 		final Multimap<Orientation, ModelRotation> toVanilla = HashMultimap.create();
 
 		for (ModelRotation rot : ModelRotation.values()) {
-			final Matrix4f rotMatrix = rot.getMatrix4d();
-			final Matrix3d key = convertMatrix(rotMatrix);
+			final Matrix4f rotMatrix = TRSRTransformation.toVecmath(rot.getMatrix4d());
+			final Matrix3f key = roundAndReduceMatrixElements(rotMatrix);
 			final Orientation orientation = fromMatrix.get(key);
 			Preconditions.checkNotNull(orientation, rot);
 			toVanilla.put(orientation, rot);
@@ -232,10 +254,10 @@ public class OrientationInfoGenerator {
 
 	public static void main(String[] args) throws IOException {
 		OUTPUT_DIR.mkdirs();
-		final Map<Matrix3d, Orientation> fromMatrix = Maps.newHashMap();
+		final Map<Matrix3f, Orientation> fromMatrix = Maps.newHashMap();
 
 		for (Orientation o : Orientation.VALUES)
-			fromMatrix.put(o.createTransformMatrix().invertCopy(), o);
+			fromMatrix.put(o.createLocalToWorldMatrix(), o);
 
 		final Multimap<Orientation, ModelRotation> vanilla = calculateVanillaRotations(fromMatrix);
 

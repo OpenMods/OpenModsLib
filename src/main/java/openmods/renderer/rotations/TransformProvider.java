@@ -3,7 +3,7 @@ package openmods.renderer.rotations;
 import com.google.common.collect.Maps;
 import java.nio.FloatBuffer;
 import java.util.Map;
-import openmods.geometry.Matrix3d;
+import net.minecraftforge.common.model.TRSRTransformation;
 import openmods.geometry.Orientation;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -20,21 +20,10 @@ public class TransformProvider {
 		private final FloatBuffer asInverseBuffer;
 
 		public Transformation(Orientation orientation) {
-			final Matrix3d originalMatrix = orientation.createTransformMatrix();
+			final javax.vecmath.Matrix4f originalMatrix = new javax.vecmath.Matrix4f();
+			originalMatrix.set(orientation.createLocalToWorldMatrix());
 
-			asMatrix = new Matrix4f();
-			asMatrix.setIdentity();
-			asMatrix.m00 = (float)originalMatrix.m00;
-			asMatrix.m10 = (float)originalMatrix.m10;
-			asMatrix.m20 = (float)originalMatrix.m20;
-
-			asMatrix.m01 = (float)originalMatrix.m01;
-			asMatrix.m11 = (float)originalMatrix.m11;
-			asMatrix.m21 = (float)originalMatrix.m21;
-
-			asMatrix.m02 = (float)originalMatrix.m02;
-			asMatrix.m12 = (float)originalMatrix.m12;
-			asMatrix.m22 = (float)originalMatrix.m22;
+			asMatrix = TRSRTransformation.toLwjgl(originalMatrix);
 
 			asBuffer = BufferUtils.createFloatBuffer(16);
 			asMatrix.store(asBuffer);

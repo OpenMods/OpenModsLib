@@ -2,10 +2,10 @@
 "xn_zn": {"x": 270, "y": 180}, // front: north, top: down
 "xp_yp": {}, // front: up, top: south
 "xp_zn": {"x": 90}, // front: north, top: up
-"yn_xn": {{ "transform": { "rotation": [{"x": 180}, {"z": 90}]}}}, // front: west, top: north
-"yn_zn": {{ "transform": { "rotation": [{"x": 90}, {"z": 90}]}}}, // front: north, top: east
-"yp_xn": {{ "transform": { "rotation": [{"z": 270}]}}}, // front: west, top: south
-"yp_zn": {{ "transform": { "rotation": [{"x": 90}, {"z": 270}]}}}, // front: north, top: west
+"yn_xn": {{ "transform": { "rotation": [{"z": 90}, {"y": 180}]}}}, // front: west, top: north
+"yn_zn": {{ "transform": { "rotation": [{"z": 270}, {"x": 270}]}}}, // front: north, top: east
+"yp_xn": {{ "transform": { "rotation": [{"z": 90}]}}}, // front: west, top: south
+"yp_zn": {{ "transform": { "rotation": [{"z": 90}, {"x": 270}]}}}, // front: north, top: west
 "zn_xn": {"x": 90, "y": 270}, // front: west, top: up
 "zn_yp": {"y": 270}, // front: up, top: east
 "zp_xn": {"x": 270, "y": 90}, // front: west, top: down

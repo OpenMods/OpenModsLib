@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import java.util.Locale;
+import javax.vecmath.Matrix3f;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
 
@@ -195,19 +196,18 @@ public enum Orientation implements IStringSerializable {
 		return this.x.z * x + this.y.z * y + this.z.z * z;
 	}
 
-	public Matrix3d createTransformMatrix() {
-		// basis change matrix - local east (X), up (Y), south (Z) are new basis vectors
-		final Matrix3d mat = new Matrix3d();
+	public Matrix3f createLocalToWorldMatrix() {
+		final Matrix3f mat = new Matrix3f();
 		mat.m00 = x.x;
-		mat.m01 = x.y;
-		mat.m02 = x.z;
+		mat.m10 = x.y;
+		mat.m20 = x.z;
 
-		mat.m10 = y.x;
+		mat.m01 = y.x;
 		mat.m11 = y.y;
-		mat.m12 = y.z;
+		mat.m21 = y.z;
 
-		mat.m20 = z.x;
-		mat.m21 = z.y;
+		mat.m02 = z.x;
+		mat.m12 = z.y;
 		mat.m22 = z.z;
 		return mat;
 	}

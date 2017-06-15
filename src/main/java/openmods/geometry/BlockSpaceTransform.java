@@ -1,6 +1,7 @@
 package openmods.geometry;
 
 import com.google.common.base.Preconditions;
+import javax.vecmath.Matrix3f;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import org.objectweb.asm.ClassWriter;
@@ -11,6 +12,10 @@ import org.objectweb.asm.Type;
 
 public abstract class BlockSpaceTransform {
 	// Ok, so it's needlessly complicated, but I was trying to relax after trying to remember how to build transformation matrices from my linear algebra course
+
+	private static final int ARG_Z = 6;
+	private static final int ARG_Y = 4;
+	private static final int ARG_X = 2;
 
 	private static class BytecodeClassLoader extends ClassLoader {
 		private BytecodeClassLoader() {
@@ -34,17 +39,17 @@ public abstract class BlockSpaceTransform {
 		}
 	}
 
-	// there should be exactly one non-zero value in row
-	private static void createGetLine(MethodVisitor mv, double x, double y, double z) {
+	private static void createRowVectorMultiplication(MethodVisitor mv, double x, double y, double z) {
+		// there should be exactly one non-zero value in row, so we don't do addition
 		if (x != 0) {
 			Preconditions.checkArgument(y == 0 && z == 0);
-			createVarAccess(mv, x, 2);
+			createVarAccess(mv, x, ARG_X);
 		} else if (y != 0) {
 			Preconditions.checkArgument(x == 0 && z == 0);
-			createVarAccess(mv, y, 4);
+			createVarAccess(mv, y, ARG_Y);
 		} else if (z != 0) {
 			Preconditions.checkArgument(x == 0 && y == 0);
-			createVarAccess(mv, z, 6);
+			createVarAccess(mv, z, ARG_Z);
 		} else {
 			throw new IllegalArgumentException();
 		}
@@ -91,12 +96,12 @@ public abstract class BlockSpaceTransform {
 			for (int i = 0; i < orientations.length; i++) {
 				mv.visitLabel(targets[i]);
 				final Orientation orientation = orientations[i];
-				final Matrix3d mat = orientation.createTransformMatrix();
-				if (invert) mat.invertInplace();
+				final Matrix3f mat = orientation.createLocalToWorldMatrix();
+				if (invert) mat.invert();
 
-				createGetLine(mv, mat.m00, mat.m10, mat.m20);
-				createGetLine(mv, mat.m01, mat.m11, mat.m21);
-				createGetLine(mv, mat.m02, mat.m12, mat.m22);
+				createRowVectorMultiplication(mv, mat.m00, mat.m01, mat.m02);
+				createRowVectorMultiplication(mv, mat.m10, mat.m11, mat.m12);
+				createRowVectorMultiplication(mv, mat.m20, mat.m21, mat.m22);
 
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, selfType, "createVector", createVectorDesc, false);
 				mv.visitInsn(Opcodes.ARETURN);

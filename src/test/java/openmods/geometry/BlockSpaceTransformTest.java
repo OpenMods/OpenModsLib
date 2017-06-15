@@ -8,19 +8,19 @@ public class BlockSpaceTransformTest {
 
 	private static final double DELTA = Double.MIN_VALUE;
 
-	public void testCoordinates(Orientation orientation, double x, double y, double z, double tx, double ty, double tz) {
+	public void testCoordinates(Orientation orientation, double worldX, double worldY, double worldZ, double blockX, double blockY, double blockZ) {
 		{
-			final Vec3d v = BlockSpaceTransform.instance.mapWorldToBlock(orientation, x, y, z);
-			Assert.assertEquals(tx, v.xCoord, DELTA);
-			Assert.assertEquals(ty, v.yCoord, DELTA);
-			Assert.assertEquals(tz, v.zCoord, DELTA);
+			final Vec3d v = BlockSpaceTransform.instance.mapWorldToBlock(orientation, worldX, worldY, worldZ);
+			Assert.assertEquals(blockX, v.xCoord, DELTA);
+			Assert.assertEquals(blockY, v.yCoord, DELTA);
+			Assert.assertEquals(blockZ, v.zCoord, DELTA);
 		}
 
 		{
-			final Vec3d v = BlockSpaceTransform.instance.mapBlockToWorld(orientation, tx, ty, tz);
-			Assert.assertEquals(x, v.xCoord, DELTA);
-			Assert.assertEquals(y, v.yCoord, DELTA);
-			Assert.assertEquals(z, v.zCoord, DELTA);
+			final Vec3d v = BlockSpaceTransform.instance.mapBlockToWorld(orientation, blockX, blockY, blockZ);
+			Assert.assertEquals(worldX, v.xCoord, DELTA);
+			Assert.assertEquals(worldY, v.yCoord, DELTA);
+			Assert.assertEquals(worldZ, v.zCoord, DELTA);
 		}
 	}
 
