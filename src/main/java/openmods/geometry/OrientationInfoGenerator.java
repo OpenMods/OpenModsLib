@@ -107,7 +107,7 @@ public class OrientationInfoGenerator {
 			for (Orientation o : Sets.newTreeSet(brm.getValidDirections())) {
 				final StringBuilder line = new StringBuilder();
 				line.append('"');
-				line.append(o.toString().toLowerCase(Locale.ROOT));
+				line.append(o.getName().toLowerCase(Locale.ROOT));
 				line.append("\": {");
 				final Collection<ModelRotation> v = vanilla.get(o);
 				if (!v.isEmpty()) {
@@ -243,7 +243,7 @@ public class OrientationInfoGenerator {
 			out = new PrintWriter(outFile);
 
 			for (Orientation o : Orientation.VALUES) {
-				out.println(String.format("%s -> XY: %s, XYZ: %s", o, vanilla.get(o), sorted(xyz.get(o))));
+				out.println(String.format("%s = %s -> x=%s,y=%s,z=%s -> XY: %s, XYZ: %s", o.name(), o, o.x.dir, o.y.dir, o.z.dir, vanilla.get(o), sorted(xyz.get(o))));
 			}
 		} finally
 

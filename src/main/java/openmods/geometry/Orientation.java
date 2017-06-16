@@ -116,6 +116,8 @@ public enum Orientation implements IStringSerializable {
 
 	private final String name;
 
+	private final String lowercaseName;
+
 	private final EnumFacing[] localToGlobalDirections = new EnumFacing[EnumFacing.values().length];
 	private final EnumFacing[] globalToLocalDirections = new EnumFacing[EnumFacing.values().length];
 
@@ -153,7 +155,8 @@ public enum Orientation implements IStringSerializable {
 		addDirectionMappings(EnumFacing.UP, y.dir);
 		addDirectionMappings(EnumFacing.SOUTH, z.dir);
 
-		this.name = name().toLowerCase(Locale.ENGLISH);
+		this.name = x.shortName + "_" + y.shortName + "_" + z.shortName;
+		this.lowercaseName = name().toLowerCase(Locale.ROOT);
 
 		this.blockCenterToWorld = new Matrix3f(
 				x.x, y.x, z.x,
@@ -241,6 +244,11 @@ public enum Orientation implements IStringSerializable {
 
 	@Override
 	public String getName() {
+		return lowercaseName;
+	}
+
+	@Override
+	public String toString() {
 		return name;
 	}
 
