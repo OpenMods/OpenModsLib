@@ -257,7 +257,7 @@ public class OrientationInfoGenerator {
 		final Map<Matrix3f, Orientation> fromMatrix = Maps.newHashMap();
 
 		for (Orientation o : Orientation.VALUES)
-			fromMatrix.put(o.createLocalToWorldMatrix(), o);
+			fromMatrix.put(o.getLocalToWorldMatrix(), o);
 
 		final Multimap<Orientation, ModelRotation> vanilla = calculateVanillaRotations(fromMatrix);
 

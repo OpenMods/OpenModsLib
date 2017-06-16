@@ -132,7 +132,7 @@ public class OrientationTest {
 		separate.z = orientation.transformZ(x, y, z);
 
 		final Vector3f common = new Vector3f(input);
-		orientation.createLocalToWorldMatrix().transform(common);
+		orientation.getLocalToWorldMatrix().transform(common);
 
 		Assert.assertEquals(separate, common);
 	}

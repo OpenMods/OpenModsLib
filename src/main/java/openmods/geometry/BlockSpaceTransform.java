@@ -96,7 +96,7 @@ public abstract class BlockSpaceTransform {
 			for (int i = 0; i < orientations.length; i++) {
 				mv.visitLabel(targets[i]);
 				final Orientation orientation = orientations[i];
-				final Matrix3f mat = orientation.createLocalToWorldMatrix();
+				final Matrix3f mat = orientation.getLocalToWorldMatrix();
 				if (invert) mat.invert();
 
 				createRowVectorMultiplication(mv, mat.m00, mat.m01, mat.m02);

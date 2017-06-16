@@ -63,13 +63,10 @@ public class BlockUtils {
 	}
 
 	public static EnumFacing get3dOrientation(EntityLivingBase entity, BlockPos pos) {
-		if (MathHelper.abs((float)entity.posX - pos.getX()) < 2.0F
-				&& MathHelper.abs((float)entity.posZ - pos.getZ()) < 2.0F) {
-			final double eyePos = entity.posY + entity.getEyeHeight();
-			final double blockPos = pos.getY();
-
-			if (eyePos - blockPos > 2.0D) return EnumFacing.UP;
-			if (blockPos - eyePos > 0.0D) return EnumFacing.DOWN;
+		if (MathHelper.abs((float)entity.posX - pos.getX()) < 2.0F && MathHelper.abs((float)entity.posZ - pos.getZ()) < 2.0F) {
+			final double entityEyes = entity.posY + entity.getEyeHeight();
+			if (entityEyes - pos.getY() > 2.0D) return EnumFacing.DOWN;
+			if (pos.getY() - entityEyes > 0.0D) return EnumFacing.UP;
 		}
 
 		return entity.getHorizontalFacing();

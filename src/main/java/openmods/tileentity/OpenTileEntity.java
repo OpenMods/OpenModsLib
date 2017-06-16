@@ -13,6 +13,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import openmods.api.IInventoryCallback;
+import openmods.block.BlockRotationMode;
+import openmods.block.IBlockRotationMode;
 import openmods.block.OpenBlock;
 import openmods.geometry.LocalDirections;
 import openmods.geometry.Orientation;
@@ -41,6 +43,14 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		if (!(block instanceof OpenBlock)) return Orientation.XP_YP;
 		final OpenBlock openBlock = (OpenBlock)block;
 		return openBlock.getOrientation(state);
+	}
+
+	public IBlockRotationMode getRotationMode() {
+		final IBlockState state = worldObj.getBlockState(pos);
+		final Block block = state.getBlock();
+		if (!(block instanceof OpenBlock)) return BlockRotationMode.NONE;
+		final OpenBlock openBlock = (OpenBlock)block;
+		return openBlock.rotationMode;
 	}
 
 	public EnumFacing getFront() {

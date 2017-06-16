@@ -5,6 +5,7 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import java.util.Locale;
 import javax.vecmath.Matrix3f;
+import javax.vecmath.Matrix4f;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
 
@@ -118,6 +119,10 @@ public enum Orientation implements IStringSerializable {
 	private final EnumFacing[] localToGlobalDirections = new EnumFacing[EnumFacing.values().length];
 	private final EnumFacing[] globalToLocalDirections = new EnumFacing[EnumFacing.values().length];
 
+	private final Matrix3f blockCenterToWorld;
+
+	private final Matrix4f blockCornerToWorld;
+
 	private void addDirectionMapping(EnumFacing local, EnumFacing global) {
 		localToGlobalDirections[local.ordinal()] = global;
 		globalToLocalDirections[global.ordinal()] = local;
@@ -126,6 +131,17 @@ public enum Orientation implements IStringSerializable {
 	private void addDirectionMappings(EnumFacing local, EnumFacing global) {
 		addDirectionMapping(local, global);
 		addDirectionMapping(local.getOpposite(), global.getOpposite());
+	}
+
+	private static Matrix4f blockCenterToCorner(Matrix4f transform) {
+		Matrix4f ret = new Matrix4f(transform);
+		Matrix4f tmp = new Matrix4f();
+		tmp.setIdentity();
+		tmp.m03 = tmp.m13 = tmp.m23 = +0.5f;
+		ret.mul(tmp, ret);
+		tmp.m03 = tmp.m13 = tmp.m23 = -0.5f;
+		ret.mul(tmp);
+		return ret;
 	}
 
 	private Orientation(HalfAxis x, HalfAxis y) {
@@ -138,6 +154,15 @@ public enum Orientation implements IStringSerializable {
 		addDirectionMappings(EnumFacing.SOUTH, z.dir);
 
 		this.name = name().toLowerCase(Locale.ENGLISH);
+
+		this.blockCenterToWorld = new Matrix3f(
+				x.x, y.x, z.x,
+				x.y, y.y, z.y,
+				x.z, y.z, z.z);
+
+		final Matrix4f tmp = new Matrix4f();
+		tmp.set(this.blockCenterToWorld);
+		this.blockCornerToWorld = blockCenterToCorner(tmp);
 	}
 
 	public EnumFacing localToGlobalDirection(EnumFacing local) {
@@ -196,20 +221,22 @@ public enum Orientation implements IStringSerializable {
 		return this.x.z * x + this.y.z * y + this.z.z * z;
 	}
 
-	public Matrix3f createLocalToWorldMatrix() {
-		final Matrix3f mat = new Matrix3f();
-		mat.m00 = x.x;
-		mat.m10 = x.y;
-		mat.m20 = x.z;
+	/**
+	 * Returns transformation for case when middle of the block is in center of local space
+	 *
+	 * @return local (block centered) to world transformation
+	 */
+	public Matrix3f getLocalToWorldMatrix() {
+		return (Matrix3f)blockCenterToWorld.clone();
+	}
 
-		mat.m01 = y.x;
-		mat.m11 = y.y;
-		mat.m21 = y.z;
-
-		mat.m02 = z.x;
-		mat.m12 = z.y;
-		mat.m22 = z.z;
-		return mat;
+	/**
+	 * Returns transformation for case when (-0.5,-0.5,-0.5) corner of the block is in center of local space
+	 *
+	 * @return local (block corner centered) to world transformation
+	 */
+	public Matrix4f getBlockLocalToWorldMatrix() {
+		return (Matrix4f)blockCornerToWorld.clone();
 	}
 
 	@Override

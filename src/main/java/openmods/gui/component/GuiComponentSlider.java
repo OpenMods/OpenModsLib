@@ -1,46 +1,63 @@
 package openmods.gui.component;
 
+import com.google.common.primitives.Ints;
+import joptsimple.internal.Strings;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.math.MathHelper;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
 import org.lwjgl.opengl.GL11;
 
-public class GuiComponentSlider extends BaseComponent implements IValueReceiver<Integer> {
+public class GuiComponentSlider extends BaseComponent implements IValueReceiver<Double> {
 
 	private static final int HANDLE_SIZE = 8;
 
 	private int width;
-	private int min;
-	private int max;
-	private int value;
-	private double stepSize;
-	private boolean showValue = true;
+	private final double min;
+	private final double max;
+	private final int steps;
+	private final double stepSize;
+	private final boolean showValue;
+	private final String label;
 
-	private IValueChangedListener<Integer> listener;
+	private int step;
 
-	public GuiComponentSlider(int x, int y, int width, int min, int max, int initialValue, boolean showValue) {
-		this(x, y, width, min, max, initialValue);
-		this.showValue = showValue;
-	}
+	private IValueChangedListener<Double> listener;
 
 	public GuiComponentSlider(int x, int y, int width, int min, int max, int initialValue) {
+		this(x, y, width, min, max, initialValue, max - min, true, "");
+	}
+
+	public GuiComponentSlider(int x, int y, int width, int min, int max, int initialValue, boolean showValue) {
+		this(x, y, width, min, max, initialValue, max - min, showValue, "");
+	}
+
+	public GuiComponentSlider(int x, int y, int width, double min, double max, double initialValue, int steps, boolean showValue, String label) {
 		super(x, y);
 		this.width = width;
 		this.min = min;
 		this.max = max;
-		this.value = initialValue;
+		this.steps = steps;
+		this.showValue = showValue;
+		this.label = label;
 
-		int steps = max - min + 1;
+		this.step = (int)valueToStep(initialValue);
 		this.stepSize = (double)(width - 2 * HANDLE_SIZE / 2 - 2) / (double)steps;
+	}
+
+	private double valueToStep(double value) {
+		return steps * (value - min) / max;
+	}
+
+	private double stepToValue(double step) {
+		return (step / this.steps) * (max - min) + min;
 	}
 
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		GlStateManager.color(1, 1, 1, 1);
-		int left = offsetX + x;
-		int top = offsetY + y;
+		final int left = offsetX + x;
+		final int top = offsetY + y;
 		int barStartX = left + 1;
 		bindComponentsSheet();
 		drawTexturedModalRect(left, top, 0, 70, 1, getHeight());
@@ -50,10 +67,19 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 		drawTexturedModalRect(0, 0, 1, 70, 1, getHeight());
 		GL11.glPopMatrix();
 		drawTexturedModalRect(left + getWidth() - 1, top, 2, 70, 1, getHeight());
-		int handleX = (int)Math.floor(barStartX + stepSize * (value - min + 1));
 
+		if (!Strings.isNullOrEmpty(label)) {
+			final FontRenderer fr = parent.getFontRenderer();
+			int strWidth = fr.getStringWidth(label);
+			fr.drawString(label, left + getWidth() / 2 - strWidth / 2, top + 2, 4210752);
+		}
+
+		GlStateManager.color(1, 1, 1, 1);
+		bindComponentsSheet();
+		int handleX = (int)Math.floor(barStartX + stepSize * step);
 		drawTexturedModalRect(handleX, top + 1, 3, 70, 9, 10);
 		if (showValue) {
+			final double value = stepToValue(step);
 			String label = formatValue(value);
 			final FontRenderer fr = parent.getFontRenderer();
 			int strWidth = fr.getStringWidth(label);
@@ -67,18 +93,19 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 		if (button == 0) {
 			int offX = mouseX - HANDLE_SIZE / 2;
 			if (offX < 0) return;
-			final int newValue = min + MathHelper.floor_double(offX / stepSize);
-			final int boundedValue = Math.max(min, Math.min(max, newValue));
+			final int newStep = Ints.saturatedCast(Math.round(offX / stepSize));
+			final int boundedNewStep = Math.max(0, Math.min(steps, newStep));
 
-			if (boundedValue != value) {
-				value = boundedValue;
-				if (listener != null) listener.valueChanged(value);
+			if (boundedNewStep != step) {
+				step = boundedNewStep;
+				final double newValue = stepToValue(step);
+				if (listener != null) listener.valueChanged(newValue);
 			}
 		}
 	}
 
-	public String formatValue(int value) {
-		return Integer.toString(value);
+	protected String formatValue(double value) {
+		return String.format("%.2f", value);
 	}
 
 	@Override
@@ -91,16 +118,16 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 		return 12;
 	}
 
-	public int getValue() {
-		return value;
+	public double getValue() {
+		return stepToValue(step);
 	}
 
 	@Override
-	public void setValue(Integer value) {
-		this.value = value;
+	public void setValue(Double value) {
+		this.step = (int)valueToStep(value);
 	}
 
-	public void setListener(IValueChangedListener<Integer> listener) {
+	public void setListener(IValueChangedListener<Double> listener) {
 		this.listener = listener;
 	}
 }

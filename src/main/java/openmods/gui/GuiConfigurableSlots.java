@@ -37,7 +37,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 	}
 
 	protected GuiComponentCheckbox createCheckbox(E slot) {
-		return new GuiComponentCheckbox(10, 82, false, 0xFFFFFF);
+		return new GuiComponentCheckbox(10, 82, false);
 	}
 
 	protected abstract GuiComponentLabel createLabel(E slot);

@@ -1,19 +1,23 @@
 package openmods.gui.logic;
 
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;
 
-public class ValueCopyAction<T> implements IValueUpdateAction {
+public class ValueCopyAction<I, O> implements IValueUpdateAction {
 
 	private final Object trigger;
-	private final IValueProvider<T> provider;
-	private final IValueReceiver<T> receiver;
+	private final IValueProvider<I> provider;
+	private final IValueReceiver<O> receiver;
+	private final Function<I, O> converter;
 
-	public ValueCopyAction(Object trigger, IValueProvider<T> provider, IValueReceiver<T> receiver) {
+	public ValueCopyAction(Object trigger, IValueProvider<I> provider, IValueReceiver<O> receiver, Function<I, O> converter) {
 		this.trigger = trigger;
 		this.provider = provider;
 		this.receiver = receiver;
+		this.converter = converter;
 	}
 
 	@Override
@@ -23,15 +27,24 @@ public class ValueCopyAction<T> implements IValueUpdateAction {
 
 	@Override
 	public void execute() {
-		T value = provider.getValue();
-		receiver.setValue(value);
+		I input = provider.getValue();
+		O output = converter.apply(input);
+		receiver.setValue(output);
 	}
 
-	public static <T> ValueCopyAction<T> create(IValueProvider<T> provider, IValueReceiver<T> receiver) {
-		return new ValueCopyAction<T>(provider, provider, receiver);
+	public static <T> ValueCopyAction<T, T> create(IValueProvider<T> provider, IValueReceiver<T> receiver) {
+		return new ValueCopyAction<T, T>(provider, provider, receiver, Functions.<T> identity());
 	}
 
-	public static <T> ValueCopyAction<T> create(Object trigger, IValueProvider<T> provider, IValueReceiver<T> receiver) {
-		return new ValueCopyAction<T>(trigger, provider, receiver);
+	public static <T> ValueCopyAction<T, T> create(Object trigger, IValueProvider<T> provider, IValueReceiver<T> receiver) {
+		return new ValueCopyAction<T, T>(trigger, provider, receiver, Functions.<T> identity());
+	}
+
+	public static <I, O> ValueCopyAction<I, O> create(IValueProvider<I> provider, IValueReceiver<O> receiver, Function<I, O> converter) {
+		return new ValueCopyAction<I, O>(provider, provider, receiver, converter);
+	}
+
+	public static <I, O> ValueCopyAction<I, O> create(Object trigger, IValueProvider<I> provider, IValueReceiver<O> receiver, Function<I, O> converter) {
+		return new ValueCopyAction<I, O>(trigger, provider, receiver, converter);
 	}
 }

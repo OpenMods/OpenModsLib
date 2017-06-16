@@ -5,13 +5,11 @@ import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
 
 public class GuiComponentCheckbox extends BaseComponent implements IValueReceiver<Boolean> {
-	protected int color;
 	private boolean value;
 	private IValueChangedListener<Boolean> listener;
 
-	public GuiComponentCheckbox(int x, int y, boolean initialValue, int color) {
+	public GuiComponentCheckbox(int x, int y, boolean initialValue) {
 		super(x, y);
-		this.color = color;
 		this.value = initialValue;
 	}
 

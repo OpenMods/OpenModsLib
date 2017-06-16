@@ -21,7 +21,7 @@ public class TransformProvider {
 
 		public Transformation(Orientation orientation) {
 			final javax.vecmath.Matrix4f originalMatrix = new javax.vecmath.Matrix4f();
-			originalMatrix.set(orientation.createLocalToWorldMatrix());
+			originalMatrix.set(orientation.getLocalToWorldMatrix());
 
 			asMatrix = TRSRTransformation.toLwjgl(originalMatrix);
 
