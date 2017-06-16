@@ -195,8 +195,11 @@ public enum BlockRotationMode implements IBlockRotationMode {
 				case NORTH:
 				case SOUTH:
 				case EAST:
-				case WEST:
-					return getOrientationFacing(axis);
+				case WEST: {
+					final EnumFacing currentFront = getFront(currentOrientation);
+					final EnumFacing target = (currentFront == axis)? axis.getOpposite() : axis;
+					return getOrientationFacing(target);
+				}
 				default:
 					return null;
 			}
@@ -245,7 +248,9 @@ public enum BlockRotationMode implements IBlockRotationMode {
 
 		@Override
 		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
-			return getOrientationFacing(axis);
+			final EnumFacing currentFront = getFront(currentOrientation);
+			final EnumFacing target = (currentFront == axis)? axis.getOpposite() : axis;
+			return getOrientationFacing(target);
 		}
 
 		@Override
@@ -379,8 +384,11 @@ public enum BlockRotationMode implements IBlockRotationMode {
 				case NORTH:
 				case SOUTH:
 				case EAST:
-				case WEST:
-					return Orientation.lookupYZ(HalfAxis.fromEnumFacing(axis), HalfAxis.POS_Y);
+				case WEST: {
+					final EnumFacing currentFront = getFront(currentOrientation);
+					final EnumFacing target = (currentFront == axis)? axis.getOpposite() : axis;
+					return Orientation.lookupYZ(HalfAxis.fromEnumFacing(target), HalfAxis.POS_Y);
+				}
 				case UP:
 					if (currentOrientation.y != HalfAxis.POS_Y) return Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_Z);
 					else return currentOrientation.rotateAround(HalfAxis.POS_Y);
