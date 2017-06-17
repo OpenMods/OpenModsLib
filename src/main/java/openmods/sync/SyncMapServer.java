@@ -32,6 +32,7 @@ public abstract class SyncMapServer extends SyncMap {
 			this.name = name;
 			this.obj = obj;
 			this.type = SyncableObjectTypeRegistry.getType(obj.getClass());
+			Preconditions.checkNotNull(type, "Type %s is not registered", obj.getClass());
 		}
 	}
 

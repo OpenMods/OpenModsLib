@@ -1,5 +1,7 @@
 package openmods.inventory.legacy;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -198,10 +200,19 @@ public class ItemDistribution {
 	}
 
 	public static int moveItemsFromOneOfSides(TileEntity te, IInventory inv, int maxAmount, int intoSlot, Iterable<EnumFacing> sides, boolean randomize) {
-		return moveItemsFromOneOfSides(te, inv, null, maxAmount, intoSlot, sides, randomize);
+		return moveItemsFromOneOfSides(te, inv, Predicates.<ItemStack> alwaysTrue(), maxAmount, intoSlot, sides, randomize);
 	}
 
-	public static int moveItemsFromOneOfSides(TileEntity te, IInventory inv, ItemStack filterStack, int maxAmount, int intoSlot, Iterable<EnumFacing> sides, boolean randomize) {
+	public static int moveItemsFromOneOfSides(TileEntity te, IInventory inv, final ItemStack filterStack, int maxAmount, int intoSlot, Iterable<EnumFacing> sides, boolean randomize) {
+		return moveItemsFromOneOfSides(te, inv, new Predicate<ItemStack>() {
+			@Override
+			public boolean apply(ItemStack input) {
+				return input != null && input.isItemEqual(filterStack);
+			}
+		}, maxAmount, intoSlot, sides, randomize);
+	}
+
+	public static int moveItemsFromOneOfSides(TileEntity te, IInventory inv, Predicate<ItemStack> predicate, int maxAmount, int intoSlot, Iterable<EnumFacing> sides, boolean randomize) {
 		if (randomize) {
 			List<EnumFacing> shuffledSides = Lists.newArrayList(sides);
 			Collections.shuffle(shuffledSides);
@@ -214,7 +225,7 @@ public class ItemDistribution {
 			// if it's an inventory
 			if (tileOnSurface instanceof IInventory) {
 				final IInventory neighbor = (IInventory)tileOnSurface;
-				Set<Integer> slots = filterStack == null? InventoryUtils.getAllSlots(neighbor) : InventoryUtils.getAllSlotsWithStack(neighbor, filterStack);
+				Set<Integer> slots = predicate == null? InventoryUtils.getAllSlots(neighbor) : InventoryUtils.getAllSlots(neighbor, predicate);
 				for (Integer slot : slots) {
 					int moved = moveItemInto(neighbor, slot, inv, intoSlot, maxAmount, dir.getOpposite(), true);
 					if (moved > 0) {

@@ -12,6 +12,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.common.util.Constants;
 import openmods.api.IInventoryCallback;
 
 public class GenericInventory implements IInventory {
@@ -40,22 +41,22 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
-	public ItemStack decrStackSize(int par1, int par2) {
-		if (this.inventoryContents[par1] != null) {
+	public ItemStack decrStackSize(int index, int count) {
+		if (this.inventoryContents[index] != null) {
 			ItemStack itemstack;
 
-			if (this.inventoryContents[par1].stackSize <= par2) {
-				itemstack = this.inventoryContents[par1];
-				this.inventoryContents[par1] = null;
-				onInventoryChanged(par1);
+			if (this.inventoryContents[index].stackSize <= count) {
+				itemstack = this.inventoryContents[index];
+				this.inventoryContents[index] = null;
+				onInventoryChanged(index);
 				return itemstack;
 			}
-			itemstack = this.inventoryContents[par1].splitStack(par2);
-			if (this.inventoryContents[par1].stackSize == 0) {
-				this.inventoryContents[par1] = null;
+			itemstack = this.inventoryContents[index].splitStack(count);
+			if (this.inventoryContents[index].stackSize == 0) {
+				this.inventoryContents[index] = null;
 			}
 
-			onInventoryChanged(par1);
+			onInventoryChanged(index);
 			return itemstack;
 		}
 		return null;
@@ -125,10 +126,15 @@ public class GenericInventory implements IInventory {
 	}
 
 	public void readFromNBT(NBTTagCompound tag) {
-		if (tag.hasKey(TAG_SIZE)) {
+		readFromNBT(tag, true);
+	}
+
+	public void readFromNBT(NBTTagCompound tag, boolean readSize) {
+		if (readSize && tag.hasKey(TAG_SIZE)) {
 			this.slotsCount = tag.getInteger(TAG_SIZE);
 		}
-		NBTTagList nbttaglist = tag.getTagList(TAG_ITEMS, 10);
+
+		final NBTTagList nbttaglist = tag.getTagList(TAG_ITEMS, Constants.NBT.TAG_COMPOUND);
 		inventoryContents = new ItemStack[slotsCount];
 		for (int i = 0; i < nbttaglist.tagCount(); i++) {
 			NBTTagCompound stacktag = nbttaglist.getCompoundTagAt(i);

@@ -85,6 +85,8 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		GlStateManager.enableTexture2D();
 
 		if (te != null) TileEntityRendererDispatcher.instance.renderTileEntityAt(te, -0.5, -0.5, -0.5, 0.0F);
+
+		parent.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 		if (blockState != null) drawBlock();
 
 		SidePicker picker = new SidePicker(0.5);

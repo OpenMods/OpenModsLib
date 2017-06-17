@@ -32,6 +32,10 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 		this(x, y, width, min, max, initialValue, max - min, showValue, "");
 	}
 
+	public GuiComponentSlider(int x, int y, int width, int min, int max, int initialValue, boolean showValue, String label) {
+		this(x, y, width, min, max, initialValue, max - min, showValue, label);
+	}
+
 	public GuiComponentSlider(int x, int y, int width, double min, double max, double initialValue, int steps, boolean showValue, String label) {
 		super(x, y);
 		this.width = width;
@@ -46,7 +50,7 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 	}
 
 	private double valueToStep(double value) {
-		return steps * (value - min) / max;
+		return steps * (value - min) / (max - min);
 	}
 
 	private double stepToValue(double step) {

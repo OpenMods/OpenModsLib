@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.lang.reflect.Field;
 import java.util.List;
-import openmods.Log;
 import openmods.utils.FieldsSelector;
 
 public class SyncObjectScanner extends FieldsSelector {
@@ -29,10 +28,9 @@ public class SyncObjectScanner extends FieldsSelector {
 			ISyncableObject obj;
 			try {
 				obj = (ISyncableObject)field.get(target);
-				Preconditions.checkNotNull(obj, "Null field value");
+				Preconditions.checkNotNull(obj, "Field not initialized");
 			} catch (Exception e) {
-				obj = DummySyncableObject.INSTANCE;
-				Log.severe(e, "Exception while registering synced field '%s' of object '%s'", field, target);
+				throw new RuntimeException(String.format("Exception while registering synced field '%s' of object '%s'", field, target), e);
 			}
 
 			final String fieldName = field.getName();

@@ -1,6 +1,7 @@
 package openmods.utils;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -86,12 +87,24 @@ public class InventoryUtils {
 	 * @param inventory
 	 * @param stack
 	 * @return Returns a set of the slot indexes
+	 *
+	 * @deprecated use {@link #getAllSlots(IInventory, Predicate)}
 	 */
+	@Deprecated
 	public static Set<Integer> getAllSlotsWithStack(IInventory inventory, ItemStack stack) {
 		Set<Integer> slots = Sets.newHashSet();
 		for (int i = 0; i < inventory.getSizeInventory(); i++) {
 			ItemStack stackInSlot = inventory.getStackInSlot(i);
 			if (stackInSlot != null && stackInSlot.isItemEqual(stack)) slots.add(i);
+		}
+		return slots;
+	}
+
+	public static Set<Integer> getAllSlots(IInventory inventory, Predicate<ItemStack> predicate) {
+		Set<Integer> slots = Sets.newHashSet();
+		for (int i = 0; i < inventory.getSizeInventory(); i++) {
+			ItemStack stackInSlot = inventory.getStackInSlot(i);
+			if (predicate.apply(stackInSlot)) slots.add(i);
 		}
 		return slots;
 	}
