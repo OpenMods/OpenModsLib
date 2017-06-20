@@ -7,7 +7,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import openmods.fakeplayer.FakePlayerPool.PlayerUserReturning;
 import openmods.utils.InventoryUtils;
-import openmods.utils.MathUtils;
 
 public class UseItemAction implements PlayerUserReturning<ItemStack> {
 
@@ -19,6 +18,9 @@ public class UseItemAction implements PlayerUserReturning<ItemStack> {
 	private final EnumFacing side;
 	private final EnumHand hand;
 
+	private final float yaw;
+	private final float pitch;
+
 	public UseItemAction(ItemStack stack, Vec3d playerPos, Vec3d clickPos, Vec3d hitPos, EnumFacing side, EnumHand hand) {
 		super();
 		this.stack = stack;
@@ -27,20 +29,19 @@ public class UseItemAction implements PlayerUserReturning<ItemStack> {
 		this.hitPos = hitPos;
 		this.side = side;
 		this.hand = hand;
+
+		final float deltaX = (float)(clickPos.xCoord - playerPos.xCoord);
+		final float deltaY = (float)(clickPos.yCoord - playerPos.yCoord);
+		final float deltaZ = (float)(clickPos.zCoord - playerPos.zCoord);
+
+		this.pitch = -(float)Math.toDegrees(Math.asin(deltaY));
+		this.yaw = -(float)Math.toDegrees(Math.atan2(deltaX, deltaZ));
 	}
 
 	@Override
 	public ItemStack usePlayer(OpenModsFakePlayer player) {
 		player.inventory.currentItem = 0;
 		player.inventory.setInventorySlotContents(0, stack);
-
-		final float deltaX = (float)(clickPos.xCoord - playerPos.xCoord);
-		final float deltaY = (float)(clickPos.yCoord - playerPos.yCoord);
-		final float deltaZ = (float)(clickPos.zCoord - playerPos.zCoord);
-		final float distanceInGroundPlain = (float)Math.sqrt((float)MathUtils.lengthSq(deltaX, deltaZ));
-
-		final float yaw = (float)(Math.atan2(deltaX, deltaZ) * -180 / Math.PI);
-		final float pitch = (float)(Math.atan2(deltaY, distanceInGroundPlain) * -180 / Math.PI);
 
 		player.setPositionAndRotation(playerPos.xCoord, playerPos.yCoord, playerPos.zCoord, yaw, pitch);
 

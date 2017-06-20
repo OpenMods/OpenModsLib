@@ -39,6 +39,10 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 
 	public Orientation getOrientation() {
 		final IBlockState state = worldObj.getBlockState(pos);
+		return getOrientation(state);
+	}
+
+	public Orientation getOrientation(IBlockState state) {
 		final Block block = state.getBlock();
 		if (!(block instanceof OpenBlock)) return Orientation.XP_YP;
 		final OpenBlock openBlock = (OpenBlock)block;
@@ -47,6 +51,10 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 
 	public IBlockRotationMode getRotationMode() {
 		final IBlockState state = worldObj.getBlockState(pos);
+		return getRotationMode(state);
+	}
+
+	public IBlockRotationMode getRotationMode(IBlockState state) {
 		final Block block = state.getBlock();
 		if (!(block instanceof OpenBlock)) return BlockRotationMode.NONE;
 		final OpenBlock openBlock = (OpenBlock)block;
@@ -55,6 +63,10 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 
 	public EnumFacing getFront() {
 		final IBlockState state = worldObj.getBlockState(pos);
+		return getFront(state);
+	}
+
+	public EnumFacing getFront(IBlockState state) {
 		final Block block = state.getBlock();
 		if (!(block instanceof OpenBlock)) return EnumFacing.NORTH;
 		final OpenBlock openBlock = (OpenBlock)block;
