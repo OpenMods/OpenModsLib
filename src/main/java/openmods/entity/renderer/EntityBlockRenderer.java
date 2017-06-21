@@ -23,7 +23,7 @@ public class EntityBlockRenderer extends Render<EntityBlock> {
 
 		if (blockState.getRenderType() != EnumBlockRenderType.INVISIBLE) {
 			GlStateManager.pushMatrix();
-			GlStateManager.translate((float)x, (float)y, (float)z);
+			GlStateManager.translate(x - 0.5, y, z + 0.5);
 			GlStateManager.disableLighting();
 
 			bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
