@@ -1,0 +1,12 @@
+{
+    "parent": "openmods:block/cube_tinted",
+    "textures": {
+        "particle": "#side",
+        "down": "#side",
+        "up": "#top",
+        "north": "#side",
+        "east": "#side",
+        "south": "#side",
+        "west": "#side"
+    }
+}
