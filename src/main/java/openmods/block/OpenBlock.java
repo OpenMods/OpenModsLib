@@ -439,14 +439,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	public boolean eventReceived(IBlockState state, World world, BlockPos blockPos, int eventId, int eventParam) {
 		if (eventId < 0 && !world.isRemote) {
 			switch (eventId) {
-				case EVENT_ADDED: {
-					if (hasCapability(TileEntityCapability.ADD_LISTENER)) {
-						final IAddAwareTile te = getTileEntity(world, blockPos, IAddAwareTile.class);
-						if (te != null)
-							te.onAdded();
-					}
-				}
-					break;
+				case EVENT_ADDED:
+					return onBlockAddedNextTick(world, blockPos, state);
 			}
 
 			return false;
@@ -458,6 +452,16 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		} else {
 			return super.eventReceived(state, world, blockPos, eventId, eventParam);
 		}
+	}
+
+	protected boolean onBlockAddedNextTick(World world, BlockPos blockPos, IBlockState state) {
+		if (hasCapability(TileEntityCapability.ADD_LISTENER)) {
+			final IAddAwareTile te = getTileEntity(world, blockPos, IAddAwareTile.class);
+			if (te != null)
+				te.onAdded();
+		}
+
+		return true;
 	}
 
 	@SuppressWarnings("unchecked")
