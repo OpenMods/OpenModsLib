@@ -177,12 +177,12 @@ public abstract class BlockSpaceTransform {
 	public AxisAlignedBB mapWorldToBlock(Orientation orientation, AxisAlignedBB aabb) {
 		final Vec3d min = mapWorldToBlock(orientation, aabb.minX, aabb.minY, aabb.minZ);
 		final Vec3d max = mapWorldToBlock(orientation, aabb.maxX, aabb.maxY, aabb.maxZ);
-		return AabbUtils.createAabb(min.xCoord, min.yCoord, min.zCoord, max.xCoord, max.yCoord, max.zCoord);
+		return new AxisAlignedBB(min.xCoord, min.yCoord, min.zCoord, max.xCoord, max.yCoord, max.zCoord);
 	}
 
 	public AxisAlignedBB mapBlockToWorld(Orientation orientation, AxisAlignedBB aabb) {
 		final Vec3d min = mapBlockToWorld(orientation, aabb.minX, aabb.minY, aabb.minZ);
 		final Vec3d max = mapBlockToWorld(orientation, aabb.maxX, aabb.maxY, aabb.maxZ);
-		return AabbUtils.createAabb(min.xCoord, min.yCoord, min.zCoord, max.xCoord, max.yCoord, max.zCoord);
+		return new AxisAlignedBB(min.xCoord, min.yCoord, min.zCoord, max.xCoord, max.yCoord, max.zCoord);
 	}
 }

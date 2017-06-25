@@ -1,6 +1,7 @@
 package openmods.model;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -64,6 +65,22 @@ public class ModelUpdater {
 			throw new JsonSyntaxException("Expected " + name + " to be a Int, was " + JsonUtils.toString(element));
 		}
 	};
+
+	public static <T extends Enum<T>> ValueConverter<T> enumConverter(Class<T> enumCls) {
+		final ImmutableMap.Builder<String, T> valuesBuilder = ImmutableMap.builder();
+		for (T c : enumCls.getEnumConstants())
+			valuesBuilder.put(c.name().toLowerCase(), c);
+
+		final ImmutableMap<String, T> values = valuesBuilder.build();
+
+		return new ValueConverter<T>() {
+			@Override
+			public T convert(String name, JsonElement element) {
+				final String enumName = JsonUtils.getString(element, name);
+				return values.get(enumName.toLowerCase());
+			}
+		};
+	}
 
 	private final Map<String, String> values;
 
