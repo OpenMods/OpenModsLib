@@ -33,6 +33,7 @@ import openmods.source.ClassSourceCollector;
 import openmods.source.CommandSource;
 import openmods.sync.SyncChannelHolder;
 import openmods.sync.SyncableBlock;
+import openmods.sync.SyncableBlockState;
 import openmods.sync.SyncableBoolean;
 import openmods.sync.SyncableByte;
 import openmods.sync.SyncableByteArray;
@@ -87,6 +88,7 @@ public class OpenMods {
 
 		SyncableObjectTypeRegistry.register(SyncableTank.class);
 		SyncableObjectTypeRegistry.register(SyncableBlock.class);
+		SyncableObjectTypeRegistry.register(SyncableBlockState.class);
 		SyncableObjectTypeRegistry.register(SyncableBoolean.class);
 		SyncableObjectTypeRegistry.register(SyncableByte.class);
 		SyncableObjectTypeRegistry.register(SyncableByteArray.class);
