@@ -36,7 +36,10 @@ public class NetUtils {
 	public static Set<EntityPlayerMP> getPlayersWatchingChunk(WorldServer world, int chunkX, int chunkZ) {
 		final PlayerChunkMapEntry playerChunkMap = world.getPlayerChunkMap().getEntry(chunkX, chunkZ);
 
-		Set<EntityPlayerMP> playerList = Sets.newHashSet();
+		final Set<EntityPlayerMP> playerList = Sets.newHashSet();
+		if (playerChunkMap == null || !playerChunkMap.isSentToPlayers())
+			return playerList;
+
 		for (EntityPlayer o : world.playerEntities) {
 			EntityPlayerMP player = (EntityPlayerMP)o;
 			if (playerChunkMap.containsPlayer(player)) playerList.add(player);
