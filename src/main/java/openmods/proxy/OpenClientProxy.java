@@ -39,6 +39,7 @@ import openmods.gui.ClientGuiHandler;
 import openmods.model.MappedModelLoader;
 import openmods.model.ModelWithDependencies;
 import openmods.model.MultiLayerModel;
+import openmods.model.itemstate.ItemStateModel;
 import openmods.model.textureditem.TexturedItemModel;
 import openmods.model.variant.VariantModel;
 import openmods.movement.PlayerMovementManager;
@@ -122,6 +123,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 				.put("multi-layer", MultiLayerModel.EMPTY)
 				.put("variantmodel", VariantModel.EMPTY_MODEL)
 				.put("textureditem", TexturedItemModel.INSTANCE)
+				.put("stateitem", ItemStateModel.EMPTY)
 				.build(OpenMods.MODID));
 
 		((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(hitboxManager);
