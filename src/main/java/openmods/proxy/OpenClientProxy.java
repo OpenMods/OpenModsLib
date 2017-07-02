@@ -46,6 +46,7 @@ import openmods.movement.PlayerMovementManager;
 import openmods.source.CommandSource;
 import openmods.utils.CachedFactory;
 import openmods.utils.SneakyThrower;
+import openmods.utils.render.FramebufferBlitter;
 import openmods.utils.render.RenderUtils;
 
 public final class OpenClientProxy implements IOpenModsProxy {
@@ -127,6 +128,8 @@ public final class OpenClientProxy implements IOpenModsProxy {
 				.build(OpenMods.MODID));
 
 		((IReloadableResourceManager)Minecraft.getMinecraft().getResourceManager()).registerReloadListener(hitboxManager);
+
+		FramebufferBlitter.setup();
 	}
 
 	@Override
