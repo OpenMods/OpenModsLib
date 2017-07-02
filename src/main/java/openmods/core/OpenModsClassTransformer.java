@@ -25,6 +25,7 @@ import openmods.include.IncludingClassVisitor;
 import openmods.injector.InjectedClassesManager;
 import openmods.movement.MovementPatcher;
 import openmods.renderer.PlayerRendererHookVisitor;
+import openmods.renderer.PreWorldRenderHookVisitor;
 import openmods.utils.StateTracker;
 import openmods.utils.StateTracker.StateUpdater;
 import openmods.world.MapGenStructureVisitor;
@@ -164,6 +165,21 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				"Modified class: net.minecraft.entity.player.EntityPlayer",
 				"Known users: Last Stand enchantment",
 				"When disabled: Last Stand enchantment will not work");
+
+		config.addEntry("hook_pre_world_rendering", 0, "true", new ConfigOption("pre_world_render_hook") {
+			@Override
+			protected void onActivate(final StateUpdater<TransformerState> state) {
+				vanillaPatches.put("net.minecraft.client.renderer.EntityRenderer", new TransformProvider(0) {
+					@Override
+					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
+						Log.debug("Trying to patch EntityRenderer (class: %s)", name);
+						state.update(TransformerState.ACTIVATED);
+						return new PreWorldRenderHookVisitor(name, cv, createResultListener(state));
+					}
+				});
+			}
+
+		});
 	}
 
 	private final static TransformProvider INCLUDING_CV = new TransformProvider(0) {
