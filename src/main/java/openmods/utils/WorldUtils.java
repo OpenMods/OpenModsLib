@@ -6,7 +6,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import openmods.OpenMods;
 
@@ -19,9 +18,9 @@ public class WorldUtils {
 		}
 	};
 
-	public static World getWorld(int dimensionId) {
-		World result;
-		if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER) {
+	public static World getWorld(Side side, int dimensionId) {
+		final World result;
+		if (side == Side.SERVER) {
 			result = OpenMods.proxy.getServerWorld(dimensionId);
 		} else {
 			result = OpenMods.proxy.getClientWorld();

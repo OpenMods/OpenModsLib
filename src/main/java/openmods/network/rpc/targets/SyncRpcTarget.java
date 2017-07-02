@@ -5,6 +5,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.fml.relauncher.Side;
 import openmods.network.rpc.IRpcTarget;
 import openmods.network.rpc.IRpcTargetProvider;
 import openmods.sync.ISyncMapProvider;
@@ -50,8 +51,8 @@ public abstract class SyncRpcTarget implements IRpcTarget {
 	}
 
 	@Override
-	public void readFromStreamStream(EntityPlayer player, PacketBuffer input) throws IOException {
-		syncProvider.readFromStreamStream(player, input);
+	public void readFromStreamStream(Side side, EntityPlayer player, PacketBuffer input) throws IOException {
+		syncProvider.readFromStreamStream(side, player, input);
 
 		SyncMap map = getSyncMap();
 		objectId = input.readVarIntFromBuffer();

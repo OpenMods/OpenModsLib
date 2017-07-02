@@ -66,6 +66,8 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 		event.readFromStream(payload);
 		event.dispatcher = msg.getDispatcher();
 
+		event.side = side;
+
 		final INetHandler handler = msg.handler();
 		if (handler != null) event.sender = OpenMods.proxy.getPlayerFromHandler(handler);
 

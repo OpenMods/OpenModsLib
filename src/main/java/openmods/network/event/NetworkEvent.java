@@ -9,6 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
+import net.minecraftforge.fml.relauncher.Side;
 
 public abstract class NetworkEvent extends Event {
 
@@ -17,6 +18,8 @@ public abstract class NetworkEvent extends Event {
 	NetworkDispatcher dispatcher;
 
 	public EntityPlayer sender;
+
+	public Side side;
 
 	protected abstract void readFromStream(PacketBuffer input) throws IOException;
 

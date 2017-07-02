@@ -4,6 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
 import openmods.network.rpc.IRpcTarget;
 import openmods.utils.WorldUtils;
 
@@ -29,11 +30,11 @@ public class EntityRpcTarget implements IRpcTarget {
 	}
 
 	@Override
-	public void readFromStreamStream(EntityPlayer player, PacketBuffer input) {
+	public void readFromStreamStream(Side side, EntityPlayer player, PacketBuffer input) {
 		int worldId = input.readInt();
 		int entityId = input.readInt();
 
-		World world = WorldUtils.getWorld(worldId);
+		World world = WorldUtils.getWorld(side, worldId);
 		entity = world.getEntityByID(entityId);
 	}
 

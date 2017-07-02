@@ -51,6 +51,6 @@ public abstract class BlockEventPacket extends NetworkEvent {
 	}
 
 	public World getWorld() {
-		return WorldUtils.getWorld(dimension);
+		return WorldUtils.getWorld(side, dimension);
 	}
 }

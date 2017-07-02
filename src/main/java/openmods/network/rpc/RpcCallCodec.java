@@ -10,8 +10,10 @@ import java.util.List;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import net.minecraftforge.fml.common.registry.IForgeRegistry;
+import net.minecraftforge.fml.relauncher.Side;
 import openmods.OpenMods;
 import openmods.utils.CommonRegistryCallbacks;
 
@@ -54,6 +56,8 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 	protected void decode(ChannelHandlerContext ctx, FMLProxyPacket msg, List<Object> out) throws Exception {
 		final PacketBuffer input = new PacketBuffer(msg.payload());
 
+		final Side side = ctx.channel().attr(NetworkRegistry.CHANNEL_SOURCE).get();
+
 		final IRpcTarget target;
 		final MethodEntry method;
 		final Object[] args;
@@ -64,7 +68,7 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 			final TargetTypeProvider entry = idToEntryMap.get(targetId);
 			target = entry.createRpcTarget();
 			EntityPlayer player = getPlayer(msg);
-			target.readFromStreamStream(player, input);
+			target.readFromStreamStream(side, player, input);
 		}
 
 		{
