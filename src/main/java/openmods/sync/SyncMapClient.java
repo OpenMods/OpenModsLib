@@ -77,7 +77,11 @@ public class SyncMapClient extends SyncMap {
 
 	@Override
 	public void readUpdate(PacketBuffer dis) throws IOException {
-		Preconditions.checkState(bitmapLength > 0, "Initial data not received yet!");
+		if (bitmapLength <= 0) {
+			// Initial data not received yet - assuming this is initialization packet
+			readIntializationData(dis);
+			return;
+		}
 
 		final ByteBuf bitmapData = dis.readSlice(bitmapLength);
 

@@ -158,6 +158,8 @@ public abstract class SyncMapServer extends SyncMap {
 
 	protected interface IUpdateStrategy {
 		public void sendUpdates(Set<ISyncableObject> changedObjects);
+
+		public boolean sendsFirstPacket();
 	}
 
 	private final IUpdateStrategy updateStrategy = createUpdateStrategy();
@@ -180,6 +182,11 @@ public abstract class SyncMapServer extends SyncMap {
 
 		}
 
+		@Override
+		public boolean sendsFirstPacket() {
+			return false;
+		}
+
 	}
 
 	protected class SendInitialPacketStrategy implements IUpdateStrategy {
@@ -188,7 +195,7 @@ public abstract class SyncMapServer extends SyncMap {
 
 		@Override
 		public void sendUpdates(Set<ISyncableObject> changes) {
-			final boolean hasChanges = changes.isEmpty();
+			final boolean hasChanges = !changes.isEmpty();
 
 			List<EntityPlayerMP> fullPacketTargets = Lists.newArrayList();
 			List<EntityPlayerMP> deltaPacketTargets = Lists.newArrayList();
@@ -224,6 +231,11 @@ public abstract class SyncMapServer extends SyncMap {
 			}
 		}
 
+		@Override
+		public boolean sendsFirstPacket() {
+			return true;
+		}
+
 	}
 
 	private Set<ISyncableObject> listChanges() {
@@ -256,7 +268,7 @@ public abstract class SyncMapServer extends SyncMap {
 
 	@Override
 	public void sendUpdates() {
-		if (isInvalid() || !firstDataSent) return;
+		if (isInvalid() || (!updateStrategy.sendsFirstPacket() && !firstDataSent)) return;
 
 		final Set<ISyncableObject> changedObjects = listChanges();
 		updateStrategy.sendUpdates(changedObjects);
