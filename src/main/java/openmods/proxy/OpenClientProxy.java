@@ -2,6 +2,7 @@ package openmods.proxy;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -22,6 +23,8 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.animation.ITimeValue;
+import net.minecraftforge.common.model.animation.IAnimationStateMachine;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import openmods.LibConfig;
@@ -196,6 +199,11 @@ public final class OpenClientProxy implements IOpenModsProxy {
 	@Override
 	public Supplier<List<Hitbox>> getHitboxes(ResourceLocation location) {
 		return hitboxManager.get(location);
+	}
+
+	@Override
+	public IAnimationStateMachine loadAsm(ResourceLocation location, ImmutableMap<String, ITimeValue> parameters) {
+		return ModelLoaderRegistry.loadASM(location, parameters);
 	}
 
 }
