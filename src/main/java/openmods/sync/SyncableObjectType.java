@@ -15,6 +15,10 @@ public abstract class SyncableObjectType implements IForgeRegistryEntry<Syncable
 
 	public abstract Class<? extends ISyncableObject> getObjectClass();
 
+	public boolean isValidType(ISyncableObject object) {
+		return getObjectClass().isInstance(object);
+	}
+
 	@Override
 	public SyncableObjectType setRegistryName(ResourceLocation name) {
 		this.initialName = name;

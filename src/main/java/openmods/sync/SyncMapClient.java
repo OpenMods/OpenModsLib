@@ -55,7 +55,7 @@ public class SyncMapClient extends SyncMap {
 			final SyncableObjectType type = SyncableObjectTypeRegistry.getType(typeId);
 
 			ISyncableObject object = availableObjects.get(id);
-			if (object == null)
+			if (object == null || !type.isValidType(object))
 				object = type.createDummyObject();
 
 			object.readFromStream(dis);
