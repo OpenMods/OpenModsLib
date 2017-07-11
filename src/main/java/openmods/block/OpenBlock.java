@@ -135,8 +135,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	public final IProperty<Orientation> propertyOrientation;
 
-	protected Orientation inventoryRenderOrientation;
-
 	public boolean hasCapability(TileEntityCapability capability) {
 		return teCapabilities.contains(capability);
 	}
@@ -179,10 +177,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	protected BlockPlacementMode getPlacementMode() {
 		return this.blockPlacementMode;
-	}
-
-	protected void setInventoryRenderOrientation(Orientation orientation) {
-		inventoryRenderOrientation = orientation;
 	}
 
 	protected Orientation getOrientation(IBlockAccess world, BlockPos pos) {
