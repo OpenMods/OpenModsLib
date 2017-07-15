@@ -34,22 +34,22 @@ public abstract class NetworkEvent extends Event {
 	}
 
 	public void sendToAll() {
-		NetworkEventManager.INSTANCE.dispatcher().senders.global.sendMessage(this);
+		NetworkEventManager.dispatcher().senders.global.sendMessage(this);
 	}
 
 	public void sendToServer() {
-		NetworkEventManager.INSTANCE.dispatcher().senders.client.sendMessage(this);
+		NetworkEventManager.dispatcher().senders.client.sendMessage(this);
 	}
 
 	public void sendToPlayer(EntityPlayer player) {
-		NetworkEventManager.INSTANCE.dispatcher().senders.player.sendMessage(this, player);
+		NetworkEventManager.dispatcher().senders.player.sendMessage(this, player);
 	}
 
 	public void sendToEntity(Entity entity) {
-		NetworkEventManager.INSTANCE.dispatcher().senders.entity.sendMessage(this, entity);
+		NetworkEventManager.dispatcher().senders.entity.sendMessage(this, entity);
 	}
 
 	public List<Object> serialize() {
-		return NetworkEventManager.INSTANCE.dispatcher().senders.serialize(this);
+		return NetworkEventManager.dispatcher().senders.serialize(this);
 	}
 }

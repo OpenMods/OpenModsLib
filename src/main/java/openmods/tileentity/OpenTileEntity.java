@@ -141,16 +141,16 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 
 	public <T> T createProxy(final IPacketSender sender, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		TypeUtils.isInstance(this, mainIntf, extraIntf);
-		return RpcCallDispatcher.INSTANCE.createProxy(createRpcTarget(), sender, mainIntf, extraIntf);
+		return RpcCallDispatcher.instance().createProxy(createRpcTarget(), sender, mainIntf, extraIntf);
 	}
 
 	public <T> T createClientRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
-		final IPacketSender sender = RpcCallDispatcher.INSTANCE.senders.client;
+		final IPacketSender sender = RpcCallDispatcher.instance().senders.client;
 		return createProxy(sender, mainIntf, extraIntf);
 	}
 
 	public <T> T createServerRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
-		final IPacketSender sender = RpcCallDispatcher.INSTANCE.senders.block.bind(getDimCoords());
+		final IPacketSender sender = RpcCallDispatcher.instance().senders.block.bind(getDimCoords());
 		return createProxy(sender, mainIntf, extraIntf);
 	}
 

@@ -43,7 +43,7 @@ public abstract class BlockEventPacket extends NetworkEvent {
 	}
 
 	public void sendToWatchers() {
-		NetworkEventManager.INSTANCE.dispatcher().senders.block.sendMessage(this, getDimCoords());
+		NetworkEventManager.dispatcher().senders.block.sendMessage(this, getDimCoords());
 	}
 
 	public DimCoord getDimCoords() {

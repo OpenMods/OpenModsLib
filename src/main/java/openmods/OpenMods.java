@@ -4,7 +4,9 @@ import java.io.File;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -12,6 +14,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import openmods.config.ConfigChangeListener;
 import openmods.config.ConfigStorage;
@@ -23,7 +26,9 @@ import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
 import openmods.integration.modules.BuildCraftPipes;
 import openmods.liquids.BucketFillHandler;
+import openmods.network.rpc.MethodEntry;
 import openmods.network.rpc.RpcCallDispatcher;
+import openmods.network.rpc.TargetTypeProvider;
 import openmods.network.rpc.targets.EntityRpcTarget;
 import openmods.network.rpc.targets.SyncRpcTarget;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
@@ -45,6 +50,7 @@ import openmods.sync.SyncableInt;
 import openmods.sync.SyncableIntArray;
 import openmods.sync.SyncableItemStack;
 import openmods.sync.SyncableNBT;
+import openmods.sync.SyncableObjectType;
 import openmods.sync.SyncableObjectTypeRegistry;
 import openmods.sync.SyncableShort;
 import openmods.sync.SyncableSides;
@@ -82,42 +88,59 @@ public class OpenMods {
 		return new ResourceLocation(MODID, id);
 	}
 
+	@EventBusSubscriber
+	public static class DefaultRegistryEntries {
+
+		@SubscribeEvent
+		public static void registerSyncTypes(RegistryEvent.Register<SyncableObjectType> type) {
+			SyncableObjectTypeRegistry.startRegistration(type.getRegistry())
+					.register(SyncableTank.class)
+					.register(SyncableBlock.class)
+					.register(SyncableBlockState.class)
+					.register(SyncableBoolean.class)
+					.register(SyncableByte.class)
+					.register(SyncableByteArray.class)
+					.register(SyncableDouble.class)
+					.register(SyncableEnum.class, SyncableEnum.DUMMY_SUPPLIER)
+					.register(SyncableFlags.ByteFlags.class)
+					.register(SyncableFlags.ShortFlags.class)
+					.register(SyncableFlags.IntFlags.class)
+					.register(SyncableFloat.class)
+					.register(SyncableInt.class)
+					.register(SyncableIntArray.class)
+					.register(SyncableItemStack.class)
+					.register(SyncableNBT.class)
+					.register(SyncableShort.class)
+					.register(SyncableSides.class)
+					.register(SyncableString.class)
+					.register(SyncableUnsignedByte.class)
+					.register(SyncableUUID.class)
+					.register(SyncableVarInt.class);
+		}
+
+		@SubscribeEvent
+		public static void registerMethodTypes(RegistryEvent.Register<MethodEntry> evt) {
+			RpcCallDispatcher.startMethodRegistration(evt.getRegistry())
+					.registerInterface(IRpcDirectionBitMap.class)
+					.registerInterface(IRpcIntBitMap.class);
+		}
+
+		@SubscribeEvent
+		public static void registerTargets(RegistryEvent.Register<TargetTypeProvider> evt) {
+			RpcCallDispatcher.startTargetRegistration(evt.getRegistry())
+					.registerTargetWrapper(EntityRpcTarget.class)
+					.registerTargetWrapper(TileEntityRpcTarget.class)
+					.registerTargetWrapper(SyncRpcTarget.SyncEntityRpcTarget.class)
+					.registerTargetWrapper(SyncRpcTarget.SyncTileEntityRpcTarget.class);
+		}
+
+	}
+
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent evt) {
 		new TypeVariableHolderHandler().fillAllHolders(evt.getAsmData());
 
-		SyncableObjectTypeRegistry.register(SyncableTank.class);
-		SyncableObjectTypeRegistry.register(SyncableBlock.class);
-		SyncableObjectTypeRegistry.register(SyncableBlockState.class);
-		SyncableObjectTypeRegistry.register(SyncableBoolean.class);
-		SyncableObjectTypeRegistry.register(SyncableByte.class);
-		SyncableObjectTypeRegistry.register(SyncableByteArray.class);
-		SyncableObjectTypeRegistry.register(SyncableDouble.class);
-		SyncableObjectTypeRegistry.register(SyncableEnum.class, SyncableEnum.DUMMY_SUPPLIER);
-		SyncableObjectTypeRegistry.register(SyncableFlags.ByteFlags.class);
-		SyncableObjectTypeRegistry.register(SyncableFlags.ShortFlags.class);
-		SyncableObjectTypeRegistry.register(SyncableFlags.IntFlags.class);
-		SyncableObjectTypeRegistry.register(SyncableFloat.class);
-		SyncableObjectTypeRegistry.register(SyncableInt.class);
-		SyncableObjectTypeRegistry.register(SyncableIntArray.class);
-		SyncableObjectTypeRegistry.register(SyncableItemStack.class);
-		SyncableObjectTypeRegistry.register(SyncableNBT.class);
-		SyncableObjectTypeRegistry.register(SyncableShort.class);
-		SyncableObjectTypeRegistry.register(SyncableSides.class);
-		SyncableObjectTypeRegistry.register(SyncableString.class);
-		SyncableObjectTypeRegistry.register(SyncableUnsignedByte.class);
-		SyncableObjectTypeRegistry.register(SyncableUUID.class);
-		SyncableObjectTypeRegistry.register(SyncableVarInt.class);
-
 		SyncChannelHolder.ensureLoaded();
-
-		RpcCallDispatcher.INSTANCE
-				.registerInterface(IRpcDirectionBitMap.class)
-				.registerInterface(IRpcIntBitMap.class)
-				.registerTargetWrapper(EntityRpcTarget.class)
-				.registerTargetWrapper(TileEntityRpcTarget.class)
-				.registerTargetWrapper(SyncRpcTarget.SyncEntityRpcTarget.class)
-				.registerTargetWrapper(SyncRpcTarget.SyncTileEntityRpcTarget.class);
 
 		final File configFile = evt.getSuggestedConfigurationFile();
 		Configuration config = new Configuration(configFile);
