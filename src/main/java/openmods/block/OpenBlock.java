@@ -422,7 +422,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 			// TODO Expand for new args
 			if (te instanceof IActivateAwareTile)
-				return ((IActivateAwareTile)te).onBlockActivated(player, side, hitX, hitY, hitZ);
+				return ((IActivateAwareTile)te).onBlockActivated(player, hand, heldItem, side, hitX, hitY, hitZ);
 		}
 
 		return false;
