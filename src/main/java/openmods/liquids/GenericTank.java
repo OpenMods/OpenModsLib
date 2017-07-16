@@ -179,7 +179,7 @@ public class GenericTank extends FluidTank {
 	}
 
 	public int fillFromSide(int maxDrain, World world, BlockPos coord, EnumFacing side) {
-		maxDrain = Math.max(maxDrain, getSpace());
+		maxDrain = Math.min(maxDrain, getSpace());
 		if (maxDrain <= 0) return 0;
 
 		return fillInternal(world, coord, side, maxDrain);
