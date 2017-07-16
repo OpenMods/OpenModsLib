@@ -279,6 +279,12 @@ public abstract class SyncMapServer extends SyncMap {
 	}
 
 	@Override
+	public boolean trySendUpdates() {
+		sendUpdates();
+		return true;
+	}
+
+	@Override
 	public ISyncableObject getObjectById(int objectId) {
 		try {
 			return orderedEntries.get(objectId).obj;

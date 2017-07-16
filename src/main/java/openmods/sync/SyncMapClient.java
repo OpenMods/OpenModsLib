@@ -39,6 +39,11 @@ public class SyncMapClient extends SyncMap {
 	}
 
 	@Override
+	public boolean trySendUpdates() {
+		return false;
+	}
+
+	@Override
 	public void readIntializationData(PacketBuffer dis) throws IOException {
 		final int count = dis.readVarIntFromBuffer();
 

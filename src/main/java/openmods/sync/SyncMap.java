@@ -32,6 +32,8 @@ public abstract class SyncMap {
 
 	public abstract void sendUpdates();
 
+	public abstract boolean trySendUpdates();
+
 	public abstract void registerObject(String name, ISyncableObject value);
 
 	public abstract ISyncableObject getObjectById(int id);

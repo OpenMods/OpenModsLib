@@ -111,6 +111,10 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		getSyncMap().sendUpdates();
 	}
 
+	public boolean trySync() {
+		return getSyncMap().trySendUpdates();
+	}
+
 	@Override
 	public SyncMap getSyncMap() {
 		Preconditions.checkState(syncMap != null, "Tile entity not initialized properly");
