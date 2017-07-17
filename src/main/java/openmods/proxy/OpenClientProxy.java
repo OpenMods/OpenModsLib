@@ -47,6 +47,7 @@ import openmods.model.itemstate.ItemStateModel;
 import openmods.model.textureditem.TexturedItemModel;
 import openmods.model.variant.VariantModel;
 import openmods.movement.PlayerMovementManager;
+import openmods.renderer.CommandGlDebug;
 import openmods.source.CommandSource;
 import openmods.utils.CachedFactory;
 import openmods.utils.SneakyThrower;
@@ -109,6 +110,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 	public void preInit() {
 		ClientCommandHandler.instance.registerCommand(new CommandConfig("om_config_c", false));
 		ClientCommandHandler.instance.registerCommand(new CommandSource("om_source_c", false, OpenMods.instance.getCollector()));
+		ClientCommandHandler.instance.registerCommand(new CommandGlDebug());
 
 		if (LibConfig.enableCalculatorCommands) {
 			final ICommandComponent commandRoot = new CommandCalcFactory(new File(getMinecraftDir(), "scripts")).getRoot();
