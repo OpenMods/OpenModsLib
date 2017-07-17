@@ -29,6 +29,12 @@ public class SyncedGuiContainer<T extends ContainerBase<? extends ISyncMapProvid
 	}
 
 	@Override
+	public void initGui() {
+		super.initGui();
+		if (dispatcher != null) dispatcher.triggerAll();
+	}
+
+	@Override
 	public void onGuiClosed() {
 		super.onGuiClosed();
 

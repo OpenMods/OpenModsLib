@@ -82,7 +82,6 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 		GlStateManager.enableBlend();
 		GlStateManager.disableTexture2D();
 		GlStateManager.disableAlpha();
-		GlStateManager.alphaFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);
 		GL11.glBegin(GL11.GL_QUADS);
 		GlStateManager.color(0, 0, 0, 1.0f);
