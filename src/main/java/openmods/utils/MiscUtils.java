@@ -1,5 +1,6 @@
 package openmods.utils;
 
+import com.google.common.base.Strings;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -7,6 +8,9 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
 import openmods.Log;
 import openmods.api.IValueReceiver;
 
@@ -74,5 +78,16 @@ public class MiscUtils {
 				target.setValue(value != null? value.toString() : null);
 			}
 		};
+	}
+
+	public static String getTranslatedFluidName(FluidStack fluidStack) {
+		if (fluidStack == null) return "";
+		final Fluid fluid = fluidStack.getFluid();
+		String localizedName = fluid.getLocalizedName(fluidStack);
+		if (!Strings.isNullOrEmpty(localizedName) && !localizedName.equals(fluid.getUnlocalizedName())) {
+			return fluid.getRarity(fluidStack).rarityColor.toString() + localizedName;
+		} else {
+			return TextFormatting.OBFUSCATED + "LOLNOPE" + TextFormatting.RESET;
+		}
 	}
 }

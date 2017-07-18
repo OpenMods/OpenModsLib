@@ -1,5 +1,8 @@
 package openmods.gui.component;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import java.util.List;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.ResourceLocation;
@@ -7,6 +10,7 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueReceiver;
 import openmods.gui.misc.BoxRenderer;
+import openmods.utils.MiscUtils;
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentTankLevel extends GuiComponentResizable {
@@ -17,6 +21,8 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 	private FluidStack fluidStack;
 
 	private int capacity;
+
+	private boolean displayFluidName = true;
 
 	public GuiComponentTankLevel(int x, int y, int width, int height, int capacity) {
 		super(x, y, width, height);
@@ -61,6 +67,25 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 			addVertexWithUV(posX + 3, posY + (height - fluidHeight), this.zLevel, minU, minV);
 			GL11.glEnd();
 		}
+	}
+
+	@Override
+	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
+		if (fluidStack != null && isMouseOver(mouseX, mouseY)) {
+			final List<String> lines = Lists.newArrayListWithCapacity(2);
+			if (displayFluidName) {
+				final String translatedFluidName = MiscUtils.getTranslatedFluidName(fluidStack);
+				if (!Strings.isNullOrEmpty(translatedFluidName))
+					lines.add(translatedFluidName);
+			}
+
+			lines.add(String.format("%d/%d", fluidStack.amount, capacity));
+			parent.drawHoveringText(lines, offsetX + mouseX, offsetY + mouseY);
+		}
+	}
+
+	public void setDisplayFluidNameInTooltip(boolean isEnabled) {
+		displayFluidName = isEnabled;
 	}
 
 	public void setFluid(FluidStack value) {
