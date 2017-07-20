@@ -22,7 +22,6 @@ import openmods.config.simple.ConfigProcessor;
 import openmods.config.simple.ConfigProcessor.UpdateListener;
 import openmods.entity.PlayerDamageEventInjector;
 import openmods.include.IncludingClassVisitor;
-import openmods.injector.InjectedClassesManager;
 import openmods.movement.MovementPatcher;
 import openmods.renderer.PlayerRendererHookVisitor;
 import openmods.renderer.PreWorldRenderHookVisitor;
@@ -212,8 +211,6 @@ public class OpenModsClassTransformer implements IClassTransformer {
 
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] bytes) {
-		if (bytes == null) { return InjectedClassesManager.instance.tryGetBytecode(name); }
-
 		if (transformedName.startsWith("net.minecraft.")) {
 			TransformProvider provider = vanillaPatches.get(transformedName);
 			return (provider != null)? VisitorHelper.apply(bytes, name, provider) : bytes;

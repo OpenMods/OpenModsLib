@@ -9,7 +9,6 @@ import net.minecraftforge.fml.common.ICrashCallable;
 import net.minecraftforge.fml.common.LoadController;
 import net.minecraftforge.fml.common.ModMetadata;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
-import openmods.injector.InjectorSanityChecker;
 
 public class OpenModsCore extends DummyModContainer {
 
@@ -45,7 +44,5 @@ public class OpenModsCore extends DummyModContainer {
 				return "OpenModsLib class transformers";
 			}
 		});
-
-		FMLCommonHandler.instance().registerCrashCallable(new InjectorSanityChecker());
 	}
 }
