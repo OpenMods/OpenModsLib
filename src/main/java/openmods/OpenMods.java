@@ -24,7 +24,6 @@ import openmods.entity.DelayedEntityLoadManager;
 import openmods.entity.EntityBlock;
 import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
-import openmods.integration.modules.BuildCraftPipes;
 import openmods.liquids.BucketFillHandler;
 import openmods.network.rpc.MethodEntry;
 import openmods.network.rpc.RpcCallDispatcher;
@@ -177,7 +176,6 @@ public class OpenMods {
 
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent evt) {
-		Integration.addModule(new BuildCraftPipes());
 		Integration.loadModules();
 		proxy.postInit();
 	}

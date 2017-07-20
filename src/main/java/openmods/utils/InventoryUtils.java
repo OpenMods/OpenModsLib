@@ -1,15 +1,10 @@
 package openmods.utils;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
@@ -17,6 +12,11 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 
 public class InventoryUtils {
 
@@ -34,28 +34,6 @@ public class InventoryUtils {
 		return copy;
 	}
 
-	public static void removeFromSlot(IInventory inventory, int slot, int amount) {
-		ItemStack sourceStack = inventory.getStackInSlot(slot);
-		sourceStack.stackSize -= amount;
-		if (sourceStack.stackSize == 0) {
-			inventory.setInventorySlotContents(slot, null);
-		} else {
-			// Paranoia? Always!
-			inventory.setInventorySlotContents(slot, sourceStack);
-		}
-	}
-
-	public static IInventory getInventory(World world, BlockPos pos) {
-		TileEntity tileEntity = world.getTileEntity(pos);
-		return tileEntity instanceof IInventory? (IInventory)tileEntity : null;
-	}
-
-	public static IInventory getInventory(World world, BlockPos blockPos, EnumFacing direction) {
-		if (direction != null) blockPos = blockPos.offset(direction);
-		return getInventory(world, blockPos);
-
-	}
-
 	public static List<ItemStack> getInventoryContents(IInventory inventory) {
 		List<ItemStack> result = Lists.newArrayList();
 		for (int i = 0; i < inventory.getSizeInventory(); i++) {
@@ -63,83 +41,6 @@ public class InventoryUtils {
 			if (slot != null) result.add(slot);
 		}
 		return result;
-	}
-
-	/***
-	 * Get the first slot containing an item type matching the supplied type.
-	 *
-	 * @param inventory
-	 * @param stack
-	 * @return Returns -1 if none found
-	 */
-	public static int getFirstSlotWithStack(IInventory inventory, ItemStack stack) {
-		for (int i = 0; i < inventory.getSizeInventory(); i++) {
-			ItemStack stackInSlot = inventory.getStackInSlot(i);
-			if (stackInSlot != null && stackInSlot.isItemEqual(stack)) { return i; }
-		}
-		return -1;
-	}
-
-	/***
-	 * Get the indexes of all slots containing a stack of the supplied item
-	 * type.
-	 *
-	 * @param inventory
-	 * @param stack
-	 * @return Returns a set of the slot indexes
-	 *
-	 * @deprecated use {@link #getAllSlots(IInventory, Predicate)}
-	 */
-	@Deprecated
-	public static Set<Integer> getAllSlotsWithStack(IInventory inventory, ItemStack stack) {
-		Set<Integer> slots = Sets.newHashSet();
-		for (int i = 0; i < inventory.getSizeInventory(); i++) {
-			ItemStack stackInSlot = inventory.getStackInSlot(i);
-			if (stackInSlot != null && stackInSlot.isItemEqual(stack)) slots.add(i);
-		}
-		return slots;
-	}
-
-	public static Set<Integer> getAllSlots(IInventory inventory, Predicate<ItemStack> predicate) {
-		Set<Integer> slots = Sets.newHashSet();
-		for (int i = 0; i < inventory.getSizeInventory(); i++) {
-			ItemStack stackInSlot = inventory.getStackInSlot(i);
-			if (predicate.apply(stackInSlot)) slots.add(i);
-		}
-		return slots;
-	}
-
-	public static int getFirstNonEmptySlot(IInventory inventory) {
-		for (int i = 0; i < inventory.getSizeInventory(); i++) {
-			ItemStack stack = inventory.getStackInSlot(i);
-			if (stack != null) { return i; }
-		}
-		return -1;
-	}
-
-	public static Set<Integer> getAllSlots(IInventory inventory) {
-		Set<Integer> slots = Sets.newHashSet();
-		for (int i = 0; i < inventory.getSizeInventory(); i++)
-			slots.add(i);
-
-		return slots;
-	}
-
-	public static Map<Integer, ItemStack> getAllItems(IInventory inventory) {
-		Map<Integer, ItemStack> result = Maps.newHashMap();
-		for (int i = 0; i < inventory.getSizeInventory(); i++) {
-			ItemStack stack = inventory.getStackInSlot(i);
-			if (stack != null) result.put(i, stack);
-		}
-
-		return result;
-
-	}
-
-	public static boolean inventoryIsEmpty(IInventory inventory) {
-		for (int i = 0, l = inventory.getSizeInventory(); i < l; i++)
-			if (inventory.getStackInSlot(i) != null) return false;
-		return true;
 	}
 
 	public static boolean tryMergeStacks(ItemStack stackToMerge, ItemStack stackInSlot) {
@@ -165,74 +66,8 @@ public class InventoryUtils {
 		return (stack == null || stack.stackSize <= 0)? null : stack.copy();
 	}
 
-	public static void swapStacks(IInventory inventory, int slot1, int slot2) {
-		swapStacks(inventory, slot1, slot2, true, true);
-	}
-
-	public static void swapStacks(IInventory inventory, int slot1, int slot2, boolean copy, boolean validate) {
-		Preconditions.checkElementIndex(slot1, inventory.getSizeInventory(), "input slot id");
-		Preconditions.checkElementIndex(slot2, inventory.getSizeInventory(), "output slot id");
-
-		ItemStack stack1 = inventory.getStackInSlot(slot1);
-		ItemStack stack2 = inventory.getStackInSlot(slot2);
-
-		if (validate) {
-			isItemValid(inventory, slot2, stack1);
-			isItemValid(inventory, slot1, stack2);
-		}
-
-		if (copy) {
-			if (stack1 != null) stack1 = stack1.copy();
-			if (stack2 != null) stack2 = stack2.copy();
-		}
-
-		inventory.setInventorySlotContents(slot1, stack2);
-		inventory.setInventorySlotContents(slot2, stack1);
-	}
-
-	public static void swapStacks(ISidedInventory inventory, int slot1, EnumFacing side1, int slot2, EnumFacing side2) {
-		swapStacks(inventory, slot1, side1, slot2, side2, true, true);
-	}
-
-	public static void swapStacks(ISidedInventory inventory, int slot1, EnumFacing side1, int slot2, EnumFacing side2, boolean copy, boolean validate) {
-		Preconditions.checkElementIndex(slot1, inventory.getSizeInventory(), "input slot id");
-		Preconditions.checkElementIndex(slot2, inventory.getSizeInventory(), "output slot id");
-
-		ItemStack stack1 = inventory.getStackInSlot(slot1);
-		ItemStack stack2 = inventory.getStackInSlot(slot2);
-
-		if (validate) {
-			isItemValid(inventory, slot2, stack1);
-			isItemValid(inventory, slot1, stack2);
-
-			canExtract(inventory, slot1, side1, stack1);
-			canInsert(inventory, slot2, side2, stack1);
-
-			canExtract(inventory, slot2, side2, stack2);
-			canInsert(inventory, slot1, side1, stack2);
-		}
-
-		if (copy) {
-			if (stack1 != null) stack1 = stack1.copy();
-			if (stack2 != null) stack2 = stack2.copy();
-		}
-
-		inventory.setInventorySlotContents(slot1, stack2);
-		inventory.setInventorySlotContents(slot2, stack1);
-	}
-
 	protected static void isItemValid(IInventory inventory, int slot, ItemStack stack) {
 		Preconditions.checkArgument(inventory.isItemValidForSlot(slot, stack), "Slot %s cannot accept item", slot);
-	}
-
-	protected static void canInsert(ISidedInventory inventory, int slot, EnumFacing side, ItemStack stack) {
-		Preconditions.checkArgument(inventory.canInsertItem(slot, stack, side),
-				"Item cannot be inserted into slot %s on side %s", slot, side);
-	}
-
-	protected static void canExtract(ISidedInventory inventory, int slot, EnumFacing side, ItemStack stack) {
-		Preconditions.checkArgument(inventory.canExtractItem(slot, stack, side),
-				"Item cannot be extracted from slot %s on side %s", slot, side);
 	}
 
 	public static Iterable<ItemStack> asIterable(final IInventory inv) {
@@ -251,7 +86,32 @@ public class InventoryUtils {
 				};
 			}
 		};
-
 	}
 
+	public static IItemHandler tryGetHandler(World world, BlockPos pos, EnumFacing side) {
+		if (!world.isBlockLoaded(pos)) return null;
+		final TileEntity te = world.getTileEntity(pos);
+
+		return tryGetHandler(te, side);
+	}
+
+	public static IItemHandler tryGetHandler(TileEntity te, EnumFacing side) {
+		if (te == null) return null;
+
+		if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side))
+			return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side);
+
+		if (te instanceof ISidedInventory)
+			return new SidedInvWrapper((ISidedInventory)te, side);
+
+		if (te instanceof IInventory)
+			return new InvWrapper((IInventory)te);
+
+		return null;
+	}
+
+	public static boolean canInsertStack(IItemHandler handler, ItemStack stack) {
+		final ItemStack toInsert = ItemHandlerHelper.insertItemStacked(handler, stack, true);
+		return toInsert == null || toInsert.stackSize < stack.stackSize;
+	}
 }

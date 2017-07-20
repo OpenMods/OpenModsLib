@@ -27,6 +27,18 @@ public class Utils {
 		}
 	};
 
+	public static ItemStack itemA(int amount) {
+		return new ItemStack(ITEM_A, amount);
+	}
+
+	public static ItemStack itemB(int amount) {
+		return new ItemStack(ITEM_B, amount);
+	}
+
+	public static ItemStack itemC(int amount) {
+		return new ItemStack(ITEM_C, amount);
+	}
+
 	static Matcher<ItemStack> containsItem(final Item item, final int size) {
 		return new BaseMatcher<ItemStack>() {
 			@Override

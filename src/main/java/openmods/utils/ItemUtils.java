@@ -63,4 +63,12 @@ public class ItemUtils {
 		}
 	}
 
+	// because vanilla is not really good with null stacks
+	public static void setEntityItemStack(EntityItem entity, ItemStack stack) {
+		if (stack == null) {
+			entity.setDead();
+		} else {
+			entity.setEntityItemStack(stack);
+		}
+	}
 }
