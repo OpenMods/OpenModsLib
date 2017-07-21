@@ -59,6 +59,7 @@ public class BucketFillHandler {
 		if (evt.getResult() != Result.DEFAULT) return;
 
 		final RayTraceResult target = evt.getTarget();
+		if (target == null) return;
 		if (target.typeOfHit != RayTraceResult.Type.BLOCK) return;
 
 		TileEntity te = evt.getWorld().getTileEntity(target.getBlockPos());
