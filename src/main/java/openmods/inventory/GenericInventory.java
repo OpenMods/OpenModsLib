@@ -13,7 +13,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import openmods.api.IInventoryCallback;
 
@@ -28,7 +28,7 @@ public class GenericInventory implements IInventory {
 	protected int slotsCount;
 	protected ItemStack[] inventoryContents;
 	protected boolean isInvNameLocalized;
-	private IItemHandler handler;
+	private IItemHandlerModifiable handler;
 
 	public GenericInventory(String name, boolean isInvNameLocalized, int size) {
 		callbacks = new ArrayList<IInventoryCallback>();
@@ -237,7 +237,7 @@ public class GenericInventory implements IInventory {
 		return 0;
 	}
 
-	public IItemHandler getHandler() {
+	public IItemHandlerModifiable getHandler() {
 		if (handler == null) handler = new InvWrapper(this);
 		return handler;
 	}
