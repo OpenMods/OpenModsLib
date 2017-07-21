@@ -211,6 +211,8 @@ public class OpenModsClassTransformer implements IClassTransformer {
 
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] bytes) {
+		if (bytes == null) return null;
+
 		if (transformedName.startsWith("net.minecraft.")) {
 			TransformProvider provider = vanillaPatches.get(transformedName);
 			return (provider != null)? VisitorHelper.apply(bytes, name, provider) : bytes;
