@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.util.math.BlockPos;
@@ -189,5 +190,9 @@ public class StructureRegistry {
 		});
 
 		return result.build();
+	}
+
+	public static String structureNameLocalizationKey(String structure) {
+		return "openmodslib.structure." + structure.toLowerCase(Locale.ROOT);
 	}
 }

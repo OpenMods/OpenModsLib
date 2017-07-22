@@ -76,3 +76,11 @@ openmodslib.config.features.blocks=Enable/disable blocks
 openmodslib.config.features.items=Enable/disable items
 openmodslib.config.config=Mod specific configuration
 openmodslib.config.update_warning=§c§lNote:§r to change configuration in runtime, use §l/om_config_s§r or §l/om_config_m§r commands
+
+openmodslib.structure.endcity=End City
+openmodslib.structure.mineshaft=Mineshaft
+openmodslib.structure.fortress=Nether Fortress
+openmodslib.structure.temple=Shrine
+openmodslib.structure.stronghold=Stronghold
+openmodslib.structure.village=Village
+openmodslib.structure.monument=Ocean Monument
