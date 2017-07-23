@@ -40,7 +40,7 @@ public class Mods {
 	public static final String MULTIPART = "McMultipart";
 	public static final String MYSTCRAFT = "Mystcraft";
 	public static final String NOTENOUGHITEMS = "NotEnoughItems";
-	public static final String OPENBLOCKS = "OpenBlocks";
+	public static final String OPENBLOCKS = "openblocks";
 	public static final String OPENCOMPUTERS = "OpenComputers";
 	public static final String OPENPERIPHERAL = "OpenPeripheral";
 	public static final String OPENPERIPHERALCORE = "OpenPeripheralCore";
