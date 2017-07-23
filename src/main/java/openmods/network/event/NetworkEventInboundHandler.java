@@ -20,7 +20,6 @@ public class NetworkEventInboundHandler extends SimpleChannelInboundHandler<Netw
 				MinecraftForge.EVENT_BUS.post(msg);
 				msg.dispatcher = null;
 
-				// TODO 1.8.9 verify. Maybe too risky?
 				for (NetworkEvent reply : msg.replies) {
 					ctx.channel().attr(FMLOutboundHandler.FML_MESSAGETARGET).set(OutboundTarget.REPLY);
 					ctx.writeAndFlush(reply);
