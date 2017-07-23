@@ -52,6 +52,7 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 		final ItemModelMesher itemModelMesher = itemRenderer.getItemModelMesher();
 		final IBakedModel model = itemModelMesher.getItemModel(stack);
 
+		GlStateManager.disableLighting();
 		GlStateManager.enableRescaleNormal();
 		GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
 		GlStateManager.enableBlend();
