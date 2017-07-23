@@ -5,14 +5,13 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import openmods.utils.bitmap.IReadableBitMap;
 
 public abstract class SidedFluidCapabilityWrapper {
 
-	private final FluidTank tank;
+	private final IFluidHandler tank;
 
 	private final Map<EnumFacing, IFluidHandler> handlers = Maps.newEnumMap(EnumFacing.class);
 
@@ -53,7 +52,7 @@ public abstract class SidedFluidCapabilityWrapper {
 
 	}
 
-	private SidedFluidCapabilityWrapper(FluidTank tank) {
+	private SidedFluidCapabilityWrapper(IFluidHandler tank) {
 		this.tank = tank;
 
 		for (EnumFacing side : EnumFacing.VALUES)
@@ -76,7 +75,7 @@ public abstract class SidedFluidCapabilityWrapper {
 		return handlers.get(side);
 	}
 
-	public static SidedFluidCapabilityWrapper wrap(FluidTank tank, final IReadableBitMap<EnumFacing> flags, boolean canDrain, boolean canFill) {
+	public static SidedFluidCapabilityWrapper wrap(IFluidHandler tank, final IReadableBitMap<EnumFacing> flags, boolean canDrain, boolean canFill) {
 		if (canDrain && canFill) return new SidedFluidCapabilityWrapper(tank) {
 			@Override
 			protected boolean canFill(EnumFacing side) {
