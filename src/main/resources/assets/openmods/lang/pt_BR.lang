@@ -27,10 +27,20 @@ openmodslib.command.calc_invalid_key=Nome da propriedade inválido
 openmodslib.command.calc_cant_set=Houve uma falha ao definir a propriedade
 openmodslib.command.calc_function_defined=Função %s definida.
 openmodslib.command.calc_error=Falha ao executar: '%s'
+#openmodslib.command.calc_syntax_error_path=Failed to parse command '%s':  ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_runtime_error_path=Failed to execute command '%s':  ## NEEDS TRANSLATION ##
 openmodslib.command.calc_stack_underflow=Calculator stack underflow
 openmodslib.command.calc_after_push=Pushed calculator, stack size: %s
 openmodslib.command.calc_after_pop=Popped calculator, stack size: %s
 openmodslib.command.calc_stack_size=Stack size: %s
+#openmodslib.command.calc_extra_args=Unparsed arguments left in command: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_invalid_number='%s' is not valid number ## NEEDS TRANSLATION ##
+#openmodslib.command.no_subcommand=Can't find subcommand: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.no_subcommands=Command has no subcommands ## NEEDS TRANSLATION ##
+#openmodslib.command.not_enough_arguments=Not enough arguments ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_executed_count=Executed %d commands ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_not_child=Path %s is not child of %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_not_file=Path %s is not valid file ## NEEDS TRANSLATION ##
 
 openmodslib.color.black=Preto
 openmodslib.color.red=Vermelho
@@ -59,8 +69,18 @@ openmodslib.locale.book.scale.pageContent=0.5
 openmodslib.locale.book.lineSpace.titledPage=2
 openmodslib.locale.book.lineSpace.recipePage=4
 
+#openmodslib.book.page=Page %d of %d ## NEEDS TRANSLATION ##
+
 openmodslib.config.features=Habilitar/desabilitar funções
 openmodslib.config.features.blocks=Habilitar/desabilitar blocos
 openmodslib.config.features.items=Habilitar/desabilitar itens
 openmodslib.config.config=Configurações de mods específicos
 openmodslib.config.update_warning=§c§lOBS:§r para alterar as configurações em tempo real, use §l/om_config_s§r ou §l/om_config_m§r.
+
+#openmodslib.structure.endcity=End City ## NEEDS TRANSLATION ##
+#openmodslib.structure.mineshaft=Mineshaft ## NEEDS TRANSLATION ##
+#openmodslib.structure.fortress=Nether Fortress ## NEEDS TRANSLATION ##
+#openmodslib.structure.temple=Shrine ## NEEDS TRANSLATION ##
+#openmodslib.structure.stronghold=Stronghold ## NEEDS TRANSLATION ##
+#openmodslib.structure.village=Village ## NEEDS TRANSLATION ##
+#openmodslib.structure.monument=Ocean Monument ## NEEDS TRANSLATION ##

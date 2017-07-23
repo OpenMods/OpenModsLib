@@ -176,11 +176,11 @@ javadoc {
 }
 
 task updateTranslations(type: net.thesilkminer.gradle.plugin.translationchecker.tasks.TranslationCheckTask) {
-    modId = "openmodslib"
+    modId = "openmods"
 }
 
 task checkTranslations(type: net.thesilkminer.gradle.plugin.translationchecker.tasks.TranslationCheckTask) {
-    modId = "openmodslib"
+    modId = "openmods"
     dryRun = true
 }
 

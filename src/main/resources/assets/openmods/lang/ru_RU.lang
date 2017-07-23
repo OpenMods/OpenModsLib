@@ -27,10 +27,20 @@ openmodslib.command.class_provider=Класс предоставленный ф�
 #openmodslib.command.calc_cant_set=Failed to set property ## NEEDS TRANSLATION ##
 #openmodslib.command.calc_function_defined=Defined function %s ## NEEDS TRANSLATION ##
 #openmodslib.command.calc_error=Failed to execute: '%s' ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_syntax_error_path=Failed to parse command '%s':  ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_runtime_error_path=Failed to execute command '%s':  ## NEEDS TRANSLATION ##
 #openmodslib.command.calc_stack_underflow=Calculator stack underflow ## NEEDS TRANSLATION ##
 #openmodslib.command.calc_after_push=Pushed calculator, stack size: %s ## NEEDS TRANSLATION ##
 #openmodslib.command.calc_after_pop=Popped calculator, stack size: %s ## NEEDS TRANSLATION ##
 #openmodslib.command.calc_stack_size=Stack size: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_extra_args=Unparsed arguments left in command: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_invalid_number='%s' is not valid number ## NEEDS TRANSLATION ##
+#openmodslib.command.no_subcommand=Can't find subcommand: %s ## NEEDS TRANSLATION ##
+#openmodslib.command.no_subcommands=Command has no subcommands ## NEEDS TRANSLATION ##
+#openmodslib.command.not_enough_arguments=Not enough arguments ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_executed_count=Executed %d commands ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_not_child=Path %s is not child of %s ## NEEDS TRANSLATION ##
+#openmodslib.command.calc_not_file=Path %s is not valid file ## NEEDS TRANSLATION ##
 
 #openmodslib.color.black=Black ## NEEDS TRANSLATION ##
 #openmodslib.color.red=Red ## NEEDS TRANSLATION ##
@@ -59,8 +69,18 @@ openmodslib.command.class_provider=Класс предоставленный ф�
 #openmodslib.locale.book.lineSpace.titledPage=2 ## NEEDS TRANSLATION ##
 #openmodslib.locale.book.lineSpace.recipePage=4 ## NEEDS TRANSLATION ##
 
+#openmodslib.book.page=Page %d of %d ## NEEDS TRANSLATION ##
+
 #openmodslib.config.features=Enable/disable features ## NEEDS TRANSLATION ##
 #openmodslib.config.features.blocks=Enable/disable blocks ## NEEDS TRANSLATION ##
 #openmodslib.config.features.items=Enable/disable items ## NEEDS TRANSLATION ##
 #openmodslib.config.config=Mod specific configuration ## NEEDS TRANSLATION ##
 #openmodslib.config.update_warning=§c§lNote:§r to change configuration in runtime, use §l/om_config_s§r or §l/om_config_m§r commands ## NEEDS TRANSLATION ##
+
+#openmodslib.structure.endcity=End City ## NEEDS TRANSLATION ##
+#openmodslib.structure.mineshaft=Mineshaft ## NEEDS TRANSLATION ##
+#openmodslib.structure.fortress=Nether Fortress ## NEEDS TRANSLATION ##
+#openmodslib.structure.temple=Shrine ## NEEDS TRANSLATION ##
+#openmodslib.structure.stronghold=Stronghold ## NEEDS TRANSLATION ##
+#openmodslib.structure.village=Village ## NEEDS TRANSLATION ##
+#openmodslib.structure.monument=Ocean Monument ## NEEDS TRANSLATION ##
