@@ -161,8 +161,6 @@ public class OpenMods {
 
 		EntityRegistry.registerModEntity(EntityBlock.class, "Block", ENTITY_BLOCK_ID, instance, 64, 1, true);
 
-		Sounds.register();
-
 		proxy.preInit();
 	}
 
