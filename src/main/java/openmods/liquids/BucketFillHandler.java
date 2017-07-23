@@ -1,57 +1,25 @@
 package openmods.liquids;
 
-import com.google.common.collect.Sets;
-import java.util.Set;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
-import net.minecraftforge.fluids.FluidContainerRegistry;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTankInfo;
-import net.minecraftforge.fluids.IFluidHandler;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class BucketFillHandler {
 
-	public static final BucketFillHandler instance = new BucketFillHandler();
+	private final ItemStack filledBucket;
 
-	private BucketFillHandler() {}
+	private final FluidStack containedFluid;
 
-	private final Set<Class<? extends IFluidHandler>> whitelist = Sets.newHashSet();
-
-	@SuppressWarnings("unchecked")
-	public void addToWhitelist(Class<? extends TileEntity> cls) {
-		whitelist.add((Class<? extends IFluidHandler>)cls);
-	}
-
-	private boolean shouldFill(Object target) {
-		return (target instanceof IFluidHandler) && whitelist.contains(target.getClass());
-	}
-
-	private static ItemStack fillTank(IFluidHandler handler, EnumFacing dir, ItemStack container) {
-		FluidTankInfo tanks[] = handler.getTankInfo(dir);
-
-		for (FluidTankInfo tank : tanks) {
-			FluidStack available = tank.fluid;
-			if (available == null || available.amount <= 0) continue;
-
-			ItemStack filledStack = FluidContainerRegistry.fillFluidContainer(available, container);
-			FluidStack filled = FluidContainerRegistry.getFluidForFilledItem(filledStack);
-
-			if (filled != null && filled.isFluidEqual(available) && filled.amount <= available.amount) {
-				FluidStack drained = handler.drain(dir, filled.amount, false);
-
-				if (drained.isFluidStackIdentical(filled)) {
-					handler.drain(dir, filled.amount, true);
-					return filledStack;
-				}
-			}
-		}
-
-		return null;
+	public BucketFillHandler(ItemStack filledBucket, FluidStack containedFluid) {
+		this.filledBucket = filledBucket;
+		this.containedFluid = containedFluid;
 	}
 
 	@SubscribeEvent
@@ -59,14 +27,18 @@ public class BucketFillHandler {
 		if (evt.getResult() != Result.DEFAULT) return;
 
 		final RayTraceResult target = evt.getTarget();
-		if (target.typeOfHit != RayTraceResult.Type.BLOCK) return;
+		if (target == null || target.typeOfHit != RayTraceResult.Type.BLOCK) return;
 
-		TileEntity te = evt.getWorld().getTileEntity(target.getBlockPos());
+		final TileEntity te = evt.getWorld().getTileEntity(target.getBlockPos());
+		if (te == null) return;
 
-		if (shouldFill(te)) {
-			ItemStack result = fillTank((IFluidHandler)te, target.sideHit, evt.getEmptyBucket());
-			if (result != null) {
-				evt.setFilledBucket(result);
+		if (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, target.sideHit)) {
+			final IFluidHandler source = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, target.sideHit);
+
+			final FluidStack drained = source.drain(Fluid.BUCKET_VOLUME, false);
+			if (containedFluid.isFluidStackIdentical(drained)) {
+				source.drain(Fluid.BUCKET_VOLUME, true);
+				evt.setFilledBucket(filledBucket.copy());
 				evt.setResult(Result.ALLOW);
 			}
 		}
