@@ -135,6 +135,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	public final IProperty<Orientation> propertyOrientation;
 
+	private boolean requiresInitialization;
+
 	public boolean hasCapability(TileEntityCapability capability) {
 		return teCapabilities.contains(capability);
 	}
@@ -404,7 +406,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	public void onBlockAdded(World world, BlockPos blockPos, IBlockState state) {
 		super.onBlockAdded(world, blockPos, state);
 
-		if (hasCapability(TileEntityCapability.ADD_LISTENER)) {
+		if (requiresInitialization || hasCapability(TileEntityCapability.ADD_LISTENER)) {
 			world.addBlockEvent(blockPos, this, EVENT_ADDED, 0);
 		}
 	}
@@ -581,5 +583,10 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		if (!canRotateWithTool())
 			return RotationAxis.NO_AXIS;
 		return rotationMode.getToolRotationAxes();
+	}
+
+	public OpenBlock setRequiresInitialization(boolean value) {
+		this.requiresInitialization = value;
+		return this;
 	}
 }
