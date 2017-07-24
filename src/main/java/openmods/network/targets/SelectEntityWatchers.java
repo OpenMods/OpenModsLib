@@ -22,8 +22,8 @@ public class SelectEntityWatchers implements IPacketTargetSelector<Entity> {
 
 	@Override
 	public void listDispatchers(Entity entity, Collection<NetworkDispatcher> result) {
-		Preconditions.checkArgument(entity.worldObj instanceof WorldServer, "Invalid side");
-		WorldServer server = (WorldServer)entity.worldObj;
+		Preconditions.checkArgument(entity.world instanceof WorldServer, "Invalid side");
+		WorldServer server = (WorldServer)entity.world;
 		Set<EntityPlayerMP> players = NetUtils.getPlayersWatchingEntity(server, entity);
 
 		for (EntityPlayerMP player : players) {

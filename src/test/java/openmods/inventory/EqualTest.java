@@ -1,5 +1,6 @@
 package openmods.inventory;
 
+import net.minecraft.init.Bootstrap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import openmods.inventory.StackEqualityTesterBuilder.IEqualityTester;
@@ -8,6 +9,10 @@ import org.junit.Test;
 
 public class EqualTest {
 
+	static {
+		Bootstrap.register();
+	}
+	
 	private static void assertSymmetricEquals(IEqualityTester tester, ItemStack left, ItemStack right) {
 		Assert.assertTrue(tester.isEqual(left, right));
 		Assert.assertTrue(tester.isEqual(right, left));

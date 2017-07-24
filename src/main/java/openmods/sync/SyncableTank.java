@@ -49,13 +49,13 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 	@Override
 	public void readFromStream(PacketBuffer stream) throws IOException {
 		if (stream.readBoolean()) {
-			String fluidName = stream.readStringFromBuffer(32767);
+			String fluidName = stream.readString(Short.MAX_VALUE);
 			Fluid fluid = FluidRegistry.getFluid(fluidName);
 
 			int fluidAmount = stream.readInt();
 
 			this.fluid = new FluidStack(fluid, fluidAmount);
-			this.fluid.tag = stream.readNBTTagCompoundFromBuffer();
+			this.fluid.tag = stream.readCompoundTag();
 		} else {
 			this.fluid = null;
 		}
@@ -68,7 +68,7 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 			final String id = FluidRegistry.getFluidName(fluid.getFluid());
 			stream.writeString(id);
 			stream.writeInt(fluid.amount);
-			stream.writeNBTTagCompoundToBuffer(fluid.tag);
+			stream.writeCompoundTag(fluid.tag);
 		} else {
 			stream.writeBoolean(false);
 		}

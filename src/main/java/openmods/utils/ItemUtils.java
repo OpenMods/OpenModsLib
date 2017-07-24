@@ -19,10 +19,10 @@ import org.apache.commons.io.output.NullOutputStream;
 public class ItemUtils {
 
 	public static ItemStack consumeItem(ItemStack stack) {
-		if (stack.stackSize == 1) {
+		if (stack.getCount() == 1) {
 			final Item item = stack.getItem();
 			if (item.hasContainerItem(stack)) return item.getContainerItem(stack);
-			return null;
+			return ItemStack.EMPTY;
 		}
 		stack.splitStack(1);
 
@@ -39,7 +39,7 @@ public class ItemUtils {
 	}
 
 	public static EntityItem createDrop(Entity dropper, ItemStack is) {
-		return createEntityItem(dropper.worldObj, dropper.posX, dropper.posY, dropper.posZ, is);
+		return createEntityItem(dropper.world, dropper.posX, dropper.posY, dropper.posZ, is);
 	}
 
 	public static EntityItem createEntityItem(World world, double x, double y, double z, ItemStack is) {
@@ -65,7 +65,8 @@ public class ItemUtils {
 
 	// because vanilla is not really good with null stacks
 	public static void setEntityItemStack(EntityItem entity, ItemStack stack) {
-		if (stack == null) {
+		// TODO 1.11 verify if needed
+		if (stack.isEmpty()) {
 			entity.setDead();
 		} else {
 			entity.setEntityItemStack(stack);

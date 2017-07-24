@@ -30,7 +30,7 @@ public class SyncableString extends SyncableObjectBase implements ISyncableValue
 
 	@Override
 	public void readFromStream(PacketBuffer stream) {
-		value = stream.readStringFromBuffer(32767);
+		value = stream.readString(Short.MAX_VALUE);
 	}
 
 	@Override

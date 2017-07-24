@@ -19,6 +19,7 @@ public class GuiFactory implements IModGuiFactory {
 	public void initialize(Minecraft minecraftInstance) {}
 
 	@Override
+	@Deprecated
 	public Class<? extends GuiScreen> mainConfigGuiClass() {
 		return ConfigScreen.class;
 	}
@@ -32,5 +33,15 @@ public class GuiFactory implements IModGuiFactory {
 	@SuppressWarnings("deprecation")
 	public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) {
 		return null;
+	}
+
+	@Override
+	public boolean hasConfigGui() {
+		return true;
+	}
+
+	@Override
+	public GuiScreen createConfigGui(GuiScreen parentScreen) {
+		return new ConfigScreen(parentScreen);
 	}
 }

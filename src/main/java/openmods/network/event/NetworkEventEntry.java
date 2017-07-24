@@ -31,7 +31,7 @@ public abstract class NetworkEventEntry implements IForgeRegistryEntry<NetworkEv
 	}
 
 	@Override
-	public Class<? super NetworkEventEntry> getRegistryType() {
+	public Class<NetworkEventEntry> getRegistryType() {
 		return NetworkEventEntry.class;
 	}
 

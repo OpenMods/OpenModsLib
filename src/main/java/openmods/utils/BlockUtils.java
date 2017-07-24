@@ -25,7 +25,7 @@ public class BlockUtils {
 	}
 
 	public static EnumFacing get2dOrientation(double yaw) {
-		return EnumFacing.getHorizontal(MathHelper.floor_double((yaw * 4.0 / 360.0) + 0.5) & 3);
+		return EnumFacing.getHorizontal(MathHelper.floor((yaw * 4.0 / 360.0) + 0.5) & 3);
 	}
 
 	public static float getRotationFromDirection(EnumFacing direction) {
@@ -86,7 +86,7 @@ public class BlockUtils {
 		if (stack.hasTagCompound()) {
 			entityitem.getEntityItem().setTagCompound(stack.getTagCompound().copy());
 		}
-		worldObj.spawnEntityInWorld(entityitem);
+		worldObj.spawnEntity(entityitem);
 		return entityitem;
 	}
 
@@ -117,7 +117,7 @@ public class BlockUtils {
 		if (inventory == null) { return; }
 		for (int i = 0; i < inventory.getSizeInventory(); ++i) {
 			ItemStack itemStack = inventory.getStackInSlot(i);
-			if (itemStack != null) {
+			if (!itemStack.isEmpty()) {
 				dropItemStackInWorld(world, x, y, z, itemStack);
 			}
 		}

@@ -77,6 +77,11 @@ public class SidedItemHandlerAdapter {
 
 			return inventory.extractItem(mappedSlot.index, amount, simulate);
 		}
+
+		@Override
+		public int getSlotLimit(int slot) {
+			return inventory.getSlotLimit(slot);
+		}
 	}
 
 	private final Set<EnumFacing> validSides = EnumSet.noneOf(EnumFacing.class);

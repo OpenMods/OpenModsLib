@@ -36,7 +36,7 @@ public class ComparatorComponents {
 	public static final Ordering<ItemStack> SIZE_COMPARATOR = Ordering.natural().onResultOf(new Function<ItemStack, Integer>() {
 		@Override
 		public Integer apply(ItemStack input) {
-			return input.stackSize;
+			return input.getCount();
 		}
 	}).nullsLast();
 }

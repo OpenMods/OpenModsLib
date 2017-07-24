@@ -32,7 +32,7 @@ public abstract class DroppableTileEntity extends SyncedTileEntity implements IP
 
 	@Override
 	public ItemStack getPickBlock(EntityPlayer player) {
-		final IBlockState state = worldObj.getBlockState(pos);
+		final IBlockState state = world.getBlockState(pos);
 		return getDropStack(state);
 	}
 

@@ -87,14 +87,14 @@ public class ItemMover {
 		MAIN: for (IItemHandler source : sources) {
 			for (int sourceSlot = 0; sourceSlot < source.getSlots(); sourceSlot++) {
 				final ItemStack stackToPull = source.getStackInSlot(sourceSlot);
-				if (stackToPull == null) continue;
+				if (stackToPull.isEmpty()) continue;
 
 				final ItemStack leftover = target.insertItem(targetSlot, stackToPull, true);
-				if (leftover == null || leftover.stackSize < stackToPull.stackSize) {
-					final int leftoverAmount = leftover != null? leftover.stackSize : 0;
-					final int amountToExtract = Math.min(maxSize - transferedAmount, stackToPull.stackSize - leftoverAmount);
+				if (leftover.getCount() < stackToPull.getCount()) {
+					final int leftoverAmount = leftover.getCount();
+					final int amountToExtract = Math.min(maxSize - transferedAmount, stackToPull.getCount() - leftoverAmount);
 					final ItemStack extractedItem = source.extractItem(sourceSlot, amountToExtract, false);
-					if (extractedItem != null) {
+					if (!extractedItem.isEmpty()) {
 						// don't care about results here, since target already declared space
 						target.insertItem(targetSlot, extractedItem, false);
 						transferedAmount += amountToExtract;
@@ -102,7 +102,7 @@ public class ItemMover {
 				}
 
 				final ItemStack targetContents = target.getStackInSlot(targetSlot);
-				if (targetContents != null && targetContents.stackSize >= targetContents.getMaxStackSize()) break MAIN;
+				if (targetContents != null && targetContents.getCount() >= targetContents.getMaxStackSize()) break MAIN;
 			}
 		}
 
@@ -119,16 +119,16 @@ public class ItemMover {
 		MAIN: for (IItemHandler target : targets) {
 			ItemStack stackToPush = source.getStackInSlot(sourceSlot);
 			for (int targetSlot = 0; targetSlot < target.getSlots(); targetSlot++) {
-				if (stackToPush == null || stackToPush.stackSize <= 0) break MAIN;
+				if (stackToPush.isEmpty()) break MAIN;
 
 				final ItemStack leftover = target.insertItem(targetSlot, stackToPush, true);
-				if (leftover == null || leftover.stackSize < stackToPush.stackSize) {
-					final int leftoverAmount = leftover != null? leftover.stackSize : 0;
-					final int amountToExtract = Math.min(maxSize - transferedAmount, stackToPush.stackSize - leftoverAmount);
+				if (leftover.getCount() < stackToPush.getCount()) {
+					final int leftoverAmount = leftover.getCount();
+					final int amountToExtract = Math.min(maxSize - transferedAmount, stackToPush.getCount() - leftoverAmount);
 					final ItemStack extractedItem = source.extractItem(sourceSlot, amountToExtract, false);
-					if (extractedItem != null) {
+					if (!extractedItem.isEmpty()) {
 						target.insertItem(targetSlot, extractedItem, false);
-						transferedAmount += extractedItem.stackSize;
+						transferedAmount += extractedItem.getCount();
 						stackToPush = source.getStackInSlot(sourceSlot);
 					}
 				}

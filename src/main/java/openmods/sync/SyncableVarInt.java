@@ -38,12 +38,12 @@ public class SyncableVarInt extends SyncableObjectBase implements ISyncableValue
 
 	@Override
 	public void readFromStream(PacketBuffer stream) {
-		value = stream.readVarIntFromBuffer();
+		value = stream.readVarInt();
 	}
 
 	@Override
 	public void writeToStream(PacketBuffer stream) {
-		stream.writeVarIntToBuffer(value);
+		stream.writeVarInt(value);
 	}
 
 	@Override

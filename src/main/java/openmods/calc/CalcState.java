@@ -84,14 +84,14 @@ public class CalcState {
 					}
 
 					final String result = ": " + Joiner.on(" ").join(results);
-					sender.addChatMessage(new TextComponentString(result));
+					sender.sendMessage(new TextComponentString(result));
 				}
 			});
 
 			calculator.environment.setGlobalSymbol("print", new UnaryFunction.Direct<E>() {
 				@Override
 				protected E call(E value) {
-					sender.addChatMessage(new TextComponentString(printer.str(value)));
+					sender.sendMessage(new TextComponentString(printer.str(value)));
 					return value;
 				}
 			});

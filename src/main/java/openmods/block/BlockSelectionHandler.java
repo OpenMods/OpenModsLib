@@ -16,7 +16,7 @@ public class BlockSelectionHandler {
 
 		if (mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK) {
 
-			final World world = evt.getPlayer().worldObj;
+			final World world = evt.getPlayer().world;
 			final BlockPos blockPos = mop.getBlockPos();
 			final Block block = world.getBlockState(blockPos).getBlock();
 

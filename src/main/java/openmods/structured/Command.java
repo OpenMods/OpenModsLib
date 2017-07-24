@@ -112,22 +112,22 @@ public abstract class Command {
 
 		@Override
 		protected void readDataFromStream(PacketBuffer input) {
-			elementCount = input.readVarIntFromBuffer();
-			minElementId = input.readVarIntFromBuffer();
-			maxElementId = input.readVarIntFromBuffer();
-			containerCount = input.readVarIntFromBuffer();
-			minContainerId = input.readVarIntFromBuffer();
-			maxContainerId = input.readVarIntFromBuffer();
+			elementCount = input.readVarInt();
+			minElementId = input.readVarInt();
+			maxElementId = input.readVarInt();
+			containerCount = input.readVarInt();
+			minContainerId = input.readVarInt();
+			maxContainerId = input.readVarInt();
 		}
 
 		@Override
 		protected void writeDataToStream(PacketBuffer output) {
-			output.writeVarIntToBuffer(elementCount);
-			output.writeVarIntToBuffer(minElementId);
-			output.writeVarIntToBuffer(maxElementId);
-			output.writeVarIntToBuffer(containerCount);
-			output.writeVarIntToBuffer(minContainerId);
-			output.writeVarIntToBuffer(maxContainerId);
+			output.writeVarInt(elementCount);
+			output.writeVarInt(minElementId);
+			output.writeVarInt(maxElementId);
+			output.writeVarInt(containerCount);
+			output.writeVarInt(minContainerId);
+			output.writeVarInt(maxContainerId);
 		}
 
 		@Override
@@ -220,15 +220,15 @@ public abstract class Command {
 
 		@Override
 		protected void readDataFromStream(PacketBuffer input) {
-			final int elemCount = input.readVarIntFromBuffer();
+			final int elemCount = input.readVarInt();
 
 			int currentContainerId = 0;
 			int currentElementId = 0;
 
 			for (int i = 0; i < elemCount; i++) {
-				currentContainerId += input.readVarIntFromBuffer();
-				final int type = input.readVarIntFromBuffer();
-				currentElementId += input.readVarIntFromBuffer();
+				currentContainerId += input.readVarInt();
+				final int type = input.readVarInt();
+				currentElementId += input.readVarInt();
 
 				containers.add(new ContainerInfo(currentContainerId, type, currentElementId));
 			}
@@ -239,7 +239,7 @@ public abstract class Command {
 
 		@Override
 		protected void writeDataToStream(PacketBuffer output) {
-			output.writeVarIntToBuffer(containers.size());
+			output.writeVarInt(containers.size());
 
 			int prevContainerId = 0;
 			int prevElementId = 0;
@@ -250,9 +250,9 @@ public abstract class Command {
 				int deltaElementId = info.start - prevElementId;
 				Preconditions.checkArgument(deltaElementId >= 0, "Element ids must be sorted in ascending order");
 
-				output.writeVarIntToBuffer(deltaContainerId);
-				output.writeVarIntToBuffer(info.type);
-				output.writeVarIntToBuffer(deltaElementId);
+				output.writeVarInt(deltaContainerId);
+				output.writeVarInt(info.type);
+				output.writeVarInt(deltaElementId);
 
 				prevContainerId = info.id;
 				prevElementId = info.start;
@@ -336,7 +336,7 @@ public abstract class Command {
 	protected abstract void writeDataToStream(PacketBuffer output) throws IOException;
 
 	public static Command createFromStream(PacketBuffer input) throws IOException {
-		final int id = input.readVarIntFromBuffer();
+		final int id = input.readVarInt();
 		Type type = Type.TYPES[id];
 		Command command = type.create();
 		command.readDataFromStream(input);
@@ -344,17 +344,17 @@ public abstract class Command {
 	}
 
 	public void writeToStream(PacketBuffer output) throws IOException {
-		output.writeVarIntToBuffer(type().ordinal());
+		output.writeVarInt(type().ordinal());
 		writeDataToStream(output);
 	}
 
 	protected static PacketBuffer readChunk(PacketBuffer input) {
-		final int size = input.readVarIntFromBuffer();
+		final int size = input.readVarInt();
 		return new PacketBuffer(input.readBytes(size));
 	}
 
 	protected static void writeChunk(PacketBuffer output, ByteBuf chunk) {
-		output.writeVarIntToBuffer(chunk.readableBytes());
+		output.writeVarInt(chunk.readableBytes());
 		output.writeBytes(chunk);
 	}
 

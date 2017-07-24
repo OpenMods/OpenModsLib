@@ -18,21 +18,21 @@ public abstract class SidedCommand implements ICommand {
 
 	@Override
 	public int compareTo(ICommand o) {
-		return name.compareTo(o.getCommandName());
+		return name.compareTo(o.getName());
 	}
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return name;
 	}
 
 	@Override
-	public List<String> getCommandAliases() {
+	public List<String> getAliases() {
 		return Collections.emptyList();
 	}
 
 	@Override
 	public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-		return restricted? sender.canCommandSenderUseCommand(4, name) : true;
+		return restricted? sender.canUseCommand(4, name) : true;
 	}
 }

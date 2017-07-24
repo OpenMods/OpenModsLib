@@ -50,7 +50,7 @@ public class SingleFluidBucketHandler implements IFluidHandler {
 	@Override
 	@Nullable
 	public FluidStack drain(FluidStack resource, boolean doDrain) {
-		if (container.stackSize != 1 || resource == null || resource.amount < volume)
+		if (container.getCount() != 1 || resource == null || resource.amount < volume)
 			return null;
 
 		if (resource.getFluid() == fluid)
@@ -63,7 +63,7 @@ public class SingleFluidBucketHandler implements IFluidHandler {
 	@Override
 	@Nullable
 	public FluidStack drain(int maxDrain, boolean doDrain) {
-		if (container.stackSize != 1 || maxDrain < Fluid.BUCKET_VOLUME)
+		if (container.getCount() != 1 || maxDrain < Fluid.BUCKET_VOLUME)
 			return null;
 
 		if (doDrain)

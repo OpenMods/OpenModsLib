@@ -33,7 +33,7 @@ public class CommandSource extends SidedCommand {
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender icommandsender) {
+	public String getUsage(ICommandSender icommandsender) {
 		return name + " class <class name>";
 	}
 
@@ -48,16 +48,16 @@ public class CommandSource extends SidedCommand {
 			final String clsName = args[1];
 			final ClassMeta meta = getMeta(clsName);
 
-			sender.addChatMessage(new TextComponentTranslation("openmodslib.command.class_source", meta.cls.getName(), meta.source()));
+			sender.sendMessage(new TextComponentTranslation("openmodslib.command.class_source", meta.cls.getName(), meta.source()));
 
 			final ApiInfo api = meta.api;
 			if (api != null) {
-				sender.addChatMessage(new TextComponentTranslation("openmodslib.command.api_class",
+				sender.sendMessage(new TextComponentTranslation("openmodslib.command.api_class",
 						api.api, api.owner, api.version));
 			}
 
 			for (Map.Entry<File, Set<String>> e : meta.providerMods.entrySet())
-				sender.addChatMessage(new TextComponentTranslation("openmodslib.command.class_provider",
+				sender.sendMessage(new TextComponentTranslation("openmodslib.command.class_provider",
 						e.getKey().getAbsolutePath(),
 						Joiner.on(',').join(e.getValue())));
 		}
@@ -75,7 +75,7 @@ public class CommandSource extends SidedCommand {
 	}
 
 	@Override
-	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		if (args.length == 1) return filterPrefixes(args[0], subcommands);
 
 		return null;

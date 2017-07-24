@@ -46,7 +46,7 @@ public class RenderUtils {
 	 * @return Returns a world for rendering with
 	 */
 	public static World getRenderWorld() {
-		if (Minecraft.getMinecraft() != null) return Minecraft.getMinecraft().theWorld;
+		if (Minecraft.getMinecraft() != null) return Minecraft.getMinecraft().world;
 		return null;
 	}
 

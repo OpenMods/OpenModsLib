@@ -12,6 +12,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -84,7 +85,7 @@ public class MetaGeneric implements IMetaItem {
 	}
 
 	@Override
-	public void addToCreativeList(Item item, int meta, List<ItemStack> result) {
+	public void addToCreativeList(Item item, int meta, NonNullList<ItemStack> result) {
 		if (visibleInCreative) {
 			result.add(new ItemStack(item, 1, meta));
 		}

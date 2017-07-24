@@ -35,7 +35,7 @@ public class MethodEntry implements IForgeRegistryEntry<MethodEntry> {
 	}
 
 	@Override
-	public Class<? super MethodEntry> getRegistryType() {
+	public Class<MethodEntry> getRegistryType() {
 		return MethodEntry.class;
 	}
 

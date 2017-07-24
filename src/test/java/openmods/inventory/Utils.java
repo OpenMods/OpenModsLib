@@ -45,7 +45,7 @@ public class Utils {
 			public boolean matches(Object o) {
 				if (o instanceof ItemStack) {
 					ItemStack stack = (ItemStack)o;
-					return stack.getItem() == item && stack.stackSize == size;
+					return stack.getItem() == item && stack.getCount() == size;
 				}
 
 				return false;

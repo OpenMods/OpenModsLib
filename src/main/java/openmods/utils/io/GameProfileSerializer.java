@@ -25,7 +25,7 @@ public class GameProfileSerializer implements IStreamSerializer<GameProfile> {
 		output.writeString(uuid == null? "" : uuid.toString());
 		output.writeString(Strings.nullToEmpty(o.getName()));
 		final PropertyMap properties = o.getProperties();
-		output.writeVarIntToBuffer(properties.size());
+		output.writeVarInt(properties.size());
 		for (Property p : properties.values()) {
 			output.writeString(p.getName());
 			output.writeString(p.getValue());
@@ -41,18 +41,18 @@ public class GameProfileSerializer implements IStreamSerializer<GameProfile> {
 	}
 
 	public static GameProfile read(PacketBuffer input) {
-		final String uuidStr = input.readStringFromBuffer(0xFFFF);
+		final String uuidStr = input.readString(Short.MAX_VALUE);
 		UUID uuid = Strings.isNullOrEmpty(uuidStr)? null : UUID.fromString(uuidStr);
-		final String name = input.readStringFromBuffer(0xFFFF);
+		final String name = input.readString(Short.MAX_VALUE);
 		GameProfile result = new GameProfile(uuid, name);
-		int propertyCount = input.readVarIntFromBuffer();
+		int propertyCount = input.readVarInt();
 
 		final PropertyMap properties = result.getProperties();
 		for (int i = 0; i < propertyCount; ++i) {
-			String key = input.readStringFromBuffer(0xFFFF);
-			String value = input.readStringFromBuffer(0xFFFF);
+			String key = input.readString(Short.MAX_VALUE);
+			String value = input.readString(Short.MAX_VALUE);
 			if (input.readBoolean()) {
-				String signature = input.readStringFromBuffer(0xFFFF);
+				String signature = input.readString(Short.MAX_VALUE);
 				properties.put(key, new Property(key, value, signature));
 			} else {
 				properties.put(key, new Property(key, value));

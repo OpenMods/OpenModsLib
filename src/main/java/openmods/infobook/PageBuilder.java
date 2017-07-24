@@ -97,7 +97,7 @@ public class PageBuilder {
 
 			if (customProviderCls == BookDocumentation.EMPTY.class) {
 				final ItemStack stack = provider.createStack(modId, itemId, obj);
-				if (stack == null) continue;
+				if (stack.isEmpty()) continue;
 				final String customName = doc.customName();
 				addPage(Strings.isNullOrEmpty(customName)? itemId : customName, modId, type, doc.hasVideo(), stack);
 			} else {

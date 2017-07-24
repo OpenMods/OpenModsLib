@@ -14,7 +14,7 @@ public class SyncableUUID extends SyncableObjectBase implements IValueProvider<U
 	@Override
 	public void readFromStream(PacketBuffer stream) {
 		if (stream.readBoolean()) {
-			this.uuid = stream.readUuid();
+			this.uuid = stream.readUniqueId();
 		} else {
 			this.uuid = null;
 		}
@@ -24,7 +24,7 @@ public class SyncableUUID extends SyncableObjectBase implements IValueProvider<U
 	public void writeToStream(PacketBuffer stream) {
 		if (uuid != null) {
 			stream.writeBoolean(true);
-			stream.writeUuid(uuid);
+			stream.writeUniqueId(uuid);
 		} else {
 			stream.writeBoolean(false);
 		}

@@ -106,13 +106,13 @@ public abstract class SyncMapServer extends SyncMap {
 			bitmapLength = (objects.size() + 7) / 8;
 		}
 
-		dos.writeVarIntToBuffer(objects.size());
+		dos.writeVarInt(objects.size());
 
 		for (Entry e : orderedEntries) {
 			dos.writeString(e.name);
 
 			final int typeId = SyncableObjectTypeRegistry.getTypeId(e.type);
-			dos.writeVarIntToBuffer(typeId);
+			dos.writeVarInt(typeId);
 
 			e.obj.writeToStream(dos);
 		}
@@ -152,7 +152,7 @@ public abstract class SyncMapServer extends SyncMap {
 	}
 
 	private void writePrefix(PacketBuffer dos) {
-		dos.writeVarIntToBuffer(getOwnerType());
+		dos.writeVarInt(getOwnerType());
 		writeOwnerData(dos);
 	}
 

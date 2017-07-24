@@ -41,15 +41,15 @@ public class PlayerItemInventory extends ItemInventory {
 	}
 
 	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
+	public boolean isUsableByPlayer(EntityPlayer player) {
 		if (!(player == this.player && player.inventory.currentItem == inventorySlot)) {
 			invalidate(player);
 			return false;
 		}
 
-		if (!player.worldObj.isRemote) {
+		if (!player.world.isRemote) {
 			final ItemStack currentItem = player.inventory.getCurrentItem();
-			if (currentItem == null || !currentItem.isItemEqual(containerStack) || getGuiId(currentItem) != selfId) {
+			if (currentItem.isEmpty() || !currentItem.isItemEqual(containerStack) || getGuiId(currentItem) != selfId) {
 				invalidate(player);
 				return false;
 			}

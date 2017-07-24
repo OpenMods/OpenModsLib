@@ -44,7 +44,7 @@ public class CommandConfig extends SidedCommand {
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender icommandsender) {
+	public String getUsage(ICommandSender icommandsender) {
 		return name + " save <modid> OR\n" +
 				name + " help <modid> <category> <name> OR\n" +
 				name + " get <modid> <category> <name> OR\n" +
@@ -148,7 +148,7 @@ public class CommandConfig extends SidedCommand {
 	}
 
 	@Override
-	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos blockPos) {
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos blockPos) {
 		String command = args[0];
 		if (args.length == 1) return filterPrefixes(command, SUBCOMMANDS);
 

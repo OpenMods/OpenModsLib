@@ -14,12 +14,12 @@ public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implemen
 
 				@Override
 				public void writeToStream(PacketBuffer buf) {
-					buf.writeVarIntToBuffer(0);
+					buf.writeVarInt(0);
 				}
 
 				@Override
 				public void readFromStream(PacketBuffer buf) {
-					buf.readVarIntFromBuffer();
+					buf.readVarInt();
 				}
 
 				@Override
@@ -46,13 +46,13 @@ public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implemen
 
 	@Override
 	public void readFromStream(PacketBuffer stream) {
-		int ordinal = stream.readVarIntFromBuffer();
+		int ordinal = stream.readVarInt();
 		value = values[ordinal];
 	}
 
 	@Override
 	public void writeToStream(PacketBuffer stream) {
-		stream.writeVarIntToBuffer(value.ordinal());
+		stream.writeVarInt(value.ordinal());
 	}
 
 	@Override

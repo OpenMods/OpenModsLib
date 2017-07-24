@@ -18,7 +18,7 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		@Override
 		@Nullable
 		public ItemStack[] apply(@Nullable ItemStack input) {
-			return input != null? new ItemStack[] { input.copy() } : null;
+			return input.isEmpty()? new ItemStack[] { input.copy() } : null;
 		}
 	};
 
@@ -64,7 +64,7 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 
 		for (int i = 0; i < items.length; i++) {
 			ItemStack input = selectedItems[i];
-			if (input != null) {
+			if (!input.isEmpty()) {
 				int row = (i % 3);
 				int column = i / 3;
 				int itemX = offsetX + gridOffsetX + (row * itemBoxSize);
@@ -97,7 +97,7 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		final int itemBoxSize = 19;
 
 		if (isMouseOver(mouseX, mouseY)) {
-			ItemStack tooltip = null;
+			ItemStack tooltip = ItemStack.EMPTY;
 			// so lazy
 			for (int i = 0; i < selectedItems.length; i++) {
 				int row = (i % 3);
@@ -111,7 +111,7 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 				}
 			}
 
-			if (tooltip != null) {
+			if (!tooltip.isEmpty()) {
 				parent.drawItemStackTooltip(tooltip, relativeMouseX + 25, relativeMouseY + 30);
 			}
 		}

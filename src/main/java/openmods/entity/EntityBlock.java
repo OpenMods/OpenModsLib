@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.MoverType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -158,16 +159,16 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		prevPosZ = posZ;
 
 		extinguish();
-		moveEntity(motionX, motionY, motionZ);
+		move(MoverType.SELF, motionX, motionY, motionZ);
 
 		final Block block = blockState.getBlock();
 		if (block == null) setDead();
 		// TODO missing functionality, fix (fake world access?)
 		// setHeight((float)block.getBlockBoundsMaxY());
 
-		if (worldObj instanceof WorldServer && shouldPlaceBlock()) {
+		if (world instanceof WorldServer && shouldPlaceBlock()) {
 			final BlockPos dropPos = new BlockPos(posX, posY, posZ);
-			if (!tryPlaceBlock((WorldServer)worldObj, dropPos)) dropBlock();
+			if (!tryPlaceBlock((WorldServer)world, dropPos)) dropBlock();
 
 			setDead();
 		}
@@ -194,16 +195,16 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	private boolean tryPlaceBlock(EntityPlayer player, WorldServer world, BlockPos pos, EnumFacing fromSide) {
-		if (!worldObj.isAirBlock(pos)) return false;
+		if (!world.isAirBlock(pos)) return false;
 
-		boolean blockPlaced = new BlockManipulator(worldObj, player, pos).place(blockState, fromSide, EnumHand.MAIN_HAND);
+		boolean blockPlaced = new BlockManipulator(world, player, pos).place(blockState, fromSide, EnumHand.MAIN_HAND);
 		if (!blockPlaced) return false;
 
 		if (tileEntity != null) {
 			tileEntity.setInteger("x", pos.getX());
 			tileEntity.setInteger("y", pos.getY());
 			tileEntity.setInteger("z", pos.getZ());
-			TileEntity te = worldObj.getTileEntity(pos);
+			TileEntity te = world.getTileEntity(pos);
 			te.readFromNBT(tileEntity);
 		}
 
@@ -213,7 +214,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	private void dropBlock() {
 		final Block block = blockState.getBlock();
 
-		Random rand = worldObj.rand;
+		Random rand = world.rand;
 
 		final int count = block.quantityDropped(blockState, 0, rand);
 		for (int i = 0; i < count; i++) {
@@ -261,7 +262,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	public boolean attackEntityFrom(DamageSource p_70097_1_, float p_70097_2_) {
-		if (!isDead && !worldObj.isRemote) dropBlock();
+		if (!isDead && !world.isRemote) dropBlock();
 		setDead();
 		return false;
 	}

@@ -37,7 +37,7 @@ public class InboundSyncHandler extends SimpleChannelInboundHandler<FMLProxyPack
 			}
 
 			private ISyncMapProvider findSyncMapProvider(PacketBuffer payload) {
-				final int ownerType = payload.readVarIntFromBuffer();
+				final int ownerType = payload.readVarInt();
 
 				final World world = OpenMods.proxy.getClientWorld();
 

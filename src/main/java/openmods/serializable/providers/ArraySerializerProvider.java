@@ -28,7 +28,7 @@ public class ArraySerializerProvider implements ISerializerProvider {
 		return new IStreamSerializer<Object>() {
 			@Override
 			public Object readFromStream(PacketBuffer input) throws IOException {
-				final int length = input.readVarIntFromBuffer();
+				final int length = input.readVarInt();
 				Object result = Array.newInstance(componentCls, length);
 
 				for (int i = 0; i < length; i++) {
@@ -42,7 +42,7 @@ public class ArraySerializerProvider implements ISerializerProvider {
 			@Override
 			public void writeToStream(Object o, PacketBuffer output) throws IOException {
 				final int length = Array.getLength(o);
-				output.writeVarIntToBuffer(length);
+				output.writeVarInt(length);
 
 				for (int i = 0; i < length; i++) {
 					Object value = Array.get(o, i);

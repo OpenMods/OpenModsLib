@@ -4,9 +4,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -26,84 +23,59 @@ import openmods.Log;
 
 public class StructureRegistry {
 
-	private static <T> void addMapGen(Collection<MapGenStructure> output, Class<T> klazz, T provider, String... names) {
-		try {
-			MapGenStructure struct = ReflectionHelper.getPrivateValue(klazz, provider, names);
-			if (struct != null) output.add(struct);
-		} catch (UnableToAccessFieldException e) {
-			Log.warn(e, "Can't access fields %s from provider %s. Some structures may not be detected", Arrays.toString(names), provider);
-		}
-	}
-
 	private StructureRegistry() {
-		ImmutableList.Builder<IStructureGenProvider> builder = ImmutableList.builder();
+		ImmutableList.Builder<IStructureGenProvider<?>> builder = ImmutableList.builder();
 
-		builder.add(new IStructureGenProvider() {
+		builder.add(new IStructureGenProvider<ChunkProviderOverworld>() {
 			@Override
-			public boolean canUseOnProvider(IChunkGenerator provider) {
-				return provider instanceof ChunkProviderOverworld;
+			public Class<ChunkProviderOverworld> getGeneratorCls() {
+				return ChunkProviderOverworld.class;
 			}
 
 			@Override
-			public Collection<MapGenStructure> listProviders(IChunkGenerator provider) {
-				ChunkProviderOverworld cp = (ChunkProviderOverworld)provider;
-				List<MapGenStructure> result = Lists.newArrayList();
-				addMapGen(result, ChunkProviderOverworld.class, cp, "strongholdGenerator", "field_186004_w");
-				addMapGen(result, ChunkProviderOverworld.class, cp, "villageGenerator", "field_186005_x");
-				addMapGen(result, ChunkProviderOverworld.class, cp, "mineshaftGenerator", "field_186006_y");
-				addMapGen(result, ChunkProviderOverworld.class, cp, "scatteredFeatureGenerator", "field_186007_z");
-				addMapGen(result, ChunkProviderOverworld.class, cp, "oceanMonumentGenerator", "field_185980_B");
-				return result;
+			public Set<String> listStructureNames(ChunkProviderOverworld provider) {
+				return ImmutableSet.of("Stronghold", "Mansion", "Monument", "Village", "Mineshaft", "Temple");
 			}
 		});
 
-		builder.add(new IStructureGenProvider() {
+		builder.add(new IStructureGenProvider<ChunkProviderFlat>() {
 			@Override
-			public boolean canUseOnProvider(IChunkGenerator provider) {
-				return provider instanceof ChunkProviderFlat;
+			public Class<ChunkProviderFlat> getGeneratorCls() {
+				return ChunkProviderFlat.class;
 			}
 
 			@Override
-			public Collection<MapGenStructure> listProviders(IChunkGenerator provider) {
-				ChunkProviderFlat cp = (ChunkProviderFlat)provider;
-				List<MapGenStructure> result = Lists.newArrayList();
+			public Set<String> listStructureNames(ChunkProviderFlat provider) {
 				try {
-					List<MapGenStructure> gen = ReflectionHelper.getPrivateValue(ChunkProviderFlat.class, cp, "structureGenerators", "field_82696_f");
-					if (gen != null) result.addAll(gen);
-				} catch (UnableToAccessFieldException e) {
-					Log.warn(e, "Can't access map gen list from provider %s. Some structures may not be detected", provider);
+					final Map<String, MapGenStructure> structures = ReflectionHelper.getPrivateValue(ChunkProviderFlat.class, provider, "structureGenerators", "field_82696_f");
+					return ImmutableSet.copyOf(structures.keySet());
+				} catch (Exception e) {
+					return ImmutableSet.of();
 				}
-				return result;
 			}
 		});
 
-		builder.add(new IStructureGenProvider() {
+		builder.add(new IStructureGenProvider<ChunkProviderHell>() {
 			@Override
-			public boolean canUseOnProvider(IChunkGenerator provider) {
-				return provider instanceof ChunkProviderHell;
+			public Class<ChunkProviderHell> getGeneratorCls() {
+				return ChunkProviderHell.class;
 			}
 
 			@Override
-			public Collection<MapGenStructure> listProviders(IChunkGenerator provider) {
-				ChunkProviderHell cp = (ChunkProviderHell)provider;
-				List<MapGenStructure> result = Lists.newArrayList();
-				addMapGen(result, ChunkProviderHell.class, cp, "genNetherBridge", "field_73172_c");
-				return result;
+			public Set<String> listStructureNames(ChunkProviderHell provider) {
+				return ImmutableSet.of("Fortress");
 			}
 		});
 
-		builder.add(new IStructureGenProvider() {
+		builder.add(new IStructureGenProvider<ChunkProviderEnd>() {
 			@Override
-			public boolean canUseOnProvider(IChunkGenerator provider) {
-				return provider instanceof ChunkProviderEnd;
+			public Class<ChunkProviderEnd> getGeneratorCls() {
+				return ChunkProviderEnd.class;
 			}
 
 			@Override
-			public Collection<MapGenStructure> listProviders(IChunkGenerator provider) {
-				ChunkProviderEnd cp = (ChunkProviderEnd)provider;
-				List<MapGenStructure> result = Lists.newArrayList();
-				addMapGen(result, ChunkProviderEnd.class, cp, "endCityGen", "field_185972_n");
-				return result;
+			public Set<String> listStructureNames(ChunkProviderEnd provider) {
+				return ImmutableSet.of("EndCity");
 			}
 		});
 		providers = builder.build();
@@ -111,9 +83,7 @@ public class StructureRegistry {
 
 	public final static StructureRegistry instance = new StructureRegistry();
 
-	private List<IStructureNamer> names = Lists.newArrayList();
-
-	private List<IStructureGenProvider> providers;
+	private List<IStructureGenProvider<?>> providers;
 
 	private static IChunkGenerator getWrappedChunkProvider(ChunkProviderServer provider) {
 		try {
@@ -125,7 +95,7 @@ public class StructureRegistry {
 	}
 
 	private interface IStructureVisitor {
-		public void visit(MapGenStructure structure);
+		public void visit(IChunkGenerator generator, String structureName);
 	}
 
 	private void visitStructures(WorldServer world, IStructureVisitor visitor) {
@@ -133,33 +103,30 @@ public class StructureRegistry {
 		IChunkGenerator inner = getWrappedChunkProvider(provider);
 
 		if (inner != null) {
-			for (IStructureGenProvider p : providers)
-				if (p.canUseOnProvider(inner)) {
-					for (MapGenStructure struct : p.listProviders(inner))
-						visitor.visit(struct);
-				}
+			for (IStructureGenProvider<?> p : providers)
+				tryVisit(visitor, inner, p);
 		}
 	}
 
-	private String identifyStructure(MapGenStructure structure) {
-		for (IStructureNamer n : names) {
-			String name = n.identify(structure);
-			if (!Strings.isNullOrEmpty(name)) return name;
+	private static <T extends IChunkGenerator> void tryVisit(IStructureVisitor visitor, IChunkGenerator generator, IStructureGenProvider<T> p) {
+		final Class<T> generatorCls = p.getGeneratorCls();
+		if (generatorCls.isInstance(generator)) {
+			final T castGenerator = generatorCls.cast(generator);
+			for (String struct : p.listStructureNames(castGenerator))
+				visitor.visit(generator, struct);
 		}
-		return structure.getStructureName();
 	}
 
 	public Map<String, BlockPos> getNearestStructures(final WorldServer world, final BlockPos pos) {
 		final ImmutableMap.Builder<String, BlockPos> result = ImmutableMap.builder();
 		visitStructures(world, new IStructureVisitor() {
 			@Override
-			public void visit(MapGenStructure structure) {
+			public void visit(IChunkGenerator generator, String structure) {
 				try {
-					BlockPos structPos = structure.getClosestStrongholdPos(world, pos);
+					BlockPos structPos = generator.getStrongholdGen(world, structure, pos, false);
 
 					if (structPos != null) {
-						String structType = identifyStructure(structure);
-						if (!Strings.isNullOrEmpty(structType)) result.put(structType, structPos);
+						if (!Strings.isNullOrEmpty(structure)) result.put(structure, structPos);
 					}
 				} catch (IndexOutOfBoundsException e) {
 					// bug in MC, just ignore
@@ -175,16 +142,10 @@ public class StructureRegistry {
 		final ImmutableSet.Builder<BlockPos> result = ImmutableSet.builder();
 		visitStructures(world, new IStructureVisitor() {
 			@Override
-			public void visit(MapGenStructure structure) {
-				String structType = identifyStructure(structure);
-				if (name.equals(structType)) {
-					try {
-						BlockPos structPos = structure.getClosestStrongholdPos(world, blockPos);
-						if (structPos != null) result.add(structPos);
-					} catch (IndexOutOfBoundsException e) {
-						// bug in MC, just ignore
-						// hopefully fixed by magic of ASM
-					}
+			public void visit(IChunkGenerator generator, String structure) {
+				if (name.equals(structure)) {
+					BlockPos structPos = generator.getStrongholdGen(world, structure, blockPos, false);
+					if (structPos != null) result.add(structPos);
 				}
 			}
 		});

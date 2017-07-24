@@ -207,7 +207,7 @@ public class EntityPlayerWrapper {
 
 		@ExposeProperty
 		public BigInteger count() {
-			return BigInteger.valueOf(itemStack.stackSize);
+			return BigInteger.valueOf(itemStack.getCount());
 		}
 
 		@ExposeProperty

@@ -21,14 +21,14 @@ public class VanillaEnchantLogic {
 		this.seed = seed;
 	}
 
-	private ItemStack toEnchant;
+	private ItemStack toEnchant = ItemStack.EMPTY;
 
 	private Level level;
 
 	private int xpLevels;
 
 	public boolean setup(ItemStack stack, Level level, int power) {
-		if (stack == null || !stack.isItemEnchantable()) return false;
+		if (stack.isEmpty() || !stack.isItemEnchantable()) return false;
 
 		rand.setSeed(seed);
 		this.toEnchant = stack.copy();
@@ -51,15 +51,17 @@ public class VanillaEnchantLogic {
 		return level.ordinal() + 1;
 	}
 
-	@SuppressWarnings("deprecation")
 	public ItemStack enchant() {
-		final ItemStack enchantedItem = toEnchant.copy();
+		if (toEnchant.isEmpty())
+			return ItemStack.EMPTY;
+
+		ItemStack enchantedItem = toEnchant.copy();
 		final boolean isBook = enchantedItem.getItem() == Items.BOOK;
 
 		final List<EnchantmentData> enchantmentsToApply = getEnchantmentList(toEnchant, level, xpLevels);
 		if (enchantmentsToApply != null) {
 			if (isBook) {
-				enchantedItem.setItem(Items.ENCHANTED_BOOK);
+				enchantedItem = new ItemStack(Items.ENCHANTED_BOOK);
 			}
 
 			for (EnchantmentData enchantment : enchantmentsToApply) {

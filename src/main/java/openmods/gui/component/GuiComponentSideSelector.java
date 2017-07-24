@@ -58,7 +58,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	public GuiComponentSideSelector(int x, int y, double scale, IBlockState blockState, TileEntity te, boolean highlightSelectedSides) {
 		super(x, y);
 		this.scale = scale;
-		this.diameter = MathHelper.ceiling_double_int(scale * SQRT_3);
+		this.diameter = MathHelper.ceil(scale * SQRT_3);
 		this.blockState = blockState;
 		this.te = te;
 		this.access = new FakeBlockAccess(blockState, te);

@@ -16,9 +16,9 @@ public class EntityUtils {
 
 	public static RayTraceResult raytraceEntity(Entity entity) {
 
-		if (entity == null || entity.worldObj == null) { return null; }
+		if (entity == null || entity.world == null) { return null; }
 
-		return entity.worldObj.rayTraceBlocks(
+		return entity.world.rayTraceBlocks(
 				entity.getPositionVector(),
 				getPredictedPosition(entity),
 				false,

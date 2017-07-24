@@ -29,7 +29,7 @@ public class ItemStackTocPage extends PageBase {
 		this.capacity = rows * columns;
 
 		this.iconScale = iconScale;
-		this.iconSize = MathHelper.floor_float(16 * iconScale);
+		this.iconSize = MathHelper.floor(16 * iconScale);
 
 		this.columns = columns;
 

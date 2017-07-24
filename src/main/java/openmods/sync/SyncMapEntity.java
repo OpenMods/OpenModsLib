@@ -41,7 +41,7 @@ public class SyncMapEntity extends SyncMapServer {
 
 	@Override
 	protected Set<EntityPlayerMP> getPlayersWatching() {
-		return NetUtils.getPlayersWatchingEntity((WorldServer)owner.worldObj, owner);
+		return NetUtils.getPlayersWatchingEntity((WorldServer)owner.world, owner);
 	}
 
 	@Override

@@ -60,7 +60,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 
 	@Override
 	public EntityPlayer getThePlayer() {
-		return FMLClientHandler.instance().getClient().thePlayer;
+		return FMLClientHandler.instance().getClient().player;
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 
 	@Override
 	public World getClientWorld() {
-		return Minecraft.getMinecraft().theWorld;
+		return Minecraft.getMinecraft().world;
 	}
 
 	@Override

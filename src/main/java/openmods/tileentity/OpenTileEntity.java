@@ -34,11 +34,11 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	public void setup() {}
 
 	public DimCoord getDimCoords() {
-		return new DimCoord(worldObj.provider.getDimension(), pos);
+		return new DimCoord(world.provider.getDimension(), pos);
 	}
 
 	public Orientation getOrientation() {
-		final IBlockState state = worldObj.getBlockState(pos);
+		final IBlockState state = world.getBlockState(pos);
 		return getOrientation(state);
 	}
 
@@ -50,7 +50,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public IBlockRotationMode getRotationMode() {
-		final IBlockState state = worldObj.getBlockState(pos);
+		final IBlockState state = world.getBlockState(pos);
 		return getRotationMode(state);
 	}
 
@@ -62,7 +62,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public EnumFacing getFront() {
-		final IBlockState state = worldObj.getBlockState(pos);
+		final IBlockState state = world.getBlockState(pos);
 		return getFront(state);
 	}
 
@@ -78,7 +78,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public LocalDirections getLocalDirections() {
-		final IBlockState state = worldObj.getBlockState(pos);
+		final IBlockState state = world.getBlockState(pos);
 		final Block block = state.getBlock();
 		if (!(block instanceof OpenBlock)) return LocalDirections.fromFrontAndTop(EnumFacing.NORTH, EnumFacing.UP);
 		final OpenBlock openBlock = (OpenBlock)block;
@@ -86,11 +86,11 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public boolean isAddedToWorld() {
-		return worldObj != null;
+		return world != null;
 	}
 
 	protected TileEntity getTileEntity(BlockPos blockPos) {
-		return (worldObj != null && worldObj.isBlockLoaded(blockPos))? worldObj.getTileEntity(blockPos) : null;
+		return (world != null && world.isBlockLoaded(blockPos))? world.getTileEntity(blockPos) : null;
 	}
 
 	public TileEntity getTileInDirection(EnumFacing direction) {
@@ -98,11 +98,11 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public boolean isAirBlock(EnumFacing direction) {
-		return worldObj != null && worldObj.isAirBlock(getPos().offset(direction));
+		return world != null && world.isAirBlock(getPos().offset(direction));
 	}
 
 	protected void playSoundAtBlock(SoundEvent sound, SoundCategory category, float volume, float pitch) {
-		BlockUtils.playSoundAtPos(worldObj, pos, sound, category, volume, pitch);
+		BlockUtils.playSoundAtPos(world, pos, sound, category, volume, pitch);
 	}
 
 	protected void playSoundAtBlock(SoundEvent sound, float volume, float pitch) {
@@ -110,7 +110,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	protected void spawnParticle(EnumParticleTypes particle, double dx, double dy, double dz, double vx, double vy, double vz, int... args) {
-		worldObj.spawnParticle(particle, pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz, vx, vy, vz, args);
+		world.spawnParticle(particle, pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz, vx, vy, vz, args);
 	}
 
 	protected void spawnParticle(EnumParticleTypes particle, double vx, double vy, double vz, int... args) {
@@ -118,7 +118,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public void sendBlockEvent(int event, int param) {
-		worldObj.addBlockEvent(pos, getBlockType(), event, param);
+		world.addBlockEvent(pos, getBlockType(), event, param);
 	}
 
 	@Override
@@ -127,7 +127,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public void openGui(Object instance, EntityPlayer player) {
-		player.openGui(instance, -1, worldObj, pos.getX(), pos.getY(), pos.getZ());
+		player.openGui(instance, -1, world, pos.getX(), pos.getY(), pos.getZ());
 	}
 
 	public AxisAlignedBB getBB() {
@@ -155,7 +155,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public void markUpdated() {
-		worldObj.markChunkDirty(pos, this);
+		world.markChunkDirty(pos, this);
 	}
 
 	protected IInventoryCallback createInventoryCallback() {
@@ -172,6 +172,6 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public boolean isValid(EntityPlayer player) {
-		return (worldObj.getTileEntity(pos) == this) && (player.getDistanceSqToCenter(pos) <= 64.0D);
+		return (world.getTileEntity(pos) == this) && (player.getDistanceSqToCenter(pos) <= 64.0D);
 	}
 }

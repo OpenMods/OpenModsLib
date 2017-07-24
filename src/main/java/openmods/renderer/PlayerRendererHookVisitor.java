@@ -58,7 +58,7 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 		this.listener = listener;
 
 		Type injectedMethodType = Type.getMethodType(Type.VOID_TYPE, MappedType.of(AbstractClientPlayer.class).type(), Type.FLOAT_TYPE, Type.FLOAT_TYPE, Type.FLOAT_TYPE);
-		modifiedMethod = new MethodMatcher(rendererTypeCls, injectedMethodType.getDescriptor(), "rotateCorpse", "func_77043_a");
+		modifiedMethod = new MethodMatcher(rendererTypeCls, injectedMethodType.getDescriptor(), "applyRotations", "func_77043_a");
 	}
 
 	@Override

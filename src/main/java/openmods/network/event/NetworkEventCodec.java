@@ -41,7 +41,7 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 				"Invalid direction: sending packet %s on side %s", msg.getClass(), side);
 
 		final PacketBuffer buf = new PacketBuffer(Unpooled.buffer());
-		buf.writeVarIntToBuffer(id);
+		buf.writeVarInt(id);
 		msg.writeToStream(buf);
 
 		final FMLProxyPacket packet = new FMLProxyPacket(buf, NetworkEventDispatcher.CHANNEL_NAME);
@@ -55,7 +55,7 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 		final Side side = channel.attr(NetworkRegistry.CHANNEL_SOURCE).get();
 
 		final PacketBuffer payload = new PacketBuffer(msg.payload());
-		final int typeId = payload.readVarIntFromBuffer();
+		final int typeId = payload.readVarInt();
 		final NetworkEventEntry type = CommonRegistryCallbacks.getEntryIdMap(registry).inverse().get(typeId);
 
 		final EventDirection validator = type.getDirection();

@@ -51,7 +51,7 @@ public abstract class NullableCollectionSerializer<T> implements IStreamSerializ
 
 	@Override
 	public T readFromStream(PacketBuffer input) throws IOException {
-		final int length = input.readVarIntFromBuffer();
+		final int length = input.readVarInt();
 
 		T result = createCollection(componentType, length);
 
@@ -74,7 +74,7 @@ public abstract class NullableCollectionSerializer<T> implements IStreamSerializ
 	@Override
 	public void writeToStream(T o, PacketBuffer output) throws IOException {
 		final int length = getLength(o);
-		output.writeVarIntToBuffer(length);
+		output.writeVarInt(length);
 
 		if (length > 0) {
 			final OutputBitStream nullBitsStream = new OutputBitStream(StreamAdapters.createSink(output));

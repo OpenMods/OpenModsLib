@@ -33,7 +33,7 @@ public abstract class SyncableObjectType implements IForgeRegistryEntry<Syncable
 	}
 
 	@Override
-	public Class<? super SyncableObjectType> getRegistryType() {
+	public Class<SyncableObjectType> getRegistryType() {
 		return SyncableObjectType.class;
 	}
 

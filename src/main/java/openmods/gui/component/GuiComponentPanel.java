@@ -18,14 +18,14 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 	public static final ISlotBackgroundRenderer normalSlot = new ISlotBackgroundRenderer() {
 		@Override
 		public void render(Gui gui, Slot slot) {
-			gui.drawTexturedModalRect(slot.xDisplayPosition - 1, slot.yDisplayPosition - 1, 0, 20, 18, 18);
+			gui.drawTexturedModalRect(slot.xPos - 1, slot.yPos - 1, 0, 20, 18, 18);
 		}
 	};
 
 	public static final ISlotBackgroundRenderer bigSlot = new ISlotBackgroundRenderer() {
 		@Override
 		public void render(Gui gui, Slot slot) {
-			gui.drawTexturedModalRect(slot.xDisplayPosition - 5, slot.yDisplayPosition - 5, 29, 20, 26, 26);
+			gui.drawTexturedModalRect(slot.xPos - 5, slot.yPos - 5, 29, 20, 26, 26);
 		}
 	};
 
@@ -39,7 +39,7 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 			@Override
 			public void render(Gui gui, Slot slot) {
 				RenderUtils.setColor(color);
-				gui.drawTexturedModalRect(slot.xDisplayPosition - 1, slot.yDisplayPosition - 1, 0, 20, 18, 18);
+				gui.drawTexturedModalRect(slot.xPos - 1, slot.yPos - 1, 0, 20, 18, 18);
 				GlStateManager.color(1, 1, 1);
 			}
 		};

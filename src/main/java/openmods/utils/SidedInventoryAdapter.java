@@ -92,8 +92,8 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public boolean isUseableByPlayer(EntityPlayer entityplayer) {
-		return inventory.isUseableByPlayer(entityplayer);
+	public boolean isUsableByPlayer(EntityPlayer entityplayer) {
+		return inventory.isUsableByPlayer(entityplayer);
 	}
 
 	@Override
@@ -173,5 +173,10 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	@Override
 	public ITextComponent getDisplayName() {
 		return inventory.getDisplayName();
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return inventory.isEmpty();
 	}
 }

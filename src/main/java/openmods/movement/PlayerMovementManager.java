@@ -37,7 +37,7 @@ public class PlayerMovementManager {
 	public static class LegacyTickHandler {
 		@SubscribeEvent
 		public void onClientTick(ClientTickEvent evt) {
-			final EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+			final EntityPlayerSP player = Minecraft.getMinecraft().player;
 			if (player != null) PlayerMovementManager.updateMovementState(player.movementInput, player);
 		}
 	}

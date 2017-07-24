@@ -84,7 +84,7 @@ public abstract class ContainerBase<T> extends Container {
 
 	@Override
 	public boolean canInteractWith(EntityPlayer entityplayer) {
-		return inventory.isUseableByPlayer(entityplayer);
+		return inventory.isUsableByPlayer(entityplayer);
 	}
 
 	public T getOwner() {
@@ -99,7 +99,7 @@ public abstract class ContainerBase<T> extends Container {
 
 		if (stackToMerge.isStackable()) {
 			int slotId = reverse? stop - 1 : start;
-			while (stackToMerge.stackSize > 0 && ((!reverse && slotId < stop) || (reverse && slotId >= start))) {
+			while (!stackToMerge.isEmpty() && ((!reverse && slotId < stop) || (reverse && slotId >= start))) {
 
 				Slot slot = slots.get(slotId);
 
@@ -116,7 +116,7 @@ public abstract class ContainerBase<T> extends Container {
 			}
 		}
 
-		if (stackToMerge.stackSize > 0) {
+		if (!stackToMerge.isEmpty()) {
 			int slotId = reverse? stop - 1 : start;
 
 			while ((!reverse && slotId < stop) || (reverse && slotId >= start)) {
@@ -126,7 +126,7 @@ public abstract class ContainerBase<T> extends Container {
 				if (stackInSlot == null && canTransferItemsIn(slot) && slot.isItemValid(stackToMerge)) {
 					slot.putStack(stackToMerge.copy());
 					slot.onSlotChanged();
-					stackToMerge.stackSize = 0;
+					stackToMerge.setCount(0);
 					return true;
 				}
 
@@ -139,6 +139,7 @@ public abstract class ContainerBase<T> extends Container {
 
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotId) {
+		// TODO 1.11 verify
 		final Slot slot = inventorySlots.get(slotId);
 
 		if (slot != null && canTransferItemOut(slot) && slot.getHasStack()) {
@@ -148,10 +149,9 @@ public abstract class ContainerBase<T> extends Container {
 				if (!mergeItemStackSafe(itemToTransfer, inventorySize, inventorySlots.size(), true)) return null;
 			} else if (!mergeItemStackSafe(itemToTransfer, 0, inventorySize, false)) return null;
 
-			if (itemToTransfer.stackSize == 0) slot.putStack(null);
-			else slot.onSlotChanged();
+			slot.putStack(itemToTransfer);
 
-			if (itemToTransfer.stackSize != copy.stackSize) return copy;
+			if (itemToTransfer.getCount() != copy.getCount()) return copy;
 		}
 		return null;
 	}

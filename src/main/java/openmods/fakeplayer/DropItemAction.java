@@ -58,7 +58,7 @@ public class DropItemAction implements PlayerUser {
 			droppedItem.motionY = v.y;
 			droppedItem.motionZ = v.z;
 
-			player.getEntityWorld().spawnEntityInWorld(droppedItem);
+			player.getEntityWorld().spawnEntity(droppedItem);
 		}
 	}
 

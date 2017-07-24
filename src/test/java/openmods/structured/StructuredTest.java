@@ -52,7 +52,7 @@ public class StructuredTest {
 
 		@Override
 		public void readFromStream(PacketBuffer input) {
-			this.value = input.readStringFromBuffer(0xFFFF);
+			this.value = input.readString(Short.MAX_VALUE);
 		}
 
 		@Override

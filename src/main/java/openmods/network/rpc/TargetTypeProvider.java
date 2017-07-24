@@ -29,7 +29,7 @@ public abstract class TargetTypeProvider implements IForgeRegistryEntry<TargetTy
 	}
 
 	@Override
-	public Class<? super TargetTypeProvider> getRegistryType() {
+	public Class<TargetTypeProvider> getRegistryType() {
 		return TargetTypeProvider.class;
 	}
 

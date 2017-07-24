@@ -27,7 +27,6 @@ import openmods.renderer.PlayerRendererHookVisitor;
 import openmods.renderer.PreWorldRenderHookVisitor;
 import openmods.utils.StateTracker;
 import openmods.utils.StateTracker.StateUpdater;
-import openmods.world.MapGenStructureVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
@@ -110,24 +109,6 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				"Modified class: net.minecraft.client.entity.EntityPlayerSP",
 				"Known users: OpenBlocks elevator",
 				"When disabled: users usually have fallbacks (elevator will use less accurate algorithm)");
-
-		config.addEntry("activate_map_gen_fix", 0, "true", new ConfigOption("map_gen_fix") {
-			@Override
-			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.world.gen.structure.MapGenStructure", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
-					@Override
-					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.debug("Trying to patch MapGenStructure (class: %s)", name);
-						state.update(TransformerState.ACTIVATED);
-						return new MapGenStructureVisitor(name, cv, createResultListener(state));
-					}
-				});
-			}
-		},
-				"Purpose: fix bug in vanilla code used to find nearby structures",
-				"Modified class: net.minecraft.world.gen.structure.MapGenStructure",
-				"Known users: OpenBlocks golden eye",
-				"When disabled: features may not work (either silently fail or cause crash)");
 
 		config.addEntry("activate_player_render_hook", 0, "true", new ConfigOption("player_render_hook") {
 			@Override

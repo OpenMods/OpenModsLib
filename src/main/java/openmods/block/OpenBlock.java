@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -16,6 +15,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Enchantments;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stats.StatList;
@@ -255,7 +255,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 				return ((ICustomPickItem)te).getPickBlock(player);
 		}
 
-		return suppressPickBlock()? null : super.getPickBlock(state, target, world, pos, player);
+		return suppressPickBlock()? ItemStack.EMPTY : super.getPickBlock(state, target, world, pos, player);
 	}
 
 	private static List<ItemStack> getTileBreakDrops(TileEntity te) {
@@ -332,9 +332,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		}
 
 		if (addNormalDrops) {
-			final ItemStack drop = createStackedBlock(state);
-			if (drop != null)
-				items.add(drop);
+			final ItemStack drop = new ItemStack(Item.getItemFromBlock(this), 1, damageDropped(state));
+			items.add(drop);
 		}
 
 		ForgeEventFactory.fireBlockHarvesting(items, world, pos, state, 0, 1.0f, true, player);
@@ -374,15 +373,15 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void neighborChanged(IBlockState state, World world, BlockPos blockPos, Block neighbour) {
+	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
 		if (hasCapabilities(TileEntityCapability.NEIGBOUR_LISTENER, TileEntityCapability.SURFACE_ATTACHEMENT)) {
-			final TileEntity te = world.getTileEntity(blockPos);
+			final TileEntity te = world.getTileEntity(pos);
 			if (te instanceof INeighbourAwareTile)
-				((INeighbourAwareTile)te).onNeighbourChanged(neighbour);
+				((INeighbourAwareTile)te).onNeighbourChanged(fromPos, blockIn);
 
 			if (te instanceof ISurfaceAttachment) {
 				final EnumFacing direction = ((ISurfaceAttachment)te).getSurfaceDirection();
-				breakBlockIfSideNotSolid(world, blockPos, direction);
+				breakBlockIfSideNotSolid(world, pos, direction);
 			}
 		}
 	}
@@ -412,7 +411,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState state, EntityPlayer player, EnumHand hand, @Nullable ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ) {
+	public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
 		if (hasCapabilities(TileEntityCapability.GUI_PROVIDER, TileEntityCapability.ACTIVATE_LISTENER)) {
 			final TileEntity te = world.getTileEntity(blockPos);
 
@@ -424,7 +423,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 			// TODO Expand for new args
 			if (te instanceof IActivateAwareTile)
-				return ((IActivateAwareTile)te).onBlockActivated(player, hand, heldItem, side, hitX, hitY, hitZ);
+				return ((IActivateAwareTile)te).onBlockActivated(player, hand, side, hitX, hitY, hitZ);
 		}
 
 		return false;
@@ -486,7 +485,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
 		final Orientation orientation = calculateOrientationAfterPlace(pos, facing, placer);
 		return getStateFromMeta(meta).withProperty(propertyOrientation, orientation);
 	}

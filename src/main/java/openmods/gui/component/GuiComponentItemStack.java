@@ -24,7 +24,7 @@ public class GuiComponentItemStack extends BaseComponent {
 		this.drawTooltip = drawTooltip;
 		this.scale = scale;
 
-		this.size = MathHelper.floor_float(16 * scale);
+		this.size = MathHelper.floor(16 * scale);
 		this.displayName = ImmutableList.of(stack.getDisplayName());
 	}
 

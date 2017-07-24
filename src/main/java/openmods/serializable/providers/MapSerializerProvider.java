@@ -35,7 +35,7 @@ public class MapSerializerProvider implements IGenericSerializerProvider {
 
 				@Override
 				public Map<Object, Object> readFromStream(PacketBuffer input) throws IOException {
-					final int length = input.readVarIntFromBuffer();
+					final int length = input.readVarInt();
 
 					Map<Object, Object> result = Maps.newHashMap();
 
@@ -61,7 +61,7 @@ public class MapSerializerProvider implements IGenericSerializerProvider {
 				@Override
 				public void writeToStream(Map<Object, Object> o, PacketBuffer output) throws IOException {
 					final int length = o.size();
-					output.writeVarIntToBuffer(length);
+					output.writeVarInt(length);
 
 					if (length > 0) {
 						final OutputBitStream nullBitsStream = new OutputBitStream(StreamAdapters.createSink(output));

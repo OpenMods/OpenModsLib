@@ -1,6 +1,5 @@
 package openmods.utils;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.Collection;
 import java.util.List;
@@ -11,6 +10,7 @@ import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.item.crafting.ShapelessRecipes;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
@@ -21,20 +21,20 @@ public class RecipeUtils {
 	public static class InputBuilder {
 		private static final ItemStack[] EMPTY_SLOT = new ItemStack[0];
 
-		private final Map<Integer, List<ItemStack>> slots = Maps.newHashMap();
+		private final Map<Integer, NonNullList<ItemStack>> slots = Maps.newHashMap();
 
 		public InputBuilder() {}
 
-		private List<ItemStack> getSlot(int slot) {
-			List<ItemStack> result = slots.get(slot);
+		private NonNullList<ItemStack> getSlot(int slot) {
+			NonNullList<ItemStack> result = slots.get(slot);
 			if (result == null) {
-				result = Lists.newArrayList();
+				result = NonNullList.create();
 				slots.put(slot, result);
 			}
 			return result;
 		}
 
-		private static void addItemStack(final List<ItemStack> slot, ItemStack stack) {
+		private static void addItemStack(final NonNullList<ItemStack> slot, ItemStack stack) {
 			if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
 				final Item item = stack.getItem();
 				item.getSubItems(item, null, slot);
@@ -44,22 +44,22 @@ public class RecipeUtils {
 		}
 
 		public void add(int slot, ItemStack stack) {
-			if (stack != null) {
-				final List<ItemStack> slotContents = getSlot(slot);
+			if (!stack.isEmpty()) {
+				final NonNullList<ItemStack> slotContents = getSlot(slot);
 				addItemStack(slotContents, stack);
 			}
 		}
 
 		public void add(int slot, ItemStack[] stacks) {
-			final List<ItemStack> slotContents = getSlot(slot);
+			final NonNullList<ItemStack> slotContents = getSlot(slot);
 			for (ItemStack stack : stacks) {
-				if (stack != null)
+				if (!stack.isEmpty())
 					addItemStack(slotContents, stack);
 			}
 		}
 
 		public void add(int slot, Collection<ItemStack> stacks) {
-			final List<ItemStack> slotContents = getSlot(slot);
+			final NonNullList<ItemStack> slotContents = getSlot(slot);
 			for (ItemStack stack : stacks) {
 				if (stack != null)
 					addItemStack(slotContents, stack);
@@ -95,7 +95,7 @@ public class RecipeUtils {
 			if (recipe == null) continue;
 
 			ItemStack result = recipe.getRecipeOutput();
-			if (result != null && result.isItemEqual(resultingItem)) return recipe;
+			if (!result.isEmpty() && result.isItemEqual(resultingItem)) return recipe;
 
 		}
 		return null;

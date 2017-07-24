@@ -16,14 +16,14 @@ public class SyncableBlockState extends SyncableObjectBase implements ISyncableV
 
 	@Override
 	public void readFromStream(PacketBuffer buf) {
-		final int id = buf.readVarIntFromBuffer();
+		final int id = buf.readVarInt();
 		state = Block.getStateById(id);
 	}
 
 	@Override
 	public void writeToStream(PacketBuffer buf) {
 		final int id = Block.getStateId(state);
-		buf.writeVarIntToBuffer(id);
+		buf.writeVarInt(id);
 	}
 
 	@Override

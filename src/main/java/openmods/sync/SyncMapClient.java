@@ -45,7 +45,7 @@ public class SyncMapClient extends SyncMap {
 
 	@Override
 	public void readIntializationData(PacketBuffer dis) throws IOException {
-		final int count = dis.readVarIntFromBuffer();
+		final int count = dis.readVarInt();
 
 		final ImmutableList.Builder<ISyncableObject> idToObject = ImmutableList.builder();
 
@@ -54,8 +54,8 @@ public class SyncMapClient extends SyncMap {
 		final Set<ISyncableObject> changedObjects = Sets.newIdentityHashSet();
 
 		for (int i = 0; i < count; i++) {
-			final String id = dis.readStringFromBuffer(0xFFFF);
-			final int typeId = dis.readVarIntFromBuffer();
+			final String id = dis.readString(Short.MAX_VALUE);
+			final int typeId = dis.readVarInt();
 
 			final SyncableObjectType type = SyncableObjectTypeRegistry.getType(typeId);
 

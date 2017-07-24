@@ -25,12 +25,12 @@ public class InventoryUtils {
 	}
 
 	public static boolean areMergeCandidates(ItemStack source, ItemStack target) {
-		return areItemAndTagEqual(source, target) && target.stackSize < target.getMaxStackSize();
+		return areItemAndTagEqual(source, target) && target.getCount() < target.getMaxStackSize();
 	}
 
 	public static ItemStack copyAndChange(ItemStack stack, int newSize) {
 		ItemStack copy = stack.copy();
-		copy.stackSize = newSize;
+		copy.setCount(newSize);
 		return copy;
 	}
 
@@ -38,24 +38,24 @@ public class InventoryUtils {
 		List<ItemStack> result = Lists.newArrayList();
 		for (int i = 0; i < inventory.getSizeInventory(); i++) {
 			ItemStack slot = inventory.getStackInSlot(i);
-			if (slot != null) result.add(slot);
+			if (!slot.isEmpty()) result.add(slot);
 		}
 		return result;
 	}
 
 	public static boolean tryMergeStacks(ItemStack stackToMerge, ItemStack stackInSlot) {
-		if (stackInSlot == null || !stackInSlot.isItemEqual(stackToMerge) || !ItemStack.areItemStackTagsEqual(stackToMerge, stackInSlot)) return false;
+		if (stackInSlot.isEmpty() || !stackInSlot.isItemEqual(stackToMerge) || !ItemStack.areItemStackTagsEqual(stackToMerge, stackInSlot)) return false;
 
-		int newStackSize = stackInSlot.stackSize + stackToMerge.stackSize;
+		int newStackSize = stackInSlot.getCount() + stackToMerge.getCount();
 
 		final int maxStackSize = stackToMerge.getMaxStackSize();
 		if (newStackSize <= maxStackSize) {
-			stackToMerge.stackSize = 0;
-			stackInSlot.stackSize = newStackSize;
+			stackToMerge.setCount(0);
+			stackInSlot.setCount(newStackSize);
 			return true;
-		} else if (stackInSlot.stackSize < maxStackSize) {
-			stackToMerge.stackSize -= maxStackSize - stackInSlot.stackSize;
-			stackInSlot.stackSize = maxStackSize;
+		} else if (stackInSlot.getCount() < maxStackSize) {
+			stackToMerge.shrink(maxStackSize - stackInSlot.getCount());
+			stackInSlot.setCount(maxStackSize);
 			return true;
 		}
 
@@ -63,7 +63,7 @@ public class InventoryUtils {
 	}
 
 	public static ItemStack returnItem(ItemStack stack) {
-		return (stack == null || stack.stackSize <= 0)? null : stack.copy();
+		return stack.isEmpty()? ItemStack.EMPTY : stack.copy();
 	}
 
 	protected static void isItemValid(IInventory inventory, int slot, ItemStack stack) {
@@ -112,6 +112,6 @@ public class InventoryUtils {
 
 	public static boolean canInsertStack(IItemHandler handler, ItemStack stack) {
 		final ItemStack toInsert = ItemHandlerHelper.insertItemStacked(handler, stack, true);
-		return toInsert == null || toInsert.stackSize < stack.stackSize;
+		return toInsert.getCount() < stack.getCount();
 	}
 }

@@ -11,7 +11,7 @@ public class GuiComponentTab extends GuiComponentResizableComposite {
 	protected final int expandedWidth;
 	protected final int expandedHeight;
 	private boolean active = false;
-	private ItemStack iconStack;
+	private final ItemStack iconStack;
 	private double dWidth = FOLDED_WIDTH;
 	private double dHeight = FOLDED_HEIGHT;
 	private int color;

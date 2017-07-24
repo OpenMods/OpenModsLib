@@ -159,7 +159,7 @@ public class OpenMods {
 
 		collector = new ClassSourceCollector(evt.getAsmData());
 
-		EntityRegistry.registerModEntity(EntityBlock.class, "Block", ENTITY_BLOCK_ID, instance, 64, 1, true);
+		EntityRegistry.registerModEntity(OpenMods.location("block"), EntityBlock.class, "Block", ENTITY_BLOCK_ID, instance, 64, 1, true);
 
 		proxy.preInit();
 	}

@@ -17,11 +17,11 @@ public class FakeSlot extends Slot implements ICustomSlot {
 
 	@Override
 	public ItemStack onClick(EntityPlayer player, int dragType, ClickType clickType) {
-		if (clickType == ClickType.CLONE && player.capabilities.isCreativeMode) { // TODO check
+		if (clickType == ClickType.CLONE && player.capabilities.isCreativeMode) { // TODO 1.11 verify
 			ItemStack contents = getStack();
-			if (contents != null) {
+			if (!contents.isEmpty()) {
 				ItemStack tmp = contents.copy();
-				tmp.stackSize = tmp.getMaxStackSize();
+				tmp.setCount(tmp.getMaxStackSize());
 				player.inventory.setItemStack(tmp);
 				return tmp;
 			}
@@ -29,11 +29,11 @@ public class FakeSlot extends Slot implements ICustomSlot {
 
 		ItemStack held = player.inventory.getItemStack();
 
-		ItemStack place = null;
+		ItemStack place = ItemStack.EMPTY;
 
-		if (held != null) {
+		if (!held.isEmpty()) {
 			place = held.copy();
-			if (!keepSize) place.stackSize = 1;
+			if (!keepSize) place.setCount(1);
 		}
 
 		inventory.setInventorySlotContents(slotNumber, place);

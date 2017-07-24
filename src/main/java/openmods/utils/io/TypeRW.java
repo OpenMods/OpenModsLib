@@ -156,7 +156,7 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public String readFromStream(PacketBuffer input) {
-			return input.readStringFromBuffer(0xFFFF);
+			return input.readString(Short.MAX_VALUE);
 		}
 
 		@Override
@@ -349,12 +349,12 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public void writeToStream(Integer o, PacketBuffer output) {
-			output.writeVarIntToBuffer(o);
+			output.writeVarInt(o);
 		}
 
 		@Override
 		public Integer readFromStream(PacketBuffer input) {
-			return input.readVarIntFromBuffer();
+			return input.readVarInt();
 		}
 	};
 
@@ -403,12 +403,12 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public UUID readFromStream(PacketBuffer input) {
-			return input.readUuid();
+			return input.readUniqueId();
 		}
 
 		@Override
 		public void writeToStream(UUID o, PacketBuffer output) {
-			output.writeUuid(o);
+			output.writeUniqueId(o);
 		}
 
 		@Override

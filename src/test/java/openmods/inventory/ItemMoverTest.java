@@ -1,6 +1,7 @@
 package openmods.inventory;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.init.Bootstrap;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
@@ -8,6 +9,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ItemMoverTest {
+
+	static {
+		Bootstrap.register();
+	}
 
 	private static class TestHandler extends InvWrapper {
 		public TestHandler(ItemStack... items) {
@@ -38,7 +43,7 @@ public class ItemMoverTest {
 		return ImmutableList.copyOf(handlers);
 	}
 
-	private static final ItemStack NULL_STACK = null;
+	private static final ItemStack NULL_STACK = ItemStack.EMPTY;
 
 	@Test
 	public void testSingleItemPull() {

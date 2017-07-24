@@ -30,13 +30,13 @@ public class SyncableNBT extends SyncableObjectBase implements ISyncableValuePro
 
 	@Override
 	public void readFromStream(PacketBuffer stream) throws IOException {
-		this.tag = stream.readNBTTagCompoundFromBuffer();
+		this.tag = stream.readCompoundTag();
 
 	}
 
 	@Override
 	public void writeToStream(PacketBuffer stream) {
-		stream.writeNBTTagCompoundToBuffer(this.tag);
+		stream.writeCompoundTag(this.tag);
 	}
 
 	@Override

@@ -22,25 +22,28 @@ public class ItemOpenBlock extends ItemBlock {
 	}
 
 	protected void afterBlockPlaced(ItemStack stack, EntityPlayer player, World world, BlockPos pos) {
-		stack.stackSize--;
+		stack.shrink(1);
 	}
 
 	protected boolean isStackValid(ItemStack stack, EntityPlayer player) {
-		return stack.stackSize >= 0;
+		return !stack.isEmpty();
 	}
 
 	/**
 	 * Replicates the super method, but with our own hooks
 	 */
 	@Override
-	public EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		final IBlockState clickedBlockState = world.getBlockState(pos);
 		final Block clickedBlock = clickedBlockState.getBlock();
 
 		if (!clickedBlock.isReplaceable(world, pos)) pos = pos.offset(facing);
+
+		ItemStack stack = player.getHeldItem(hand);
+
 		if (!isStackValid(stack, player)) return EnumActionResult.FAIL;
 		if (!player.canPlayerEdit(pos, facing, stack)) return EnumActionResult.FAIL;
-		if (!world.canBlockBePlaced(this.block, pos, false, facing, (Entity)null, stack)) return EnumActionResult.FAIL;
+		if (!world.mayPlace(this.block, pos, false, facing, (Entity)null)) return EnumActionResult.FAIL;
 
 		final int itemMetadata = getMetadata(stack.getMetadata());
 
@@ -49,7 +52,7 @@ public class ItemOpenBlock extends ItemBlock {
 			if (!openBlock.canBlockBePlaced(world, pos, hand, facing, hitX, hitY, hitZ, itemMetadata, player)) return EnumActionResult.FAIL;
 		}
 
-		final IBlockState newBlockState = this.block.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, itemMetadata, player, stack);
+		final IBlockState newBlockState = this.block.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, itemMetadata, player, hand);
 
 		if (placeBlockAt(stack, player, world, pos, facing, hitX, hitY, hitZ, newBlockState)) {
 			final SoundType soundType = this.block.getSoundType(newBlockState, world, pos, player);

@@ -1,11 +1,10 @@
 package openmods.world;
 
-import java.util.Collection;
+import java.util.Set;
 import net.minecraft.world.chunk.IChunkGenerator;
-import net.minecraft.world.gen.structure.MapGenStructure;
 
-public interface IStructureGenProvider {
-	public boolean canUseOnProvider(IChunkGenerator provider);
+public interface IStructureGenProvider<T extends IChunkGenerator> {
+	public Class<T> getGeneratorCls();
 
-	public Collection<MapGenStructure> listProviders(IChunkGenerator provider);
+	public Set<String> listStructureNames(T provider);
 }

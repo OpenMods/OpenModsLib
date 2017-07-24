@@ -85,11 +85,11 @@ public class CollectionUtils {
 	}
 
 	public static void readSortedIdList(PacketBuffer input, Collection<Integer> output) {
-		final int elemCount = input.readVarIntFromBuffer();
+		final int elemCount = input.readVarInt();
 
 		int currentId = 0;
 		for (int i = 0; i < elemCount; i++) {
-			currentId += input.readVarIntFromBuffer();
+			currentId += input.readVarInt();
 			output.add(currentId);
 		}
 	}
@@ -106,23 +106,23 @@ public class CollectionUtils {
 	}
 
 	public static void writeSortedIdList(PacketBuffer output, SortedSet<Integer> idList) {
-		output.writeVarIntToBuffer(idList.size());
+		output.writeVarInt(idList.size());
 
 		int currentId = 0;
 		for (Integer id : idList) {
 			int delta = id - currentId;
-			output.writeVarIntToBuffer(delta);
+			output.writeVarInt(delta);
 			currentId = id;
 		}
 	}
 
 	public static <D> void readSortedIdMap(PacketBuffer input, Map<Integer, D> output, IStreamReader<D> reader) {
-		final int elemCount = input.readVarIntFromBuffer();
+		final int elemCount = input.readVarInt();
 
 		int currentId = 0;
 		try {
 			for (int i = 0; i < elemCount; i++) {
-				currentId += input.readVarIntFromBuffer();
+				currentId += input.readVarInt();
 				D data = reader.readFromStream(input);
 				output.put(currentId, data);
 			}
@@ -132,14 +132,14 @@ public class CollectionUtils {
 	}
 
 	public static <D> void writeSortedIdMap(PacketBuffer output, SortedMap<Integer, D> input, IStreamWriter<D> writer) {
-		output.writeVarIntToBuffer(input.size());
+		output.writeVarInt(input.size());
 
 		int currentId = 0;
 		try {
 			for (Map.Entry<Integer, D> e : input.entrySet()) {
 				final int id = e.getKey();
 				final int delta = id - currentId;
-				output.writeVarIntToBuffer(delta);
+				output.writeVarInt(delta);
 				writer.writeToStream(e.getValue(), output);
 				currentId = id;
 			}

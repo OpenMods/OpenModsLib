@@ -58,7 +58,7 @@ public class DropCapture {
 		final Entity e = evt.getEntity();
 		if (e != null
 				&& e.getClass() == EntityItem.class
-				&& !e.worldObj.isRemote) {
+				&& !e.world.isRemote) {
 			final EntityItem ei = (EntityItem)e;
 
 			for (CaptureContext c : captures)

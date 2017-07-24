@@ -21,12 +21,12 @@ import org.lwjgl.opengl.KHRDebugCallback;
 public class CommandGlDebug extends CommandBase {
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "gl_debug";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender) {
+	public String getUsage(ICommandSender sender) {
 		return "gl_debug high|medium|low|notification|disable";
 	}
 
@@ -46,7 +46,7 @@ public class CommandGlDebug extends CommandBase {
 			"high", ImmutableSet.of(KHRDebug.GL_DEBUG_SEVERITY_HIGH));
 
 	@Override
-	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		if (args.length == 1) {
 			String state = args[0];
 			return CommandUtils.filterPrefixes(state, STATES);

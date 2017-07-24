@@ -14,7 +14,7 @@ public class TileEntityInventory extends GenericInventory {
 	}
 
 	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
+	public boolean isUsableByPlayer(EntityPlayer player) {
 		final BlockPos pos = owner.getPos();
 		return (owner.getWorld().getTileEntity(pos) == owner)
 				&& (player.getDistanceSq(pos) <= 64.0D);

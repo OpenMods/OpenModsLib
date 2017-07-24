@@ -42,7 +42,7 @@ public abstract class SyncRpcTarget implements IRpcTarget {
 	@Override
 	public void writeToStream(PacketBuffer output) throws IOException {
 		syncProvider.writeToStream(output);
-		output.writeVarIntToBuffer(objectId);
+		output.writeVarInt(objectId);
 	}
 
 	private SyncMap getSyncMap() {
@@ -55,7 +55,7 @@ public abstract class SyncRpcTarget implements IRpcTarget {
 		syncProvider.readFromStreamStream(side, player, input);
 
 		SyncMap map = getSyncMap();
-		objectId = input.readVarIntFromBuffer();
+		objectId = input.readVarInt();
 		object = map.getObjectById(objectId);
 	}
 

@@ -61,7 +61,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	@Override
 	public void validate() {
 		super.validate();
-		createSyncMap(worldObj);
+		createSyncMap(world);
 	}
 
 	@Override
@@ -102,7 +102,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	}
 
 	protected void markBlockForRenderUpdate(BlockPos pos) {
-		worldObj.markBlockRangeForRenderUpdate(pos, pos);
+		world.markBlockRangeForRenderUpdate(pos, pos);
 	}
 
 	protected abstract void createSyncedFields();

@@ -2,7 +2,6 @@ package openmods.item;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import net.minecraft.creativetab.CreativeTabs;
@@ -14,6 +13,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -55,16 +55,18 @@ public abstract class ItemGeneric extends Item {
 	}
 
 	@Override
-	public EnumActionResult onItemUse(ItemStack itemStack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-		IMetaItem meta = getMeta(itemStack.getItemDamage());
+	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+		final ItemStack itemStack = player.getHeldItem(hand);
+		IMetaItem meta = getMeta(itemStack.getMetadata());
 		return (meta != null)
 				? meta.onItemUse(itemStack, player, world, pos, hand, facing, hitX, hitY, hitZ)
 				: EnumActionResult.PASS;
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick(ItemStack itemStack, World world, EntityPlayer player, EnumHand hand) {
-		IMetaItem meta = getMeta(itemStack.getItemDamage());
+	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+		final ItemStack itemStack = player.getHeldItem(hand);
+		IMetaItem meta = getMeta(itemStack.getMetadata());
 		return meta != null
 				? meta.onItemRightClick(itemStack, world, player, hand)
 				: ActionResult.newResult(EnumActionResult.PASS, itemStack);
@@ -86,7 +88,7 @@ public abstract class ItemGeneric extends Item {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void getSubItems(Item item, CreativeTabs tab, List<ItemStack> subItems) {
+	public void getSubItems(Item item, CreativeTabs tab, NonNullList<ItemStack> subItems) {
 		for (Entry<Integer, IMetaItem> entry : metaitems.entrySet())
 			entry.getValue().addToCreativeList(item, entry.getKey(), subItems);
 	}

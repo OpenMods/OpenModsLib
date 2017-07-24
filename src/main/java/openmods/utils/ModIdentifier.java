@@ -18,11 +18,8 @@ public class ModIdentifier {
 	private final Map<Block, ModContainer> blockCache = Maps.newHashMap();
 
 	public ModContainer getModItemStack(ItemStack stack) {
-		if (stack == null) return null;
-		Item item = stack.getItem();
-		if (item == null) return null;
-
-		return getModForItem(item);
+		if (stack.isEmpty()) return null;
+		return getModForItem(stack.getItem());
 	}
 
 	public ModContainer getModForItem(Item item) {

@@ -28,16 +28,16 @@ public class CommandCalc implements ICommand {
 
 	@Override
 	public int compareTo(ICommand o) {
-		return name.compareTo(o.getCommandName());
+		return name.compareTo(o.getName());
 	}
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return name;
 	}
 
 	@Override
-	public List<String> getCommandAliases() {
+	public List<String> getAliases() {
 		return aliases;
 	}
 
@@ -52,7 +52,7 @@ public class CommandCalc implements ICommand {
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender) {
+	public String getUsage(ICommandSender sender) {
 		final HelpPrinter printer = new HelpPrinter();
 		printer.push(name);
 		commandComponent.help(printer);
@@ -60,7 +60,7 @@ public class CommandCalc implements ICommand {
 	}
 
 	@Override
-	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		return commandComponent.getTabCompletions(WhitespaceSplitters.fromSplitArray(args));
 	}
 
@@ -73,7 +73,7 @@ public class CommandCalc implements ICommand {
 			e.pushCommandName(name);
 			final ITextComponent message = e.getChatComponent();
 			message.getStyle().setColor(TextFormatting.RED);
-			sender.addChatMessage(message);
+			sender.sendMessage(message);
 		} catch (Exception e) {
 			Log.info(e, "Failed to execute command");
 			final List<String> causes = Lists.newArrayList();

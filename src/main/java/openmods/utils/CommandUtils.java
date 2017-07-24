@@ -30,7 +30,8 @@ public class CommandUtils {
 
 	public static List<String> getPlayerNames() {
 		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-		if (server != null) return ImmutableList.copyOf(server.getAllUsernames());
+		// TODO 1.11 verify
+		if (server != null) return ImmutableList.copyOf(server.getOnlinePlayerNames());
 		return ImmutableList.of();
 	}
 
@@ -39,11 +40,11 @@ public class CommandUtils {
 	}
 
 	public static void respondText(ICommandSender sender, String message) {
-		sender.addChatMessage(new TextComponentString(message));
+		sender.sendMessage(new TextComponentString(message));
 	}
 
 	public static void respond(ICommandSender sender, String format, Object... args) {
-		sender.addChatMessage(new TextComponentTranslation(format, args));
+		sender.sendMessage(new TextComponentTranslation(format, args));
 	}
 
 	public static CommandException error(String format, Object... args) throws CommandException {

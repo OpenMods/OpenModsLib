@@ -16,7 +16,7 @@ public class SyncableBlock extends SyncableObjectBase implements ISyncableValueP
 
 	@Override
 	public void readFromStream(PacketBuffer stream) {
-		final int blockId = stream.readVarIntFromBuffer();
+		final int blockId = stream.readVarInt();
 		block = Block.getBlockById(blockId);
 	}
 
@@ -24,7 +24,7 @@ public class SyncableBlock extends SyncableObjectBase implements ISyncableValueP
 	public void writeToStream(PacketBuffer stream) {
 		int blockId = Block.getIdFromBlock(block);
 		if (blockId < 0) blockId = 0;
-		stream.writeVarIntToBuffer(blockId);
+		stream.writeVarInt(blockId);
 	}
 
 	@Override

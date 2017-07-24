@@ -19,7 +19,7 @@ public class EnumSerializerProvider implements ISerializerProvider {
 		return new IStreamSerializer<Object>() {
 			@Override
 			public Object readFromStream(PacketBuffer input) {
-				final int ord = input.readVarIntFromBuffer();
+				final int ord = input.readVarInt();
 
 				try {
 					return values[ord];
@@ -31,7 +31,7 @@ public class EnumSerializerProvider implements ISerializerProvider {
 			@Override
 			public void writeToStream(Object o, PacketBuffer output) {
 				final int ord = ((Enum<?>)o).ordinal();
-				output.writeVarIntToBuffer(ord);
+				output.writeVarInt(ord);
 			}
 		};
 	}

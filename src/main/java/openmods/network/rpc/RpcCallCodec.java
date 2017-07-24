@@ -36,14 +36,14 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 		{
 			final IRpcTarget targetWrapper = call.target;
 			int targetId = CommonRegistryCallbacks.mapObjectToId(targetRegistry, targetWrapper.getClass());
-			output.writeVarIntToBuffer(targetId);
+			output.writeVarInt(targetId);
 			targetWrapper.writeToStream(output);
 		}
 
 		{
 			final BiMap<MethodEntry, Integer> eventIdMap = CommonRegistryCallbacks.getEntryIdMap(methodRegistry);
 			int methodId = eventIdMap.get(call.method);
-			output.writeVarIntToBuffer(methodId);
+			output.writeVarInt(methodId);
 			MethodParamsCodec paramsCodec = call.method.paramsCodec;
 			paramsCodec.writeArgs(output, call.args);
 		}
@@ -63,7 +63,7 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 		final Object[] args;
 
 		{
-			final int targetId = input.readVarIntFromBuffer();
+			final int targetId = input.readVarInt();
 			final BiMap<Integer, TargetTypeProvider> idToEntryMap = CommonRegistryCallbacks.getEntryIdMap(targetRegistry).inverse();
 			final TargetTypeProvider entry = idToEntryMap.get(targetId);
 			target = entry.createRpcTarget();
@@ -73,7 +73,7 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 
 		{
 			final BiMap<MethodEntry, Integer> eventIdMap = CommonRegistryCallbacks.getEntryIdMap(methodRegistry);
-			final int methodId = input.readVarIntFromBuffer();
+			final int methodId = input.readVarInt();
 			method = eventIdMap.inverse().get(methodId);
 			args = method.paramsCodec.readArgs(input);
 		}

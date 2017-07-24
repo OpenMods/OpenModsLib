@@ -16,9 +16,9 @@ public class Coord implements Cloneable {
 	}
 
 	public Coord(double x, double y, double z) {
-		this.x = MathHelper.floor_double(x);
-		this.y = MathHelper.floor_double(y);
-		this.z = MathHelper.floor_double(z);
+		this.x = MathHelper.floor(x);
+		this.y = MathHelper.floor(y);
+		this.z = MathHelper.floor(z);
 	}
 
 	public Coord(int[] coords) {

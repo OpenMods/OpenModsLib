@@ -50,7 +50,7 @@ public class SyncableIntArray extends SyncableObjectBase implements ISyncableVal
 
 	@Override
 	public void readFromStream(PacketBuffer stream) {
-		final int length = stream.readVarIntFromBuffer();
+		final int length = stream.readVarInt();
 		value = new int[length];
 		for (int i = 0; i < length; i++)
 			value[i] = stream.readInt();
@@ -58,7 +58,7 @@ public class SyncableIntArray extends SyncableObjectBase implements ISyncableVal
 
 	@Override
 	public void writeToStream(PacketBuffer stream) {
-		stream.writeVarIntToBuffer(size());
+		stream.writeVarInt(size());
 		for (int i = 0; i < size(); i++) {
 			stream.writeInt(value[i]);
 		}

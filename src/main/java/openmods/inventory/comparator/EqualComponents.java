@@ -34,7 +34,7 @@ public class EqualComponents {
 	public static final IItemStackTester SIZE_TESTER = new IItemStackTester() {
 		@Override
 		public boolean isEqual(ItemStack left, ItemStack right) {
-			return left.stackSize == right.stackSize;
+			return left.getCount() == right.getCount();
 		}
 	};
 

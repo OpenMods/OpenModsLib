@@ -5,6 +5,7 @@ import java.util.Map;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Items;
+import net.minecraft.item.ItemNameTag;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AnvilUpdateEvent;
@@ -18,7 +19,7 @@ public class VanillaAnvilLogic {
 
 	public VanillaAnvilLogic(ItemStack inputStack, ItemStack modifierStack, boolean isCreativeMode, Optional<String> itemName) {
 		this.materialCost = -1;
-		this.outputStack = null;
+		this.outputStack = ItemStack.EMPTY;
 
 		final String repairedItemName = itemName.orNull();
 
@@ -28,43 +29,48 @@ public class VanillaAnvilLogic {
 		int j = 0;
 		int k = 0;
 
-		if (inputStack == null) {
-			this.outputStack = null;
+		if (inputStack.isEmpty()) {
+			outputStack = ItemStack.EMPTY;
 			this.maximumCost = 0;
 		} else {
 			ItemStack itemstack1 = inputStack.copy();
+
+			if (itemstack1.getCount() > 1 && !isCreativeMode && !(itemstack1.getItem() instanceof ItemNameTag)) {
+				itemstack1.setCount(1);
+			}
+
 			ItemStack itemstack2 = modifierStack;
 			Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(itemstack1);
-			j = j + inputStack.getRepairCost() + (itemstack2 == null? 0 : itemstack2.getRepairCost());
+			j = j + inputStack.getRepairCost() + (itemstack2.isEmpty()? 0 : itemstack2.getRepairCost());
 			this.materialCost = 0;
 			boolean flag = false;
 
-			if (itemstack2 != null) {
+			if (!itemstack2.isEmpty()) {
 				if (!onAnvilChange(inputStack, itemstack2, repairedItemName, j)) return;
 				flag = itemstack2.getItem() == Items.ENCHANTED_BOOK && !Items.ENCHANTED_BOOK.getEnchantments(itemstack2).hasNoTags();
 
 				if (itemstack1.isItemStackDamageable() && itemstack1.getItem().getIsRepairable(inputStack, itemstack2)) {
-					int j2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
+					int l2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
 
-					if (j2 <= 0) {
-						this.outputStack = null;
+					if (l2 <= 0) {
+						outputStack = ItemStack.EMPTY;
 						this.maximumCost = 0;
 						return;
 					}
 
-					int k2;
+					int i3;
 
-					for (k2 = 0; j2 > 0 && k2 < itemstack2.stackSize; ++k2) {
-						int l2 = itemstack1.getItemDamage() - j2;
-						itemstack1.setItemDamage(l2);
+					for (i3 = 0; l2 > 0 && i3 < itemstack2.getCount(); ++i3) {
+						int j3 = itemstack1.getItemDamage() - l2;
+						itemstack1.setItemDamage(j3);
 						++i;
-						j2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
+						l2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
 					}
 
-					this.materialCost = k2;
+					this.materialCost = i3;
 				} else {
 					if (!flag && (itemstack1.getItem() != itemstack2.getItem() || !itemstack1.isItemStackDamageable())) {
-						this.outputStack = null;
+						outputStack = ItemStack.EMPTY;
 						this.maximumCost = 0;
 						return;
 					}
@@ -87,12 +93,14 @@ public class VanillaAnvilLogic {
 					}
 
 					Map<Enchantment, Integer> map1 = EnchantmentHelper.getEnchantments(itemstack2);
+					boolean flag2 = false;
+					boolean flag3 = false;
 
 					for (Enchantment enchantment1 : map1.keySet()) {
 						if (enchantment1 != null) {
-							int i3 = map.containsKey(enchantment1)? map.get(enchantment1).intValue() : 0;
-							int j3 = map1.get(enchantment1).intValue();
-							j3 = i3 == j3? j3 + 1 : Math.max(j3, i3);
+							int i2 = map.containsKey(enchantment1)? map.get(enchantment1).intValue() : 0;
+							int j2 = map1.get(enchantment1).intValue();
+							j2 = i2 == j2? j2 + 1 : Math.max(j2, i2);
 							boolean flag1 = enchantment1.canApply(inputStack);
 
 							if (isCreativeMode || inputStack.getItem() == Items.ENCHANTED_BOOK) {
@@ -100,19 +108,22 @@ public class VanillaAnvilLogic {
 							}
 
 							for (Enchantment enchantment : map.keySet()) {
-								if (enchantment != enchantment1 && !(enchantment1.canApplyTogether(enchantment) && enchantment.canApplyTogether(enchantment1)))  // Forge BugFix: Let Both enchantments veto being together
-								{
+								if (enchantment != enchantment1 && !enchantment1.func_191560_c(enchantment)) {
 									flag1 = false;
 									++i;
 								}
 							}
 
-							if (flag1) {
-								if (j3 > enchantment1.getMaxLevel()) {
-									j3 = enchantment1.getMaxLevel();
+							if (!flag1) {
+								flag3 = true;
+							} else {
+								flag2 = true;
+
+								if (j2 > enchantment1.getMaxLevel()) {
+									j2 = enchantment1.getMaxLevel();
 								}
 
-								map.put(enchantment1, Integer.valueOf(j3));
+								map.put(enchantment1, Integer.valueOf(j2));
 								int k3 = 0;
 
 								switch (enchantment1.getRarity()) {
@@ -133,33 +144,36 @@ public class VanillaAnvilLogic {
 									k3 = Math.max(1, k3 / 2);
 								}
 
-								i += k3 * j3;
+								i += k3 * j2;
 							}
 						}
 					}
+
+					if (flag3 && !flag2) {
+						outputStack = ItemStack.EMPTY;
+						this.maximumCost = 0;
+						return;
+					}
 				}
 			}
 
-			if (flag && !itemstack1.getItem().isBookEnchantable(itemstack1, itemstack2)) itemstack1 = null;
-
-			if (itemstack1 != null) {
-				if (StringUtils.isBlank(repairedItemName)) {
-					if (inputStack.hasDisplayName()) {
-						k = 1;
-						i += k;
-						itemstack1.clearCustomName();
-					}
-				} else if (!repairedItemName.equals(inputStack.getDisplayName())) {
+			if (StringUtils.isBlank(repairedItemName)) {
+				if (inputStack.hasDisplayName()) {
 					k = 1;
 					i += k;
-					itemstack1.setStackDisplayName(repairedItemName);
+					itemstack1.clearCustomName();
 				}
+			} else if (!repairedItemName.equals(inputStack.getDisplayName())) {
+				k = 1;
+				i += k;
+				itemstack1.setStackDisplayName(repairedItemName);
 			}
+			if (flag && !itemstack1.getItem().isBookEnchantable(itemstack1, itemstack2)) itemstack1 = ItemStack.EMPTY;
 
 			this.maximumCost = j + i;
 
 			if (i <= 0) {
-				itemstack1 = null;
+				itemstack1 = ItemStack.EMPTY;
 			}
 
 			if (k == i && k > 0 && this.maximumCost >= 40) {
@@ -167,25 +181,25 @@ public class VanillaAnvilLogic {
 			}
 
 			if (this.maximumCost >= 40 && !isCreativeMode) {
-				itemstack1 = null;
+				itemstack1 = ItemStack.EMPTY;
 			}
 
-			if (itemstack1 != null) {
-				int i2 = itemstack1.getRepairCost();
+			if (!itemstack1.isEmpty()) {
+				int k2 = itemstack1.getRepairCost();
 
-				if (itemstack2 != null && i2 < itemstack2.getRepairCost()) {
-					i2 = itemstack2.getRepairCost();
+				if (!itemstack2.isEmpty() && k2 < itemstack2.getRepairCost()) {
+					k2 = itemstack2.getRepairCost();
 				}
 
 				if (k != i || k == 0) {
-					i2 = i2 * 2 + 1;
+					k2 = k2 * 2 + 1;
 				}
 
-				itemstack1.setRepairCost(i2);
+				itemstack1.setRepairCost(k2);
 				EnchantmentHelper.setEnchantments(map, itemstack1);
 			}
 
-			this.outputStack = itemstack1;
+			outputStack = itemstack1;
 		}
 	}
 

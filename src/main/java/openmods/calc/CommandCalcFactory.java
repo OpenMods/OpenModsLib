@@ -227,7 +227,7 @@ public class CommandCalcFactory {
 			.put("echo", new TerminalCommandComponent("<str>") {
 				@Override
 				public void execute(ICommandSender sender, IWhitespaceSplitter args) {
-					sender.addChatMessage(new TextComponentString(args.getTail()));
+					sender.sendMessage(new TextComponentString(args.getTail()));
 				}
 			})
 			.build();
