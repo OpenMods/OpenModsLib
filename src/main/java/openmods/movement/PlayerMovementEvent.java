@@ -10,8 +10,6 @@ public class PlayerMovementEvent extends PlayerEvent {
 	public enum Type {
 		JUMP,
 		SNEAK;
-
-		public static final Type[] VALUES = values();
 	}
 
 	public Type type;
