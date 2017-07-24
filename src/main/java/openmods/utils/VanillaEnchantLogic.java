@@ -59,7 +59,7 @@ public class VanillaEnchantLogic {
 		final boolean isBook = enchantedItem.getItem() == Items.BOOK;
 
 		final List<EnchantmentData> enchantmentsToApply = getEnchantmentList(toEnchant, level, xpLevels);
-		if (enchantmentsToApply != null) {
+		if (!enchantmentsToApply.isEmpty()) {
 			if (isBook) {
 				enchantedItem = new ItemStack(Items.ENCHANTED_BOOK);
 			}

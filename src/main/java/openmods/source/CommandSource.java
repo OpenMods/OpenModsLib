@@ -5,6 +5,7 @@ import static openmods.utils.CommandUtils.filterPrefixes;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,7 +79,7 @@ public class CommandSource extends SidedCommand {
 	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		if (args.length == 1) return filterPrefixes(args[0], subcommands);
 
-		return null;
+		return Collections.emptyList();
 	}
 
 	@Override

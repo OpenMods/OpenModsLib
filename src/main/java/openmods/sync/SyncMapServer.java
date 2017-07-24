@@ -90,6 +90,11 @@ public abstract class SyncMapServer extends SyncMap {
 	}
 
 	@Override
+	public void safeWrite(NBTTagCompound tag) {
+		write(tag);
+	}
+
+	@Override
 	public void readIntializationData(PacketBuffer dis) {
 		throw new UnsupportedOperationException();
 	}

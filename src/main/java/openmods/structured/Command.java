@@ -92,8 +92,6 @@ public abstract class Command {
 		};
 
 		public abstract Command create();
-
-		public static final Type[] TYPES = values();
 	}
 
 	public static class ConsistencyCheck extends Command {
@@ -336,15 +334,14 @@ public abstract class Command {
 	protected abstract void writeDataToStream(PacketBuffer output) throws IOException;
 
 	public static Command createFromStream(PacketBuffer input) throws IOException {
-		final int id = input.readVarInt();
-		Type type = Type.TYPES[id];
+		Type type = input.readEnumValue(Type.class);
 		Command command = type.create();
 		command.readDataFromStream(input);
 		return command;
 	}
 
 	public void writeToStream(PacketBuffer output) throws IOException {
-		output.writeVarInt(type().ordinal());
+		output.writeEnumValue(type());
 		writeDataToStream(output);
 	}
 

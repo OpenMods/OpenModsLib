@@ -29,6 +29,11 @@ public class SyncMapClient extends SyncMap {
 	}
 
 	@Override
+	public void safeWrite(NBTTagCompound tag) {
+		// NO-OP
+	}
+
+	@Override
 	public void writeInitializationData(PacketBuffer dos) {
 		throw new UnsupportedOperationException();
 	}

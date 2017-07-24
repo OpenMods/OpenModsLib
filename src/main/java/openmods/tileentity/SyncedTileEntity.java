@@ -126,7 +126,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound tag) {
 		super.writeToNBT(tag);
-		getSyncMap().write(tag);
+		getSyncMap().safeWrite(tag);
 		return tag;
 	}
 

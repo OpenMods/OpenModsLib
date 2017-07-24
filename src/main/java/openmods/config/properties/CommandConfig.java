@@ -6,6 +6,7 @@ import static openmods.utils.CommandUtils.respond;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.command.CommandException;
@@ -155,10 +156,10 @@ public class CommandConfig extends SidedCommand {
 		String modId = args[1];
 		if (args.length == 2) return filterPrefixes(modId, ConfigProcessing.getConfigsIds());
 
-		if (COMMAND_SAVE.equals(command)) return null;
+		if (COMMAND_SAVE.equals(command)) return Collections.emptyList();
 
 		final ModConfig config = ConfigProcessing.getConfig(modId);
-		if (config == null) return null;
+		if (config == null) return Collections.emptyList();
 
 		String category = args[2];
 		if (args.length == 3) return filterPrefixes(category, config.getCategories());
@@ -166,7 +167,7 @@ public class CommandConfig extends SidedCommand {
 		String name = args[3];
 		if (args.length == 4) return filterPrefixes(name, config.getValues(category));
 
-		return null;
+		return Collections.emptyList();
 	}
 
 	@Override

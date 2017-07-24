@@ -24,6 +24,8 @@ public abstract class SyncMap {
 
 	public abstract void write(NBTTagCompound tag);
 
+	public abstract void safeWrite(NBTTagCompound tag);
+
 	public abstract void readIntializationData(PacketBuffer dis) throws IOException;
 
 	public abstract void writeInitializationData(PacketBuffer dos) throws IOException;
