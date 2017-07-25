@@ -9,9 +9,58 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class HorseNullFix extends ClassVisitor {
+public abstract class HorseNullFix extends ClassVisitor {
 
-	private static boolean hasFixed;
+	public static class Base extends HorseNullFix {
+		public Base(String horseClass, ClassVisitor cv, IResultListener listener) {
+			super(horseClass, cv, listener);
+		}
+
+		private static boolean hasFixed;
+
+		public static boolean isWorking() {
+			return hasFixed;
+		}
+
+		@Override
+		protected void setFixFlag() {
+			hasFixed = true;
+		}
+	}
+
+	public static class Llama extends HorseNullFix {
+		public Llama(String horseClass, ClassVisitor cv, IResultListener listener) {
+			super(horseClass, cv, listener);
+		}
+
+		private static boolean hasFixed;
+
+		public static boolean isWorking() {
+			return hasFixed;
+		}
+
+		@Override
+		protected void setFixFlag() {
+			hasFixed = true;
+		}
+	}
+
+	public static class Horse extends HorseNullFix {
+		public Horse(String horseClass, ClassVisitor cv, IResultListener listener) {
+			super(horseClass, cv, listener);
+		}
+
+		private static boolean hasFixed;
+
+		public static boolean isWorking() {
+			return hasFixed;
+		}
+
+		@Override
+		protected void setFixFlag() {
+			hasFixed = true;
+		}
+	}
 
 	private final IResultListener listener;
 
@@ -24,9 +73,7 @@ public class HorseNullFix extends ClassVisitor {
 		modifiedMethod = new MethodMatcher(horseClass, Type.getMethodType(Type.VOID_TYPE).getDescriptor(), "updateHorseSlots", "func_110232_cE");
 	}
 
-	public static boolean isWorking() {
-		return hasFixed;
-	}
+	protected abstract void setFixFlag();
 
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
@@ -57,7 +104,7 @@ public class HorseNullFix extends ClassVisitor {
 			visitLabel(skip);
 
 			listener.onSuccess();
-			hasFixed = true;
+			setFixFlag();
 		}
 	}
 

@@ -174,7 +174,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
 						Log.debug("Trying to patch AbstractHorse (class: %s)", name);
 						state.update(TransformerState.ACTIVATED);
-						return new HorseNullFix(name, cv, createResultListener(state));
+						return new HorseNullFix.Base(name, cv, createResultListener(state));
 					}
 				});
 			}
@@ -192,7 +192,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
 						Log.debug("Trying to patch EntityHorse (class: %s)", name);
 						state.update(TransformerState.ACTIVATED);
-						return new HorseNullFix(name, cv, createResultListener(state));
+						return new HorseNullFix.Horse(name, cv, createResultListener(state));
 					}
 				});
 			}
@@ -210,7 +210,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
 						Log.debug("Trying to patch EntityLlama (class: %s)", name);
 						state.update(TransformerState.ACTIVATED);
-						return new HorseNullFix(name, cv, createResultListener(state));
+						return new HorseNullFix.Llama(name, cv, createResultListener(state));
 					}
 				});
 			}
