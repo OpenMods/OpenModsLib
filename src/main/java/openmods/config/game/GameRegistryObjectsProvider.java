@@ -107,7 +107,9 @@ public class GameRegistryObjectsProvider {
 
 	private final ResourceLocationBuilder itemModelDecorator = new ResourceLocationBuilder();
 
-	private final IdDecorator teDecorator = new IdDecorator("_");
+	private final IdDecorator teDecorator = new IdDecorator(":");
+
+	private final IdDecorator legacyTeDecorator = new IdDecorator("_");
 
 	private final IdDecorator legacyItemDecorator = new IdDecorator(".");
 
@@ -123,6 +125,7 @@ public class GameRegistryObjectsProvider {
 		langDecorator.setMod(modPrefix);
 		itemModelDecorator.setMod(modPrefix);
 		teDecorator.setMod(modPrefix);
+		legacyTeDecorator.setMod(modPrefix);
 		legacyBlockDecorator.setMod(modPrefix);
 		legacyItemDecorator.setMod(modPrefix);
 
@@ -145,6 +148,7 @@ public class GameRegistryObjectsProvider {
 
 	public void setTileEntityModId(String modId) {
 		teDecorator.setMod(modId);
+		legacyTeDecorator.setMod(modId);
 	}
 
 	public void setFeatures(AbstractFeatureManager features) {
@@ -359,13 +363,14 @@ public class GameRegistryObjectsProvider {
 
 						if (teClass != null) {
 							final String teName = teDecorator.decorate(id);
-							GameRegistry.registerTileEntity(teClass, teName);
+							final String legacyTeName = legacyTeDecorator.decorate(id);
+							GameRegistry.registerTileEntityWithAlternatives(teClass, teName, legacyTeName);
 						}
 
 						if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(modContainer, id, teClass, itemBlock);
 
 						for (RegisterTileEntity te : annotation.tileEntities()) {
-							final String teName = teDecorator.decorate(te.name());
+							final String teName = legacyTeDecorator.decorate(te.name());
 							GameRegistry.registerTileEntity(te.cls(), teName);
 						}
 
