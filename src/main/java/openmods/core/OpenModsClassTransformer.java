@@ -20,6 +20,7 @@ import openmods.asm.VisitorHelper;
 import openmods.asm.VisitorHelper.TransformProvider;
 import openmods.config.simple.ConfigProcessor;
 import openmods.config.simple.ConfigProcessor.UpdateListener;
+import openmods.core.fixes.HorseNullFix;
 import openmods.entity.PlayerDamageEventInjector;
 import openmods.include.IncludingClassVisitor;
 import openmods.movement.MovementPatcher;
@@ -178,7 +179,31 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				});
 			}
 
-		});
+		},
+				"Purpose: hook in world rendering, triggered between sky and terrain",
+				"Modified class: net.minecraft.client.renderer.EntityRenderer",
+				"Known users: Sky block",
+				"When disabled: Sky block will not render properly");
+
+		config.addEntry("horse_null_fix", 0, "true", new ConfigOption("horse_null_fix") {
+			@Override
+			protected void onActivate(final StateUpdater<TransformerState> state) {
+				vanillaPatches.put("net.minecraft.entity.passive.EntityHorse", new TransformProvider(0) {
+					@Override
+					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
+						Log.debug("Trying to patch EntityHorse (class: %s)", name);
+						state.update(TransformerState.ACTIVATED);
+						return new HorseNullFix(name, cv, createResultListener(state));
+					}
+				});
+			}
+
+		},
+				"Purpose: prevent NPE when creating horse without world",
+				"Modified class: net.minecraft.entity.passive.EntityHorse",
+				"Known users: Trophy",
+				"When disabled: Horse trophy cannot be rendered");
+
 	}
 
 	private final static TransformProvider INCLUDING_CV = new TransformProvider(0) {
