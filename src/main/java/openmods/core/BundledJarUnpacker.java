@@ -2,6 +2,7 @@ package openmods.core;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 import java.io.File;
@@ -54,22 +55,24 @@ public class BundledJarUnpacker {
 			try {
 				final String jarJars = coremodJar.getManifest().getMainAttributes().getValue(JAR_JARS_ATTRIBUTE);
 
-				for (String jarJar : Splitter.on(" ").split(jarJars)) {
-					final ZipEntry entry = coremodJar.getEntry(jarJar);
-					if (entry == null) throw new IllegalAccessException("Can't find entry " + jarJar + " in jar " + coremodFile);
+				if (!Strings.isNullOrEmpty(jarJars)) {
+					for (String jarJar : Splitter.on(" ").split(jarJars)) {
+						final ZipEntry entry = coremodJar.getEntry(jarJar);
+						if (entry == null) throw new IllegalAccessException("Can't find entry " + jarJar + " in jar " + coremodFile);
 
-					final ExclusiveLock lockedFile = findLockableFile(libDir, jarJar);
+						final ExclusiveLock lockedFile = findLockableFile(libDir, jarJar);
 
-					Log.debug("Copying file %s from %s to %s", jarJar, coremodFile, lockedFile.file);
-					final ReadableByteChannel jarJarStream = Channels.newChannel(coremodJar.getInputStream(entry));
-					ByteStreams.copy(jarJarStream, lockedFile.channel);
-					jarJarStream.close();
+						Log.debug("Copying file %s from %s to %s", jarJar, coremodFile, lockedFile.file);
+						final ReadableByteChannel jarJarStream = Channels.newChannel(coremodJar.getInputStream(entry));
+						ByteStreams.copy(jarJarStream, lockedFile.channel);
+						jarJarStream.close();
 
-					// keep shared lock to prevent file overwrite
-					final SharedLock sharedFile = closer.register(lockedFile.degrade());
-					sharedFile.file.deleteOnExit();
+						// keep shared lock to prevent file overwrite
+						final SharedLock sharedFile = closer.register(lockedFile.degrade());
+						sharedFile.file.deleteOnExit();
 
-					classLoader.addURL(sharedFile.file.toURI().toURL());
+						classLoader.addURL(sharedFile.file.toURI().toURL());
+					}
 				}
 			} catch (Throwable t) {
 				throw closer.rethrow(t);
