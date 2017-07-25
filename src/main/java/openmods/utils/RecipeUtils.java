@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -89,7 +90,7 @@ public class RecipeUtils {
 		return CraftingManager.getInstance().getRecipeList();
 	}
 
-	public static IRecipe getFirstRecipeForItemStack(ItemStack resultingItem) {
+	public static IRecipe getFirstRecipeForItemStack(@Nonnull ItemStack resultingItem) {
 
 		for (IRecipe recipe : getVanillaRecipes()) {
 			if (recipe == null) continue;

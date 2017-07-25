@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.annotation.Nonnull;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -97,22 +98,25 @@ public abstract class ItemGeneric extends Item {
 		return metaitems.get(id);
 	}
 
-	public IMetaItem getMeta(ItemStack itemStack) {
+	public IMetaItem getMeta(@Nonnull ItemStack itemStack) {
 		return getMeta(itemStack.getItemDamage());
 	}
 
+	@Nonnull
 	public ItemStack newItemStack(int id) {
 		return newItemStack(id, 1);
 	}
 
+	@Nonnull
 	public ItemStack newItemStack(int id, int number) {
 		return new ItemStack(this, number, id);
 	}
 
+	@Nonnull
 	public ItemStack newItemStack(IMetaItem meta, int size) {
 		for (Entry<Integer, IMetaItem> o : metaitems.entrySet()) {
 			if (o.getValue().equals(meta)) { return newItemStack(o.getKey(), size); }
 		}
-		return null;
+		return ItemStack.EMPTY;
 	}
 }

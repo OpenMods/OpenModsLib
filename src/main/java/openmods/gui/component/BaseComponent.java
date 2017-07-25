@@ -2,6 +2,7 @@ package openmods.gui.component;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
@@ -123,7 +124,9 @@ public abstract class BaseComponent extends Gui {
 
 	public void tick() {}
 
-	protected void drawItemStack(ItemStack stack, int x, int y, String overlayText) {
+	protected void drawItemStack(@Nonnull ItemStack stack, int x, int y, String overlayText) {
+		if (stack.isEmpty()) return;
+
 		RenderHelper.enableGUIStandardItemLighting();
 		final RenderItem itemRenderer = parent.getItemRenderer();
 		GlStateManager.translate(0.0F, 0.0F, 32.0F);
@@ -131,7 +134,7 @@ public abstract class BaseComponent extends Gui {
 		itemRenderer.zLevel = 200.0F;
 
 		FontRenderer font = null;
-		if (stack != null) font = stack.getItem().getFontRenderer(stack);
+		font = stack.getItem().getFontRenderer(stack);
 		if (font == null) font = parent.getFontRenderer();
 
 		itemRenderer.renderItemAndEffectIntoGUI(stack, x, y);
@@ -141,7 +144,9 @@ public abstract class BaseComponent extends Gui {
 		RenderHelper.disableStandardItemLighting();
 	}
 
-	protected void drawItemStack(ItemStack stack, int x, int y) {
+	protected void drawItemStack(@Nonnull ItemStack stack, int x, int y) {
+		if (stack.isEmpty()) return;
+
 		RenderHelper.enableGUIStandardItemLighting();
 		final RenderItem itemRenderer = parent.getItemRenderer();
 		GlStateManager.translate(0.0F, 0.0F, 32.0F);

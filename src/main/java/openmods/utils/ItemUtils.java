@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import javax.annotation.Nonnull;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.Item;
@@ -18,7 +19,8 @@ import org.apache.commons.io.output.NullOutputStream;
 
 public class ItemUtils {
 
-	public static ItemStack consumeItem(ItemStack stack) {
+	@Nonnull
+	public static ItemStack consumeItem(@Nonnull ItemStack stack) {
 		if (stack.getCount() == 1) {
 			final Item item = stack.getItem();
 			if (item.hasContainerItem(stack)) return item.getContainerItem(stack);
@@ -29,7 +31,7 @@ public class ItemUtils {
 		return stack;
 	}
 
-	public static NBTTagCompound getItemTag(ItemStack stack) {
+	public static NBTTagCompound getItemTag(@Nonnull ItemStack stack) {
 		NBTTagCompound result = stack.getTagCompound();
 		if (result == null) {
 			result = new NBTTagCompound();
@@ -38,11 +40,11 @@ public class ItemUtils {
 		return result;
 	}
 
-	public static EntityItem createDrop(Entity dropper, ItemStack is) {
+	public static EntityItem createDrop(Entity dropper, @Nonnull ItemStack is) {
 		return createEntityItem(dropper.world, dropper.posX, dropper.posY, dropper.posZ, is);
 	}
 
-	public static EntityItem createEntityItem(World world, double x, double y, double z, ItemStack is) {
+	public static EntityItem createEntityItem(World world, double x, double y, double z, @Nonnull ItemStack is) {
 		return new EntityItem(world, x, y, z, is.copy());
 	}
 
@@ -64,7 +66,7 @@ public class ItemUtils {
 	}
 
 	// because vanilla is not really good with null stacks
-	public static void setEntityItemStack(EntityItem entity, ItemStack stack) {
+	public static void setEntityItemStack(EntityItem entity, @Nonnull ItemStack stack) {
 		// TODO 1.11 verify if needed
 		if (stack.isEmpty()) {
 			entity.setDead();

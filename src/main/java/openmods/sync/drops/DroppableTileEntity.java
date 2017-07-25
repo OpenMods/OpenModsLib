@@ -1,6 +1,7 @@
 package openmods.sync.drops;
 
 import java.util.List;
+import javax.annotation.Nonnull;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -21,6 +22,7 @@ public abstract class DroppableTileEntity extends SyncedTileEntity implements IP
 		return true;
 	}
 
+	@Nonnull
 	protected ItemStack getRawDrop(IBlockState blockState) {
 		return new ItemStack(blockState.getBlock());
 	}
@@ -31,17 +33,19 @@ public abstract class DroppableTileEntity extends SyncedTileEntity implements IP
 	}
 
 	@Override
+	@Nonnull
 	public ItemStack getPickBlock(EntityPlayer player) {
 		final IBlockState state = world.getBlockState(pos);
 		return getDropStack(state);
 	}
 
+	@Nonnull
 	protected ItemStack getDropStack(IBlockState blockState) {
 		return getDropSerializer().write(getRawDrop(blockState));
 	}
 
 	@Override
-	public void onBlockPlacedBy(IBlockState state, EntityLivingBase placer, ItemStack stack) {
+	public void onBlockPlacedBy(IBlockState state, EntityLivingBase placer, @Nonnull ItemStack stack) {
 		getDropSerializer().read(stack, true);
 	}
 

@@ -7,6 +7,7 @@ import com.google.common.primitives.Ints;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
@@ -67,22 +68,25 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
+	@Nonnull
 	public ItemStack getStackInSlot(int i) {
 		return inventory.getStackInSlot(i);
 	}
 
 	@Override
+	@Nonnull
 	public ItemStack decrStackSize(int i, int j) {
 		return inventory.decrStackSize(i, j);
 	}
 
 	@Override
+	@Nonnull
 	public ItemStack removeStackFromSlot(int slot) {
 		return inventory.removeStackFromSlot(slot);
 	}
 
 	@Override
-	public void setInventorySlotContents(int i, ItemStack itemstack) {
+	public void setInventorySlotContents(int i, @Nonnull ItemStack itemstack) {
 		inventory.setInventorySlotContents(i, itemstack);
 	}
 
@@ -97,7 +101,7 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public boolean isItemValidForSlot(int i, ItemStack itemstack) {
+	public boolean isItemValidForSlot(int i, @Nonnull ItemStack itemstack) {
 		return inventory.isItemValidForSlot(i, itemstack);
 	}
 
@@ -112,14 +116,14 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public boolean canInsertItem(int slotIndex, ItemStack itemstack, EnumFacing dir) {
+	public boolean canInsertItem(int slotIndex, @Nonnull ItemStack itemstack, EnumFacing dir) {
 		SlotInfo slot = slots.get(slotIndex);
 		if (slot == null) return false;
 		return slot.canInsert && slot.canAccessFromSide(dir) && inventory.isItemValidForSlot(slotIndex, itemstack);
 	}
 
 	@Override
-	public boolean canExtractItem(int slotIndex, ItemStack itemstack, EnumFacing dir) {
+	public boolean canExtractItem(int slotIndex, @Nonnull ItemStack itemstack, EnumFacing dir) {
 		SlotInfo slot = slots.get(slotIndex);
 		if (slot == null) return false;
 		return slot.canExtract && slot.canAccessFromSide(dir);

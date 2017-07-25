@@ -42,11 +42,12 @@ public class SyncableItemStack extends SyncableObjectBase {
 		}
 	}
 
-	public void set(ItemStack stack) {
-		this.stack = stack != null? stack.copy() : null;
+	public void set(@Nonnull ItemStack stack) {
+		this.stack = stack.copy();
 		markDirty();
 	}
 
+	@Nonnull
 	public ItemStack get() {
 		return stack;
 	}

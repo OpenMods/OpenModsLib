@@ -58,7 +58,7 @@ public final class ComputerCraftUtils {
 
 	private static void addTurtlesForUpgrade(List<ItemStack> result, IRecipe recipe, Item turtle, ItemStack upgrade) {
 		final ItemStack turtleStack = new ItemStack(turtle);
-		addTurtleForUpgrade(result, recipe, turtleStack, null, upgrade);
+		addTurtleForUpgrade(result, recipe, turtleStack, ItemStack.EMPTY, upgrade);
 		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Blocks.CRAFTING_TABLE), upgrade);
 		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.DIAMOND_SWORD), upgrade);
 		addTurtleForUpgrade(result, recipe, turtleStack, new ItemStack(Items.DIAMOND_SHOVEL), upgrade);

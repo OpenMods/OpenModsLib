@@ -2,6 +2,7 @@ package openmods.inventory;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
@@ -45,6 +46,7 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
+	@Nonnull
 	public ItemStack decrStackSize(int index, int count) {
 		// TODO 1.11 verify
 		final ItemStack result = ItemStackHelper.getAndSplit(this.inventoryContents, index, count);
@@ -66,6 +68,7 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
+	@Nonnull
 	public ItemStack getStackInSlot(int index) {
 		if (index >= 0 && index < this.inventoryContents.size())
 			return this.inventoryContents.get(index);
@@ -73,11 +76,13 @@ public class GenericInventory implements IInventory {
 			return ItemStack.EMPTY;
 	}
 
+	@Nonnull
 	public ItemStack getStackInSlot(Enum<?> i) {
 		return getStackInSlot(i.ordinal());
 	}
 
 	@Override
+	@Nonnull
 	public ItemStack removeStackFromSlot(int index) {
 		if (index >= this.inventoryContents.size()) return ItemStack.EMPTY;
 

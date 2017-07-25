@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
@@ -46,10 +47,12 @@ public enum ColorMeta implements IStringSerializable {
 	public final RGB rgbWrap;
 	public final CYMK cymkWrap;
 
+	@Nonnull
 	public ItemStack createStack(Block block, int amount) {
 		return new ItemStack(block, amount, vanillaBlockId);
 	}
 
+	@Nonnull
 	public ItemStack createStack(Item item, int amount) {
 		return new ItemStack(item, amount, vanillaDyeId);
 	}
@@ -94,7 +97,7 @@ public enum ColorMeta implements IStringSerializable {
 		}
 	}
 
-	public static Set<ColorMeta> fromStack(ItemStack stack) {
+	public static Set<ColorMeta> fromStack(@Nonnull ItemStack stack) {
 		Set<ColorMeta> result = Sets.newIdentityHashSet();
 		for (int oreId : OreDictionary.getOreIDs(stack)) {
 			ColorMeta meta = COLORS_BY_ORE_ID.get(oreId);

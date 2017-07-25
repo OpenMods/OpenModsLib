@@ -2,12 +2,14 @@ package openmods.gui.component;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentItemStack extends BaseComponent {
 
+	@Nonnull
 	private final ItemStack stack;
 
 	private boolean drawTooltip;
@@ -18,7 +20,7 @@ public class GuiComponentItemStack extends BaseComponent {
 
 	private final List<String> displayName;
 
-	public GuiComponentItemStack(int x, int y, ItemStack stack, boolean drawTooltip, float scale) {
+	public GuiComponentItemStack(int x, int y, @Nonnull ItemStack stack, boolean drawTooltip, float scale) {
 		super(x, y);
 		this.stack = stack;
 		this.drawTooltip = drawTooltip;

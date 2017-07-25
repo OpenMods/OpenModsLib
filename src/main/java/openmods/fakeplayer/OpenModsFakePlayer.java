@@ -2,6 +2,7 @@ package openmods.fakeplayer;
 
 import com.mojang.authlib.GameProfile;
 import java.util.UUID;
+import javax.annotation.Nonnull;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -36,7 +37,7 @@ public class OpenModsFakePlayer extends FakePlayer {
 		isDead = true;
 	}
 
-	public EnumActionResult rightClick(ItemStack itemStack, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+	public EnumActionResult rightClick(@Nonnull ItemStack itemStack, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		// mimics PlayerInteractionManager.processRightClickBlock
 
 		if (itemStack.isEmpty()) return EnumActionResult.PASS;

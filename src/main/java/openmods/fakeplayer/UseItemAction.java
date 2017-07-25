@@ -1,5 +1,6 @@
 package openmods.fakeplayer;
 
+import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -10,6 +11,7 @@ import openmods.utils.InventoryUtils;
 
 public class UseItemAction implements PlayerUserReturning<ItemStack> {
 
+	@Nonnull
 	private final ItemStack stack;
 
 	private final Vec3d playerPos;
@@ -39,6 +41,7 @@ public class UseItemAction implements PlayerUserReturning<ItemStack> {
 	}
 
 	@Override
+	@Nonnull
 	public ItemStack usePlayer(OpenModsFakePlayer player) {
 		player.inventory.currentItem = 0;
 		player.inventory.setInventorySlotContents(0, stack);

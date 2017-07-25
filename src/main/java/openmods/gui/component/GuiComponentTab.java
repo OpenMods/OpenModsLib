@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import javax.annotation.Nonnull;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.item.ItemStack;
 import openmods.gui.misc.BoxRenderer;
@@ -11,6 +12,7 @@ public class GuiComponentTab extends GuiComponentResizableComposite {
 	protected final int expandedWidth;
 	protected final int expandedHeight;
 	private boolean active = false;
+	@Nonnull
 	private final ItemStack iconStack;
 	private double dWidth = FOLDED_WIDTH;
 	private double dHeight = FOLDED_HEIGHT;
@@ -27,7 +29,7 @@ public class GuiComponentTab extends GuiComponentResizableComposite {
 		protected void renderLeftEdge(Gui gui, int height) {}
 	};
 
-	public GuiComponentTab(int color, ItemStack iconStack, int expandedWidth, int expandedHeight) {
+	public GuiComponentTab(int color, @Nonnull ItemStack iconStack, int expandedWidth, int expandedHeight) {
 		super(-5, 0, FOLDED_WIDTH, FOLDED_HEIGHT);
 		this.expandedWidth = expandedWidth;
 		this.expandedHeight = expandedHeight;

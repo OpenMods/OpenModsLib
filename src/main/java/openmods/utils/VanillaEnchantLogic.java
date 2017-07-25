@@ -2,6 +2,7 @@ package openmods.utils;
 
 import java.util.List;
 import java.util.Random;
+import javax.annotation.Nonnull;
 import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Items;
@@ -21,13 +22,14 @@ public class VanillaEnchantLogic {
 		this.seed = seed;
 	}
 
+	@Nonnull
 	private ItemStack toEnchant = ItemStack.EMPTY;
 
 	private Level level;
 
 	private int xpLevels;
 
-	public boolean setup(ItemStack stack, Level level, int power) {
+	public boolean setup(@Nonnull ItemStack stack, Level level, int power) {
 		if (stack.isEmpty() || !stack.isItemEnchantable()) return false;
 
 		rand.setSeed(seed);
@@ -51,6 +53,7 @@ public class VanillaEnchantLogic {
 		return level.ordinal() + 1;
 	}
 
+	@Nonnull
 	public ItemStack enchant() {
 		if (toEnchant.isEmpty())
 			return ItemStack.EMPTY;
@@ -76,7 +79,7 @@ public class VanillaEnchantLogic {
 		return enchantedItem;
 	}
 
-	private List<EnchantmentData> getEnchantmentList(ItemStack stack, Level level, int xpLevels) {
+	private List<EnchantmentData> getEnchantmentList(@Nonnull ItemStack stack, Level level, int xpLevels) {
 		rand.setSeed(seed + level.ordinal());
 		List<EnchantmentData> list = EnchantmentHelper.buildEnchantmentList(rand, stack, xpLevels, false);
 

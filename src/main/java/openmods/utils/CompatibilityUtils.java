@@ -17,7 +17,6 @@ public class CompatibilityUtils {
 		return null;
 	}
 
-	@Nullable
 	public static boolean isFluidHandler(TileEntity te, EnumFacing side) {
 		return te != null && (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side));
 	}

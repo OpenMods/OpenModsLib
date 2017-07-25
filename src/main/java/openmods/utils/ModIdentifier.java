@@ -2,6 +2,7 @@ package openmods.utils;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -17,7 +18,7 @@ public class ModIdentifier {
 
 	private final Map<Block, ModContainer> blockCache = Maps.newHashMap();
 
-	public ModContainer getModItemStack(ItemStack stack) {
+	public ModContainer getModItemStack(@Nonnull ItemStack stack) {
 		if (stack.isEmpty()) return null;
 		return getModForItem(stack.getItem());
 	}

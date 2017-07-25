@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.SortedMap;
+import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -27,12 +28,14 @@ import openmods.utils.TranslationUtils;
 
 public class PageBuilder {
 	public interface StackProvider<T> {
+		@Nonnull
 		public ItemStack createStack(String modId, String name, T item);
 	}
 
 	private static final CachedInstanceFactory<ICustomBookEntryProvider> PROVIDERS = CachedInstanceFactory.create();
 
 	private static class Entry {
+		@Nonnull
 		public final ItemStack stack;
 
 		public final String nameKey;
@@ -41,7 +44,7 @@ public class PageBuilder {
 
 		public final Optional<String> mediaKey;
 
-		public Entry(ItemStack stack, String nameKey, String descriptionKey, Optional<String> mediaKey) {
+		public Entry(@Nonnull ItemStack stack, String nameKey, String descriptionKey, Optional<String> mediaKey) {
 			this.stack = stack;
 			this.nameKey = nameKey;
 			this.descriptionKey = descriptionKey;
@@ -132,7 +135,7 @@ public class PageBuilder {
 		}
 	}
 
-	private void addToToc(final GuiComponentBook book, ItemStack stack, final int target) {
+	private void addToToc(final GuiComponentBook book, @Nonnull ItemStack stack, final int target) {
 		for (ItemStackTocPage tocPage : tocPages)
 			if (tocPage.addEntry(stack, new IMouseDownListener() {
 				@Override
@@ -144,7 +147,7 @@ public class PageBuilder {
 		throw new IllegalStateException(String.format("Tried to add more TOC entries than allocated"));
 	}
 
-	private void addPage(String id, String modId, String type, boolean hasVideo, ItemStack stack) {
+	private void addPage(String id, String modId, String type, boolean hasVideo, @Nonnull ItemStack stack) {
 		final String nameKey = getTranslationKey(id, modId, type, "name");
 		final String descriptionKey = getTranslationKey(id, modId, type, "description");
 

@@ -2,6 +2,7 @@ package openmods.utils;
 
 import com.google.common.base.Optional;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Items;
@@ -15,9 +16,11 @@ public class VanillaAnvilLogic {
 
 	private int materialCost;
 	private int maximumCost;
-	private ItemStack outputStack;
 
-	public VanillaAnvilLogic(ItemStack inputStack, ItemStack modifierStack, boolean isCreativeMode, Optional<String> itemName) {
+	@Nonnull
+	private ItemStack outputStack = ItemStack.EMPTY;
+
+	public VanillaAnvilLogic(@Nonnull ItemStack inputStack, @Nonnull ItemStack modifierStack, boolean isCreativeMode, Optional<String> itemName) {
 		this.materialCost = -1;
 		this.outputStack = ItemStack.EMPTY;
 
@@ -203,7 +206,7 @@ public class VanillaAnvilLogic {
 		}
 	}
 
-	private boolean onAnvilChange(ItemStack inputItem, ItemStack modifierItem, String itemName, int baseCost) {
+	private boolean onAnvilChange(@Nonnull ItemStack inputItem, @Nonnull ItemStack modifierItem, String itemName, int baseCost) {
 		AnvilUpdateEvent e = new AnvilUpdateEvent(inputItem, modifierItem, itemName, baseCost);
 		if (MinecraftForge.EVENT_BUS.post(e)) return false;
 		if (e.getOutput() != null) {
@@ -223,6 +226,7 @@ public class VanillaAnvilLogic {
 		return maximumCost;
 	}
 
+	@Nonnull
 	public ItemStack getOutputStack() {
 		return outputStack;
 	}

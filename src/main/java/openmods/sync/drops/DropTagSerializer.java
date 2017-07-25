@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import java.lang.reflect.Field;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import openmods.reflection.FieldAccess;
@@ -55,12 +56,14 @@ public class DropTagSerializer {
 		}
 	}
 
+	@Nonnull
 	public ItemStack write(ItemStack stack) {
 		NBTTagCompound tag = ItemUtils.getItemTag(stack);
 		write(tag);
 		return stack;
 	}
 
+	@Nonnull
 	public void read(ItemStack stack, boolean skipEmpty) {
 		NBTTagCompound tag = ItemUtils.getItemTag(stack);
 		read(tag, skipEmpty);

@@ -8,6 +8,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.items.IItemHandlerModifiable;
@@ -51,18 +52,20 @@ public class SidedItemHandlerAdapter {
 		}
 
 		@Override
+		@Nonnull
 		public ItemStack getStackInSlot(int slot) {
 			final SlotConfig mappedSlot = slots.get(slot);
 			return inventory.getStackInSlot(mappedSlot.index);
 		}
 
 		@Override
-		public void setStackInSlot(int slot, ItemStack stack) {
+		public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
 			final SlotConfig mappedSlot = slots.get(slot);
 			inventory.setStackInSlot(mappedSlot.index, stack);
 		}
 
 		@Override
+		@Nonnull
 		public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
 			final SlotConfig mappedSlot = slots.get(slot);
 			if (!mappedSlot.canInsert) return stack;
@@ -71,9 +74,10 @@ public class SidedItemHandlerAdapter {
 		}
 
 		@Override
+		@Nonnull
 		public ItemStack extractItem(int slot, int amount, boolean simulate) {
 			final SlotConfig mappedSlot = slots.get(slot);
-			if (!mappedSlot.canExtract) return null;
+			if (!mappedSlot.canExtract) return ItemStack.EMPTY;
 
 			return inventory.extractItem(mappedSlot.index, amount, simulate);
 		}

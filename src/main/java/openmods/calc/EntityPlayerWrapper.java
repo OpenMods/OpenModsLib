@@ -11,6 +11,7 @@ import java.lang.ref.WeakReference;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
@@ -199,9 +200,10 @@ public class EntityPlayerWrapper {
 	}
 
 	public class ItemStackWrapper {
+		@Nonnull
 		private final ItemStack itemStack;
 
-		public ItemStackWrapper(ItemStack itemStack) {
+		public ItemStackWrapper(@Nonnull ItemStack itemStack) {
 			this.itemStack = itemStack;
 		}
 

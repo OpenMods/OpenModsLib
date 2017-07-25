@@ -1,6 +1,7 @@
 package openmods.gui;
 
 import java.util.List;
+import javax.annotation.Nonnull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.FontRenderer;
@@ -28,7 +29,7 @@ public interface IComponentParent {
 
 	public void drawHoveringText(List<String> textLines, int x, int y);
 
-	public void drawItemStackTooltip(ItemStack stack, int x, int y);
+	public void drawItemStackTooltip(@Nonnull ItemStack stack, int x, int y);
 
 	public void drawGradientRect(int left, int top, int right, int bottom, int startColor, int endColor);
 

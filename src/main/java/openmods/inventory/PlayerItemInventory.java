@@ -1,5 +1,6 @@
 package openmods.inventory;
 
+import javax.annotation.Nonnull;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import openmods.Log;
@@ -15,11 +16,11 @@ public class PlayerItemInventory extends ItemInventory {
 
 	private static final String TAG_INV = "openedInGui";
 
-	private static void setGuiId(ItemStack stack, int id) {
+	private static void setGuiId(@Nonnull ItemStack stack, int id) {
 		ItemUtils.getItemTag(stack).setInteger(TAG_INV, id);
 	}
 
-	private static int getGuiId(ItemStack stack) {
+	private static int getGuiId(@Nonnull ItemStack stack) {
 		return ItemUtils.getItemTag(stack).getInteger(TAG_INV);
 	}
 

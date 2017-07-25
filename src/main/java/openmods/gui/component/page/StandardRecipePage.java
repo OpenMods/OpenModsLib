@@ -1,6 +1,7 @@
 package openmods.gui.component.page;
 
 import com.google.common.base.Strings;
+import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import openmods.gui.Icon;
@@ -17,7 +18,7 @@ public class StandardRecipePage extends PageBase {
 	public static Icon iconCraftingGrid = Icon.createSheetIcon(BOOK_TEXTURE, 0, 180, 56, 56);
 	public static Icon iconArrow = Icon.createSheetIcon(BOOK_TEXTURE, 60, 198, 48, 15);
 
-	public StandardRecipePage(String title, String description, ItemStack resultingItem) {
+	public StandardRecipePage(String title, String description, @Nonnull ItemStack resultingItem) {
 		addComponent(new GuiComponentSprite(75, 40, iconArrow));
 		addComponent(new GuiComponentItemStackSpinner(140, 30, resultingItem));
 
@@ -45,7 +46,7 @@ public class StandardRecipePage extends PageBase {
 		}
 	}
 
-	public StandardRecipePage(String title, String description, String videoLink, ItemStack resultingItem) {
+	public StandardRecipePage(String title, String description, String videoLink, @Nonnull ItemStack resultingItem) {
 		this(title, description, resultingItem);
 
 		if (!Strings.isNullOrEmpty(videoLink)) {

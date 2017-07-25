@@ -3,6 +3,7 @@ package openmods.container;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ClickType;
@@ -30,7 +31,7 @@ public abstract class ContainerBase<T> extends Container {
 		}
 
 		@Override
-		public boolean isItemValid(ItemStack itemstack) {
+		public boolean isItemValid(@Nonnull ItemStack itemstack) {
 			return inventory.isItemValidForSlot(inventoryIndex, itemstack);
 		}
 	}
@@ -91,7 +92,7 @@ public abstract class ContainerBase<T> extends Container {
 		return owner;
 	}
 
-	protected boolean mergeItemStackSafe(ItemStack stackToMerge, int start, int stop, boolean reverse) {
+	protected boolean mergeItemStackSafe(@Nonnull ItemStack stackToMerge, int start, int stop, boolean reverse) {
 		boolean inventoryChanged = false;
 
 		final int delta = reverse? -1 : 1;
@@ -138,6 +139,7 @@ public abstract class ContainerBase<T> extends Container {
 	}
 
 	@Override
+	@Nonnull
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotId) {
 		// TODO 1.11 verify
 		final Slot slot = inventorySlots.get(slotId);
@@ -146,14 +148,14 @@ public abstract class ContainerBase<T> extends Container {
 			ItemStack itemToTransfer = slot.getStack();
 			ItemStack copy = itemToTransfer.copy();
 			if (slotId < inventorySize) {
-				if (!mergeItemStackSafe(itemToTransfer, inventorySize, inventorySlots.size(), true)) return null;
-			} else if (!mergeItemStackSafe(itemToTransfer, 0, inventorySize, false)) return null;
+				if (!mergeItemStackSafe(itemToTransfer, inventorySize, inventorySlots.size(), true)) return ItemStack.EMPTY;
+			} else if (!mergeItemStackSafe(itemToTransfer, 0, inventorySize, false)) return ItemStack.EMPTY;
 
 			slot.putStack(itemToTransfer);
 
 			if (itemToTransfer.getCount() != copy.getCount()) return copy;
 		}
-		return null;
+		return ItemStack.EMPTY;
 	}
 
 	protected boolean canTransferItemOut(Slot slot) {

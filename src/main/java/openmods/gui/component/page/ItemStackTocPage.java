@@ -1,5 +1,6 @@
 package openmods.gui.component.page;
 
+import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import openmods.gui.component.GuiComponentItemStack;
@@ -47,7 +48,7 @@ public class ItemStackTocPage extends PageBase {
 		return capacity;
 	}
 
-	public boolean addEntry(ItemStack stack, IMouseDownListener clickListener) {
+	public boolean addEntry(@Nonnull ItemStack stack, IMouseDownListener clickListener) {
 		if (count >= capacity) return false;
 
 		int x = column * (iconSize + spacerWidth);

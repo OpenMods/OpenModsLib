@@ -1,6 +1,7 @@
 package openmods.item;
 
 import java.util.List;
+import javax.annotation.Nonnull;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -49,22 +50,22 @@ public class MetaGeneric implements IMetaItem {
 	}
 
 	@Override
-	public String getUnlocalizedName(ItemStack stack) {
+	public String getUnlocalizedName(@Nonnull ItemStack stack) {
 		return String.format("%s.%s", mod, name);
 	}
 
 	@Override
-	public boolean hitEntity(ItemStack itemStack, EntityLivingBase target, EntityLivingBase player) {
+	public boolean hitEntity(@Nonnull ItemStack itemStack, EntityLivingBase target, EntityLivingBase player) {
 		return false;
 	}
 
 	@Override
-	public EnumActionResult onItemUse(ItemStack itemStack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+	public EnumActionResult onItemUse(@Nonnull ItemStack itemStack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
 		return EnumActionResult.PASS;
 	}
 
 	@Override
-	public ActionResult<ItemStack> onItemRightClick(ItemStack itemStack, World world, EntityPlayer player, EnumHand hand) {
+	public ActionResult<ItemStack> onItemRightClick(@Nonnull ItemStack itemStack, World world, EntityPlayer player, EnumHand hand) {
 		return ActionResult.newResult(EnumActionResult.PASS, itemStack);
 	}
 

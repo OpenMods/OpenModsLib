@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -248,6 +249,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
+	@Nonnull
 	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
 		if (hasCapability(TileEntityCapability.CUSTOM_PICK_ITEM)) {
 			TileEntity te = world.getTileEntity(pos);
@@ -284,7 +286,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te, ItemStack stack) {
+	public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te, @Nonnull ItemStack stack) {
 		player.addStat(StatList.getBlockStats(this));
 		player.addExhaustion(0.025F);
 
@@ -295,7 +297,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		}
 	}
 
-	protected void handleNormalDrops(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te, ItemStack stack) {
+	protected void handleNormalDrops(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te, @Nonnull ItemStack stack) {
 		harvesters.set(player);
 		final int fortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, stack);
 
@@ -491,7 +493,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos blockPos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+	public void onBlockPlacedBy(World world, BlockPos blockPos, IBlockState state, EntityLivingBase placer, @Nonnull ItemStack stack) {
 		super.onBlockPlacedBy(world, blockPos, state, placer, stack);
 
 		if (hasCapability(TileEntityCapability.PLACE_LISTENER)) {

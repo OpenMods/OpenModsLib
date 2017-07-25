@@ -1,5 +1,6 @@
 package openmods.fakeplayer;
 
+import javax.annotation.Nonnull;
 import javax.vecmath.Vector3f;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
@@ -20,9 +21,10 @@ public class DropItemAction implements PlayerUser {
 	private float yaw;
 	private float pitch;
 
+	@Nonnull
 	private final ItemStack stack;
 
-	public DropItemAction(ItemStack stack, double x, double y, double z, float vx, float vy, float vz) {
+	public DropItemAction(@Nonnull ItemStack stack, double x, double y, double z, float vx, float vy, float vz) {
 		this.stack = stack;
 		this.x = x;
 		this.y = y;
@@ -36,7 +38,7 @@ public class DropItemAction implements PlayerUser {
 		this.yaw = -(float)Math.toDegrees(Math.atan2(nv.x, nv.z));
 	}
 
-	public DropItemAction(ItemStack stack, BlockPos pos, float vx, float vy, float vz) {
+	public DropItemAction(@Nonnull ItemStack stack, BlockPos pos, float vx, float vy, float vz) {
 		this(stack, pos.getX(), pos.getY(), pos.getZ(), vx, vy, vz);
 	}
 

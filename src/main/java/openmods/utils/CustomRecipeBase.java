@@ -1,5 +1,6 @@
 package openmods.utils;
 
+import javax.annotation.Nonnull;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -9,6 +10,7 @@ import net.minecraftforge.common.ForgeHooks;
 public abstract class CustomRecipeBase implements IRecipe {
 
 	@Override
+	@Nonnull
 	public ItemStack getRecipeOutput() {
 		return ItemStack.EMPTY;
 	}

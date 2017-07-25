@@ -5,6 +5,7 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
+import javax.annotation.Nonnull;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
@@ -20,15 +21,16 @@ import net.minecraftforge.items.wrapper.SidedInvWrapper;
 
 public class InventoryUtils {
 
-	public static boolean areItemAndTagEqual(final ItemStack stackA, ItemStack stackB) {
+	public static boolean areItemAndTagEqual(@Nonnull ItemStack stackA, @Nonnull ItemStack stackB) {
 		return stackA.isItemEqual(stackB) && ItemStack.areItemStackTagsEqual(stackA, stackB);
 	}
 
-	public static boolean areMergeCandidates(ItemStack source, ItemStack target) {
+	public static boolean areMergeCandidates(@Nonnull ItemStack source, @Nonnull ItemStack target) {
 		return areItemAndTagEqual(source, target) && target.getCount() < target.getMaxStackSize();
 	}
 
-	public static ItemStack copyAndChange(ItemStack stack, int newSize) {
+	@Nonnull
+	public static ItemStack copyAndChange(@Nonnull ItemStack stack, int newSize) {
 		ItemStack copy = stack.copy();
 		copy.setCount(newSize);
 		return copy;
@@ -43,7 +45,7 @@ public class InventoryUtils {
 		return result;
 	}
 
-	public static boolean tryMergeStacks(ItemStack stackToMerge, ItemStack stackInSlot) {
+	public static boolean tryMergeStacks(@Nonnull ItemStack stackToMerge, @Nonnull ItemStack stackInSlot) {
 		if (stackInSlot.isEmpty() || !stackInSlot.isItemEqual(stackToMerge) || !ItemStack.areItemStackTagsEqual(stackToMerge, stackInSlot)) return false;
 
 		int newStackSize = stackInSlot.getCount() + stackToMerge.getCount();
@@ -62,11 +64,12 @@ public class InventoryUtils {
 		return false;
 	}
 
-	public static ItemStack returnItem(ItemStack stack) {
+	@Nonnull
+	public static ItemStack returnItem(@Nonnull ItemStack stack) {
 		return stack.isEmpty()? ItemStack.EMPTY : stack.copy();
 	}
 
-	protected static void isItemValid(IInventory inventory, int slot, ItemStack stack) {
+	protected static void isItemValid(IInventory inventory, int slot, @Nonnull ItemStack stack) {
 		Preconditions.checkArgument(inventory.isItemValidForSlot(slot, stack), "Slot %s cannot accept item", slot);
 	}
 
@@ -110,7 +113,7 @@ public class InventoryUtils {
 		return null;
 	}
 
-	public static boolean canInsertStack(IItemHandler handler, ItemStack stack) {
+	public static boolean canInsertStack(IItemHandler handler, @Nonnull ItemStack stack) {
 		final ItemStack toInsert = ItemHandlerHelper.insertItemStacked(handler, stack, true);
 		return toInsert.getCount() < stack.getCount();
 	}

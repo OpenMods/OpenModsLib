@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
 import net.minecraft.block.state.IBlockState;
@@ -97,7 +98,7 @@ public class ItemStateOverrideList extends ItemOverrideList {
 	}
 
 	@Override
-	public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity) {
+	public IBakedModel handleItemState(IBakedModel originalModel, @Nonnull ItemStack stack, World world, EntityLivingBase entity) {
 		final Item item = stack.getItem();
 		if (item instanceof IStateItem) {
 			final State state = ((IStateItem)item).getState(stack, world, entity);

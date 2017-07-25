@@ -1,6 +1,7 @@
 package openmods.utils;
 
 import java.util.List;
+import javax.annotation.Nonnull;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.inventory.IInventory;
@@ -72,11 +73,11 @@ public class BlockUtils {
 		return entity.getHorizontalFacing();
 	}
 
-	public static EntityItem dropItemStackInWorld(World worldObj, Vec3i pos, ItemStack stack) {
+	public static EntityItem dropItemStackInWorld(World worldObj, Vec3i pos, @Nonnull ItemStack stack) {
 		return dropItemStackInWorld(worldObj, pos.getX(), pos.getY(), pos.getZ(), stack);
 	}
 
-	public static EntityItem dropItemStackInWorld(World worldObj, double x, double y, double z, ItemStack stack) {
+	public static EntityItem dropItemStackInWorld(World worldObj, double x, double y, double z, @Nonnull ItemStack stack) {
 		float f = 0.7F;
 		float d0 = worldObj.rand.nextFloat() * f + (1.0F - f) * 0.5F;
 		float d1 = worldObj.rand.nextFloat() * f + (1.0F - f) * 0.5F;
@@ -90,7 +91,7 @@ public class BlockUtils {
 		return entityitem;
 	}
 
-	public static EntityItem ejectItemInDirection(World world, double x, double y, double z, EnumFacing direction, ItemStack stack) {
+	public static EntityItem ejectItemInDirection(World world, double x, double y, double z, EnumFacing direction, @Nonnull ItemStack stack) {
 		EntityItem item = BlockUtils.dropItemStackInWorld(world, x, y, z, stack);
 		final Vec3i v = direction.getDirectionVec();
 		item.motionX = v.getX() / 5F;

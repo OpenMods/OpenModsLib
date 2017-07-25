@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import javax.annotation.Nonnull;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.CullFace;
 import net.minecraft.client.renderer.ItemModelMesher;
@@ -11,10 +12,11 @@ import org.lwjgl.opengl.GL11;
 
 public class GuiComponentItemStackSpinner extends BaseComponent {
 
+	@Nonnull
 	private final ItemStack stack;
 	private float rotationY = 0f;
 
-	public GuiComponentItemStackSpinner(int x, int y, ItemStack stack) {
+	public GuiComponentItemStackSpinner(int x, int y, @Nonnull ItemStack stack) {
 		super(x, y);
 		this.stack = stack;
 	}

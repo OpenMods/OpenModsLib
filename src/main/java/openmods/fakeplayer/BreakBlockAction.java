@@ -2,6 +2,7 @@ package openmods.fakeplayer;
 
 import com.google.common.collect.Lists;
 import java.util.List;
+import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
@@ -21,6 +22,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 	private final World worldObj;
 	private final BlockPos blockPos;
 
+	@Nonnull
 	private ItemStack stackToUse;
 
 	public BreakBlockAction(World worldObj, BlockPos blockPos) {
@@ -29,7 +31,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 		this.stackToUse = new ItemStack(Items.DIAMOND_PICKAXE, 0, 0);
 	}
 
-	public BreakBlockAction setStackToUse(ItemStack stack) {
+	public BreakBlockAction setStackToUse(@Nonnull ItemStack stack) {
 		this.stackToUse = stack;
 		return this;
 	}

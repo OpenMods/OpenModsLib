@@ -2,6 +2,7 @@ package openmods.gui;
 
 import java.io.IOException;
 import java.util.List;
+import javax.annotation.Nonnull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.FontRenderer;
@@ -62,7 +63,7 @@ public abstract class ComponentGui extends GuiContainer {
 			}
 
 			@Override
-			public void drawItemStackTooltip(ItemStack stack, int x, int y) {
+			public void drawItemStackTooltip(@Nonnull ItemStack stack, int x, int y) {
 				ComponentGui.this.renderToolTip(stack, x, y);
 			}
 

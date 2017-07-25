@@ -1,5 +1,6 @@
 package openmods.item;
 
+import javax.annotation.Nonnull;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -15,13 +16,13 @@ import net.minecraft.world.World;
 
 public interface IMetaItem {
 
-	public String getUnlocalizedName(ItemStack stack);
+	public String getUnlocalizedName(@Nonnull ItemStack stack);
 
-	public boolean hitEntity(ItemStack itemStack, EntityLivingBase target, EntityLivingBase player);
+	public boolean hitEntity(@Nonnull ItemStack itemStack, EntityLivingBase target, EntityLivingBase player);
 
-	public EnumActionResult onItemUse(ItemStack itemStack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ);
+	public EnumActionResult onItemUse(@Nonnull ItemStack itemStack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ);
 
-	public ActionResult<ItemStack> onItemRightClick(ItemStack itemStack, World world, EntityPlayer player, EnumHand hand);
+	public ActionResult<ItemStack> onItemRightClick(@Nonnull ItemStack itemStack, World world, EntityPlayer player, EnumHand hand);
 
 	public void addRecipe();
 

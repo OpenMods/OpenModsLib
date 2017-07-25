@@ -1,5 +1,6 @@
 package openmods.liquids;
 
+import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.RayTraceResult;
@@ -13,11 +14,12 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class BucketFillHandler {
 
+	@Nonnull
 	private final ItemStack filledBucket;
 
 	private final FluidStack containedFluid;
 
-	public BucketFillHandler(ItemStack filledBucket, FluidStack containedFluid) {
+	public BucketFillHandler(@Nonnull ItemStack filledBucket, FluidStack containedFluid) {
 		this.filledBucket = filledBucket;
 		this.containedFluid = containedFluid;
 	}

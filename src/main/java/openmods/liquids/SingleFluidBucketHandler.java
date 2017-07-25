@@ -1,5 +1,6 @@
 package openmods.liquids;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
@@ -11,19 +12,21 @@ import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
 public class SingleFluidBucketHandler implements IFluidHandler {
 
+	@Nonnull
 	private final ItemStack container;
 
 	private final int volume;
 
 	private final Fluid fluid;
 
+	@Nonnull
 	private final ItemStack emptyContainer;
 
 	private final FluidStack contents;
 
 	private final IFluidTankProperties properties;
 
-	public SingleFluidBucketHandler(ItemStack container, String fluidId, int volume, ItemStack emptyContainer) {
+	public SingleFluidBucketHandler(@Nonnull ItemStack container, String fluidId, int volume, @Nonnull ItemStack emptyContainer) {
 		this.container = container;
 		this.fluid = FluidRegistry.getFluid(fluidId);
 		this.volume = volume;

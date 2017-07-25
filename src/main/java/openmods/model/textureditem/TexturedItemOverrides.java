@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemOverride;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
@@ -54,12 +55,12 @@ public class TexturedItemOverrides extends ItemOverrideList {
 	}
 
 	@Override
-	public IBakedModel handleItemState(IBakedModel originalModel, ItemStack stack, World world, EntityLivingBase entity) {
+	public IBakedModel handleItemState(IBakedModel originalModel, @Nonnull ItemStack stack, World world, EntityLivingBase entity) {
 		final Optional<ResourceLocation> texture = getTextureFromStack(stack);
 		return texture.isPresent()? rebakeModel(texture.get(), stack, world, entity) : untexturedModel;
 	}
 
-	private IBakedModel rebakeModel(ResourceLocation texture, ItemStack stack, World world, EntityLivingBase entity) {
+	private IBakedModel rebakeModel(ResourceLocation texture, @Nonnull ItemStack stack, World world, EntityLivingBase entity) {
 		@SuppressWarnings("deprecation")
 		final Optional<ResourceLocation> overrideLocation = Optional.fromNullable(applyOverride(stack, world, entity));
 		return textureOverrides.getUnchecked(Pair.of(texture, overrideLocation));
@@ -86,7 +87,7 @@ public class TexturedItemOverrides extends ItemOverrideList {
 		return overrideModel;
 	}
 
-	private static Optional<ResourceLocation> getTextureFromStack(ItemStack stack) {
+	private static Optional<ResourceLocation> getTextureFromStack(@Nonnull ItemStack stack) {
 		if (stack.hasCapability(ItemTextureCapability.CAPABILITY, null)) {
 			final IItemTexture fluidRender = stack.getCapability(ItemTextureCapability.CAPABILITY, null);
 			return fluidRender.getTexture();

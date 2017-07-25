@@ -1,5 +1,6 @@
 package openmods.item;
 
+import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.state.IBlockState;
@@ -21,11 +22,11 @@ public class ItemOpenBlock extends ItemBlock {
 		super(block);
 	}
 
-	protected void afterBlockPlaced(ItemStack stack, EntityPlayer player, World world, BlockPos pos) {
+	protected void afterBlockPlaced(@Nonnull ItemStack stack, EntityPlayer player, World world, BlockPos pos) {
 		stack.shrink(1);
 	}
 
-	protected boolean isStackValid(ItemStack stack, EntityPlayer player) {
+	protected boolean isStackValid(@Nonnull ItemStack stack, EntityPlayer player) {
 		return !stack.isEmpty();
 	}
 
