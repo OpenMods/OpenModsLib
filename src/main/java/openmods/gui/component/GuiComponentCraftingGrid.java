@@ -18,7 +18,7 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		@Override
 		@Nullable
 		public ItemStack[] apply(@Nullable ItemStack input) {
-			return input.isEmpty()? new ItemStack[] { input.copy() } : null;
+			return new ItemStack[] { input.copy() };
 		}
 	};
 
@@ -77,7 +77,7 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 	private void selectItems() {
 		for (int i = 0; i < items.length; i++) {
 			ItemStack[] slotItems = items[i];
-			if (slotItems.length == 0) selectedItems[i] = null;
+			if (slotItems.length == 0) selectedItems[i] = ItemStack.EMPTY;
 			else {
 				final int choice = rnd.nextInt(slotItems.length);
 				selectedItems[i] = slotItems[choice];
