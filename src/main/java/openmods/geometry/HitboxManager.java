@@ -1,7 +1,8 @@
 package openmods.geometry;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Closer;
@@ -48,26 +49,43 @@ public class HitboxManager implements IResourceManagerReloadListener {
 		}
 	}).create();
 
-	private class Holder implements Supplier<List<Hitbox>> {
+	private class Holder implements IHitboxSupplier {
 		private final ResourceLocation location;
 
-		private List<Hitbox> hitboxes;
+		private List<Hitbox> list;
+
+		private Map<String, Hitbox> map;
 
 		public Holder(ResourceLocation location) {
 			this.location = new ResourceLocation(location.getResourceDomain(), "hitboxes/" + location.getResourcePath() + ".json");
 		}
 
+		private void reload() {
+			this.list = ImmutableList.copyOf(load(location));
+
+			final Map<String, Hitbox> builder = Maps.newLinkedHashMap();
+			for (Hitbox hb : list)
+				builder.put(hb.name, hb);
+
+			this.map = ImmutableMap.copyOf(builder);
+		}
+
 		@Override
-		public List<Hitbox> get() {
-			if (hitboxes == null)
+		public List<Hitbox> asList() {
+			if (list == null)
 				reload();
 
-			return hitboxes;
+			return list;
 		}
 
-		private void reload() {
-			hitboxes = load(location);
+		@Override
+		public Map<String, Hitbox> asMap() {
+			if (map == null)
+				reload();
+
+			return map;
 		}
+
 	}
 
 	private IResourceManager resourceManager;
@@ -99,14 +117,13 @@ public class HitboxManager implements IResourceManagerReloadListener {
 		return result;
 	}
 
-	public Holder get(ResourceLocation location) {
+	public IHitboxSupplier get(ResourceLocation location) {
 		synchronized (holders) {
 			Holder result = holders.get(location);
 			if (result == null) {
 				result = new Holder(location);
 				holders.put(location, result);
 			}
-
 			return result;
 		}
 	}
