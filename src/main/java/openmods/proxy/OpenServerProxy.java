@@ -1,10 +1,10 @@
 package openmods.proxy;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -19,6 +19,7 @@ import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.server.FMLServerHandler;
 import openmods.config.game.ICustomItemModelProvider;
 import openmods.geometry.Hitbox;
+import openmods.geometry.IHitboxSupplier;
 import openmods.gui.CommonGuiHandler;
 
 public final class OpenServerProxy implements IOpenModsProxy {
@@ -97,15 +98,20 @@ public final class OpenServerProxy implements IOpenModsProxy {
 	@Override
 	public void runCustomItemModelProvider(ResourceLocation itemLocation, Item item, Class<? extends ICustomItemModelProvider> providerCls) {}
 
-	private static final Supplier<List<Hitbox>> DUMMY_HITBOX_SUPPLIER = new Supplier<List<Hitbox>>() {
+	private static final IHitboxSupplier DUMMY_HITBOX_SUPPLIER = new IHitboxSupplier() {
 		@Override
-		public List<Hitbox> get() {
+		public List<Hitbox> asList() {
+			throw new UnsupportedOperationException("Not available on server");
+		}
+
+		@Override
+		public Map<String, Hitbox> asMap() {
 			throw new UnsupportedOperationException("Not available on server");
 		}
 	};
 
 	@Override
-	public Supplier<List<Hitbox>> getHitboxes(ResourceLocation location) {
+	public IHitboxSupplier getHitboxes(ResourceLocation location) {
 		return DUMMY_HITBOX_SUPPLIER;
 	}
 
@@ -113,4 +119,5 @@ public final class OpenServerProxy implements IOpenModsProxy {
 	public IAnimationStateMachine loadAsm(ResourceLocation location, ImmutableMap<String, ITimeValue> parameters) {
 		return null;
 	}
+
 }

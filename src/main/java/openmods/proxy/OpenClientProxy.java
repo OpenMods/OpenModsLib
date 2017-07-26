@@ -1,10 +1,8 @@
 package openmods.proxy;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
-import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetHandlerPlayClient;
@@ -36,8 +34,8 @@ import openmods.calc.CommandCalcFactory;
 import openmods.calc.ICommandComponent;
 import openmods.config.game.ICustomItemModelProvider;
 import openmods.config.properties.CommandConfig;
-import openmods.geometry.Hitbox;
 import openmods.geometry.HitboxManager;
+import openmods.geometry.IHitboxSupplier;
 import openmods.gui.ClientGuiHandler;
 import openmods.model.MappedModelLoader;
 import openmods.model.ModelWithDependencies;
@@ -201,7 +199,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 	}
 
 	@Override
-	public Supplier<List<Hitbox>> getHitboxes(ResourceLocation location) {
+	public IHitboxSupplier getHitboxes(ResourceLocation location) {
 		return hitboxManager.get(location);
 	}
 
