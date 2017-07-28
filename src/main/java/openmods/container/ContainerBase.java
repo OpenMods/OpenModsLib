@@ -124,7 +124,7 @@ public abstract class ContainerBase<T> extends Container {
 				Slot slot = slots.get(slotId);
 				ItemStack stackInSlot = slot.getStack();
 
-				if (stackInSlot == null && canTransferItemsIn(slot) && slot.isItemValid(stackToMerge)) {
+				if (stackInSlot.isEmpty() && canTransferItemsIn(slot) && slot.isItemValid(stackToMerge)) {
 					slot.putStack(stackToMerge.copy());
 					slot.onSlotChanged();
 					stackToMerge.setCount(0);
