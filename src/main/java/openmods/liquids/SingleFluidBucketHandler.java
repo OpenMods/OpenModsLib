@@ -43,9 +43,17 @@ public class SingleFluidBucketHandler implements IFluidHandlerItem {
 		return contents.isFluidEqual(resource) && resource.amount >= volume;
 	}
 
+	private ItemStack getContainerRaw() {
+		return isFilled? filledContainer : emptyContainer;
+	}
+
+	private boolean isContainerSingleItem() {
+		return getContainerRaw().getCount() == 1;
+	}
+
 	@Override
 	public int fill(@Nullable FluidStack resource, boolean doFill) {
-		if (isFilled || !isResourceValid(resource))
+		if (isFilled || !isResourceValid(resource) || !isContainerSingleItem())
 			return 0;
 
 		if (doFill)
@@ -57,7 +65,7 @@ public class SingleFluidBucketHandler implements IFluidHandlerItem {
 	@Override
 	@Nullable
 	public FluidStack drain(@Nullable FluidStack resource, boolean doDrain) {
-		if (!isFilled || !isResourceValid(resource))
+		if (!isFilled || !isResourceValid(resource) || !isContainerSingleItem())
 			return null;
 
 		if (doDrain)
@@ -69,7 +77,7 @@ public class SingleFluidBucketHandler implements IFluidHandlerItem {
 	@Override
 	@Nullable
 	public FluidStack drain(int maxDrain, boolean doDrain) {
-		if (!isFilled || maxDrain < volume)
+		if (!isFilled || maxDrain < volume || !isContainerSingleItem())
 			return null;
 
 		if (doDrain)
@@ -80,7 +88,7 @@ public class SingleFluidBucketHandler implements IFluidHandlerItem {
 
 	@Override
 	public ItemStack getContainer() {
-		return (isFilled? filledContainer : emptyContainer).copy();
+		return getContainerRaw().copy();
 	}
 
 }
