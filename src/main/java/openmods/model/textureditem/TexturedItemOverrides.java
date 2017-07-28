@@ -7,6 +7,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +46,7 @@ public class TexturedItemOverrides extends ItemOverrideList {
 	});
 
 	public TexturedItemOverrides(IBakedModel untexturedModel, IModel texturedModel, List<ItemOverride> texturedModelOverrides, Set<String> texturesToReplace, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-		super(texturedModelOverrides);
+		super(Lists.reverse(texturedModelOverrides));
 		this.untexturedModel = untexturedModel;
 		this.texturedModel = texturedModel;
 		this.texturesToReplace = ImmutableSet.copyOf(texturesToReplace);
