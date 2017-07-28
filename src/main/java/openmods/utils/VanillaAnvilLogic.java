@@ -209,7 +209,7 @@ public class VanillaAnvilLogic {
 	private boolean onAnvilChange(@Nonnull ItemStack inputItem, @Nonnull ItemStack modifierItem, String itemName, int baseCost) {
 		AnvilUpdateEvent e = new AnvilUpdateEvent(inputItem, modifierItem, itemName, baseCost);
 		if (MinecraftForge.EVENT_BUS.post(e)) return false;
-		if (e.getOutput() != null) {
+		if (!e.getOutput().isEmpty()) {
 			this.outputStack = e.getOutput();
 			this.maximumCost = e.getCost();
 			this.materialCost = e.getMaterialCost();
