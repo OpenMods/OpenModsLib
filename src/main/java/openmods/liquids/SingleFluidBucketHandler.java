@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.FluidTankProperties;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
@@ -22,13 +21,44 @@ public class SingleFluidBucketHandler implements IFluidHandler {
 
 	private boolean isEmpty;
 
-	public SingleFluidBucketHandler(ItemStack filledContainer, ItemStack emptyContainer, Fluid fluid, int volume) {
+	public SingleFluidBucketHandler(ItemStack filledContainer, ItemStack emptyContainer, Fluid fluid, final int volume) {
 		this.volume = volume;
 		this.filledContainer = filledContainer;
 		this.emptyContainer = emptyContainer.copy();
 
 		this.contents = new FluidStack(fluid, volume);
-		this.properties = new FluidTankProperties(contents, volume);
+		this.properties = new IFluidTankProperties() {
+
+			@Override
+			public FluidStack getContents() {
+				return isEmpty? null : contents.copy();
+			}
+
+			@Override
+			public int getCapacity() {
+				return volume;
+			}
+
+			@Override
+			public boolean canFillFluidType(FluidStack fluidStack) {
+				return false;
+			}
+
+			@Override
+			public boolean canFill() {
+				return false;
+			}
+
+			@Override
+			public boolean canDrainFluidType(FluidStack fluidStack) {
+				return contents.isFluidEqual(fluidStack);
+			}
+
+			@Override
+			public boolean canDrain() {
+				return true;
+			}
+		};
 	}
 
 	@Override
