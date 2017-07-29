@@ -3,7 +3,6 @@ package openmods.liquids;
 import javax.annotation.Nullable;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.FluidTankProperties;
 import net.minecraftforge.fluids.capability.IFluidHandler;
@@ -11,11 +10,9 @@ import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
 public class SingleFluidBucketHandler implements IFluidHandler {
 
-	private final ItemStack container;
+	private final ItemStack filledContainer;
 
 	private final int volume;
-
-	private final Fluid fluid;
 
 	private final ItemStack emptyContainer;
 
@@ -23,10 +20,11 @@ public class SingleFluidBucketHandler implements IFluidHandler {
 
 	private final IFluidTankProperties properties;
 
-	public SingleFluidBucketHandler(ItemStack container, String fluidId, int volume, ItemStack emptyContainer) {
-		this.container = container;
-		this.fluid = FluidRegistry.getFluid(fluidId);
+	private boolean isEmpty;
+
+	public SingleFluidBucketHandler(ItemStack filledContainer, ItemStack emptyContainer, Fluid fluid, int volume) {
 		this.volume = volume;
+		this.filledContainer = filledContainer;
 		this.emptyContainer = emptyContainer.copy();
 
 		this.contents = new FluidStack(fluid, volume);
@@ -44,32 +42,36 @@ public class SingleFluidBucketHandler implements IFluidHandler {
 	}
 
 	protected void switchToEmptyBucket() {
-		container.deserializeNBT(emptyContainer.serializeNBT());
+		filledContainer.deserializeNBT(emptyContainer.serializeNBT());
+		isEmpty = true;
+	}
+
+	private boolean isValidResource(FluidStack resource) {
+		return contents.isFluidEqual(resource) && resource.amount >= volume;
 	}
 
 	@Override
 	@Nullable
 	public FluidStack drain(FluidStack resource, boolean doDrain) {
-		if (container.stackSize != 1 || resource == null || resource.amount < volume)
-			return null;
-
-		if (resource.getFluid() == fluid)
-			if (doDrain)
-				switchToEmptyBucket();
-
-		return contents;
-	}
-
-	@Override
-	@Nullable
-	public FluidStack drain(int maxDrain, boolean doDrain) {
-		if (container.stackSize != 1 || maxDrain < Fluid.BUCKET_VOLUME)
+		if (isEmpty || filledContainer.stackSize != 1 || !isValidResource(resource))
 			return null;
 
 		if (doDrain)
 			switchToEmptyBucket();
 
-		return contents;
+		return contents.copy();
+	}
+
+	@Override
+	@Nullable
+	public FluidStack drain(int maxDrain, boolean doDrain) {
+		if (isEmpty || filledContainer.stackSize != 1 || maxDrain < volume)
+			return null;
+
+		if (doDrain)
+			switchToEmptyBucket();
+
+		return contents.copy();
 	}
 
 }
