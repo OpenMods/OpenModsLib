@@ -3,10 +3,10 @@ package openmods.gui.component;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import java.util.Map;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
+import openmods.gui.Icon;
 import openmods.gui.misc.BoxRenderer;
 import openmods.gui.misc.ISlotBackgroundRenderer;
 import openmods.utils.render.RenderUtils;
@@ -17,30 +17,40 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 
 	public static final ISlotBackgroundRenderer normalSlot = new ISlotBackgroundRenderer() {
 		@Override
-		public void render(Gui gui, Slot slot) {
+		public void render(BaseComponent gui, Slot slot) {
 			gui.drawTexturedModalRect(slot.xDisplayPosition - 1, slot.yDisplayPosition - 1, 0, 20, 18, 18);
 		}
 	};
 
 	public static final ISlotBackgroundRenderer bigSlot = new ISlotBackgroundRenderer() {
 		@Override
-		public void render(Gui gui, Slot slot) {
+		public void render(BaseComponent gui, Slot slot) {
 			gui.drawTexturedModalRect(slot.xDisplayPosition - 5, slot.yDisplayPosition - 5, 29, 20, 26, 26);
 		}
 	};
 
 	public static final ISlotBackgroundRenderer noRenderSlot = new ISlotBackgroundRenderer() {
 		@Override
-		public void render(Gui gui, Slot slot) {}
+		public void render(BaseComponent gui, Slot slot) {}
 	};
 
 	public static ISlotBackgroundRenderer coloredSlot(final int color) {
 		return new ISlotBackgroundRenderer() {
 			@Override
-			public void render(Gui gui, Slot slot) {
+			public void render(BaseComponent gui, Slot slot) {
 				RenderUtils.setColor(color);
 				gui.drawTexturedModalRect(slot.xDisplayPosition - 1, slot.yDisplayPosition - 1, 0, 20, 18, 18);
 				GlStateManager.color(1, 1, 1);
+			}
+		};
+	}
+
+	public static ISlotBackgroundRenderer customIconSlot(final Icon icon, final int deltaX, final int deltaY) {
+		return new ISlotBackgroundRenderer() {
+			@Override
+			public void render(BaseComponent gui, Slot slot) {
+				gui.drawSprite(icon, slot.xDisplayPosition + deltaX, slot.yDisplayPosition + deltaY);
+
 			}
 		};
 	}
@@ -68,10 +78,10 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 	@Override
 	protected void renderComponentForeground(int x, int y, int mouseX, int mouseY) {
 		GlStateManager.color(1, 1, 1);
-		bindComponentsSheet();
 
 		if (container != null) {
 			for (Slot slot : container.inventorySlots) {
+				bindComponentsSheet();
 				Objects.firstNonNull(slotRenderers.get(slot.slotNumber), normalSlot).render(this, slot);
 			}
 		}
