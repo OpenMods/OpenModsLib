@@ -27,6 +27,7 @@ import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.network.senders.IPacketSender;
 import openmods.reflection.TypeUtils;
 import openmods.utils.BlockUtils;
+import openmods.utils.OptionalInt;
 
 public abstract class OpenTileEntity extends TileEntity implements IRpcTargetProvider {
 
@@ -161,7 +162,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	protected IInventoryCallback createInventoryCallback() {
 		return new IInventoryCallback() {
 			@Override
-			public void onInventoryChanged(IInventory inventory, int slotNumber) {
+			public void onInventoryChanged(IInventory inventory, OptionalInt slotNumber) {
 				markUpdated();
 			}
 		};

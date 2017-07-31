@@ -60,6 +60,11 @@ public abstract class OptionalInt {
 		public OptionalInt map(IntFunction function) {
 			return new Present(function.apply(value));
 		}
+
+		@Override
+		public Integer asNullable() {
+			return value;
+		}
 	}
 
 	private static class Absent extends OptionalInt {
@@ -94,6 +99,11 @@ public abstract class OptionalInt {
 			return this;
 		}
 
+		@Override
+		public Integer asNullable() {
+			return null;
+		}
+
 	}
 
 	private OptionalInt() {}
@@ -111,6 +121,8 @@ public abstract class OptionalInt {
 	}
 
 	public abstract OptionalInt map(IntFunction function);
+
+	public abstract Integer asNullable();
 
 	private static final OptionalInt[] cache = new OptionalInt[CACHE_RANGE * 2 + 1];
 

@@ -11,6 +11,7 @@ import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import openmods.inventory.GenericInventory;
 import openmods.utils.InventoryUtils;
 
 public abstract class ContainerBase<T> extends Container {
@@ -22,16 +23,20 @@ public abstract class ContainerBase<T> extends Container {
 
 	protected static class RestrictedSlot extends Slot {
 
-		private final int inventoryIndex;
-
 		public RestrictedSlot(IInventory inventory, int slot, int x, int y) {
 			super(inventory, slot, x, y);
-			inventoryIndex = slot; // since slotIndex is private
 		}
 
 		@Override
 		public boolean isItemValid(ItemStack itemstack) {
-			return inventory.isItemValidForSlot(inventoryIndex, itemstack);
+			return inventory.isItemValidForSlot(getSlotIndex(), itemstack);
+		}
+
+		@Override
+		public void onSlotChanged() {
+			super.onSlotChanged();
+			// hackish, but required
+			if (inventory instanceof GenericInventory) ((GenericInventory)inventory).onInventoryChanged(getSlotIndex());
 		}
 	}
 
