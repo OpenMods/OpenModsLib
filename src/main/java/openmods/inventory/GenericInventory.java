@@ -18,6 +18,7 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import openmods.api.IInventoryCallback;
+import openmods.utils.OptionalInt;
 
 public class GenericInventory implements IInventory {
 
@@ -108,6 +109,10 @@ public class GenericInventory implements IInventory {
 	}
 
 	public void onInventoryChanged(int slotNumber) {
+		onInventoryChanged(OptionalInt.of(slotNumber));
+	}
+
+	public void onInventoryChanged(OptionalInt slotNumber) {
 		for (IInventoryCallback callback : callbacks)
 			callback.onInventoryChanged(this, slotNumber);
 	}
@@ -115,7 +120,7 @@ public class GenericInventory implements IInventory {
 	public void clearAndSetSlotCount(int size) {
 		this.slotsCount = size;
 		inventoryContents = NonNullList.withSize(size, ItemStack.EMPTY);
-		onInventoryChanged(0);
+		onInventoryChanged(OptionalInt.ABSENT);
 	}
 
 	@Override
@@ -170,12 +175,9 @@ public class GenericInventory implements IInventory {
 		tag.setTag(TAG_ITEMS, nbttaglist);
 	}
 
-	/**
-	 * This bastard never even gets called, so don't rely on it.
-	 */
 	@Override
 	public void markDirty() {
-		onInventoryChanged(0);
+		onInventoryChanged(OptionalInt.ABSENT);
 	}
 
 	public void copyFrom(IInventory inventory) {
