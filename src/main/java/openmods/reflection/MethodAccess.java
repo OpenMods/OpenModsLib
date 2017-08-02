@@ -23,6 +23,7 @@ public class MethodAccess {
 
 		public FunctionWrap(Class<? extends R> returnCls, Method method) {
 			this.method = method;
+			method.setAccessible(true);
 			Preconditions.checkArgument(returnCls.isAssignableFrom(method.getReturnType()), "Method '%s' has invalid return type", method);
 		}
 
