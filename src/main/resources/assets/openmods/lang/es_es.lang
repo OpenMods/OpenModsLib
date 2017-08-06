@@ -84,3 +84,4 @@ openmodslib.command.class_provider=Clase proporcionada por el archivo %s (mods: 
 #openmodslib.structure.stronghold=Stronghold ## NEEDS TRANSLATION ##
 #openmodslib.structure.village=Village ## NEEDS TRANSLATION ##
 #openmodslib.structure.monument=Ocean Monument ## NEEDS TRANSLATION ##
+#openmodslib.structure.mansion=Woodland Mansion ## NEEDS TRANSLATION ##

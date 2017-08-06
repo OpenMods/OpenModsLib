@@ -177,11 +177,13 @@ javadoc {
 
 task updateTranslations(type: net.thesilkminer.gradle.plugin.translationchecker.tasks.TranslationCheckTask) {
     modId = "openmods"
+    templateFileName = "en_us.lang"
 }
 
 task checkTranslations(type: net.thesilkminer.gradle.plugin.translationchecker.tasks.TranslationCheckTask) {
     modId = "openmods"
     dryRun = true
+    templateFileName = "en_us.lang"
 }
 
 task wrapper (type: Wrapper) {
