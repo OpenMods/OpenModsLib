@@ -62,11 +62,15 @@ import openmods.utils.bitmap.IRpcIntBitMap;
 import openmods.world.DelayedActionTickHandler;
 import openmods.world.DropCapture;
 
-@Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = "$LIB-VERSION$", dependencies = "required-after:openmodscore", guiFactory = "openmods.GuiFactory")
+@Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = OpenMods.VERSION, dependencies = OpenMods.DEPENDENCIES, guiFactory = OpenMods.GUI_FACTORY, updateJSON = OpenMods.UPDATE_JSON)
 public class OpenMods {
 
 	public static final String MODID = "openmods";
 	public static final String MODNAME = "OpenModsLib";
+	public static final String VERSION = "$LIB-VERSION$";
+	public static final String DEPENDENCIES = "required-after:openmodscore";
+	public static final String GUI_FACTORY = "openmods.GuiFactory";
+	public static final String UPDATE_JSON = "http://openmods.info/versions/openmodslib.json";
 
 	private static final int ENTITY_BLOCK_ID = 804;
 
