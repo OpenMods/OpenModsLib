@@ -42,16 +42,22 @@ public class BakedEvalModel extends BakedModelAdapter {
 		return model.bake(compositeState, format, bakedTextureGetter);
 	}
 
-	private final LoadingCache<Map<String, Float>, IBakedModel> cache = CacheBuilder.newBuilder()
+	private final CacheLoader<Map<String, Float>, IBakedModel> loader = new CacheLoader<Map<String, Float>, IBakedModel>() {
+		@Override
+		public IBakedModel load(Map<String, Float> key) throws Exception {
+			final IModelState clipTransform = evaluator.evaluate(key);
+			return bakeModelWithTransform(clipTransform);
+		}
+	};
+
+	private final LoadingCache<Map<String, Float>, IBakedModel> longTermCache = CacheBuilder.newBuilder()
 			.expireAfterAccess(5, TimeUnit.MINUTES)
-			.build(
-					new CacheLoader<Map<String, Float>, IBakedModel>() {
-						@Override
-						public IBakedModel load(Map<String, Float> key) throws Exception {
-							final IModelState clipTransform = evaluator.evaluate(key);
-							return bakeModelWithTransform(clipTransform);
-						}
-					});
+			.build(loader);
+
+	private final LoadingCache<Map<String, Float>, IBakedModel> shortTermCache = CacheBuilder.newBuilder()
+			.expireAfterAccess(100, TimeUnit.MILLISECONDS)
+			.maximumSize(200)
+			.build(loader);
 
 	@Override
 	public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
@@ -60,7 +66,7 @@ public class BakedEvalModel extends BakedModelAdapter {
 			final IExtendedBlockState extState = (IExtendedBlockState)state;
 
 			final EvalModelState args = extState.getValue(EvalModelState.PROPERTY);
-			if (args != null) return cache.getUnchecked(args.getArgs()).getQuads(state, side, rand);
+			if (args != null) { return (args.isShortLived()? shortTermCache : longTermCache).getUnchecked(args.getArgs()).getQuads(state, side, rand); }
 		}
 
 		return super.getQuads(state, side, rand);
