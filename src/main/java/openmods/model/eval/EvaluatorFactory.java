@@ -3,11 +3,19 @@ package openmods.model.eval;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import info.openmods.calc.parsing.token.Token;
+import info.openmods.calc.parsing.token.TokenIterator;
+import info.openmods.calc.parsing.token.TokenType;
+import info.openmods.calc.parsing.token.Tokenizer;
+import info.openmods.calc.types.fp.DoubleParser;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.animation.IAnimatedModel;
 import net.minecraftforge.common.model.IModelPart;
@@ -15,6 +23,7 @@ import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.model.animation.IClip;
 import net.minecraftforge.common.model.animation.IJoint;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class EvaluatorFactory {
@@ -64,21 +73,92 @@ public class EvaluatorFactory {
 
 	}
 
+	private static class ArgExpander implements IExpander {
+
+		private final List<Pair<String, Float>> expansions;
+
+		public ArgExpander(List<Pair<String, Float>> expansions) {
+			this.expansions = ImmutableList.copyOf(expansions);
+		}
+
+		@Override
+		public Map<String, Float> expand(Map<String, Float> args) {
+			final Map<String, Float> result = Maps.newHashMap(args);
+			for (Pair<String, Float> e : expansions)
+				result.put(e.getKey(), e.getValue());
+
+			return ImmutableMap.copyOf(result);
+		}
+
+	}
+
 	// TODO make it powerful
-	private static final Pattern SIMPLE_EXPR = Pattern.compile("([a-zA-Z_][a-zA-Z0-9_]+)\\(([a-zA-Z_][a-zA-Z0-9_]+)\\)");
+
+	private final Tokenizer tokenizer = new Tokenizer();
+
+	{
+		tokenizer.addOperator(":=");
+	}
 
 	private final List<Pair<String, String>> clipArgs = Lists.newArrayList();
 
-	public void appendStatement(String statement) {
-		final Matcher matcher = SIMPLE_EXPR.matcher(statement);
-		Preconditions.checkState(matcher.matches(), "Invalid statement, expected 'clip(arg)'");
-		final String clip = matcher.group(1);
-		final String arg = matcher.group(2);
+	private final List<Pair<String, Float>> constArgs = Lists.newArrayList();
 
-		clipArgs.add(Pair.of(clip, arg));
+	private static Token nextToken(Iterator<Token> tokens) {
+		Preconditions.checkState(tokens.hasNext(), "Unexpected end of statement");
+		return tokens.next();
 	}
 
-	public IEvaluator bind(IModel model) {
+	private static String expectToken(Iterator<Token> tokens, TokenType type) {
+		Token result = nextToken(tokens);
+		Preconditions.checkState(result.type == type, "Expected %s, got %s", type, result);
+		return result.value;
+	}
+
+	private static void expectToken(Iterator<Token> tokens, TokenType type, String value) {
+		Token result = nextToken(tokens);
+		Preconditions.checkState(result.type == type && result.value.equals(value), "Expect %s:%s, got %s", type, value, result);
+	}
+
+	private static Token expectTokens(Iterator<Token> tokens, TokenType... types) {
+		Token result = nextToken(tokens);
+		Preconditions.checkState(ImmutableSet.of(types).contains(types), "Expect %s, got %s", Arrays.toString(types), result);
+		return result;
+	}
+
+	private final DoubleParser numberParser = new DoubleParser();
+
+	public void appendStatement(String statement) {
+		try {
+			final TokenIterator tokens = tokenizer.tokenize(statement);
+			final String id = expectToken(tokens, TokenType.SYMBOL);
+
+			final Token op = expectTokens(tokens, TokenType.OPERATOR, TokenType.LEFT_BRACKET);
+
+			switch (op.type) {
+				case OPERATOR: {
+					final Token token = nextToken(tokens);
+					Preconditions.checkState(token.type.isNumber(), "Expected number, got '%s'", token.value);
+					final Double value = numberParser.parseToken(token);
+					constArgs.add(ImmutablePair.of(id, value.floatValue()));
+					break;
+				}
+				case LEFT_BRACKET: {
+					Preconditions.checkState(op.value.equals("("), "Invalid brackets");
+					final String value = expectToken(tokens, TokenType.SYMBOL);
+					expectToken(tokens, TokenType.RIGHT_BRACKET, ")");
+					clipArgs.add(ImmutablePair.of(id, value));
+					break;
+				}
+				default:
+					throw new IllegalArgumentException("Expected either 'clip(arg)' of 'arg := number'");
+			}
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Failed to parse: " + statement, e);
+		}
+	}
+
+	public IEvaluator createEvaluator(IModel model) {
 		if (!(model instanceof IAnimatedModel)) return EMPTY;
 
 		final IAnimatedModel animatedModel = (IAnimatedModel)model;
@@ -90,10 +170,15 @@ public class EvaluatorFactory {
 			final String arg = clipArg.getValue();
 			final Optional<? extends IClip> clip = animatedModel.getClip(clipName);
 			Preconditions.checkState(clip.isPresent(), "Can't find clip '%s'", clipName);
-			args.add(Pair.<IClip, String> of(clip.get(), arg));
+			args.add(ImmutablePair.<IClip, String> of(clip.get(), arg));
 		}
 
 		return new ClipEvaluator(args);
+	}
+
+	public IExpander createExpander() {
+		Preconditions.checkState(clipArgs.isEmpty(), "No transforms allowed in expander");
+		return new ArgExpander(constArgs);
 	}
 
 }
