@@ -27,11 +27,11 @@ public class EvalExpandModel extends EvalModelBase {
 
 	private static class BakedEvalExpandModel extends BakedModelAdapter {
 
-		private final IExpander expander;
+		private final IVarExpander expander;
 
 		private final IBlockState defaultBlockState;
 
-		public BakedEvalExpandModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, IBlockState defaultBlockState, IExpander expander) {
+		public BakedEvalExpandModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, IBlockState defaultBlockState, IVarExpander expander) {
 			super(model.bake(state, format, bakedTextureGetter), MapWrapper.getTransforms(state));
 			this.expander = expander;
 			this.defaultBlockState = defaultBlockState;
@@ -79,7 +79,7 @@ public class EvalExpandModel extends EvalModelBase {
 			}
 		}
 
-		final IExpander expander = evaluatorFactory.createExpander();
+		final IVarExpander expander = evaluatorFactory.createExpander();
 		return new BakedEvalExpandModel(model, state, format, bakedTextureGetter, blockState, expander);
 	}
 
