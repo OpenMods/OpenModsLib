@@ -1,11 +1,8 @@
 package openmods.model;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ForwardingMap;
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multiset;
 import java.util.Map;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.animation.Event;
@@ -25,40 +22,10 @@ public class EvalModelTest {
 
 	private static final ImmutableMap<String, Float> NO_ARGS = ImmutableMap.<String, Float> of();
 
-	private static class AccessCountingMap extends ForwardingMap<String, Float> {
-		private final Map<String, Float> parent;
-
-		private final Multiset<String> accessCounters;
-
-		public AccessCountingMap(Map<String, Float> parent, Multiset<String> accessCounters) {
-			this.parent = parent;
-			this.accessCounters = accessCounters;
-		}
-
-		@Override
-		protected Map<String, Float> delegate() {
-			return parent;
-		}
-
-		@Override
-		public Float get(Object key) {
-			accessCounters.add((String)key);
-			return super.get(key);
-		}
-
-		@Override
-		public boolean containsKey(Object key) {
-			accessCounters.add((String)key);
-			return super.containsKey(key);
-		}
-	}
-
 	private static class Tester {
 		private final Map<String, Float> state = Maps.newHashMap();
 
 		private Map<String, Float> result;
-
-		private Multiset<String> accessCount;
 
 		public Tester put(String key, float value) {
 			state.put(key, value);
@@ -66,9 +33,7 @@ public class EvalModelTest {
 		}
 
 		public Tester run(IVarExpander expander) {
-			final Multiset<String> counters = HashMultiset.create();
-			this.result = expander.expand(new AccessCountingMap(ImmutableMap.copyOf(state), counters));
-			this.accessCount = counters;
+			this.result = expander.expand(ImmutableMap.copyOf(state));
 			return this;
 		}
 
@@ -78,12 +43,6 @@ public class EvalModelTest {
 
 		public Tester validate() {
 			Assert.assertEquals(this.state, this.result);
-			return this;
-		}
-
-		@SuppressWarnings("unused")
-		public Tester checkAccessCount(String value, int count) {
-			Assert.assertEquals(count, this.accessCount.count(value));
 			return this;
 		}
 	}
@@ -98,6 +57,18 @@ public class EvalModelTest {
 		factory.appendStatement("a := 1.3");
 
 		start().run(factory).put("a", 1.3f).validate();
+	}
+
+	@Test
+	public void testSingleFloatVarArithmetics() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("a := 1.3 / 2.5 + 3.2 - -4.4 * 56");
+		factory.appendStatement("b := (1.4 + 4.5) * +5.4 + 2 ^ 3");
+
+		start().run(factory)
+				.put("a", 1.3f / 2.5f + 3.2f - -4.4f * 56f)
+				.put("b", (1.4f + 4.5f) * 5.4f + 8)
+				.validate();
 	}
 
 	@Test
@@ -133,6 +104,30 @@ public class EvalModelTest {
 		start().put("a", 2).put("b", 3).put("c", 4)
 				.run(factory)
 				.put("a", 4.4f).put("b", 9.3f).validate();
+	}
+
+	@Test
+	public void testVarArithmeticsOverride() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("a := 3.3 / 2");
+		factory.appendStatement("b := a + 3.6");
+		factory.appendStatement("a := 3.4 * 3");
+
+		start().put("c", 4)
+				.run(factory)
+				.put("a", 3.4f * 3).put("b", 3.3f / 2 + 3.6f).validate();
+	}
+
+	@Test
+	public void testVarArithmeticsSelfOverride() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("a := 2 * a");
+		factory.appendStatement("a := a * 3");
+		factory.appendStatement("a := a + a");
+
+		start().put("a", 4)
+				.run(factory)
+				.put("a", 2 * ((2 * 4) * 3)).validate();
 	}
 
 	private static final IJoint DUMMY_JOINT = new IJoint() {
@@ -227,6 +222,43 @@ public class EvalModelTest {
 		Assert.assertEquals(transform, result);
 
 		Mockito.verify(jointClipMock).apply(1.4f);
+		Mockito.verifyNoMoreInteractions(jointClipMock);
+	}
+
+	@Test
+	public void testConstApply() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("clip(2.4 + 1/3)");
+
+		final ClipStub clipStub = new ClipStub();
+		final IJointClip jointClipMock = clipStub.jointClipMock;
+
+		final TRSRTransformation transform = new TRSRTransformation(EnumFacing.NORTH);
+		Mockito.when(jointClipMock.apply(Matchers.anyFloat())).thenReturn(transform);
+
+		final TRSRTransformation result = factory.createEvaluator(clips("clip", clipStub)).evaluate(DUMMY_JOINT, NO_ARGS);
+		Assert.assertEquals(transform, result);
+
+		Mockito.verify(jointClipMock).apply(2.4f + 1f / 3f);
+		Mockito.verifyNoMoreInteractions(jointClipMock);
+	}
+
+	@Test
+	public void testArithmeticsVarApply() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("clip(2.4 / a + 1/(3 * b))");
+
+		final ClipStub clipStub = new ClipStub();
+		final IJointClip jointClipMock = clipStub.jointClipMock;
+
+		final TRSRTransformation transform = new TRSRTransformation(EnumFacing.NORTH);
+		Mockito.when(jointClipMock.apply(Matchers.anyFloat())).thenReturn(transform);
+
+		final TRSRTransformation result = factory.createEvaluator(clips("clip", clipStub))
+				.evaluate(DUMMY_JOINT, ImmutableMap.of("a", 5.1f, "b", -0.4f));
+		Assert.assertEquals(transform, result);
+
+		Mockito.verify(jointClipMock).apply(2.4f / 5.1f + 1f / (3f * -0.4f));
 		Mockito.verifyNoMoreInteractions(jointClipMock);
 	}
 
