@@ -106,6 +106,121 @@ public class EvalModelTest {
 				.put("a", 4.4f).put("b", 9.3f).validate();
 	}
 
+	private static void testConstExpr(String expr, float expected) {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("ans := " + expr);
+		start().run(factory).put("ans", expected).validate();
+	}
+
+	private static void testSingleVarExpr(String expr, String var, float value, float expected) {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("ans := " + expr);
+		start().put(var, value).run(factory).put("ans", expected).validate();
+	}
+
+	@Test
+	public void testSingleFloatVarOptimizations() {
+		final float a = 1.53f;
+		testSingleVarExpr("1 * a", "a", a, a);
+		testSingleVarExpr("1 * (a / 4)", "a", a, a / 4);
+
+		testSingleVarExpr("0 * a", "a", a, 0);
+		testSingleVarExpr("0 * (a / 4)", "a", a, 0);
+
+		testSingleVarExpr("a * 1", "a", a, a);
+		testSingleVarExpr("(a / 4) * 1", "a", a, a / 4);
+
+		testSingleVarExpr("a * 0", "a", a, 0);
+		testSingleVarExpr("(a / 4) * 0", "a", a, 0);
+
+		testSingleVarExpr("0 + a", "a", a, a);
+		testSingleVarExpr("0 + (a * 4)", "a", a, a * 4);
+
+		testSingleVarExpr("a - 0", "a", a, a);
+		testSingleVarExpr("(a / 6) - 0", "a", a, a / 6);
+
+		testSingleVarExpr("2 ^ 2 ^ a", "a", a, (float)Math.pow(4, a));
+
+		testSingleVarExpr("(a + 4) ^ 1", "a", a, a + 4);
+		testSingleVarExpr("1 ^ (a + 4)", "a", a, 1);
+	}
+
+	@Test
+	public void testSpecialValueNonOptimizations() {
+		final float nan = Float.NaN;
+		final float inf = Float.POSITIVE_INFINITY;
+		final float zero = 0;
+		final float nzero = 1 / Float.NEGATIVE_INFINITY;
+
+		Assert.assertNotEquals(Float.floatToIntBits(nzero), Float.floatToIntBits(zero)); // sanity check
+
+		testSingleVarExpr("1 * inf", "inf", inf, inf);
+		testSingleVarExpr("1 * nan", "nan", nan, nan);
+
+		testConstExpr("(0 / 0)", nan);
+
+		testConstExpr("0 * (1 / 0)", nan);
+		testSingleVarExpr("0 * inf", "inf", inf, nan);
+		testConstExpr("0 * (0 / 0)", nan);
+		testSingleVarExpr("0 * nan", "nan", nan, nan);
+
+		testConstExpr("(1 / 0) * 0", nan);
+		testSingleVarExpr("inf * 0", "inf", inf, nan);
+		testConstExpr("(0 / 0) * 0", nan);
+		testSingleVarExpr("nan * 0", "nan", nan, nan);
+
+		testSingleVarExpr("inf * inf", "inf", inf, inf);
+
+		testSingleVarExpr("zero / 1", "zero", zero, zero);
+		testSingleVarExpr("1 / zero", "zero", zero, inf);
+		testSingleVarExpr("zero / zero", "zero", zero, nan);
+
+		testSingleVarExpr("zero / 0", "zero", zero, nan);
+		testSingleVarExpr("nan / 0", "zero", zero, nan);
+
+		testSingleVarExpr("0 / nan", "nan", nan, nan);
+		testSingleVarExpr("0 / inf", "inf", inf, zero);
+
+		testSingleVarExpr("1 / nzero", "nzero", nzero, -inf);
+
+		testConstExpr("-1 / (1 / 0)", nzero);
+		testConstExpr("1 / (-1 / 0)", nzero);
+		testSingleVarExpr("0 / -inf", "inf", inf, nzero);
+		testSingleVarExpr("-1 / inf", "inf", inf, nzero);
+		testSingleVarExpr("1 * nzero", "nzero", nzero, nzero);
+
+		testSingleVarExpr("nzero * nzero", "nzero", nzero, zero);
+		testSingleVarExpr("nzero * 0", "nzero", nzero, nzero);
+		testSingleVarExpr("0 * nzero", "nzero", nzero, nzero);
+
+		testSingleVarExpr("0 - nzero", "nzero", nzero, nzero);
+		testSingleVarExpr("0 + nzero", "nzero", nzero, nzero);
+
+		testSingleVarExpr("inf / inf", "inf", inf, nan);
+		testSingleVarExpr("nan / nan", "nan", nan, nan);
+
+		testSingleVarExpr("1 - inf", "inf", inf, -inf);
+		testSingleVarExpr("1 - nan", "nan", nan, nan);
+
+		testSingleVarExpr("inf + inf", "inf", inf, inf);
+		testSingleVarExpr("inf + -inf", "inf", inf, nan);
+		testSingleVarExpr("-inf + inf", "inf", inf, nan);
+
+		testSingleVarExpr("inf - inf", "inf", inf, nan);
+		testSingleVarExpr("inf - -inf", "inf", inf, inf);
+
+		testSingleVarExpr("1 ^ zero", "zero", zero, 1);
+		testSingleVarExpr("zero ^ 1", "zero", zero, zero);
+
+		testSingleVarExpr("inf ^ inf", "inf", inf, inf);
+
+		testSingleVarExpr("nan ^ 0", "nan", nan, 1);
+		testSingleVarExpr("inf ^ 0", "inf", inf, 1);
+
+		testSingleVarExpr("0 ^ zero", "zero", zero, 1);
+		testSingleVarExpr("zero ^ 0", "zero", zero, 1);
+	}
+
 	@Test
 	public void testVarArithmeticsOverride() {
 		EvaluatorFactory factory = new EvaluatorFactory();

@@ -40,8 +40,12 @@ public class EvaluatorFactory {
 	private static final int PRIORITY_ASSIGN = 1;
 	private static final String OPERATOR_ASSIGN = ":=";
 
-	private interface Expr {
-		public float evaluate(Map<String, Float> args);
+	private abstract static class Expr {
+		public abstract float evaluate(Map<String, Float> args);
+
+		public Optional<Float> getConstValue() {
+			return Optional.absent();
+		}
 	}
 
 	private interface NodeOp {}
@@ -92,13 +96,21 @@ public class EvaluatorFactory {
 		public Expr createExpr(List<Node> children) {
 			Preconditions.checkState(children.size() == 1);
 			final Expr arg = createExprFromNode(children.get(0));
-			return new Expr() {
-				@Override
-				public float evaluate(Map<String, Float> args) {
-					final float value = arg.evaluate(args);
-					return apply(value);
-				}
-			};
+
+			final Optional<Float> maybeConst = arg.getConstValue();
+
+			if (maybeConst.isPresent()) {
+				final float value = apply(maybeConst.get());
+				return new ConstExpr(value);
+			} else {
+				return new Expr() {
+					@Override
+					public float evaluate(Map<String, Float> args) {
+						final float value = arg.evaluate(args);
+						return apply(value);
+					}
+				};
+			}
 		}
 
 		protected abstract float apply(float value);
@@ -124,7 +136,24 @@ public class EvaluatorFactory {
 		public Expr createExpr(List<Node> children) {
 			Preconditions.checkState(children.size() == 2);
 			final Expr leftArg = createExprFromNode(children.get(0));
+			final Optional<Float> maybeLeftConst = leftArg.getConstValue();
+
 			final Expr rightArg = createExprFromNode(children.get(1));
+			final Optional<Float> maybeRightConst = rightArg.getConstValue();
+
+			if (maybeLeftConst.isPresent()) {
+				final float leftConst = maybeLeftConst.get();
+				if (maybeRightConst.isPresent()) {
+					final float rightConst = maybeRightConst.get();
+					return bothConst(leftConst, rightConst);
+				} else {
+					return leftConst(leftConst, rightArg);
+				}
+			} else if (maybeRightConst.isPresent()) {
+				final float rightConst = maybeRightConst.get();
+				return rightConst(leftArg, rightConst);
+			}
+
 			return new Expr() {
 				@Override
 				public float evaluate(Map<String, Float> args) {
@@ -135,8 +164,61 @@ public class EvaluatorFactory {
 			};
 		}
 
-		protected abstract float apply(float left, float right);
+		protected Expr bothConst(final float leftConst, final float rightConst) {
+			final float value = apply(leftConst, rightConst);
+			return new ConstExpr(value);
+		}
 
+		protected Expr rightConst(final Expr leftArg, final float rightConst) {
+			return new Expr() {
+				@Override
+				public float evaluate(Map<String, Float> args) {
+					final float leftValue = leftArg.evaluate(args);
+					return apply(leftValue, rightConst);
+				}
+			};
+		}
+
+		protected Expr leftConst(final float leftConst, final Expr rightArg) {
+			return new Expr() {
+				@Override
+				public float evaluate(Map<String, Float> args) {
+					final float rightValue = rightArg.evaluate(args);
+					return apply(leftConst, rightValue);
+				}
+			};
+		}
+
+		protected abstract float apply(float left, float right);
+	}
+
+	private abstract static class BinaryOperatorWithRightNeutralElement extends BinaryOperator {
+
+		protected final float neutralElement;
+
+		public BinaryOperatorWithRightNeutralElement(String id, int precedence, float neutralElement) {
+			super(id, precedence);
+			this.neutralElement = neutralElement;
+		}
+
+		@Override
+		protected Expr rightConst(Expr leftArg, float rightConst) {
+			if (rightConst == neutralElement) return leftArg;
+			return super.rightConst(leftArg, rightConst);
+		}
+	}
+
+	private abstract static class BinaryOperatorWithNeutralElement extends BinaryOperatorWithRightNeutralElement {
+
+		public BinaryOperatorWithNeutralElement(String id, int precedence, float neutralElement) {
+			super(id, precedence, neutralElement);
+		}
+
+		@Override
+		protected Expr leftConst(float leftConst, Expr rightArg) {
+			if (leftConst == neutralElement) return rightArg;
+			return super.leftConst(leftConst, rightArg);
+		}
 	}
 
 	private static final OperatorDictionary<Operator> operators = new OperatorDictionary<Operator>();
@@ -160,36 +242,45 @@ public class EvaluatorFactory {
 			protected float apply(float value) {
 				return -value;
 			}
-
 		});
 
-		operators.registerOperator(new BinaryOperator(OPERATOR_POWER, PRIORITY_POWER) {
+		operators.registerOperator(new BinaryOperatorWithRightNeutralElement(OPERATOR_POWER, PRIORITY_POWER, 1) {
+			@Override
+			protected Expr rightConst(Expr leftArg, float rightConst) {
+				if (rightConst == 0) return new ConstExpr(1); // per docs, Math.pow(x, 0) == 1, even for inf and nan
+				return super.rightConst(leftArg, rightConst);
+			}
+
 			@Override
 			protected float apply(float left, float right) {
 				return (float)Math.pow(left, right);
 			}
 		});
 
-		operators.registerOperator(new BinaryOperator(OPERATOR_MULTIPLY, PRIORITY_MULTIPLY) {
+		operators.registerOperator(new BinaryOperatorWithNeutralElement(OPERATOR_MULTIPLY, PRIORITY_MULTIPLY, 1) {
+			// not doing 0 * x == 0, since 0 * Infinity == NaN
+			// even if 0 * 0, 0 * x and x * 0 are patched here, I can't patch x * y without performance loss
+
 			@Override
 			protected float apply(float left, float right) {
 				return left * right;
 			}
 		});
-		operators.registerOperator(new BinaryOperator(OPERATOR_DIVIDE, PRIORITY_MULTIPLY) {
+		operators.registerOperator(new BinaryOperatorWithRightNeutralElement(OPERATOR_DIVIDE, PRIORITY_MULTIPLY, 1) {
+			// same issue as multiplication, skipping 0 / x optimization
 			@Override
 			protected float apply(float left, float right) {
 				return left / right;
 			}
 		});
 
-		operators.registerOperator(new BinaryOperator(OPERATOR_ADD, PRIORITY_ADD) {
+		operators.registerOperator(new BinaryOperatorWithNeutralElement(OPERATOR_ADD, PRIORITY_ADD, 0) {
 			@Override
 			protected float apply(float left, float right) {
 				return left + right;
 			}
 		});
-		operators.registerOperator(new BinaryOperator(OPERATOR_SUBTRACT, PRIORITY_ADD) {
+		operators.registerOperator(new BinaryOperatorWithNeutralElement(OPERATOR_SUBTRACT, PRIORITY_ADD, 0) {
 			@Override
 			protected float apply(float left, float right) {
 				return left - right;
@@ -230,16 +321,31 @@ public class EvaluatorFactory {
 		}
 	}
 
+	private static class ConstExpr extends Expr {
+		private final Optional<Float> maybeValue;
+		private final float value;
+
+		private ConstExpr(float value) {
+			this.value = value;
+			this.maybeValue = Optional.of(value);
+		}
+
+		@Override
+		public float evaluate(Map<String, Float> args) {
+			return value;
+		}
+
+		@Override
+		public Optional<Float> getConstValue() {
+			return maybeValue;
+		}
+	}
+
 	private static NodeOp createConstNode(final float value) {
 		return new ExprFactory() {
 			@Override
 			public Expr createExpr(List<Node> children) {
-				return new Expr() {
-					@Override
-					public float evaluate(Map<String, Float> args) {
-						return value;
-					}
-				};
+				return new ConstExpr(value);
 			}
 		};
 	}
