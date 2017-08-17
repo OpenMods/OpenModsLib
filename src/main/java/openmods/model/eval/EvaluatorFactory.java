@@ -32,6 +32,7 @@ public class EvaluatorFactory {
 	private static final int PRIORITY_MULTIPLY = 3;
 	private static final String OPERATOR_MULTIPLY = "*";
 	private static final String OPERATOR_DIVIDE = "/";
+	private static final String OPERATOR_MOD = "%";
 
 	private static final int PRIORITY_ADD = 2;
 	private static final String OPERATOR_ADD = "+";
@@ -274,6 +275,13 @@ public class EvaluatorFactory {
 			}
 		});
 
+		operators.registerOperator(new BinaryOperator(OPERATOR_MOD, PRIORITY_MULTIPLY) {
+			@Override
+			protected float apply(float left, float right) {
+				return left % right;
+			}
+		});
+
 		operators.registerOperator(new BinaryOperatorWithNeutralElement(OPERATOR_ADD, PRIORITY_ADD, 0) {
 			@Override
 			protected float apply(float left, float right) {
@@ -420,6 +428,7 @@ public class EvaluatorFactory {
 		tokenizer.addOperator(OPERATOR_SUBTRACT);
 		tokenizer.addOperator(OPERATOR_DIVIDE);
 		tokenizer.addOperator(OPERATOR_MULTIPLY);
+		tokenizer.addOperator(OPERATOR_MOD);
 		tokenizer.addOperator(OPERATOR_POWER);
 	}
 

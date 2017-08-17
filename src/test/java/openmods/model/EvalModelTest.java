@@ -143,6 +143,8 @@ public class EvalModelTest {
 
 		testSingleVarExpr("(a + 4) ^ 1", "a", a, a + 4);
 		testSingleVarExpr("1 ^ (a + 4)", "a", a, 1);
+
+		testSingleVarExpr("a % 1", "a", a, a % 1);
 	}
 
 	@Test
@@ -219,6 +221,20 @@ public class EvalModelTest {
 
 		testSingleVarExpr("0 ^ zero", "zero", zero, 1);
 		testSingleVarExpr("zero ^ 0", "zero", zero, 1);
+
+		testSingleVarExpr("nan % 1", "nan", nan, nan);
+		testSingleVarExpr("1 % nan", "nan", nan, nan);
+
+		testSingleVarExpr("nan % 0", "nan", nan, nan);
+		testSingleVarExpr("0 % nan", "nan", nan, nan);
+
+		testSingleVarExpr("inf % 1", "nan", nan, zero);
+		testSingleVarExpr("1 % inf", "nan", nan, nan);
+
+		testSingleVarExpr("1 % zero", "zero", zero, nan);
+		testSingleVarExpr("zero % zero", "zero", zero, nan);
+
+		testSingleVarExpr("nzero % 1", "nzero", nzero, nzero);
 	}
 
 	@Test
