@@ -3,6 +3,7 @@ package openmods.model.eval;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.PeekingIterator;
@@ -49,10 +50,34 @@ public class EvaluatorFactory {
 		}
 	}
 
-	private interface NodeOp {}
+	private static class Scope {
+		private final Map<String, ExprFactory> vals;
+
+		public Scope(Map<String, ExprFactory> vals) {
+			this.vals = ImmutableMap.copyOf(vals);
+		}
+
+		public ExprFactory get(String name) {
+			return vals.get(name);
+		}
+
+		public Scope expand(Map<String, ExprFactory> patch) {
+			return new Scope(patch) {
+				@Override
+				public ExprFactory get(String name) {
+					final ExprFactory result = super.get(name);
+					return result != null? result : Scope.this.get(name);
+				}
+			};
+		}
+	}
+
+	private interface NodeOp {
+		public String toString(List<Node> children);
+	}
 
 	private interface ExprFactory extends NodeOp {
-		public Expr createExpr(List<Node> children);
+		public Expr createExpr(List<Node> children, Scope scope);
 	}
 
 	private abstract static class Operator implements IOperator<Operator>, ExprFactory {
@@ -70,11 +95,44 @@ public class EvaluatorFactory {
 		public String id() {
 			return id;
 		}
+
+		@Override
+		public String toString(List<Node> children) {
+			final StringBuilder result = new StringBuilder();
+			result.append('(').append(id);
+			for (Node child : children)
+				result.append(' ').append(child.toString());
+			return result.append(')').toString();
+		}
 	}
 
-	private static Expr createExprFromNode(Node node) {
-		if (!(node.op instanceof ExprFactory)) throw new UnsupportedOperationException("Can't compile " + node.op.getClass().getSimpleName() + " to expression");
-		return ((ExprFactory)node.op).createExpr(node.children);
+	private static ExprFactory getExprFactoryFromNode(NodeOp nodeOp) {
+		if (!(nodeOp instanceof ExprFactory)) throw new UnsupportedOperationException("Can't compile " + nodeOp.getClass().getSimpleName() + " to expression");
+		return (ExprFactory)nodeOp;
+	}
+
+	private static Expr createExprFromNode(Node node, Scope scope) {
+		return getExprFactoryFromNode(node.op).createExpr(node.children, scope);
+	}
+
+	private static Node bindExprFactoryNodeToScope(Node node, final Scope newScope) {
+		if (node.op instanceof ExprFactory) {
+			final ExprFactory childExprFactory = ((ExprFactory)node.op);
+			return new Node(new ExprFactory() {
+
+				@Override
+				public Expr createExpr(List<Node> children, Scope scope) {
+					return childExprFactory.createExpr(children, newScope);
+				}
+
+				@Override
+				public String toString(List<Node> children) {
+					return childExprFactory.toString(children);
+				}
+			}, node.children);
+		} else {
+			return node;
+		}
 	}
 
 	private abstract static class UnaryOperator extends Operator {
@@ -94,9 +152,9 @@ public class EvaluatorFactory {
 		}
 
 		@Override
-		public Expr createExpr(List<Node> children) {
+		public Expr createExpr(List<Node> children, Scope scope) {
 			Preconditions.checkState(children.size() == 1);
-			final Expr arg = createExprFromNode(children.get(0));
+			final Expr arg = createExprFromNode(children.get(0), scope);
 
 			final Optional<Float> maybeConst = arg.getConstValue();
 
@@ -134,12 +192,12 @@ public class EvaluatorFactory {
 		}
 
 		@Override
-		public Expr createExpr(List<Node> children) {
+		public Expr createExpr(List<Node> children, Scope scope) {
 			Preconditions.checkState(children.size() == 2);
-			final Expr leftArg = createExprFromNode(children.get(0));
+			final Expr leftArg = createExprFromNode(children.get(0), scope);
 			final Optional<Float> maybeLeftConst = leftArg.getConstValue();
 
-			final Expr rightArg = createExprFromNode(children.get(1));
+			final Expr rightArg = createExprFromNode(children.get(1), scope);
 			final Optional<Float> maybeRightConst = rightArg.getConstValue();
 
 			if (maybeLeftConst.isPresent()) {
@@ -298,34 +356,59 @@ public class EvaluatorFactory {
 		operators.registerOperator(OP_ASSIGN);
 	}
 
-	private static class SymbolNodeOp implements NodeOp {
+	private abstract static class SymbolNodeOp implements ExprFactory {
 		public final String symbol;
 
 		public SymbolNodeOp(String symbol) {
 			this.symbol = symbol;
 		}
+
+		@Override
+		public String toString(List<Node> children) {
+			final StringBuilder result = new StringBuilder();
+			result.append('(').append(symbol);
+			for (Node child : children)
+				result.append(' ').append(child.toString());
+			return result.append(')').toString();
+		}
 	}
 
-	private static class NodeOpGet extends SymbolNodeOp implements ExprFactory {
+	private static class NodeOpGet extends SymbolNodeOp {
 		public NodeOpGet(String symbol) {
 			super(symbol);
 		}
 
 		@Override
-		public Expr createExpr(List<Node> children) {
-			return new Expr() {
-				@Override
-				public float evaluate(Map<String, Float> args) {
-					final Float value = args.get(symbol);
-					return value != null? value : 0;
-				}
-			};
+		public Expr createExpr(List<Node> children, Scope scope) {
+			final ExprFactory maybeMacro = scope.get(symbol);
+			if (maybeMacro != null) {
+				// may have children when placed via macro arg
+				return maybeMacro.createExpr(children, scope);
+			} else {
+				return new Expr() {
+					@Override
+					public float evaluate(Map<String, Float> args) {
+						final Float value = args.get(symbol);
+						return value != null? value : 0;
+					}
+				};
+			}
 		}
 	}
 
 	private static class NodeOpCall extends SymbolNodeOp {
 		public NodeOpCall(String symbol) {
 			super(symbol);
+		}
+
+		@Override
+		public Expr createExpr(List<Node> children, Scope scope) {
+			final ExprFactory maybeMacro = scope.get(symbol);
+			if (maybeMacro != null) {
+				return maybeMacro.createExpr(children, scope);
+			} else {
+				throw new IllegalArgumentException("Unknown macro: " + symbol);
+			}
 		}
 	}
 
@@ -347,13 +430,24 @@ public class EvaluatorFactory {
 		public Optional<Float> getConstValue() {
 			return maybeValue;
 		}
+
 	}
 
 	private static NodeOp createConstNode(final float value) {
 		return new ExprFactory() {
 			@Override
-			public Expr createExpr(List<Node> children) {
+			public Expr createExpr(List<Node> children, Scope scope) {
+				Preconditions.checkState(children.isEmpty(), "Cannot call constant");
 				return new ConstExpr(value);
+			}
+
+			@Override
+			public String toString(List<Node> children) {
+				if (children.isEmpty()) {
+					return Float.toString(value);
+				} else {
+					return Float.toString(value) + '?' + children.toString();
+				}
 			}
 		};
 	}
@@ -372,6 +466,11 @@ public class EvaluatorFactory {
 		public Node(NodeOp op, List<Node> children) {
 			this.op = op;
 			this.children = ImmutableList.copyOf(children);
+		}
+
+		@Override
+		public String toString() {
+			return op.toString(children);
 		}
 	}
 
@@ -522,6 +621,86 @@ public class EvaluatorFactory {
 
 	}
 
+	private static class Macro implements ExprFactory {
+		public final String name;
+		public final List<String> args;
+		public final Node body;
+		public final Scope defineSiteScope;
+
+		public Macro(String name, List<String> args, Node node, Scope scope) {
+			this.name = name;
+			this.args = ImmutableList.copyOf(args);
+			this.body = node;
+			this.defineSiteScope = scope;
+		}
+
+		@Override
+		public Expr createExpr(List<Node> children, final Scope callsiteScope) {
+			final int expectedArgCount = args.size();
+			final int actualArgCount = children.size();
+			Preconditions.checkState(actualArgCount == expectedArgCount, "Invalid number of args: expected %s, got %s", expectedArgCount, actualArgCount);
+
+			final Map<String, ExprFactory> defineScopePatch = Maps.newHashMap();
+			defineScopePatch.put(name, this); // for recursion
+
+			for (int i = 0; i < expectedArgCount; i++) {
+				final String argName = args.get(i);
+				final Node argNode = children.get(i);
+				if (argNode.children.isEmpty()) {
+					// no children = we substitute local chilren, to allow high-order macros
+					// newly placed macro should be taken from macro callsite (since it's parameter evaluation site),
+					// but children should be evaluated with scope from place of substitution
+					defineScopePatch.put(argName, new ExprFactory() {
+						@Override
+						public Expr createExpr(List<Node> children, final Scope localScope) {
+							final List<Node> rescopedChildren = Lists.newArrayList();
+							for (Node child : children) {
+								rescopedChildren.add(bindExprFactoryNodeToScope(child, localScope));
+							}
+
+							return getExprFactoryFromNode(argNode.op).createExpr(rescopedChildren, callsiteScope);
+						}
+
+						@Override
+						public String toString(List<Node> children) {
+							return "<" + argNode.op.toString(children) + ">";
+						}
+
+					});
+				} else {
+					final Expr argExpr = createExprFromNode(argNode, callsiteScope);
+					defineScopePatch.put(argName, new ExprFactory() {
+
+						@Override
+						public Expr createExpr(List<Node> children, Scope localScope) {
+							return argExpr;
+						}
+
+						@Override
+						public String toString(List<Node> children) {
+							return "<" + argNode.toString() + ">";
+						}
+					});
+				}
+
+			}
+
+			return createExprFromNode(body, defineSiteScope.expand(defineScopePatch));
+		}
+
+		@Override
+		public String toString(List<Node> children) {
+			return toString();
+		}
+
+		@Override
+		public String toString() {
+			return name + args.toString() + ":=" + body.toString();
+		}
+	}
+
+	private final Map<String, ExprFactory> globalScope = Maps.newHashMap();
+
 	private final List<IStatement> statements = Lists.newArrayList();
 
 	public void appendStatement(String statement) {
@@ -533,15 +712,29 @@ public class EvaluatorFactory {
 				Preconditions.checkState(node.children.size() == 2);
 				final Node left = node.children.get(0);
 				final Node right = node.children.get(1);
-				Preconditions.checkState(left.op instanceof NodeOpGet, "Only symbols allowed on left side of assign");
-				final String key = ((NodeOpGet)left.op).symbol;
-				final Expr arg = createExprFromNode(right);
-				statements.add(new AssignStatement(key, arg));
+				if (left.op instanceof NodeOpGet) {
+					final String key = ((NodeOpGet)left.op).symbol;
+					final Expr arg = createExprFromNode(right, new Scope(globalScope));
+					statements.add(new AssignStatement(key, arg));
+				} else if (left.op instanceof NodeOpCall) {
+					final String key = ((NodeOpCall)left.op).symbol;
+					final List<String> args = Lists.newArrayList();
+					for (Node argNode : left.children) {
+						Preconditions.checkState(argNode.op instanceof NodeOpGet, "Only single symbols allowed as macro args");
+						final String argName = ((NodeOpGet)argNode.op).symbol;
+						args.add(argName);
+					}
+
+					//
+					globalScope.put(key, new Macro(key, args, right, new Scope(globalScope)));
+				} else {
+					throw new UnsupportedOperationException("Expected single symbol or symbol call on left side of assignment");
+				}
 			} else if (node.op instanceof NodeOpCall) {
 				Preconditions.checkState(node.children.size() == 1, "Invalid number of arguments for clip application");
 				final Node arg = node.children.get(0);
 				final String key = ((NodeOpCall)node.op).symbol;
-				final Expr argExpr = createExprFromNode(arg);
+				final Expr argExpr = createExprFromNode(arg, new Scope(globalScope));
 				statements.add(new ClipStatement(key, argExpr));
 			} else {
 				throw new UnsupportedOperationException("Only statements in form 'clip(<expr>, ...)' or `value := <expr>` allowed");

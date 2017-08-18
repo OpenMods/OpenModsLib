@@ -261,6 +261,100 @@ public class EvalModelTest {
 				.put("a", 2 * ((2 * 4) * 3)).validate();
 	}
 
+	@Test
+	public void testSimpleMacro() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("f(x) := 2 * x + x / 2");
+		factory.appendStatement("ans := f(5 / a)");
+
+		start().put("a", 4)
+				.run(factory)
+				.put("ans", 2f * (5f / 4f) + ((5f / 4f) / 2f)).validate();
+	}
+
+	@Test
+	public void testNestedMacros() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("f(x) := 2 * x + x / 2");
+		factory.appendStatement("g(x) := x + f(5 + x/2)");
+		factory.appendStatement("ans := g(-a)");
+
+		start().put("a", 4)
+				.run(factory)
+				.put("ans", -4 + 2f * (5 + -4f / 2f) + ((5 + -4f / 2f) / 2f)).validate();
+	}
+
+	@Test
+	public void testUnboundSymbolsInMacro() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("g(a) := a + global");
+		factory.appendStatement("f(a) := g(a * 3) / (g(a * 3) + 1)");
+		factory.appendStatement("ans := f(a + 2)");
+
+		start().put("a", 6)
+				.put("global", 10)
+				.run(factory)
+				.put("ans", ((6f + 2f) * 3f + 10f) / (((6f + 2f) * 3f + 10f) + 1f)).validate();
+	}
+
+	@Test
+	public void testMacroParamNameShadowing() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("f(f) := f * 2.3");
+		factory.appendStatement("ans := f(4.3)");
+
+		start().run(factory)
+				.put("ans", 4.3f * 2.3f).validate();
+	}
+
+	@Test
+	public void testMacroScopeShadowing() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("g() := 13");
+		factory.appendStatement("f(g) := g * 4");
+		factory.appendStatement("ans := f(4.3)");
+
+		start().run(factory)
+				.put("ans", 4.3f * 4f).validate();
+	}
+
+	@Test
+	public void testArgMacroOverride() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		// decided to always looks for macro first, since we have no information if it's global macro or local parameter
+		factory.appendStatement("g() := 13");
+		factory.appendStatement("g := 75");
+		factory.appendStatement("ans := g * g()");
+
+		start().run(factory)
+				.put("g", 75).put("ans", 13f * 13f).validate();
+	}
+
+	@Test
+	public void testMacroScoping() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("f(x) := 2 + x");
+		factory.appendStatement("g(x) := f(x) * 3");
+		factory.appendStatement("f(x) := g(x) / 6");
+		factory.appendStatement("ans := f(5 * a)");
+
+		start().put("a", 4)
+				.run(factory)
+				.put("ans", (2 + (5f * 4f)) / 6f * 3f).validate();
+	}
+
+	@Test
+	public void testHighOrderMacro() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("g(a, o) := o(a, 7)");
+		factory.appendStatement("f(x, y) := 3 * x + 4 * y");
+		factory.appendStatement("ans := g(8 + a, f)");
+
+		start().put("a", 6)
+				.run(factory)
+				.put("ans", 3 * (8 + 6) + 4 * 7).validate();
+	}
+
 	private static final IJoint DUMMY_JOINT = new IJoint() {
 
 		@Override
