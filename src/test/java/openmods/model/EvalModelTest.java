@@ -413,6 +413,17 @@ public class EvalModelTest {
 				.put("ans", (float)Math.sin(2f * 6f) * (float)Math.sin(2f * 6f)).validate();
 	}
 
+	@Test
+	public void testHighOrderMacroWithRawOp() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("g(a, f) := f(a, 7)");
+		factory.appendStatement("ans := g(8 + a, @^)");
+
+		start().put("a", 6)
+				.run(factory)
+				.put("ans", (float)Math.pow(8f + 6f, 7f)).validate();
+	}
+
 	private static final IJoint DUMMY_JOINT = new IJoint() {
 
 		@Override

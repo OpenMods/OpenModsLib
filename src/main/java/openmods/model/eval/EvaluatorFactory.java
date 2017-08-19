@@ -8,13 +8,19 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.PeekingIterator;
 import info.openmods.calc.executable.OperatorDictionary;
+import info.openmods.calc.parsing.ast.IAstParser;
+import info.openmods.calc.parsing.ast.IModifierStateTransition;
 import info.openmods.calc.parsing.ast.INodeFactory;
 import info.openmods.calc.parsing.ast.IOperator;
+import info.openmods.calc.parsing.ast.IParserState;
+import info.openmods.calc.parsing.ast.ISymbolCallStateTransition;
 import info.openmods.calc.parsing.ast.InfixParser;
 import info.openmods.calc.parsing.ast.OperatorArity;
-import info.openmods.calc.parsing.ast.SimpleParserState;
+import info.openmods.calc.parsing.ast.SameStateSymbolTransition;
+import info.openmods.calc.parsing.ast.SingleStateTransition;
 import info.openmods.calc.parsing.token.Token;
 import info.openmods.calc.parsing.token.TokenIterator;
+import info.openmods.calc.parsing.token.TokenType;
 import info.openmods.calc.parsing.token.Tokenizer;
 import info.openmods.calc.types.fp.DoubleParser;
 import java.util.List;
@@ -41,6 +47,8 @@ public class EvaluatorFactory {
 
 	private static final int PRIORITY_ASSIGN = 1;
 	private static final String OPERATOR_ASSIGN = ":=";
+
+	private static final String MODIFIER_OP = "@";
 
 	private abstract static class Expr {
 		public abstract float evaluate(Map<String, Float> args);
@@ -503,20 +511,53 @@ public class EvaluatorFactory {
 
 	private static final InfixParser<Node, Operator> parser = new InfixParser<Node, Operator>(operators, nodeFactory);
 
-	private final SimpleParserState<Node> parserState = new SimpleParserState<Node>(parser) {
+	private final IParserState<Node> parserState = new IParserState<Node>() {
+
 		@Override
-		protected Node createModifierNode(String modifier, Node child) {
-			throw new UnsupportedOperationException("Modifier: " + modifier);
+		public IAstParser<Node> getParser() {
+			return parser;
 		}
 
 		@Override
-		protected Node createSymbolNode(String symbol, List<Node> children) {
-			return new Node(new NodeOpCall(symbol), children);
+		public ISymbolCallStateTransition<Node> getStateForSymbolCall(final String symbol) {
+			return new SameStateSymbolTransition<Node>(this) {
+				@Override
+				public Node createRootNode(List<Node> children) {
+					return new Node(new NodeOpCall(symbol), children);
+				}
+			};
+		}
+
+		@Override
+		public IModifierStateTransition<Node> getStateForModifier(String modifier) {
+			if (MODIFIER_OP.equals(modifier)) {
+				return new SingleStateTransition.ForModifier<Node>() {
+
+					@Override
+					public Node createRootNode(Node child) {
+						return child;
+					}
+
+					@Override
+					public Node parseSymbol(IParserState<Node> state, PeekingIterator<Token> input) {
+						Preconditions.checkState(input.hasNext(), "Unexpected end out input");
+						final Token token = input.next();
+						Preconditions.checkState(token.type == TokenType.OPERATOR, "Unexpected token, expected operator, got %s", token);
+						NodeOp operator = operators.getOperator(token.value, OperatorArity.BINARY);
+						if (operator == null) operator = operators.getOperator(token.value, OperatorArity.UNARY);
+						if (operator == null) throw new IllegalArgumentException("Unknown operator: " + token.value);
+						return new Node(operator);
+					}
+
+				};
+			} else {
+				throw new UnsupportedOperationException("Modifier: " + modifier);
+			}
 		}
 	};
 
 	private Node parseExpression(PeekingIterator<Token> tokens) {
-		return parserState.parse(tokens);
+		return parserState.getParser().parse(parserState, tokens);
 	}
 
 	private static final Tokenizer tokenizer = new Tokenizer();
@@ -529,6 +570,8 @@ public class EvaluatorFactory {
 		tokenizer.addOperator(OPERATOR_MULTIPLY);
 		tokenizer.addOperator(OPERATOR_MOD);
 		tokenizer.addOperator(OPERATOR_POWER);
+
+		tokenizer.addModifier(MODIFIER_OP);
 	}
 
 	public interface IClipProvider {
