@@ -433,7 +433,7 @@ public class EvaluatorFactory {
 
 	}
 
-	private static NodeOp createConstNode(final float value) {
+	private static ExprFactory createConstNode(final float value) {
 		return new ExprFactory() {
 			@Override
 			public Expr createExpr(List<Node> children, Scope scope) {
@@ -699,7 +699,276 @@ public class EvaluatorFactory {
 		}
 	}
 
-	private final Map<String, ExprFactory> globalScope = Maps.newHashMap();
+	private abstract static class SimpleExprFactory implements ExprFactory {
+
+		@Override
+		public Expr createExpr(List<Node> children, Scope scope) {
+			validateArgs(children);
+
+			final ImmutableList.Builder<Expr> argsBuilder = ImmutableList.builder();
+			for (Node child : children)
+				argsBuilder.add(createExprFromNode(child, scope));
+
+			return createExpr(argsBuilder.build());
+		}
+
+		protected abstract void validateArgs(List<Node> args);
+
+		protected abstract Expr createExpr(List<Expr> args);
+
+		@Override
+		public String toString(List<Node> children) {
+			return "<built-in>";
+		}
+
+	}
+
+	private abstract static class Function extends SimpleExprFactory {
+
+		@Override
+		protected Expr createExpr(final List<Expr> args) {
+			return new Expr() {
+				@Override
+				public float evaluate(Map<String, Float> vars) {
+					return Function.this.evaluate(vars, args);
+				}
+			};
+		}
+
+		protected abstract float evaluate(Map<String, Float> vars, List<Expr> args);
+
+		@Override
+		public String toString(List<Node> children) {
+			return "<built-in>";
+		}
+
+	}
+
+	private abstract static class UnaryFunction extends Function {
+		@Override
+		protected void validateArgs(List<Node> args) {
+			final int argCount = args.size();
+			Preconditions.checkArgument(argCount == 1, "Invalid number of args, expected 1, got %s", argCount);
+		}
+
+		@Override
+		protected float evaluate(Map<String, Float> vars, List<Expr> args) {
+			final Expr argExpr = args.get(0);
+			final float arg = argExpr.evaluate(vars);
+			return evaluate(arg);
+		}
+
+		protected abstract float evaluate(float arg);
+	}
+
+	private abstract static class BinaryFunction extends Function {
+
+		@Override
+		protected void validateArgs(List<Node> args) {
+			final int argCount = args.size();
+			Preconditions.checkArgument(argCount == 2, "Invalid number of args, expected 2, got %s", argCount);
+		}
+
+		@Override
+		protected float evaluate(Map<String, Float> vars, List<Expr> args) {
+			final Expr leftExpr = args.get(0);
+			final float leftArg = leftExpr.evaluate(vars);
+
+			final Expr rightExpr = args.get(1);
+			final float rightArg = rightExpr.evaluate(vars);
+			return evaluate(leftArg, rightArg);
+		}
+
+		protected abstract float evaluate(float leftArg, float rightArg);
+	}
+
+	private abstract static class AggregateFunction extends SimpleExprFactory {
+		@Override
+		protected void validateArgs(List<Node> args) {
+			Preconditions.checkArgument(args.size() > 0, "Expected at least one arg");
+		}
+
+		@Override
+		protected Expr createExpr(List<Expr> args) {
+			if (args.size() == 1) {
+				return args.get(0);
+			} else if (args.size() == 2) {
+				final Expr left = args.get(0);
+				final Expr right = args.get(1);
+				return new Expr() {
+					@Override
+					public float evaluate(Map<String, Float> args) {
+						final float leftValue = left.evaluate(args);
+						final float rightValue = right.evaluate(args);
+						return AggregateFunction.this.evaluate(leftValue, rightValue);
+					}
+				};
+			} else {
+				final Expr head = args.get(0);
+				final List<Expr> tail = args.subList(1, args.size());
+				return new Expr() {
+					@Override
+					public float evaluate(Map<String, Float> args) {
+						float result = head.evaluate(args);
+						for (Expr e : tail) {
+							final float val = e.evaluate(args);
+							result = AggregateFunction.this.evaluate(result, val);
+						}
+
+						return result;
+					}
+				};
+			}
+		}
+
+		protected abstract float evaluate(float accumulator, float arg);
+	}
+
+	private static final Map<String, ExprFactory> builtIns;
+
+	static {
+		final ImmutableMap.Builder<String, ExprFactory> builder = ImmutableMap.builder();
+		builder.put("PI", createConstNode((float)Math.PI));
+		builder.put("E", createConstNode((float)Math.E));
+		builder.put("abs", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return Math.abs(arg);
+			}
+		});
+		builder.put("sin", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.sin(arg);
+			}
+		});
+		builder.put("cos", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.cos(arg);
+			}
+		});
+		builder.put("tan", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.tan(arg);
+			}
+		});
+		builder.put("asin", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.asin(arg);
+			}
+		});
+		builder.put("acos", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.acos(arg);
+			}
+		});
+		builder.put("atan", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.atan(arg);
+			}
+		});
+		builder.put("sinh", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.sinh(arg);
+			}
+		});
+		builder.put("cosh", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.cosh(arg);
+			}
+		});
+		builder.put("exp", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.exp(arg);
+			}
+		});
+		builder.put("log", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.log(arg);
+			}
+		});
+		builder.put("log10", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.log10(arg);
+			}
+		});
+		builder.put("floor", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.floor(arg);
+			}
+		});
+		builder.put("ceil", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.ceil(arg);
+			}
+		});
+		builder.put("round", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return Math.round(arg);
+			}
+		});
+		builder.put("sgn", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return Math.signum(arg);
+			}
+		});
+		builder.put("sqrt", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.sqrt(arg);
+			}
+		});
+		builder.put("deg", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.toDegrees(arg);
+			}
+		});
+		builder.put("rad", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.toRadians(arg);
+			}
+		});
+
+		builder.put("atan2", new BinaryFunction() {
+			@Override
+			protected float evaluate(float leftArg, float rightArg) {
+				return (float)Math.atan2(leftArg, rightArg);
+			}
+		});
+
+		builder.put("max", new AggregateFunction() {
+			@Override
+			protected float evaluate(float leftArg, float rightArg) {
+				return Math.max(leftArg, rightArg);
+			}
+		});
+		builder.put("min", new AggregateFunction() {
+			@Override
+			protected float evaluate(float leftArg, float rightArg) {
+				return Math.min(leftArg, rightArg);
+			}
+		});
+
+		builtIns = builder.build();
+	}
+
+	private final Map<String, ExprFactory> globalScope = Maps.newHashMap(builtIns);
 
 	private final List<IStatement> statements = Lists.newArrayList();
 

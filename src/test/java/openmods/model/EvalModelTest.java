@@ -262,6 +262,53 @@ public class EvalModelTest {
 	}
 
 	@Test
+	public void testBuiltInConst() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("ans := E / 4");
+		factory.appendStatement("tau := 2 * PI()");
+
+		start().run(factory)
+				.put("ans", (float)Math.E / 4f)
+				.put("tau", 2f * (float)Math.PI).validate();
+	}
+
+	@Test
+	public void testBuiltInUnaryFunction() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("ans := sin(5 / a)");
+
+		start().put("a", 6)
+				.run(factory)
+				.put("ans", (float)Math.sin(5f / 6f)).validate();
+	}
+
+	@Test
+	public void testBuiltInBinaryFunction() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("ans := atan2(5 / a, b / 3)");
+
+		start().put("a", 6)
+				.put("b", 8)
+				.run(factory)
+				.put("ans", (float)Math.atan2(5f / 6f, 8f / 3f)).validate();
+	}
+
+	@Test
+	public void testBuiltInAggregateFunction() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("ans1 := max(3)");
+		factory.appendStatement("ans2 := max(5,3)");
+		factory.appendStatement("ans3 := max(-4,a,5)");
+
+		start().put("a", 7)
+				.run(factory)
+				.put("ans1", 3f)
+				.put("ans2", 5f)
+				.put("ans3", 7f)
+				.validate();
+	}
+
+	@Test
 	public void testSimpleMacro() {
 		EvaluatorFactory factory = new EvaluatorFactory();
 		factory.appendStatement("f(x) := 2 * x + x / 2");
@@ -321,7 +368,7 @@ public class EvalModelTest {
 	@Test
 	public void testArgMacroOverride() {
 		EvaluatorFactory factory = new EvaluatorFactory();
-		// decided to always looks for macro first, since we have no information if it's global macro or local parameter
+		// decided to always look for macro first, since we have no information if it's global macro or local parameter
 		factory.appendStatement("g() := 13");
 		factory.appendStatement("g := 75");
 		factory.appendStatement("ans := g * g()");
@@ -353,6 +400,17 @@ public class EvalModelTest {
 		start().put("a", 6)
 				.run(factory)
 				.put("ans", 3 * (8 + 6) + 4 * 7).validate();
+	}
+
+	@Test
+	public void testHighOrderMacroWithFunction() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("sq(x, f) := f(x) * f(x)");
+		factory.appendStatement("ans := sq(2 * a, sin)");
+
+		start().put("a", 6)
+				.run(factory)
+				.put("ans", (float)Math.sin(2f * 6f) * (float)Math.sin(2f * 6f)).validate();
 	}
 
 	private static final IJoint DUMMY_JOINT = new IJoint() {
