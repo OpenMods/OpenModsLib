@@ -511,6 +511,22 @@ public class EvalModelTest {
 		start().put("a", 1).put("b", 1).run(factory).put("ans1", 1).put("ans2", 1).validate();
 	}
 
+	@Test
+	public void testBooleanIfStatement() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("ans := number(if(s = 0, bool(a), bool(b)))");
+
+		start().put("s", 0).put("a", 0).put("b", 0).run(factory).put("ans", 0).validate();
+		start().put("s", 0).put("a", 0).put("b", 1).run(factory).put("ans", 0).validate();
+		start().put("s", 0).put("a", 1).put("b", 0).run(factory).put("ans", 1).validate();
+		start().put("s", 0).put("a", 1).put("b", 1).run(factory).put("ans", 1).validate();
+
+		start().put("s", 1).put("a", 0).put("b", 0).run(factory).put("ans", 0).validate();
+		start().put("s", 1).put("a", 0).put("b", 1).run(factory).put("ans", 1).validate();
+		start().put("s", 1).put("a", 1).put("b", 0).run(factory).put("ans", 0).validate();
+		start().put("s", 1).put("a", 1).put("b", 1).run(factory).put("ans", 1).validate();
+	}
+
 	private static final IJoint DUMMY_JOINT = new IJoint() {
 
 		@Override

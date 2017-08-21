@@ -1514,7 +1514,7 @@ public class EvaluatorFactory {
 			}
 		});
 
-		builder.put("if", new NumericExprFactory() {
+		builder.put("if", new ExprFactory() {
 			@Override
 			public NumericExpr createNumericExpr(List<Node> children, Scope scope) {
 				Preconditions.checkArgument(children.size() == 3, "Expected 3 arg for 'if'");
@@ -1533,6 +1533,31 @@ public class EvaluatorFactory {
 					return new NumericExpr() {
 						@Override
 						public float evaluate(Map<String, Float> args) {
+							final boolean selector = cond.evaluate(args);
+							return (selector? ifTrue : ifFalse).evaluate(args);
+						}
+					};
+				}
+			}
+
+			@Override
+			public BooleanExpr createBooleanExpr(List<Node> children, Scope scope) {
+				Preconditions.checkArgument(children.size() == 3, "Expected 3 arg for 'if'");
+				final BooleanExpr cond = children.get(0).createBooleanExprFromNode(scope);
+				final Node ifTrueNode = children.get(1);
+				final Node ifFalseNode = children.get(2);
+
+				final Optional<Boolean> constCond = cond.getConstValue();
+
+				if (constCond.isPresent()) {
+					return (constCond.get()? ifTrueNode : ifFalseNode).createBooleanExprFromNode(scope);
+				} else {
+					final BooleanExpr ifTrue = ifTrueNode.createBooleanExprFromNode(scope);
+					final BooleanExpr ifFalse = ifFalseNode.createBooleanExprFromNode(scope);
+
+					return new BooleanExpr() {
+						@Override
+						public boolean evaluate(Map<String, Float> args) {
 							final boolean selector = cond.evaluate(args);
 							return (selector? ifTrue : ifFalse).evaluate(args);
 						}
