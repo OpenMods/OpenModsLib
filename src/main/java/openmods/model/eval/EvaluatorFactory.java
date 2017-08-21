@@ -1519,16 +1519,25 @@ public class EvaluatorFactory {
 			public NumericExpr createNumericExpr(List<Node> children, Scope scope) {
 				Preconditions.checkArgument(children.size() == 3, "Expected 3 arg for 'if'");
 				final BooleanExpr cond = children.get(0).createBooleanExprFromNode(scope);
-				final NumericExpr ifTrue = children.get(1).createNumericExprFromNode(scope);
-				final NumericExpr ifFalse = children.get(2).createNumericExprFromNode(scope);
+				final Node ifTrueNode = children.get(1);
+				final Node ifFalseNode = children.get(2);
 
-				return new NumericExpr() {
-					@Override
-					public float evaluate(Map<String, Float> args) {
-						final boolean selector = cond.evaluate(args);
-						return (selector? ifTrue : ifFalse).evaluate(args);
-					}
-				};
+				final Optional<Boolean> constCond = cond.getConstValue();
+
+				if (constCond.isPresent()) {
+					return (constCond.get()? ifTrueNode : ifFalseNode).createNumericExprFromNode(scope);
+				} else {
+					final NumericExpr ifTrue = ifTrueNode.createNumericExprFromNode(scope);
+					final NumericExpr ifFalse = ifFalseNode.createNumericExprFromNode(scope);
+
+					return new NumericExpr() {
+						@Override
+						public float evaluate(Map<String, Float> args) {
+							final boolean selector = cond.evaluate(args);
+							return (selector? ifTrue : ifFalse).evaluate(args);
+						}
+					};
+				}
 			}
 		});
 

@@ -479,6 +479,26 @@ public class EvalModelTest {
 	}
 
 	@Test
+	public void testBooleanStatementLaziness() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		// note: this only works with constant expression as condition
+		factory.appendStatement("fib(n) := if(n < 2, 1, fib(n - 1) + fib(n - 2))");
+		factory.appendStatement("ans1 := fib(1)");
+		factory.appendStatement("ans2 := fib(2)");
+		factory.appendStatement("ans3 := fib(3)");
+		factory.appendStatement("ans4 := fib(4)");
+		factory.appendStatement("ans5 := fib(5)");
+
+		start().put("n", 1).run(factory)
+				.put("ans1", 1)
+				.put("ans2", 2)
+				.put("ans3", 3)
+				.put("ans4", 5)
+				.put("ans5", 8)
+				.validate();
+	}
+
+	@Test
 	public void testUniversalMacro() {
 		EvaluatorFactory factory = new EvaluatorFactory();
 		factory.appendStatement("f(a, b, o) := o(a, b)");
