@@ -63,7 +63,7 @@ public class EvalModelTest {
 	public void testSingleFloatVarArithmetics() {
 		EvaluatorFactory factory = new EvaluatorFactory();
 		factory.appendStatement("a := 1.3 / 2.5 + 3.2 - -4.4 * 56");
-		factory.appendStatement("b := (1.4 + 4.5) * +5.4 + 2 ^ 3");
+		factory.appendStatement("b := (1.4 + 4.5) * +5.4 + 2 ** 3");
 
 		start().run(factory)
 				.put("a", 1.3f / 2.5f + 3.2f - -4.4f * 56f)
@@ -139,10 +139,10 @@ public class EvalModelTest {
 		testSingleVarExpr("a - 0", "a", a, a);
 		testSingleVarExpr("(a / 6) - 0", "a", a, a / 6);
 
-		testSingleVarExpr("2 ^ 2 ^ a", "a", a, (float)Math.pow(4, a));
+		testSingleVarExpr("2 ** 2 ** a", "a", a, (float)Math.pow(4, a));
 
-		testSingleVarExpr("(a + 4) ^ 1", "a", a, a + 4);
-		testSingleVarExpr("1 ^ (a + 4)", "a", a, 1);
+		testSingleVarExpr("(a + 4) ** 1", "a", a, a + 4);
+		testSingleVarExpr("1 ** (a + 4)", "a", a, 1);
 
 		testSingleVarExpr("a % 1", "a", a, a % 1);
 	}
@@ -211,16 +211,16 @@ public class EvalModelTest {
 		testSingleVarExpr("inf - inf", "inf", inf, nan);
 		testSingleVarExpr("inf - -inf", "inf", inf, inf);
 
-		testSingleVarExpr("1 ^ zero", "zero", zero, 1);
-		testSingleVarExpr("zero ^ 1", "zero", zero, zero);
+		testSingleVarExpr("1 ** zero", "zero", zero, 1);
+		testSingleVarExpr("zero ** 1", "zero", zero, zero);
 
-		testSingleVarExpr("inf ^ inf", "inf", inf, inf);
+		testSingleVarExpr("inf ** inf", "inf", inf, inf);
 
-		testSingleVarExpr("nan ^ 0", "nan", nan, 1);
-		testSingleVarExpr("inf ^ 0", "inf", inf, 1);
+		testSingleVarExpr("nan ** 0", "nan", nan, 1);
+		testSingleVarExpr("inf ** 0", "inf", inf, 1);
 
-		testSingleVarExpr("0 ^ zero", "zero", zero, 1);
-		testSingleVarExpr("zero ^ 0", "zero", zero, 1);
+		testSingleVarExpr("0 ** zero", "zero", zero, 1);
+		testSingleVarExpr("zero ** 0", "zero", zero, 1);
 
 		testSingleVarExpr("nan % 1", "nan", nan, nan);
 		testSingleVarExpr("1 % nan", "nan", nan, nan);
@@ -417,11 +417,78 @@ public class EvalModelTest {
 	public void testHighOrderMacroWithRawOp() {
 		EvaluatorFactory factory = new EvaluatorFactory();
 		factory.appendStatement("g(a, f) := f(a, 7)");
-		factory.appendStatement("ans := g(8 + a, @^)");
+		factory.appendStatement("ans := g(8 + a, @**)");
 
 		start().put("a", 6)
 				.run(factory)
 				.put("ans", (float)Math.pow(8f + 6f, 7f)).validate();
+	}
+
+	@Test
+	public void testSingleVarIfStatement() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("ans := if(a > 3, a / 3, a + 6)");
+
+		start().put("a", -3).run(factory).put("ans", -3f + 6f).validate();
+		start().put("a", 5).run(factory).put("ans", 5f / 3f).validate();
+	}
+
+	@Test
+	public void testDoubleIfStatement() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("ans := if(a = b - 1, 1, 0)");
+
+		start().put("a", -3).put("b", -2).run(factory).put("ans", 1).validate();
+		start().put("a", -3).put("b", -2.1f).run(factory).put("ans", 0).validate();
+		start().put("a", -3.2f).put("b", -2).run(factory).put("ans", 0).validate();
+	}
+
+	@Test
+	public void testBooleanStatement() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("ans := if(a = 1 | a = 2, a, 0)");
+
+		start().put("a", -1).run(factory).put("ans", 0).validate();
+		start().put("a", 0).run(factory).put("ans", 0).validate();
+		start().put("a", 1).run(factory).put("ans", 1).validate();
+		start().put("a", 2).run(factory).put("ans", 2).validate();
+		start().put("a", 3).run(factory).put("ans", 0).validate();
+	}
+
+	@Test
+	public void testBooleanStatementsOptimizations() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("ans1 := number(a > 5 | true)");
+		factory.appendStatement("ans2 := number(!true)");
+		factory.appendStatement("ans3 := number(a > 3 ^ true)");
+
+		start().put("a", -1).run(factory).put("ans1", 1).put("ans2", 0).put("ans3", 1).validate();
+		start().put("a", 5).run(factory).put("ans1", 1).put("ans2", 0).put("ans3", 0).validate();
+	}
+
+	@Test
+	public void testBooleanMacro() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("f(a,b) := (!a & b) | (a & !b)");
+		factory.appendStatement("ans := number(f(bool(a), bool(b)))");
+
+		start().put("a", 0).put("b", 0).run(factory).put("ans", 0).validate();
+		start().put("a", 1).put("b", 0).run(factory).put("ans", 1).validate();
+		start().put("a", 0).put("b", 1).run(factory).put("ans", 1).validate();
+		start().put("a", 1).put("b", 1).run(factory).put("ans", 0).validate();
+	}
+
+	@Test
+	public void testUniversalMacro() {
+		EvaluatorFactory factory = new EvaluatorFactory();
+		factory.appendStatement("f(a, b, o) := o(a, b)");
+		factory.appendStatement("ans1 := number(f(bool(a), bool(b), @&))");
+		factory.appendStatement("ans2 := f(a, b, @*))");
+
+		start().put("a", 0).put("b", 0).run(factory).put("ans1", 0).put("ans2", 0).validate();
+		start().put("a", 1).put("b", 0).run(factory).put("ans1", 0).put("ans2", 0).validate();
+		start().put("a", 0).put("b", 1).run(factory).put("ans1", 0).put("ans2", 0).validate();
+		start().put("a", 1).put("b", 1).run(factory).put("ans1", 1).put("ans2", 1).validate();
 	}
 
 	private static final IJoint DUMMY_JOINT = new IJoint() {
