@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.PeekingIterator;
+import com.google.common.math.DoubleMath;
 import info.openmods.calc.executable.OperatorDictionary;
 import info.openmods.calc.parsing.ast.IAstParser;
 import info.openmods.calc.parsing.ast.IModifierStateTransition;
@@ -1439,10 +1440,28 @@ public class EvaluatorFactory {
 				return (float)Math.exp(arg);
 			}
 		});
+		builder.put("expm1", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.expm1(arg);
+			}
+		});
 		builder.put("log", new UnaryFunction() {
 			@Override
 			protected float evaluate(float arg) {
 				return (float)Math.log(arg);
+			}
+		});
+		builder.put("log2", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)DoubleMath.log2(arg);
+			}
+		});
+		builder.put("logp1", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return (float)Math.log1p(arg);
 			}
 		});
 		builder.put("log10", new UnaryFunction() {
@@ -1466,7 +1485,14 @@ public class EvaluatorFactory {
 		builder.put("round", new UnaryFunction() {
 			@Override
 			protected float evaluate(float arg) {
-				return Math.round(arg);
+				return (float)Math.rint(arg);
+			}
+		});
+		builder.put("trunc", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				if (Float.isInfinite(arg) || Float.isNaN(arg)) return arg;
+				return (int)(arg);
 			}
 		});
 		builder.put("sgn", new UnaryFunction() {
@@ -1498,6 +1524,12 @@ public class EvaluatorFactory {
 			@Override
 			protected float evaluate(float leftArg, float rightArg) {
 				return (float)Math.atan2(leftArg, rightArg);
+			}
+		});
+		builder.put("hypot", new BinaryFunction() {
+			@Override
+			protected float evaluate(float leftArg, float rightArg) {
+				return (float)Math.hypot(leftArg, rightArg);
 			}
 		});
 
