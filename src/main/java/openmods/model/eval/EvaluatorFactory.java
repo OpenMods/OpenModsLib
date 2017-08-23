@@ -26,6 +26,7 @@ import info.openmods.calc.parsing.token.Tokenizer;
 import info.openmods.calc.types.fp.DoubleParser;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.model.animation.IClip;
 import net.minecraftforge.common.model.animation.IJoint;
@@ -1517,6 +1518,12 @@ public class EvaluatorFactory {
 			@Override
 			protected float evaluate(float arg) {
 				return (float)Math.toRadians(arg);
+			}
+		});
+		builder.put("wrap_deg", new UnaryFunction() {
+			@Override
+			protected float evaluate(float arg) {
+				return MathHelper.wrapDegrees(arg);
 			}
 		});
 
