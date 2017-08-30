@@ -34,12 +34,15 @@ public class EvalModelState {
 
 	private final Map<String, Float> args;
 
-	private EvalModelState(Map<String, Float> args) {
+	private final boolean shortLived;
+
+	private EvalModelState(Map<String, Float> args, boolean quickCache) {
 		this.args = ImmutableMap.copyOf(args);
+		this.shortLived = quickCache;
 	}
 
 	private EvalModelState() {
-		this(ImmutableMap.<String, Float> of());
+		this(ImmutableMap.<String, Float> of(), false);
 	}
 
 	public static EvalModelState create() {
@@ -47,16 +50,34 @@ public class EvalModelState {
 	}
 
 	public static EvalModelState create(Map<String, Float> args) {
-		return new EvalModelState(args);
+		return create(args, false);
+	}
+
+	public static EvalModelState create(Map<String, Float> args, boolean shortLived) {
+		return new EvalModelState(args, false);
 	}
 
 	public EvalModelState withArg(String name, float value) {
 		Map<String, Float> copy = Maps.newHashMap(args);
 		copy.put(name, value);
-		return new EvalModelState(copy);
+		return new EvalModelState(copy, this.shortLived);
+	}
+
+	public EvalModelState withArg(String name, float value, boolean isRapidChanging) {
+		Map<String, Float> copy = Maps.newHashMap(args);
+		copy.put(name, value);
+		return new EvalModelState(copy, this.shortLived || isRapidChanging);
+	}
+
+	public EvalModelState markShortLived() {
+		return new EvalModelState(args, true);
 	}
 
 	Map<String, Float> getArgs() {
 		return args;
+	}
+
+	boolean isShortLived() {
+		return shortLived;
 	}
 }

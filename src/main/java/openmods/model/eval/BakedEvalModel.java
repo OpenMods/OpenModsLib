@@ -1,6 +1,7 @@
 package openmods.model.eval;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -16,7 +17,10 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelStateComposition;
+import net.minecraftforge.common.model.IModelPart;
 import net.minecraftforge.common.model.IModelState;
+import net.minecraftforge.common.model.TRSRTransformation;
+import net.minecraftforge.common.model.animation.IJoint;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import openmods.model.BakedModelAdapter;
 
@@ -26,9 +30,9 @@ public class BakedEvalModel extends BakedModelAdapter {
 	private IModelState originalState;
 	private VertexFormat format;
 	private Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter;
-	private IEvaluator evaluator;
+	private ITransformEvaluator evaluator;
 
-	public BakedEvalModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, IEvaluator evaluator) {
+	public BakedEvalModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, ITransformEvaluator evaluator) {
 		super(model.bake(state, format, bakedTextureGetter), MapWrapper.getTransforms(state));
 		this.model = model;
 		this.originalState = state;
@@ -42,16 +46,33 @@ public class BakedEvalModel extends BakedModelAdapter {
 		return model.bake(compositeState, format, bakedTextureGetter);
 	}
 
-	private final LoadingCache<Map<String, Float>, IBakedModel> cache = CacheBuilder.newBuilder()
+	private final CacheLoader<Map<String, Float>, IBakedModel> loader = new CacheLoader<Map<String, Float>, IBakedModel>() {
+		@Override
+		public IBakedModel load(final Map<String, Float> key) throws Exception {
+			final IModelState clipTransform = new IModelState() {
+				@Override
+				public Optional<TRSRTransformation> apply(Optional<? extends IModelPart> part) {
+					if (!part.isPresent()) return Optional.absent();
+
+					final IModelPart maybeJoint = part.get();
+					if (!(maybeJoint instanceof IJoint)) return Optional.absent();
+
+					final IJoint joint = (IJoint)part.get();
+					return Optional.of(evaluator.evaluate(joint, key));
+				}
+			};
+			return bakeModelWithTransform(clipTransform);
+		}
+	};
+
+	private final LoadingCache<Map<String, Float>, IBakedModel> longTermCache = CacheBuilder.newBuilder()
 			.expireAfterAccess(5, TimeUnit.MINUTES)
-			.build(
-					new CacheLoader<Map<String, Float>, IBakedModel>() {
-						@Override
-						public IBakedModel load(Map<String, Float> key) throws Exception {
-							final IModelState clipTransform = evaluator.evaluate(key);
-							return bakeModelWithTransform(clipTransform);
-						}
-					});
+			.build(loader);
+
+	private final LoadingCache<Map<String, Float>, IBakedModel> shortTermCache = CacheBuilder.newBuilder()
+			.expireAfterAccess(100, TimeUnit.MILLISECONDS)
+			.maximumSize(200)
+			.build(loader);
 
 	@Override
 	public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
@@ -60,7 +81,7 @@ public class BakedEvalModel extends BakedModelAdapter {
 			final IExtendedBlockState extState = (IExtendedBlockState)state;
 
 			final EvalModelState args = extState.getValue(EvalModelState.PROPERTY);
-			if (args != null) return cache.getUnchecked(args.getArgs()).getQuads(state, side, rand);
+			if (args != null) { return (args.isShortLived()? shortTermCache : longTermCache).getUnchecked(args.getArgs()).getQuads(state, side, rand); }
 		}
 
 		return super.getQuads(state, side, rand);
