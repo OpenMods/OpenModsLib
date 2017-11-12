@@ -11,7 +11,7 @@ import openmods.Log;
 
 public class TessellatorPool {
 
-	private final Queue<Tessellator> pool = new ConcurrentLinkedQueue<Tessellator>();
+	private final Queue<Tessellator> pool = new ConcurrentLinkedQueue<>();
 	private final AtomicInteger count = new AtomicInteger();
 
 	public static final TessellatorPool instance = new TessellatorPool();

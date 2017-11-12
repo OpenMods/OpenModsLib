@@ -13,7 +13,7 @@ public class SneakyThrower {
 		}
 	}
 
-	private static final Thrower<DummyException> HELPER = new Thrower<DummyException>();
+	private static final Thrower<DummyException> HELPER = new Thrower<>();
 
 	public static DummyException sneakyThrow(Throwable exception) {
 		HELPER.sneakyThrow(exception);

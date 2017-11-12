@@ -31,6 +31,6 @@ public class BoundingBoxMap<T> {
 	}
 
 	public static <T> BoundingBoxMap<T> create() {
-		return new BoundingBoxMap<T>();
+		return new BoundingBoxMap<>();
 	}
 }

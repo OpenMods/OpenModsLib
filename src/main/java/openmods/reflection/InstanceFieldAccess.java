@@ -1,6 +1,5 @@
 package openmods.reflection;
 
-import com.google.common.base.Throwables;
 import java.lang.reflect.Field;
 
 public class InstanceFieldAccess<T> {
@@ -23,22 +22,22 @@ public class InstanceFieldAccess<T> {
 	public T get() {
 		try {
 			return (T)field.get(target);
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
 	public void set(T value) {
 		try {
 			field.set(target, value);
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
 	public static <T> InstanceFieldAccess<T> create(Class<?> cls, Object target, String... names) {
 		Field f = ReflectionHelper.getField(cls, names);
-		return new InstanceFieldAccess<T>(target, f, false); // log done in ReflectionHelper
+		return new InstanceFieldAccess<>(target, f, false); // log done in ReflectionHelper
 	}
 
 	public static <T> InstanceFieldAccess<T> create(Class<?> cls, String... names) {

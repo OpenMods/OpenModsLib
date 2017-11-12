@@ -34,7 +34,7 @@ public class GenericInventory implements IInventory {
 	private IItemHandlerModifiable handler;
 
 	public GenericInventory(String name, boolean isInvNameLocalized, int size) {
-		callbacks = new ArrayList<IInventoryCallback>();
+		callbacks = new ArrayList<>();
 		this.isInvNameLocalized = isInvNameLocalized;
 		this.slotsCount = size;
 		this.inventoryTitle = name;

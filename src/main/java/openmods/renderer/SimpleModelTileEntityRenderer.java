@@ -28,6 +28,6 @@ public class SimpleModelTileEntityRenderer<T extends OpenTileEntity> extends Til
 	}
 
 	public static <T extends OpenTileEntity> TileEntitySpecialRenderer<T> create(ITileEntityModel<T> model, ResourceLocation texture) {
-		return new SimpleModelTileEntityRenderer<T>(model, texture);
+		return new SimpleModelTileEntityRenderer<>(model, texture);
 	}
 }

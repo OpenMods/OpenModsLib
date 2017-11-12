@@ -1,11 +1,12 @@
 package openmods.utils;
 
-import com.google.common.base.Throwables;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import javax.annotation.Nonnull;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -60,8 +61,8 @@ public class ItemUtils {
 			CompressedStreamTools.write(tag, output);
 			byte[] hash = digest.digest();
 			return new String(Hex.encodeHex(hash));
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
+		} catch (IOException | NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
 		}
 	}
 

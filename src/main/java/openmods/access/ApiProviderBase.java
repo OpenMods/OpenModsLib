@@ -14,7 +14,7 @@ public abstract class ApiProviderBase<A> {
 	}
 
 	public ApiProviderBase() {
-		this.apiRegistry = new ApiProviderRegistry<A>(markerType);
+		this.apiRegistry = new ApiProviderRegistry<>(markerType);
 	}
 
 	public void registerClass(Class<? extends A> cls) {

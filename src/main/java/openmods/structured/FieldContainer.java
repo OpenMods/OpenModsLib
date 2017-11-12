@@ -9,7 +9,7 @@ public abstract class FieldContainer implements IStructureContainer<IStructureEl
 
 	private static final int NULL = -1;
 
-	private final TObjectIntMap<Field> fields = new TObjectIntHashMap<Field>(Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, NULL);
+	private final TObjectIntMap<Field> fields = new TObjectIntHashMap<>(Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, NULL);
 
 	@Override
 	public void createElements(IElementAddCallback<IStructureElement> callback) {

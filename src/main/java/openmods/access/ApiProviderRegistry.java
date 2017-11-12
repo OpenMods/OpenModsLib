@@ -77,7 +77,7 @@ public class ApiProviderRegistry<A> {
 
 		final ApiImplementation meta = cls.getAnnotation(ApiImplementation.class);
 
-		ApiInstanceProvider<T> provider = isCacheable(meta)? new ApiInstanceProvider.CachedInstance<T>(cls) : new ApiInstanceProvider.NewInstance<T>(cls);
+		ApiInstanceProvider<T> provider = isCacheable(meta)? new ApiInstanceProvider.CachedInstance<>(cls) : new ApiInstanceProvider.NewInstance<>(cls);
 		registerInterfaces(cls, provider, shouldIncludeSuper(meta));
 	}
 
@@ -89,7 +89,7 @@ public class ApiProviderRegistry<A> {
 
 		final ApiSingleton meta = cls.getAnnotation(ApiSingleton.class);
 
-		ApiInstanceProvider<T> provider = new ApiInstanceProvider.Singleton<T>(obj);
+		ApiInstanceProvider<T> provider = new ApiInstanceProvider.Singleton<>(obj);
 		registerInterfaces(cls, provider, shouldIncludeSuper(meta));
 	}
 

@@ -2,7 +2,6 @@ package openmods.reflection;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
@@ -32,8 +31,8 @@ public class MethodAccess {
 		public R call(Object target, Object... args) {
 			try {
 				return (R)method.invoke(target, args);
-			} catch (Throwable t) {
-				throw Throwables.propagate(t);
+			} catch (ReflectiveOperationException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}
@@ -56,7 +55,7 @@ public class MethodAccess {
 	}
 
 	public static <R> Function0<R> create(Class<? extends R> returnCls, Class<?> target, String... names) {
-		return new Function0Impl<R>(returnCls, ReflectionHelper.getMethod(target, names));
+		return new Function0Impl<>(returnCls, ReflectionHelper.getMethod(target, names));
 	}
 
 	// R(P1)
@@ -77,7 +76,7 @@ public class MethodAccess {
 	}
 
 	public static <R, P1> Function1<R, P1> create(Class<? extends R> returnCls, Class<?> target, Class<? extends P1> p1, String... names) {
-		return new Function1Impl<R, P1>(returnCls, ReflectionHelper.getMethod(target, names, p1));
+		return new Function1Impl<>(returnCls, ReflectionHelper.getMethod(target, names, p1));
 	}
 
 	// R(P1, P2)
@@ -98,7 +97,7 @@ public class MethodAccess {
 	}
 
 	public static <R, P1, P2> Function2<R, P1, P2> create(Class<? extends R> returnCls, Class<?> target, Class<? extends P1> p1, Class<? extends P2> p2, String... names) {
-		return new Function2Impl<R, P1, P2>(returnCls, ReflectionHelper.getMethod(target, names, p1, p2));
+		return new Function2Impl<>(returnCls, ReflectionHelper.getMethod(target, names, p1, p2));
 	}
 
 	// R(P1, P2, P3)
@@ -119,7 +118,7 @@ public class MethodAccess {
 	}
 
 	public static <R, P1, P2, P3> Function3<R, P1, P2, P3> create(Class<? extends R> returnCls, Class<?> target, Class<? extends P1> p1, Class<? extends P2> p2, Class<? extends P3> p3, String... names) {
-		return new Function3Impl<R, P1, P2, P3>(returnCls, ReflectionHelper.getMethod(target, names, p1, p2, p3));
+		return new Function3Impl<>(returnCls, ReflectionHelper.getMethod(target, names, p1, p2, p3));
 	}
 
 	// R(P1, P2, P3, P4)
@@ -140,7 +139,7 @@ public class MethodAccess {
 	}
 
 	public static <R, P1, P2, P3, P4> Function4<R, P1, P2, P3, P4> create(Class<? extends R> returnCls, Class<?> target, Class<? extends P1> p1, Class<? extends P2> p2, Class<? extends P3> p3, Class<? extends P4> p4, String... names) {
-		return new Function4Impl<R, P1, P2, P3, P4>(returnCls, ReflectionHelper.getMethod(target, names, p1, p2, p3, p4));
+		return new Function4Impl<>(returnCls, ReflectionHelper.getMethod(target, names, p1, p2, p3, p4));
 	}
 
 	// R(P1, P2, P3, P4, P5)
@@ -161,7 +160,7 @@ public class MethodAccess {
 	}
 
 	public static <R, P1, P2, P3, P4, P5> Function5<R, P1, P2, P3, P4, P5> create(Class<? extends R> returnCls, Class<?> target, Class<? extends P1> p1, Class<? extends P2> p2, Class<? extends P3> p3, Class<? extends P4> p4, Class<? extends P5> p5, String... names) {
-		return new Function5Impl<R, P1, P2, P3, P4, P5>(returnCls, ReflectionHelper.getMethod(target, names, p1, p2, p3, p4, p5));
+		return new Function5Impl<>(returnCls, ReflectionHelper.getMethod(target, names, p1, p2, p3, p4, p5));
 	}
 
 	// helpers

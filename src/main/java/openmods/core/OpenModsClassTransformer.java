@@ -2,7 +2,6 @@ package openmods.core;
 
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -269,7 +268,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 			return VisitorHelper.apply(bytes, name, INCLUDING_CV);
 		} catch (Throwable t) {
 			Log.severe(t, "Failed to apply including transformer on %s(%s)", name, transformedName);
-			throw Throwables.propagate(t);
+			throw t;
 		}
 	}
 

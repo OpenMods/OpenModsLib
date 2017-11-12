@@ -1,7 +1,6 @@
 package openmods.config.game;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import java.util.Map;
 
@@ -30,8 +29,8 @@ public class FactoryRegistry<T> {
 
 		try {
 			return cls.newInstance();
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
+		} catch (ReflectiveOperationException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }

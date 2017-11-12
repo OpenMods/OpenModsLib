@@ -1,6 +1,5 @@
 package openmods.structured;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -158,7 +157,7 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 
 			if (input.readableBytes() != 0) throw new ConsistencyCheckFailed("Element payload not fully consumed");
 		} catch (IOException e) {
-			throw Throwables.propagate(e);
+			throw new RuntimeException(e);
 		}
 	}
 }

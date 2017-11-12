@@ -36,7 +36,7 @@ public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implemen
 	private E value;
 
 	public static <E extends Enum<E>> SyncableEnum<E> create(E initialValue) {
-		return new SyncableEnum<E>(initialValue);
+		return new SyncableEnum<>(initialValue);
 	}
 
 	public SyncableEnum(E value) {

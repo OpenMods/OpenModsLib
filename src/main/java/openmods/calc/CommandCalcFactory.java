@@ -2,7 +2,6 @@ package openmods.calc;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
@@ -10,6 +9,7 @@ import info.openmods.calc.ExprType;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
@@ -269,8 +269,8 @@ public class CommandCalcFactory {
 				if (canonicalDir.equals(target)) return true;
 				target = target.getParentFile();
 			}
-		} catch (Throwable t) {
-			throw Throwables.propagate(t);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 		return false;
 	}

@@ -182,7 +182,7 @@ public abstract class ContainerBase<T> extends Container {
 	}
 
 	public Set<EntityPlayer> getPlayers() {
-		Set<EntityPlayer> players = new HashSet<EntityPlayer>();
+		Set<EntityPlayer> players = new HashSet<>();
 		for (IContainerListener crafter : listeners) {
 			if (crafter instanceof EntityPlayerMP) {
 				players.add((EntityPlayerMP)crafter);

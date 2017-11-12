@@ -3,7 +3,6 @@ package openmods.config.properties;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -108,16 +107,16 @@ public abstract class ConfigPropertyMeta {
 	protected void setFieldValue(Object value) {
 		try {
 			field.set(null, value);
-		} catch (Throwable e) {
-			throw Throwables.propagate(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
 	protected Object getFieldValue() {
 		try {
 			return field.get(null);
-		} catch (Throwable t) {
-			throw Throwables.propagate(t);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
 		}
 	}
 

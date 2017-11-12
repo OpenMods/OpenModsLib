@@ -15,7 +15,7 @@ import openmods.network.targets.SelectMultiplePlayers;
 public class ExtPacketSenderFactory {
 
 	public static <T> ITargetedPacketSender<T> createSender(Channel channel, IPacketTargetSelector<T> selector) {
-		return new ExtTargetedPacketSender<T>(channel, selector);
+		return new ExtTargetedPacketSender<>(channel, selector);
 	}
 
 	public static ITargetedPacketSender<DimCoord> createBlockSender(Channel channel) {

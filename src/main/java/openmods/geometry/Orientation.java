@@ -43,9 +43,9 @@ public enum Orientation implements IStringSerializable {
 
 	public static final Orientation[] VALUES = values();
 
-	private static final TIntObjectMap<Orientation> LOOKUP_XY = new TIntObjectHashMap<Orientation>(VALUES.length);
-	private static final TIntObjectMap<Orientation> LOOKUP_XZ = new TIntObjectHashMap<Orientation>(VALUES.length);
-	private static final TIntObjectMap<Orientation> LOOKUP_YZ = new TIntObjectHashMap<Orientation>(VALUES.length);
+	private static final TIntObjectMap<Orientation> LOOKUP_XY = new TIntObjectHashMap<>(VALUES.length);
+	private static final TIntObjectMap<Orientation> LOOKUP_XZ = new TIntObjectHashMap<>(VALUES.length);
+	private static final TIntObjectMap<Orientation> LOOKUP_YZ = new TIntObjectHashMap<>(VALUES.length);
 
 	private static final Orientation[][] ROTATIONS = new Orientation[VALUES.length][HalfAxis.VALUES.length];
 

@@ -1,7 +1,6 @@
 package openmods.renderer.shaders;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.io.IOException;
@@ -63,7 +62,7 @@ public class ShaderProgramBuilder {
 			return shader;
 		} catch (Throwable t) {
 			ShaderHelper.methods().glDeleteShader(shader);
-			throw Throwables.propagate(t);
+			throw t;
 		}
 	}
 

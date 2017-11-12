@@ -1,7 +1,6 @@
 package openmods.network.rpc;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -158,8 +157,8 @@ public class RpcCallDispatcher extends Dispatcher {
 				public IRpcTarget createRpcTarget() {
 					try {
 						return ctor.newInstance();
-					} catch (Exception e) {
-						throw Throwables.propagate(e);
+					} catch (ReflectiveOperationException e) {
+						throw new RuntimeException(e);
 					}
 				}
 

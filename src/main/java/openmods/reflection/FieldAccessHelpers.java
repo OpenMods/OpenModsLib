@@ -1,6 +1,5 @@
 package openmods.reflection;
 
-import com.google.common.base.Throwables;
 import java.lang.reflect.Field;
 
 public class FieldAccessHelpers {
@@ -23,8 +22,8 @@ public class FieldAccessHelpers {
 			Field f = ReflectionHelper.getField(klazz, field);
 			Object o = f.get(target);
 			if (o != null) return (T)o;
-		} catch (Throwable t) {
-			throw Throwables.propagate(t);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
 		}
 		return defaultValue;
 	}

@@ -1,6 +1,5 @@
 package openmods.network.event;
 
-import com.google.common.base.Throwables;
 import java.lang.reflect.Constructor;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
@@ -74,8 +73,8 @@ public class NetworkEventManager {
 				public NetworkEvent createPacket() {
 					try {
 						return ctor.newInstance();
-					} catch (Exception e) {
-						throw Throwables.propagate(e);
+					} catch (ReflectiveOperationException e) {
+						throw new RuntimeException(e);
 					}
 				}
 

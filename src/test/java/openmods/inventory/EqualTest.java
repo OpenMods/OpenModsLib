@@ -12,7 +12,7 @@ public class EqualTest {
 	static {
 		Bootstrap.register();
 	}
-	
+
 	private static void assertSymmetricEquals(IEqualityTester tester, ItemStack left, ItemStack right) {
 		Assert.assertTrue(tester.isEqual(left, right));
 		Assert.assertTrue(tester.isEqual(right, left));

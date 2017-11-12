@@ -1,7 +1,5 @@
 package openmods.access;
 
-import com.google.common.base.Throwables;
-
 public abstract class ApiInstanceProvider<T> {
 	public static class CachedInstance<T> extends ApiInstanceProvider<T> {
 		private final T instance;
@@ -9,8 +7,8 @@ public abstract class ApiInstanceProvider<T> {
 		public CachedInstance(Class<? extends T> cls) {
 			try {
 				instance = cls.newInstance();
-			} catch (Throwable t) {
-				throw Throwables.propagate(t);
+			} catch (ReflectiveOperationException e) {
+				throw new RuntimeException(e);
 			}
 		}
 
@@ -37,8 +35,8 @@ public abstract class ApiInstanceProvider<T> {
 		public T getInterface() {
 			try {
 				return cls.newInstance();
-			} catch (Throwable t) {
-				throw Throwables.propagate(t);
+			} catch (ReflectiveOperationException e) {
+				throw new RuntimeException(e);
 			}
 		}
 

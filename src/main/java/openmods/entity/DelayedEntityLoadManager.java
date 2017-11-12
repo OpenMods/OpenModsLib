@@ -1,12 +1,10 @@
 package openmods.entity;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.WeakHashMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
@@ -20,12 +18,7 @@ public class DelayedEntityLoadManager {
 
 	private Multimap<Integer, IEntityLoadListener> delayedLoads = Multimaps.newSetMultimap(
 			new HashMap<Integer, Collection<IEntityLoadListener>>(),
-			new Supplier<Set<IEntityLoadListener>>() {
-				@Override
-				public Set<IEntityLoadListener> get() {
-					return Sets.newSetFromMap(new WeakHashMap<IEntityLoadListener, Boolean>());
-				}
-			});
+			() -> Collections.newSetFromMap(new WeakHashMap<IEntityLoadListener, Boolean>()));
 
 	@SubscribeEvent
 	public void onEntityCreate(EntityJoinWorldEvent evt) {

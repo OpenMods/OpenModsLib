@@ -1,6 +1,5 @@
 package openmods.config;
 
-import com.google.common.base.Throwables;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -22,8 +21,8 @@ public class FieldProcessor {
 					Object value = f.get(null);
 					T item = fieldCls.cast(value);
 					if (item != null) visitor.visit(item);
-				} catch (Throwable t) {
-					throw Throwables.propagate(t);
+				} catch (ReflectiveOperationException e) {
+					throw new RuntimeException(e);
 				}
 			}
 		}

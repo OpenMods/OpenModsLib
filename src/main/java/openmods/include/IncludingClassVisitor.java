@@ -3,7 +3,6 @@ package openmods.include;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -232,9 +231,9 @@ public class IncludingClassVisitor extends ClassVisitor {
 			for (java.lang.reflect.Method m : loaded.getMethods())
 				result.add(Method.getMethod(m));
 			return result;
-		} catch (Throwable t) {
-			Log.severe(t, "Error while searching for interface '%s'", intf);
-			throw Throwables.propagate(t);
+		} catch (ClassNotFoundException e) {
+			Log.severe(e, "Error while searching for interface '%s'", intf);
+			throw new RuntimeException(e);
 		}
 	}
 

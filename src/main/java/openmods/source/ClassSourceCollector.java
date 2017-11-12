@@ -1,6 +1,5 @@
 package openmods.source;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -62,14 +61,8 @@ public class ClassSourceCollector {
 	}
 
 	public ClassMeta getClassInfo(String clsName) throws ClassNotFoundException {
-		try {
-			Class<?> cls = Class.forName(clsName);
-			return getClassInfo(cls);
-		} catch (ClassNotFoundException e) {
-			throw e;
-		} catch (Throwable t) {
-			throw Throwables.propagate(t);
-		}
+		Class<?> cls = Class.forName(clsName);
+		return getClassInfo(cls);
 	}
 
 	public ClassMeta getClassInfo(Class<?> cls) {

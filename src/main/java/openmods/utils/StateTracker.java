@@ -50,7 +50,7 @@ public class StateTracker<T extends Enum<T>> {
 	}
 
 	public StateUpdater<T> register(String name, T initialState) {
-		StateUpdater<T> state = new StateUpdater<T>(name, initialState);
+		StateUpdater<T> state = new StateUpdater<>(name, initialState);
 		StateUpdater<T> prev = states.put(name, state);
 		Preconditions.checkState(prev == null, "Duplicated tracked name: %s", name);
 		return state;
@@ -61,6 +61,6 @@ public class StateTracker<T extends Enum<T>> {
 	}
 
 	public static <T extends Enum<T>> StateTracker<T> create(T initialState) {
-		return new StateTracker<T>(initialState);
+		return new StateTracker<>(initialState);
 	}
 }

@@ -1,6 +1,5 @@
 package openmods.renderer;
 
-import com.google.common.base.Throwables;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraftforge.common.MinecraftForge;
 import openmods.Log;
@@ -24,8 +23,8 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 
 			try {
 				postMethod = Method.getMethod(PlayerRendererHookVisitor.class.getMethod("post", AbstractClientPlayer.class, float.class));
-			} catch (Throwable t) {
-				throw Throwables.propagate(t);
+			} catch (NoSuchMethodException e) {
+				throw new RuntimeException(e);
 			}
 
 			Log.debug("Injecting hook %s.%s into EntityPlayerRender.rotateCorpse", PlayerRendererHookVisitor.class, postMethod);

@@ -9,15 +9,15 @@ import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 public class FmlPacketSenderFactory {
 
 	public static ITargetedPacketSender<EntityPlayer> createPlayerSender(Channel channel) {
-		return new FmlTargetedPacketSender<EntityPlayer>(channel, OutboundTarget.PLAYER);
+		return new FmlTargetedPacketSender<>(channel, OutboundTarget.PLAYER);
 	}
 
 	public static ITargetedPacketSender<Integer> createDimensionSender(Channel channel) {
-		return new FmlTargetedPacketSender<Integer>(channel, OutboundTarget.DIMENSION);
+		return new FmlTargetedPacketSender<>(channel, OutboundTarget.DIMENSION);
 	}
 
 	public static ITargetedPacketSender<TargetPoint> createPointSender(Channel channel) {
-		return new FmlTargetedPacketSender<TargetPoint>(channel, OutboundTarget.ALLAROUNDPOINT);
+		return new FmlTargetedPacketSender<>(channel, OutboundTarget.ALLAROUNDPOINT);
 	}
 
 	public static IPacketSender createSender(Channel channel, OutboundTarget target) {

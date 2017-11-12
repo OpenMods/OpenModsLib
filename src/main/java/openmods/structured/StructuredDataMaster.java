@@ -1,7 +1,6 @@
 package openmods.structured;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import io.netty.buffer.Unpooled;
 import java.io.IOException;
@@ -192,7 +191,7 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 
 			return result;
 		} catch (IOException e) {
-			throw Throwables.propagate(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -206,7 +205,7 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 
 			return output;
 		} catch (IOException e) {
-			throw Throwables.propagate(e);
+			throw new RuntimeException(e);
 		}
 	}
 }

@@ -33,7 +33,7 @@ public class SimpleUnlistedProperty<T> implements IUnlistedProperty<T> {
 	}
 
 	public static <T> IUnlistedProperty<T> create(Class<T> type, String name) {
-		return new SimpleUnlistedProperty<T>(type, name);
+		return new SimpleUnlistedProperty<>(type, name);
 	}
 
 }

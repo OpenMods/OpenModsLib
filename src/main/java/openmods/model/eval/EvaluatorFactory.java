@@ -583,7 +583,7 @@ public class EvaluatorFactory {
 		protected abstract boolean apply(float left, float right);
 	}
 
-	private static final OperatorDictionary<Operator> OPERATORS = new OperatorDictionary<Operator>();
+	private static final OperatorDictionary<Operator> OPERATORS = new OperatorDictionary<>();
 
 	private static final Operator OP_ASSIGN = new Operator(OPERATOR_ASSIGN, PRIORITY_ASSIGN) {
 
@@ -999,7 +999,7 @@ public class EvaluatorFactory {
 		}
 	};
 
-	private static final InfixParser<Node, Operator> PARSER = new InfixParser<Node, Operator>(OPERATORS, NODE_FACTORY);
+	private static final InfixParser<Node, Operator> PARSER = new InfixParser<>(OPERATORS, NODE_FACTORY);
 
 	private final IParserState<Node> parserState = new IParserState<Node>() {
 

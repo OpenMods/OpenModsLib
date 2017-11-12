@@ -139,7 +139,7 @@ public class ClassSerializerBuilder<T> {
 
 	public IObjectSerializer<T> create() {
 		return (nullableCount != 0)
-				? new NullableSerializer<T>(fields, StreamUtils.bitsToBytes(nullableCount))
-				: new NonNullableSerializer<T>(fields);
+				? new NullableSerializer<>(fields, StreamUtils.bitsToBytes(nullableCount))
+				: new NonNullableSerializer<>(fields);
 	}
 }

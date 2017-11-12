@@ -85,10 +85,10 @@ public class FieldAccess<T> {
 
 	public static <T> FieldAccess<T> create(Class<?> cls, String... names) {
 		Field f = ReflectionHelper.getField(cls, names);
-		return new FieldAccess<T>(f, false); // log done in ReflectionHelper
+		return new FieldAccess<>(f, false); // log done in ReflectionHelper
 	}
 
 	public static <T> FieldAccess<T> create(Field f) {
-		return new FieldAccess<T>(f, true);
+		return new FieldAccess<>(f, true);
 	}
 }

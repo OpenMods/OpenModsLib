@@ -33,18 +33,18 @@ public class ValueCopyAction<I, O> implements IValueUpdateAction {
 	}
 
 	public static <T> ValueCopyAction<T, T> create(IValueProvider<T> provider, IValueReceiver<T> receiver) {
-		return new ValueCopyAction<T, T>(provider, provider, receiver, Functions.<T> identity());
+		return new ValueCopyAction<>(provider, provider, receiver, Functions.<T> identity());
 	}
 
 	public static <T> ValueCopyAction<T, T> create(Object trigger, IValueProvider<T> provider, IValueReceiver<T> receiver) {
-		return new ValueCopyAction<T, T>(trigger, provider, receiver, Functions.<T> identity());
+		return new ValueCopyAction<>(trigger, provider, receiver, Functions.<T> identity());
 	}
 
 	public static <I, O> ValueCopyAction<I, O> create(IValueProvider<I> provider, IValueReceiver<O> receiver, Function<I, O> converter) {
-		return new ValueCopyAction<I, O>(provider, provider, receiver, converter);
+		return new ValueCopyAction<>(provider, provider, receiver, converter);
 	}
 
 	public static <I, O> ValueCopyAction<I, O> create(Object trigger, IValueProvider<I> provider, IValueReceiver<O> receiver, Function<I, O> converter) {
-		return new ValueCopyAction<I, O>(trigger, provider, receiver, converter);
+		return new ValueCopyAction<>(trigger, provider, receiver, converter);
 	}
 }

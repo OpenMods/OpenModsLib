@@ -1,7 +1,6 @@
 package openmods.config.game;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -63,9 +62,9 @@ public class GameRegistryObjectsProvider {
 
 	private boolean remapFromLegacy = true;
 
-	private final FactoryRegistry<Block> blockFactory = new FactoryRegistry<Block>();
+	private final FactoryRegistry<Block> blockFactory = new FactoryRegistry<>();
 
-	private final FactoryRegistry<Item> itemFactory = new FactoryRegistry<Item>();
+	private final FactoryRegistry<Item> itemFactory = new FactoryRegistry<>();
 
 	private final Map<ResourceLocation, Item> itemRemaps = Maps.newHashMap();
 
@@ -183,8 +182,8 @@ public class GameRegistryObjectsProvider {
 			if (entry == null) continue;
 			try {
 				f.set(null, entry);
-			} catch (Exception e) {
-				throw Throwables.propagate(e);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
 			}
 			visitor.visit(entry, annotation);
 		}

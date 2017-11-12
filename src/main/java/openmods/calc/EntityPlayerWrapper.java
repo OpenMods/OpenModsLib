@@ -26,7 +26,7 @@ public class EntityPlayerWrapper {
 	private final TypedValue nullValue;
 
 	public EntityPlayerWrapper(EntityPlayer player, TypedValue nullValue) {
-		this.player = new WeakReference<EntityPlayer>(player);
+		this.player = new WeakReference<>(player);
 		this.nullValue = nullValue;
 	}
 
@@ -137,7 +137,7 @@ public class EntityPlayerWrapper {
 		private final WeakReference<World> world;
 
 		public WorldWrapper(World world) {
-			this.world = new WeakReference<World>(world);
+			this.world = new WeakReference<>(world);
 		}
 
 		public World world() {

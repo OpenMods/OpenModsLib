@@ -1,7 +1,6 @@
 package openmods.access;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.lang.annotation.Annotation;
@@ -101,8 +100,8 @@ public class ApiFactory {
 			try {
 				final Class<?> cls = Class.forName(className, true, getClass().getClassLoader());
 				return new ClassInfo(cls);
-			} catch (Exception ex) {
-				throw Throwables.propagate(ex);
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}
@@ -157,7 +156,7 @@ public class ApiFactory {
 	public <A> ApiProviderRegistry<A> createApi(Class<? extends Annotation> fieldMarker, Class<A> interfaceMarker, ASMDataTable table, ApiProviderSetup<A> registrySetup) {
 		Preconditions.checkState(apis.add(fieldMarker), "Duplicate API registration on %s", fieldMarker);
 
-		final ApiProviderRegistry<A> registry = new ApiProviderRegistry<A>(interfaceMarker);
+		final ApiProviderRegistry<A> registry = new ApiProviderRegistry<>(interfaceMarker);
 		registrySetup.setup(registry);
 		registry.freeze();
 

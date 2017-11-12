@@ -48,7 +48,7 @@ public class MiscUtils {
 	}
 
 	public static String[] loadTextFromURL(URL url, String[] defaultValue, int timeoutMS) {
-		List<String> arraylist = new ArrayList<String>();
+		List<String> arraylist = new ArrayList<>();
 		Scanner scanner = null;
 		try {
 			URLConnection uc = url.openConnection();

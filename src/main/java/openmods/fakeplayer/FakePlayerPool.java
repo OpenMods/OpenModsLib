@@ -33,7 +33,7 @@ public class FakePlayerPool {
 	}
 
 	private static class WorldPool {
-		private final Queue<OpenModsFakePlayer> pool = new ConcurrentLinkedQueue<OpenModsFakePlayer>();
+		private final Queue<OpenModsFakePlayer> pool = new ConcurrentLinkedQueue<>();
 		private final AtomicInteger playerCount = new AtomicInteger();
 
 		public <T> T executeOnPlayer(WorldServer world, PlayerUserReturning<T> user) {
@@ -57,7 +57,7 @@ public class FakePlayerPool {
 
 	public static final FakePlayerPool instance = new FakePlayerPool();
 
-	private static final Map<World, WorldPool> worldPools = new WeakHashMap<World, WorldPool>();
+	private static final Map<World, WorldPool> worldPools = new WeakHashMap<>();
 
 	@SubscribeEvent
 	public void onWorldLoad(WorldEvent.Load evt) {

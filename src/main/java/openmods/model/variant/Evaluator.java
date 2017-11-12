@@ -143,7 +143,7 @@ public class Evaluator {
 		}
 	}
 
-	private static final OperatorDictionary<Operator> operators = new OperatorDictionary<Operator>();
+	private static final OperatorDictionary<Operator> operators = new OperatorDictionary<>();
 
 	private static abstract class Constant implements IExpr {
 
@@ -711,7 +711,7 @@ public class Evaluator {
 		}
 	};
 
-	private static final InfixParser<IExpr, Operator> parser = new InfixParser<IExpr, Operator>(operators, nodeFactory);
+	private static final InfixParser<IExpr, Operator> parser = new InfixParser<>(operators, nodeFactory);
 
 	private final SimpleParserState<IExpr> parserState = new SimpleParserState<IExpr>(parser) {
 		@Override

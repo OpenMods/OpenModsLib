@@ -87,7 +87,7 @@ public class Stack<E> implements Iterable<E> {
 	}
 
 	public static <T> Stack<T> create() {
-		return new Stack<T>();
+		return new Stack<>();
 	}
 
 	@Override
@@ -104,7 +104,7 @@ public class Stack<E> implements Iterable<E> {
 	public Stack<E> substack(int depth) {
 		final int newBottom = data.size() - depth;
 		if (newBottom < bottomElement) throw new StackUnderflowException(String.format("Not enough elements to create substack: required %s, size %d", depth, size()));
-		return newBottom == 0? this : new Stack<E>(data, newBottom);
+		return newBottom == 0? this : new Stack<>(data, newBottom);
 	}
 
 	public Stack<E> checkIsEmpty() {

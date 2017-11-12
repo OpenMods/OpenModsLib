@@ -6,7 +6,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 public class EnumUtils {
 
 	private static class EnumMappings<T extends Enum<T>> {
-		private final TIntObjectMap<T> idToValue = new TIntObjectHashMap<T>();
+		private final TIntObjectMap<T> idToValue = new TIntObjectHashMap<>();
 
 		public EnumMappings(Class<T> enumCls) {
 

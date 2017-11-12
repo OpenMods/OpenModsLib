@@ -27,7 +27,7 @@ public class ObjectTester<T> implements ITester<T> {
 	}
 
 	public static <T> ITester<T> createClassTester(Class<? extends T> cls) {
-		return new ClassTester<T>(cls);
+		return new ClassTester<>(cls);
 	}
 
 	public static class ClassNameTester<T> implements ITester<T> {
@@ -62,7 +62,7 @@ public class ObjectTester<T> implements ITester<T> {
 	}
 
 	public static <T> ObjectTester<T> create() {
-		return new ObjectTester<T>();
+		return new ObjectTester<>();
 	}
 
 	private List<ITester<T>> testers = Lists.newArrayList();

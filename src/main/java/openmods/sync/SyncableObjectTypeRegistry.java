@@ -2,7 +2,6 @@ package openmods.sync;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import com.google.common.base.Throwables;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Map;
@@ -80,14 +79,11 @@ public class SyncableObjectTypeRegistry {
 				throw new IllegalArgumentException("Class " + cls + " has no parameterless constructor");
 			}
 
-			return register(cls, new Supplier<ISyncableObject>() {
-				@Override
-				public ISyncableObject get() {
-					try {
-						return ctor.newInstance();
-					} catch (Exception e) {
-						throw Throwables.propagate(e);
-					}
+			return register(cls, () -> {
+				try {
+					return ctor.newInstance();
+				} catch (ReflectiveOperationException e) {
+					throw new RuntimeException(e);
 				}
 			});
 		}

@@ -43,7 +43,7 @@ public class ConstructorAccess<T> implements IInstanceFactory<T> {
 	public static <T> ConstructorAccess<T> create(Class<? extends T> cls) {
 		try {
 			Constructor<? extends T> c = cls.getConstructor();
-			return new ConstructorAccess<T>(c);
+			return new ConstructorAccess<>(c);
 		} catch (Throwable t) {
 			throw SneakyThrower.sneakyThrow(t);
 		}

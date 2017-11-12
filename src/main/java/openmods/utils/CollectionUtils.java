@@ -2,7 +2,6 @@ package openmods.utils;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.reflect.TypeToken;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -130,7 +129,7 @@ public class CollectionUtils {
 				output.put(currentId, data);
 			}
 		} catch (IOException e) {
-			Throwables.propagate(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -147,7 +146,7 @@ public class CollectionUtils {
 				currentId = id;
 			}
 		} catch (IOException e) {
-			Throwables.propagate(e);
+			throw new RuntimeException(e);
 		}
 	}
 

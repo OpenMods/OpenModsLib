@@ -1,7 +1,6 @@
 package openmods.renderer;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import openmods.Log;
 import openmods.api.IResultListener;
 import openmods.asm.MethodMatcher;
@@ -65,8 +64,8 @@ public class PreWorldRenderHookVisitor extends ClassVisitor {
 			try {
 				hookCls = Type.getType(PreWorldRenderHookVisitor.class);
 				hookMethod = Method.getMethod(PreWorldRenderHookVisitor.class.getMethod("callHook"));
-			} catch (Throwable t) {
-				throw Throwables.propagate(t);
+			} catch (NoSuchMethodException e) {
+				throw new RuntimeException(e);
 			}
 
 			Log.debug("Injecting hook %s.%s into EntityRenderer.renderWorldPass", PreWorldRenderHookVisitor.class, hookMethod);

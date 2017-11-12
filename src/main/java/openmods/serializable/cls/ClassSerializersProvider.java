@@ -15,7 +15,7 @@ public class ClassSerializersProvider {
 	private final CachedFactory<Class<?>, IObjectSerializer<?>> cache = new CachedFactory<Class<?>, IObjectSerializer<?>>() {
 		@Override
 		protected IObjectSerializer<?> create(Class<?> key) {
-			ClassSerializerBuilder<Object> builder = new ClassSerializerBuilder<Object>(key);
+			ClassSerializerBuilder<Object> builder = new ClassSerializerBuilder<>(key);
 
 			for (Field f : SELECTOR.getFields(key))
 				builder.appendField(f);

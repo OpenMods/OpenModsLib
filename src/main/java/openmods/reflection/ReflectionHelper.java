@@ -2,7 +2,6 @@ package openmods.reflection;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.lang.reflect.Field;
@@ -97,8 +96,8 @@ public class ReflectionHelper {
 
 		try {
 			return (T)field.get(instance);
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
+		} catch (ReflectiveOperationException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -115,8 +114,8 @@ public class ReflectionHelper {
 
 		try {
 			field.set(instance, value);
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
+		} catch (ReflectiveOperationException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -157,8 +156,8 @@ public class ReflectionHelper {
 		m.setAccessible(true);
 		try {
 			return (T)m.invoke(instance, args);
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
+		} catch (ReflectiveOperationException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -209,9 +208,7 @@ public class ReflectionHelper {
 				final Method m = clazz.getDeclaredMethod(name, argsTypes);
 				ReflectionLog.logLoad(m);
 				return m;
-			} catch (NoSuchMethodException e) {} catch (Exception e) {
-				throw Throwables.propagate(e);
-			}
+			} catch (NoSuchMethodException e) {}
 			clazz = clazz.getSuperclass();
 		}
 		return null;
@@ -239,9 +236,7 @@ public class ReflectionHelper {
 					f.setAccessible(true);
 					ReflectionLog.logLoad(f);
 					return f;
-				} catch (NoSuchFieldException e) {} catch (Exception e) {
-					throw Throwables.propagate(e);
-				}
+				} catch (NoSuchFieldException e) {}
 				current = current.getSuperclass();
 			}
 		}
@@ -255,8 +250,8 @@ public class ReflectionHelper {
 			final Class<?> cls = Class.forName(className);
 			ReflectionLog.logLoad(cls);
 			return cls;
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
+		} catch (ReflectiveOperationException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -269,8 +264,6 @@ public class ReflectionHelper {
 				return cls;
 			} catch (ClassNotFoundException e) {
 				Log.log(Level.DEBUG, e, "Class %s not found", className);
-			} catch (Exception e) {
-				throw Throwables.propagate(e);
 			}
 		}
 

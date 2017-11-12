@@ -1,7 +1,6 @@
 package openmods.tileentity;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import io.netty.buffer.Unpooled;
 import java.io.IOException;
@@ -141,7 +140,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		try {
 			getSyncMap().writeInitializationData(tmp);
 		} catch (IOException e) {
-			throw Throwables.propagate(e);
+			throw new RuntimeException(e);
 		}
 		byte[] data = new byte[tmp.readableBytes()];
 		tmp.readBytes(data);
@@ -159,7 +158,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 			try {
 				getSyncMap().readIntializationData(tmp);
 			} catch (IOException e) {
-				throw Throwables.propagate(e);
+				throw new RuntimeException(e);
 			}
 		}
 	}
