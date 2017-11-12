@@ -1,6 +1,6 @@
 package openmods.utils;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import java.util.UUID;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -81,7 +81,7 @@ public class NbtUtils {
 	}
 
 	public static NBTTagCompound store(Vec3d vec) {
-		return store(vec.xCoord, vec.yCoord, vec.zCoord);
+		return store(vec.x, vec.y, vec.z);
 	}
 
 	public static NBTTagCompound store(NBTTagCompound tag, ResourceLocation location) {
@@ -139,6 +139,6 @@ public class NbtUtils {
 
 	@SuppressWarnings("unchecked")
 	public static <T extends Enum<T>> T readEnum(NBTTagCompound tag, String name, T defaultValue) {
-		return Objects.firstNonNull(readEnum(tag, name, (Class<T>)defaultValue.getClass()), defaultValue);
+		return MoreObjects.firstNonNull(readEnum(tag, name, (Class<T>)defaultValue.getClass()), defaultValue);
 	}
 }

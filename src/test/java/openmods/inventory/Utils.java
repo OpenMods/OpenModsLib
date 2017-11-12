@@ -12,20 +12,20 @@ public class Utils {
 		{
 			setUnlocalizedName("itemA");
 		}
-	};
+	}.setRegistryName("itemA");
 
 	public static final Item ITEM_B = new Item() {
 		{
 			setUnlocalizedName("itemB");
 		}
-	};
+	}.setRegistryName("itemB");
 
 	public static final Item ITEM_C = new Item() {
 		{
 			setUnlocalizedName("itemC");
 			setMaxStackSize(2);
 		}
-	};
+	}.setRegistryName("itemC");
 
 	public static ItemStack itemA(int amount) {
 		return new ItemStack(ITEM_A, amount);

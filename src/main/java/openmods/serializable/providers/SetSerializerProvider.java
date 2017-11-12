@@ -16,7 +16,7 @@ public class SetSerializerProvider implements IGenericSerializerProvider {
 	public IStreamSerializer<?> getSerializer(Type type) {
 		TypeToken<?> typeToken = TypeToken.of(type);
 
-		if (TypeUtils.SET_TOKEN.isAssignableFrom(typeToken)) {
+		if (typeToken.isSubtypeOf(TypeUtils.SET_TOKEN)) {
 			final TypeToken<?> componentType = typeToken.resolveType(TypeUtils.SET_VALUE_PARAM);
 			return createSetSerializer(componentType);
 		}

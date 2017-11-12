@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Items;
-import net.minecraft.item.ItemNameTag;
+import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AnvilUpdateEvent;
@@ -37,11 +37,6 @@ public class VanillaAnvilLogic {
 			this.maximumCost = 0;
 		} else {
 			ItemStack itemstack1 = inputStack.copy();
-
-			if (itemstack1.getCount() > 1 && !isCreativeMode && !(itemstack1.getItem() instanceof ItemNameTag)) {
-				itemstack1.setCount(1);
-			}
-
 			ItemStack itemstack2 = modifierStack;
 			Map<Enchantment, Integer> map = EnchantmentHelper.getEnchantments(itemstack1);
 			j = j + inputStack.getRepairCost() + (itemstack2.isEmpty()? 0 : itemstack2.getRepairCost());
@@ -50,7 +45,7 @@ public class VanillaAnvilLogic {
 
 			if (!itemstack2.isEmpty()) {
 				if (!onAnvilChange(inputStack, itemstack2, repairedItemName, j)) return;
-				flag = itemstack2.getItem() == Items.ENCHANTED_BOOK && !Items.ENCHANTED_BOOK.getEnchantments(itemstack2).hasNoTags();
+				flag = itemstack2.getItem() == Items.ENCHANTED_BOOK && !ItemEnchantedBook.getEnchantments(itemstack2).hasNoTags();
 
 				if (itemstack1.isItemStackDamageable() && itemstack1.getItem().getIsRepairable(inputStack, itemstack2)) {
 					int l2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);
@@ -111,7 +106,7 @@ public class VanillaAnvilLogic {
 							}
 
 							for (Enchantment enchantment : map.keySet()) {
-								if (enchantment != enchantment1 && !enchantment1.func_191560_c(enchantment)) {
+								if (enchantment != enchantment1 && !enchantment1.isCompatibleWith(enchantment)) {
 									flag1 = false;
 									++i;
 								}
@@ -148,6 +143,10 @@ public class VanillaAnvilLogic {
 								}
 
 								i += k3 * j2;
+
+								if (inputStack.getCount() > 1) {
+									i = 40;
+								}
 							}
 						}
 					}

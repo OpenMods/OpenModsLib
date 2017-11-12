@@ -10,44 +10,42 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.IChunkGenerator;
-import net.minecraft.world.gen.ChunkProviderEnd;
-import net.minecraft.world.gen.ChunkProviderFlat;
-import net.minecraft.world.gen.ChunkProviderHell;
-import net.minecraft.world.gen.ChunkProviderOverworld;
+import net.minecraft.world.gen.ChunkGeneratorEnd;
+import net.minecraft.world.gen.ChunkGeneratorFlat;
+import net.minecraft.world.gen.ChunkGeneratorHell;
+import net.minecraft.world.gen.ChunkGeneratorOverworld;
 import net.minecraft.world.gen.ChunkProviderServer;
+import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraft.world.gen.structure.MapGenStructure;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import net.minecraftforge.fml.relauncher.ReflectionHelper.UnableToAccessFieldException;
-import openmods.Log;
 
 public class StructureRegistry {
 
 	private StructureRegistry() {
 		ImmutableList.Builder<IStructureGenProvider<?>> builder = ImmutableList.builder();
 
-		builder.add(new IStructureGenProvider<ChunkProviderOverworld>() {
+		builder.add(new IStructureGenProvider<ChunkGeneratorOverworld>() {
 			@Override
-			public Class<ChunkProviderOverworld> getGeneratorCls() {
-				return ChunkProviderOverworld.class;
+			public Class<ChunkGeneratorOverworld> getGeneratorCls() {
+				return ChunkGeneratorOverworld.class;
 			}
 
 			@Override
-			public Set<String> listStructureNames(ChunkProviderOverworld provider) {
+			public Set<String> listStructureNames(ChunkGeneratorOverworld provider) {
 				return ImmutableSet.of("Stronghold", "Mansion", "Monument", "Village", "Mineshaft", "Temple");
 			}
 		});
 
-		builder.add(new IStructureGenProvider<ChunkProviderFlat>() {
+		builder.add(new IStructureGenProvider<ChunkGeneratorFlat>() {
 			@Override
-			public Class<ChunkProviderFlat> getGeneratorCls() {
-				return ChunkProviderFlat.class;
+			public Class<ChunkGeneratorFlat> getGeneratorCls() {
+				return ChunkGeneratorFlat.class;
 			}
 
 			@Override
-			public Set<String> listStructureNames(ChunkProviderFlat provider) {
+			public Set<String> listStructureNames(ChunkGeneratorFlat provider) {
 				try {
-					final Map<String, MapGenStructure> structures = ReflectionHelper.getPrivateValue(ChunkProviderFlat.class, provider, "structureGenerators", "field_82696_f");
+					final Map<String, MapGenStructure> structures = ReflectionHelper.getPrivateValue(ChunkGeneratorFlat.class, provider, "structureGenerators", "field_82696_f");
 					return ImmutableSet.copyOf(structures.keySet());
 				} catch (Exception e) {
 					return ImmutableSet.of();
@@ -55,26 +53,26 @@ public class StructureRegistry {
 			}
 		});
 
-		builder.add(new IStructureGenProvider<ChunkProviderHell>() {
+		builder.add(new IStructureGenProvider<ChunkGeneratorHell>() {
 			@Override
-			public Class<ChunkProviderHell> getGeneratorCls() {
-				return ChunkProviderHell.class;
+			public Class<ChunkGeneratorHell> getGeneratorCls() {
+				return ChunkGeneratorHell.class;
 			}
 
 			@Override
-			public Set<String> listStructureNames(ChunkProviderHell provider) {
+			public Set<String> listStructureNames(ChunkGeneratorHell provider) {
 				return ImmutableSet.of("Fortress");
 			}
 		});
 
-		builder.add(new IStructureGenProvider<ChunkProviderEnd>() {
+		builder.add(new IStructureGenProvider<ChunkGeneratorEnd>() {
 			@Override
-			public Class<ChunkProviderEnd> getGeneratorCls() {
-				return ChunkProviderEnd.class;
+			public Class<ChunkGeneratorEnd> getGeneratorCls() {
+				return ChunkGeneratorEnd.class;
 			}
 
 			@Override
-			public Set<String> listStructureNames(ChunkProviderEnd provider) {
+			public Set<String> listStructureNames(ChunkGeneratorEnd provider) {
 				return ImmutableSet.of("EndCity");
 			}
 		});
@@ -85,22 +83,13 @@ public class StructureRegistry {
 
 	private List<IStructureGenProvider<?>> providers;
 
-	private static IChunkGenerator getWrappedChunkProvider(ChunkProviderServer provider) {
-		try {
-			return ReflectionHelper.getPrivateValue(ChunkProviderServer.class, provider, "chunkGenerator", "field_186029_c");
-		} catch (UnableToAccessFieldException e) {
-			Log.warn(e, "Can't access chunk provider data. No structures will be detected");
-			return null;
-		}
-	}
-
 	private interface IStructureVisitor {
 		public void visit(IChunkGenerator generator, String structureName);
 	}
 
 	private void visitStructures(WorldServer world, IStructureVisitor visitor) {
 		ChunkProviderServer provider = world.getChunkProvider();
-		IChunkGenerator inner = getWrappedChunkProvider(provider);
+		IChunkGenerator inner = provider.chunkGenerator;
 
 		if (inner != null) {
 			for (IStructureGenProvider<?> p : providers)
@@ -123,7 +112,7 @@ public class StructureRegistry {
 			@Override
 			public void visit(IChunkGenerator generator, String structure) {
 				try {
-					BlockPos structPos = generator.getStrongholdGen(world, structure, pos, false);
+					BlockPos structPos = generator.getNearestStructurePos(world, structure, pos, true);
 
 					if (structPos != null) {
 						if (!Strings.isNullOrEmpty(structure)) result.put(structure, structPos);
@@ -144,7 +133,7 @@ public class StructureRegistry {
 			@Override
 			public void visit(IChunkGenerator generator, String structure) {
 				if (name.equals(structure)) {
-					BlockPos structPos = generator.getStrongholdGen(world, structure, blockPos, false);
+					BlockPos structPos = generator.getNearestStructurePos(world, structure, blockPos, true);
 					if (structPos != null) result.add(structPos);
 				}
 			}

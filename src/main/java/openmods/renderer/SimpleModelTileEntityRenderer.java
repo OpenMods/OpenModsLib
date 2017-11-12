@@ -17,7 +17,7 @@ public class SimpleModelTileEntityRenderer<T extends OpenTileEntity> extends Til
 	}
 
 	@Override
-	public void renderTileEntityAt(T te, double x, double y, double z, float partialTicks, int destroyStage) {
+	public void render(T te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		GL11.glPushMatrix();
 		GL11.glTranslated(x + 0.5, y + 1.0, z + 0.5);
 		GL11.glRotatef(180.0F, 1.0F, 0.0F, 0.0F);

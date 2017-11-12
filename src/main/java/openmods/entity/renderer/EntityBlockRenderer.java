@@ -28,7 +28,7 @@ public class EntityBlockRenderer extends Render<EntityBlock> {
 
 			bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
-			Minecraft.getMinecraft().getBlockRendererDispatcher().renderBlockBrightness(blockState, entity.getBrightness(partialTicks));
+			Minecraft.getMinecraft().getBlockRendererDispatcher().renderBlockBrightness(blockState, entity.getBrightness());
 
 			GlStateManager.enableLighting();
 			GlStateManager.popMatrix();

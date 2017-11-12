@@ -1,6 +1,6 @@
 package openmods.sync;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -55,12 +55,12 @@ public class SyncableBlock extends SyncableObjectBase implements ISyncableValueP
 
 	@Override
 	public Block getValue() {
-		return Objects.firstNonNull(block, Blocks.AIR);
+		return MoreObjects.firstNonNull(block, Blocks.AIR);
 	}
 
 	public void setValue(Block block) {
 		if (this.block != block) {
-			this.block = Objects.firstNonNull(block, Blocks.AIR);
+			this.block = MoreObjects.firstNonNull(block, Blocks.AIR);
 			markDirty();
 		}
 	}

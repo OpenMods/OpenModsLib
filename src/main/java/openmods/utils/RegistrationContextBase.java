@@ -3,8 +3,8 @@ package openmods.utils;
 import com.google.common.base.Preconditions;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.common.registry.IForgeRegistry;
-import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
 public class RegistrationContextBase<T extends IForgeRegistryEntry<T>> {
 

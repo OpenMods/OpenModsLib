@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
-import net.minecraftforge.fml.common.registry.IForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistry;
 import openmods.network.senders.IPacketSender;
 import openmods.utils.CommonRegistryCallbacks;
 import org.apache.commons.lang3.ArrayUtils;

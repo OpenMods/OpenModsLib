@@ -1,8 +1,6 @@
 package openmods.model;
 
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Optional;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -11,8 +9,9 @@ import com.google.common.collect.Maps;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -24,17 +23,17 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.IModelCustomData;
-import net.minecraftforge.client.model.IPerspectiveAwareModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.ModelStateComposition;
+import net.minecraftforge.client.model.PerspectiveMapWrapper;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
+import openmods.utils.CollectionUtils;
 
 // This is more or less Forge's multi-layer model, but this one changes order of quads renderes without any layer (solid first, then translucent)
-public final class MultiLayerModel implements IModelCustomData {
+public final class MultiLayerModel implements IModel {
 
-	public static final MultiLayerModel EMPTY = new MultiLayerModel(Optional.<ResourceLocation> absent(), ImmutableMap.<BlockRenderLayer, ResourceLocation> of());
+	public static final MultiLayerModel EMPTY = new MultiLayerModel(Optional.empty(), ImmutableMap.of());
 
 	private final Optional<ResourceLocation> base;
 	private final Map<BlockRenderLayer, ResourceLocation> models;
@@ -46,7 +45,7 @@ public final class MultiLayerModel implements IModelCustomData {
 
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
-		return ImmutableList.copyOf(Iterables.concat(models.values(), base.asSet()));
+		return ImmutableList.copyOf(Iterables.concat(models.values(), CollectionUtils.asSet(base)));
 	}
 
 	@Override
@@ -61,13 +60,7 @@ public final class MultiLayerModel implements IModelCustomData {
 
 	@Override
 	public IBakedModel bake(final IModelState state, final VertexFormat format, final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-		final Map<BlockRenderLayer, IBakedModel> bakedModels = Maps.transformValues(models, new Function<ResourceLocation, IBakedModel>() {
-			@Override
-			@Nullable
-			public IBakedModel apply(@Nullable ResourceLocation location) {
-				return bakeModel(location, state, format, bakedTextureGetter);
-			}
-		});
+		final Map<BlockRenderLayer, IBakedModel> bakedModels = Maps.transformValues(models, location -> bakeModel(location, state, format, bakedTextureGetter));
 
 		IModel missing = ModelLoaderRegistry.getMissingModel();
 		IBakedModel bakedMissing = missing.bake(missing.getDefaultState(), format, bakedTextureGetter);
@@ -83,7 +76,7 @@ public final class MultiLayerModel implements IModelCustomData {
 				bakedModels,
 				bakedBase,
 				bakedMissing,
-				IPerspectiveAwareModel.MapWrapper.getTransforms(state));
+				PerspectiveMapWrapper.getTransforms(state));
 	}
 
 	@Override
@@ -143,7 +136,7 @@ public final class MultiLayerModel implements IModelCustomData {
 			if (layer == null) { return side == null? quads : ImmutableList.<BakedQuad> of(); }
 
 			final IBakedModel model = models.get(layer);
-			return Objects.firstNonNull(model, missing).getQuads(state, side, rand);
+			return MoreObjects.firstNonNull(model, missing).getQuads(state, side, rand);
 		}
 	}
 

@@ -1,15 +1,12 @@
 package openmods.network.rpc;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
-import net.minecraftforge.fml.common.registry.PersistentRegistryManager;
-import net.minecraftforge.fml.common.registry.RegistryDelegate;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
 public abstract class TargetTypeProvider implements IForgeRegistryEntry<TargetTypeProvider> {
 
-	public final RegistryDelegate<TargetTypeProvider> delegate = PersistentRegistryManager.makeDelegate(this, TargetTypeProvider.class);
-
-	private ResourceLocation initialName;
+	private ResourceLocation name;
 
 	public abstract IRpcTarget createRpcTarget();
 
@@ -17,15 +14,14 @@ public abstract class TargetTypeProvider implements IForgeRegistryEntry<TargetTy
 
 	@Override
 	public TargetTypeProvider setRegistryName(ResourceLocation name) {
-		this.initialName = name;
+		Preconditions.checkState(this.name == null, "Name already set, %s->%s", this.name, name);
+		this.name = name;
 		return this;
 	}
 
 	@Override
 	public ResourceLocation getRegistryName() {
-		final ResourceLocation registryName = delegate.name();
-		if (registryName != null) return registryName;
-		return initialName != null? initialName : null;
+		return name;
 	}
 
 	@Override

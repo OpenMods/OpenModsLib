@@ -1,7 +1,5 @@
 package openmods.model.textureditem;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -9,8 +7,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemOverride;
@@ -22,7 +22,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.IRetexturableModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.IModelState;
 import org.apache.commons.lang3.tuple.Pair;
@@ -63,7 +62,7 @@ public class TexturedItemOverrides extends ItemOverrideList {
 
 	private IBakedModel rebakeModel(ResourceLocation texture, @Nonnull ItemStack stack, World world, EntityLivingBase entity) {
 		@SuppressWarnings("deprecation")
-		final Optional<ResourceLocation> overrideLocation = Optional.fromNullable(applyOverride(stack, world, entity));
+		final Optional<ResourceLocation> overrideLocation = Optional.ofNullable(applyOverride(stack, world, entity));
 		return textureOverrides.getUnchecked(Pair.of(texture, overrideLocation));
 	}
 
@@ -77,15 +76,11 @@ public class TexturedItemOverrides extends ItemOverrideList {
 	}
 
 	private IModel retextureModel(IModel overrideModel, ResourceLocation texture) {
-		if (overrideModel instanceof IRetexturableModel) {
-			final ImmutableMap.Builder<String, String> textures = ImmutableMap.builder();
-			for (String t : texturesToReplace)
-				textures.put(t, texture.toString());
+		final ImmutableMap.Builder<String, String> textures = ImmutableMap.builder();
+		for (String t : texturesToReplace)
+			textures.put(t, texture.toString());
 
-			return ((IRetexturableModel)overrideModel).retexture(textures.build());
-		}
-
-		return overrideModel;
+		return overrideModel.retexture(textures.build());
 	}
 
 	private static Optional<ResourceLocation> getTextureFromStack(@Nonnull ItemStack stack) {
@@ -94,6 +89,6 @@ public class TexturedItemOverrides extends ItemOverrideList {
 			return fluidRender.getTexture();
 		}
 
-		return Optional.absent();
+		return Optional.empty();
 	}
 }

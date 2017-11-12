@@ -20,17 +20,16 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
-import net.minecraftforge.client.model.IPerspectiveAwareModel;
 import openmods.state.State;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class ItemStateOverrideList extends ItemOverrideList {
 
-	private class BakedModelWrapper<T extends IBakedModel> implements IBakedModel {
+	private class BakedModelWrapper implements IBakedModel {
 
-		protected final T original;
+		protected final IBakedModel original;
 
-		public BakedModelWrapper(T original) {
+		public BakedModelWrapper(IBakedModel original) {
 			this.original = original;
 		}
 
@@ -69,25 +68,15 @@ public class ItemStateOverrideList extends ItemOverrideList {
 		public ItemOverrideList getOverrides() {
 			return ItemStateOverrideList.this;
 		}
-	}
-
-	public class PerspectiveAwareBakedModelWrapper<T extends IPerspectiveAwareModel> extends BakedModelWrapper<T> implements IPerspectiveAwareModel {
-
-		public PerspectiveAwareBakedModelWrapper(T original) {
-			super(original);
-		}
 
 		@Override
 		public Pair<? extends IBakedModel, Matrix4f> handlePerspective(TransformType cameraTransformType) {
 			return original.handlePerspective(cameraTransformType);
 		}
-
 	}
 
 	IBakedModel wrapModel(IBakedModel original) {
-		return original instanceof IPerspectiveAwareModel
-				? new PerspectiveAwareBakedModelWrapper<IPerspectiveAwareModel>((IPerspectiveAwareModel)original)
-				: new BakedModelWrapper<IBakedModel>(original);
+		return new BakedModelWrapper(original);
 	}
 
 	private final Map<State, IBakedModel> models;

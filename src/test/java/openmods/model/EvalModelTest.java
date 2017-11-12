@@ -1,9 +1,9 @@
 package openmods.model;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
+import java.util.Optional;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.animation.Event;
 import net.minecraftforge.common.model.TRSRTransformation;
@@ -550,7 +550,7 @@ public class EvalModelTest {
 
 		@Override
 		public Optional<? extends IClip> get(String name) {
-			return Optional.fromNullable(clips.get(name));
+			return Optional.ofNullable(clips.get(name));
 		}
 	}
 

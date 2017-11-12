@@ -1,10 +1,9 @@
 package openmods.model.textureditem;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
@@ -14,12 +13,7 @@ public class ItemTextureCapability {
 	@CapabilityInject(IItemTexture.class)
 	public static Capability<IItemTexture> CAPABILITY = null;
 
-	private static IItemTexture EMPTY = new IItemTexture() {
-		@Override
-		public Optional<ResourceLocation> getTexture() {
-			return Optional.absent();
-		}
-	};
+	private static IItemTexture EMPTY = Optional::empty;
 
 	public static void register() {
 		CapabilityManager.INSTANCE.register(IItemTexture.class, new Capability.IStorage<IItemTexture>() {

@@ -14,7 +14,7 @@ public class ListSerializerProvider implements IGenericSerializerProvider {
 	public IStreamSerializer<?> getSerializer(Type type) {
 		TypeToken<?> typeToken = TypeToken.of(type);
 
-		if (TypeUtils.LIST_TOKEN.isAssignableFrom(typeToken)) {
+		if (typeToken.isSubtypeOf(TypeUtils.LIST_TOKEN)) {
 			final TypeToken<?> componentType = typeToken.resolveType(TypeUtils.LIST_VALUE_PARAM);
 
 			return new NullableCollectionSerializer<List<Object>>(componentType) {

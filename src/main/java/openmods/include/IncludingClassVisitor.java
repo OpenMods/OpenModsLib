@@ -1,6 +1,6 @@
 package openmods.include;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
@@ -44,7 +44,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 
 		@Override
 		public Type getInterfaceType(Type annotationHint) {
-			return Objects.firstNonNull(annotationHint, fieldType);
+			return MoreObjects.firstNonNull(annotationHint, fieldType);
 		}
 
 		@Override
@@ -77,7 +77,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 
 		@Override
 		public Type getInterfaceType(Type annotationHint) {
-			return Objects.firstNonNull(annotationHint, method.getReturnType());
+			return MoreObjects.firstNonNull(annotationHint, method.getReturnType());
 		}
 
 		@Override

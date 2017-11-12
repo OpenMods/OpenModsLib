@@ -1,14 +1,13 @@
 package openmods.model.itemstate;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.Map;
-import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -16,15 +15,15 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.IModelCustomData;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 import openmods.model.ModelUpdater;
 import openmods.state.State;
 import openmods.state.StateContainer;
+import openmods.utils.CollectionUtils;
 
-public class ItemStateModel implements IModelCustomData {
+public class ItemStateModel implements IModel {
 
 	private final Optional<ResourceLocation> itemLocation;
 
@@ -39,7 +38,7 @@ public class ItemStateModel implements IModelCustomData {
 		this.stateModels = createModelLocations();
 	}
 
-	public static final ItemStateModel EMPTY = new ItemStateModel(Optional.<ResourceLocation> absent(), Optional.<ResourceLocation> absent());
+	public static final ItemStateModel EMPTY = new ItemStateModel(Optional.empty(), Optional.empty());
 
 	private Map<State, ResourceLocation> createModelLocations() {
 		if (!itemLocation.isPresent()) return ImmutableMap.of();
@@ -62,7 +61,7 @@ public class ItemStateModel implements IModelCustomData {
 
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
-		return Sets.union(ImmutableSet.copyOf(stateModels.values()), defaultModel.asSet());
+		return Sets.union(ImmutableSet.copyOf(stateModels.values()), CollectionUtils.asSet(defaultModel));
 	}
 
 	@Override
@@ -85,12 +84,9 @@ public class ItemStateModel implements IModelCustomData {
 
 		final IBakedModel bakedDefaultModel = defaultModel.bake(defaultModel.getDefaultState(), format, bakedTextureGetter);
 
-		final Map<State, IBakedModel> bakedStateModels = Maps.transformValues(stateModels, new Function<ResourceLocation, IBakedModel>() {
-			@Override
-			public IBakedModel apply(@Nullable ResourceLocation input) {
-				final IModel model = getModel(input);
-				return model.bake(model.getDefaultState(), format, bakedTextureGetter);
-			}
+		final Map<State, IBakedModel> bakedStateModels = Maps.transformValues(stateModels, (input) -> {
+			final IModel model = getModel(input);
+			return model.bake(model.getDefaultState(), format, bakedTextureGetter);
 		});
 
 		return new ItemStateOverrideList(bakedStateModels).wrapModel(bakedDefaultModel);

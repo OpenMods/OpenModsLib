@@ -1,8 +1,9 @@
 package openmods.model.textureditem;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import net.minecraft.util.ResourceLocation;
 
+@FunctionalInterface
 public interface IItemTexture {
 	public Optional<ResourceLocation> getTexture();
 }

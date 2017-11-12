@@ -32,9 +32,9 @@ public class UseItemAction implements PlayerUserReturning<ItemStack> {
 		this.side = side;
 		this.hand = hand;
 
-		final float deltaX = (float)(clickPos.xCoord - playerPos.xCoord);
-		final float deltaY = (float)(clickPos.yCoord - playerPos.yCoord);
-		final float deltaZ = (float)(clickPos.zCoord - playerPos.zCoord);
+		final float deltaX = (float)(clickPos.x - playerPos.x);
+		final float deltaY = (float)(clickPos.y - playerPos.y);
+		final float deltaZ = (float)(clickPos.z - playerPos.z);
 
 		this.pitch = -(float)Math.toDegrees(Math.asin(deltaY));
 		this.yaw = -(float)Math.toDegrees(Math.atan2(deltaX, deltaZ));
@@ -46,14 +46,14 @@ public class UseItemAction implements PlayerUserReturning<ItemStack> {
 		player.inventory.currentItem = 0;
 		player.inventory.setInventorySlotContents(0, stack);
 
-		player.setPositionAndRotation(playerPos.xCoord, playerPos.yCoord, playerPos.zCoord, yaw, pitch);
+		player.setPositionAndRotation(playerPos.x, playerPos.y, playerPos.z, yaw, pitch);
 
 		player.rightClick(
 				stack,
-				new BlockPos(clickPos.xCoord, clickPos.yCoord, clickPos.zCoord),
+				new BlockPos(clickPos.x, clickPos.y, clickPos.z),
 				hand,
 				side,
-				(float)hitPos.xCoord, (float)hitPos.yCoord, (float)hitPos.zCoord);
+				(float)hitPos.x, (float)hitPos.y, (float)hitPos.z);
 
 		return InventoryUtils.returnItem(player.inventory.getCurrentItem());
 	}

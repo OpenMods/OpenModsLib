@@ -1,24 +1,24 @@
 package openmods.model.eval;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.IModelCustomData;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 import openmods.model.ModelUpdater;
 import openmods.model.ModelUpdater.ValueConverter;
+import openmods.utils.CollectionUtils;
 
-public abstract class EvalModelBase implements IModelCustomData {
+public abstract class EvalModelBase implements IModel {
 
 	protected final Optional<ResourceLocation> baseModel;
 
@@ -31,7 +31,7 @@ public abstract class EvalModelBase implements IModelCustomData {
 
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
-		return baseModel.asSet();
+		return CollectionUtils.asSet(baseModel);
 	}
 
 	@Override

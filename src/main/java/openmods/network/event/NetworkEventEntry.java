@@ -1,15 +1,12 @@
 package openmods.network.event;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
-import net.minecraftforge.fml.common.registry.PersistentRegistryManager;
-import net.minecraftforge.fml.common.registry.RegistryDelegate;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
 public abstract class NetworkEventEntry implements IForgeRegistryEntry<NetworkEventEntry> {
 
-	public final RegistryDelegate<NetworkEventEntry> delegate = PersistentRegistryManager.makeDelegate(this, NetworkEventEntry.class);
-
-	private ResourceLocation initialName;
+	private ResourceLocation name;
 
 	public abstract Class<? extends NetworkEvent> getPacketType();
 
@@ -19,15 +16,14 @@ public abstract class NetworkEventEntry implements IForgeRegistryEntry<NetworkEv
 
 	@Override
 	public NetworkEventEntry setRegistryName(ResourceLocation name) {
-		this.initialName = name;
+		Preconditions.checkState(this.name == null, "Name already set, %s->%s", this.name, name);
+		this.name = name;
 		return this;
 	}
 
 	@Override
 	public ResourceLocation getRegistryName() {
-		final ResourceLocation registryName = delegate.name();
-		if (registryName != null) return registryName;
-		return initialName != null? initialName : null;
+		return name;
 	}
 
 	@Override

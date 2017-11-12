@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.init.Items;
+import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
 
 public class VanillaEnchantLogic {
@@ -69,9 +70,9 @@ public class VanillaEnchantLogic {
 
 			for (EnchantmentData enchantment : enchantmentsToApply) {
 				if (isBook) {
-					Items.ENCHANTED_BOOK.addEnchantment(enchantedItem, enchantment);
+					ItemEnchantedBook.addEnchantment(enchantedItem, enchantment);
 				} else {
-					enchantedItem.addEnchantment(enchantment.enchantmentobj, enchantment.enchantmentLevel);
+					enchantedItem.addEnchantment(enchantment.enchantment, enchantment.enchantmentLevel);
 				}
 			}
 		}

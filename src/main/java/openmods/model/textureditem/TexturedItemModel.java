@@ -1,12 +1,12 @@
 package openmods.model.textureditem;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
@@ -14,16 +14,16 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.IModelCustomData;
-import net.minecraftforge.client.model.IPerspectiveAwareModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.ModelStateComposition;
+import net.minecraftforge.client.model.PerspectiveMapWrapper;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 import openmods.model.BakedModelAdapter;
 import openmods.model.ModelUpdater;
+import openmods.utils.CollectionUtils;
 
-public class TexturedItemModel implements IModelCustomData {
+public class TexturedItemModel implements IModel {
 
 	private static class BakedModel extends BakedModelAdapter {
 
@@ -47,8 +47,8 @@ public class TexturedItemModel implements IModelCustomData {
 	private final Set<String> textures;
 
 	private TexturedItemModel() {
-		untexturedModel = Optional.absent();
-		texturedModel = Optional.absent();
+		untexturedModel = Optional.empty();
+		texturedModel = Optional.empty();
 		textures = ImmutableSet.of();
 	}
 
@@ -60,7 +60,7 @@ public class TexturedItemModel implements IModelCustomData {
 
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
-		return Sets.union(untexturedModel.asSet(), texturedModel.asSet());
+		return Sets.union(CollectionUtils.asSet(untexturedModel), CollectionUtils.asSet(texturedModel));
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class TexturedItemModel implements IModelCustomData {
 
 		final ItemOverrideList overrides = new TexturedItemOverrides(untexturedBakedModel, texturedModel, texturedBakedModel.getOverrides().getOverrides(), textures, state, format, bakedTextureGetter);
 
-		return new BakedModel(untexturedBakedModel, IPerspectiveAwareModel.MapWrapper.getTransforms(state), overrides);
+		return new BakedModel(untexturedBakedModel, PerspectiveMapWrapper.getTransforms(state), overrides);
 	}
 
 	private static IModel getModel(Optional<ResourceLocation> model) {

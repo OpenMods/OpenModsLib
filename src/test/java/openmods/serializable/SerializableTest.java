@@ -72,7 +72,7 @@ public class SerializableTest {
 
 	public <T> T[] testArray(T[] v) throws IOException {
 		@SuppressWarnings("unchecked")
-		final Class<? extends T[]> cls = (Class<? extends T[]>)v.getClass();
+		final Class<T[]> cls = (Class<T[]>)v.getClass();
 
 		T[] result = serializeDeserialize(cls, v);
 		Assert.assertTrue(cls.isInstance(result));

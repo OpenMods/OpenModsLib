@@ -11,16 +11,16 @@ public class BlockSpaceTransformTest {
 	public void testCoordinates(Orientation orientation, double worldX, double worldY, double worldZ, double blockX, double blockY, double blockZ) {
 		{
 			final Vec3d v = BlockSpaceTransform.instance.mapWorldToBlock(orientation, worldX, worldY, worldZ);
-			Assert.assertEquals(blockX, v.xCoord, DELTA);
-			Assert.assertEquals(blockY, v.yCoord, DELTA);
-			Assert.assertEquals(blockZ, v.zCoord, DELTA);
+			Assert.assertEquals(blockX, v.x, DELTA);
+			Assert.assertEquals(blockY, v.y, DELTA);
+			Assert.assertEquals(blockZ, v.z, DELTA);
 		}
 
 		{
 			final Vec3d v = BlockSpaceTransform.instance.mapBlockToWorld(orientation, blockX, blockY, blockZ);
-			Assert.assertEquals(worldX, v.xCoord, DELTA);
-			Assert.assertEquals(worldY, v.yCoord, DELTA);
-			Assert.assertEquals(worldZ, v.zCoord, DELTA);
+			Assert.assertEquals(worldX, v.x, DELTA);
+			Assert.assertEquals(worldY, v.y, DELTA);
+			Assert.assertEquals(worldZ, v.z, DELTA);
 		}
 	}
 

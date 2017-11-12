@@ -4,7 +4,7 @@ import java.util.List;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
+import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -92,6 +92,6 @@ public class EnchantmentUtils {
 
 	public static void addAllBooks(Enchantment enchantment, List<ItemStack> items) {
 		for (int i = enchantment.getMinLevel(); i <= enchantment.getMaxLevel(); i++)
-			items.add(Items.ENCHANTED_BOOK.getEnchantedItemStack(new EnchantmentData(enchantment, i)));
+			items.add(ItemEnchantedBook.getEnchantedItemStack(new EnchantmentData(enchantment, i)));
 	}
 }

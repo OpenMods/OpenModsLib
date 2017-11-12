@@ -1,7 +1,7 @@
 package openmods.world;
 
 import java.util.Set;
-import net.minecraft.world.chunk.IChunkGenerator;
+import net.minecraft.world.gen.IChunkGenerator;
 
 public interface IStructureGenProvider<T extends IChunkGenerator> {
 	public Class<T> getGeneratorCls();

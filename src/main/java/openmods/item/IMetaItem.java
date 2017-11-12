@@ -24,8 +24,6 @@ public interface IMetaItem {
 
 	public ActionResult<ItemStack> onItemRightClick(@Nonnull ItemStack itemStack, World world, EntityPlayer player, EnumHand hand);
 
-	public void addRecipe();
-
 	public void addToCreativeList(Item item, int meta, NonNullList<ItemStack> result);
 
 	public boolean hasEffect();

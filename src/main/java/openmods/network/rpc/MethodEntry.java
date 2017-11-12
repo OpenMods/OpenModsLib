@@ -1,16 +1,13 @@
 package openmods.network.rpc;
 
+import com.google.common.base.Preconditions;
 import java.lang.reflect.Method;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
-import net.minecraftforge.fml.common.registry.PersistentRegistryManager;
-import net.minecraftforge.fml.common.registry.RegistryDelegate;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
 public class MethodEntry implements IForgeRegistryEntry<MethodEntry> {
 
-	public final RegistryDelegate<MethodEntry> delegate = PersistentRegistryManager.makeDelegate(this, MethodEntry.class);
-
-	private ResourceLocation initialName;
+	private ResourceLocation name;
 
 	public final Method method;
 
@@ -23,15 +20,14 @@ public class MethodEntry implements IForgeRegistryEntry<MethodEntry> {
 
 	@Override
 	public MethodEntry setRegistryName(ResourceLocation name) {
-		this.initialName = name;
+		Preconditions.checkState(this.name == null, "Name already set, %s->%s", this.name, name);
+		this.name = name;
 		return this;
 	}
 
 	@Override
 	public ResourceLocation getRegistryName() {
-		final ResourceLocation registryName = delegate.name();
-		if (registryName != null) return registryName;
-		return initialName != null? initialName : null;
+		return name;
 	}
 
 	@Override

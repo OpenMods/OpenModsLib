@@ -11,11 +11,11 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformT
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
-import net.minecraftforge.client.model.IPerspectiveAwareModel;
+import net.minecraftforge.client.model.PerspectiveMapWrapper;
 import net.minecraftforge.common.model.TRSRTransformation;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class BakedModelAdapter implements IPerspectiveAwareModel {
+public class BakedModelAdapter implements IBakedModel {
 
 	protected final IBakedModel base;
 	private final ImmutableMap<TransformType, TRSRTransformation> cameraTransforms;
@@ -63,6 +63,6 @@ public class BakedModelAdapter implements IPerspectiveAwareModel {
 
 	@Override
 	public Pair<? extends IBakedModel, Matrix4f> handlePerspective(TransformType cameraTransformType) {
-		return IPerspectiveAwareModel.MapWrapper.handlePerspective(this, cameraTransforms, cameraTransformType);
+		return PerspectiveMapWrapper.handlePerspective(this, cameraTransforms, cameraTransformType);
 	}
 }

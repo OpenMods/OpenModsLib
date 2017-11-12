@@ -71,7 +71,7 @@ public class ItemUtils {
 		if (stack.isEmpty()) {
 			entity.setDead();
 		} else {
-			entity.setEntityItemStack(stack);
+			entity.setItem(stack);
 		}
 	}
 }

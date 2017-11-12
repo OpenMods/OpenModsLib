@@ -1,7 +1,5 @@
 package openmods.model.variant;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -10,6 +8,8 @@ import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -21,17 +21,17 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.IModelCustomData;
-import net.minecraftforge.client.model.IPerspectiveAwareModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.ModelStateComposition;
+import net.minecraftforge.client.model.PerspectiveMapWrapper;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import openmods.model.BakedModelAdapter;
 import openmods.model.ModelUpdater;
+import openmods.utils.CollectionUtils;
 
-public class VariantModel implements IModelCustomData {
+public class VariantModel implements IModel {
 
 	private static class BakedModel extends BakedModelAdapter {
 
@@ -84,7 +84,7 @@ public class VariantModel implements IModelCustomData {
 
 	private static final String KEY_BASE = "base";
 
-	public static final VariantModel EMPTY_MODEL = new VariantModel(Optional.<ResourceLocation> absent(), new VariantModelData());
+	public static final VariantModel EMPTY_MODEL = new VariantModel(Optional.empty(), new VariantModelData());
 
 	private final Optional<ResourceLocation> base;
 
@@ -114,7 +114,7 @@ public class VariantModel implements IModelCustomData {
 
 		final IBakedModel bakedBaseModel = baseModel.bake(new ModelStateComposition(state, baseModel.getDefaultState()), format, bakedTextureGetter);
 
-		return new BakedModel(bakedBaseModel, modelData, bakedSubModels, IPerspectiveAwareModel.MapWrapper.getTransforms(state));
+		return new BakedModel(bakedBaseModel, modelData, bakedSubModels, PerspectiveMapWrapper.getTransforms(state));
 	}
 
 	@Override
@@ -131,8 +131,8 @@ public class VariantModel implements IModelCustomData {
 		VariantModelData modelData = this.modelData;
 		if (customData.containsKey(KEY_VARIANTS) || customData.containsKey(KEY_EXPANSIONS)) {
 			updater.markChanged();
-			Optional<String> variants = Optional.fromNullable(customData.get(KEY_VARIANTS));
-			Optional<String> expansions = Optional.fromNullable(customData.get(KEY_EXPANSIONS));
+			Optional<String> variants = Optional.ofNullable(customData.get(KEY_VARIANTS));
+			Optional<String> expansions = Optional.ofNullable(customData.get(KEY_EXPANSIONS));
 			modelData = modelData.update(variants, expansions);
 		}
 
@@ -141,7 +141,7 @@ public class VariantModel implements IModelCustomData {
 
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
-		return ImmutableList.copyOf(Sets.union(modelData.getAllModels(), base.asSet()));
+		return ImmutableList.copyOf(Sets.union(modelData.getAllModels(), CollectionUtils.asSet(base)));
 	}
 
 	@Override

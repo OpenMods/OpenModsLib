@@ -1,6 +1,6 @@
 package openmods.words;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.Random;
@@ -17,7 +17,7 @@ public class Substitution implements IGenerator {
 
 	@Override
 	public String generate(Random random, Map<String, String> params) {
-		return Objects.firstNonNull(params.get(key), defaultValue);
+		return MoreObjects.firstNonNull(params.get(key), defaultValue);
 	}
 
 	@Override

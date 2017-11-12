@@ -20,14 +20,14 @@ public class BoundingBoxMap<T> {
 
 	public Map.Entry<AxisAlignedBB, T> findEntryContainingPoint(Vec3d point) {
 		for (Map.Entry<AxisAlignedBB, T> e : entries)
-			if (e.getKey().isVecInside(point)) return e;
+			if (e.getKey().contains(point)) return e;
 
 		return null;
 	}
 
 	public void findAllEntriesContainingPoint(Vec3d point, Collection<Map.Entry<AxisAlignedBB, T>> output) {
 		for (Map.Entry<AxisAlignedBB, T> e : entries)
-			if (e.getKey().isVecInside(point)) output.add(e);
+			if (e.getKey().contains(point)) output.add(e);
 	}
 
 	public static <T> BoundingBoxMap<T> create() {

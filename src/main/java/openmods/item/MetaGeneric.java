@@ -1,14 +1,10 @@
 package openmods.item;
 
-import java.util.List;
 import javax.annotation.Nonnull;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
-import net.minecraft.item.crafting.FurnaceRecipes;
-import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -20,28 +16,14 @@ import net.minecraft.world.World;
 
 public class MetaGeneric implements IMetaItem {
 
-	public static class SmeltingRecipe {
-		public final ItemStack input;
-		public final ItemStack result;
-		public final float experience;
-
-		private SmeltingRecipe(ItemStack input, ItemStack result, float experience) {
-			this.input = input;
-			this.result = result.copy();
-			this.experience = experience;
-		}
-	}
-
 	private final String mod;
 	private final String name;
 
-	private Object[] recipes;
 	private boolean visibleInCreative = true;
 
-	public MetaGeneric(String mod, String name, Object... recipes) {
+	public MetaGeneric(String mod, String name) {
 		this.mod = mod;
 		this.name = name;
-		this.recipes = recipes;
 	}
 
 	public MetaGeneric hideFromCreative() {
@@ -67,22 +49,6 @@ public class MetaGeneric implements IMetaItem {
 	@Override
 	public ActionResult<ItemStack> onItemRightClick(@Nonnull ItemStack itemStack, World world, EntityPlayer player, EnumHand hand) {
 		return ActionResult.newResult(EnumActionResult.PASS, itemStack);
-	}
-
-	@Override
-	public void addRecipe() {
-		if (recipes == null) return;
-
-		final List<IRecipe> craftingRecipes = CraftingManager.getInstance().getRecipeList();
-		for (Object tmp : recipes) {
-			if (tmp instanceof SmeltingRecipe) {
-				SmeltingRecipe recipe = (SmeltingRecipe)tmp;
-				FurnaceRecipes.instance().addSmeltingRecipe(recipe.input, recipe.result, recipe.experience);
-			} else if (tmp instanceof IRecipe) {
-				craftingRecipes.add((IRecipe)tmp);
-			} else throw new IllegalArgumentException("Invalid recipe object: "
-					+ tmp);
-		}
 	}
 
 	@Override

@@ -1,15 +1,12 @@
 package openmods.sync;
 
+import com.google.common.base.Preconditions;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.IForgeRegistryEntry;
-import net.minecraftforge.fml.common.registry.PersistentRegistryManager;
-import net.minecraftforge.fml.common.registry.RegistryDelegate;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 
 public abstract class SyncableObjectType implements IForgeRegistryEntry<SyncableObjectType> {
 
-	public final RegistryDelegate<SyncableObjectType> delegate = PersistentRegistryManager.makeDelegate(this, SyncableObjectType.class);
-
-	private ResourceLocation initialName;
+	private ResourceLocation name;
 
 	public abstract ISyncableObject createDummyObject();
 
@@ -21,15 +18,14 @@ public abstract class SyncableObjectType implements IForgeRegistryEntry<Syncable
 
 	@Override
 	public SyncableObjectType setRegistryName(ResourceLocation name) {
-		this.initialName = name;
+		Preconditions.checkState(this.name == null, "Name already set, %s->%s", this.name, name);
+		this.name = name;
 		return this;
 	}
 
 	@Override
 	public ResourceLocation getRegistryName() {
-		final ResourceLocation registryName = delegate.name();
-		if (registryName != null) return registryName;
-		return initialName != null? initialName : null;
+		return name;
 	}
 
 	@Override

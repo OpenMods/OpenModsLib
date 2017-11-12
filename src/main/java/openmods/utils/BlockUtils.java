@@ -85,7 +85,7 @@ public class BlockUtils {
 		EntityItem entityitem = new EntityItem(worldObj, x + d0, y + d1, z + d2, stack);
 		entityitem.setDefaultPickupDelay();
 		if (stack.hasTagCompound()) {
-			entityitem.getEntityItem().setTagCompound(stack.getTagCompound().copy());
+			entityitem.getItem().setTagCompound(stack.getTagCompound().copy());
 		}
 		worldObj.spawnEntity(entityitem);
 		return entityitem;

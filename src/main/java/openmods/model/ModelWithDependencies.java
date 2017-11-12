@@ -1,25 +1,24 @@
 package openmods.model;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.IModelCustomData;
-import net.minecraftforge.client.model.IRetexturableModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
+import openmods.utils.CollectionUtils;
 
-public class ModelWithDependencies implements IModelCustomData, IRetexturableModel {
-	public static final ModelWithDependencies EMPTY = new ModelWithDependencies(Optional.<ResourceLocation> absent(), ImmutableSet.<ResourceLocation> of(), new ModelTextureMap());
+public class ModelWithDependencies implements IModel {
+	public static final ModelWithDependencies EMPTY = new ModelWithDependencies(Optional.empty(), ImmutableSet.of(), new ModelTextureMap());
 
 	private final Optional<ResourceLocation> base;
 
@@ -35,7 +34,7 @@ public class ModelWithDependencies implements IModelCustomData, IRetexturableMod
 
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
-		return Sets.union(dependencies, base.asSet());
+		return Sets.union(dependencies, CollectionUtils.asSet(base));
 	}
 
 	@Override

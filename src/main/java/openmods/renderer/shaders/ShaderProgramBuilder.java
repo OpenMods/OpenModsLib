@@ -6,12 +6,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -70,7 +70,7 @@ public class ShaderProgramBuilder {
 	private static String readShaderSource(ResourceLocation source) {
 		try {
 			final InputStream is = Minecraft.getMinecraft().getResourceManager().getResource(source).getInputStream();
-			final Iterator<String> lines = IOUtils.lineIterator(is, Charsets.UTF_8);
+			final Iterator<String> lines = IOUtils.lineIterator(is, StandardCharsets.UTF_8);
 			final StringBuilder out = new StringBuilder();
 			Joiner.on('\n').appendTo(out, lines);
 			return out.toString();

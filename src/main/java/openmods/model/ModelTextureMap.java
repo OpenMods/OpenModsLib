@@ -1,15 +1,14 @@
 package openmods.model;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.ResourceLocation;
 
@@ -30,7 +29,7 @@ public class ModelTextureMap {
 	}
 
 	public Optional<ModelTextureMap> update(Map<String, String> updates) {
-		if (updates.isEmpty()) return Optional.absent();
+		if (updates.isEmpty()) return Optional.empty();
 
 		final Map<String, ResourceLocation> newTextures = Maps.newHashMap(this.textures);
 
@@ -47,11 +46,11 @@ public class ModelTextureMap {
 	}
 
 	public Iterable<TextureAtlasSprite> bake(Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-		final Set<ResourceLocation> texturesToGet = Sets.newHashSet(textures.values());
-		return Iterables.transform(texturesToGet, bakedTextureGetter);
+		return textures.values().stream().map(bakedTextureGetter).collect(Collectors.toSet());
 	}
 
 	public Map<String, TextureAtlasSprite> bakeWithKeys(Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-		return Maps.transformValues(textures, bakedTextureGetter);
+		return textures.entrySet().stream().collect(Collectors.toMap(Entry::getKey, e -> bakedTextureGetter.apply(e.getValue())));
+
 	}
 }

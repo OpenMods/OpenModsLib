@@ -59,7 +59,7 @@ public abstract class ComponentGui extends GuiContainer {
 
 			@Override
 			public FontRenderer getFontRenderer() {
-				return fontRendererObj;
+				return fontRenderer;
 			}
 
 			@Override

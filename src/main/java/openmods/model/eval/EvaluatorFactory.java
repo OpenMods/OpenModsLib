@@ -1,6 +1,5 @@
 package openmods.model.eval;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -26,6 +25,7 @@ import info.openmods.calc.parsing.token.Tokenizer;
 import info.openmods.calc.types.fp.DoubleParser;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.model.animation.IClip;
@@ -79,7 +79,7 @@ public class EvaluatorFactory {
 	private static class Expr<T> {
 
 		public Optional<T> getConstValue() {
-			return Optional.absent();
+			return Optional.empty();
 		}
 	}
 
@@ -1077,6 +1077,7 @@ public class EvaluatorFactory {
 		TOKENIZER.addModifier(MODIFIER_OP);
 	}
 
+	@FunctionalInterface
 	public interface IClipProvider {
 		public Optional<? extends IClip> get(String name);
 	}

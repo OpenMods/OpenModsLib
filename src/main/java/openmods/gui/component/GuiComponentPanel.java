@@ -1,6 +1,6 @@
 package openmods.gui.component;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import net.minecraft.client.renderer.GlStateManager;
@@ -82,7 +82,7 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 		if (container != null) {
 			for (Slot slot : container.inventorySlots) {
 				bindComponentsSheet();
-				Objects.firstNonNull(slotRenderers.get(slot.slotNumber), normalSlot).render(this, slot);
+				MoreObjects.firstNonNull(slotRenderers.get(slot.slotNumber), normalSlot).render(this, slot);
 			}
 		}
 	}

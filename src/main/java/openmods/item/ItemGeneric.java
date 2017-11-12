@@ -42,12 +42,6 @@ public abstract class ItemGeneric extends Item {
 		OpenMods.proxy.registerCustomItemModel(this, id, item.getLocation());
 	}
 
-	public void initRecipes() {
-		for (IMetaItem item : metaitems.values()) {
-			item.addRecipe();
-		}
-	}
-
 	@Override
 	public String getUnlocalizedName(ItemStack stack) {
 		IMetaItem meta = getMeta(stack.getItemDamage());
@@ -89,9 +83,9 @@ public abstract class ItemGeneric extends Item {
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public void getSubItems(Item item, CreativeTabs tab, NonNullList<ItemStack> subItems) {
+	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> subItems) {
 		for (Entry<Integer, IMetaItem> entry : metaitems.entrySet())
-			entry.getValue().addToCreativeList(item, entry.getKey(), subItems);
+			entry.getValue().addToCreativeList(this, entry.getKey(), subItems);
 	}
 
 	public IMetaItem getMeta(int id) {

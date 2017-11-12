@@ -18,10 +18,11 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.event.RegistryEvent.MissingMappings.Mapping;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.common.event.FMLMissingMappingsEvent.MissingMapping;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.registries.IForgeRegistry;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.config.BlockInstances;
@@ -107,10 +108,6 @@ public class GameRegistryObjectsProvider {
 
 	private final ResourceLocationBuilder itemModelDecorator = new ResourceLocationBuilder();
 
-	private final IdDecorator teDecorator = new IdDecorator(":");
-
-	private final IdDecorator legacyTeDecorator = new IdDecorator("_");
-
 	private final IdDecorator legacyItemDecorator = new IdDecorator(".");
 
 	private final IdDecorator legacyBlockDecorator = new IdDecorator("_");
@@ -124,8 +121,6 @@ public class GameRegistryObjectsProvider {
 	public GameRegistryObjectsProvider(String modPrefix) {
 		langDecorator.setMod(modPrefix);
 		itemModelDecorator.setMod(modPrefix);
-		teDecorator.setMod(modPrefix);
-		legacyTeDecorator.setMod(modPrefix);
 		legacyBlockDecorator.setMod(modPrefix);
 		legacyItemDecorator.setMod(modPrefix);
 
@@ -144,11 +139,6 @@ public class GameRegistryObjectsProvider {
 
 	public void setItemModelId(String modId) {
 		itemModelDecorator.setMod(modId);
-	}
-
-	public void setTileEntityModId(String modId) {
-		teDecorator.setMod(modId);
-		legacyTeDecorator.setMod(modId);
 	}
 
 	public void setFeatures(AbstractFeatureManager features) {
@@ -228,7 +218,7 @@ public class GameRegistryObjectsProvider {
 		}
 	}
 
-	public void registerItems(Class<? extends ItemInstances> klazz) {
+	public void registerItems(Class<? extends ItemInstances> klazz, IForgeRegistry<Item> items) {
 		processAnnotations(klazz, Item.class, RegisterItem.class, itemFactory,
 				new IAnnotationAccess<RegisterItem>() {
 					@Override
@@ -257,7 +247,7 @@ public class GameRegistryObjectsProvider {
 							selectedId = legacyPrefixedId;
 						}
 
-						GameRegistry.register(item.setRegistryName(new ResourceLocation(modId, selectedId)));
+						items.register(item.setRegistryName(new ResourceLocation(modId, selectedId)));
 
 						registerRemaps(itemRemaps, item, selectedId, legacyIds, legacyModIds);
 
@@ -304,7 +294,7 @@ public class GameRegistryObjectsProvider {
 		}
 	}
 
-	public void registerBlocks(Class<? extends BlockInstances> klazz) {
+	public void registerBlocks(Class<? extends BlockInstances> klazz, IForgeRegistry<Block> blocks, IForgeRegistry<Item> items) {
 		processAnnotations(klazz, Block.class, RegisterBlock.class, blockFactory,
 				new IAnnotationAccess<RegisterBlock>() {
 					@Override
@@ -338,7 +328,7 @@ public class GameRegistryObjectsProvider {
 							selectedId = legacyPrefixedId;
 						}
 
-						GameRegistry.register(block.setRegistryName(new ResourceLocation(modId, selectedId)));
+						blocks.register(block.setRegistryName(new ResourceLocation(modId, selectedId)));
 
 						registerRemaps(blockRemaps, block, selectedId, legacyIds, legacyModIds);
 
@@ -347,7 +337,7 @@ public class GameRegistryObjectsProvider {
 						if (annotation.registerItemBlock()) {
 							itemBlock = initializeItemBlock(itemBlockClass, block);
 							if (itemBlock != null) {
-								GameRegistry.register(itemBlock.setRegistryName(new ResourceLocation(modId, selectedId)));
+								items.register(itemBlock.setRegistryName(new ResourceLocation(modId, selectedId)));
 								registerRemaps(itemRemaps, itemBlock, selectedId, legacyIds, legacyModIds);
 							}
 						} else {
@@ -362,15 +352,14 @@ public class GameRegistryObjectsProvider {
 						});
 
 						if (teClass != null) {
-							final String teName = teDecorator.decorate(id);
-							final String legacyTeName = legacyTeDecorator.decorate(id);
-							GameRegistry.registerTileEntityWithAlternatives(teClass, teName, legacyTeName);
+							final String teName = new ResourceLocation(modId, id).toString();
+							GameRegistry.registerTileEntity(teClass, teName);
 						}
 
 						if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(modContainer, id, teClass, itemBlock);
 
 						for (RegisterTileEntity te : annotation.tileEntities()) {
-							final String teName = legacyTeDecorator.decorate(te.name());
+							final String teName = new ResourceLocation(modId, te.name()).toString();
 							GameRegistry.registerTileEntity(te.cls(), teName);
 						}
 
@@ -396,24 +385,17 @@ public class GameRegistryObjectsProvider {
 		return !legacyModIds.isEmpty();
 	}
 
-	public void handleRemaps(Collection<MissingMapping> mappings) {
-		for (MissingMapping mapping : mappings) {
-			switch (mapping.type) {
-				case BLOCK: {
-					Block remap = blockRemaps.get(mapping.resourceLocation);
-					if (remap != null) mapping.remap(remap);
-					break;
-				}
-				case ITEM: {
-					Item remap = itemRemaps.get(mapping.resourceLocation);
-					if (remap != null) mapping.remap(remap);
-					break;
-				}
+	public void handleBlockRemaps(Collection<Mapping<Block>> mappings) {
+		for (Mapping<Block> mapping : mappings) {
+			Block remap = blockRemaps.get(mapping.key);
+			if (remap != null) mapping.remap(remap);
+		}
+	}
 
-				default:
-					break;
-
-			}
+	public void handleItemRemaps(Collection<Mapping<Item>> mappings) {
+		for (Mapping<Item> mapping : mappings) {
+			Item remap = itemRemaps.get(mapping.key);
+			if (remap != null) mapping.remap(remap);
 		}
 	}
 

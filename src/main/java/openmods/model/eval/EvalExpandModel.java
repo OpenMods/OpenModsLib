@@ -1,10 +1,10 @@
 package openmods.model.eval;
 
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Optional;
+import com.google.common.base.MoreObjects;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import jline.internal.Log;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -16,6 +16,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
+import net.minecraftforge.client.model.PerspectiveMapWrapper;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import openmods.model.BakedModelAdapter;
@@ -23,7 +24,7 @@ import openmods.model.ModelUpdater;
 
 public class EvalExpandModel extends EvalModelBase {
 
-	public static final IModel EMPTY = new EvalExpandModel(Optional.<ResourceLocation> absent(), Optional.<ResourceLocation> absent(), new EvaluatorFactory());
+	public static final IModel EMPTY = new EvalExpandModel(Optional.empty(), Optional.empty(), new EvaluatorFactory());
 
 	private static class BakedEvalExpandModel extends BakedModelAdapter {
 
@@ -32,7 +33,7 @@ public class EvalExpandModel extends EvalModelBase {
 		private final IBlockState defaultBlockState;
 
 		public BakedEvalExpandModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, IBlockState defaultBlockState, IVarExpander expander) {
-			super(model.bake(state, format, bakedTextureGetter), MapWrapper.getTransforms(state));
+			super(model.bake(state, format, bakedTextureGetter), PerspectiveMapWrapper.getTransforms(state));
 			this.expander = expander;
 			this.defaultBlockState = defaultBlockState;
 		}
@@ -44,7 +45,7 @@ public class EvalExpandModel extends EvalModelBase {
 
 			if (state instanceof IExtendedBlockState) {
 				final IExtendedBlockState extState = (IExtendedBlockState)state;
-				final EvalModelState originalArgs = Objects.firstNonNull(extState.getValue(EvalModelState.PROPERTY), EvalModelState.EMPTY);
+				final EvalModelState originalArgs = MoreObjects.firstNonNull(extState.getValue(EvalModelState.PROPERTY), EvalModelState.EMPTY);
 				final EvalModelState updatedArgs = EvalModelState.create(expander.expand(originalArgs.getArgs()), originalArgs.isShortLived());
 				state = extState.withProperty(EvalModelState.PROPERTY, updatedArgs);
 			}

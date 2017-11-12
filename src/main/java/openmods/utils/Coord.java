@@ -30,7 +30,7 @@ public class Coord implements Cloneable {
 	}
 
 	public Coord(Vec3d vec) {
-		this(vec.xCoord, vec.yCoord, vec.zCoord);
+		this(vec.x, vec.y, vec.z);
 	}
 
 	public Coord offset(int ox, int oy, int oz) {

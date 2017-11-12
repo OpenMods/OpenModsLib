@@ -24,7 +24,7 @@ public class MapSerializerProvider implements IGenericSerializerProvider {
 	public IStreamSerializer<?> getSerializer(Type type) {
 		TypeToken<?> typeToken = TypeToken.of(type);
 
-		if (TypeUtils.MAP_TOKEN.isAssignableFrom(typeToken)) {
+		if (typeToken.isSubtypeOf(TypeUtils.MAP_TOKEN)) {
 			final TypeToken<?> keyType = typeToken.resolveType(TypeUtils.MAP_KEY_PARAM);
 			final TypeToken<?> valueType = typeToken.resolveType(TypeUtils.MAP_VALUE_PARAM);
 

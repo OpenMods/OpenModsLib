@@ -9,10 +9,13 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import net.minecraft.network.PacketBuffer;
@@ -182,5 +185,9 @@ public class CollectionUtils {
 	public static <K, V> void putOnce(Map<K, V> map, K key, V value) {
 		final V prev = map.put(key, value);
 		Preconditions.checkState(prev == null, "Duplicate value on key %s: %s -> %s", key, prev, value);
+	}
+
+	public static <T> Set<T> asSet(Optional<T> value) {
+		return value.map(v -> Collections.singleton(v)).orElseGet(() -> Collections.emptySet());
 	}
 }

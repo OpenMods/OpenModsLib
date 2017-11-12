@@ -1,10 +1,10 @@
 package openmods.utils.render;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
@@ -149,7 +149,7 @@ public class RenderUtils {
 	}
 
 	public static void renderSolidCube(Tessellator tes, double x1, double y1, double z1, double x2, double y2, double z2) {
-		final VertexBuffer wr = tes.getBuffer();
+		final BufferBuilder wr = tes.getBuffer();
 		wr.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
 		renderCube(new IVertexSink() {
 			@Override

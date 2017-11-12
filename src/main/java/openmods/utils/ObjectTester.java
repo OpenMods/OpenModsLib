@@ -48,6 +48,7 @@ public class ObjectTester<T> implements ITester<T> {
 			return this;
 		}
 
+		@SuppressWarnings("unchecked")
 		public ClassNameTester<T> addClasses(Class<? extends T>... classes) {
 			for (Class<? extends T> cls : classes)
 				names.add(cls.getName());

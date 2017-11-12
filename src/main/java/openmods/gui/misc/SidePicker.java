@@ -91,10 +91,10 @@ public class SidePicker {
 	}
 
 	private Vec3d calculateXPoint(Vec3d near, Vec3d diff, double x) {
-		double p = (x - near.xCoord) / diff.xCoord;
+		double p = (x - near.x) / diff.x;
 
-		double y = near.yCoord + diff.yCoord * p;
-		double z = near.zCoord + diff.zCoord * p;
+		double y = near.y + diff.y * p;
+		double z = near.z + diff.z * p;
 
 		if (negY <= y && y <= posY && negZ <= z && z <= posZ) return new Vec3d(x, y, z);
 
@@ -102,10 +102,10 @@ public class SidePicker {
 	}
 
 	private Vec3d calculateYPoint(Vec3d near, Vec3d diff, double y) {
-		double p = (y - near.yCoord) / diff.yCoord;
+		double p = (y - near.y) / diff.y;
 
-		double x = near.xCoord + diff.xCoord * p;
-		double z = near.zCoord + diff.zCoord * p;
+		double x = near.x + diff.x * p;
+		double z = near.z + diff.z * p;
 
 		if (negX <= x && x <= posX && negZ <= z && z <= posZ) return new Vec3d(x, y, z);
 
@@ -113,10 +113,10 @@ public class SidePicker {
 	}
 
 	private Vec3d calculateZPoint(Vec3d near, Vec3d diff, double z) {
-		double p = (z - near.zCoord) / diff.zCoord;
+		double p = (z - near.z) / diff.z;
 
-		double x = near.xCoord + diff.xCoord * p;
-		double y = near.yCoord + diff.yCoord * p;
+		double x = near.x + diff.x * p;
+		double y = near.y + diff.y * p;
 
 		if (negX <= x && x <= posX && negY <= y && y <= posY) return new Vec3d(x, y, z);
 

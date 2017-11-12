@@ -382,7 +382,7 @@ public class GeometryUtils {
 	}
 
 	public static void line3D(Vec3d start, Vec3d end, IShapeable shapeable) {
-		line3D((int)start.xCoord, (int)start.yCoord, (int)start.zCoord, (int)end.xCoord, (int)end.yCoord, (int)end.zCoord, shapeable);
+		line3D((int)start.x, (int)start.y, (int)start.z, (int)end.x, (int)end.y, (int)end.z, shapeable);
 	}
 
 	public static void line3D(Coord start, Coord end, IShapeable shapeable) {

@@ -159,7 +159,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		setHardness(1.0F);
 
 		// I dont think vanilla actually uses this..
-		this.isBlockContainer = false;
+		this.hasTileEntity = false;
 
 		this.rotationMode = getRotationMode();
 		Preconditions.checkNotNull(this.rotationMode);
@@ -349,7 +349,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 		if (tileEntity != null) {
 			this.teClass = tileEntity;
-			isBlockContainer = true;
+			hasTileEntity = true;
 
 			for (TileEntityCapability capability : TileEntityCapability.values())
 				if (capability.intf.isAssignableFrom(teClass))
@@ -442,7 +442,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 			return false;
 		}
-		if (isBlockContainer) {
+		if (hasTileEntity) {
 			super.eventReceived(state, world, blockPos, eventId, eventParam);
 			TileEntity te = world.getTileEntity(blockPos);
 			return te != null? te.receiveClientEvent(eventId, eventParam) : false;

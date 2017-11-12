@@ -157,7 +157,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 
 	@Override
 	public EntityPlayer getPlayerFromHandler(INetHandler handler) {
-		if (handler instanceof NetHandlerPlayServer) return ((NetHandlerPlayServer)handler).playerEntity;
+		if (handler instanceof NetHandlerPlayServer) return ((NetHandlerPlayServer)handler).player;
 
 		if (handler instanceof NetHandlerPlayClient) return getThePlayer();
 

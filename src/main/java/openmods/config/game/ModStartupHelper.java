@@ -8,7 +8,9 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
-import net.minecraftforge.fml.common.event.FMLMissingMappingsEvent;
+import net.minecraftforge.event.RegistryEvent.MissingMappings;
+import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.registries.IForgeRegistry;
 import openmods.config.BlockInstances;
 import openmods.config.ConfigStorage;
 import openmods.config.ItemInstances;
@@ -62,11 +64,14 @@ public class ModStartupHelper {
 
 		setupItemFactory(gameObjectsProvider.getItemFactory());
 
+		final IForgeRegistry<Item> items = GameRegistry.findRegistry(Item.class);
+		final IForgeRegistry<Block> blocks = GameRegistry.findRegistry(Block.class);
+
 		for (Class<? extends BlockInstances> blockHolder : blockHolders)
-			gameObjectsProvider.registerBlocks(blockHolder);
+			gameObjectsProvider.registerBlocks(blockHolder, blocks, items);
 
 		for (Class<? extends ItemInstances> itemHolder : itemHolders)
-			gameObjectsProvider.registerItems(itemHolder);
+			gameObjectsProvider.registerItems(itemHolder, items);
 
 		setupConfigPost(gameObjectsProvider);
 	}
@@ -75,8 +80,12 @@ public class ModStartupHelper {
 		gameObjectsProvider.registerItemModels();
 	}
 
-	public void handleRenames(FMLMissingMappingsEvent event) {
-		gameObjectsProvider.handleRemaps(gameObjectsProvider.hasIntraModRenames()? event.getAll() : event.get());
+	public void handleBlockRenames(MissingMappings<Block> event) {
+		gameObjectsProvider.handleBlockRemaps(gameObjectsProvider.hasIntraModRenames()? event.getAllMappings() : event.getMappings());
+	}
+
+	public void handleItemRenames(MissingMappings<Item> event) {
+		gameObjectsProvider.handleItemRemaps(gameObjectsProvider.hasIntraModRenames()? event.getAllMappings() : event.getMappings());
 	}
 
 	protected void setupItemFactory(FactoryRegistry<Item> itemFactory) {}

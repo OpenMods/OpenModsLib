@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -84,7 +84,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		parent.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 		GlStateManager.enableTexture2D();
 
-		if (te != null) TileEntityRendererDispatcher.instance.renderTileEntityAt(te, -0.5, -0.5, -0.5, 0.0F);
+		if (te != null) TileEntityRendererDispatcher.instance.render(te, -0.5, -0.5, -0.5, 0.0F);
 
 		parent.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 		if (blockState != null) drawBlock();
@@ -109,7 +109,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 	private void drawBlock() {
 		final Tessellator tessellator = Tessellator.getInstance();
-		final VertexBuffer wr = tessellator.getBuffer();
+		final BufferBuilder wr = tessellator.getBuffer();
 		final BlockRendererDispatcher dispatcher = parent.getMinecraft().getBlockRendererDispatcher();
 		for (BlockRenderLayer layer : BlockRenderLayer.values()) {
 			if (blockState.getBlock().canRenderInLayer(blockState, layer)) {
