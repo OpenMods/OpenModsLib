@@ -26,7 +26,6 @@ import net.minecraftforge.common.model.animation.IAnimationStateMachine;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import openmods.LibConfig;
-import openmods.Log;
 import openmods.OpenMods;
 import openmods.block.BlockSelectionHandler;
 import openmods.calc.CommandCalc;
@@ -45,7 +44,6 @@ import openmods.model.eval.EvalModel;
 import openmods.model.itemstate.ItemStateModel;
 import openmods.model.textureditem.TexturedItemModel;
 import openmods.model.variant.VariantModel;
-import openmods.movement.PlayerMovementManager;
 import openmods.renderer.CommandGlDebug;
 import openmods.source.CommandSource;
 import openmods.utils.CachedFactory;
@@ -143,12 +141,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 	public void init() {}
 
 	@Override
-	public void postInit() {
-		if (!PlayerMovementManager.isCallbackInjected()) {
-			Log.info("EntityPlayerSP movement callback patch not applied, using legacy solution");
-			MinecraftForge.EVENT_BUS.register(new PlayerMovementManager.LegacyTickHandler());
-		}
-	}
+	public void postInit() {}
 
 	@Override
 	public void setNowPlayingTitle(String nowPlaying) {

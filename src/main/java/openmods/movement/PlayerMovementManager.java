@@ -1,24 +1,25 @@
 package openmods.movement;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MovementInput;
+import net.minecraftforge.client.event.InputUpdateEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import openmods.movement.PlayerMovementEvent.Type;
 
+@EventBusSubscriber
 public class PlayerMovementManager {
-
-	static boolean callbackInjected = false;
 
 	private static boolean wasJumping = false;
 	private static boolean wasSneaking = false;
 
 	private PlayerMovementManager() {}
 
-	public static void updateMovementState(MovementInput input, EntityPlayer owner) {
+	@SubscribeEvent
+	public static void updateMovementState(InputUpdateEvent evt) {
+		final MovementInput input = evt.getMovementInput();
+		final EntityPlayer owner = evt.getEntityPlayer();
 		if (input.jump && !wasJumping) input.jump = postMovementEvent(owner, PlayerMovementEvent.Type.JUMP);
 		if (input.sneak && !wasSneaking) input.sneak = postMovementEvent(owner, PlayerMovementEvent.Type.SNEAK);
 
@@ -28,17 +29,5 @@ public class PlayerMovementManager {
 
 	private static boolean postMovementEvent(EntityPlayer player, Type type) {
 		return !MinecraftForge.EVENT_BUS.post(new PlayerMovementEvent(player, type));
-	}
-
-	public static boolean isCallbackInjected() {
-		return callbackInjected;
-	}
-
-	public static class LegacyTickHandler {
-		@SubscribeEvent
-		public void onClientTick(ClientTickEvent evt) {
-			final EntityPlayerSP player = Minecraft.getMinecraft().player;
-			if (player != null) PlayerMovementManager.updateMovementState(player.movementInput, player);
-		}
 	}
 }

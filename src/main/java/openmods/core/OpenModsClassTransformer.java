@@ -20,9 +20,7 @@ import openmods.asm.VisitorHelper.TransformProvider;
 import openmods.config.simple.ConfigProcessor;
 import openmods.config.simple.ConfigProcessor.UpdateListener;
 import openmods.core.fixes.HorseNullFix;
-import openmods.entity.PlayerDamageEventInjector;
 import openmods.include.IncludingClassVisitor;
-import openmods.movement.MovementPatcher;
 import openmods.renderer.PlayerRendererHookVisitor;
 import openmods.renderer.PreWorldRenderHookVisitor;
 import openmods.utils.StateTracker;
@@ -92,24 +90,6 @@ public class OpenModsClassTransformer implements IClassTransformer {
 	}
 
 	public void addConfigValues(ConfigProcessor config) {
-		config.addEntry("activate_movement_callback", 0, "true", new ConfigOption("movement_callback") {
-			@Override
-			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.client.entity.EntityPlayerSP", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
-					@Override
-					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.debug("Trying to apply movement callback (class: %s)", name);
-						state.update(TransformerState.ACTIVATED);
-						return new MovementPatcher(name, cv, createResultListener(state));
-					}
-				});
-			}
-		},
-				"Purpose: this transformer add hook to player movement controls",
-				"Modified class: net.minecraft.client.entity.EntityPlayerSP",
-				"Known users: OpenBlocks elevator",
-				"When disabled: users usually have fallbacks (elevator will use less accurate algorithm)");
-
 		config.addEntry("activate_player_render_hook", 0, "true", new ConfigOption("player_render_hook") {
 			@Override
 			protected void onActivate(final StateUpdater<TransformerState> state) {
@@ -127,24 +107,6 @@ public class OpenModsClassTransformer implements IClassTransformer {
 				"Modified class: net.minecraft.client.renderer.entity.RenderPlayer",
 				"Known users: OpenBlocks hangglider",
 				"When disabled: code may fallback to less compatible mechanism (like replacing renderer)");
-
-		config.addEntry("activate_player_damage_hook", 0, "true", new ConfigOption("player_damage_hook") {
-			@Override
-			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.entity.player.EntityPlayer", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
-					@Override
-					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.debug("Trying to patch EntityPlayer (class: %s)", name);
-						state.update(TransformerState.ACTIVATED);
-						return new PlayerDamageEventInjector(name, cv, createResultListener(state));
-					}
-				});
-			}
-		},
-				"Purpose: hook for capturing damage to player (after armor and potion calculations)",
-				"Modified class: net.minecraft.entity.player.EntityPlayer",
-				"Known users: Last Stand enchantment",
-				"When disabled: Last Stand enchantment will not work");
 
 		config.addEntry("hook_pre_world_rendering", 0, "true", new ConfigOption("pre_world_render_hook") {
 			@Override
