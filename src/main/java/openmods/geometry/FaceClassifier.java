@@ -1,13 +1,12 @@
 package openmods.geometry;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.vecmath.Vector3f;
 import net.minecraft.util.EnumFacing;
 import org.apache.commons.lang3.tuple.Pair;
@@ -24,12 +23,7 @@ public class FaceClassifier {
 	private final List<Pair<Vector3f, EnumFacing>> sideOrder = Lists.newArrayList();
 
 	public FaceClassifier(Collection<EnumFacing> sideOrder) {
-		this.sideOrder.addAll(Collections2.transform(sideOrder, new Function<EnumFacing, Pair<Vector3f, EnumFacing>>() {
-			@Override
-			public Pair<Vector3f, EnumFacing> apply(EnumFacing input) {
-				return Pair.of(BASES.get(input), input);
-			}
-		}));
+		this.sideOrder.addAll(Collections2.transform(sideOrder, input -> Pair.of(BASES.get(input), input)));
 	}
 
 	public Optional<EnumFacing> classify(Vector3f normalVec) {
@@ -42,6 +36,6 @@ public class FaceClassifier {
 			if (angleCos > 0) return Optional.of(e.getValue());
 		}
 
-		return Optional.absent();
+		return Optional.empty();
 	}
 }

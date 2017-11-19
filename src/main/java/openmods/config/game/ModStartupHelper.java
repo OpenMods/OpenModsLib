@@ -6,9 +6,11 @@ import java.io.File;
 import java.util.Set;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.RegistryEvent.MissingMappings;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import openmods.config.BlockInstances;
@@ -74,16 +76,20 @@ public class ModStartupHelper {
 			gameObjectsProvider.registerItems(itemHolder, items);
 
 		setupConfigPost(gameObjectsProvider);
+
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	public void init() {
 		gameObjectsProvider.registerItemModels();
 	}
 
+	@SubscribeEvent
 	public void handleBlockRenames(MissingMappings<Block> event) {
 		gameObjectsProvider.handleBlockRemaps(gameObjectsProvider.hasIntraModRenames()? event.getAllMappings() : event.getMappings());
 	}
 
+	@SubscribeEvent
 	public void handleItemRenames(MissingMappings<Item> event) {
 		gameObjectsProvider.handleItemRemaps(gameObjectsProvider.hasIntraModRenames()? event.getAllMappings() : event.getMappings());
 	}
