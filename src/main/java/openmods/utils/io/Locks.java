@@ -4,10 +4,13 @@ import com.google.common.base.Optional;
 import com.google.common.io.Closer;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import openmods.Log;
+import org.apache.logging.log4j.Level;
 
 public class Locks {
 
@@ -103,6 +106,9 @@ public class Locks {
 
 			final FileLock lock = ch.tryLock();
 			if (lock != null) return Optional.of(new ExclusiveLock(file, ch, lock));
+		} catch (FileNotFoundException e) {
+			// just let it skip, user has to retry
+			Log.log(Level.DEBUG, e, "Failed to create or lock file %s, possible permission issue", file);
 		} catch (Throwable t) {
 			throw closer.rethrow(t);
 		}
