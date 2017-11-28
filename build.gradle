@@ -60,14 +60,14 @@ repositories {
 */
 
 configurations {
-    pack {
+    shade {
         transitive = false
     }
-    compile.extendsFrom pack
+    compile.extendsFrom shade
 }
 
 dependencies {
-    pack group: 'info.openmods', name: 'calc', version: '0.2'
+    shade group: 'info.openmods', name: 'calc', version: '0.2'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile "org.mockito:mockito-core:1.10.19"
@@ -151,13 +151,10 @@ processResources {
     }
 }
 
-def packagedJars = configurations.pack.collect({f -> f.getName()}).join(" ")
-
 def fmlManifest = manifest {
     attributes(
         "FMLCorePlugin": "openmods.core.OpenModsCorePlugin",
         "FMLCorePluginContainsFMLMod": "true",
-        "JarJars": packagedJars
     )
 }
 
@@ -166,7 +163,11 @@ jar {
         from jenkinsManifest, gitManifest, fmlManifest
     }
 
-    configurations.pack.each { dep -> from(dep) }
+    configurations.shade.each { dep ->
+        from(project.zipTree(dep)){
+            exclude 'META-INF', 'META-INF/**'
+        }
+    }
 }
 
 javadoc {
