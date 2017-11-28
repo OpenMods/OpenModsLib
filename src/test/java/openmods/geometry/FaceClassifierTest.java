@@ -1,7 +1,7 @@
 package openmods.geometry;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import java.util.Optional;
 import javax.vecmath.Vector3f;
 import net.minecraft.util.EnumFacing;
 import org.junit.Assert;
@@ -18,7 +18,7 @@ public class FaceClassifierTest {
 	private static void test(FaceClassifier classifier, float x, float y, float z) {
 		Vector3f v = new Vector3f(x, y, z);
 		v.normalize();
-		Assert.assertEquals(Optional.absent(), classifier.classify(v));
+		Assert.assertEquals(Optional.empty(), classifier.classify(v));
 	}
 
 	@Test
