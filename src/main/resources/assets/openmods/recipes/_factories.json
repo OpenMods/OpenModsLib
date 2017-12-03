@@ -1,0 +1,8 @@
+{
+  "conditions": {
+    "enchantment_exists": "openmods.recipe.EnchantingRecipe$Condition"
+  },
+  "recipes": {
+    "enchanting": "openmods.recipe.EnchantingRecipe$Factory"
+  }
+}
