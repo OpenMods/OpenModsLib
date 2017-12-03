@@ -5,6 +5,7 @@ import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,6 +18,10 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.datafix.DataFixer;
+import net.minecraft.util.datafix.FixTypes;
+import net.minecraft.util.datafix.IDataFixer;
+import net.minecraft.util.datafix.IDataWalker;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -53,6 +58,23 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	public EntityBlock(World world, IBlockState state, NBTTagCompound tileEntity) {
 		super(world);
 		setSize(0.925F, 0.925F);
+	}
+
+	public static void registerFixes(DataFixer fixer, final Class<? extends EntityBlock> cls) {
+		fixer.registerWalker(FixTypes.ENTITY, new IDataWalker() {
+			@Override
+			public NBTTagCompound process(IDataFixer fixer, NBTTagCompound compound, int versionIn) {
+				if (EntityList.getKey(cls).equals(new ResourceLocation(compound.getString("id")))) {
+					if (compound.hasKey(TAG_TILE_ENTITY, Constants.NBT.TAG_COMPOUND)) {
+						final NBTTagCompound teTag = compound.getCompoundTag(TAG_TILE_ENTITY);
+						final NBTTagCompound fixedTeTag = fixer.process(FixTypes.BLOCK_ENTITY, teTag, versionIn);
+						compound.setTag(TAG_TILE_ENTITY, fixedTeTag);
+					}
+				}
+
+				return compound;
+			}
+		});
 	}
 
 	public interface EntityFactory {

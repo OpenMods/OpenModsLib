@@ -4,7 +4,9 @@ import java.io.File;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.util.CompoundDataFixer;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -163,8 +165,10 @@ public class OpenMods {
 
 		collector = new ClassSourceCollector(evt.getAsmData());
 
-		EntityRegistry.registerModEntity(OpenMods.location("block"), EntityBlock.class, "Block", ENTITY_BLOCK_ID, instance, 64, 1, true);
+		final CompoundDataFixer dataFixer = FMLCommonHandler.instance().getDataFixer();
 
+		EntityRegistry.registerModEntity(OpenMods.location("block"), EntityBlock.class, "Block", ENTITY_BLOCK_ID, instance, 64, 1, true);
+		EntityBlock.registerFixes(dataFixer, EntityBlock.class);
 		proxy.preInit();
 	}
 
