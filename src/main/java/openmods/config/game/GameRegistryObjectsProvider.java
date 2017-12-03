@@ -17,7 +17,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.datafix.DataFixer;
 import net.minecraftforge.event.RegistryEvent.MissingMappings.Mapping;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -28,6 +30,9 @@ import openmods.config.BlockInstances;
 import openmods.config.InstanceContainer;
 import openmods.config.ItemInstances;
 import openmods.config.game.RegisterBlock.RegisterTileEntity;
+import openmods.fixers.IFixerFactory;
+import openmods.fixers.RegisterFixer;
+import openmods.utils.CachedInstanceFactory;
 
 public class GameRegistryObjectsProvider {
 
@@ -294,6 +299,8 @@ public class GameRegistryObjectsProvider {
 	}
 
 	public void registerBlocks(Class<? extends BlockInstances> klazz, IForgeRegistry<Block> blocks, IForgeRegistry<Item> items) {
+		final CachedInstanceFactory<IFixerFactory> fixerFactories = CachedInstanceFactory.create();
+		final DataFixer fixerRegistry = FMLCommonHandler.instance().getDataFixer();
 		processAnnotations(klazz, Block.class, RegisterBlock.class, blockFactory,
 				new IAnnotationAccess<RegisterBlock>() {
 					@Override
@@ -353,6 +360,8 @@ public class GameRegistryObjectsProvider {
 						if (teClass != null) {
 							final String teName = new ResourceLocation(modId, id).toString();
 							GameRegistry.registerTileEntity(teClass, teName);
+
+							registerFixer(teClass);
 						}
 
 						if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(modContainer, id, teClass, itemBlock);
@@ -360,6 +369,8 @@ public class GameRegistryObjectsProvider {
 						for (RegisterTileEntity te : annotation.tileEntities()) {
 							final String teName = new ResourceLocation(modId, te.name()).toString();
 							GameRegistry.registerTileEntity(te.cls(), teName);
+
+							registerFixer(te.cls());
 						}
 
 						if (creativeTab != null && annotation.addToModCreativeTab())
@@ -375,6 +386,14 @@ public class GameRegistryObjectsProvider {
 							if (annotation.registerDefaultItemModel()) {
 								itemModelIds.put(itemBlock, itemLocation);
 							}
+						}
+					}
+
+					private void registerFixer(Class<? extends TileEntity> teClass) {
+						RegisterFixer fixer = teClass.getAnnotation(RegisterFixer.class);
+						if (fixer != null) {
+							final IFixerFactory fixerFactory = fixerFactories.getOrCreate(fixer.value());
+							fixerFactory.register(fixerRegistry, teClass);
 						}
 					}
 				});
