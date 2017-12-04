@@ -34,6 +34,7 @@ public class NetworkEventManager {
 				.setType(NetworkEventEntry.class)
 				.setIDRange(0, 0xFFFF) // something, something, 64k
 				.addCallback(new Callbacks())
+				.disableSaving()
 				.create();
 
 		DISPATCHER = new NetworkEventDispatcher(registry);

@@ -33,6 +33,7 @@ public class SyncableObjectTypeRegistry {
 				.addCallback(new Callbacks())
 				.setIDRange(0, 0xFFFF)
 				.setType(SyncableObjectType.class)
+				.disableSaving()
 				.setName(OpenMods.location("syncable_object_type"))
 				.create();
 

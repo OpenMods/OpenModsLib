@@ -50,6 +50,7 @@ public class RpcCallDispatcher extends Dispatcher {
 				.setIDRange(0, 0x0FFFFF)
 				.setName(OpenMods.location("rpc_methods"))
 				.setType(MethodEntry.class)
+				.disableSaving()
 				.addCallback(new MethodsCallbacks())
 				.create();
 
@@ -57,6 +58,7 @@ public class RpcCallDispatcher extends Dispatcher {
 				.setIDRange(0, 0xFF)
 				.setName(OpenMods.location("rpc_targets"))
 				.setType(TargetTypeProvider.class)
+				.disableSaving()
 				.addCallback(new TargetTypeCallbacks())
 				.create();
 
