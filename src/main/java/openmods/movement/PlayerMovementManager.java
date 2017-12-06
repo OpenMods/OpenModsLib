@@ -6,9 +6,10 @@ import net.minecraftforge.client.event.InputUpdateEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
 import openmods.movement.PlayerMovementEvent.Type;
 
-@EventBusSubscriber
+@EventBusSubscriber(Side.CLIENT)
 public class PlayerMovementManager {
 
 	private static boolean wasJumping = false;

@@ -130,7 +130,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 		config.addEntry("horse_base_null_fix", 0, "true", new ConfigOption("horse_base_null_fix") {
 			@Override
 			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.entity.passive.AbstractHorse", new TransformProvider(0) {
+				vanillaPatches.put("net.minecraft.entity.passive.AbstractHorse", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
 					@Override
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
 						Log.debug("Trying to patch AbstractHorse (class: %s)", name);
@@ -148,7 +148,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 		config.addEntry("horse_null_fix", 0, "true", new ConfigOption("horse_null_fix") {
 			@Override
 			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.entity.passive.EntityHorse", new TransformProvider(0) {
+				vanillaPatches.put("net.minecraft.entity.passive.EntityHorse", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
 					@Override
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
 						Log.debug("Trying to patch EntityHorse (class: %s)", name);
@@ -166,7 +166,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 		config.addEntry("llama_null_fix", 0, "true", new ConfigOption("llama_null_fix") {
 			@Override
 			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.entity.passive.EntityLlama", new TransformProvider(0) {
+				vanillaPatches.put("net.minecraft.entity.passive.EntityLlama", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
 					@Override
 					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
 						Log.debug("Trying to patch EntityLlama (class: %s)", name);
