@@ -28,7 +28,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 	public BreakBlockAction(World worldObj, BlockPos blockPos) {
 		this.worldObj = worldObj;
 		this.blockPos = blockPos;
-		this.stackToUse = new ItemStack(Items.DIAMOND_PICKAXE, 0, 0);
+		this.stackToUse = new ItemStack(Items.DIAMOND_PICKAXE, 1, 0);
 	}
 
 	public BreakBlockAction setStackToUse(@Nonnull ItemStack stack) {
