@@ -67,7 +67,6 @@ public class ItemUtils {
 
 	// because vanilla is not really good with null stacks
 	public static void setEntityItemStack(EntityItem entity, @Nonnull ItemStack stack) {
-		// TODO 1.11 verify if needed
 		if (stack.isEmpty()) {
 			entity.setDead();
 		} else {

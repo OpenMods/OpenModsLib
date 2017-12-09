@@ -146,7 +146,6 @@ public abstract class ContainerBase<T> extends Container {
 	@Override
 	@Nonnull
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotId) {
-		// TODO 1.11 verify
 		final Slot slot = inventorySlots.get(slotId);
 
 		if (slot != null && canTransferItemOut(slot) && slot.getHasStack()) {
