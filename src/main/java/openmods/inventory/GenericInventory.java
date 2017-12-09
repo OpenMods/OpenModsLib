@@ -49,7 +49,6 @@ public class GenericInventory implements IInventory {
 	@Override
 	@Nonnull
 	public ItemStack decrStackSize(int index, int count) {
-		// TODO 1.11 verify
 		final ItemStack result = ItemStackHelper.getAndSplit(this.inventoryContents, index, count);
 
 		if (!result.isEmpty())

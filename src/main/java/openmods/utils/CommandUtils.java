@@ -10,7 +10,6 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class CommandUtils {
 
@@ -28,15 +27,13 @@ public class CommandUtils {
 		return filterPrefixes(prefix, Arrays.asList(proposals));
 	}
 
-	public static List<String> getPlayerNames() {
-		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-		// TODO 1.11 verify
+	public static List<String> getPlayerNames(MinecraftServer server) {
 		if (server != null) return ImmutableList.copyOf(server.getOnlinePlayerNames());
 		return ImmutableList.of();
 	}
 
-	public static List<String> fiterPlayerNames(String prefix) {
-		return filterPrefixes(prefix, getPlayerNames());
+	public static List<String> fiterPlayerNames(MinecraftServer server, String prefix) {
+		return filterPrefixes(prefix, getPlayerNames(server));
 	}
 
 	public static void respondText(ICommandSender sender, String message) {

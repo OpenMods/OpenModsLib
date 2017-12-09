@@ -41,7 +41,6 @@ public final class ComputerCraftUtils {
 
 	protected static IRecipe findTurtleUpgradeRecipe() {
 		for (IRecipe recipe : CraftingManager.REGISTRY)
-			// TODO 1.12 review
 			if (recipe.getClass().getSimpleName().equals("TurtleUpgradeRecipe")) return recipe;
 
 		return null;

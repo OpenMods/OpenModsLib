@@ -17,7 +17,7 @@ public class FakeSlot extends Slot implements ICustomSlot {
 
 	@Override
 	public ItemStack onClick(EntityPlayer player, int dragType, ClickType clickType) {
-		if (clickType == ClickType.CLONE && player.capabilities.isCreativeMode) { // TODO 1.11 verify
+		if (clickType == ClickType.CLONE && player.capabilities.isCreativeMode) {
 			ItemStack contents = getStack();
 			if (!contents.isEmpty()) {
 				ItemStack tmp = contents.copy();
