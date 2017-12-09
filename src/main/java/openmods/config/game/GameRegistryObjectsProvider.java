@@ -11,6 +11,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -77,7 +78,19 @@ public class GameRegistryObjectsProvider {
 
 	private final Map<Item, ResourceLocation> itemModelIds = Maps.newHashMap();
 
+	private Supplier<CreativeTabs> creativeTabSupplier;
 	private CreativeTabs creativeTab;
+
+	private CreativeTabs creativeTab() {
+		if (creativeTab == null) {
+			if (creativeTabSupplier != null) {
+				creativeTab = creativeTabSupplier.get();
+				Preconditions.checkNotNull(creativeTab);
+			}
+		}
+
+		return creativeTab;
+	}
 
 	private static class IdDecorator {
 		private String modId;
@@ -131,6 +144,10 @@ public class GameRegistryObjectsProvider {
 		this.modContainer = Loader.instance().activeModContainer();
 		Preconditions.checkNotNull(this.modContainer, "This class can only be initialized in mod init");
 		this.modId = this.modContainer.getModId();
+	}
+
+	public void setCreativeTab(Supplier<CreativeTabs> creativeTab) {
+		this.creativeTabSupplier = creativeTab;
 	}
 
 	public void setCreativeTab(CreativeTabs creativeTab) {
@@ -272,8 +289,8 @@ public class GameRegistryObjectsProvider {
 							registerCustomItemModels(item, itemLocation, annotation.customItemModels());
 						}
 
-						if (creativeTab != null && annotation.addToModCreativeTab())
-							item.setCreativeTab(creativeTab);
+						if (annotation.addToModCreativeTab())
+							item.setCreativeTab(creativeTab());
 					}
 				});
 	}
@@ -373,8 +390,8 @@ public class GameRegistryObjectsProvider {
 							registerFixer(te.cls());
 						}
 
-						if (creativeTab != null && annotation.addToModCreativeTab())
-							block.setCreativeTab(creativeTab);
+						if (annotation.addToModCreativeTab())
+							block.setCreativeTab(creativeTab());
 
 						if (itemBlock != null) {
 							final ResourceLocation itemLocation = itemModelDecorator.build(id);
