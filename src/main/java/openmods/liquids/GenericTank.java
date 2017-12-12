@@ -75,7 +75,7 @@ public class GenericTank extends FluidTank {
 
 	private static boolean isNeighbourTank(World world, BlockPos coord, EnumFacing dir) {
 		TileEntity tile = BlockUtils.getTileInDirectionSafe(world, coord, dir);
-		return CompatibilityUtils.isFluidHandler(tile, dir);
+		return CompatibilityUtils.isFluidHandler(tile, dir.getOpposite());
 	}
 
 	private static Set<EnumFacing> getSurroundingTanks(World world, BlockPos coord) {

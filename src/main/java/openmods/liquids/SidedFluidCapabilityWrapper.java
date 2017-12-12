@@ -68,11 +68,11 @@ public abstract class SidedFluidCapabilityWrapper {
 	}
 
 	public boolean hasHandler(EnumFacing side) {
-		return canInteract(side);
+		return side == null || canInteract(side);
 	}
 
 	public IFluidHandler getHandler(EnumFacing side) {
-		return handlers.get(side);
+		return side != null? handlers.get(side) : tank;
 	}
 
 	public static SidedFluidCapabilityWrapper wrap(IFluidHandler tank, final IReadableBitMap<EnumFacing> flags, boolean canDrain, boolean canFill) {
