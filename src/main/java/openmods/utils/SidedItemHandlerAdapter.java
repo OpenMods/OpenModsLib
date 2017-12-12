@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.util.EnumSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +33,7 @@ public class SidedItemHandlerAdapter {
 		}
 
 		private boolean canAccessFromSide(EnumFacing side) {
-			return reachability.get(side);
+			return side == null || reachability.get(side);
 		}
 	}
 
@@ -79,8 +79,42 @@ public class SidedItemHandlerAdapter {
 		}
 	}
 
-	private final Set<EnumFacing> validSides = EnumSet.noneOf(EnumFacing.class);
-	private final Map<EnumFacing, ItemHandler> handlers = Maps.newEnumMap(EnumFacing.class);
+	private class SideHandler {
+		private final EnumFacing side;
+
+		private boolean isValid;
+		private ItemHandler value;
+
+		public SideHandler(EnumFacing side) {
+			this.side = side;
+		}
+
+		public ItemHandler get() {
+			if (isValid)
+				return value;
+
+			value = createHandlerForSide(side);
+			isValid = true;
+			return value;
+		}
+
+		public void invalidate() {
+			isValid = false;
+			value = null;
+		}
+	}
+
+	private final Map<EnumFacing, SideHandler> handlers;
+
+	{
+		final Map<EnumFacing, SideHandler> handlers = Maps.newEnumMap(EnumFacing.class);
+		for (EnumFacing side : EnumFacing.VALUES)
+			handlers.put(side, new SideHandler(side));
+
+		this.handlers = Collections.unmodifiableMap(handlers);
+	}
+
+	private final SideHandler selfHandler = new SideHandler(null);
 
 	// this map is only here to ensure we have at most one config for slot
 	private final Map<Integer, SlotConfig> slots = Maps.newHashMap();
@@ -90,14 +124,7 @@ public class SidedItemHandlerAdapter {
 	}
 
 	public IItemHandlerModifiable getHandler(EnumFacing side) {
-		if (validSides.contains(side))
-			return handlers.get(side);
-
-		final ItemHandler handler = createHandlerForSide(side);
-		if (handler != null)
-			handlers.put(side, handler);
-		validSides.add(side);
-		return handler;
+		return (side != null? handlers.get(side) : selfHandler).get();
 	}
 
 	public boolean hasHandler(EnumFacing side) {
@@ -114,8 +141,10 @@ public class SidedItemHandlerAdapter {
 	}
 
 	public void invalidate() {
-		validSides.clear();
-		handlers.clear();
+		for (SideHandler handler : handlers.values())
+			handler.invalidate();
+
+		selfHandler.invalidate();
 	}
 
 	public ISyncListener createSyncListener() {
