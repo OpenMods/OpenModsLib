@@ -145,7 +145,13 @@ public abstract class ComponentGui extends GuiContainer {
 
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+		drawDefaultBackground();
 		super.drawScreen(mouseX, mouseY, partialTicks);
+		renderOverlay(mouseX, mouseY);
+		renderHoveredToolTip(mouseX, mouseY);
+	}
+
+	private void renderOverlay(int mouseX, int mouseY) {
 		prepareRenderState();
 		GL11.glPushMatrix();
 		root.renderOverlay(this.guiLeft, this.guiTop, mouseX - this.guiLeft, mouseY - this.guiTop);
