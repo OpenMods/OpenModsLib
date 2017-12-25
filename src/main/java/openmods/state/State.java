@@ -10,21 +10,16 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Table;
 import java.util.Locale;
 import java.util.Map;
-import javax.annotation.Nullable;
 import net.minecraft.block.properties.IProperty;
 
 public class State {
 
+	@SuppressWarnings("unchecked")
 	private static <T extends Comparable<T>> Function<Map.Entry<IProperty<?>, Comparable<?>>, String> createConverter() {
-		return new Function<Map.Entry<IProperty<?>, Comparable<?>>, String>() {
-			@Override
-			@Nullable
-			@SuppressWarnings("unchecked")
-			public String apply(@Nullable Map.Entry<IProperty<?>, Comparable<?>> entry) {
-				final IProperty<T> property = (IProperty<T>)entry.getKey();
-				final T value = (T)entry.getValue();
-				return property.getName() + "=" + property.getName(value);
-			}
+		return entry -> {
+			final IProperty<T> property = (IProperty<T>)entry.getKey();
+			final T value = (T)entry.getValue();
+			return property.getName() + "=" + property.getName(value);
 		};
 	}
 

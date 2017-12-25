@@ -1,5 +1,6 @@
 package openmods.utils;
 
+@FunctionalInterface
 public interface ITester<T> {
 	public enum Result {
 		ACCEPT,

@@ -41,20 +41,10 @@ public class GuiComponentProgress extends BaseComponent {
 	}
 
 	public IValueReceiver<Integer> progressReceiver() {
-		return new IValueReceiver<Integer>() {
-			@Override
-			public void setValue(Integer value) {
-				progress = value;
-			}
-		};
+		return value -> progress = value;
 	}
 
 	public IValueReceiver<Integer> maxProgressReceiver() {
-		return new IValueReceiver<Integer>() {
-			@Override
-			public void setValue(Integer value) {
-				setMaxProgress(value);
-			}
-		};
+		return value -> setMaxProgress(value);
 	}
 }

@@ -6,42 +6,18 @@ import net.minecraft.item.ItemStack;
 
 public class EqualComponents {
 
+	@FunctionalInterface
 	public interface IItemStackTester {
 		public boolean isEqual(ItemStack left, ItemStack right);
 	}
 
-	public static final IItemStackTester ITEM_TESTER = new IItemStackTester() {
-		@Override
-		public boolean isEqual(ItemStack left, ItemStack right) {
-			return left.getItem() == right.getItem();
-		}
-	};
+	public static final IItemStackTester ITEM_TESTER = (left, right) -> left.getItem() == right.getItem();
 
-	public static final IItemStackTester ITEM_ID_TESTER = new IItemStackTester() {
-		@Override
-		public boolean isEqual(ItemStack left, ItemStack right) {
-			return Item.getIdFromItem(left.getItem()) == Item.getIdFromItem(right.getItem());
-		}
-	};
+	public static final IItemStackTester ITEM_ID_TESTER = (left, right) -> Item.getIdFromItem(left.getItem()) == Item.getIdFromItem(right.getItem());
 
-	public static final IItemStackTester DAMAGE_TESTER = new IItemStackTester() {
-		@Override
-		public boolean isEqual(ItemStack left, ItemStack right) {
-			return left.getItemDamage() == right.getItemDamage();
-		}
-	};
+	public static final IItemStackTester DAMAGE_TESTER = (left, right) -> left.getItemDamage() == right.getItemDamage();
 
-	public static final IItemStackTester SIZE_TESTER = new IItemStackTester() {
-		@Override
-		public boolean isEqual(ItemStack left, ItemStack right) {
-			return left.getCount() == right.getCount();
-		}
-	};
+	public static final IItemStackTester SIZE_TESTER = (left, right) -> left.getCount() == right.getCount();
 
-	public static final IItemStackTester NBT_TESTER = new IItemStackTester() {
-		@Override
-		public boolean isEqual(ItemStack left, ItemStack right) {
-			return Objects.equal(left.getTagCompound(), right.getTagCompound());
-		}
-	};
+	public static final IItemStackTester NBT_TESTER = (left, right) -> Objects.equal(left.getTagCompound(), right.getTagCompound());
 }

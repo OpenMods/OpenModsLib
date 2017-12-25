@@ -1,9 +1,7 @@
 package openmods.gui.component;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import java.util.Random;
-import javax.annotation.Nullable;
 import net.minecraft.item.ItemStack;
 import openmods.gui.Icon;
 import openmods.utils.CollectionUtils;
@@ -14,14 +12,6 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 
 	private static final Random rnd = new Random();
 
-	private static final Function<ItemStack, ItemStack[]> EXPAND_TRANSFORM = new Function<ItemStack, ItemStack[]>() {
-		@Override
-		@Nullable
-		public ItemStack[] apply(@Nullable ItemStack input) {
-			return new ItemStack[] { input.copy() };
-		}
-	};
-
 	private final ItemStack[][] items;
 
 	private final ItemStack[] selectedItems;
@@ -29,7 +19,7 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 	private int changeCountdown = UPDATE_DELAY;
 
 	public GuiComponentCraftingGrid(int x, int y, ItemStack[] items, Icon background) {
-		this(x, y, CollectionUtils.transform(items, EXPAND_TRANSFORM), background);
+		this(x, y, CollectionUtils.transform(ItemStack[].class, items, input -> new ItemStack[] { input.copy() }), background);
 	}
 
 	public GuiComponentCraftingGrid(int x, int y, ItemStack[][] items, Icon background) {

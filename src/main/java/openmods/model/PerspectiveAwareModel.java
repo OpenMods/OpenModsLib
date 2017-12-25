@@ -52,7 +52,7 @@ public final class PerspectiveAwareModel implements IModel {
 
 	@Override
 	public IBakedModel bake(final IModelState state, final VertexFormat format, final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-		final Map<TransformType, IBakedModel> bakedModels = Maps.transformValues(models, (location) -> bakeModel(location, state, format, bakedTextureGetter));
+		final Map<TransformType, IBakedModel> bakedModels = Maps.transformValues(models, location -> bakeModel(location, state, format, bakedTextureGetter));
 
 		IModel missing = ModelLoaderRegistry.getMissingModel();
 		IBakedModel bakedMissing = missing.bake(missing.getDefaultState(), format, bakedTextureGetter);

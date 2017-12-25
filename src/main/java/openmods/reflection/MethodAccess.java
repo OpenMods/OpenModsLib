@@ -1,6 +1,5 @@
 package openmods.reflection;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -303,12 +302,7 @@ public class MethodAccess {
 
 		Preconditions.checkArgument(!applicableResolvers.isEmpty(), "Invalid type: %s", cls);
 		Preconditions.checkArgument(applicableResolvers.size() == 1, "Ambiguous type: %s, bases: ", cls,
-				Lists.transform(applicableResolvers, new Function<ArgResolver, String>() {
-					@Override
-					public String apply(ArgResolver input) {
-						return input.intf.getName();
-					}
-				}));
+				Lists.transform(applicableResolvers, input -> input.intf.getName()));
 
 		return applicableResolvers.get(0).resolve(cls);
 	}

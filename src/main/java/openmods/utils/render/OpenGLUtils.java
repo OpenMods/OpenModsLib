@@ -1,6 +1,5 @@
 package openmods.utils.render;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -13,13 +12,6 @@ import org.lwjgl.opengl.Util;
 import org.lwjgl.util.vector.Matrix4f;
 
 public class OpenGLUtils {
-
-	public static final Function<Integer, String> CONVERT_GL_ERROR = new Function<Integer, String>() {
-		@Override
-		public String apply(Integer input) {
-			return Util.translateGLErrorString(input);
-		}
-	};
 
 	private static FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
 
@@ -48,7 +40,8 @@ public class OpenGLUtils {
 		if (!errors.isEmpty()) Log.warn("OpenGl errors detected in '%s': [%s]", location, errorsToString(errors));
 	}
 
+	@SuppressWarnings("null")
 	public static String errorsToString(Iterable<Integer> errors) {
-		return Joiner.on(',').join(Iterables.transform(errors, CONVERT_GL_ERROR));
+		return Joiner.on(',').join(Iterables.transform(errors, Util::translateGLErrorString));
 	}
 }

@@ -2,7 +2,6 @@ package openmods.include;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -193,12 +192,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 		Set<Method> markedButNotImplemented = Sets.difference(overrides, methodsToAdd.keySet());
 		Preconditions.checkState(markedButNotImplemented.isEmpty(), "%s marks methods %s with @IncludeOverride, but no interface implements it", clsName, markedButNotImplemented);
 
-		Map<Method, MethodAdder> filtered = Maps.filterKeys(methodsToAdd, new Predicate<Method>() {
-			@Override
-			public boolean apply(Method m) {
-				return !conflicts.contains(m);
-			}
-		});
+		Map<Method, MethodAdder> filtered = Maps.filterKeys(methodsToAdd, m -> !conflicts.contains(m));
 
 		for (Map.Entry<Method, MethodAdder> m : filtered.entrySet())
 			m.getValue().addMethod(cv, m.getKey());

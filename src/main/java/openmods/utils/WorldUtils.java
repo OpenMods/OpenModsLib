@@ -11,12 +11,7 @@ import openmods.OpenMods;
 
 public class WorldUtils {
 
-	public static final Predicate<Entity> NON_PLAYER = new Predicate<Entity>() {
-		@Override
-		public boolean apply(Entity entity) {
-			return !(entity instanceof EntityPlayer);
-		}
-	};
+	public static final Predicate<Entity> NON_PLAYER = entity -> !(entity instanceof EntityPlayer);
 
 	public static World getWorld(Side side, int dimensionId) {
 		final World result;

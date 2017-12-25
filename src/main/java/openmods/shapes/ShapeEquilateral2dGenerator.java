@@ -1,6 +1,5 @@
 package openmods.shapes;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import java.util.List;
 import openmods.utils.CollectionUtils;
@@ -153,13 +152,10 @@ public class ShapeEquilateral2dGenerator extends DefaultShapeGenerator {
 		final double middleZ = (maxZ + minZ) / 2.0;
 		final double radiusZ = (maxZ - minZ) / 2.0;
 
-		final Point[] points = CollectionUtils.transform(angles, new Function<Trig, Point>() {
-			@Override
-			public Point apply(Trig input) {
-				int x = (int)Math.round(middleX + radiusX * input.cos);
-				int z = (int)Math.round(middleZ + radiusZ * input.sin);
-				return new Point(x, z);
-			}
+		final Point[] points = CollectionUtils.transform(Point.class, angles, input -> {
+			int x = (int)Math.round(middleX + radiusX * input.cos);
+			int z = (int)Math.round(middleZ + radiusZ * input.sin);
+			return new Point(x, z);
 		});
 
 		final IShapeable mirroredShapeable = symmetry.createMirroredShapeable(columnShapeable);

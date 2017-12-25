@@ -1745,16 +1745,9 @@ public class EvaluatorFactory {
 		}
 	}
 
-	private static final ITransformEvaluator EMPTY_EVALUATOR = new ITransformEvaluator() {
-		@Override
-		public TRSRTransformation evaluate(IJoint joint, Map<String, Float> args) {
-			return TRSRTransformation.identity();
-		}
-	};
-
 	public ITransformEvaluator createEvaluator(IClipProvider provider) {
 		if (statements.isEmpty())
-			return EMPTY_EVALUATOR;
+			return (joint, args) -> TRSRTransformation.identity();
 
 		final List<ITransformExecutor> executors = Lists.newArrayList();
 
@@ -1763,13 +1756,6 @@ public class EvaluatorFactory {
 
 		return new EvaluatorImpl(composeTransformExecutors(executors));
 	}
-
-	private static final IVarExpander EMPTY_EXPANDER = new IVarExpander() {
-		@Override
-		public Map<String, Float> expand(Map<String, Float> args) {
-			return args;
-		}
-	};
 
 	private static class ExpanderImpl implements IVarExpander {
 
@@ -1790,7 +1776,8 @@ public class EvaluatorFactory {
 
 	public IVarExpander createExpander() {
 		if (statements.isEmpty())
-			return EMPTY_EXPANDER;
+			return args -> args;
+
 		final List<IValueExecutor> executors = Lists.newArrayList();
 
 		for (IStatement statement : statements)

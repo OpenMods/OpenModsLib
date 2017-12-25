@@ -2,15 +2,13 @@ package openmods.inventory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import java.util.List;
 import net.minecraft.item.ItemStack;
 import openmods.inventory.comparator.EqualComponents;
 import openmods.inventory.comparator.EqualComponents.IItemStackTester;
 
 public class StackEqualityTesterBuilder {
 
+	@FunctionalInterface
 	public interface IEqualityTester {
 		public boolean isEqual(Object left, Object right);
 	}
@@ -21,72 +19,66 @@ public class StackEqualityTesterBuilder {
 	private boolean usedSize;
 	private boolean usedNBT;
 
-	private List<IItemStackTester> testers = Lists.newArrayList();
+	private IItemStackTester tester = null;
+
+	private void compose(IItemStackTester newTerm) {
+		if (tester == null) {
+			tester = newTerm;
+		} else {
+			final IItemStackTester current = tester;
+			tester = (left, right) -> newTerm.isEqual(left, right) && current.isEqual(left, right);
+		}
+	}
 
 	public StackEqualityTesterBuilder useItem() {
 		Preconditions.checkState(!usedItem);
 		usedItem = true;
-		testers.add(EqualComponents.ITEM_TESTER);
+		compose(EqualComponents.ITEM_TESTER);
 		return this;
 	}
 
 	public StackEqualityTesterBuilder useItemId() {
 		Preconditions.checkState(!usedItemId);
 		usedItemId = true;
-		testers.add(EqualComponents.ITEM_ID_TESTER);
+		compose(EqualComponents.ITEM_ID_TESTER);
 		return this;
 	}
 
 	public StackEqualityTesterBuilder useDamage() {
 		Preconditions.checkState(!usedDamage);
 		usedDamage = true;
-		testers.add(EqualComponents.DAMAGE_TESTER);
+		compose(EqualComponents.DAMAGE_TESTER);
 		return this;
 	}
 
 	public StackEqualityTesterBuilder useSize() {
 		Preconditions.checkState(!usedSize);
 		usedSize = true;
-		testers.add(EqualComponents.SIZE_TESTER);
+		compose(EqualComponents.SIZE_TESTER);
 		return this;
 	}
 
 	public StackEqualityTesterBuilder useNBT() {
 		Preconditions.checkState(!usedNBT);
 		usedNBT = true;
-		testers.add(EqualComponents.NBT_TESTER);
+		compose(EqualComponents.NBT_TESTER);
 		return this;
 	}
 
 	public IEqualityTester build() {
-		final List<IItemStackTester> frozenTesters = ImmutableList.copyOf(testers);
+		final IItemStackTester tester = this.tester != null? this.tester : (left, right) -> true;
 
-		return new IEqualityTester() {
-			@Override
-			public boolean isEqual(Object left, Object right) {
-				if (left == right) return true;
-				if ((left instanceof ItemStack) && (right instanceof ItemStack)) {
-					for (IItemStackTester tester : frozenTesters)
-						if (!tester.isEqual((ItemStack)left, (ItemStack)right)) return false;
-
-					return true;
-				}
-
-				return false;
-			}
+		return (left, right) -> {
+			if (left == right) return true;
+			if ((left instanceof ItemStack) && (right instanceof ItemStack)) { return tester.isEqual((ItemStack)left, (ItemStack)right); }
+			return false;
 		};
 	}
 
 	public Predicate<ItemStack> buildPredicate(ItemStack template) {
 		final ItemStack copy = template.copy();
 		final IEqualityTester tester = build();
-
-		return new Predicate<ItemStack>() {
-			@Override
-			public boolean apply(ItemStack input) {
-				return tester.isEqual(copy, input);
-			}
-		};
+		return input -> tester.isEqual(copy, input);
 	}
 
 }

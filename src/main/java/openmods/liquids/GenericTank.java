@@ -1,13 +1,11 @@
 package openmods.liquids;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -26,35 +24,21 @@ public class GenericTank extends FluidTank {
 	private List<EnumFacing> surroundingTanks = Lists.newArrayList();
 	private final IFluidFilter filter;
 
+	@FunctionalInterface
 	public interface IFluidFilter {
 		public boolean canAcceptFluid(FluidStack stack);
 	}
 
-	private static final IFluidFilter NO_RESTRICTIONS = new IFluidFilter() {
-		@Override
-		public boolean canAcceptFluid(FluidStack stack) {
-			return true;
-		}
-	};
-	private static final Function<Fluid, FluidStack> FLUID_CONVERTER = new Function<Fluid, FluidStack>() {
-		@Override
-		@Nullable
-		public FluidStack apply(@Nullable Fluid input) {
-			return new FluidStack(input, 0);
-		}
-	};
+	private static final IFluidFilter NO_RESTRICTIONS = stack -> true;
 
 	private static IFluidFilter filter(final FluidStack... acceptableFluids) {
 		if (acceptableFluids.length == 0) return NO_RESTRICTIONS;
 
-		return new IFluidFilter() {
-			@Override
-			public boolean canAcceptFluid(FluidStack stack) {
-				for (FluidStack acceptableFluid : acceptableFluids)
-					if (acceptableFluid.isFluidEqual(stack)) return true;
+		return stack -> {
+			for (FluidStack acceptableFluid : acceptableFluids)
+				if (acceptableFluid.isFluidEqual(stack)) return true;
 
-				return false;
-			}
+			return false;
 		};
 	}
 
@@ -70,7 +54,7 @@ public class GenericTank extends FluidTank {
 
 	public GenericTank(int capacity, Fluid... acceptableFluids) {
 		super(capacity);
-		this.filter = filter(CollectionUtils.transform(acceptableFluids, FLUID_CONVERTER));
+		this.filter = filter(CollectionUtils.transform(FluidStack.class, acceptableFluids, input -> new FluidStack(input, 0)));
 	}
 
 	private static boolean isNeighbourTank(World world, BlockPos coord, EnumFacing dir) {

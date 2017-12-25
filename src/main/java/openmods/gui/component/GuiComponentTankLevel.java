@@ -97,21 +97,11 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 	}
 
 	public IValueReceiver<FluidStack> fluidReceiver() {
-		return new IValueReceiver<FluidStack>() {
-			@Override
-			public void setValue(FluidStack value) {
-				fluidStack = value;
-			}
-		};
+		return value -> fluidStack = value;
 	}
 
 	public IValueReceiver<Integer> capacityReceiver() {
-		return new IValueReceiver<Integer>() {
-			@Override
-			public void setValue(Integer value) {
-				capacity = value;
-			}
-		};
+		return value -> capacity = value;
 	}
 
 }

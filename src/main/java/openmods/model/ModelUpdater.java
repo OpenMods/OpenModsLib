@@ -14,56 +14,35 @@ import net.minecraft.util.ResourceLocation;
 
 public class ModelUpdater {
 
+	@FunctionalInterface
 	public interface ValueConverter<T> {
 		public T convert(String name, JsonElement element);
 	}
 
-	public static final ValueConverter<ResourceLocation> RESOURCE_LOCATION = new ValueConverter<ResourceLocation>() {
-		@Override
-		public ResourceLocation convert(String name, JsonElement element) {
-			final String value = JsonUtils.getString(element, name);
-			return new ResourceLocation(value);
-		}
+	public static final ValueConverter<ResourceLocation> RESOURCE_LOCATION = (name, element) -> {
+		final String value = JsonUtils.getString(element, name);
+		return new ResourceLocation(value);
 	};
 
-	public static final ValueConverter<ModelResourceLocation> MODEL_RESOURCE_LOCATION = new ValueConverter<ModelResourceLocation>() {
-		@Override
-		public ModelResourceLocation convert(String name, JsonElement element) {
-			final String value = JsonUtils.getString(element, name);
-			return new ModelResourceLocation(value);
-		}
+	public static final ValueConverter<ModelResourceLocation> MODEL_RESOURCE_LOCATION = (name, element) -> {
+		final String value = JsonUtils.getString(element, name);
+		return new ModelResourceLocation(value);
 	};
 
-	public static final ValueConverter<ResourceLocation> MODEL_LOCATION = new ValueConverter<ResourceLocation>() {
-		@Override
-		public ResourceLocation convert(String name, JsonElement element) {
-			final String value = JsonUtils.getString(element, name);
-			return value.contains("#")? new ModelResourceLocation(value) : new ResourceLocation(value);
-		}
+	public static final ValueConverter<ResourceLocation> MODEL_LOCATION = (name, element) -> {
+		final String value = JsonUtils.getString(element, name);
+		return value.contains("#")? new ModelResourceLocation(value) : new ResourceLocation(value);
 	};
 
-	public static final ValueConverter<String> TO_STRING = new ValueConverter<String>() {
-		@Override
-		public String convert(String name, JsonElement element) {
-			return JsonUtils.getString(element, name);
-		}
-	};
+	public static final ValueConverter<String> TO_STRING = (name, element) -> JsonUtils.getString(element, name);
 
-	public static final ValueConverter<Integer> TO_INT = new ValueConverter<Integer>() {
-		@Override
-		public Integer convert(String name, JsonElement element) {
-			return JsonUtils.getInt(element, name);
-		}
-	};
+	public static final ValueConverter<Integer> TO_INT = (name, element) -> JsonUtils.getInt(element, name);
 
-	public static final ValueConverter<Long> TO_LONG = new ValueConverter<Long>() {
-		@Override
-		public Long convert(String name, JsonElement element) {
-			if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isNumber())
-				return element.getAsLong();
+	public static final ValueConverter<Long> TO_LONG = (name, element) -> {
+		if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isNumber())
+			return element.getAsLong();
 
-			throw new JsonSyntaxException("Expected " + name + " to be a Int, was " + JsonUtils.toString(element));
-		}
+		throw new JsonSyntaxException("Expected " + name + " to be a Int, was " + JsonUtils.toString(element));
 	};
 
 	public static <T extends Enum<T>> ValueConverter<T> enumConverter(Class<T> enumCls) {
@@ -73,12 +52,9 @@ public class ModelUpdater {
 
 		final ImmutableMap<String, T> values = valuesBuilder.build();
 
-		return new ValueConverter<T>() {
-			@Override
-			public T convert(String name, JsonElement element) {
-				final String enumName = JsonUtils.getString(element, name);
-				return values.get(enumName.toLowerCase());
-			}
+		return (name, element) -> {
+			final String enumName = JsonUtils.getString(element, name);
+			return values.get(enumName.toLowerCase());
 		};
 	}
 
@@ -116,12 +92,7 @@ public class ModelUpdater {
 	}
 
 	public <T> Optional<T> get(String key, final ValueConverter<T> converter, Optional<T> current) {
-		return get(key, new ValueConverter<Optional<T>>() {
-			@Override
-			public Optional<T> convert(String name, JsonElement element) {
-				return Optional.of(converter.convert(name, element));
-			}
-		}, current);
+		return get(key, (String name, JsonElement element) -> Optional.of(converter.convert(name, element)), current);
 	}
 
 	public <T> Set<T> get(String key, ValueConverter<T> converter, Set<T> current) {

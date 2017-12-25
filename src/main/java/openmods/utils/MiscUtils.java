@@ -72,12 +72,7 @@ public class MiscUtils {
 	}
 
 	public static <T> IValueReceiver<T> createTextValueReceiver(final IValueReceiver<String> target) {
-		return new IValueReceiver<T>() {
-			@Override
-			public void setValue(T value) {
-				target.setValue(value != null? value.toString() : null);
-			}
-		};
+		return value -> target.setValue(value != null? value.toString() : null);
 	}
 
 	public static String getTranslatedFluidName(FluidStack fluidStack) {

@@ -11,10 +11,8 @@ import openmods.gui.component.BaseComposite;
 import openmods.gui.component.GuiComponentCheckbox;
 import openmods.gui.component.GuiComponentLabel;
 import openmods.gui.component.GuiComponentSideSelector;
-import openmods.gui.component.GuiComponentSideSelector.ISideSelectedListener;
 import openmods.gui.component.GuiComponentTab;
 import openmods.gui.component.GuiComponentTabWrapper;
-import openmods.gui.listener.IValueChangedListener;
 import openmods.gui.logic.ValueCopyAction;
 import openmods.gui.misc.IConfigurableGuiSlots;
 import openmods.sync.ISyncMapProvider;
@@ -72,24 +70,12 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 	}
 
 	private void setupSelector(GuiComponentSideSelector selector, IValueProvider<Set<EnumFacing>> source, final IWriteableBitMap<EnumFacing> updater) {
-		selector.setListener(new ISideSelectedListener() {
-			@Override
-			public void onSideToggled(EnumFacing side, boolean currentState) {
-				updater.set(side, currentState);
-			}
-		});
-
+		selector.setListener(updater::set);
 		addSyncUpdateListener(ValueCopyAction.create(source, selector));
 	}
 
 	private void setupCheckBox(final GuiComponentCheckbox checkbox, IValueProvider<Boolean> source, final IValueReceiver<Boolean> updater) {
-		checkbox.setListener(new IValueChangedListener<Boolean>() {
-			@Override
-			public void valueChanged(Boolean value) {
-				updater.setValue(value);
-			}
-		});
-
+		checkbox.setListener(updater::setValue);
 		addSyncUpdateListener(ValueCopyAction.create(source, checkbox));
 	}
 }

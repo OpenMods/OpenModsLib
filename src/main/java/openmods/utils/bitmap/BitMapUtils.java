@@ -51,30 +51,15 @@ public class BitMapUtils {
 	}
 
 	public static <T> IValueProvider<Boolean> singleBitProvider(final IReadableBitMap<T> map, final T key) {
-		return new IValueProvider<Boolean>() {
-			@Override
-			public Boolean getValue() {
-				return map.get(key);
-			}
-		};
+		return () -> map.get(key);
 	}
 
 	public static <T> IValueReceiver<Boolean> singleBitReceiver(final IWriteableBitMap<T> map, final T key) {
-		return new IValueReceiver<Boolean>() {
-			@Override
-			public void setValue(Boolean value) {
-				map.set(key, value);
-			}
-		};
+		return value -> map.set(key, value);
 	}
 
 	public static IValueReceiver<Boolean> singleBitReceiver(final IRpcIntBitMap map, final int key) {
-		return new IValueReceiver<Boolean>() {
-			@Override
-			public void setValue(Boolean value) {
-				map.set(key, value);
-			}
-		};
+		return value -> map.set(key, value);
 	}
 
 	public static IWriteableBitMap<EnumFacing> createRpcAdapter(final IRpcDirectionBitMap map) {

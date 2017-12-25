@@ -7,6 +7,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -151,20 +152,56 @@ public class CollectionUtils {
 	}
 
 	private static <A, B> Object allocateArray(Function<A, B> transformer, final int length) {
-		final TypeToken<?> token = TypeToken.of(transformer.getClass());
+		final Class<?> transformerCls = transformer.getClass();
+		Class<?> componentType = findTypeFromGenericInterface(transformerCls);
+		if (componentType == null)
+			componentType = findTypeFromMethod(transformerCls);
+
+		Preconditions.checkState(componentType != null, "Failed to find type for class %s", transformer);
+		return Array.newInstance(componentType, length);
+	}
+
+	private static Class<?> findTypeFromGenericInterface(Class<?> cls) {
+		final TypeToken<?> token = TypeToken.of(cls);
 		final TypeToken<?> typeB = token.resolveType(TypeUtils.FUNCTION_B_PARAM);
-		return Array.newInstance(typeB.getRawType(), length);
+		if (typeB.getType() instanceof Class<?>) { return typeB.getRawType(); }
+
+		return null;
+	}
+
+	private static Class<?> findTypeFromMethod(Class<?> cls) {
+		for (Method m : cls.getDeclaredMethods()) {
+			if (m.getName().equals("apply")) {
+				final Class<?>[] parameterTypes = m.getParameterTypes();
+				if (parameterTypes.length == 1) {
+					final Class<?> parameterType = parameterTypes[0];
+					if (parameterType != Object.class)
+						return parameterType;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private static <B, A> void transform(A[] input, Function<A, B> transformer, final Object result) {
+		for (int i = 0; i < input.length; i++) {
+			final B o = transformer.apply(input[i]);
+			Array.set(result, i, o);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <A, B> B[] transform(A[] input, Function<A, B> transformer) {
 		final Object result = allocateArray(transformer, input.length);
+		transform(input, transformer, result);
+		return (B[])result;
+	}
 
-		for (int i = 0; i < input.length; i++) {
-			final B o = transformer.apply(input[i]);
-			Array.set(result, i, o);
-		}
-
+	@SuppressWarnings("unchecked")
+	public static <A, B> B[] transform(Class<? extends B> cls, A[] input, Function<A, B> transformer) {
+		final Object result = Array.newInstance(cls, input.length);
+		transform(input, transformer, result);
 		return (B[])result;
 	}
 

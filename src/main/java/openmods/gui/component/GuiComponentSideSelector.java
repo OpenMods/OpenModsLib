@@ -35,6 +35,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 	private static final double SQRT_3 = Math.sqrt(3);
 
+	@FunctionalInterface
 	public static interface ISideSelectedListener extends IListenerBase {
 		public void onSideToggled(EnumFacing side, boolean currentState);
 	}

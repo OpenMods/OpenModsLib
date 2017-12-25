@@ -1,6 +1,5 @@
 package openmods.calc;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -14,7 +13,6 @@ import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import javax.annotation.Nullable;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.TextComponentString;
 import openmods.calc.CalcState.CalculatorType;
@@ -276,12 +274,6 @@ public class CommandCalcFactory {
 	}
 
 	private static Iterable<String> stringifyList(Object... values) {
-		return Iterables.transform(Arrays.asList(values), new Function<Object, String>() {
-			@Override
-			@Nullable
-			public String apply(@Nullable Object input) {
-				return String.valueOf(input).toLowerCase(Locale.ROOT);
-			}
-		});
+		return Iterables.transform(Arrays.asList(values), input -> String.valueOf(input).toLowerCase(Locale.ROOT));
 	}
 }

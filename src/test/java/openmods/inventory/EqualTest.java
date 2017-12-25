@@ -1,5 +1,7 @@
 package openmods.inventory;
 
+import java.util.Arrays;
+import java.util.List;
 import net.minecraft.init.Bootstrap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -134,6 +136,40 @@ public class EqualTest {
 		assertSymmetricNotEquals(tester, stackA1, stackB1);
 		assertSymmetricNotEquals(tester, stackA2, stackB1);
 		assertSymmetricNotEquals(tester, stackA2, stackB2);
+	}
+
+	@Test
+	public void testFullCompositeComparator() {
+		ItemStack stackA = new ItemStack(Utils.ITEM_A, 1, 2);
+		ItemStack stackA1 = new ItemStack(Utils.ITEM_A, 1, 10);
+		ItemStack stackA2 = new ItemStack(Utils.ITEM_A, 1, 2);
+		ItemStack stackA3 = new ItemStack(Utils.ITEM_A, 2, 1);
+
+		ItemStack stackB = new ItemStack(Utils.ITEM_B, 1, 2);
+		ItemStack stackB1 = new ItemStack(Utils.ITEM_B, 1, 10);
+		ItemStack stackB2 = new ItemStack(Utils.ITEM_B, 1, 2);
+		ItemStack stackB3 = new ItemStack(Utils.ITEM_B, 2, 1);
+
+		StackEqualityTesterBuilder builder = new StackEqualityTesterBuilder();
+		builder.useItem();
+		builder.useSize();
+		builder.useDamage();
+		IEqualityTester tester = builder.build();
+
+		final List<ItemStack> allStacks = Arrays.asList(stackA, stackA1, stackA2, stackA3, stackB, stackB1, stackB2, stackB3);
+
+		for (ItemStack left : allStacks) {
+			for (ItemStack right : allStacks) {
+				boolean shouldBeEqual =
+						left == right ||
+								left == stackA && right == stackA2 ||
+								right == stackA && left == stackA2 ||
+								left == stackB && right == stackB2 ||
+								right == stackB && left == stackB2;
+
+				Assert.assertEquals(shouldBeEqual, tester.isEqual(left, right));
+			}
+		}
 	}
 
 }

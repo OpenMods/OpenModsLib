@@ -8,21 +8,11 @@ public class IntegrationConditions extends openmods.conditions.Conditions {
 
 	public static ICondition classExists(String clsName) {
 		final SafeClassLoad cls = new SafeClassLoad(clsName);
-		return new ICondition() {
-			@Override
-			public boolean check() {
-				return cls.tryLoad();
-			}
-		};
+		return cls::tryLoad;
 	}
 
 	public static ICondition modLoaded(final String modName) {
-		return new ICondition() {
-			@Override
-			public boolean check() {
-				return Loader.isModLoaded(modName);
-			}
-		};
+		return () -> Loader.isModLoaded(modName);
 	}
 
 }

@@ -84,7 +84,7 @@ public class ItemStateModel implements IModel {
 
 		final IBakedModel bakedDefaultModel = defaultModel.bake(defaultModel.getDefaultState(), format, bakedTextureGetter);
 
-		final Map<State, IBakedModel> bakedStateModels = Maps.transformValues(stateModels, (input) -> {
+		final Map<State, IBakedModel> bakedStateModels = Maps.transformValues(stateModels, input -> {
 			final IModel model = getModel(input);
 			return model.bake(model.getDefaultState(), format, bakedTextureGetter);
 		});
