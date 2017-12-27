@@ -13,7 +13,8 @@ public class SyncMapEntity extends SyncMapServer {
 
 	private final Entity owner;
 
-	public SyncMapEntity(Entity owner) {
+	public SyncMapEntity(Entity owner, UpdateStrategy strategy) {
+		super(strategy);
 		this.owner = owner;
 	}
 
@@ -47,10 +48,5 @@ public class SyncMapEntity extends SyncMapServer {
 	@Override
 	protected boolean isInvalid() {
 		return owner.isDead;
-	}
-
-	@Override
-	protected IUpdateStrategy createUpdateStrategy() {
-		return new SendInitialPacketStrategy();
 	}
 }

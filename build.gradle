@@ -153,6 +153,20 @@ def fmlManifest = manifest {
     )
 }
 
+if (project.hasProperty('keyStore')) {
+    task signJar(type: SignJar, dependsOn: reobfJar) {
+        keyStore = project.keyStore
+        alias = project.keyStoreAlias
+        storePass = project.keyStorePass
+        keyPass = project.keyStoreKeyPass
+
+        inputFile = jar.archivePath
+        outputFile = jar.archivePath
+    }
+
+    build.dependsOn signJar
+}
+
 jar {
     manifest {
         from jenkinsManifest, gitManifest, fmlManifest

@@ -23,6 +23,7 @@ import openmods.sync.ISyncMapProvider;
 import openmods.sync.ISyncableObject;
 import openmods.sync.SyncMap;
 import openmods.sync.SyncMapClient;
+import openmods.sync.SyncMapServer.UpdateStrategy;
 import openmods.sync.SyncMapTile;
 import openmods.sync.SyncObjectScanner;
 import openmods.sync.drops.DropTagSerializer;
@@ -40,7 +41,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	}
 
 	private void createSyncMap(World world) {
-		final SyncMap syncMap = world.isRemote? new SyncMapClient() : new SyncMapTile(this);
+		final SyncMap syncMap = world.isRemote? new SyncMapClient() : new SyncMapTile(this, UpdateStrategy.WITH_INITIAL_PACKET);
 
 		SyncObjectScanner.INSTANCE.registerAllFields(syncMap, this);
 
@@ -125,14 +126,14 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound tag) {
 		super.writeToNBT(tag);
-		getSyncMap().safeWrite(tag);
+		getSyncMap().tryWrite(tag);
 		return tag;
 	}
 
 	@Override
 	public void readFromNBT(NBTTagCompound tag) {
 		super.readFromNBT(tag);
-		getSyncMap().read(tag);
+		getSyncMap().tryRead(tag);
 	}
 
 	private NBTTagCompound serializeInitializationData(NBTTagCompound tag) {
