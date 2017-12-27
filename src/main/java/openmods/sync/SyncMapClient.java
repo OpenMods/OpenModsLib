@@ -24,13 +24,18 @@ public class SyncMapClient extends SyncMap {
 	}
 
 	@Override
+	public boolean tryRead(NBTTagCompound tag) {
+		return false; // NO-OP
+	}
+
+	@Override
 	public void write(NBTTagCompound tag) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void safeWrite(NBTTagCompound tag) {
-		// NO-OP
+	public boolean tryWrite(NBTTagCompound tag) {
+		return false; // NO-OP
 	}
 
 	@Override

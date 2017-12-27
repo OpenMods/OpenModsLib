@@ -14,7 +14,8 @@ public class SyncMapTile extends SyncMapServer {
 
 	private final SyncedTileEntity owner;
 
-	public SyncMapTile(SyncedTileEntity owner) {
+	public SyncMapTile(SyncedTileEntity owner, UpdateStrategy strategy) {
+		super(strategy);
 		this.owner = owner;
 	}
 
@@ -52,10 +53,4 @@ public class SyncMapTile extends SyncMapServer {
 	protected boolean isInvalid() {
 		return owner.isInvalid();
 	}
-
-	@Override
-	protected IUpdateStrategy createUpdateStrategy() {
-		return new AutomaticInitialPacketStrategy();
-	}
-
 }

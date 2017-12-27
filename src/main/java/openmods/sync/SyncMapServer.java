@@ -40,13 +40,19 @@ public abstract class SyncMapServer extends SyncMap {
 
 	private final Map<ISyncableObject, Integer> objectToId = Maps.newIdentityHashMap();
 
-	private boolean firstDataSent = false;
+	private boolean firstRemoteObjectInitialized = false;
 
 	private int bitmapLength;
 
+	private final IUpdateStrategy updateStrategy;
+
+	public SyncMapServer(UpdateStrategy strategy) {
+		this.updateStrategy = strategy.create(this);
+	}
+
 	@Override
 	public void registerObject(String name, ISyncableObject value) {
-		Preconditions.checkState(!firstDataSent, "Can't add fields to object that has already sent data to clients");
+		Preconditions.checkState(!firstRemoteObjectInitialized, "Can't add fields to object that has already sent data to clients");
 
 		{
 			final ISyncableObject prev = objects.put(name, value);
@@ -77,6 +83,12 @@ public abstract class SyncMapServer extends SyncMap {
 	}
 
 	@Override
+	public boolean tryRead(NBTTagCompound tag) {
+		read(tag);
+		return true;
+	}
+
+	@Override
 	public void write(NBTTagCompound tag) {
 		for (Map.Entry<String, ISyncableObject> entry : objects.entrySet()) {
 			final String name = entry.getKey();
@@ -90,8 +102,9 @@ public abstract class SyncMapServer extends SyncMap {
 	}
 
 	@Override
-	public void safeWrite(NBTTagCompound tag) {
+	public boolean tryWrite(NBTTagCompound tag) {
 		write(tag);
+		return true;
 	}
 
 	@Override
@@ -106,8 +119,17 @@ public abstract class SyncMapServer extends SyncMap {
 
 	@Override
 	public void writeInitializationData(PacketBuffer dos) throws IOException {
-		if (!firstDataSent) {
-			firstDataSent = true;
+		updateStrategy.writeInitializationData(dos);
+	}
+
+	private void writeOwnerInfo(PacketBuffer dos) {
+		dos.writeVarIntToBuffer(getOwnerType());
+		writeOwnerData(dos);
+	}
+
+	private void writeSyncObjectInitialization(PacketBuffer dos) throws IOException {
+		if (!firstRemoteObjectInitialized) {
+			firstRemoteObjectInitialized = true;
 			bitmapLength = (objects.size() + 7) / 8;
 		}
 
@@ -123,15 +145,8 @@ public abstract class SyncMapServer extends SyncMap {
 		}
 	}
 
-	private void writeInitialDataWithPrefix(PacketBuffer dos) throws IOException {
-		writePrefix(dos);
-		writeInitializationData(dos);
-	}
-
 	private void writeUpdatePacket(PacketBuffer dos, Set<ISyncableObject> changes) throws IOException {
-		Preconditions.checkState(firstDataSent, "Initial data not sent to clients");
-
-		writePrefix(dos);
+		Preconditions.checkState(firstRemoteObjectInitialized, "Remote objects not intialized yet");
 
 		final ByteBuf bitmapData = dos.slice(dos.writerIndex(), bitmapLength);
 		bitmapData.clear();
@@ -156,20 +171,15 @@ public abstract class SyncMapServer extends SyncMap {
 		bitmap.flush();
 	}
 
-	private void writePrefix(PacketBuffer dos) {
-		dos.writeVarIntToBuffer(getOwnerType());
-		writeOwnerData(dos);
-	}
-
 	protected interface IUpdateStrategy {
 		public void sendUpdates(Set<ISyncableObject> changedObjects);
 
-		public boolean sendsFirstPacket();
+		public void writeInitializationData(PacketBuffer dos) throws IOException;
+
+		public boolean canSendUpdates();
 	}
 
-	private final IUpdateStrategy updateStrategy = createUpdateStrategy();
-
-	protected class AutomaticInitialPacketStrategy implements IUpdateStrategy {
+	private class SeparateInitializationPacketStrategy implements IUpdateStrategy {
 
 		@Override
 		public void sendUpdates(Set<ISyncableObject> changedObjects) {
@@ -179,22 +189,27 @@ public abstract class SyncMapServer extends SyncMap {
 
 			try {
 				final PacketBuffer deltaPayload = new PacketBuffer(Unpooled.buffer());
+				writeOwnerInfo(deltaPayload);
 				writeUpdatePacket(deltaPayload, changedObjects);
 				SyncChannelHolder.INSTANCE.sendPayloadToPlayers(deltaPayload, players);
 			} catch (IOException e) {
 				Log.warn(e, "IOError during delta sync");
 			}
-
 		}
 
 		@Override
-		public boolean sendsFirstPacket() {
-			return false;
+		public void writeInitializationData(PacketBuffer dos) throws IOException {
+			// owner info not required, as initialization packet is assumed to already be directed
+			writeSyncObjectInitialization(dos);
 		}
 
+		@Override
+		public boolean canSendUpdates() {
+			return firstRemoteObjectInitialized;
+		}
 	}
 
-	protected class SendInitialPacketStrategy implements IUpdateStrategy {
+	private class SelfInitializingUpdateStrategy implements IUpdateStrategy {
 
 		private Set<Integer> knownUsers = Sets.newHashSet();
 
@@ -218,6 +233,7 @@ public abstract class SyncMapServer extends SyncMap {
 			try {
 				if (!deltaPacketTargets.isEmpty()) {
 					final PacketBuffer deltaPayload = new PacketBuffer(Unpooled.buffer());
+					writeOwnerInfo(deltaPayload);
 					writeUpdatePacket(deltaPayload, changes);
 					SyncChannelHolder.INSTANCE.sendPayloadToPlayers(deltaPayload, deltaPacketTargets);
 				}
@@ -228,7 +244,8 @@ public abstract class SyncMapServer extends SyncMap {
 			try {
 				if (!fullPacketTargets.isEmpty()) {
 					final PacketBuffer fullPayload = new PacketBuffer(Unpooled.buffer());
-					writeInitialDataWithPrefix(fullPayload);
+					writeOwnerInfo(fullPayload);
+					writeSyncObjectInitialization(fullPayload);
 					SyncChannelHolder.INSTANCE.sendPayloadToPlayers(fullPayload, fullPacketTargets);
 				}
 			} catch (IOException e) {
@@ -237,10 +254,32 @@ public abstract class SyncMapServer extends SyncMap {
 		}
 
 		@Override
-		public boolean sendsFirstPacket() {
-			return true;
+		public void writeInitializationData(PacketBuffer dos) {
+			// use other strategy, if you want to send update packet
+			throw new UnsupportedOperationException();
 		}
 
+		@Override
+		public boolean canSendUpdates() {
+			return true;
+		}
+	}
+
+	public enum UpdateStrategy {
+		WITHOUT_INITIAL_PACKET {
+			@Override
+			protected IUpdateStrategy create(SyncMapServer owner) {
+				return owner.new SelfInitializingUpdateStrategy();
+			}
+		},
+		WITH_INITIAL_PACKET {
+			@Override
+			protected IUpdateStrategy create(SyncMapServer owner) {
+				return owner.new SeparateInitializationPacketStrategy();
+			}
+		};
+
+		protected abstract IUpdateStrategy create(SyncMapServer owner);
 	}
 
 	private Set<ISyncableObject> listChanges() {
@@ -273,7 +312,7 @@ public abstract class SyncMapServer extends SyncMap {
 
 	@Override
 	public void sendUpdates() {
-		if (isInvalid() || (!updateStrategy.sendsFirstPacket() && !firstDataSent)) return;
+		if (isInvalid() || !updateStrategy.canSendUpdates()) return;
 
 		final Set<ISyncableObject> changedObjects = listChanges();
 		updateStrategy.sendUpdates(changedObjects);
@@ -304,8 +343,6 @@ public abstract class SyncMapServer extends SyncMap {
 		if (result == null) throw new NoSuchElementException(String.valueOf(object));
 		return result;
 	}
-
-	protected abstract IUpdateStrategy createUpdateStrategy();
 
 	protected abstract int getOwnerType();
 
