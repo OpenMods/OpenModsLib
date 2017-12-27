@@ -64,7 +64,7 @@ import openmods.utils.bitmap.IRpcIntBitMap;
 import openmods.world.DelayedActionTickHandler;
 import openmods.world.DropCapture;
 
-@Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = OpenMods.VERSION, dependencies = OpenMods.DEPENDENCIES, guiFactory = OpenMods.GUI_FACTORY, updateJSON = OpenMods.UPDATE_JSON)
+@Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = OpenMods.VERSION, dependencies = OpenMods.DEPENDENCIES, guiFactory = OpenMods.GUI_FACTORY, updateJSON = OpenMods.UPDATE_JSON, certificateFingerprint = OpenMods.CERTIFICATE_FINGERPRINT)
 public class OpenMods {
 
 	public static final String MODID = "openmods";
@@ -73,6 +73,7 @@ public class OpenMods {
 	public static final String DEPENDENCIES = "required-after:openmodscore";
 	public static final String GUI_FACTORY = "openmods.GuiFactory";
 	public static final String UPDATE_JSON = "http://openmods.info/versions/openmodslib.json";
+	public static final String CERTIFICATE_FINGERPRINT = "d2a9a8e8440196e26a268d1f3ddc01b2e9c572a5";
 
 	private static final int ENTITY_BLOCK_ID = 804;
 

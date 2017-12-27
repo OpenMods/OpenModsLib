@@ -20,11 +20,16 @@ public abstract class SyncMap {
 		}
 	}
 
+	// Note: try... methods are non-throwing variants of read/write methods
+	// They are convenient when methods can be called via client-side HUD modifiers
+
 	public abstract void read(NBTTagCompound tag);
+
+	public abstract boolean tryRead(NBTTagCompound tag);
 
 	public abstract void write(NBTTagCompound tag);
 
-	public abstract void safeWrite(NBTTagCompound tag);
+	public abstract boolean tryWrite(NBTTagCompound tag);
 
 	public abstract void readIntializationData(PacketBuffer dis) throws IOException;
 
