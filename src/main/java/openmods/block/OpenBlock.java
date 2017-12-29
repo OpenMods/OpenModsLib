@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -363,7 +364,10 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public final static boolean isNeighborBlockSolid(IBlockAccess world, BlockPos blockPos, EnumFacing side) {
-		return world.isSideSolid(blockPos.offset(side), side.getOpposite(), false);
+		final BlockPos pos = blockPos.offset(side);
+		final IBlockState state = world.getBlockState(pos);
+		return isExceptionBlockForAttaching(state.getBlock()) ||
+				state.getBlockFaceShape(world, pos, side.getOpposite()) == BlockFaceShape.SOLID;
 	}
 
 	public final static boolean areNeighborBlocksSolid(World world, BlockPos blockPos, EnumFacing... sides) {
