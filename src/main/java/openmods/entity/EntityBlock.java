@@ -20,8 +20,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.util.datafix.FixTypes;
-import net.minecraft.util.datafix.IDataFixer;
-import net.minecraft.util.datafix.IDataWalker;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -29,7 +27,6 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import openmods.fakeplayer.FakePlayerPool;
 import openmods.fakeplayer.FakePlayerPool.PlayerUserReturning;
-import openmods.fakeplayer.OpenModsFakePlayer;
 import openmods.utils.BlockManipulator;
 import openmods.utils.NbtUtils;
 
@@ -60,20 +57,17 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		setSize(0.925F, 0.925F);
 	}
 
-	public static void registerFixes(DataFixer fixer, final Class<? extends EntityBlock> cls) {
-		fixer.registerWalker(FixTypes.ENTITY, new IDataWalker() {
-			@Override
-			public NBTTagCompound process(IDataFixer fixer, NBTTagCompound compound, int versionIn) {
-				if (EntityList.getKey(cls).equals(new ResourceLocation(compound.getString("id")))) {
-					if (compound.hasKey(TAG_TILE_ENTITY, Constants.NBT.TAG_COMPOUND)) {
-						final NBTTagCompound teTag = compound.getCompoundTag(TAG_TILE_ENTITY);
-						final NBTTagCompound fixedTeTag = fixer.process(FixTypes.BLOCK_ENTITY, teTag, versionIn);
-						compound.setTag(TAG_TILE_ENTITY, fixedTeTag);
-					}
+	public static void registerFixes(DataFixer fixers, final Class<? extends EntityBlock> cls) {
+		fixers.registerWalker(FixTypes.ENTITY, (fixer, compound, versionIn) -> {
+			if (EntityList.getKey(cls).equals(new ResourceLocation(compound.getString("id")))) {
+				if (compound.hasKey(TAG_TILE_ENTITY, Constants.NBT.TAG_COMPOUND)) {
+					final NBTTagCompound teTag = compound.getCompoundTag(TAG_TILE_ENTITY);
+					final NBTTagCompound fixedTeTag = fixer.process(FixTypes.BLOCK_ENTITY, teTag, versionIn);
+					compound.setTag(TAG_TILE_ENTITY, fixedTeTag);
 				}
-
-				return compound;
 			}
+
+			return compound;
 		});
 	}
 
@@ -82,12 +76,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	public static EntityBlock create(EntityPlayer player, World world, BlockPos pos) {
-		return create(player, world, pos, new EntityFactory() {
-			@Override
-			public EntityBlock create(World world) {
-				return new EntityBlock(world);
-			}
-		});
+		return create(player, world, pos, world1 -> new EntityBlock(world1));
 	}
 
 	public static EntityBlock create(EntityLivingBase creator, World world, BlockPos pos, EntityFactory factory) {
@@ -201,17 +190,13 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	private boolean tryPlaceBlock(final WorldServer world, final BlockPos pos) {
-		return FakePlayerPool.instance.executeOnPlayer(world, new PlayerUserReturning<Boolean>() {
+		return FakePlayerPool.instance.executeOnPlayer(world, (PlayerUserReturning<Boolean>)fakePlayer -> {
+			if (tryPlaceBlock(fakePlayer, world, pos, EnumFacing.DOWN)) return true;
 
-			@Override
-			public Boolean usePlayer(OpenModsFakePlayer fakePlayer) {
-				if (tryPlaceBlock(fakePlayer, world, pos, EnumFacing.DOWN)) return true;
-
-				for (EnumFacing dir : PLACE_DIRECTIONS) {
-					if (tryPlaceBlock(fakePlayer, world, pos, dir)) return true;
-				}
-				return false;
+			for (EnumFacing dir : PLACE_DIRECTIONS) {
+				if (tryPlaceBlock(fakePlayer, world, pos, dir)) return true;
 			}
+			return false;
 		});
 
 	}

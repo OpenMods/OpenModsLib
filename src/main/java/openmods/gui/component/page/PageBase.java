@@ -7,7 +7,6 @@ import java.net.URI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiConfirmOpenLink;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.util.ResourceLocation;
 import openmods.Log;
 import openmods.OpenMods;
@@ -64,22 +63,16 @@ public abstract class PageBase extends BaseComposite {
 		GuiComponentSprite image = new GuiComponentSprite(0, 0, icon);
 		result.addComponent(image);
 
-		result.setListener(new IMouseDownListener() {
-			@Override
-			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
-				final Minecraft mc = Minecraft.getMinecraft();
-				if (mc.gameSettings.chatLinksPrompt) {
-					final GuiScreen prevGui = mc.currentScreen;
-					mc.displayGuiScreen(new GuiConfirmOpenLink(new GuiYesNoCallback() {
-						@Override
-						public void confirmClicked(boolean result, int id) {
-							if (result) listener.onConfirm();
-							mc.displayGuiScreen(prevGui);
-						}
-					}, link, 0, false));
-				} else {
-					listener.onConfirm();
-				}
+		result.setListener((IMouseDownListener)(component, clickX, clickY, button) -> {
+			final Minecraft mc = Minecraft.getMinecraft();
+			if (mc.gameSettings.chatLinksPrompt) {
+				final GuiScreen prevGui = mc.currentScreen;
+				mc.displayGuiScreen(new GuiConfirmOpenLink((response, id) -> {
+					if (response) listener.onConfirm();
+					mc.displayGuiScreen(prevGui);
+				}, link, 0, false));
+			} else {
+				listener.onConfirm();
 			}
 		});
 
@@ -87,15 +80,12 @@ public abstract class PageBase extends BaseComposite {
 	}
 
 	public PageBase addActionButton(int x, int y, final String link, Icon icon, String text) {
-		addComponent(createActionButton(x, y, link.toString(), icon, text, new IConfirmListener() {
-			@Override
-			public void onConfirm() {
-				final URI uri = URI.create(link);
-				try {
-					Desktop.getDesktop().browse(uri);
-				} catch (IOException e) {
-					Log.log(Level.INFO, e, "Failed to open URI '%s'", uri);
-				}
+		addComponent(createActionButton(x, y, link.toString(), icon, text, () -> {
+			final URI uri = URI.create(link);
+			try {
+				Desktop.getDesktop().browse(uri);
+			} catch (IOException e) {
+				Log.log(Level.INFO, e, "Failed to open URI '%s'", uri);
 			}
 		}));
 
@@ -103,14 +93,11 @@ public abstract class PageBase extends BaseComposite {
 	}
 
 	public PageBase addActionButton(int x, int y, final File file, Icon icon, String text) {
-		addComponent(createActionButton(x, y, file.getAbsolutePath(), icon, text, new IConfirmListener() {
-			@Override
-			public void onConfirm() {
-				try {
-					Desktop.getDesktop().open(file);
-				} catch (IOException e) {
-					Log.log(Level.INFO, e, "Failed to open file '%s'", file.getAbsolutePath());
-				}
+		addComponent(createActionButton(x, y, file.getAbsolutePath(), icon, text, () -> {
+			try {
+				Desktop.getDesktop().open(file);
+			} catch (IOException e) {
+				Log.log(Level.INFO, e, "Failed to open file '%s'", file.getAbsolutePath());
 			}
 		}));
 

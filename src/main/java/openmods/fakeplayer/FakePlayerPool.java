@@ -23,12 +23,9 @@ public class FakePlayerPool {
 	}
 
 	private static PlayerUserReturning<Void> wrap(final PlayerUser user) {
-		return new PlayerUserReturning<Void>() {
-			@Override
-			public Void usePlayer(OpenModsFakePlayer fakePlayer) {
-				user.usePlayer(fakePlayer);
-				return null;
-			}
+		return fakePlayer -> {
+			user.usePlayer(fakePlayer);
+			return null;
 		};
 	}
 

@@ -14,7 +14,6 @@ import java.util.Set;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import openmods.utils.bitstream.InputBitStream;
-import openmods.utils.io.IByteSource;
 
 public class SyncMapClient extends SyncMap {
 
@@ -100,12 +99,7 @@ public class SyncMapClient extends SyncMap {
 
 		final ByteBuf bitmapData = dis.readSlice(bitmapLength);
 
-		InputBitStream bitmap = new InputBitStream(new IByteSource() {
-			@Override
-			public int nextByte() {
-				return bitmapData.readUnsignedByte();
-			}
-		});
+		InputBitStream bitmap = new InputBitStream(bitmapData::readUnsignedByte);
 
 		final Set<ISyncableObject> changes = Sets.newIdentityHashSet();
 		for (int i = 0; i < idToObject.size(); i++) {

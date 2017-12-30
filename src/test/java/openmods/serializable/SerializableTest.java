@@ -192,12 +192,7 @@ public class SerializableTest {
 		TestSerializable inputInstance = new TestSerializable(Mockito.mock(IStreamSerializable.class));
 		final TestSerializable outputInstance = new TestSerializable(Mockito.mock(IStreamSerializable.class));
 
-		registry.registerSerializable(new IInstanceFactory<TestSerializable>() {
-			@Override
-			public TestSerializable create() {
-				return outputInstance;
-			}
-		});
+		registry.registerSerializable(TestSerializable.class, () -> outputInstance);
 
 		testValue(inputInstance);
 

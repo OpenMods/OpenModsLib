@@ -20,7 +20,6 @@ import net.minecraftforge.client.model.ModelStateComposition;
 import net.minecraftforge.client.model.PerspectiveMapWrapper;
 import net.minecraftforge.common.model.IModelPart;
 import net.minecraftforge.common.model.IModelState;
-import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.model.animation.IJoint;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import openmods.model.BakedModelAdapter;
@@ -50,17 +49,14 @@ public class BakedEvalModel extends BakedModelAdapter {
 	private final CacheLoader<Map<String, Float>, IBakedModel> loader = new CacheLoader<Map<String, Float>, IBakedModel>() {
 		@Override
 		public IBakedModel load(final Map<String, Float> key) throws Exception {
-			final IModelState clipTransform = new IModelState() {
-				@Override
-				public Optional<TRSRTransformation> apply(Optional<? extends IModelPart> part) {
-					if (!part.isPresent()) return Optional.empty();
+			final IModelState clipTransform = part -> {
+				if (!part.isPresent()) return Optional.empty();
 
-					final IModelPart maybeJoint = part.get();
-					if (!(maybeJoint instanceof IJoint)) return Optional.empty();
+				final IModelPart maybeJoint = part.get();
+				if (!(maybeJoint instanceof IJoint)) return Optional.empty();
 
-					final IJoint joint = (IJoint)part.get();
-					return Optional.of(evaluator.evaluate(joint, key));
-				}
+				final IJoint joint = (IJoint)part.get();
+				return Optional.of(evaluator.evaluate(joint, key));
 			};
 			return bakeModelWithTransform(clipTransform);
 		}

@@ -37,13 +37,10 @@ public class ShapeEquilateral2dGenerator extends DefaultShapeGenerator {
 		TwoFold(Math.PI) {
 			@Override
 			public IShapeable createMirroredShapeable(final IShapeable shapeable) {
-				return new IShapeable() {
-					@Override
-					public void setBlock(int x, int y, int z) {
-						if (z >= 0) {
-							shapeable.setBlock(x, y, +z);
-							shapeable.setBlock(x, y, -z);
-						}
+				return (x, y, z) -> {
+					if (z >= 0) {
+						shapeable.setBlock(x, y, +z);
+						shapeable.setBlock(x, y, -z);
 					}
 				};
 			}
@@ -56,15 +53,12 @@ public class ShapeEquilateral2dGenerator extends DefaultShapeGenerator {
 		FourFold(Math.PI / 2) {
 			@Override
 			public IShapeable createMirroredShapeable(final IShapeable shapeable) {
-				return new IShapeable() {
-					@Override
-					public void setBlock(int x, int y, int z) {
-						if (x >= 0 && z >= 0) {
-							shapeable.setBlock(+x, y, -z);
-							shapeable.setBlock(-x, y, -z);
-							shapeable.setBlock(-x, y, +z);
-							shapeable.setBlock(+x, y, +z);
-						}
+				return (x, y, z) -> {
+					if (x >= 0 && z >= 0) {
+						shapeable.setBlock(+x, y, -z);
+						shapeable.setBlock(-x, y, -z);
+						shapeable.setBlock(-x, y, +z);
+						shapeable.setBlock(+x, y, +z);
 					}
 				};
 			}
@@ -77,20 +71,17 @@ public class ShapeEquilateral2dGenerator extends DefaultShapeGenerator {
 		EightFold(Math.PI / 4) {
 			@Override
 			public IShapeable createMirroredShapeable(final IShapeable shapeable) {
-				return new IShapeable() {
-					@Override
-					public void setBlock(int x, int y, int z) {
-						if (x >= z) {
-							shapeable.setBlock(+x, y, -z);
-							shapeable.setBlock(-x, y, -z);
-							shapeable.setBlock(-x, y, +z);
-							shapeable.setBlock(+x, y, +z);
+				return (x, y, z) -> {
+					if (x >= z) {
+						shapeable.setBlock(+x, y, -z);
+						shapeable.setBlock(-x, y, -z);
+						shapeable.setBlock(-x, y, +z);
+						shapeable.setBlock(+x, y, +z);
 
-							shapeable.setBlock(+z, y, -x);
-							shapeable.setBlock(-z, y, -x);
-							shapeable.setBlock(-z, y, +x);
-							shapeable.setBlock(+z, y, +x);
-						}
+						shapeable.setBlock(+z, y, -x);
+						shapeable.setBlock(-z, y, -x);
+						shapeable.setBlock(-z, y, +x);
+						shapeable.setBlock(+z, y, +x);
 					}
 				};
 			}
@@ -138,12 +129,9 @@ public class ShapeEquilateral2dGenerator extends DefaultShapeGenerator {
 
 	@Override
 	public void generateShape(int minX, final int minY, int minZ, int maxX, final int maxY, int maxZ, final IShapeable shapeable) {
-		final IShapeable columnShapeable = new IShapeable() {
-			@Override
-			public void setBlock(int x, int ingored, int z) {
-				for (int y = minY; y <= maxY; y++)
-					shapeable.setBlock(x, y, z);
-			}
+		final IShapeable columnShapeable = (x, ingored, z) -> {
+			for (int y = minY; y <= maxY; y++)
+				shapeable.setBlock(x, y, z);
 		};
 
 		final double middleX = (maxX + minX) / 2.0;

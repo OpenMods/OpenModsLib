@@ -12,17 +12,14 @@ public class RpcCallInboundHandler extends SimpleChannelInboundHandler<RpcCall> 
 
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, final RpcCall msg) throws Exception {
-		NetUtils.executeSynchronized(ctx, new Runnable() {
-			@Override
-			public void run() {
-				try {
-					Object target = msg.target.getTarget();
-					Preconditions.checkNotNull(target, "Target wrapper %s returned null object");
-					msg.method.method.invoke(target, msg.args);
-					msg.target.afterCall();
-				} catch (Throwable t) {
-					throw SneakyThrower.sneakyThrow(t);
-				}
+		NetUtils.executeSynchronized(ctx, () -> {
+			try {
+				Object target = msg.target.getTarget();
+				Preconditions.checkNotNull(target, "Target wrapper %s returned null object");
+				msg.method.method.invoke(target, msg.args);
+				msg.target.afterCall();
+			} catch (Throwable t) {
+				throw SneakyThrower.sneakyThrow(t);
 			}
 		});
 	}

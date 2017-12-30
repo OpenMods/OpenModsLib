@@ -6,6 +6,7 @@ import java.util.Map;
 
 public class FactoryRegistry<T> {
 
+	@FunctionalInterface
 	public interface Factory<T> {
 		public T construct();
 	}

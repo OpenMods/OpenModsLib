@@ -20,12 +20,7 @@ public class StateContainer {
 
 	private final List<State> allStates;
 
-	private static final Comparator<IProperty<?>> PROPERTY_NAME_COMPARATOR = new Comparator<IProperty<?>>() {
-		@Override
-		public int compare(IProperty<?> o1, IProperty<?> o2) {
-			return o1.getName().compareTo(o2.getName());
-		}
-	};
+	private static final Comparator<IProperty<?>> PROPERTY_NAME_COMPARATOR = (o1, o2) -> o1.getName().compareTo(o2.getName());
 
 	public StateContainer(IProperty<?>... properties) {
 		this(Arrays.asList(properties));

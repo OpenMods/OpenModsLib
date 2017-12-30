@@ -43,6 +43,7 @@ public class GameRegistryObjectsProvider {
 		public boolean isEnabled(String name);
 	}
 
+	@FunctionalInterface
 	private interface IObjectVisitor<I, A extends Annotation> {
 		public void visit(I entry, A annotation);
 	}
@@ -211,6 +212,7 @@ public class GameRegistryObjectsProvider {
 		}
 	}
 
+	@FunctionalInterface
 	private interface IdSetter {
 		public void setId(String id);
 	}
@@ -252,46 +254,38 @@ public class GameRegistryObjectsProvider {
 						return features.isItemEnabled(id);
 					}
 				},
-				new IObjectVisitor<Item, RegisterItem>() {
-					@Override
-					public void visit(final Item item, RegisterItem annotation) {
-						final String id = annotation.id();
-						final Set<String> legacyIds = Sets.newHashSet(annotation.legacyIds());
+				(item, annotation) -> {
+					final String id = annotation.id();
+					final Set<String> legacyIds = Sets.newHashSet(annotation.legacyIds());
 
-						final String legacyPrefixedId = legacyItemDecorator.decorate(id);
+					final String legacyPrefixedId = legacyItemDecorator.decorate(id);
 
-						final String selectedId;
-						if (remapFromLegacy) {
-							selectedId = id;
-							legacyIds.add(legacyPrefixedId);
-						} else {
-							selectedId = legacyPrefixedId;
-						}
-
-						items.register(item.setRegistryName(new ResourceLocation(modId, selectedId)));
-
-						registerRemaps(itemRemaps, item, selectedId, legacyIds, legacyModIds);
-
-						setItemPrefixedId(annotation.unlocalizedName(), id, langDecorator, new IdSetter() {
-							@Override
-							public void setId(String unlocalizedName) {
-								item.setUnlocalizedName(unlocalizedName);
-							}
-						});
-
-						final ResourceLocation itemLocation = itemModelDecorator.build(id);
-
-						if (annotation.registerDefaultModel()) {
-							itemModelIds.put(item, itemLocation);
-						}
-
-						if (annotation.customItemModels() != ICustomItemModelProvider.class) {
-							registerCustomItemModels(item, itemLocation, annotation.customItemModels());
-						}
-
-						if (annotation.addToModCreativeTab())
-							item.setCreativeTab(creativeTab());
+					final String selectedId;
+					if (remapFromLegacy) {
+						selectedId = id;
+						legacyIds.add(legacyPrefixedId);
+					} else {
+						selectedId = legacyPrefixedId;
 					}
+
+					items.register(item.setRegistryName(new ResourceLocation(modId, selectedId)));
+
+					registerRemaps(itemRemaps, item, selectedId, legacyIds, legacyModIds);
+
+					setItemPrefixedId(annotation.unlocalizedName(), id, langDecorator, item::setUnlocalizedName);
+
+					final ResourceLocation itemLocation = itemModelDecorator.build(id);
+
+					if (annotation.registerDefaultModel()) {
+						itemModelIds.put(item, itemLocation);
+					}
+
+					if (annotation.customItemModels() != ICustomItemModelProvider.class) {
+						registerCustomItemModels(item, itemLocation, annotation.customItemModels());
+					}
+
+					if (annotation.addToModCreativeTab())
+						item.setCreativeTab(creativeTab());
 				});
 	}
 
@@ -367,12 +361,7 @@ public class GameRegistryObjectsProvider {
 							itemBlock = null;
 						}
 
-						setBlockPrefixedId(annotation.unlocalizedName(), id, langDecorator, new IdSetter() {
-							@Override
-							public void setId(String unlocalizedName) {
-								block.setUnlocalizedName(unlocalizedName);
-							}
-						});
+						setBlockPrefixedId(annotation.unlocalizedName(), id, langDecorator, block::setUnlocalizedName);
 
 						if (teClass != null) {
 							final String teName = new ResourceLocation(modId, id).toString();

@@ -1,11 +1,9 @@
 package openmods.model;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.model.ModelLoader;
 
 public class ModelUtils {
@@ -27,12 +25,7 @@ public class ModelUtils {
 
 		ModelBakery.registerItemVariants(item, location);
 
-		ModelLoader.setCustomMeshDefinition(item, new ItemMeshDefinition() {
-			@Override
-			public ModelResourceLocation getModelLocation(ItemStack stack) {
-				return location;
-			}
-		});
+		ModelLoader.setCustomMeshDefinition(item, stack -> location);
 	}
 
 }

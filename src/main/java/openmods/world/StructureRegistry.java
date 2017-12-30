@@ -108,19 +108,16 @@ public class StructureRegistry {
 
 	public Map<String, BlockPos> getNearestStructures(final WorldServer world, final BlockPos pos) {
 		final ImmutableMap.Builder<String, BlockPos> result = ImmutableMap.builder();
-		visitStructures(world, new IStructureVisitor() {
-			@Override
-			public void visit(IChunkGenerator generator, String structure) {
-				try {
-					BlockPos structPos = generator.getNearestStructurePos(world, structure, pos, true);
+		visitStructures(world, (generator, structure) -> {
+			try {
+				BlockPos structPos = generator.getNearestStructurePos(world, structure, pos, true);
 
-					if (structPos != null) {
-						if (!Strings.isNullOrEmpty(structure)) result.put(structure, structPos);
-					}
-				} catch (IndexOutOfBoundsException e) {
-					// bug in MC, just ignore
-					// hopefully fixed by magic of ASM
+				if (structPos != null) {
+					if (!Strings.isNullOrEmpty(structure)) result.put(structure, structPos);
 				}
+			} catch (IndexOutOfBoundsException e) {
+				// bug in MC, just ignore
+				// hopefully fixed by magic of ASM
 			}
 		});
 
@@ -129,13 +126,10 @@ public class StructureRegistry {
 
 	public Set<BlockPos> getNearestInstance(final String name, final WorldServer world, final BlockPos blockPos) {
 		final ImmutableSet.Builder<BlockPos> result = ImmutableSet.builder();
-		visitStructures(world, new IStructureVisitor() {
-			@Override
-			public void visit(IChunkGenerator generator, String structure) {
-				if (name.equals(structure)) {
-					BlockPos structPos = generator.getNearestStructurePos(world, structure, blockPos, true);
-					if (structPos != null) result.add(structPos);
-				}
+		visitStructures(world, (generator, structure) -> {
+			if (name.equals(structure)) {
+				BlockPos structPos = generator.getNearestStructurePos(world, structure, blockPos, true);
+				if (structPos != null) result.add(structPos);
 			}
 		});
 

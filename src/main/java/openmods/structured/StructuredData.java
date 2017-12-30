@@ -8,7 +8,6 @@ import gnu.trove.map.hash.TIntIntHashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import openmods.structured.IStructureContainer.IElementAddCallback;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 public abstract class StructuredData<C extends IStructureContainer<E>, E extends IStructureElement> {
@@ -71,20 +70,17 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 	protected int addContainer(final int containerId, final C container, int firstElementId) {
 		final MutableInt nextElementId = new MutableInt(firstElementId);
 
-		container.createElements(new IElementAddCallback<E>() {
-			@Override
-			public int addElement(E element) {
-				final int elementId = nextElementId.intValue();
-				nextElementId.increment();
+		container.createElements(element -> {
+			final int elementId = nextElementId.intValue();
+			nextElementId.increment();
 
-				elements.put(elementId, element);
-				containerToElement.put(containerId, elementId);
-				elementToContainer.put(elementId, containerId);
+			elements.put(elementId, element);
+			containerToElement.put(containerId, elementId);
+			elementToContainer.put(elementId, containerId);
 
-				observer.onElementAdded(containerId, container, elementId, element);
+			observer.onElementAdded(containerId, container, elementId, element);
 
-				return elementId;
-			}
+			return elementId;
 		});
 
 		containers.put(containerId, container);

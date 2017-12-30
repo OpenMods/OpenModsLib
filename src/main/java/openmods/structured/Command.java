@@ -15,13 +15,7 @@ import openmods.utils.CollectionUtils;
 
 public abstract class Command {
 
-	public static final Comparator<Command> COMPARATOR = new Comparator<Command>() {
-
-		@Override
-		public int compare(Command o1, Command o2) {
-			return o1.type().compareTo(o2.type());
-		}
-	};
+	public static final Comparator<Command> COMPARATOR = (o1, o2) -> o1.type().compareTo(o2.type());
 
 	public static class CommandList extends ArrayList<Command> {
 		private static final long serialVersionUID = 8317603452787461684L;

@@ -18,17 +18,14 @@ public class GuiComponentTabWrapper extends BaseComposite {
 		if (component instanceof GuiComponentTab) {
 			final GuiComponentTab tab = (GuiComponentTab)component;
 			component.setX(component.getX() + mainComponent.getWidth());
-			component.setListener(new IMouseDownListener() {
-				@Override
-				public void componentMouseDown(BaseComponent component, int x, int y, int button) {
-					if (activeTab != tab) {
-						if (activeTab != null) activeTab.setActive(false);
-						activeTab = tab;
-						activeTab.setActive(true);
-					} else if (activeTab != null && activeTab.isOrigin(x, y)) {
-						tab.setActive(false);
-						activeTab = null;
-					}
+			component.setListener((IMouseDownListener)(self, x, y, button) -> {
+				if (activeTab != tab) {
+					if (activeTab != null) activeTab.setActive(false);
+					activeTab = tab;
+					activeTab.setActive(true);
+				} else if (activeTab != null && activeTab.isOrigin(x, y)) {
+					tab.setActive(false);
+					activeTab = null;
 				}
 			});
 		}

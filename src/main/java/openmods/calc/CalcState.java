@@ -6,10 +6,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import info.openmods.calc.Calculator;
 import info.openmods.calc.ExprType;
-import info.openmods.calc.Frame;
 import info.openmods.calc.IValuePrinter;
 import info.openmods.calc.symbol.ICallable;
-import info.openmods.calc.symbol.IGettable;
 import info.openmods.calc.symbol.NullaryFunction;
 import info.openmods.calc.symbol.UnaryFunction;
 import info.openmods.calc.types.bigint.BigIntCalculatorFactory;
@@ -20,7 +18,6 @@ import info.openmods.calc.types.multi.StructWrapper;
 import info.openmods.calc.types.multi.TypeDomain;
 import info.openmods.calc.types.multi.TypedValue;
 import info.openmods.calc.types.multi.TypedValueCalculatorFactory;
-import info.openmods.calc.utils.OptionalInt;
 import info.openmods.calc.utils.Stack;
 import info.openmods.calc.utils.StackValidationException;
 import java.math.BigInteger;
@@ -67,25 +64,22 @@ public class CalcState {
 
 		public <E> Calculator<E, ExprType> addPrinter(Calculator<E, ExprType> calculator) {
 			final IValuePrinter<E> printer = calculator.printer;
-			calculator.environment.setGlobalSymbol("p", new ICallable<E>() {
-				@Override
-				public void call(Frame<E> frame, OptionalInt argumentsCount, OptionalInt returnsCount) {
-					Preconditions.checkNotNull(sender, "DERP");
+			calculator.environment.setGlobalSymbol("p", (ICallable<E>)(frame, argumentsCount, returnsCount) -> {
+				Preconditions.checkNotNull(sender, "DERP");
 
-					if (!returnsCount.compareIfPresent(0)) throw new StackValidationException("This function does not return any values");
+				if (!returnsCount.compareIfPresent(0)) throw new StackValidationException("This function does not return any values");
 
-					final Stack<E> stack = frame.stack();
-					final int in = argumentsCount.or(1);
+				final Stack<E> stack = frame.stack();
+				final int in = argumentsCount.or(1);
 
-					final List<String> results = Lists.newArrayListWithExpectedSize(in);
-					for (int i = 0; i < in; i++) {
-						final E value = stack.pop();
-						results.add(printer.repr(value));
-					}
-
-					final String result = ": " + Joiner.on(" ").join(results);
-					sender.sendMessage(new TextComponentString(result));
+				final List<String> results = Lists.newArrayListWithExpectedSize(in);
+				for (int i = 0; i < in; i++) {
+					final E value = stack.pop();
+					results.add(printer.repr(value));
 				}
+
+				final String result = ": " + Joiner.on(" ").join(results);
+				sender.sendMessage(new TextComponentString(result));
 			});
 
 			calculator.environment.setGlobalSymbol("print", new UnaryFunction.Direct<E>() {
@@ -112,26 +106,11 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<Double, ExprType> calculator = DoubleCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("_x", new IGettable<Double>() {
-					@Override
-					public Double get() {
-						return Double.valueOf(holder.getX());
-					}
-				});
+				calculator.environment.setGlobalSymbol("_x", () -> Double.valueOf(holder.getX()));
 
-				calculator.environment.setGlobalSymbol("_y", new IGettable<Double>() {
-					@Override
-					public Double get() {
-						return Double.valueOf(holder.getY());
-					}
-				});
+				calculator.environment.setGlobalSymbol("_y", () -> Double.valueOf(holder.getY()));
 
-				calculator.environment.setGlobalSymbol("_z", new IGettable<Double>() {
-					@Override
-					public Double get() {
-						return Double.valueOf(holder.getZ());
-					}
-				});
+				calculator.environment.setGlobalSymbol("_z", () -> Double.valueOf(holder.getZ()));
 
 				return calculator;
 			}
@@ -141,26 +120,11 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<Fraction, ExprType> calculator = FractionCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("_x", new IGettable<Fraction>() {
-					@Override
-					public Fraction get() {
-						return Fraction.getFraction(holder.getX(), 1);
-					}
-				});
+				calculator.environment.setGlobalSymbol("_x", () -> Fraction.getFraction(holder.getX(), 1));
 
-				calculator.environment.setGlobalSymbol("_y", new IGettable<Fraction>() {
-					@Override
-					public Fraction get() {
-						return Fraction.getFraction(holder.getY(), 1);
-					}
-				});
+				calculator.environment.setGlobalSymbol("_y", () -> Fraction.getFraction(holder.getY(), 1));
 
-				calculator.environment.setGlobalSymbol("_z", new IGettable<Fraction>() {
-					@Override
-					public Fraction get() {
-						return Fraction.getFraction(holder.getZ(), 1);
-					}
-				});
+				calculator.environment.setGlobalSymbol("_z", () -> Fraction.getFraction(holder.getZ(), 1));
 
 				return calculator;
 			}
@@ -170,26 +134,11 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<BigInteger, ExprType> calculator = BigIntCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("_x", new IGettable<BigInteger>() {
-					@Override
-					public BigInteger get() {
-						return BigInteger.valueOf(holder.getX());
-					}
-				});
+				calculator.environment.setGlobalSymbol("_x", () -> BigInteger.valueOf(holder.getX()));
 
-				calculator.environment.setGlobalSymbol("_y", new IGettable<BigInteger>() {
-					@Override
-					public BigInteger get() {
-						return BigInteger.valueOf(holder.getY());
-					}
-				});
+				calculator.environment.setGlobalSymbol("_y", () -> BigInteger.valueOf(holder.getY()));
 
-				calculator.environment.setGlobalSymbol("_z", new IGettable<BigInteger>() {
-					@Override
-					public BigInteger get() {
-						return BigInteger.valueOf(holder.getZ());
-					}
-				});
+				calculator.environment.setGlobalSymbol("_z", () -> BigInteger.valueOf(holder.getZ()));
 
 				return calculator;
 			}
@@ -288,40 +237,24 @@ public class CalcState {
 	}
 
 	public void compileAndExecute(ICommandSender sender, final String expr) {
-		senderHolder.call(sender, new IFunction<Void>() {
-			@Override
-			public Void call() {
-				active.compileAndExecute(exprType, expr);
-				return null;
-			}
+		senderHolder.call(sender, () -> {
+			active.compileAndExecute(exprType, expr);
+			return null;
 		});
 	}
 
 	public String compileExecuteAndPrint(ICommandSender sender, final String expr) {
-		return senderHolder.call(sender, new IFunction<String>() {
-			@Override
-			public String call() {
-				return active.compileExecuteAndPrint(exprType, expr);
-			}
-		});
+		return senderHolder.call(sender, () -> active.compileExecuteAndPrint(exprType, expr));
 	}
 
 	public Object compileAndSetGlobalSymbol(ICommandSender sender, final String id, final String expr) {
-		return senderHolder.call(sender, new IFunction<Object>() {
-			@Override
-			public Object call() {
-				return active.compileAndSetGlobalSymbol(exprType, id, expr);
-			}
-		});
+		return senderHolder.call(sender, () -> active.compileAndSetGlobalSymbol(exprType, id, expr));
 	}
 
 	public void compileAndDefineGlobalFunction(ICommandSender sender, final String id, final int argCount, final String expr) {
-		senderHolder.call(sender, new IFunction<Void>() {
-			@Override
-			public Void call() {
-				active.compileAndDefineGlobalFunction(exprType, id, argCount, expr);
-				return null;
-			}
+		senderHolder.call(sender, () -> {
+			active.compileAndDefineGlobalFunction(exprType, id, argCount, expr);
+			return null;
 		});
 
 	}

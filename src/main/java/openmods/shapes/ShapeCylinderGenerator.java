@@ -18,12 +18,9 @@ public class ShapeCylinderGenerator extends DefaultShapeGenerator {
 
 	@Override
 	public void generateShape(int minX, final int minY, int minZ, int maxX, final int maxY, int maxZ, final IShapeable shapeable) {
-		GeometryUtils.makeEllipse(minX, minZ, maxX, maxZ, 0, new IShapeable() {
-			@Override
-			public void setBlock(int x, int ignore, int z) {
-				for (int y = minY; y <= maxY; y++)
-					shapeable.setBlock(x, y, z);
-			}
+		GeometryUtils.makeEllipse(minX, minZ, maxX, maxZ, 0, (x, ignore, z) -> {
+			for (int y = minY; y <= maxY; y++)
+				shapeable.setBlock(x, y, z);
 		}, quadrants);
 	}
 

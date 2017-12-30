@@ -14,10 +14,7 @@ public class PreWorldRenderHookVisitor extends ClassVisitor {
 
 	private static boolean active;
 
-	private static Runnable hook = new Runnable() {
-		@Override
-		public void run() {}
-	};
+	private static Runnable hook = () -> {};
 
 	public static boolean isActive() {
 		return active;

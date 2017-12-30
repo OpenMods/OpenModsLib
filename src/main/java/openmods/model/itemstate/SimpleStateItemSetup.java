@@ -1,10 +1,8 @@
 package openmods.model.itemstate;
 
-import net.minecraft.client.renderer.ItemMeshDefinition;
 import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
 import openmods.state.State;
@@ -26,12 +24,9 @@ public class SimpleStateItemSetup {
 			ModelBakery.registerItemVariants(item, modelLoc);
 		}
 
-		ModelLoader.setCustomMeshDefinition(item, new ItemMeshDefinition() {
-			@Override
-			public ModelResourceLocation getModelLocation(ItemStack stack) {
-				final State state = item.getState(stack);
-				return new ModelResourceLocation(id, state.getVariant());
-			}
+		ModelLoader.setCustomMeshDefinition(item, stack -> {
+			final State state = item.getState(stack);
+			return new ModelResourceLocation(id, state.getVariant());
 		});
 	}
 

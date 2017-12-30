@@ -1,6 +1,5 @@
 package openmods.network.rpc;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
@@ -23,16 +22,13 @@ public class RpcProxyFactory {
 
 		final Map<Method, MethodEntry> methodMap = CommonRegistryCallbacks.getObjectToEntryMap(registry);
 
-		Object proxy = Proxy.newProxyInstance(loader, allInterfaces, new InvocationHandler() {
-			@Override
-			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-				final MethodEntry entry = methodMap.get(method);
-				if (entry != null) {
-					RpcCall call = new RpcCall(wrapper, entry, args);
-					sender.sendMessage(call);
-				}
-				return null;
+		Object proxy = Proxy.newProxyInstance(loader, allInterfaces, (self, method, args) -> {
+			final MethodEntry entry = methodMap.get(method);
+			if (entry != null) {
+				RpcCall call = new RpcCall(wrapper, entry, args);
+				sender.sendMessage(call);
 			}
+			return null;
 		});
 
 		return (T)proxy;

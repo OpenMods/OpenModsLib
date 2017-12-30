@@ -3,7 +3,6 @@ package openmods.utils;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nonnull;
 import net.minecraft.inventory.IInventory;
@@ -74,19 +73,14 @@ public class InventoryUtils {
 	}
 
 	public static Iterable<ItemStack> asIterable(final IInventory inv) {
-		return new Iterable<ItemStack>() {
-			@Override
-			public Iterator<ItemStack> iterator() {
-				return new AbstractIterator<ItemStack>() {
-					final int size = inv.getSizeInventory();
-					int slot = 0;
+		return () -> new AbstractIterator<ItemStack>() {
+			final int size = inv.getSizeInventory();
+			int slot = 0;
 
-					@Override
-					protected ItemStack computeNext() {
-						if (slot >= size) return endOfData();
-						return inv.getStackInSlot(slot++);
-					}
-				};
+			@Override
+			protected ItemStack computeNext() {
+				if (slot >= size) return endOfData();
+				return inv.getStackInSlot(slot++);
 			}
 		};
 	}

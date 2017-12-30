@@ -1086,21 +1086,9 @@ public class EvaluatorFactory {
 		public TRSRTransformation apply(TRSRTransformation initial, IJoint joint, Map<String, Float> args);
 	}
 
-	private static final ITransformExecutor EMPTY_TRANSFORM_EXECUTOR = new ITransformExecutor() {
-		@Override
-		public TRSRTransformation apply(TRSRTransformation initial, IJoint joint, Map<String, Float> args) {
-			return initial;
-		}
-	};
-
 	private static interface IValueExecutor {
 		public void apply(Map<String, Float> args);
 	}
-
-	private static final IValueExecutor EMPTY_VALUE_EXECUTOR = new IValueExecutor() {
-		@Override
-		public void apply(Map<String, Float> args) {}
-	};
 
 	private interface IStatement {
 		public ITransformExecutor bind(IClipProvider provider);
@@ -1124,23 +1112,15 @@ public class EvaluatorFactory {
 
 		@Override
 		public ITransformExecutor bind(IClipProvider provider) {
-			return new ITransformExecutor() {
-				@Override
-				public TRSRTransformation apply(TRSRTransformation initial, IJoint joint, Map<String, Float> args) {
-					eval(args);
-					return initial;
-				}
+			return (initial, joint, args) -> {
+				eval(args);
+				return initial;
 			};
 		}
 
 		@Override
 		public IValueExecutor free() {
-			return new IValueExecutor() {
-				@Override
-				public void apply(Map<String, Float> args) {
-					eval(args);
-				}
-			};
+			return this::eval;
 		}
 	}
 
@@ -1686,47 +1666,37 @@ public class EvaluatorFactory {
 	}
 
 	private static ITransformExecutor composeTransformExecutors(List<ITransformExecutor> contents) {
-		if (contents.isEmpty()) return EMPTY_TRANSFORM_EXECUTOR;
+		if (contents.isEmpty()) return (initial, joint, args) -> initial;
 		if (contents.size() == 1)
 			return contents.get(0);
 
 		final List<ITransformExecutor> executors = ImmutableList.copyOf(contents);
-		return new ITransformExecutor() {
+		return (initial, joint, args) -> {
+			TRSRTransformation result = initial;
+			for (ITransformExecutor e : executors)
+				result = e.apply(result, joint, args);
 
-			@Override
-			public TRSRTransformation apply(TRSRTransformation initial, IJoint joint, Map<String, Float> args) {
-				TRSRTransformation result = initial;
-				for (ITransformExecutor e : executors)
-					result = e.apply(result, joint, args);
-
-				return result;
-			}
+			return result;
 		};
 	}
 
 	private static IValueExecutor composeValueExecutors(List<IValueExecutor> contents) {
-		if (contents.isEmpty()) return EMPTY_VALUE_EXECUTOR;
+		if (contents.isEmpty()) return args -> {};
 		if (contents.size() == 1)
 			return contents.get(0);
 
 		final List<IValueExecutor> executors = ImmutableList.copyOf(contents);
-		return new IValueExecutor() {
-			@Override
-			public void apply(Map<String, Float> args) {
-				for (IValueExecutor executors : executors)
-					executors.apply(args);
-			}
+		return args -> {
+			for (IValueExecutor executors1 : executors)
+				executors1.apply(args);
 		};
 	}
 
 	private static ITransformExecutor createForClip(final IClip clip, final NumericExpr param) {
-		return new ITransformExecutor() {
-			@Override
-			public TRSRTransformation apply(TRSRTransformation initial, IJoint joint, Map<String, Float> args) {
-				final float paramValue = param.evaluate(args);
-				final TRSRTransformation clipTransform = clip.apply(joint).apply(paramValue);
-				return initial.compose(clipTransform);
-			}
+		return (initial, joint, args) -> {
+			final float paramValue = param.evaluate(args);
+			final TRSRTransformation clipTransform = clip.apply(joint).apply(paramValue);
+			return initial.compose(clipTransform);
 		};
 	}
 

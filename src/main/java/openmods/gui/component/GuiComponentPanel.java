@@ -15,44 +15,22 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 
 	private static final BoxRenderer BOX_RENDERER = new BoxRenderer(0, 5);
 
-	public static final ISlotBackgroundRenderer normalSlot = new ISlotBackgroundRenderer() {
-		@Override
-		public void render(BaseComponent gui, Slot slot) {
-			gui.drawTexturedModalRect(slot.xPos - 1, slot.yPos - 1, 0, 20, 18, 18);
-		}
-	};
+	public static final ISlotBackgroundRenderer normalSlot = (gui, slot) -> gui.drawTexturedModalRect(slot.xPos - 1, slot.yPos - 1, 0, 20, 18, 18);
 
-	public static final ISlotBackgroundRenderer bigSlot = new ISlotBackgroundRenderer() {
-		@Override
-		public void render(BaseComponent gui, Slot slot) {
-			gui.drawTexturedModalRect(slot.xPos - 5, slot.yPos - 5, 29, 20, 26, 26);
-		}
-	};
+	public static final ISlotBackgroundRenderer bigSlot = (gui, slot) -> gui.drawTexturedModalRect(slot.xPos - 5, slot.yPos - 5, 29, 20, 26, 26);
 
-	public static final ISlotBackgroundRenderer noRenderSlot = new ISlotBackgroundRenderer() {
-		@Override
-		public void render(BaseComponent gui, Slot slot) {}
-	};
+	public static final ISlotBackgroundRenderer noRenderSlot = (gui, slot) -> {};
 
 	public static ISlotBackgroundRenderer coloredSlot(final int color) {
-		return new ISlotBackgroundRenderer() {
-			@Override
-			public void render(BaseComponent gui, Slot slot) {
-				RenderUtils.setColor(color);
-				gui.drawTexturedModalRect(slot.xPos - 1, slot.yPos - 1, 0, 20, 18, 18);
-				GlStateManager.color(1, 1, 1);
-			}
+		return (gui, slot) -> {
+			RenderUtils.setColor(color);
+			gui.drawTexturedModalRect(slot.xPos - 1, slot.yPos - 1, 0, 20, 18, 18);
+			GlStateManager.color(1, 1, 1);
 		};
 	}
 
 	public static ISlotBackgroundRenderer customIconSlot(final Icon icon, final int deltaX, final int deltaY) {
-		return new ISlotBackgroundRenderer() {
-			@Override
-			public void render(BaseComponent gui, Slot slot) {
-				gui.drawSprite(icon, slot.xPos + deltaX, slot.yPos + deltaY);
-
-			}
-		};
+		return (gui, slot) -> gui.drawSprite(icon, slot.xPos + deltaX, slot.yPos + deltaY);
 	}
 
 	private final Map<Integer, ISlotBackgroundRenderer> slotRenderers = Maps.newHashMap();

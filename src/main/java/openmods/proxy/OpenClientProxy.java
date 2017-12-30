@@ -187,12 +187,7 @@ public final class OpenClientProxy implements IOpenModsProxy {
 	@Override
 	public void runCustomItemModelProvider(final ResourceLocation location, final Item item, Class<? extends ICustomItemModelProvider> providerCls) {
 		final ICustomItemModelProvider provider = customItemModelProviders.getOrCreate(providerCls);
-		provider.addCustomItemModels(item, location, new ICustomItemModelProvider.IModelRegistrationSink() {
-			@Override
-			public void register(int meta, ResourceLocation modelLocation) {
-				OpenMods.proxy.registerCustomItemModel(item, meta, modelLocation);
-			}
-		});
+		provider.addCustomItemModels(item, location, (meta, modelLocation) -> OpenMods.proxy.registerCustomItemModel(item, meta, modelLocation));
 	}
 
 	@Override

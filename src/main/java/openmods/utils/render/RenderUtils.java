@@ -151,12 +151,7 @@ public class RenderUtils {
 	public static void renderSolidCube(Tessellator tes, double x1, double y1, double z1, double x2, double y2, double z2) {
 		final BufferBuilder wr = tes.getBuffer();
 		wr.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
-		renderCube(new IVertexSink() {
-			@Override
-			public void addVertex(double x, double y, double z) {
-				wr.pos(x, y, z).endVertex();
-			}
-		}, x1, y1, z1, x2, y2, z2);
+		renderCube((x, y, z) -> wr.pos(x, y, z).endVertex(), x1, y1, z1, x2, y2, z2);
 		tes.draw();
 	}
 

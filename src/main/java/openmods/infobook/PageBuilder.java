@@ -22,7 +22,6 @@ import openmods.gui.component.BaseComponent;
 import openmods.gui.component.GuiComponentBook;
 import openmods.gui.component.page.ItemStackTocPage;
 import openmods.gui.component.page.StandardRecipePage;
-import openmods.gui.listener.IMouseDownListener;
 import openmods.utils.CachedInstanceFactory;
 import openmods.utils.TranslationUtils;
 
@@ -137,12 +136,7 @@ public class PageBuilder {
 
 	private void addToToc(final GuiComponentBook book, @Nonnull ItemStack stack, final int target) {
 		for (ItemStackTocPage tocPage : tocPages)
-			if (tocPage.addEntry(stack, new IMouseDownListener() {
-				@Override
-				public void componentMouseDown(BaseComponent component, int x, int y, int button) {
-					book.changePage(target);
-				}
-			})) return;
+			if (tocPage.addEntry(stack, (component, x, y, button) -> book.changePage(target))) return;
 
 		throw new IllegalStateException(String.format("Tried to add more TOC entries than allocated"));
 	}
@@ -175,12 +169,7 @@ public class PageBuilder {
 	}
 
 	public void createItemPages() {
-		addItemPages(new StackProvider<Item>() {
-			@Override
-			public ItemStack createStack(String itemModId, String itemName, Item item) {
-				return new ItemStack(item);
-			}
-		});
+		addItemPages((itemModId, itemName, item) -> new ItemStack(item));
 	}
 
 	public void addBlockPages(StackProvider<Block> provider) {
@@ -188,11 +177,6 @@ public class PageBuilder {
 	}
 
 	public void createBlockPages() {
-		addBlockPages(new StackProvider<Block>() {
-			@Override
-			public ItemStack createStack(String blockModId, String blockName, Block block) {
-				return new ItemStack(block);
-			}
-		});
+		addBlockPages((blockModId, blockName, block) -> new ItemStack(block));
 	}
 }

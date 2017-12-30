@@ -2,7 +2,6 @@ package openmods.utils;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.Set;
@@ -51,14 +50,10 @@ public class NetUtils {
 		return getPlayersWatchingChunk(world, blockX >> 4, blockZ >> 4);
 	}
 
-	public static final ChannelFutureListener LOGGING_LISTENER = new ChannelFutureListener() {
-
-		@Override
-		public void operationComplete(ChannelFuture future) throws Exception {
-			if (!future.isSuccess()) {
-				Throwable cause = future.cause();
-				Log.severe(cause, "Crash in pipeline handler");
-			}
+	public static final ChannelFutureListener LOGGING_LISTENER = future -> {
+		if (!future.isSuccess()) {
+			Throwable cause = future.cause();
+			Log.severe(cause, "Crash in pipeline handler");
 		}
 	};
 

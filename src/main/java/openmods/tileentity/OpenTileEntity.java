@@ -3,7 +3,6 @@ package openmods.tileentity;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumParticleTypes;
@@ -27,7 +26,6 @@ import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.network.senders.IPacketSender;
 import openmods.reflection.TypeUtils;
 import openmods.utils.BlockUtils;
-import openmods.utils.OptionalInt;
 
 public abstract class OpenTileEntity extends TileEntity implements IRpcTargetProvider {
 
@@ -160,12 +158,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	protected IInventoryCallback createInventoryCallback() {
-		return new IInventoryCallback() {
-			@Override
-			public void onInventoryChanged(IInventory inventory, OptionalInt slotNumber) {
-				markUpdated();
-			}
-		};
+		return (inventory, slotNumber) -> markUpdated();
 	}
 
 	protected GenericInventory registerInventoryCallback(GenericInventory inventory) {

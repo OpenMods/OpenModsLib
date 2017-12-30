@@ -9,15 +9,12 @@ import com.google.common.io.Closer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,19 +31,16 @@ public class HitboxManager implements IResourceManagerReloadListener {
 	@SuppressWarnings("serial")
 	private static class HitboxList extends ArrayList<Hitbox> {}
 
-	private static final Gson GSON = new GsonBuilder().registerTypeAdapter(Vec3d.class, new JsonDeserializer<Vec3d>() {
-		@Override
-		public Vec3d deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-			JsonArray jsonarray = JsonUtils.getJsonArray(json, "vector");
+	private static final Gson GSON = new GsonBuilder().registerTypeAdapter(Vec3d.class, (JsonDeserializer<Vec3d>)(json, typeOfT, context) -> {
+		JsonArray jsonarray = JsonUtils.getJsonArray(json, "vector");
 
-			if (jsonarray.size() != 3) throw new JsonParseException("Expected 3 float values, found: " + jsonarray.size());
+		if (jsonarray.size() != 3) throw new JsonParseException("Expected 3 float values, found: " + jsonarray.size());
 
-			final float[] coords = new float[3];
-			for (int i = 0; i < 3; ++i)
-				coords[i] = JsonUtils.getFloat(jsonarray.get(i), "[" + i + "]") / 16.0f;
+		final float[] coords = new float[3];
+		for (int i = 0; i < 3; ++i)
+			coords[i] = JsonUtils.getFloat(jsonarray.get(i), "[" + i + "]") / 16.0f;
 
-			return new Vec3d(coords[0], coords[1], coords[2]);
-		}
+		return new Vec3d(coords[0], coords[1], coords[2]);
 	}).create();
 
 	private class Holder implements IHitboxSupplier {

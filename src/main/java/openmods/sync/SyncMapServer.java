@@ -17,7 +17,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import openmods.Log;
 import openmods.utils.bitstream.OutputBitStream;
-import openmods.utils.io.IByteSink;
 
 public abstract class SyncMapServer extends SyncMap {
 
@@ -152,12 +151,7 @@ public abstract class SyncMapServer extends SyncMap {
 		bitmapData.clear();
 		dos.writeZero(bitmapLength);
 
-		final OutputBitStream bitmap = new OutputBitStream(new IByteSink() {
-			@Override
-			public void acceptByte(int b) {
-				bitmapData.writeByte(b);
-			}
-		});
+		final OutputBitStream bitmap = new OutputBitStream(bitmapData::writeByte);
 
 		for (Entry e : orderedEntries) {
 			if (changes.contains(e.obj)) {

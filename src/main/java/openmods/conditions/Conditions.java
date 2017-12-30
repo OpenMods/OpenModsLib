@@ -2,14 +2,11 @@ package openmods.conditions;
 
 public class Conditions {
 	public static ICondition any(final ICondition... conditions) {
-		return new ICondition() {
-			@Override
-			public boolean check() {
-				for (ICondition c : conditions)
-					if (c.check()) return true;
+		return () -> {
+			for (ICondition c : conditions)
+				if (c.check()) return true;
 
-				return false;
-			}
+			return false;
 		};
 	}
 

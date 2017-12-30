@@ -42,12 +42,7 @@ public class ClassFrontend {
 			String defaultValue = wrap.get(null);
 			Preconditions.checkNotNull(defaultValue, "Field %s has no default value", f);
 
-			processor.addEntry(name, e.version(), defaultValue, new UpdateListener() {
-				@Override
-				public void valueSet(String value) {
-					wrap.set(null, value);
-				}
-			}, e.comment());
+			processor.addEntry(name, e.version(), defaultValue, (UpdateListener)value -> wrap.set(null, value), e.comment());
 		}
 
 		processor.process(file);

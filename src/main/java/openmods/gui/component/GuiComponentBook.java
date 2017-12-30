@@ -36,19 +36,9 @@ public class GuiComponentBook extends BaseComposite {
 		imgRightBackground.setX(iconPageRight.width);
 
 		imgPrev = new GuiComponentSpriteButton(24, 158, iconPrev, iconPrevHover);
-		imgPrev.setListener(new IMouseDownListener() {
-			@Override
-			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
-				prevPage();
-			}
-		});
+		imgPrev.setListener((IMouseDownListener)(component, x, y, button) -> prevPage());
 		imgNext = new GuiComponentSpriteButton(380, 158, iconNext, iconNextHover);
-		imgNext.setListener(new IMouseDownListener() {
-			@Override
-			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
-				nextPage();
-			}
-		});
+		imgNext.setListener((IMouseDownListener)(component, x, y, button) -> nextPage());
 
 		final float scalePageNumber = BookScaleConfig.getPageNumberScale();
 		pageNumberLeft = new GuiComponentLabel(85, 163, 100, 10, "XXX");
@@ -128,12 +118,7 @@ public class GuiComponentBook extends BaseComposite {
 	}
 
 	public IMouseDownListener createBookmarkListener(final int index) {
-		return new IMouseDownListener() {
-			@Override
-			public void componentMouseDown(BaseComponent component, int x, int y, int button) {
-				changePage(index);
-			}
-		};
+		return (component, x, y, button) -> changePage(index);
 	}
 
 	public void prevPage() {

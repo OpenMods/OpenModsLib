@@ -45,12 +45,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 
 		SyncObjectScanner.INSTANCE.registerAllFields(syncMap, this);
 
-		syncMap.addSyncListener(new ISyncListener() {
-			@Override
-			public void onSync(Set<ISyncableObject> changes) {
-				markUpdated();
-			}
-		});
+		syncMap.addSyncListener(changes -> markUpdated());
 
 		this.syncMap = syncMap;
 		onSyncMapCreate(syncMap);
@@ -75,29 +70,18 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	}
 
 	protected ISyncListener createRenderUpdateListener() {
-		return new ISyncListener() {
-			@Override
-			public void onSync(Set<ISyncableObject> changes) {
-				markBlockForRenderUpdate(getPos());
-			}
-		};
+		return changes -> markBlockForRenderUpdate(getPos());
 	}
 
 	protected ISyncListener createRenderUpdateListener(final ISyncableObject target) {
-		return new ISyncListener() {
-			@Override
-			public void onSync(Set<ISyncableObject> changes) {
-				if (changes.contains(target)) markBlockForRenderUpdate(getPos());
-			}
+		return changes -> {
+			if (changes.contains(target)) markBlockForRenderUpdate(getPos());
 		};
 	}
 
 	protected ISyncListener createRenderUpdateListener(final Set<ISyncableObject> targets) {
-		return new ISyncListener() {
-			@Override
-			public void onSync(Set<ISyncableObject> changes) {
-				if (!Sets.intersection(changes, targets).isEmpty()) markBlockForRenderUpdate(getPos());
-			}
+		return changes -> {
+			if (!Sets.intersection(changes, targets).isEmpty()) markBlockForRenderUpdate(getPos());
 		};
 	}
 

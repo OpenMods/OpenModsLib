@@ -7,13 +7,11 @@ import com.google.common.collect.Maps;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import openmods.sync.ISyncListener;
-import openmods.sync.ISyncableObject;
 import openmods.utils.bitmap.IReadableBitMap;
 
 public class SidedItemHandlerAdapter {
@@ -157,12 +155,7 @@ public class SidedItemHandlerAdapter {
 	}
 
 	public ISyncListener createSyncListener() {
-		return new ISyncListener() {
-			@Override
-			public void onSync(Set<ISyncableObject> changes) {
-				invalidate();
-			}
-		};
+		return changes -> invalidate();
 	}
 
 	public void registerSlots(int start, int count, IReadableBitMap<EnumFacing> sideFlags, boolean canInsert, boolean canExtract) {

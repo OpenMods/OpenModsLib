@@ -203,12 +203,7 @@ public class GeometryUtils {
 			final int centerZ = (minZ + maxZ) / 2;
 
 			final IShapeable prevShapeable = shapeable;
-			shapeable = new IShapeable() {
-				@Override
-				public void setBlock(int x, int y, int z) {
-					prevShapeable.setBlock(centerX + x, centerY + y, centerZ + z);
-				}
-			};
+			shapeable = (x, y, z) -> prevShapeable.setBlock(centerX + x, centerY + y, centerZ + z);
 		}
 
 		final int radiusX;
@@ -289,12 +284,7 @@ public class GeometryUtils {
 			final int centerZ = (minZ + maxZ) / 2;
 
 			final IShapeable prevShapeable = shapeable;
-			shapeable = new IShapeable() {
-				@Override
-				public void setBlock(int x, int y, int z) {
-					prevShapeable.setBlock(centerX + x, y, centerZ + z);
-				}
-			};
+			shapeable = (x, y1, z) -> prevShapeable.setBlock(centerX + x, y1, centerZ + z);
 		}
 
 		final int radiusX;
@@ -324,37 +314,28 @@ public class GeometryUtils {
 	}
 
 	private static IShapeable skipMiddleX(final IShapeable shapeable) {
-		return new IShapeable() {
-			@Override
-			public void setBlock(int x, int y, int z) {
-				if (x != 0) {
-					if (x < 0) shapeable.setBlock(x + 1, y, z);
-					else shapeable.setBlock(x, y, z);
-				}
+		return (x, y, z) -> {
+			if (x != 0) {
+				if (x < 0) shapeable.setBlock(x + 1, y, z);
+				else shapeable.setBlock(x, y, z);
 			}
 		};
 	}
 
 	private static IShapeable skipMiddleY(final IShapeable shapeable) {
-		return new IShapeable() {
-			@Override
-			public void setBlock(int x, int y, int z) {
-				if (y != 0) {
-					if (y < 0) shapeable.setBlock(x, y + 1, z);
-					else shapeable.setBlock(x, y, z);
-				}
+		return (x, y, z) -> {
+			if (y != 0) {
+				if (y < 0) shapeable.setBlock(x, y + 1, z);
+				else shapeable.setBlock(x, y, z);
 			}
 		};
 	}
 
 	private static IShapeable skipMiddleZ(final IShapeable shapeable) {
-		return new IShapeable() {
-			@Override
-			public void setBlock(int x, int y, int z) {
-				if (z != 0) {
-					if (z < 0) shapeable.setBlock(x, y, z + 1);
-					else shapeable.setBlock(x, y, z);
-				}
+		return (x, y, z) -> {
+			if (z != 0) {
+				if (z < 0) shapeable.setBlock(x, y, z + 1);
+				else shapeable.setBlock(x, y, z);
 			}
 		};
 	}

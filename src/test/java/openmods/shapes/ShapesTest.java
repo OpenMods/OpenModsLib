@@ -12,12 +12,7 @@ public class ShapesTest {
 	public static Multiset<Coord> generate(IShapeGenerator generator, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		final Multiset<Coord> result = HashMultiset.create();
 
-		generator.generateShape(minX, minY, minZ, maxX, maxY, maxZ, new IShapeable() {
-			@Override
-			public void setBlock(int x, int y, int z) {
-				result.add(new Coord(x, y, z));
-			}
-		});
+		generator.generateShape(minX, minY, minZ, maxX, maxY, maxZ, (x, y, z) -> result.add(new Coord(x, y, z)));
 
 		return result;
 	}
