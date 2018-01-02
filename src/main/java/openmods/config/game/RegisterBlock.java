@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import net.minecraft.block.Block;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
 import openmods.item.ItemOpenBlock;
@@ -19,6 +20,9 @@ public @interface RegisterBlock {
 
 		public Class<? extends TileEntity> cls();
 	}
+
+	// if left default, will use field type
+	public Class<? extends Block> type() default Block.class;
 
 	public String id();
 
