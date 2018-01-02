@@ -31,8 +31,10 @@ import openmods.config.game.RegisterBlock.RegisterTileEntity;
 
 public class GameRegistryObjectsProvider {
 
-	private interface IAnnotationAccess<A extends Annotation> {
+	private interface IAnnotationAccess<A extends Annotation, I> {
 		public String getEntryId(A annotation);
+
+		public Class<? extends I> getObjectType(A annotation);
 
 		public boolean isEnabled(String name);
 	}
@@ -168,14 +170,22 @@ public class GameRegistryObjectsProvider {
 		return itemFactory;
 	}
 
-	private static <I, A extends Annotation> void processAnnotations(Class<? extends InstanceContainer<?>> config, Class<I> fieldClass, Class<A> annotationClass, FactoryRegistry<I> factory, IAnnotationAccess<A> annotationAccess, IObjectVisitor<I, A> visitor) {
+	private static <I, A extends Annotation> void processAnnotations(Class<? extends InstanceContainer<?>> config, Class<I> baseClass, Class<A> annotationClass, FactoryRegistry<I> factory, IAnnotationAccess<A, I> annotationAccess, IObjectVisitor<I, A> visitor) {
 		for (Field f : config.getFields()) {
 			if (f.isAnnotationPresent(IgnoreFeature.class)) continue;
 			final A annotation = f.getAnnotation(annotationClass);
 			if (annotation == null) continue;
 
 			Preconditions.checkState(Modifier.isStatic(f.getModifiers()), "Field %s marked with %s must be static", f, annotationClass);
-			Preconditions.checkState(fieldClass.isAssignableFrom(f.getType()), "Field %s marked with %s must have type %s", f, annotationClass, fieldClass);
+
+			final Class<? extends I> fieldType = getFieldType(f, baseClass);
+
+			Class<? extends I> targetCls = annotationAccess.getObjectType(annotation);
+			if (targetCls == baseClass) {
+				targetCls = fieldType;
+			}
+
+			Preconditions.checkState(targetCls != baseClass, "Invalid field %s type - got base class", f);
 
 			String name = annotationAccess.getEntryId(annotation);
 			if (!annotationAccess.isEnabled(name)) {
@@ -183,9 +193,7 @@ public class GameRegistryObjectsProvider {
 				continue;
 			}
 
-			@SuppressWarnings("unchecked")
-			Class<? extends I> fieldType = (Class<? extends I>)f.getType();
-			I entry = factory.construct(name, fieldType);
+			I entry = factory.construct(name, targetCls);
 			if (entry == null) continue;
 			try {
 				f.set(null, entry);
@@ -194,6 +202,13 @@ public class GameRegistryObjectsProvider {
 			}
 			visitor.visit(entry, annotation);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <I> Class<? extends I> getFieldType(Field field, Class<I> baseClass) {
+		final Class<?> type = field.getType();
+		Preconditions.checkState(baseClass.isAssignableFrom(type), "Field %s must have type assignable to %s", field, baseClass);
+		return (Class<? extends I>)type;
 	}
 
 	private interface IdSetter {
@@ -226,10 +241,15 @@ public class GameRegistryObjectsProvider {
 
 	public void registerItems(Class<? extends ItemInstances> klazz) {
 		processAnnotations(klazz, Item.class, RegisterItem.class, itemFactory,
-				new IAnnotationAccess<RegisterItem>() {
+				new IAnnotationAccess<RegisterItem, Item>() {
 					@Override
 					public String getEntryId(RegisterItem annotation) {
 						return annotation.id();
+					}
+
+					@Override
+					public Class<? extends Item> getObjectType(RegisterItem annotation) {
+						return annotation.type();
 					}
 
 					@Override
@@ -302,10 +322,15 @@ public class GameRegistryObjectsProvider {
 
 	public void registerBlocks(Class<? extends BlockInstances> klazz) {
 		processAnnotations(klazz, Block.class, RegisterBlock.class, blockFactory,
-				new IAnnotationAccess<RegisterBlock>() {
+				new IAnnotationAccess<RegisterBlock, Block>() {
 					@Override
 					public String getEntryId(RegisterBlock annotation) {
 						return annotation.id();
+					}
+
+					@Override
+					public Class<? extends Block> getObjectType(RegisterBlock annotation) {
+						return annotation.type();
 					}
 
 					@Override
