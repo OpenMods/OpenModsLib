@@ -118,11 +118,6 @@ public class VariantModel implements IModel {
 	}
 
 	@Override
-	public IModelState getDefaultState() {
-		return TRSRTransformation.identity();
-	}
-
-	@Override
 	public IModel process(ImmutableMap<String, String> customData) {
 		final ModelUpdater updater = new ModelUpdater(customData);
 
@@ -142,11 +137,6 @@ public class VariantModel implements IModel {
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
 		return ImmutableList.copyOf(Sets.union(modelData.getAllModels(), CollectionUtils.asSet(base)));
-	}
-
-	@Override
-	public Collection<ResourceLocation> getTextures() {
-		return ImmutableList.of();
 	}
 
 }

@@ -14,7 +14,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.IModelState;
-import net.minecraftforge.common.model.TRSRTransformation;
 import openmods.utils.CollectionUtils;
 
 public class ModelWithDependencies implements IModel {
@@ -52,11 +51,6 @@ public class ModelWithDependencies implements IModel {
 		}
 
 		return model.bake(state, format, bakedTextureGetter);
-	}
-
-	@Override
-	public IModelState getDefaultState() {
-		return TRSRTransformation.identity();
 	}
 
 	@Override

@@ -40,11 +40,6 @@ public final class PerspectiveAwareModel implements IModel {
 		return ImmutableList.copyOf(Iterables.concat(models.values(), CollectionUtils.asSet(base)));
 	}
 
-	@Override
-	public Collection<ResourceLocation> getTextures() {
-		return ImmutableList.of();
-	}
-
 	private static IBakedModel bakeModel(ResourceLocation model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
 		IModel baseModel = ModelLoaderRegistry.getModelOrLogError(model, "Couldn't load MultiLayerModel dependency: " + model);
 		return baseModel.bake(new ModelStateComposition(state, baseModel.getDefaultState()), format, bakedTextureGetter);
@@ -68,11 +63,6 @@ public final class PerspectiveAwareModel implements IModel {
 				bakedModels,
 				bakedBase,
 				PerspectiveMapWrapper.getTransforms(state));
-	}
-
-	@Override
-	public IModelState getDefaultState() {
-		return TRSRTransformation.identity();
 	}
 
 	@Override

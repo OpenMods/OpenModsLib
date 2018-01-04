@@ -17,7 +17,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.IModelState;
-import net.minecraftforge.common.model.TRSRTransformation;
 import openmods.model.ModelUpdater;
 import openmods.state.State;
 import openmods.state.StateContainer;
@@ -65,11 +64,6 @@ public class ItemStateModel implements IModel {
 	}
 
 	@Override
-	public Collection<ResourceLocation> getTextures() {
-		return ImmutableSet.of();
-	}
-
-	@Override
 	public IBakedModel bake(IModelState state, final VertexFormat format, final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
 		final IModel defaultModel;
 
@@ -94,11 +88,6 @@ public class ItemStateModel implements IModel {
 
 	private static IModel getModel(ResourceLocation model) {
 		return ModelLoaderRegistry.getModelOrLogError(model, "Couldn't load model dependency: " + model);
-	}
-
-	@Override
-	public IModelState getDefaultState() {
-		return TRSRTransformation.identity();
 	}
 
 	@Override

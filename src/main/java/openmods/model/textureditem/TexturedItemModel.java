@@ -64,11 +64,6 @@ public class TexturedItemModel implements IModel {
 	}
 
 	@Override
-	public Collection<ResourceLocation> getTextures() {
-		return ImmutableSet.of();
-	}
-
-	@Override
 	public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
 		final IModel untexturedModel = getModel(this.untexturedModel);
 		final IBakedModel untexturedBakedModel = untexturedModel.bake(new ModelStateComposition(state, untexturedModel.getDefaultState()), format, bakedTextureGetter);
@@ -88,11 +83,6 @@ public class TexturedItemModel implements IModel {
 		} else {
 			return ModelLoaderRegistry.getMissingModel();
 		}
-	}
-
-	@Override
-	public IModelState getDefaultState() {
-		return TRSRTransformation.identity();
 	}
 
 	@Override
