@@ -117,7 +117,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 	}
 
 	private static void setPlayerTool(OpenModsFakePlayer fakePlayer, final ItemStack tool) {
-		fakePlayer.inventory.setInventorySlotContents(0, tool.copy());
+		fakePlayer.inventory.setInventorySlotContents(0, tool != null? tool.copy() : null);
 	}
 
 	private boolean removeBlock(EntityPlayer player, BlockPos pos, IBlockState state, boolean canHarvest) {
