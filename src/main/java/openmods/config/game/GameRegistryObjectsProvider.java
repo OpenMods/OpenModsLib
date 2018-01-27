@@ -332,8 +332,6 @@ public class GameRegistryObjectsProvider {
 	public void registerBlocks(Class<? extends BlockInstances> klazz, IForgeRegistry<Block> blocks, IForgeRegistry<Item> items) {
 		final CachedInstanceFactory<IFixerFactory> fixerFactories = CachedInstanceFactory.create();
 		final DataFixer fixerRegistry = FMLCommonHandler.instance().getDataFixer();
-
-		final Set<Class<? extends TileEntity>> registeredTes = Sets.newHashSet();
 		processAnnotations(klazz, Block.class, RegisterBlock.class, blockFactory,
 				new IAnnotationAccess<RegisterBlock, Block>() {
 					@Override
@@ -390,8 +388,7 @@ public class GameRegistryObjectsProvider {
 
 						setBlockPrefixedId(annotation.unlocalizedName(), id, langDecorator, block::setUnlocalizedName);
 
-						if (teClass != null && !registeredTes.contains(teClass)) {
-							registeredTes.add(teClass);
+						if (teClass != null) {
 							final String teName = new ResourceLocation(modId, id).toString();
 							GameRegistry.registerTileEntity(teClass, teName);
 
@@ -401,13 +398,10 @@ public class GameRegistryObjectsProvider {
 						if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(modContainer, id, teClass, itemBlock);
 
 						for (RegisterTileEntity te : annotation.tileEntities()) {
-							if (!registeredTes.contains(teClass)) {
-								registeredTes.add(teClass);
-								final String teName = new ResourceLocation(modId, te.name()).toString();
-								GameRegistry.registerTileEntity(te.cls(), teName);
+							final String teName = new ResourceLocation(modId, te.name()).toString();
+							GameRegistry.registerTileEntity(te.cls(), teName);
 
-								registerFixer(te.cls());
-							}
+							registerFixer(te.cls());
 						}
 
 						if (annotation.addToModCreativeTab())
