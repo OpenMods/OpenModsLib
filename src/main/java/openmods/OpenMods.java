@@ -70,7 +70,7 @@ public class OpenMods {
 	public static final String MODID = "openmods";
 	public static final String MODNAME = "OpenModsLib";
 	public static final String VERSION = "$LIB-VERSION$";
-	public static final String DEPENDENCIES = "required:forge@[14.23.0.2535,);required-after:openmodscore";
+	public static final String DEPENDENCIES = "required:forge@[14.23.2.2611,);required-after:openmodscore";
 	public static final String GUI_FACTORY = "openmods.GuiFactory";
 	public static final String UPDATE_JSON = "http://openmods.info/versions/openmodslib.json";
 	public static final String CERTIFICATE_FINGERPRINT = "d2a9a8e8440196e26a268d1f3ddc01b2e9c572a5";
