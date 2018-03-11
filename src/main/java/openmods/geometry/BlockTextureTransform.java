@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.Vec3d;
 
 public class BlockTextureTransform {
 
@@ -16,18 +17,6 @@ public class BlockTextureTransform {
 			this.u = u;
 			this.v = v;
 			this.h = h;
-		}
-	}
-
-	public static class WorldCoords {
-		public final double x;
-		public final double y;
-		public final double z;
-
-		public WorldCoords(double x, double y, double z) {
-			this.x = x;
-			this.y = y;
-			this.z = z;
 		}
 	}
 
@@ -145,7 +134,7 @@ public class BlockTextureTransform {
 		return new TexCoords(u, v, h);
 	}
 
-	public WorldCoords textureCoordsToWorldVec(EnumFacing side, double u, double v, double h) {
+	public Vec3d textureCoordsToWorldVec(EnumFacing side, double u, double v, double h) {
 		final Matrix2d transformation = inverseTransforms.get(side);
 		if (transformation == null) throw new IllegalArgumentException(side.toString());
 
@@ -191,7 +180,7 @@ public class BlockTextureTransform {
 				throw new IllegalArgumentException(side.toString());
 		}
 
-		return new WorldCoords(globalX, globalY, globalZ);
+		return new Vec3d(globalX, globalY, globalZ);
 	}
 
 	public static Builder builder() {
