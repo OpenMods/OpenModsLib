@@ -14,7 +14,6 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import openmods.utils.BlockUtils;
 import openmods.utils.CollectionUtils;
 import openmods.utils.CompatibilityUtils;
@@ -170,32 +169,23 @@ public class GenericTank extends FluidTank {
 	}
 
 	private int fillInternal(World world, BlockPos coord, EnumFacing side, int maxDrain) {
-		int drain = 0;
 		final TileEntity otherTank = BlockUtils.getTileInDirection(world, coord, side);
 
 		final EnumFacing drainSide = side.getOpposite();
-		IFluidHandler handler = CompatibilityUtils.getFluidHandler(otherTank, drainSide);
+		final IFluidHandler handler = CompatibilityUtils.getFluidHandler(otherTank, drainSide);
 
 		if (handler != null) {
-			final IFluidTankProperties[] infos = handler.getTankProperties();
-
-			if (infos == null) return 0;
-
-			for (IFluidTankProperties info : infos) {
-				if (filter.canAcceptFluid(info.getContents())) {
-					final FluidStack drained = handler.drain(maxDrain, true);
-
-					if (drained != null) {
-						fill(drained, true);
-						drain += drained.amount;
-						maxDrain -= drained.amount;
-						if (maxDrain <= 0) break;
-					}
+			final FluidStack drained = handler.drain(maxDrain, false);
+			if (drained != null && filter.canAcceptFluid(drained)) {
+				final int filled = fill(drained, true);
+				if (filled > 0) {
+					handler.drain(filled, true);
+					return filled;
 				}
 			}
 		}
 
-		return drain;
+		return 0;
 	}
 
 }
