@@ -12,20 +12,23 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 
 	private static final Random rnd = new Random();
 
+	private final int width;
+
 	private final ItemStack[][] items;
 
 	private final ItemStack[] selectedItems;
 
 	private int changeCountdown = UPDATE_DELAY;
 
-	public GuiComponentCraftingGrid(int x, int y, ItemStack[] items, Icon background) {
-		this(x, y, CollectionUtils.transform(ItemStack[].class, items, input -> new ItemStack[] { input.copy() }), background);
+	public GuiComponentCraftingGrid(int x, int y, ItemStack[] items, int width, Icon background) {
+		this(x, y, CollectionUtils.transform(ItemStack[].class, items, input -> new ItemStack[] { input.copy() }), width, background);
 	}
 
-	public GuiComponentCraftingGrid(int x, int y, ItemStack[][] items, Icon background) {
+	public GuiComponentCraftingGrid(int x, int y, ItemStack[][] items, int width, Icon background) {
 		super(x, y, background);
 		Preconditions.checkNotNull(items, "No items in grid");
 		this.items = items;
+		this.width = width;
 		this.selectedItems = new ItemStack[items.length];
 
 		selectItems();
@@ -55,8 +58,8 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 		for (int i = 0; i < items.length; i++) {
 			ItemStack input = selectedItems[i];
 			if (!input.isEmpty()) {
-				int row = (i % 3);
-				int column = i / 3;
+				int row = i % width;
+				int column = i / width;
 				int itemX = offsetX + gridOffsetX + (row * itemBoxSize);
 				int itemY = offsetY + gridOffsetY + (column * itemBoxSize);
 				drawItemStack(input, x + itemX, y + itemY, "");
