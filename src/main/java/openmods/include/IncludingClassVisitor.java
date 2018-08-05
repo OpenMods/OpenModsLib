@@ -185,6 +185,8 @@ public class IncludingClassVisitor extends ClassVisitor {
 
 	@Override
 	public void visitEnd() {
+		if (methodsToAdd.isEmpty()) throw new StopTransforming();
+
 		final Set<Method> conflicts = Sets.intersection(existingMethods, methodsToAdd.keySet());
 		Set<Method> nonMarked = Sets.difference(conflicts, overrides);
 		Preconditions.checkState(nonMarked.isEmpty(), "%s implements interface methods %s, but they are not marked with @IncludeOverride", clsName, nonMarked);
