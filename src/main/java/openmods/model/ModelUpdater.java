@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -48,13 +49,13 @@ public class ModelUpdater {
 	public static <T extends Enum<T>> ValueConverter<T> enumConverter(Class<T> enumCls) {
 		final ImmutableMap.Builder<String, T> valuesBuilder = ImmutableMap.builder();
 		for (T c : enumCls.getEnumConstants())
-			valuesBuilder.put(c.name().toLowerCase(), c);
+			valuesBuilder.put(c.name().toLowerCase(Locale.ROOT), c);
 
 		final ImmutableMap<String, T> values = valuesBuilder.build();
 
 		return (name, element) -> {
 			final String enumName = JsonUtils.getString(element, name);
-			return values.get(enumName.toLowerCase());
+			return values.get(enumName.toLowerCase(Locale.ROOT));
 		};
 	}
 
