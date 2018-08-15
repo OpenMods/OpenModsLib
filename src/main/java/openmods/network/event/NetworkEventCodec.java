@@ -75,5 +75,6 @@ public class NetworkEventCodec extends MessageToMessageCodec<FMLProxyPacket, Net
 		if (bufferJunkSize > 0) Log.warn("%s junk bytes left in buffer, event %s", bufferJunkSize, event);
 
 		out.add(event);
+		payload.release();
 	}
 }

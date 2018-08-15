@@ -82,6 +82,7 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 		Preconditions.checkState(bufferJunkSize == 0, "%s junk bytes left in buffer, method = %s", bufferJunkSize, method);
 
 		out.add(new RpcCall(target, method, args));
+		input.release();
 	}
 
 	protected EntityPlayer getPlayer(FMLProxyPacket msg) {
