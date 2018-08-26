@@ -36,7 +36,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	private static final String TAG_BLOCK_META = "BlockMeta";
 	private static final String TAG_BLOCK_ID = "BlockId";
 
-	public static final EnumFacing[] PLACE_DIRECTIONS = { EnumFacing.UP, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST, EnumFacing.DOWN };
+	public static final EnumFacing[] PLACE_DIRECTIONS = { EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST, EnumFacing.DOWN, EnumFacing.UP };
 	private static final String TAG_BLOCK_STATE_ID = "BlockState";
 
 	private boolean hasGravity = false;
@@ -178,7 +178,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		// setHeight((float)block.getBlockBoundsMaxY());
 
 		if (world instanceof WorldServer && shouldPlaceBlock()) {
-			final BlockPos dropPos = new BlockPos(posX, posY, posZ);
+			final BlockPos dropPos = new BlockPos(getEntityBoundingBox().getCenter());
 			if (!tryPlaceBlock((WorldServer)world, dropPos)) dropBlock();
 
 			setDead();
@@ -191,10 +191,10 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	private boolean tryPlaceBlock(final WorldServer world, final BlockPos pos) {
 		return FakePlayerPool.instance.executeOnPlayer(world, (PlayerUserReturning<Boolean>)fakePlayer -> {
-			if (tryPlaceBlock(fakePlayer, world, pos, EnumFacing.DOWN)) return true;
+			if (tryPlaceBlock(fakePlayer, world, pos, EnumFacing.UP)) return true;
 
 			for (EnumFacing dir : PLACE_DIRECTIONS) {
-				if (tryPlaceBlock(fakePlayer, world, pos, dir)) return true;
+				if (tryPlaceBlock(fakePlayer, world, pos.offset(dir), dir)) return true;
 			}
 			return false;
 		});
