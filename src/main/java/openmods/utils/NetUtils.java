@@ -1,13 +1,11 @@
 package openmods.utils;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.Set;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.util.IThreadListener;
@@ -35,15 +33,10 @@ public class NetUtils {
 	public static Set<EntityPlayerMP> getPlayersWatchingChunk(WorldServer world, int chunkX, int chunkZ) {
 		final PlayerChunkMapEntry playerChunkMap = world.getPlayerChunkMap().getEntry(chunkX, chunkZ);
 
-		final Set<EntityPlayerMP> playerList = Sets.newHashSet();
-		if (playerChunkMap == null || !playerChunkMap.isSentToPlayers())
-			return playerList;
+		if (playerChunkMap == null)
+			return ImmutableSet.of();
 
-		for (EntityPlayer o : world.playerEntities) {
-			EntityPlayerMP player = (EntityPlayerMP)o;
-			if (playerChunkMap.containsPlayer(player)) playerList.add(player);
-		}
-		return playerList;
+		return ImmutableSet.copyOf(playerChunkMap.getWatchingPlayers());
 	}
 
 	public static Set<EntityPlayerMP> getPlayersWatchingBlock(WorldServer world, int blockX, int blockZ) {

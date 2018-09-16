@@ -389,18 +389,14 @@ public class GameRegistryObjectsProvider {
 						setBlockPrefixedId(annotation.unlocalizedName(), id, langDecorator, block::setUnlocalizedName);
 
 						if (teClass != null) {
-							final String teName = new ResourceLocation(modId, id).toString();
-							GameRegistry.registerTileEntity(teClass, teName);
-
+							GameRegistry.registerTileEntity(teClass, new ResourceLocation(modId, id));
 							registerFixer(teClass);
 						}
 
 						if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(modContainer, id, teClass, itemBlock);
 
 						for (RegisterTileEntity te : annotation.tileEntities()) {
-							final String teName = new ResourceLocation(modId, te.name()).toString();
-							GameRegistry.registerTileEntity(te.cls(), teName);
-
+							GameRegistry.registerTileEntity(te.cls(), new ResourceLocation(modId, te.name()));
 							registerFixer(te.cls());
 						}
 

@@ -8,7 +8,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.network.FMLOutboundHandler.OutboundTarget;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
-import openmods.network.senders.ExtPacketSenderFactory;
 import openmods.network.senders.FmlPacketSenderFactory;
 import openmods.network.senders.IPacketSender;
 import openmods.network.senders.ITargetedPacketSender;
@@ -38,9 +37,9 @@ public abstract class Dispatcher {
 
 		public final ITargetedPacketSender<TargetPoint> point = FmlPacketSenderFactory.createPointSender(serverChannel());
 
-		public final ITargetedPacketSender<DimCoord> block = ExtPacketSenderFactory.createBlockSender(serverChannel());
+		public final ITargetedPacketSender<TargetPoint> block = FmlPacketSenderFactory.createBlockTrackersSender(serverChannel());
 
-		public final ITargetedPacketSender<Entity> entity = ExtPacketSenderFactory.createEntitySender(serverChannel());
+		public final ITargetedPacketSender<Entity> entity = FmlPacketSenderFactory.createEntityTrackersSender(serverChannel());
 
 		public List<Object> serialize(Object msg) {
 			nowhere.sendMessage(msg);

@@ -1,6 +1,7 @@
 package openmods.network.senders;
 
 import io.netty.channel.Channel;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.network.FMLOutboundHandler;
 import net.minecraftforge.fml.common.network.FMLOutboundHandler.OutboundTarget;
@@ -18,6 +19,14 @@ public class FmlPacketSenderFactory {
 
 	public static ITargetedPacketSender<TargetPoint> createPointSender(Channel channel) {
 		return new FmlTargetedPacketSender<>(channel, OutboundTarget.ALLAROUNDPOINT);
+	}
+
+	public static ITargetedPacketSender<TargetPoint> createBlockTrackersSender(Channel channel) {
+		return new FmlTargetedPacketSender<>(channel, OutboundTarget.TRACKING_POINT);
+	}
+
+	public static ITargetedPacketSender<Entity> createEntityTrackersSender(Channel channel) {
+		return new FmlTargetedPacketSender<>(channel, OutboundTarget.TRACKING_ENTITY);
 	}
 
 	public static IPacketSender createSender(Channel channel, OutboundTarget target) {

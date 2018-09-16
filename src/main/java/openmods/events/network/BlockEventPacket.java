@@ -5,7 +5,7 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import openmods.network.DimCoord;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import openmods.network.event.NetworkEvent;
 import openmods.network.event.NetworkEventManager;
 import openmods.utils.WorldUtils;
@@ -46,8 +46,8 @@ public abstract class BlockEventPacket extends NetworkEvent {
 		NetworkEventManager.dispatcher().senders.block.sendMessage(this, getDimCoords());
 	}
 
-	public DimCoord getDimCoords() {
-		return new DimCoord(dimension, blockPos);
+	public TargetPoint getDimCoords() {
+		return new TargetPoint(dimension, blockPos.getX(), blockPos.getY(), blockPos.getZ(), 0);
 	}
 
 	public World getWorld() {

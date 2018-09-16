@@ -11,6 +11,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import openmods.api.IInventoryCallback;
 import openmods.block.BlockRotationMode;
 import openmods.block.IBlockRotationMode;
@@ -18,7 +19,6 @@ import openmods.block.OpenBlock;
 import openmods.geometry.LocalDirections;
 import openmods.geometry.Orientation;
 import openmods.inventory.GenericInventory;
-import openmods.network.DimCoord;
 import openmods.network.rpc.IRpcTarget;
 import openmods.network.rpc.IRpcTargetProvider;
 import openmods.network.rpc.RpcCallDispatcher;
@@ -32,8 +32,8 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	/** Place for TE specific setup. Called once upon creation */
 	public void setup() {}
 
-	public DimCoord getDimCoords() {
-		return new DimCoord(world.provider.getDimension(), pos);
+	public TargetPoint getDimCoords() {
+		return new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 0);
 	}
 
 	public Orientation getOrientation() {
