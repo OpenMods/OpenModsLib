@@ -28,9 +28,9 @@ public abstract class BaseGuiContainer<T extends ContainerBase<?>> extends Compo
 		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 		String machineName = TranslationUtils.translateToLocal(name);
 		int x = this.xSize / 2 - (fontRenderer.getStringWidth(machineName) / 2);
-		fontRenderer.drawString(machineName, x, 6, 4210752);
+		fontRenderer.drawString(machineName, x, 6, 0x404040);
 		String translatedName = TranslationUtils.translateToLocal("container.inventory");
-		fontRenderer.drawString(translatedName, 8, this.ySize - 96 + 2, 4210752);
+		fontRenderer.drawString(translatedName, 8, this.ySize - 96 + 2, 0x404040);
 	}
 
 	public void sendButtonClick(int buttonId) {

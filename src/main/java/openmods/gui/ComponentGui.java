@@ -16,6 +16,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import openmods.gui.component.BaseComposite;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 public abstract class ComponentGui extends GuiContainer {
@@ -88,6 +89,13 @@ public abstract class ComponentGui extends GuiContainer {
 	public void initGui() {
 		super.initGui();
 		root.init(createParent());
+		Keyboard.enableRepeatEvents(true);
+	}
+
+	@Override
+	public void onGuiClosed() {
+		super.onGuiClosed();
+		Keyboard.enableRepeatEvents(false);
 	}
 
 	protected abstract BaseComposite createRoot();
@@ -120,9 +128,13 @@ public abstract class ComponentGui extends GuiContainer {
 	}
 
 	@Override
-	protected void keyTyped(char par1, int par2) throws IOException {
-		super.keyTyped(par1, par2);
-		root.keyTyped(par1, par2);
+	protected void keyTyped(char typedChar, int keyCode) {
+		// no super call!
+		if (keyCode == Keyboard.KEY_ESCAPE) {
+			this.mc.player.closeScreen();
+		} else {
+			root.keyTyped(typedChar, keyCode);
+		}
 	}
 
 	public void preRender(float mouseX, float mouseY) {}
