@@ -20,6 +20,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.util.datafix.FixTypes;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -178,11 +179,15 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		// setHeight((float)block.getBlockBoundsMaxY());
 
 		if (world instanceof WorldServer && shouldPlaceBlock()) {
-			final BlockPos dropPos = new BlockPos(getEntityBoundingBox().getCenter());
-			if (!tryPlaceBlock((WorldServer)world, dropPos)) dropBlock();
+			if (!tryPlaceBlock((WorldServer)world, getDropPos())) dropBlock();
 
 			setDead();
 		}
+	}
+
+	private BlockPos getDropPos() {
+		final AxisAlignedBB r = getEntityBoundingBox();
+		return new BlockPos((r.minX + r.maxX) / 2, (r.minY + r.maxY) / 2, (r.minZ + r.maxZ) / 2);
 	}
 
 	protected boolean shouldPlaceBlock() {
