@@ -353,8 +353,6 @@ public class GameRegistryObjectsProvider {
 						final String id = annotation.id();
 
 						final Class<? extends ItemBlock> itemBlockClass = annotation.itemBlock();
-						Class<? extends TileEntity> teClass = annotation.tileEntity();
-						if (teClass == TileEntity.class) teClass = null;
 
 						final Set<String> legacyIds = Sets.newHashSet(annotation.legacyIds());
 
@@ -386,17 +384,22 @@ public class GameRegistryObjectsProvider {
 
 						setBlockPrefixedId(annotation.unlocalizedName(), id, langDecorator, block::setUnlocalizedName);
 
-						if (teClass != null) {
-							GameRegistry.registerTileEntity(teClass, new ResourceLocation(modId, id));
-							registerFixer(teClass);
+						Class<? extends TileEntity> mainTeClass = null;
+						final Class<? extends TileEntity> teClass = annotation.tileEntity();
+						if (teClass != TileEntity.class) {
+							registerTileEntity(new ResourceLocation(modId, id), teClass);
+							mainTeClass = teClass;
 						}
-
-						if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(modContainer, id, teClass, itemBlock);
 
 						for (RegisterTileEntity te : annotation.tileEntities()) {
-							GameRegistry.registerTileEntity(te.cls(), new ResourceLocation(modId, te.name()));
-							registerFixer(te.cls());
+							registerTileEntity(new ResourceLocation(modId, te.name()), te.cls());
+							if (te.main()) {
+								Preconditions.checkState(mainTeClass == null, "Multiple main TEs");
+								mainTeClass = te.cls();
+							}
 						}
+
+						if (block instanceof IRegisterableBlock) ((IRegisterableBlock)block).setupBlock(modContainer, id, mainTeClass, itemBlock);
 
 						if (annotation.addToModCreativeTab())
 							block.setCreativeTab(creativeTab());
@@ -411,6 +414,16 @@ public class GameRegistryObjectsProvider {
 							if (annotation.registerDefaultItemModel()) {
 								itemModelIds.put(itemBlock, itemLocation);
 							}
+						}
+					}
+
+					private void registerTileEntity(ResourceLocation id, Class<? extends TileEntity> cls) {
+						ResourceLocation oldTeId = TileEntity.getKey(cls);
+						if (oldTeId == null) {
+							GameRegistry.registerTileEntity(cls, id);
+							registerFixer(cls);
+						} else {
+							Preconditions.checkState(oldTeId.equals(id), "Duplicate TE class %s registration: %s -> %s", cls, oldTeId, id);
 						}
 					}
 

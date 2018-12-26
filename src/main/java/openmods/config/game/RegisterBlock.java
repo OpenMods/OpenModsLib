@@ -19,6 +19,8 @@ public @interface RegisterBlock {
 		public String name();
 
 		public Class<? extends TileEntity> cls();
+
+		public boolean main() default false;
 	}
 
 	// if left default, will use field type
