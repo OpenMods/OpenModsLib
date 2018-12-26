@@ -201,8 +201,6 @@ public class GameRegistryObjectsProvider {
 				targetCls = fieldType;
 			}
 
-			Preconditions.checkState(targetCls != baseClass, "Invalid field %s type - got base class", f);
-
 			String name = annotationAccess.getEntryId(annotation);
 			if (!annotationAccess.isEnabled(name)) {
 				Log.info("Object %s (from field %s) is disabled", name, f);
