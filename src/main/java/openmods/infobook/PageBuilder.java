@@ -65,6 +65,8 @@ public class PageBuilder {
 
 	private List<ItemStackTocPage> tocPages;
 
+	private final Set<String> alreadyAdded = Sets.newHashSet();
+
 	protected String getMediaLink(String modId, String type, String id) {
 		final String lang = OpenMods.proxy.getLanguage().or("unknown");
 		return "https://videos.openmods.info/" + lang + "/tutorial." + modId + "." + type + "." + id;
@@ -142,6 +144,8 @@ public class PageBuilder {
 	}
 
 	private void addPage(String id, String modId, String type, boolean hasVideo, @Nonnull ItemStack stack) {
+		if (!alreadyAdded.add(type + ":" + modId + ":" + id)) return;
+
 		final String nameKey = getTranslationKey(id, modId, type, "name");
 		final String descriptionKey = getTranslationKey(id, modId, type, "description");
 

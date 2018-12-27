@@ -24,12 +24,12 @@ public enum ColorMeta implements IStringSerializable {
 	BLUE("blue", 0x253192, EnumDyeColor.BLUE),
 	PURPLE("purple", 0x7B2FBE, EnumDyeColor.PURPLE),
 	CYAN("cyan", 0x287697, EnumDyeColor.CYAN),
-	LIGHT_GRAY("lightGray", "silver", 0xABABAB, EnumDyeColor.SILVER),
+	LIGHT_GRAY("lightGray", "light_gray", "silver", 0xABABAB, EnumDyeColor.SILVER),
 	GRAY("gray", 0x434343, EnumDyeColor.GRAY),
 	PINK("pink", 0xD88198, EnumDyeColor.PINK),
 	LIME("lime", 0x41CD34, EnumDyeColor.LIME),
 	YELLOW("yellow", 0xDECF2A, EnumDyeColor.YELLOW),
-	LIGHT_BLUE("lightBlue", "light_blue", 0x6689D3, EnumDyeColor.LIGHT_BLUE),
+	LIGHT_BLUE("lightBlue", "light_blue", "light_blue", 0x6689D3, EnumDyeColor.LIGHT_BLUE),
 	MAGENTA("magenta", 0xC354CD, EnumDyeColor.MAGENTA),
 	ORANGE("orange", 0xEB8844, EnumDyeColor.ORANGE),
 	WHITE("white", 0xF0F0F0, EnumDyeColor.WHITE);
@@ -42,6 +42,7 @@ public enum ColorMeta implements IStringSerializable {
 	public final int bitmask;
 	public final String oreName;
 	public final String name;
+	public final String id;
 	public final String unlocalizedName;
 	public final String textureName;
 	public final RGB rgbWrap;
@@ -58,10 +59,11 @@ public enum ColorMeta implements IStringSerializable {
 	}
 
 	private ColorMeta(String name, int rgb, EnumDyeColor vanilla) {
-		this(name, name, rgb, vanilla);
+		this(name, name, name, rgb, vanilla);
 	}
 
-	private ColorMeta(String name, String textureName, int rgb, EnumDyeColor vanilla) {
+	private ColorMeta(String name, String id, String textureName, int rgb, EnumDyeColor vanilla) {
+		this.id = id;
 		this.oreName = "dye" + WordUtils.capitalize(name);
 		this.oreId = OreDictionary.getOreID(oreName);
 		this.textureName = textureName;
