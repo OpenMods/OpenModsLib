@@ -90,92 +90,97 @@ public class OpenModsClassTransformer implements IClassTransformer {
 	}
 
 	public void addConfigValues(ConfigProcessor config) {
-		config.addEntry("activate_player_render_hook", 0, "true", new ConfigOption("player_render_hook") {
-			@Override
-			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.client.renderer.entity.RenderPlayer", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
+		config.addEntry("activate_player_render_hook", 0, "true",
+				new ConfigOption("player_render_hook") {
 					@Override
-					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.debug("Trying to apply player render hook (class: %s)", name);
-						state.update(TransformerState.ACTIVATED);
-						return new PlayerRendererHookVisitor(name, cv, createResultListener(state));
+					protected void onActivate(final StateUpdater<TransformerState> state) {
+						vanillaPatches.put("net.minecraft.client.renderer.entity.RenderPlayer", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
+							@Override
+							public ClassVisitor createVisitor(String name, ClassVisitor cv) {
+								Log.debug("Trying to apply player render hook (class: %s)", name);
+								state.update(TransformerState.ACTIVATED);
+								return new PlayerRendererHookVisitor(name, cv, createResultListener(state));
+							}
+						});
 					}
-				});
-			}
-		},
+				},
 				"Purpose: add hook to player rendering code",
 				"Modified class: net.minecraft.client.renderer.entity.RenderPlayer",
 				"Known users: OpenBlocks hangglider",
 				"When disabled: code may fallback to less compatible mechanism (like replacing renderer)");
 
-		config.addEntry("hook_pre_world_rendering", 0, "true", new ConfigOption("pre_world_render_hook") {
-			@Override
-			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.client.renderer.EntityRenderer", new TransformProvider(0) {
+		config.addEntry("hook_pre_world_rendering", 0, "true",
+				new ConfigOption("pre_world_render_hook") {
 					@Override
-					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.debug("Trying to patch EntityRenderer (class: %s)", name);
-						state.update(TransformerState.ACTIVATED);
-						return new PreWorldRenderHookVisitor(name, cv, createResultListener(state));
+					protected void onActivate(final StateUpdater<TransformerState> state) {
+						vanillaPatches.put("net.minecraft.client.renderer.EntityRenderer", new TransformProvider(0) {
+							@Override
+							public ClassVisitor createVisitor(String name, ClassVisitor cv) {
+								Log.debug("Trying to patch EntityRenderer (class: %s)", name);
+								state.update(TransformerState.ACTIVATED);
+								return new PreWorldRenderHookVisitor(name, cv, createResultListener(state));
+							}
+						});
 					}
-				});
-			}
 
-		},
+				},
 				"Purpose: hook in world rendering, triggered between sky and terrain",
 				"Modified class: net.minecraft.client.renderer.EntityRenderer",
 				"Known users: Sky block",
 				"When disabled: Sky block will not render properly");
 
-		config.addEntry("horse_base_null_fix", 0, "true", new ConfigOption("horse_base_null_fix") {
-			@Override
-			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.entity.passive.AbstractHorse", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
+		config.addEntry("horse_base_null_fix", 0, "true",
+				new ConfigOption("horse_base_null_fix") {
 					@Override
-					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.debug("Trying to patch AbstractHorse (class: %s)", name);
-						state.update(TransformerState.ACTIVATED);
-						return new HorseNullFix.Base(name, cv, createResultListener(state));
+					protected void onActivate(final StateUpdater<TransformerState> state) {
+						vanillaPatches.put("net.minecraft.entity.passive.AbstractHorse", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
+							@Override
+							public ClassVisitor createVisitor(String name, ClassVisitor cv) {
+								Log.debug("Trying to patch AbstractHorse (class: %s)", name);
+								state.update(TransformerState.ACTIVATED);
+								return new HorseNullFix.Base(name, cv, createResultListener(state));
+							}
+						});
 					}
-				});
-			}
-		},
+				},
 				"Purpose: prevent NPE when creating horse without world",
 				"Modified class: net.minecraft.entity.passive.AbstractHorse",
 				"Known users: Trophy",
 				"When disabled: Trophy for any horse variant cannot be rendered");
 
-		config.addEntry("horse_null_fix", 0, "true", new ConfigOption("horse_null_fix") {
-			@Override
-			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.entity.passive.EntityHorse", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
+		config.addEntry("horse_null_fix", 0, "true",
+				new ConfigOption("horse_null_fix") {
 					@Override
-					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.debug("Trying to patch EntityHorse (class: %s)", name);
-						state.update(TransformerState.ACTIVATED);
-						return new HorseNullFix.Horse(name, cv, createResultListener(state));
+					protected void onActivate(final StateUpdater<TransformerState> state) {
+						vanillaPatches.put("net.minecraft.entity.passive.EntityHorse", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
+							@Override
+							public ClassVisitor createVisitor(String name, ClassVisitor cv) {
+								Log.debug("Trying to patch EntityHorse (class: %s)", name);
+								state.update(TransformerState.ACTIVATED);
+								return new HorseNullFix.Horse(name, cv, createResultListener(state));
+							}
+						});
 					}
-				});
-			}
-		},
+				},
 				"Purpose: prevent NPE when creating horse without world",
 				"Modified class: net.minecraft.entity.passive.EntityHorse",
 				"Known users: Trophy",
 				"When disabled: Horse trophy cannot be rendered");
 
-		config.addEntry("llama_null_fix", 0, "true", new ConfigOption("llama_null_fix") {
-			@Override
-			protected void onActivate(final StateUpdater<TransformerState> state) {
-				vanillaPatches.put("net.minecraft.entity.passive.EntityLlama", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
+		config.addEntry("llama_null_fix", 0, "true",
+				new ConfigOption("llama_null_fix") {
 					@Override
-					public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-						Log.debug("Trying to patch EntityLlama (class: %s)", name);
-						state.update(TransformerState.ACTIVATED);
-						return new HorseNullFix.Llama(name, cv, createResultListener(state));
+					protected void onActivate(final StateUpdater<TransformerState> state) {
+						vanillaPatches.put("net.minecraft.entity.passive.EntityLlama", new TransformProvider(ClassWriter.COMPUTE_FRAMES) {
+							@Override
+							public ClassVisitor createVisitor(String name, ClassVisitor cv) {
+								Log.debug("Trying to patch EntityLlama (class: %s)", name);
+								state.update(TransformerState.ACTIVATED);
+								return new HorseNullFix.Llama(name, cv, createResultListener(state));
+							}
+						});
 					}
-				});
-			}
-		},
+				},
 				"Purpose: prevent NPE when creating llama without world",
 				"Modified class: net.minecraft.entity.passive.EntityLlama",
 				"Known users: Trophy",

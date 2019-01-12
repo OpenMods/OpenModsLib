@@ -85,7 +85,8 @@ public class GuiComponentPalettePicker extends BaseComponent {
 
 		int ry = by;
 
-		OUTER: for (int column = 0; column < columnCount; column++) {
+		OUTER:
+		for (int column = 0; column < columnCount; column++) {
 			final int ny = ry + areaSize;
 			int rx = bx;
 

@@ -273,7 +273,6 @@ public enum BlockRotationMode implements IBlockRotationMode {
 			Orientation.XP_YP, Orientation.XN_YP, Orientation.ZP_YP, Orientation.ZN_YP,
 			Orientation.YP_XN, Orientation.YN_XN, Orientation.ZP_XN, Orientation.ZN_XN,
 			Orientation.XP_ZN, Orientation.XN_ZN, Orientation.YP_ZN, Orientation.YN_ZN) {
-
 		@Override
 		public Orientation getOrientationFacing(EnumFacing side) {
 			switch (side) {
@@ -340,7 +339,6 @@ public enum BlockRotationMode implements IBlockRotationMode {
 			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.NEG_Z),
 			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_X),
 			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.NEG_X)) {
-
 		public Orientation directionToOrientation(EnumFacing localTop) {
 			switch (localTop) {
 				case DOWN:

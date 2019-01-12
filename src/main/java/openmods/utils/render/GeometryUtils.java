@@ -160,15 +160,18 @@ public class GeometryUtils {
 		final double invRadiusZ = 1.0 / (radiusZ + 0.5);
 
 		double nextXn = 0;
-		forX: for (int x = 0; x <= radiusX; ++x) {
+		forX:
+		for (int x = 0; x <= radiusX; ++x) {
 			final double xn = nextXn;
 			nextXn += invRadiusX;
 			double nextYn = 0;
-			forY: for (int y = 0; y <= radiusY; ++y) {
+			forY:
+			for (int y = 0; y <= radiusY; ++y) {
 				final double yn = nextYn;
 				nextYn += invRadiusY;
 				double nextZn = 0;
-				forZ: for (int z = 0; z <= radiusZ; ++z) {
+				forZ:
+				for (int z = 0; z <= radiusZ; ++z) {
 					final double zn = nextZn;
 					nextZn += invRadiusZ;
 
@@ -252,11 +255,13 @@ public class GeometryUtils {
 		final List<Quadrant> quadrantsList = ImmutableList.copyOf(quadrants);
 
 		double nextXn = 0;
-		forX: for (int x = 0; x <= radiusX; ++x) {
+		forX:
+		for (int x = 0; x <= radiusX; ++x) {
 			final double xn = nextXn;
 			nextXn += invRadiusX;
 			double nextZn = 0;
-			forZ: for (int z = 0; z <= radiusZ; ++z) {
+			forZ:
+			for (int z = 0; z <= radiusZ; ++z) {
 				final double zn = nextZn;
 				nextZn += invRadiusZ;
 

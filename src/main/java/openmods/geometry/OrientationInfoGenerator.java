@@ -245,9 +245,7 @@ public class OrientationInfoGenerator {
 			for (Orientation o : Orientation.VALUES) {
 				out.println(String.format("%s = %s -> x=%s,y=%s,z=%s -> XY: %s, XYZ: %s", o.name(), o, o.x.dir, o.y.dir, o.z.dir, vanilla.get(o), sorted(xyz.get(o))));
 			}
-		} finally
-
-		{
+		} finally {
 			IOUtils.closeQuietly(out);
 		}
 	}

@@ -84,7 +84,8 @@ public class ItemMover {
 	// extracted for testing
 	static int pullToSlot(IItemHandler target, int targetSlot, int maxSize, Iterable<IItemHandler> sources) {
 		int transferedAmount = 0;
-		MAIN: for (IItemHandler source : sources) {
+		MAIN:
+		for (IItemHandler source : sources) {
 			for (int sourceSlot = 0; sourceSlot < source.getSlots(); sourceSlot++) {
 				final ItemStack stackToPull = source.getStackInSlot(sourceSlot);
 				if (stackToPull.isEmpty()) continue;
@@ -116,7 +117,8 @@ public class ItemMover {
 	// extracted for testing
 	static int pushFromSlot(IItemHandler source, int sourceSlot, int maxSize, Iterable<IItemHandler> targets) {
 		int transferedAmount = 0;
-		MAIN: for (IItemHandler target : targets) {
+		MAIN:
+		for (IItemHandler target : targets) {
 			ItemStack stackToPush = source.getStackInSlot(sourceSlot);
 			for (int targetSlot = 0; targetSlot < target.getSlots(); targetSlot++) {
 				if (stackToPush.isEmpty()) break MAIN;

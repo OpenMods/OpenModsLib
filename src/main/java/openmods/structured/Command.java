@@ -79,6 +79,7 @@ public abstract class Command {
 			}
 		},
 		END { // must be last!
+
 			@Override
 			public EmptyCommand create() {
 				return END_INST;
