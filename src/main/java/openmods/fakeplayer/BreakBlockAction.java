@@ -124,7 +124,6 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 
 	private boolean removeBlock(EntityPlayer player, BlockPos pos, IBlockState state, boolean canHarvest) {
 		final Block block = state.getBlock();
-		block.onBlockHarvested(worldObj, pos, state, player);
 		final boolean result = block.removedByPlayer(state, worldObj, pos, player, canHarvest);
 		if (result) block.onBlockDestroyedByPlayer(worldObj, pos, state);
 		return result;
@@ -134,7 +133,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 	public List<EntityItem> usePlayer(OpenModsFakePlayer fakePlayer) {
 		if (!worldObj.isBlockModifiable(fakePlayer, blockPos)) return Lists.newArrayList();
 
-		// this mirrors ItemInWorldManager.tryHarvestBlock
+		// this mirrors PlayerInteractionManager.tryHarvestBlock
 		final IBlockState state = worldObj.getBlockState(blockPos);
 
 		fakePlayer.inventory.currentItem = 0;
