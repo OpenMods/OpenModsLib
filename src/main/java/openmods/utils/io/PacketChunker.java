@@ -63,8 +63,6 @@ public class PacketChunker {
 	 * (and we're waiting for more to complete the sequence), we return null.
 	 * Otherwise we return the full byte array
 	 *
-	 * @param payload
-	 *            one of the chunks
 	 * @return the full byte array or null if not complete
 	 */
 	public synchronized byte[] consumeChunk(DataInput input, int payloadLength) throws IOException {

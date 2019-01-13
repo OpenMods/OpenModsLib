@@ -19,7 +19,7 @@ public class ConfigProcessing {
 		public final Class<?> configClass;
 		public final String modId;
 
-		private Table<String, String, ConfigPropertyMeta> properties = HashBasedTable.create();
+		private final Table<String, String, ConfigPropertyMeta> properties = HashBasedTable.create();
 
 		private ModConfig(String modId, Configuration config, Class<?> configClass) {
 			this.modId = modId;

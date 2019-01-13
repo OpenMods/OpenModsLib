@@ -5,9 +5,9 @@ import net.minecraft.util.ResourceLocation;
 
 public interface ICustomItemModelProvider {
 
-	public interface IModelRegistrationSink {
-		public void register(int meta, ResourceLocation modelLocation);
+	interface IModelRegistrationSink {
+		void register(int meta, ResourceLocation modelLocation);
 	}
 
-	public void addCustomItemModels(Item item, ResourceLocation itemId, IModelRegistrationSink modelsOut);
+	void addCustomItemModels(Item item, ResourceLocation itemId, IModelRegistrationSink modelsOut);
 }

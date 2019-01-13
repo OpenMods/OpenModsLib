@@ -6,7 +6,7 @@ import net.minecraftforge.fml.relauncher.IFMLCallHook;
 public class OpenModsHook implements IFMLCallHook {
 
 	@Override
-	public Void call() throws Exception {
+	public Void call() {
 		return null;
 	}
 

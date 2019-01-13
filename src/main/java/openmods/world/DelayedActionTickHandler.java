@@ -17,7 +17,7 @@ public class DelayedActionTickHandler {
 
 	private DelayedActionTickHandler() {}
 
-	private Map<Integer, Queue<Runnable>> callbacks = Maps.newHashMap();
+	private final Map<Integer, Queue<Runnable>> callbacks = Maps.newHashMap();
 
 	private Queue<Runnable> getWorldQueue(int worldId) {
 		synchronized (callbacks) {

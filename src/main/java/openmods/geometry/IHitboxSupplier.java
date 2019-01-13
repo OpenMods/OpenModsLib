@@ -5,8 +5,8 @@ import java.util.Map;
 
 public interface IHitboxSupplier {
 
-	public List<Hitbox> asList();
+	List<Hitbox> asList();
 
-	public Map<String, Hitbox> asMap();
+	Map<String, Hitbox> asMap();
 
 }

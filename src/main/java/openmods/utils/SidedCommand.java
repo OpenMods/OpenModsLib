@@ -33,6 +33,6 @@ public abstract class SidedCommand implements ICommand {
 
 	@Override
 	public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-		return restricted? sender.canUseCommand(4, name) : true;
+		return !restricted || sender.canUseCommand(4, name);
 	}
 }

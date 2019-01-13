@@ -30,14 +30,14 @@ public class ArraysHelper {
 		return methods;
 	}
 
-	public static interface IArrayMethods {
-		public int glGenVertexArrays();
+	public interface IArrayMethods {
+		int glGenVertexArrays();
 
-		public void glBindVertexArray(int array);
+		void glBindVertexArray(int array);
 
-		public void glVertexAttribDivisor(int index, int divisor);
+		void glVertexAttribDivisor(int index, int divisor);
 
-		public void glDrawArraysInstanced(int mode, int first, int count, int primcount);
+		void glDrawArraysInstanced(int mode, int first, int count, int primcount);
 	}
 
 	private static class GLArrayMethods implements IArrayMethods {

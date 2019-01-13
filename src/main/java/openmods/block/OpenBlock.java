@@ -116,7 +116,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 		public final Class<?> intf;
 
-		private TileEntityCapability(Class<?> intf) {
+		TileEntityCapability(Class<?> intf) {
 			this.intf = intf;
 		}
 	}
@@ -363,14 +363,14 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return teClass != null;
 	}
 
-	public final static boolean isNeighborBlockSolid(IBlockAccess world, BlockPos blockPos, EnumFacing side) {
+	public static boolean isNeighborBlockSolid(IBlockAccess world, BlockPos blockPos, EnumFacing side) {
 		final BlockPos pos = blockPos.offset(side);
 		final IBlockState state = world.getBlockState(pos);
 		return isExceptionBlockForAttaching(state.getBlock()) ||
 				state.getBlockFaceShape(world, pos, side.getOpposite()) == BlockFaceShape.SOLID;
 	}
 
-	public final static boolean areNeighborBlocksSolid(World world, BlockPos blockPos, EnumFacing... sides) {
+	public static boolean areNeighborBlocksSolid(World world, BlockPos blockPos, EnumFacing... sides) {
 		for (EnumFacing side : sides) {
 			if (isNeighborBlockSolid(world, blockPos, side))
 				return true;
@@ -449,7 +449,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		if (hasTileEntity) {
 			super.eventReceived(state, world, blockPos, eventId, eventParam);
 			TileEntity te = world.getTileEntity(blockPos);
-			return te != null? te.receiveClientEvent(eventId, eventParam) : false;
+			return te != null && te.receiveClientEvent(eventId, eventParam);
 		} else {
 			return super.eventReceived(state, world, blockPos, eventId, eventParam);
 		}

@@ -26,7 +26,7 @@ import openmods.Log;
 public class ConfigProcessor {
 
 	public interface UpdateListener {
-		public void valueSet(String value);
+		void valueSet(String value);
 	}
 
 	private static class EntryMeta {
@@ -55,7 +55,7 @@ public class ConfigProcessor {
 		}
 	}
 
-	private Map<String, EntryMeta> entries = Maps.newHashMap();
+	private final Map<String, EntryMeta> entries = Maps.newHashMap();
 
 	public void addEntry(String name, int version, String defaultValue, UpdateListener listener, String... comment) {
 		Preconditions.checkNotNull(listener);
@@ -130,40 +130,22 @@ public class ConfigProcessor {
 	}
 
 	private static void writeFile(File output, Map<String, EntryMeta> values) {
-		try {
-			OutputStream stream = new FileOutputStream(output);
-
-			try {
-				Writer writer = new OutputStreamWriter(stream, Charsets.UTF_8);
-
-				try {
-					Gson gson = new GsonBuilder().setPrettyPrinting().create();
-					gson.toJson(values, writer);
-				} finally {
-					writer.close();
-				}
-
-			} finally {
-				stream.close();
-			}
+		try (OutputStream stream = new FileOutputStream(output);
+				Writer writer = new OutputStreamWriter(stream, Charsets.UTF_8)) {
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			gson.toJson(values, writer);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+
 	}
 
 	private static Map<String, EntryMeta> readFile(File input) {
 		if (!input.exists()) return null;
-		try {
-			InputStream stream = new FileInputStream(input);
-
-			try {
-				Reader reader = new InputStreamReader(stream, Charsets.UTF_8);
-				Gson gson = new Gson();
-				return gson.fromJson(reader, EntryCollection.class);
-
-			} finally {
-				stream.close();
-			}
+		try (InputStream stream = new FileInputStream(input)) {
+			Reader reader = new InputStreamReader(stream, Charsets.UTF_8);
+			Gson gson = new Gson();
+			return gson.fromJson(reader, EntryCollection.class);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

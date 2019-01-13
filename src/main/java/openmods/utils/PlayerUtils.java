@@ -9,7 +9,7 @@ public class PlayerUtils {
 
 		NBTTagCompound tag = player.getEntityData();
 
-		NBTTagCompound persistTag = null;
+		final NBTTagCompound persistTag;
 		if (tag.hasKey(EntityPlayer.PERSISTED_NBT_TAG)) {
 			persistTag = tag.getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG);
 		} else {
@@ -17,7 +17,7 @@ public class PlayerUtils {
 			tag.setTag(EntityPlayer.PERSISTED_NBT_TAG, persistTag);
 		}
 
-		NBTTagCompound modTag = null;
+		final NBTTagCompound modTag;
 		if (persistTag.hasKey(modName)) {
 			modTag = persistTag.getCompoundTag(modName);
 		} else {

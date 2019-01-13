@@ -10,7 +10,7 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 public class ItemTextureCapability {
 
 	@CapabilityInject(IItemTexture.class)
-	public static Capability<IItemTexture> CAPABILITY = null;
+	public static Capability<IItemTexture> CAPABILITY;
 
 	public static void register() {
 		CapabilityManager.INSTANCE.register(IItemTexture.class, new Capability.IStorage<IItemTexture>() {

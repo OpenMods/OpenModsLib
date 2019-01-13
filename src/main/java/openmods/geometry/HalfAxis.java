@@ -18,7 +18,7 @@ public enum HalfAxis {
 
 	public final String shortName;
 
-	private HalfAxis(String shortName, EnumFacing dir) {
+	HalfAxis(String shortName, EnumFacing dir) {
 		this.x = dir.getFrontOffsetX();
 		this.y = dir.getFrontOffsetY();
 		this.z = dir.getFrontOffsetZ();

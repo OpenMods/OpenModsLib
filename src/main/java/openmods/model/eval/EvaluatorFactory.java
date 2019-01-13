@@ -115,14 +115,14 @@ public class EvaluatorFactory {
 
 	private interface ExprFactory {
 
-		public NumericExpr createNumericExpr(List<Node> children, Scope scope);
+		NumericExpr createNumericExpr(List<Node> children, Scope scope);
 
-		public BooleanExpr createBooleanExpr(List<Node> children, Scope scope);
+		BooleanExpr createBooleanExpr(List<Node> children, Scope scope);
 
 	}
 
 	private interface NodeOp extends ExprFactory {
-		public String toString(List<Node> children);
+		String toString(List<Node> children);
 	}
 
 	private static BooleanExpr noBooleanValue() {
@@ -850,8 +850,8 @@ public class EvaluatorFactory {
 		}
 	}
 
-	private static BooleanExpr EXPR_TRUE = new BooleanConstExpr(true);
-	private static BooleanExpr EXPR_FALSE = new BooleanConstExpr(false);
+	private static final BooleanExpr EXPR_TRUE = new BooleanConstExpr(true);
+	private static final BooleanExpr EXPR_FALSE = new BooleanConstExpr(false);
 
 	private static class BooleanConstExpr extends BooleanExpr {
 		private final Optional<Boolean> maybeValue;
@@ -1079,21 +1079,21 @@ public class EvaluatorFactory {
 
 	@FunctionalInterface
 	public interface IClipProvider {
-		public Optional<? extends IClip> get(String name);
+		Optional<? extends IClip> get(String name);
 	}
 
-	private static interface ITransformExecutor {
-		public TRSRTransformation apply(TRSRTransformation initial, IJoint joint, Map<String, Float> args);
+	private interface ITransformExecutor {
+		TRSRTransformation apply(TRSRTransformation initial, IJoint joint, Map<String, Float> args);
 	}
 
-	private static interface IValueExecutor {
-		public void apply(Map<String, Float> args);
+	private interface IValueExecutor {
+		void apply(Map<String, Float> args);
 	}
 
 	private interface IStatement {
-		public ITransformExecutor bind(IClipProvider provider);
+		ITransformExecutor bind(IClipProvider provider);
 
-		public IValueExecutor free();
+		IValueExecutor free();
 	}
 
 	private static class AssignStatement implements IStatement {
@@ -1594,8 +1594,7 @@ public class EvaluatorFactory {
 				return new BooleanExpr() {
 					@Override
 					public boolean evaluate(Map<String, Float> args) {
-						final float value = arg.evaluate(args);
-						return value == 0? false : true;
+						return arg.evaluate(args) != 0;
 					}
 				};
 			}

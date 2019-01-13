@@ -15,11 +15,11 @@ import openmods.Log;
 public class FakePlayerPool {
 
 	public interface PlayerUser {
-		public void usePlayer(OpenModsFakePlayer fakePlayer);
+		void usePlayer(OpenModsFakePlayer fakePlayer);
 	}
 
 	public interface PlayerUserReturning<T> {
-		public T usePlayer(OpenModsFakePlayer fakePlayer);
+		T usePlayer(OpenModsFakePlayer fakePlayer);
 	}
 
 	private static PlayerUserReturning<Void> wrap(final PlayerUser user) {

@@ -64,10 +64,7 @@ public abstract class ConfigPropertyMeta {
 		this.onLine = mod != null;
 
 		String name = annotation.name();
-		String category = annotation.category();
-
 		if (Strings.isNullOrEmpty(name)) name = field.getName();
-		if (Strings.isNullOrEmpty(category)) category = null;
 
 		this.name = name;
 		this.field = field;
@@ -120,7 +117,7 @@ public abstract class ConfigPropertyMeta {
 		}
 	}
 
-	protected abstract Class<? extends Object> getFieldType();
+	protected abstract Class<?> getFieldType();
 
 	protected abstract Property getProperty(Configuration configFile, Type expectedType, Object defaultValue);
 
@@ -174,7 +171,7 @@ public abstract class ConfigPropertyMeta {
 		}
 
 		@Override
-		protected Class<? extends Object> getFieldType() {
+		protected Class<?> getFieldType() {
 			return field.getType();
 		}
 
@@ -226,7 +223,7 @@ public abstract class ConfigPropertyMeta {
 		}
 
 		@Override
-		protected Class<? extends Object> getFieldType() {
+		protected Class<?> getFieldType() {
 			return field.getType().getComponentType();
 		}
 

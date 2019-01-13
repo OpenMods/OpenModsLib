@@ -12,7 +12,7 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 
 	private static final int HANDLE_SIZE = 8;
 
-	private int width;
+	private final int width;
 	private final double min;
 	private final double max;
 	private final int steps;

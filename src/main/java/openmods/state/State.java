@@ -50,7 +50,7 @@ public class State {
 			return this;
 
 		final State newState = this.neighbours.get(property, newValue);
-		Preconditions.checkArgument(value != null, "Cannot set property %s to value %s", property, newValue);
+		Preconditions.checkArgument(newState != null, "Cannot set property %s to value %s", property, newValue);
 		return newState;
 
 	}

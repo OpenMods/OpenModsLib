@@ -19,12 +19,12 @@ public class GuiComponentBook extends BaseComposite {
 	public static final Icon iconPrevHover = Icon.createSheetIcon(PageBase.BOOK_TEXTURE, 80, 226, 18, 10);
 	public static final Icon iconNextHover = Icon.createSheetIcon(PageBase.BOOK_TEXTURE, 80, 213, 18, 10);
 
-	private GuiComponentSpriteButton imgPrev;
-	private GuiComponentSpriteButton imgNext;
-	private GuiComponentLabel pageNumberLeft;
-	private GuiComponentLabel pageNumberRight;
+	private final GuiComponentSpriteButton imgPrev;
+	private final GuiComponentSpriteButton imgNext;
+	private final GuiComponentLabel pageNumberLeft;
+	private final GuiComponentLabel pageNumberRight;
 
-	public List<BaseComponent> pages;
+	public final List<BaseComponent> pages;
 
 	private int index = 0;
 

@@ -26,11 +26,11 @@ import openmods.model.BakedModelAdapter;
 
 public class BakedEvalModel extends BakedModelAdapter {
 
-	private IModel model;
-	private IModelState originalState;
-	private VertexFormat format;
-	private Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter;
-	private ITransformEvaluator evaluator;
+	private final IModel model;
+	private final IModelState originalState;
+	private final VertexFormat format;
+	private final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter;
+	private final ITransformEvaluator evaluator;
 
 	public BakedEvalModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, ITransformEvaluator evaluator) {
 		super(model.bake(state, format, bakedTextureGetter), PerspectiveMapWrapper.getTransforms(state));
@@ -48,7 +48,7 @@ public class BakedEvalModel extends BakedModelAdapter {
 
 	private final CacheLoader<Map<String, Float>, IBakedModel> loader = new CacheLoader<Map<String, Float>, IBakedModel>() {
 		@Override
-		public IBakedModel load(final Map<String, Float> key) throws Exception {
+		public IBakedModel load(final Map<String, Float> key) {
 			final IModelState clipTransform = part -> {
 				if (!part.isPresent()) return Optional.empty();
 

@@ -19,8 +19,8 @@ public class MiscUtils {
 
 	public static int getHoliday() {
 		Calendar today = Calendar.getInstance();
-		int month = today.get(2);
-		int day = today.get(5);
+		int month = today.get(Calendar.MONTH);
+		int day = today.get(Calendar.DAY_OF_MONTH);
 		if ((month == 1) && (day == 14)) { return 1; }
 		if ((month == 9) && (day == 31)) { return 2; }
 		if ((month == 11) && (day >= 24) && (day <= 30)) { return 3; }
@@ -49,7 +49,7 @@ public class MiscUtils {
 
 	public static String[] loadTextFromURL(URL url, String[] defaultValue, int timeoutMS) {
 		List<String> arraylist = new ArrayList<>();
-		Scanner scanner = null;
+		Scanner scanner;
 		try {
 			URLConnection uc = url.openConnection();
 			uc.setReadTimeout(timeoutMS);
@@ -64,7 +64,7 @@ public class MiscUtils {
 			arraylist.add(scanner.nextLine());
 		}
 		scanner.close();
-		return arraylist.toArray(new String[arraylist.size()]);
+		return arraylist.toArray(new String[0]);
 	}
 
 	public static RuntimeException unhandledEnum(Enum<?> e) {

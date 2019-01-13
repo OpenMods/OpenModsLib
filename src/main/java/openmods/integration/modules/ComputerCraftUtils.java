@@ -74,7 +74,7 @@ public final class ComputerCraftUtils {
 		inv.setInventorySlotContents(2, right);
 
 		final ItemStack upgradedTurtle = recipe.getCraftingResult(inv);
-		if (upgradedTurtle != null) result.add(upgradedTurtle);
+		if (!upgradedTurtle.isEmpty()) result.add(upgradedTurtle);
 	}
 
 }

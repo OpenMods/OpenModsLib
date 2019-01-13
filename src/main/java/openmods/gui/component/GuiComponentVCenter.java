@@ -6,7 +6,7 @@ public class GuiComponentVCenter extends BaseComposite {
 
 	private int width;
 
-	private int height;
+	private final int height;
 
 	public GuiComponentVCenter(int x, int y, int height) {
 		super(x, y);

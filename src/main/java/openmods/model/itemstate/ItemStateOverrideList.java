@@ -82,7 +82,7 @@ public class ItemStateOverrideList extends ItemOverrideList {
 	private final Map<State, IBakedModel> models;
 
 	public ItemStateOverrideList(Map<State, IBakedModel> models) {
-		super(ImmutableList.<ItemOverride> of());
+		super(ImmutableList.of());
 		this.models = ImmutableMap.copyOf(models);
 	}
 

@@ -6,7 +6,7 @@ import org.lwjgl.opengl.GL11;
 public class ManualDisplayList {
 
 	public interface Renderer {
-		public void render();
+		void render();
 	}
 
 	private int displayList;

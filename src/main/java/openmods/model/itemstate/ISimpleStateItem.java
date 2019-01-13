@@ -7,8 +7,8 @@ import openmods.state.StateContainer;
 
 public interface ISimpleStateItem {
 
-	public StateContainer getStateContainer();
+	StateContainer getStateContainer();
 
-	public State getState(@Nonnull ItemStack stack);
+	State getState(@Nonnull ItemStack stack);
 
 }

@@ -61,14 +61,14 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 						Log.warn("Failed to find item: %s", itemId);
 					}
 				}
-				probeTools = items.toArray(new ItemStack[items.size()]);
+				probeTools = items.toArray(new ItemStack[0]);
 			}
 
 			return probeTools;
 		}
 	}
 
-	private static Cache<IBlockState, ItemStack> effectiveToolCache = CacheBuilder.newBuilder()
+	private static final Cache<IBlockState, ItemStack> effectiveToolCache = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.build();
 

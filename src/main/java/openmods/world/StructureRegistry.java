@@ -81,10 +81,10 @@ public class StructureRegistry {
 
 	public final static StructureRegistry instance = new StructureRegistry();
 
-	private List<IStructureGenProvider<?>> providers;
+	private final List<IStructureGenProvider<?>> providers;
 
 	private interface IStructureVisitor {
-		public void visit(IChunkGenerator generator, String structureName);
+		void visit(IChunkGenerator generator, String structureName);
 	}
 
 	private void visitStructures(WorldServer world, IStructureVisitor visitor) {

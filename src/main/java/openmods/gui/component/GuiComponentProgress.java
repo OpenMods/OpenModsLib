@@ -45,6 +45,6 @@ public class GuiComponentProgress extends BaseComponent {
 	}
 
 	public IValueReceiver<Integer> maxProgressReceiver() {
-		return value -> setMaxProgress(value);
+		return this::setMaxProgress;
 	}
 }

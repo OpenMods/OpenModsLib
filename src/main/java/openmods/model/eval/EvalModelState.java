@@ -42,7 +42,7 @@ public class EvalModelState {
 	}
 
 	private EvalModelState() {
-		this(ImmutableMap.<String, Float> of(), false);
+		this(ImmutableMap.of(), false);
 	}
 
 	public static EvalModelState create() {

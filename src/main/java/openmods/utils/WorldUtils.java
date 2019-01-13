@@ -30,7 +30,7 @@ public class WorldUtils {
 		if (te.isInvalid()) return false;
 
 		final World world = te.getWorld();
-		return (world != null)? world.isBlockLoaded(te.getPos()) : false;
+		return (world != null) && world.isBlockLoaded(te.getPos());
 	}
 
 }

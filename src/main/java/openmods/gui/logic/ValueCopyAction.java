@@ -1,8 +1,7 @@
 package openmods.gui.logic;
 
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
+import java.util.function.Function;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;
 
@@ -33,11 +32,11 @@ public class ValueCopyAction<I, O> implements IValueUpdateAction {
 	}
 
 	public static <T> ValueCopyAction<T, T> create(IValueProvider<T> provider, IValueReceiver<T> receiver) {
-		return new ValueCopyAction<>(provider, provider, receiver, Functions.<T> identity());
+		return new ValueCopyAction<>(provider, provider, receiver, Function.identity());
 	}
 
 	public static <T> ValueCopyAction<T, T> create(Object trigger, IValueProvider<T> provider, IValueReceiver<T> receiver) {
-		return new ValueCopyAction<>(trigger, provider, receiver, Functions.<T> identity());
+		return new ValueCopyAction<>(trigger, provider, receiver, Function.identity());
 	}
 
 	public static <I, O> ValueCopyAction<I, O> create(IValueProvider<I> provider, IValueReceiver<O> receiver, Function<I, O> converter) {

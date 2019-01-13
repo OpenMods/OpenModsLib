@@ -7,8 +7,8 @@ import openmods.gui.listener.IValueChangedListener;
 
 public class GuiComponentTextbox extends BaseComponent implements IValueReceiver<String> {
 
-	private int width;
-	private int height;
+	private final int width;
+	private final int height;
 
 	private GuiTextField textfield;
 

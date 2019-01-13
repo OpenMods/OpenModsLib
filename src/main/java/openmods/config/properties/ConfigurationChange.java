@@ -23,7 +23,7 @@ public class ConfigurationChange extends Event {
 
 	@Cancelable
 	public static class Pre extends ConfigurationChange {
-		public String[] proposedValues;
+		public final String[] proposedValues;
 
 		public Pre(String name, String category, String[] proposedValues) {
 			super(name, category);

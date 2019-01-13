@@ -4,5 +4,5 @@ import openmods.gui.component.BaseComponent;
 
 @FunctionalInterface
 public interface IKeyTypedListener extends IListenerBase {
-	public void componentKeyTyped(BaseComponent component, char character, int keyCode);
+	void componentKeyTyped(BaseComponent component, char character, int keyCode);
 }

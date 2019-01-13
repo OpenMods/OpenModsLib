@@ -40,8 +40,8 @@ public class CalcState {
 		}
 	}
 
-	private static interface IFunction<E> {
-		public E call();
+	private interface IFunction<E> {
+		E call();
 	}
 
 	private static class SenderHolder {
@@ -64,7 +64,7 @@ public class CalcState {
 
 		public <E> Calculator<E, ExprType> addPrinter(Calculator<E, ExprType> calculator) {
 			final IValuePrinter<E> printer = calculator.printer;
-			calculator.environment.setGlobalSymbol("p", (ICallable<E>)(frame, argumentsCount, returnsCount) -> {
+			calculator.environment.setGlobalSymbol("p", (frame, argumentsCount, returnsCount) -> {
 				Preconditions.checkNotNull(sender, "DERP");
 
 				if (!returnsCount.compareIfPresent(0)) throw new StackValidationException("This function does not return any values");
@@ -189,9 +189,9 @@ public class CalcState {
 
 	public ExprType exprType = ExprType.INFIX;
 
-	private Stack<Calculator<?, ExprType>> calculatorStack = Stack.create();
+	private final Stack<Calculator<?, ExprType>> calculatorStack = Stack.create();
 
-	private Map<String, Calculator<?, ExprType>> calculatorMap = Maps.newHashMap();
+	private final Map<String, Calculator<?, ExprType>> calculatorMap = Maps.newHashMap();
 
 	public Calculator<?, ExprType> getActiveCalculator() {
 		return active;

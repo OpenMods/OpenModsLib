@@ -2,8 +2,8 @@ package openmods.gui.logic;
 
 public interface IValueUpdateAction {
 
-	public Iterable<?> getTriggers();
+	Iterable<?> getTriggers();
 
-	public void execute();
+	void execute();
 
 }

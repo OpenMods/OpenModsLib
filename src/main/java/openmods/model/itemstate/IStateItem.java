@@ -9,8 +9,8 @@ import openmods.state.StateContainer;
 
 public interface IStateItem {
 
-	public StateContainer getStateContainer();
+	StateContainer getStateContainer();
 
-	public State getState(@Nonnull ItemStack stack, World world, EntityLivingBase entity);
+	State getState(@Nonnull ItemStack stack, World world, EntityLivingBase entity);
 
 }

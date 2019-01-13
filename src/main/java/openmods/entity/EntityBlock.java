@@ -9,6 +9,7 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -72,11 +73,11 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	public interface EntityFactory {
-		public EntityBlock create(World world);
+		EntityBlock create(World world);
 	}
 
 	public static EntityBlock create(EntityPlayer player, World world, BlockPos pos) {
-		return create(player, world, pos, world1 -> new EntityBlock(world1));
+		return create(player, world, pos, EntityBlock::new);
 	}
 
 	public static EntityBlock create(EntityLivingBase creator, World world, BlockPos pos, EntityFactory factory) {
@@ -173,7 +174,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		move(MoverType.SELF, motionX, motionY, motionZ);
 
 		final Block block = blockState.getBlock();
-		if (block == null) setDead();
+		if (block == Blocks.AIR) setDead();
 		// TODO missing functionality, fix (fake world access?)
 		// setHeight((float)block.getBlockBoundsMaxY());
 
@@ -190,7 +191,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	private boolean tryPlaceBlock(final WorldServer world, final BlockPos pos) {
-		return FakePlayerPool.instance.executeOnPlayer(world, (PlayerUserReturning<Boolean>)fakePlayer -> {
+		return FakePlayerPool.instance.executeOnPlayer(world, fakePlayer -> {
 			if (tryPlaceBlock(fakePlayer, world, pos, EnumFacing.UP)) return true;
 
 			for (EnumFacing dir : PLACE_DIRECTIONS) {
@@ -226,17 +227,14 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		final int count = block.quantityDropped(blockState, 0, rand);
 		for (int i = 0; i < count; i++) {
 			final Item item = block.getItemDropped(blockState, rand, 0);
-			if (item != null) {
-				ItemStack toDrop = new ItemStack(item, 1, block.damageDropped(blockState));
-				entityDropItem(toDrop, 0.1f);
-			}
+			ItemStack toDrop = new ItemStack(item, 1, block.damageDropped(blockState));
+			entityDropItem(toDrop, 0.1f);
 		}
 
 		if (tileEntity instanceof IInventory) {
 			IInventory inv = (IInventory)tileEntity;
 			for (int i = 0; i < inv.getSizeInventory(); i++) {
-				ItemStack is = inv.getStackInSlot(i);
-				if (is != null) entityDropItem(is, 0.1f);
+				entityDropItem(inv.getStackInSlot(i), 0.1f);
 			}
 		}
 	}

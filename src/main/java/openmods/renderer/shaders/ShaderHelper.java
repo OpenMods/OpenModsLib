@@ -7,7 +7,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GLContext;
 
 public class ShaderHelper {
-	/**
+	/*
 	 * Class for shader functions, calling ARB methods if GL20 is not supported
 	 * A lot of this is already implemented in OpenGlHelper, but it misses some
 	 * methods and is confusing in general.
@@ -34,52 +34,52 @@ public class ShaderHelper {
 		return methods;
 	}
 
-	public static interface IShaderMethods {
-		public int glCreateProgram();
+	public interface IShaderMethods {
+		int glCreateProgram();
 
-		public int glCreateShader(int type);
+		int glCreateShader(int type);
 
-		public void glAttachShader(int program, int shader);
+		void glAttachShader(int program, int shader);
 
-		public void glDetachShader(int program, int shader);
+		void glDetachShader(int program, int shader);
 
-		public void glLinkProgram(int program);
+		void glLinkProgram(int program);
 
-		public void glValidateProgram(int program);
+		void glValidateProgram(int program);
 
-		public void glDeleteProgram(int program);
+		void glDeleteProgram(int program);
 
-		public void glDeleteShader(int shader);
+		void glDeleteShader(int shader);
 
-		public int glGetProgrami(int shader, int parameter);
+		int glGetProgrami(int shader, int parameter);
 
-		public int glGetShaderi(int program, int parameter);
+		int glGetShaderi(int program, int parameter);
 
-		public String getProgramLogInfo(int program);
+		String getProgramLogInfo(int program);
 
-		public String getShaderLogInfo(int shader);
+		String getShaderLogInfo(int shader);
 
-		public void glUseProgram(int program);
+		void glUseProgram(int program);
 
-		public void glShaderSource(int shader, String shaderSource);
+		void glShaderSource(int shader, String shaderSource);
 
-		public void glCompileShader(int shader);
+		void glCompileShader(int shader);
 
-		public int glGetUniformLocation(int program, String uniform);
+		int glGetUniformLocation(int program, String uniform);
 
-		public void glUniform1i(int loc, int val);
+		void glUniform1i(int loc, int val);
 
-		public void glUniform1f(int loc, float val);
+		void glUniform1f(int loc, float val);
 
-		public void glUniform3f(int loc, float x, float y, float z);
+		void glUniform3f(int loc, float x, float y, float z);
 
-		public int glGetAttribLocation(int program, String attrib);
+		int glGetAttribLocation(int program, String attrib);
 
-		public void glEnableVertexAttribArray(int index);
+		void glEnableVertexAttribArray(int index);
 
-		public void glDisableVertexAttribArray(int index);
+		void glDisableVertexAttribArray(int index);
 
-		public void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, long offset);
+		void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, long offset);
 	}
 
 	private static class GL20ShaderMethods implements IShaderMethods {

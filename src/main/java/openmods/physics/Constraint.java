@@ -1,8 +1,10 @@
 package openmods.physics;
 
 public class Constraint {
-	private Point p1, p2;
-	private double rest_length, squared_rest_length;
+	private final Point p1;
+	private final Point p2;
+	private final double rest_length;
+	private final double squared_rest_length;
 
 	public Constraint(Point p1, Point p2, double r1) {
 		this.p1 = p1;

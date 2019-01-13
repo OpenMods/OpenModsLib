@@ -4,7 +4,7 @@ import net.minecraft.nbt.NBTTagCompound;
 
 public interface INbtSerializable {
 
-	public void writeToNBT(NBTTagCompound nbt);
+	void writeToNBT(NBTTagCompound nbt);
 
-	public void readFromNBT(NBTTagCompound nbt);
+	void readFromNBT(NBTTagCompound nbt);
 }

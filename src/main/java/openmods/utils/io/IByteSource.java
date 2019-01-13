@@ -5,5 +5,5 @@ import java.io.IOException;
 
 @FunctionalInterface
 public interface IByteSource {
-	public int nextByte() throws IOException, EOFException;
+	int nextByte() throws IOException;
 }

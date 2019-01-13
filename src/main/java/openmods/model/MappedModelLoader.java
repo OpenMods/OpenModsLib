@@ -49,7 +49,7 @@ public class MappedModelLoader implements ICustomModelLoader {
 	}
 
 	@Override
-	public IModel loadModel(ResourceLocation modelLocation) throws Exception {
+	public IModel loadModel(ResourceLocation modelLocation) {
 		return models.get(modelLocation.getResourcePath());
 	}
 

@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApiSingleton {
-	public boolean includeSuper() default true;
+	boolean includeSuper() default true;
 }

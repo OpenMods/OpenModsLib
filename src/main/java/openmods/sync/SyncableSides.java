@@ -14,7 +14,7 @@ import openmods.utils.bitmap.IRpcDirectionBitMap;
 
 public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBitMap, IBitMap<EnumFacing>, ISyncableValueProvider<Set<EnumFacing>> {
 
-	private Set<EnumFacing> dirs = EnumSet.noneOf(EnumFacing.class);
+	private final Set<EnumFacing> dirs = EnumSet.noneOf(EnumFacing.class);
 
 	private void read(int bits) {
 		dirs.clear();

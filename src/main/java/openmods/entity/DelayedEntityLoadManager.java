@@ -16,9 +16,9 @@ public class DelayedEntityLoadManager {
 
 	private DelayedEntityLoadManager() {}
 
-	private Multimap<Integer, IEntityLoadListener> delayedLoads = Multimaps.newSetMultimap(
-			new HashMap<Integer, Collection<IEntityLoadListener>>(),
-			() -> Collections.newSetFromMap(new WeakHashMap<IEntityLoadListener, Boolean>()));
+	private final Multimap<Integer, IEntityLoadListener> delayedLoads = Multimaps.newSetMultimap(
+			new HashMap<>(),
+			() -> Collections.newSetFromMap(new WeakHashMap<>()));
 
 	@SubscribeEvent
 	public void onEntityCreate(EntityJoinWorldEvent evt) {

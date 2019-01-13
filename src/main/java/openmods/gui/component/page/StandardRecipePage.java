@@ -16,8 +16,8 @@ import openmods.utils.TranslationUtils;
 
 public class StandardRecipePage extends PageBase {
 
-	public static Icon iconCraftingGrid = Icon.createSheetIcon(BOOK_TEXTURE, 0, 180, 56, 56);
-	public static Icon iconArrow = Icon.createSheetIcon(BOOK_TEXTURE, 60, 198, 48, 15);
+	public static final Icon iconCraftingGrid = Icon.createSheetIcon(BOOK_TEXTURE, 0, 180, 56, 56);
+	public static final Icon iconArrow = Icon.createSheetIcon(BOOK_TEXTURE, 60, 198, 48, 15);
 
 	public StandardRecipePage(String title, String description, @Nonnull ItemStack resultingItem) {
 		addComponent(new GuiComponentSprite(75, 40, iconArrow));

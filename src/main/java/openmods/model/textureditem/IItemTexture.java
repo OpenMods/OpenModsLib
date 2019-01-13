@@ -5,5 +5,5 @@ import net.minecraft.util.ResourceLocation;
 
 @FunctionalInterface
 public interface IItemTexture {
-	public Optional<ResourceLocation> getTexture();
+	Optional<ResourceLocation> getTexture();
 }

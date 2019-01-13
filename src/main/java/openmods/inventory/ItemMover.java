@@ -58,7 +58,7 @@ public class ItemMover {
 		if (breakAfterFirstTry) {
 			final EnumFacing selectedSide = randomizeSides? CollectionUtils.getRandom(sides) : CollectionUtils.getFirst(sides);
 			final IItemHandler neighbour = InventoryUtils.tryGetHandler(world, pos.offset(selectedSide), selectedSide.getOpposite());
-			return neighbour != null? Collections.singletonList(neighbour) : Collections.<IItemHandler> emptyList();
+			return neighbour != null? Collections.singletonList(neighbour) : Collections.emptyList();
 		}
 
 		Collection<EnumFacing> sidesToCheck = sides;
@@ -103,7 +103,7 @@ public class ItemMover {
 				}
 
 				final ItemStack targetContents = target.getStackInSlot(targetSlot);
-				if (targetContents != null && targetContents.getCount() >= targetContents.getMaxStackSize()) break MAIN;
+				if (targetContents.getCount() >= targetContents.getMaxStackSize()) break MAIN;
 			}
 		}
 

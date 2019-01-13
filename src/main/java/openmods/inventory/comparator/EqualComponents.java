@@ -8,7 +8,7 @@ public class EqualComponents {
 
 	@FunctionalInterface
 	public interface IItemStackTester {
-		public boolean isEqual(ItemStack left, ItemStack right);
+		boolean isEqual(ItemStack left, ItemStack right);
 	}
 
 	public static final IItemStackTester ITEM_TESTER = (left, right) -> left.getItem() == right.getItem();

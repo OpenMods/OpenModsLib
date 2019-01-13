@@ -77,7 +77,7 @@ public class RenderUtils {
 	}
 
 	public interface IQuadSink {
-		public void addVertex(EnumFacing quad, int vertex, double x, double y, double z);
+		void addVertex(EnumFacing quad, int vertex, double x, double y, double z);
 	}
 
 	public static void renderCube(IQuadSink sink, AxisAlignedBB aabb) {
@@ -113,7 +113,7 @@ public class RenderUtils {
 	}
 
 	public interface IVertexSink {
-		public void addVertex(double x, double y, double z);
+		void addVertex(double x, double y, double z);
 	}
 
 	public static void renderCube(IVertexSink sink, double x1, double y1, double z1, double x2, double y2, double z2) {

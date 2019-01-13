@@ -319,7 +319,7 @@ public class StructuredTest {
 
 		performUpdate(master, slave, Command.Type.CREATE, Command.Type.CONSISTENCY_CHECK);
 
-		reset((Object)masterMock, (Object)slaveMock);
+		reset(masterMock, slaveMock);
 
 		intContainer.element.value = 42;
 		master.markElementModified(0);
@@ -376,7 +376,7 @@ public class StructuredTest {
 
 		performUpdate(master, slave, Command.Type.UPDATE_SINGLE);
 
-		reset((Object)masterMock, (Object)slaveMock);
+		reset(masterMock, slaveMock);
 
 		master.removeContainer(0);
 
@@ -428,7 +428,7 @@ public class StructuredTest {
 
 		performUpdate(master, slave, Command.Type.CREATE, Command.Type.CONSISTENCY_CHECK);
 
-		reset((Object)masterMock, (Object)slaveMock);
+		reset(masterMock, slaveMock);
 
 		master.removeAll();
 
@@ -477,7 +477,7 @@ public class StructuredTest {
 
 		performUpdate(master, slave, Command.Type.CREATE, Command.Type.CONSISTENCY_CHECK);
 
-		reset((Object)masterMock, (Object)slaveMock);
+		reset(masterMock, slaveMock);
 
 		master.removeAll();
 

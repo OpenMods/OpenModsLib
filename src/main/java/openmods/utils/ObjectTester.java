@@ -2,6 +2,7 @@ package openmods.utils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -43,8 +44,7 @@ public class ObjectTester<T> implements ITester<T> {
 		}
 
 		public ClassNameTester<T> addClasses(String... names) {
-			for (String name : names)
-				this.names.add(name);
+			this.names.addAll(Arrays.asList(names));
 			return this;
 		}
 
@@ -65,7 +65,7 @@ public class ObjectTester<T> implements ITester<T> {
 		return new ObjectTester<>();
 	}
 
-	private List<ITester<T>> testers = Lists.newArrayList();
+	private final List<ITester<T>> testers = Lists.newArrayList();
 
 	public ObjectTester<T> addTester(ITester<T> tester) {
 		testers.add(tester);

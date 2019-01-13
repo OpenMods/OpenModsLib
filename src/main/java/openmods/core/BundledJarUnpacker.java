@@ -80,16 +80,13 @@ public class BundledJarUnpacker {
 				coremodJar.close();
 			}
 
-			Runtime.getRuntime().addShutdownHook(new Thread() {
-				@Override
-				public void run() {
-					try {
-						closer.close();
-					} catch (IOException e) {
-						// welp
-					}
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				try {
+					closer.close();
+				} catch (IOException e) {
+					// welp
 				}
-			});
+			}));
 		} catch (Exception e) {
 			throw new IllegalStateException("Failed to inject dependecies, data: " + data.toString(), e);
 		}

@@ -5,5 +5,5 @@ import openmods.utils.io.IStreamSerializer;
 
 @FunctionalInterface
 public interface IGenericSerializerProvider {
-	public IStreamSerializer<?> getSerializer(Type type);
+	IStreamSerializer<?> getSerializer(Type type);
 }

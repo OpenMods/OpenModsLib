@@ -22,13 +22,13 @@ public class ApiFactory {
 	public static final ApiFactory instance = new ApiFactory();
 
 	private interface Setter {
-		public Class<?> getType();
+		Class<?> getType();
 
-		public void set(Object value) throws Exception;
+		void set(Object value) throws Exception;
 	}
 
 	private static class ClassInfo {
-		private Map<String, Setter> setters = Maps.newHashMap();
+		private final Map<String, Setter> setters = Maps.newHashMap();
 
 		public ClassInfo(Class<?> cls) {
 			for (final Field f : cls.getDeclaredFields()) {
@@ -150,7 +150,7 @@ public class ApiFactory {
 	}
 
 	public interface ApiProviderSetup<A> {
-		public void setup(ApiProviderRegistry<A> registry);
+		void setup(ApiProviderRegistry<A> registry);
 	}
 
 	public <A> ApiProviderRegistry<A> createApi(Class<? extends Annotation> fieldMarker, Class<A> interfaceMarker, ASMDataTable table, ApiProviderSetup<A> registrySetup) {

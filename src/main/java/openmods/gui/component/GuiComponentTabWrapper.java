@@ -43,7 +43,7 @@ public class GuiComponentTabWrapper extends BaseComposite {
 		for (BaseComponent component : components) {
 			if (component instanceof GuiComponentTab) {
 				component.setY(oY);
-				oY += ((GuiComponentTab)component).getHeight() - 1;
+				oY += component.getHeight() - 1;
 			}
 		}
 		return oY;

@@ -4,7 +4,7 @@ import openmods.gui.IComponentParent;
 
 public class GuiComponentHCenter extends BaseComposite {
 
-	private int width;
+	private final int width;
 
 	private int height;
 

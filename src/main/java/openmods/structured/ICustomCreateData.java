@@ -5,7 +5,7 @@ import net.minecraft.network.PacketBuffer;
 
 public interface ICustomCreateData {
 
-	public void readCustomDataFromStream(PacketBuffer input) throws IOException;
+	void readCustomDataFromStream(PacketBuffer input);
 
-	public void writeCustomDataFromStream(PacketBuffer output) throws IOException;
+	void writeCustomDataFromStream(PacketBuffer output);
 }

@@ -411,7 +411,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 
 	private static final int MAX_ORIENTATIONS = 16;
 
-	private BlockRotationMode(EnumFacing[] rotations, Orientation... validOrientations) {
+	BlockRotationMode(EnumFacing[] rotations, Orientation... validOrientations) {
 		this.rotationAxes = rotations;
 		this.validDirections = ImmutableSet.copyOf(validOrientations);
 

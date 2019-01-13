@@ -4,5 +4,5 @@ import openmods.gui.component.BaseComponent;
 
 @FunctionalInterface
 public interface IMouseDownListener extends IListenerBase {
-	public void componentMouseDown(BaseComponent component, int x, int y, int button);
+	void componentMouseDown(BaseComponent component, int x, int y, int button);
 }

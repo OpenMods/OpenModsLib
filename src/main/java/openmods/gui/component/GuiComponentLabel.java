@@ -39,7 +39,7 @@ public class GuiComponentLabel extends BaseComponent implements IValueReceiver<S
 
 	public List<String> getFormattedText(FontRenderer fr) {
 		if (formattedText == null) {
-			if (Strings.isNullOrEmpty(text)) formattedText = ImmutableList.<String> of();
+			if (Strings.isNullOrEmpty(text)) formattedText = ImmutableList.of();
 			else formattedText = ImmutableList.copyOf(fr.listFormattedStringToWidth(text, getMaxWidth()));
 		}
 		return formattedText;

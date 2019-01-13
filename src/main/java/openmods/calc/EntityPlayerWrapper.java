@@ -78,7 +78,7 @@ public class EntityPlayerWrapper {
 
 	@ExposeProperty
 	public Double y() {
-		return player().posX;
+		return player().posY;
 	}
 
 	@ExposeProperty

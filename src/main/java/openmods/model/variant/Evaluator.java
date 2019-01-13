@@ -226,7 +226,7 @@ public class Evaluator {
 	}
 
 	private interface NegatableOperator {
-		public IExpr negation();
+		IExpr negation();
 	}
 
 	private static class OperatorNot extends UnaryOperatorExpr implements NegatableOperator {
@@ -528,20 +528,20 @@ public class Evaluator {
 		});
 	}
 
-	private static interface IExpr {
-		public boolean evaluate(Map<String, String> vars);
+	private interface IExpr {
+		boolean evaluate(Map<String, String> vars);
 
-		public IExpr rebind(Map<String, IExpr> vars);
+		IExpr rebind(Map<String, IExpr> vars);
 
-		public Optional<Boolean> getConstantValue();
+		Optional<Boolean> getConstantValue();
 
-		public IExpr fold();
+		IExpr fold();
 
-		public boolean equals(IExpr other);
+		boolean equals(IExpr other);
 	}
 
 	private interface IVar extends IExpr {
-		public boolean isLessSpecific(IVar other);
+		boolean isLessSpecific(IVar other);
 	}
 
 	private static class KeyGet implements IVar {
@@ -788,8 +788,8 @@ public class Evaluator {
 		return new Macro(args, body);
 	}
 
-	private static interface IStatement {
-		public void execute(Map<String, String> env);
+	private interface IStatement {
+		void execute(Map<String, String> env);
 	}
 
 	private abstract static class SetVar implements IStatement {
@@ -850,7 +850,7 @@ public class Evaluator {
 
 	private final List<IStatement> program = Lists.newArrayList();
 
-	private Map<String, Macro> macros = Maps.newHashMap();
+	private final Map<String, Macro> macros = Maps.newHashMap();
 
 	public void addStatement(String statement) {
 		try {

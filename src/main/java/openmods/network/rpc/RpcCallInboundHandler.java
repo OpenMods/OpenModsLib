@@ -11,7 +11,7 @@ import openmods.utils.SneakyThrower;
 public class RpcCallInboundHandler extends SimpleChannelInboundHandler<RpcCall> {
 
 	@Override
-	protected void channelRead0(ChannelHandlerContext ctx, final RpcCall msg) throws Exception {
+	protected void channelRead0(ChannelHandlerContext ctx, final RpcCall msg) {
 		NetUtils.executeSynchronized(ctx, () -> {
 			try {
 				Object target = msg.target.getTarget();

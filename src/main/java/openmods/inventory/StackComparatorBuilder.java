@@ -9,7 +9,7 @@ import openmods.inventory.comparator.ComparatorComponents;
 
 public class StackComparatorBuilder {
 
-	private List<Ordering<ItemStack>> result = Lists.newArrayList();
+	private final List<Ordering<ItemStack>> result = Lists.newArrayList();
 
 	private boolean usedItem;
 	private boolean usedItemId;

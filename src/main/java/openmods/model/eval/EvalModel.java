@@ -23,7 +23,7 @@ public class EvalModel extends EvalModelBase {
 	public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
 		final IModel model = loadBaseModel(state, format, bakedTextureGetter);
 
-		final ITransformEvaluator evaluator = evaluatorFactory.createEvaluator(c -> model.getClip(c));
+		final ITransformEvaluator evaluator = evaluatorFactory.createEvaluator(model::getClip);
 		return new BakedEvalModel(model, state, format, bakedTextureGetter, evaluator);
 	}
 

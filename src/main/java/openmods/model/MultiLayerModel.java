@@ -123,7 +123,7 @@ public final class MultiLayerModel implements IModel {
 		@Override
 		public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
 			final BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
-			if (layer == null) { return side == null? quads : ImmutableList.<BakedQuad> of(); }
+			if (layer == null) { return side == null? quads : ImmutableList.of(); }
 
 			final IBakedModel model = models.get(layer);
 			return MoreObjects.firstNonNull(model, missing).getQuads(state, side, rand);

@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Serialize {
 
-	public int rank() default 0;
+	int rank() default 0;
 
-	public boolean nullable() default true;
+	boolean nullable() default true;
 }

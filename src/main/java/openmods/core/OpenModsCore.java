@@ -35,7 +35,7 @@ public class OpenModsCore extends DummyModContainer {
 		FMLCommonHandler.instance().registerCrashCallable(new ICrashCallable() {
 
 			@Override
-			public String call() throws Exception {
+			public String call() {
 				return OpenModsClassTransformer.instance().listStates();
 			}
 

@@ -44,7 +44,7 @@ public class ItemOpenBlock extends ItemBlock {
 
 		if (!isStackValid(stack, player)) return EnumActionResult.FAIL;
 		if (!player.canPlayerEdit(pos, facing, stack)) return EnumActionResult.FAIL;
-		if (!world.mayPlace(this.block, pos, false, facing, (Entity)null)) return EnumActionResult.FAIL;
+		if (!world.mayPlace(this.block, pos, false, facing, null)) return EnumActionResult.FAIL;
 
 		final int itemMetadata = getMetadata(stack.getMetadata());
 

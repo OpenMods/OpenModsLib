@@ -1,9 +1,9 @@
 package openmods.calc;
 
 public interface IWhitespaceSplitter {
-	public String getNextPart();
+	String getNextPart();
 
-	public String getTail();
+	String getTail();
 
-	public boolean isFinished();
+	boolean isFinished();
 }

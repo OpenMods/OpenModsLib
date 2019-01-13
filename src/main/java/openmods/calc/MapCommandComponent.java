@@ -61,7 +61,7 @@ public class MapCommandComponent implements ICommandComponent {
 	}
 
 	public static class Builder {
-		private ImmutableMap.Builder<String, ICommandComponent> builder = ImmutableMap.builder();
+		private final ImmutableMap.Builder<String, ICommandComponent> builder = ImmutableMap.builder();
 
 		public Builder put(String command, ICommandComponent commandComponent) {
 			builder.put(command, commandComponent);

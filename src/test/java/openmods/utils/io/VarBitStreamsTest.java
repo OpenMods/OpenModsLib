@@ -30,7 +30,7 @@ public class VarBitStreamsTest {
 		ByteArrayInputStream input = new ByteArrayInputStream(bytes);
 		final InputVarBitStream result = InputVarBitStream.readAll(StreamAdapters.createSource(input));
 		Assert.assertEquals(bytes.length, result.bytesRead());
-		Assert.assertTrue(input.read() == -1);
+		Assert.assertEquals(input.read(), -1);
 		return result;
 	}
 

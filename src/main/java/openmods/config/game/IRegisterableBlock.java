@@ -6,5 +6,5 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.common.ModContainer;
 
 public interface IRegisterableBlock {
-	public void setupBlock(ModContainer container, String id, Class<? extends TileEntity> tileEntity, @Nullable ItemBlock itemBlock);
+	void setupBlock(ModContainer container, String id, Class<? extends TileEntity> tileEntity, @Nullable ItemBlock itemBlock);
 }

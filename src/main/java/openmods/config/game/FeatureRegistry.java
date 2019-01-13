@@ -24,7 +24,7 @@ public class FeatureRegistry {
 		}
 	}
 
-	private Map<String, Entry> features = Maps.newHashMap();
+	private final Map<String, Entry> features = Maps.newHashMap();
 
 	private void addValue(Entry entry) {
 		ModContainer mod = Loader.instance().activeModContainer();
@@ -36,7 +36,7 @@ public class FeatureRegistry {
 	}
 
 	public void register(AbstractFeatureManager manager) {
-		addValue(new Entry(manager, ImmutableTable.<String, String, Property> of()));
+		addValue(new Entry(manager, ImmutableTable.of()));
 	}
 
 	public void register(AbstractFeatureManager manager, Table<String, String, Property> properties) {

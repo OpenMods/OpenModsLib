@@ -181,18 +181,14 @@ public class StructuredDataMaster<C extends IStructureContainer<E>, E extends IS
 	}
 
 	private PacketBuffer createContainerPayload(Set<Integer> containerIds) {
-		try {
-			PacketBuffer result = new PacketBuffer(Unpooled.buffer());
+		PacketBuffer result = new PacketBuffer(Unpooled.buffer());
 
-			for (Integer id : containerIds) {
-				final C c = containers.get(id);
-				if (c instanceof ICustomCreateData) ((ICustomCreateData)c).writeCustomDataFromStream(result);
-			}
-
-			return result;
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		for (Integer id : containerIds) {
+			final C c = containers.get(id);
+			if (c instanceof ICustomCreateData) ((ICustomCreateData)c).writeCustomDataFromStream(result);
 		}
+
+		return result;
 	}
 
 	private PacketBuffer createElementPayload(Collection<Integer> ids) {

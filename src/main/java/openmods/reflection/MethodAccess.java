@@ -7,13 +7,14 @@ import com.google.common.reflect.TypeToken;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MethodAccess {
 
 	public interface FunctionBase<R> {}
 
 	public interface FunctionVar<R> extends FunctionBase<R> {
-		public R call(Object target, Object... args);
+		R call(Object target, Object... args);
 	}
 
 	private static class FunctionWrap<R> implements FunctionVar<R> {
@@ -39,7 +40,7 @@ public class MethodAccess {
 	// R()
 
 	public interface Function0<R> extends FunctionBase<R> {
-		public R call(Object target);
+		R call(Object target);
 	}
 
 	private static class Function0Impl<R> extends FunctionWrap<R> implements Function0<R> {
@@ -60,7 +61,7 @@ public class MethodAccess {
 	// R(P1)
 
 	public interface Function1<R, P1> extends FunctionBase<R> {
-		public R call(Object target, P1 p1);
+		R call(Object target, P1 p1);
 	}
 
 	private static class Function1Impl<R, P1> extends FunctionWrap<R> implements Function1<R, P1> {
@@ -81,7 +82,7 @@ public class MethodAccess {
 	// R(P1, P2)
 
 	public interface Function2<R, P1, P2> extends FunctionBase<R> {
-		public R call(Object target, P1 p1, P2 p2);
+		R call(Object target, P1 p1, P2 p2);
 	}
 
 	private static class Function2Impl<R, P1, P2> extends FunctionWrap<R> implements Function2<R, P1, P2> {
@@ -102,7 +103,7 @@ public class MethodAccess {
 	// R(P1, P2, P3)
 
 	public interface Function3<R, P1, P2, P3> extends FunctionBase<R> {
-		public R call(Object target, P1 p1, P2 p2, P3 p3);
+		R call(Object target, P1 p1, P2 p2, P3 p3);
 	}
 
 	private static class Function3Impl<R, P1, P2, P3> extends FunctionWrap<R> implements Function3<R, P1, P2, P3> {
@@ -123,7 +124,7 @@ public class MethodAccess {
 	// R(P1, P2, P3, P4)
 
 	public interface Function4<R, P1, P2, P3, P4> extends FunctionBase<R> {
-		public R call(Object target, P1 p1, P2 p2, P3 p3, P4 p4);
+		R call(Object target, P1 p1, P2 p2, P3 p3, P4 p4);
 	}
 
 	private static class Function4Impl<R, P1, P2, P3, P4> extends FunctionWrap<R> implements Function4<R, P1, P2, P3, P4> {
@@ -144,7 +145,7 @@ public class MethodAccess {
 	// R(P1, P2, P3, P4, P5)
 
 	public interface Function5<R, P1, P2, P3, P4, P5> extends FunctionBase<R> {
-		public R call(Object target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5);
+		R call(Object target, P1 p1, P2 p2, P3 p3, P4 p4, P5 p5);
 	}
 
 	private static class Function5Impl<R, P1, P2, P3, P4, P5> extends FunctionWrap<R> implements Function5<R, P1, P2, P3, P4, P5> {
@@ -302,7 +303,7 @@ public class MethodAccess {
 
 		Preconditions.checkArgument(!applicableResolvers.isEmpty(), "Invalid type: %s", cls);
 		Preconditions.checkArgument(applicableResolvers.size() == 1, "Ambiguous type: %s, bases: ", cls,
-				Lists.transform(applicableResolvers, input -> input.intf.getName()));
+				applicableResolvers.stream().map(input -> input.intf.getName()).collect(Collectors.toList()));
 
 		return applicableResolvers.get(0).resolve(cls);
 	}

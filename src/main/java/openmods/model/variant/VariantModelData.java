@@ -29,7 +29,7 @@ class VariantModelData {
 				.build(
 						new CacheLoader<Map<String, String>, Set<ResourceLocation>>() {
 							@Override
-							public Set<ResourceLocation> load(Map<String, String> key) throws Exception {
+							public Set<ResourceLocation> load(Map<String, String> key) {
 								final Map<String, String> mutableCopy = Maps.newHashMap(key);
 								expansions.expandVars(mutableCopy);
 								return variants.getModels(mutableCopy);

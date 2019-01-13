@@ -16,7 +16,7 @@ public class GuiComponentTab extends GuiComponentResizableComposite {
 	private final ItemStack iconStack;
 	private double dWidth = FOLDED_WIDTH;
 	private double dHeight = FOLDED_HEIGHT;
-	private int color;
+	private final int color;
 
 	private static final BoxRenderer BOX_RENDERER = new BoxRenderer(0, 5) {
 		@Override

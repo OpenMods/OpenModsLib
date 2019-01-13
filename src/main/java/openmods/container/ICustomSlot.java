@@ -6,11 +6,11 @@ import net.minecraft.item.ItemStack;
 
 public interface ICustomSlot {
 
-	public ItemStack onClick(EntityPlayer player, int dragType, ClickType clickType);
+	ItemStack onClick(EntityPlayer player, int dragType, ClickType clickType);
 
-	public boolean canDrag();
+	boolean canDrag();
 
-	public boolean canTransferItemsOut();
+	boolean canTransferItemsOut();
 
-	public boolean canTransferItemsIn();
+	boolean canTransferItemsIn();
 }

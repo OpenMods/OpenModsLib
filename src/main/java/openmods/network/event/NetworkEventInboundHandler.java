@@ -12,7 +12,7 @@ import openmods.utils.NetUtils;
 public class NetworkEventInboundHandler extends SimpleChannelInboundHandler<NetworkEvent> {
 
 	@Override
-	protected void channelRead0(final ChannelHandlerContext ctx, final NetworkEvent msg) throws Exception {
+	protected void channelRead0(final ChannelHandlerContext ctx, final NetworkEvent msg) {
 		NetUtils.executeSynchronized(ctx, () -> {
 			// TODO asynchronous events, once needed
 			MinecraftForge.EVENT_BUS.post(msg);

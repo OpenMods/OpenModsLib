@@ -98,7 +98,7 @@ public class ShapeEquilateral2dGenerator extends DefaultShapeGenerator {
 
 		public final double angleLimit;
 
-		private Symmetry(double angleLimit) {
+		Symmetry(double angleLimit) {
 			this.angleLimit = angleLimit;
 		}
 	}
@@ -123,7 +123,7 @@ public class ShapeEquilateral2dGenerator extends DefaultShapeGenerator {
 			angles.add(new Trig(Math.sin(d), Math.cos(d)));
 		}
 
-		this.angles = angles.toArray(new Trig[angles.size()]);
+		this.angles = angles.toArray(new Trig[0]);
 
 	}
 

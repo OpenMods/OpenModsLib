@@ -2,10 +2,10 @@ package openmods.utils;
 
 @FunctionalInterface
 public interface ITester<T> {
-	public enum Result {
+	enum Result {
 		ACCEPT,
 		REJECT,
-		CONTINUE;
+		CONTINUE
 	}
 
 	Result test(T o);

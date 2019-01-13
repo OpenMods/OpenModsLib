@@ -5,5 +5,5 @@ public enum TransformerState {
 	ENABLED,
 	ACTIVATED,
 	FINISHED,
-	FAILED;
+	FAILED
 }

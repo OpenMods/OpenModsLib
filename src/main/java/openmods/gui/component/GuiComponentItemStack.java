@@ -12,7 +12,7 @@ public class GuiComponentItemStack extends BaseComponent {
 	@Nonnull
 	private final ItemStack stack;
 
-	private boolean drawTooltip;
+	private final boolean drawTooltip;
 
 	private final float scale;
 

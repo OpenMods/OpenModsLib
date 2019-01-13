@@ -23,7 +23,7 @@ public class ClonerFactory implements Opcodes {
 	}
 
 	public interface ICloner<T> {
-		public <A extends T, B extends T> void clone(A from, B to);
+		<A extends T, B extends T> void clone(A from, B to);
 	}
 
 	private static final String CLONER_DESC = Type.getInternalName(ICloner.class);

@@ -2,8 +2,11 @@ package openmods.physics;
 
 public class Point {
 
-	private FastVector current, previous, force;
-	double mass, inv_mass;
+	private FastVector current;
+	private FastVector previous;
+	private final FastVector force;
+	final double mass;
+	double inv_mass;
 
 	public Point(double x, double y, double z) {
 		this.current = this.previous = new FastVector(x, y, z);

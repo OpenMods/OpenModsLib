@@ -5,5 +5,5 @@ import net.minecraft.util.math.BlockPos;
 
 public interface INeighbourAwareTile {
 
-	public void onNeighbourChanged(BlockPos neighbourPos, Block neigbourBlock);
+	void onNeighbourChanged(BlockPos neighbourPos, Block neigbourBlock);
 }

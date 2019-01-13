@@ -10,7 +10,7 @@ public class StackEqualityTesterBuilder {
 
 	@FunctionalInterface
 	public interface IEqualityTester {
-		public boolean isEqual(Object left, Object right);
+		boolean isEqual(Object left, Object right);
 	}
 
 	private boolean usedItem;

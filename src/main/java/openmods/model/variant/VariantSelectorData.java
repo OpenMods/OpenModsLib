@@ -23,9 +23,9 @@ import net.minecraft.util.ResourceLocation;
 public class VariantSelectorData {
 
 	private interface Matcher {
-		public Set<ResourceLocation> match(String value);
+		Set<ResourceLocation> match(String value);
 
-		public Set<ResourceLocation> getAllModels();
+		Set<ResourceLocation> getAllModels();
 	}
 
 	private Map<String, Matcher> matchers = ImmutableMap.of();
@@ -131,7 +131,7 @@ public class VariantSelectorData {
 					@Override
 					public Set<ResourceLocation> match(String value) {
 						final Set<ResourceLocation> result = locs.get(value);
-						return result != null? ImmutableSet.copyOf(result) : ImmutableSet.<ResourceLocation> of();
+						return result != null? ImmutableSet.copyOf(result) : ImmutableSet.of();
 					}
 
 					@Override

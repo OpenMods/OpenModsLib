@@ -9,10 +9,10 @@ public class PlayerMovementEvent extends PlayerEvent {
 
 	public enum Type {
 		JUMP,
-		SNEAK;
+		SNEAK
 	}
 
-	public Type type;
+	public final Type type;
 
 	public PlayerMovementEvent(EntityPlayer player, Type type) {
 		super(player);

@@ -53,7 +53,7 @@ public class OpenModsConfigScreen extends GuiConfig {
 	}
 
 	public OpenModsConfigScreen(GuiScreen parent, String modId, String title) {
-		super(parent, createDefaultConfigElements(modId, Lists.<IConfigElement> newArrayList()), modId, false, true, title);
+		super(parent, createDefaultConfigElements(modId, Lists.newArrayList()), modId, false, true, title);
 	}
 
 	public OpenModsConfigScreen(GuiScreen parent, String modId, String title, List<IConfigElement> customElements) {

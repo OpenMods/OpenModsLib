@@ -133,7 +133,7 @@ public abstract class BaseComponent extends Gui {
 		this.zLevel = 200.0F;
 		itemRenderer.zLevel = 200.0F;
 
-		FontRenderer font = null;
+		FontRenderer font;
 		font = stack.getItem().getFontRenderer(stack);
 		if (font == null) font = parent.getFontRenderer();
 

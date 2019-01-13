@@ -25,7 +25,7 @@ public class ModVersionChecker {
 	private final String modName;
 	private final String proposedVer;
 	private final String currentVer;
-	private String updateURL;
+	private final String updateURL;
 	private String[] loadMsg;
 	private String[] inGameMsg;
 	private File trackerFile;

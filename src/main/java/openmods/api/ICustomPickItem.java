@@ -5,6 +5,5 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
 public interface ICustomPickItem {
-	@Nonnull
-	public ItemStack getPickBlock(EntityPlayer player);
+	@Nonnull ItemStack getPickBlock(EntityPlayer player);
 }

@@ -23,7 +23,7 @@ public class ConstructorAccess<T> implements IInstanceFactory<T> {
 
 	}
 
-	private Constructor<? extends T> ctor;
+	private final Constructor<? extends T> ctor;
 
 	public ConstructorAccess(Constructor<? extends T> ctor) {
 		ReflectionLog.logLoad(ctor);

@@ -17,7 +17,7 @@ public class ModelUpdater {
 
 	@FunctionalInterface
 	public interface ValueConverter<T> {
-		public T convert(String name, JsonElement element);
+		T convert(String name, JsonElement element);
 	}
 
 	public static final ValueConverter<ResourceLocation> RESOURCE_LOCATION = (name, element) -> {

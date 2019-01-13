@@ -19,7 +19,7 @@ public class BlockManipulator {
 
 	public final EntityPlayer player;
 
-	public BlockPos blockPos;
+	public final BlockPos blockPos;
 
 	private boolean spawnProtection = true;
 

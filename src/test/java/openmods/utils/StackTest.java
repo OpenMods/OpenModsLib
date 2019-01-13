@@ -7,7 +7,7 @@ import org.junit.Test;
 
 public class StackTest {
 
-	public Stack<Integer> stack = Stack.create();
+	public final Stack<Integer> stack = Stack.create();
 
 	private void checkStackEmpty() {
 		Assert.assertTrue(stack.isEmpty());

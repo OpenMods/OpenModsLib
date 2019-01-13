@@ -17,41 +17,41 @@ import openmods.geometry.IHitboxSupplier;
 
 public interface IOpenModsProxy {
 
-	public World getClientWorld();
+	World getClientWorld();
 
-	public World getServerWorld(int dimension);
+	World getServerWorld(int dimension);
 
-	public EntityPlayer getThePlayer();
+	EntityPlayer getThePlayer();
 
-	public boolean isClientPlayer(Entity player);
+	boolean isClientPlayer(Entity player);
 
-	public long getTicks(World worldObj);
+	long getTicks(World worldObj);
 
-	public File getMinecraftDir();
+	File getMinecraftDir();
 
-	public Optional<String> getLanguage();
+	Optional<String> getLanguage();
 
-	public String getLogFileName();
+	String getLogFileName();
 
-	public IGuiHandler wrapHandler(IGuiHandler modSpecificHandler);
+	IGuiHandler wrapHandler(IGuiHandler modSpecificHandler);
 
-	public void preInit();
+	void preInit();
 
-	public void init();
+	void init();
 
-	public void postInit();
+	void postInit();
 
-	public void setNowPlayingTitle(String nowPlaying);
+	void setNowPlayingTitle(String nowPlaying);
 
-	public EntityPlayer getPlayerFromHandler(INetHandler handler);
+	EntityPlayer getPlayerFromHandler(INetHandler handler);
 
-	public void bindItemModelToItemMeta(Item item, int metadata, ResourceLocation resourceLocation);
+	void bindItemModelToItemMeta(Item item, int metadata, ResourceLocation resourceLocation);
 
-	public void registerCustomItemModel(Item item, int metadata, ResourceLocation resourceLocation);
+	void registerCustomItemModel(Item item, int metadata, ResourceLocation resourceLocation);
 
-	public void runCustomItemModelProvider(ResourceLocation itemLocation, Item item, Class<? extends ICustomItemModelProvider> providerCls);
+	void runCustomItemModelProvider(ResourceLocation itemLocation, Item item, Class<? extends ICustomItemModelProvider> providerCls);
 
-	public IHitboxSupplier getHitboxes(ResourceLocation location);
+	IHitboxSupplier getHitboxes(ResourceLocation location);
 
-	public IAnimationStateMachine loadAsm(ResourceLocation location, ImmutableMap<String, ITimeValue> parameters);
+	IAnimationStateMachine loadAsm(ResourceLocation location, ImmutableMap<String, ITimeValue> parameters);
 }

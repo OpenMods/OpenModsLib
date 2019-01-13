@@ -21,7 +21,7 @@ public class InboundSyncHandler extends SimpleChannelInboundHandler<FMLProxyPack
 	}
 
 	@Override
-	protected void channelRead0(ChannelHandlerContext ctx, final FMLProxyPacket msg) throws Exception {
+	protected void channelRead0(ChannelHandlerContext ctx, final FMLProxyPacket msg) {
 		NetUtils.executeSynchronized(ctx, new Runnable() {
 			@Override
 			public void run() {

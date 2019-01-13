@@ -1,9 +1,7 @@
 package openmods.calc;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.io.Closer;
 import info.openmods.calc.ExprType;
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,6 +11,7 @@ import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.TextComponentString;
 import openmods.calc.CalcState.CalculatorType;
@@ -237,11 +236,9 @@ public class CommandCalcFactory {
 	private int executeScript(ICommandSender sender, File scriptFile) {
 		int count = 0;
 		try {
-			final Closer closer = Closer.create();
-			try {
-				final Reader r = closer.register(new FileReader(scriptFile));
-				final BufferedReader br = closer.register(new BufferedReader(r));
-
+			try (final Reader r = new FileReader(scriptFile);
+					final BufferedReader br = (new BufferedReader(r));
+			) {
 				String line;
 				while ((line = br.readLine()) != null) {
 					final IWhitespaceSplitter args = WhitespaceSplitters.fromString(line);
@@ -249,8 +246,6 @@ public class CommandCalcFactory {
 					count++;
 				}
 
-			} finally {
-				closer.close();
 			}
 
 			return count;
@@ -274,6 +269,6 @@ public class CommandCalcFactory {
 	}
 
 	private static Iterable<String> stringifyList(Object... values) {
-		return Iterables.transform(Arrays.asList(values), input -> String.valueOf(input).toLowerCase(Locale.ROOT));
+		return Arrays.stream(values).map(input -> String.valueOf(input).toLowerCase(Locale.ROOT)).collect(Collectors.toList());
 	}
 }

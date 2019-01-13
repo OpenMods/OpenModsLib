@@ -29,9 +29,9 @@ import org.lwjgl.opengl.GL11;
 public class CachedRendererFactory {
 
 	public interface CachedRenderer {
-		public void render();
+		void render();
 
-		public void dispose();
+		void dispose();
 	}
 
 	private static class VboRenderer implements CachedRenderer {

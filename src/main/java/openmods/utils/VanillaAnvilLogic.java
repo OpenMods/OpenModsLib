@@ -22,7 +22,6 @@ public class VanillaAnvilLogic {
 
 	public VanillaAnvilLogic(@Nonnull ItemStack inputStack, @Nonnull ItemStack modifierStack, boolean isCreativeMode, Optional<String> itemName) {
 		this.materialCost = -1;
-		this.outputStack = ItemStack.EMPTY;
 
 		final String repairedItemName = itemName.orNull();
 

@@ -6,5 +6,5 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 
 public interface IPlaceAwareTile {
-	public void onBlockPlacedBy(IBlockState state, EntityLivingBase placer, @Nonnull ItemStack stack);
+	void onBlockPlacedBy(IBlockState state, EntityLivingBase placer, @Nonnull ItemStack stack);
 }

@@ -9,25 +9,25 @@ import net.minecraft.item.Item;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface RegisterItem {
-	public static final String DEFAULT = "[default]";
-	public static final String NONE = "[none]";
+	String DEFAULT = "[default]";
+	String NONE = "[none]";
 
 	// if left default, will use field type
-	public Class<? extends Item> type() default Item.class;
+	Class<? extends Item> type() default Item.class;
 
-	public String id();
+	String id();
 
-	public String unlocalizedName() default DEFAULT;
+	String unlocalizedName() default DEFAULT;
 
-	public boolean isEnabled() default true;
+	boolean isEnabled() default true;
 
-	public boolean isConfigurable() default true;
+	boolean isConfigurable() default true;
 
-	public boolean registerDefaultModel() default true;
+	boolean registerDefaultModel() default true;
 
-	public boolean addToModCreativeTab() default true;
+	boolean addToModCreativeTab() default true;
 
-	public Class<? extends ICustomItemModelProvider> customItemModels() default ICustomItemModelProvider.class;
+	Class<? extends ICustomItemModelProvider> customItemModels() default ICustomItemModelProvider.class;
 
-	public String[] legacyIds() default {};
+	String[] legacyIds() default {};
 }

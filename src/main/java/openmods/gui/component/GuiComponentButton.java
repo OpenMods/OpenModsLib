@@ -9,7 +9,7 @@ public abstract class GuiComponentButton extends GuiComponentResizable {
 	private static final BoxRenderer BOX_RENDERER_PRESSED = new BoxRenderer(20, 10);
 	private static final BoxRenderer BOX_RENDERER_DISABLED = new BoxRenderer(40, 10);
 
-	private int borderColor;
+	private final int borderColor;
 
 	protected boolean buttonEnabled = true;
 

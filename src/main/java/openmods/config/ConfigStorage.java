@@ -14,7 +14,7 @@ public class ConfigStorage {
 
 	public static final ConfigStorage instance = new ConfigStorage();
 
-	private Multimap<String, Configuration> configs = ArrayListMultimap.create();
+	private final Multimap<String, Configuration> configs = ArrayListMultimap.create();
 
 	public void register(Configuration value) {
 		ModContainer mod = Loader.instance().activeModContainer();

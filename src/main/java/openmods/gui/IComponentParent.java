@@ -13,24 +13,24 @@ import net.minecraft.util.ResourceLocation;
 
 public interface IComponentParent {
 
-	public Minecraft getMinecraft();
+	Minecraft getMinecraft();
 
-	public TextureMap getBlocksTextureMap();
+	TextureMap getBlocksTextureMap();
 
-	public TextureAtlasSprite getIcon(ResourceLocation location);
+	TextureAtlasSprite getIcon(ResourceLocation location);
 
-	public FontRenderer getFontRenderer();
+	FontRenderer getFontRenderer();
 
-	public RenderItem getItemRenderer();
+	RenderItem getItemRenderer();
 
-	public SoundHandler getSoundHandler();
+	SoundHandler getSoundHandler();
 
-	public void bindTexture(ResourceLocation texture);
+	void bindTexture(ResourceLocation texture);
 
-	public void drawHoveringText(List<String> textLines, int x, int y);
+	void drawHoveringText(List<String> textLines, int x, int y);
 
-	public void drawItemStackTooltip(@Nonnull ItemStack stack, int x, int y);
+	void drawItemStackTooltip(@Nonnull ItemStack stack, int x, int y);
 
-	public void drawGradientRect(int left, int top, int right, int bottom, int startColor, int endColor);
+	void drawGradientRect(int left, int top, int right, int bottom, int startColor, int endColor);
 
 }

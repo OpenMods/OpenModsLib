@@ -56,7 +56,6 @@ public class CollectionUtils {
 	public static <T> T getRandom(List<T> list, Random rand) {
 		final int size = list.size();
 		Preconditions.checkArgument(size > 0, "Can't select from empty list");
-		if (size == 0) return null;
 		if (size == 1) return list.get(0);
 		int randomIndex = rnd.nextInt(list.size());
 		return list.get(randomIndex);
@@ -224,6 +223,6 @@ public class CollectionUtils {
 	}
 
 	public static <T> Set<T> asSet(Optional<T> value) {
-		return value.map(v -> Collections.singleton(v)).orElseGet(() -> Collections.emptySet());
+		return value.map(Collections::singleton).orElseGet(Collections::emptySet);
 	}
 }

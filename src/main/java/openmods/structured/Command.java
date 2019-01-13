@@ -15,7 +15,7 @@ import openmods.utils.CollectionUtils;
 
 public abstract class Command {
 
-	public static final Comparator<Command> COMPARATOR = (o1, o2) -> o1.type().compareTo(o2.type());
+	public static final Comparator<Command> COMPARATOR = Comparator.comparing(Command::type);
 
 	public static class CommandList extends ArrayList<Command> {
 		private static final long serialVersionUID = 8317603452787461684L;
@@ -29,7 +29,7 @@ public abstract class Command {
 		}
 
 		public void writeToStream(PacketBuffer output) throws IOException {
-			Collections.sort(this, Command.COMPARATOR);
+			sort(Command.COMPARATOR);
 
 			for (Command c : this) {
 				c.writeToStream(output);
@@ -324,9 +324,9 @@ public abstract class Command {
 
 	public abstract Type type();
 
-	protected abstract void readDataFromStream(PacketBuffer input) throws IOException;
+	protected abstract void readDataFromStream(PacketBuffer input);
 
-	protected abstract void writeDataToStream(PacketBuffer output) throws IOException;
+	protected abstract void writeDataToStream(PacketBuffer output);
 
 	public static Command createFromStream(PacketBuffer input) throws IOException {
 		Type type = input.readEnumValue(Type.class);

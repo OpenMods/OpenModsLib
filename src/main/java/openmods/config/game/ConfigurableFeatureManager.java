@@ -24,7 +24,7 @@ public class ConfigurableFeatureManager extends AbstractFeatureManager {
 	}
 
 	public interface CustomFeatureRule {
-		public boolean isEnabled(boolean flag);
+		boolean isEnabled(boolean flag);
 	}
 
 	private final Table<String, String, CustomFeatureRule> customRules = HashBasedTable.create();

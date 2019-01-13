@@ -117,7 +117,7 @@ public abstract class OptionalInt {
 	public abstract boolean compareIfPresent(int value);
 
 	public interface IntFunction {
-		public int apply(int value);
+		int apply(int value);
 	}
 
 	public abstract OptionalInt map(IntFunction function);

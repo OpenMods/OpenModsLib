@@ -26,7 +26,7 @@ public abstract class PageBase extends BaseComposite {
 		YOUTUBE(Icon.createSheetIcon(BOOK_TEXTURE, 0, 236, 12, 8)),
 		FOLDER(Icon.createSheetIcon(BOOK_TEXTURE, 12, 236, 12, 8));
 
-		private ActionIcon(Icon icon) {
+		ActionIcon(Icon icon) {
 			this.icon = icon;
 		}
 
@@ -50,7 +50,7 @@ public abstract class PageBase extends BaseComposite {
 	}
 
 	public interface IConfirmListener {
-		public void onConfirm();
+		void onConfirm();
 	}
 
 	protected BaseComponent createActionButton(int x, int y, final String link, Icon icon, String text, final IConfirmListener listener) {
@@ -80,7 +80,7 @@ public abstract class PageBase extends BaseComposite {
 	}
 
 	public PageBase addActionButton(int x, int y, final String link, Icon icon, String text) {
-		addComponent(createActionButton(x, y, link.toString(), icon, text, () -> {
+		addComponent(createActionButton(x, y, link, icon, text, () -> {
 			final URI uri = URI.create(link);
 			try {
 				Desktop.getDesktop().browse(uri);

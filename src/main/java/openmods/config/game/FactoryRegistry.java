@@ -8,7 +8,7 @@ public class FactoryRegistry<T> {
 
 	@FunctionalInterface
 	public interface Factory<T> {
-		public T construct();
+		T construct();
 	}
 
 	private final Map<String, Factory<T>> customFactories = Maps.newHashMap();

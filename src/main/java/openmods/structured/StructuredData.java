@@ -29,7 +29,7 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 	}
 
 	public StructuredData() {
-		this(new StructureObserver<C, E>());
+		this(new StructureObserver<>());
 	}
 
 	public void removeAll() {

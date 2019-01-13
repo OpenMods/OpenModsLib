@@ -7,11 +7,11 @@ import openmods.api.IValueReceiver;
 import openmods.utils.bitmap.IWriteableBitMap;
 
 public interface IConfigurableGuiSlots<T extends Enum<T>> {
-	public IValueProvider<Set<EnumFacing>> createAllowedDirectionsProvider(T slot);
+	IValueProvider<Set<EnumFacing>> createAllowedDirectionsProvider(T slot);
 
-	public IWriteableBitMap<EnumFacing> createAllowedDirectionsReceiver(T slot);
+	IWriteableBitMap<EnumFacing> createAllowedDirectionsReceiver(T slot);
 
-	public IValueProvider<Boolean> createAutoFlagProvider(T slot);
+	IValueProvider<Boolean> createAutoFlagProvider(T slot);
 
-	public IValueReceiver<Boolean> createAutoSlotReceiver(T slot);
+	IValueReceiver<Boolean> createAutoSlotReceiver(T slot);
 }

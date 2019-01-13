@@ -7,7 +7,7 @@ import java.util.Set;
 
 public class ValueUpdateDispatcher {
 
-	private Multimap<Object, IValueUpdateAction> actions = HashMultimap.create();
+	private final Multimap<Object, IValueUpdateAction> actions = HashMultimap.create();
 
 	public void addAction(IValueUpdateAction listener) {
 		for (Object trigger : listener.getTriggers())

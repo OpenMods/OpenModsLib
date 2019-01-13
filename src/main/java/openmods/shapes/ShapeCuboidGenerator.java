@@ -16,7 +16,7 @@ public class ShapeCuboidGenerator extends DefaultShapeGenerator {
 
 		private final boolean walls;
 
-		private Elements(boolean corners, boolean edges, boolean walls) {
+		Elements(boolean corners, boolean edges, boolean walls) {
 			this.corners = corners;
 			this.edges = edges;
 			this.walls = walls;

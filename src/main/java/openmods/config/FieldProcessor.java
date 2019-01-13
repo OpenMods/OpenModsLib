@@ -11,7 +11,7 @@ import openmods.config.game.RegisterItem;
 public class FieldProcessor {
 
 	public interface FieldValueVisitor<T> {
-		public void visit(T value);
+		void visit(T value);
 	}
 
 	private static <A extends Annotation, T> void processEntries(Class<? extends InstanceContainer<T>> container, Class<? extends A> annotationCls, Class<T> fieldCls, FieldValueVisitor<T> visitor) {

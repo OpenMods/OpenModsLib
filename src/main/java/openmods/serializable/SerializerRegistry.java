@@ -86,9 +86,9 @@ public class SerializerRegistry {
 		providers.add(provider);
 	}
 
-	private IStreamSerializer<?> findClassSerializer(Class<?> cls, IStreamSerializer<?> serializer) {
+	private IStreamSerializer<?> findClassSerializer(Class<?> cls) {
 		for (ISerializerProvider provider : providers) {
-			serializer = provider.getSerializer(cls);
+			final IStreamSerializer<?> serializer = provider.getSerializer(cls);
 			if (serializer != null) {
 				serializers.put(cls, serializer);
 				return serializer;
@@ -101,9 +101,7 @@ public class SerializerRegistry {
 	@SuppressWarnings("unchecked")
 	public <T> IStreamSerializer<T> findSerializer(Class<? extends T> cls) {
 		IStreamSerializer<?> serializer = serializers.get(cls);
-
-		if (serializer == null) serializer = findClassSerializer(cls, serializer);
-
+		if (serializer == null) serializer = findClassSerializer(cls);
 		return (IStreamSerializer<T>)serializer;
 	}
 

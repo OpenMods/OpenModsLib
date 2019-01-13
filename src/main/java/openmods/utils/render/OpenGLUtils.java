@@ -13,7 +13,7 @@ import org.lwjgl.util.vector.Matrix4f;
 
 public class OpenGLUtils {
 
-	private static FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
+	private static final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
 
 	public static synchronized void loadMatrix(Matrix4f transform) {
 		transform.store(matrixBuffer);

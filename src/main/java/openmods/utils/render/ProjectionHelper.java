@@ -9,15 +9,15 @@ import org.lwjgl.util.glu.GLU;
 
 public class ProjectionHelper {
 
-	private IntBuffer viewport = GLAllocation.createDirectIntBuffer(16);
+	private final IntBuffer viewport = GLAllocation.createDirectIntBuffer(16);
 
-	private FloatBuffer modelview = GLAllocation.createDirectFloatBuffer(16);
+	private final FloatBuffer modelview = GLAllocation.createDirectFloatBuffer(16);
 
-	private FloatBuffer projection = GLAllocation.createDirectFloatBuffer(16);
+	private final FloatBuffer projection = GLAllocation.createDirectFloatBuffer(16);
 
-	private FloatBuffer objectCoords = GLAllocation.createDirectFloatBuffer(3);
+	private final FloatBuffer objectCoords = GLAllocation.createDirectFloatBuffer(3);
 
-	private FloatBuffer winCoords = GLAllocation.createDirectFloatBuffer(3);
+	private final FloatBuffer winCoords = GLAllocation.createDirectFloatBuffer(3);
 
 	public void updateMatrices() {
 		GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);

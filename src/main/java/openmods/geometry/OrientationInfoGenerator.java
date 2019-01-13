@@ -40,7 +40,7 @@ public class OrientationInfoGenerator {
 
 		public final float angle;
 
-		private Rotation(int angle) {
+		Rotation(int angle) {
 			this.angle = (float)Math.toRadians(angle);
 			this.name = Integer.toString(angle);
 		}
@@ -138,7 +138,7 @@ public class OrientationInfoGenerator {
 		return "{ \"transform\": { \"rotation\": [" + Joiner.on(", ").join(result) + "]}}";
 	}
 
-	private static Pattern namePattern = Pattern.compile("X(\\d+)_Y(\\d+)");
+	private static final Pattern namePattern = Pattern.compile("X(\\d+)_Y(\\d+)");
 
 	private static String modelRotationToJson(ModelRotation m) {
 		final Matcher matcher = namePattern.matcher(m.name());

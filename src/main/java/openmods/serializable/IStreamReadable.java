@@ -5,6 +5,6 @@ import net.minecraft.network.PacketBuffer;
 
 public interface IStreamReadable {
 
-	public void readFromStream(PacketBuffer input) throws IOException;
+	void readFromStream(PacketBuffer input) throws IOException;
 
 }

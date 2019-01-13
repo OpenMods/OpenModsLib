@@ -5,7 +5,7 @@ import net.minecraft.item.ItemStack;
 
 public interface ICustomBookEntryProvider {
 
-	public class Entry {
+	class Entry {
 		public final String name;
 		@Nonnull
 		public final ItemStack stack;
@@ -16,5 +16,5 @@ public interface ICustomBookEntryProvider {
 		}
 	}
 
-	public Iterable<Entry> getBookEntries();
+	Iterable<Entry> getBookEntries();
 }

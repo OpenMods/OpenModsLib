@@ -58,11 +58,11 @@ public enum ColorMeta implements IStringSerializable {
 		return new ItemStack(item, amount, vanillaDyeId);
 	}
 
-	private ColorMeta(String name, int rgb, EnumDyeColor vanilla) {
+	ColorMeta(String name, int rgb, EnumDyeColor vanilla) {
 		this(name, name, name, rgb, vanilla);
 	}
 
-	private ColorMeta(String name, String id, String textureName, int rgb, EnumDyeColor vanilla) {
+	ColorMeta(String name, String id, String textureName, int rgb, EnumDyeColor vanilla) {
 		this.id = id;
 		this.oreName = "dye" + WordUtils.capitalize(name);
 		this.oreId = OreDictionary.getOreID(oreName);

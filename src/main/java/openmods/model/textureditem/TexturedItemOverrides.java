@@ -37,7 +37,7 @@ public class TexturedItemOverrides extends ItemOverrideList {
 
 	private final LoadingCache<Pair<ResourceLocation, Optional<ResourceLocation>>, IBakedModel> textureOverrides = CacheBuilder.newBuilder().expireAfterAccess(5, TimeUnit.SECONDS).build(new CacheLoader<Pair<ResourceLocation, Optional<ResourceLocation>>, IBakedModel>() {
 		@Override
-		public IBakedModel load(Pair<ResourceLocation, Optional<ResourceLocation>> key) throws Exception {
+		public IBakedModel load(Pair<ResourceLocation, Optional<ResourceLocation>> key) {
 			final IModel overrideModel = getOverrideModel(key.getRight());
 			final IModel retexturedModel = retextureModel(overrideModel, key.getKey());
 			return retexturedModel.bake(state, format, bakedTextureGetter);

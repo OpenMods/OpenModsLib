@@ -84,38 +84,38 @@ public class Coord implements Cloneable {
 	}
 
 	public boolean isAbove(Coord pos) {
-		return pos != null? y > pos.y : false;
+		return pos != null && y > pos.y;
 	}
 
 	public boolean isBelow(Coord pos) {
-		return pos != null? y < pos.y : false;
+		return pos != null && y < pos.y;
 	}
 
 	public boolean isNorthOf(Coord pos) {
-		return pos != null? z < pos.z : false;
+		return pos != null && z < pos.z;
 	}
 
 	public boolean isSouthOf(Coord pos) {
-		return pos != null? z > pos.z : false;
+		return pos != null && z > pos.z;
 	}
 
 	public boolean isEastOf(Coord pos) {
-		return pos != null? x > pos.x : false;
+		return pos != null && x > pos.x;
 	}
 
 	public boolean isWestOf(Coord pos) {
-		return pos != null? x < pos.x : false;
+		return pos != null && x < pos.x;
 	}
 
 	public boolean isXAligned(Coord pos) {
-		return pos != null? x == pos.x : false;
+		return pos != null && x == pos.x;
 	}
 
 	public boolean isYAligned(Coord pos) {
-		return pos != null? y == pos.y : false;
+		return pos != null && y == pos.y;
 	}
 
 	public boolean isZAligned(Coord pos) {
-		return pos != null? z == pos.z : false;
+		return pos != null && z == pos.z;
 	}
 }

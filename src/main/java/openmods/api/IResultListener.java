@@ -1,7 +1,7 @@
 package openmods.api;
 
 public interface IResultListener {
-	public void onSuccess();
+	void onSuccess();
 
-	public void onFailure();
+	void onFailure();
 }

@@ -5,17 +5,17 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 
 public interface ISyncableObject {
-	public boolean isDirty();
+	boolean isDirty();
 
-	public void markClean();
+	void markClean();
 
-	public void markDirty();
+	void markDirty();
 
-	public void readFromStream(PacketBuffer buf) throws IOException;
+	void readFromStream(PacketBuffer buf) throws IOException;
 
-	public void writeToStream(PacketBuffer buf) throws IOException;
+	void writeToStream(PacketBuffer buf) throws IOException;
 
-	public void writeToNBT(NBTTagCompound nbt, String name);
+	void writeToNBT(NBTTagCompound nbt, String name);
 
-	public void readFromNBT(NBTTagCompound nbt, String name);
+	void readFromNBT(NBTTagCompound nbt, String name);
 }

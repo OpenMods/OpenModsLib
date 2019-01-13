@@ -90,9 +90,9 @@ public class IncludingClassVisitor extends ClassVisitor {
 	}
 
 	private interface IIncludedMethodBuilder {
-		public Type getInterfaceType(Type annotationHint);
+		Type getInterfaceType(Type annotationHint);
 
-		public MethodAdder createMethod(Type wrappedInterface);
+		MethodAdder createMethod(Type wrappedInterface);
 	}
 
 	private class IncludeAnnotationVisitor extends AnnotationVisitor {
@@ -200,7 +200,7 @@ public class IncludingClassVisitor extends ClassVisitor {
 			m.getValue().addMethod(cv, m.getKey());
 
 		// risky, but should work, since we are only replacing interfaces
-		super.visit(version, access, clsName, signature, superName, interfaces.toArray(new String[interfaces.size()]));
+		super.visit(version, access, clsName, signature, superName, interfaces.toArray(new String[0]));
 		super.visitEnd();
 	}
 

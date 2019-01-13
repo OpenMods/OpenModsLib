@@ -18,8 +18,8 @@ public class TessellatorPool {
 
 	private TessellatorPool() {}
 
-	public static interface WorldRendererUser {
-		public void execute(BufferBuilder wr);
+	public interface WorldRendererUser {
+		void execute(BufferBuilder wr);
 	}
 
 	private Tessellator reserveTessellator() {

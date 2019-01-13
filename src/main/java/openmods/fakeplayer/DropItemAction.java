@@ -18,8 +18,8 @@ public class DropItemAction implements PlayerUser {
 
 	private final Vector3f v;
 
-	private float yaw;
-	private float pitch;
+	private final float yaw;
+	private final float pitch;
 
 	@Nonnull
 	private final ItemStack stack;

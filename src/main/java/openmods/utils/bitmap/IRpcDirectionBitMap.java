@@ -3,13 +3,13 @@ package openmods.utils.bitmap;
 import net.minecraft.util.EnumFacing;
 
 public interface IRpcDirectionBitMap {
-	public void mark(EnumFacing value);
+	void mark(EnumFacing value);
 
-	public void clear(EnumFacing value);
+	void clear(EnumFacing value);
 
-	public abstract void set(EnumFacing key, boolean value);
+	void set(EnumFacing key, boolean value);
 
-	public void toggle(EnumFacing value);
+	void toggle(EnumFacing value);
 
-	public abstract void clearAll();
+	void clearAll();
 }

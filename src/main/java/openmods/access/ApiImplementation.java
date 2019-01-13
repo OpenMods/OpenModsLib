@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApiImplementation {
-	public boolean includeSuper() default true;
+	boolean includeSuper() default true;
 
-	public boolean cacheable() default true;
+	boolean cacheable() default true;
 }

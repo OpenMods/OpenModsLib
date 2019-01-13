@@ -146,7 +146,7 @@ public enum Orientation implements IStringSerializable {
 		return ret;
 	}
 
-	private Orientation(HalfAxis x, HalfAxis y) {
+	Orientation(HalfAxis x, HalfAxis y) {
 		this.x = x;
 		this.y = y;
 		this.z = x.cross(y);

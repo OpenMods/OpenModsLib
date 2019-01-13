@@ -432,7 +432,7 @@ public class BlockRotationModeTest {
 						results.add(orientation);
 					}
 
-					Assert.assertTrue("Multiple states: " + results, results.size() == 2);
+					Assert.assertEquals("Multiple states: " + results, 2, results.size());
 				}
 			}
 		}

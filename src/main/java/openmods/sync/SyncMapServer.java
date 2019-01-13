@@ -166,11 +166,11 @@ public abstract class SyncMapServer extends SyncMap {
 	}
 
 	protected interface IUpdateStrategy {
-		public void sendUpdates(Set<ISyncableObject> changedObjects);
+		void sendUpdates(Set<ISyncableObject> changedObjects);
 
-		public void writeInitializationData(PacketBuffer dos) throws IOException;
+		void writeInitializationData(PacketBuffer dos) throws IOException;
 
-		public boolean canSendUpdates();
+		boolean canSendUpdates();
 	}
 
 	private class SeparateInitializationPacketStrategy implements IUpdateStrategy {
@@ -205,7 +205,7 @@ public abstract class SyncMapServer extends SyncMap {
 
 	private class SelfInitializingUpdateStrategy implements IUpdateStrategy {
 
-		private Set<Integer> knownUsers = Sets.newHashSet();
+		private final Set<Integer> knownUsers = Sets.newHashSet();
 
 		@Override
 		public void sendUpdates(Set<ISyncableObject> changes) {

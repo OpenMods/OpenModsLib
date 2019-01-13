@@ -26,11 +26,11 @@ public class GenericInventory implements IInventory {
 	public static final String TAG_ITEMS = "Items";
 	public static final String TAG_SIZE = "size";
 
-	protected List<IInventoryCallback> callbacks;
-	protected String inventoryTitle;
+	protected final List<IInventoryCallback> callbacks;
+	protected final String inventoryTitle;
 	protected int slotsCount;
 	protected NonNullList<ItemStack> inventoryContents;
-	protected boolean isInvNameLocalized;
+	protected final boolean isInvNameLocalized;
 	private IItemHandlerModifiable handler;
 
 	public GenericInventory(String name, boolean isInvNameLocalized, int size) {

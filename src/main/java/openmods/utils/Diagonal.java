@@ -15,7 +15,7 @@ public enum Diagonal {
 	public final int offsetY;
 	public final int offsetZ;
 
-	private Diagonal(EnumFacing a, EnumFacing b) {
+	Diagonal(EnumFacing a, EnumFacing b) {
 		final Vec3i va = a.getDirectionVec();
 		final Vec3i vb = b.getDirectionVec();
 		this.offsetX = va.getX() + vb.getX();

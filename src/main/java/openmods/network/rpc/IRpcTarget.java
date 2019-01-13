@@ -7,11 +7,11 @@ import net.minecraftforge.fml.relauncher.Side;
 
 public interface IRpcTarget {
 
-	public Object getTarget();
+	Object getTarget();
 
-	public void writeToStream(PacketBuffer output) throws IOException;
+	void writeToStream(PacketBuffer output) throws IOException;
 
-	public void readFromStreamStream(Side side, EntityPlayer player, PacketBuffer input) throws IOException;
+	void readFromStreamStream(Side side, EntityPlayer player, PacketBuffer input) throws IOException;
 
-	public void afterCall();
+	void afterCall();
 }

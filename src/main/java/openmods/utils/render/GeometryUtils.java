@@ -25,7 +25,7 @@ public class GeometryUtils {
 		public final EnumFacing positive;
 		public final EnumFacing negative;
 
-		private Axis(int dx, int dy, int dz, EnumFacing positive, EnumFacing negative) {
+		Axis(int dx, int dy, int dz, EnumFacing positive, EnumFacing negative) {
 			this.dx = dx;
 			this.dy = dy;
 			this.dz = dz;
@@ -72,7 +72,7 @@ public class GeometryUtils {
 			return name;
 		}
 
-		private Octant(String friendlyName, EnumFacing dirX, EnumFacing dirY, EnumFacing dirZ) {
+		Octant(String friendlyName, EnumFacing dirX, EnumFacing dirY, EnumFacing dirZ) {
 			this.x = dirX.getFrontOffsetX() + dirY.getFrontOffsetX() + dirZ.getFrontOffsetX();
 			this.y = dirX.getFrontOffsetY() + dirY.getFrontOffsetY() + dirZ.getFrontOffsetY();
 			this.z = dirX.getFrontOffsetZ() + dirY.getFrontOffsetZ() + dirZ.getFrontOffsetZ();
@@ -101,7 +101,7 @@ public class GeometryUtils {
 		public final int x;
 		public final int z;
 
-		private Quadrant(int x, int z) {
+		Quadrant(int x, int z) {
 			this.x = x;
 			this.z = z;
 		}

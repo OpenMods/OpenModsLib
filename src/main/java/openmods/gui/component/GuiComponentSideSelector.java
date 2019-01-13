@@ -36,8 +36,8 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	private static final double SQRT_3 = Math.sqrt(3);
 
 	@FunctionalInterface
-	public static interface ISideSelectedListener extends IListenerBase {
-		public void onSideToggled(EnumFacing side, boolean currentState);
+	public interface ISideSelectedListener extends IListenerBase {
+		void onSideToggled(EnumFacing side, boolean currentState);
 	}
 
 	private final TrackballWrapper trackball = new TrackballWrapper(1, 40);
@@ -46,14 +46,14 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	private final double scale;
 	private EnumFacing lastSideHovered;
 	private final Set<EnumFacing> selectedSides = EnumSet.noneOf(EnumFacing.class);
-	private boolean highlightSelectedSides = true;
+	private boolean highlightSelectedSides;
 
 	private boolean isInInitialPosition;
 
 	private ISideSelectedListener sideSelectedListener;
 
-	private IBlockState blockState;
-	private TileEntity te;
+	private final IBlockState blockState;
+	private final TileEntity te;
 	private final FakeBlockAccess access;
 
 	public GuiComponentSideSelector(int x, int y, double scale, IBlockState blockState, TileEntity te, boolean highlightSelectedSides) {
@@ -68,7 +68,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (isInInitialPosition == false || Mouse.isButtonDown(2)) {
+		if (!isInInitialPosition || Mouse.isButtonDown(2)) {
 			final Entity rve = parent.getMinecraft().getRenderViewEntity();
 			trackball.setTransform(MathUtils.createEntityRotateMatrix(rve));
 			isInInitialPosition = true;

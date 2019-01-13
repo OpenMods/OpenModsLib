@@ -17,7 +17,7 @@ public class ModelTextureMap {
 	private final Map<String, ResourceLocation> textures;
 
 	public ModelTextureMap() {
-		this(ImmutableMap.<String, ResourceLocation> of());
+		this(ImmutableMap.of());
 	}
 
 	private ModelTextureMap(Map<String, ResourceLocation> textures) {

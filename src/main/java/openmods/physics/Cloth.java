@@ -5,10 +5,13 @@ import java.util.List;
 
 public class Cloth {
 
-	private List<Constraint> constraints = Lists.newArrayList();
-	public Point[][] points;
-	private double max_dim, spacing;
-	private int num_x_points, num_y_points, n_constraints;
+	private final List<Constraint> constraints = Lists.newArrayList();
+	public final Point[][] points;
+	private final double max_dim;
+	private final double spacing;
+	private final int num_x_points;
+	private final int num_y_points;
+	private final int n_constraints;
 
 	private static final int PHYSICS_ITERATIONS = 2;
 

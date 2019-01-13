@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NetworkEventMeta {
-	public EventDirection direction() default EventDirection.ANY;
+	EventDirection direction() default EventDirection.ANY;
 }

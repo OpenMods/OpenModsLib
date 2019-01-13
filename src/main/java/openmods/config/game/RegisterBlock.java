@@ -12,41 +12,41 @@ import openmods.item.ItemOpenBlock;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface RegisterBlock {
-	public static final String DEFAULT = "[default]";
-	public static final String NONE = "[none]";
+	String DEFAULT = "[default]";
+	String NONE = "[none]";
 
-	public @interface RegisterTileEntity {
-		public String name();
+	@interface RegisterTileEntity {
+		String name();
 
-		public Class<? extends TileEntity> cls();
+		Class<? extends TileEntity> cls();
 
-		public boolean main() default false;
+		boolean main() default false;
 	}
 
 	// if left default, will use field type
-	public Class<? extends Block> type() default Block.class;
+	Class<? extends Block> type() default Block.class;
 
-	public String id();
+	String id();
 
-	public boolean registerItemBlock() default true;
+	boolean registerItemBlock() default true;
 
-	public Class<? extends ItemBlock> itemBlock() default ItemOpenBlock.class;
+	Class<? extends ItemBlock> itemBlock() default ItemOpenBlock.class;
 
-	public Class<? extends TileEntity> tileEntity() default TileEntity.class;
+	Class<? extends TileEntity> tileEntity() default TileEntity.class;
 
-	public RegisterTileEntity[] tileEntities() default {};
+	RegisterTileEntity[] tileEntities() default {};
 
-	public String unlocalizedName() default DEFAULT;
+	String unlocalizedName() default DEFAULT;
 
-	public boolean isEnabled() default true;
+	boolean isEnabled() default true;
 
-	public boolean isConfigurable() default true;
+	boolean isConfigurable() default true;
 
-	public boolean registerDefaultItemModel() default true;
+	boolean registerDefaultItemModel() default true;
 
-	public boolean addToModCreativeTab() default true;
+	boolean addToModCreativeTab() default true;
 
-	public Class<? extends ICustomItemModelProvider> customItemModels() default ICustomItemModelProvider.class;
+	Class<? extends ICustomItemModelProvider> customItemModels() default ICustomItemModelProvider.class;
 
-	public String[] legacyIds() default {};
+	String[] legacyIds() default {};
 }

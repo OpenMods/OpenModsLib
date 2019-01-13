@@ -25,7 +25,7 @@ public class GenericTank extends FluidTank {
 
 	@FunctionalInterface
 	public interface IFluidFilter {
-		public boolean canAcceptFluid(FluidStack stack);
+		boolean canAcceptFluid(FluidStack stack);
 	}
 
 	private static final IFluidFilter NO_RESTRICTIONS = stack -> true;

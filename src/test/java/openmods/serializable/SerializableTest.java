@@ -164,7 +164,7 @@ public class SerializableTest {
 			this.delegate = delegate;
 		}
 
-		public IStreamSerializable delegate;
+		public final IStreamSerializable delegate;
 
 		@Override
 		public void readFromStream(PacketBuffer input) throws IOException {
@@ -200,13 +200,13 @@ public class SerializableTest {
 		Mockito.verify(outputInstance.delegate).readFromStream(Matchers.any(PacketBuffer.class));
 	}
 
-	public static enum SingleClassEnum {
+	public enum SingleClassEnum {
 		A,
 		B,
 		C
 	}
 
-	public static enum MultipleClassEnum {
+	public enum MultipleClassEnum {
 		A {},
 		B {},
 		C {}
@@ -302,17 +302,17 @@ public class SerializableTest {
 		public List<MultipleClassEnum> enums = Lists.newArrayList(null, MultipleClassEnum.A, MultipleClassEnum.C);
 
 		@FieldTest
-		public List<List<Integer>> nested = Lists.newArrayList();
+		public final List<List<Integer>> nested = Lists.newArrayList();
 
 		{
 			nested.add(Lists.newArrayList(1, 2, 3));
 			nested.add(null);
-			nested.add(Lists.<Integer> newArrayList());
+			nested.add(Lists.newArrayList());
 		}
 	}
 
 	@Test
-	public void testGenericList() throws Exception {
+	public void testGenericList() {
 		testGenericFields(new TestGenericList());
 	}
 
@@ -331,17 +331,17 @@ public class SerializableTest {
 		public Set<MultipleClassEnum> enums = Sets.newHashSet(null, MultipleClassEnum.A, MultipleClassEnum.C);
 
 		@FieldTest
-		public Set<Set<Integer>> nested = Sets.newHashSet();
+		public final Set<Set<Integer>> nested = Sets.newHashSet();
 
 		{
 			nested.add(Sets.newHashSet(1, 3, 3, null));
 			nested.add(null);
-			nested.add(Sets.<Integer> newHashSet());
+			nested.add(Sets.newHashSet());
 		}
 	}
 
 	@Test
-	public void testGenericSet() throws Exception {
+	public void testGenericSet() {
 		testGenericFields(new TestGenericSet());
 	}
 
@@ -351,7 +351,7 @@ public class SerializableTest {
 		public Map<Integer, String> empty = Maps.newHashMap();
 
 		@FieldTest
-		public Map<String, Boolean> nonNull = Maps.newHashMap();
+		public final Map<String, Boolean> nonNull = Maps.newHashMap();
 
 		{
 			for (int i = 0; i < 11; i++)
@@ -359,7 +359,7 @@ public class SerializableTest {
 		}
 
 		@FieldTest
-		public Map<Float, String> nulls = Maps.newHashMap();
+		public final Map<Float, String> nulls = Maps.newHashMap();
 
 		{
 			nulls.put(null, "aaaa");
@@ -373,7 +373,7 @@ public class SerializableTest {
 		}
 
 		@FieldTest
-		public Map<Float, String> doubleNull = Maps.newHashMap();
+		public final Map<Float, String> doubleNull = Maps.newHashMap();
 
 		{
 			doubleNull.put(null, null);
@@ -383,10 +383,10 @@ public class SerializableTest {
 		public Map<String, MultipleClassEnum> enums = ImmutableMap.of("fff", MultipleClassEnum.A, "bbb", MultipleClassEnum.C);
 
 		@FieldTest
-		public Map<Map<String, Integer>, Map<Float, Boolean>> nested = Maps.newHashMap();
+		public final Map<Map<String, Integer>, Map<Float, Boolean>> nested = Maps.newHashMap();
 
 		{
-			nested.put(ImmutableMap.of("a", 3, "f", 5), Maps.<Float, Boolean> newHashMap());
+			nested.put(ImmutableMap.of("a", 3, "f", 5), Maps.newHashMap());
 			nested.put(null, ImmutableMap.of(4.0f, true, 5.0f, false));
 			nested.put(ImmutableMap.of("zzz", 2, "ddd", 4), null);
 
@@ -405,26 +405,26 @@ public class SerializableTest {
 	}
 
 	@Test
-	public void testGenericMap() throws Exception {
+	public void testGenericMap() {
 		testGenericFields(new TestGenericMap());
 	}
 
 	public static class TestGenericMixed {
 
 		@FieldTest
-		public List<Set<String>> listOfSets = Lists.newArrayList();
+		public final List<Set<String>> listOfSets = Lists.newArrayList();
 
 		{
 			listOfSets.add(Sets.newHashSet("A", null, "c"));
 			listOfSets.add(null);
-			listOfSets.add(Sets.<String> newHashSet());
+			listOfSets.add(Sets.newHashSet());
 		}
 
 		@FieldTest
-		public List<Map<String, Integer>> listOfMaps = Lists.newArrayList();
+		public final List<Map<String, Integer>> listOfMaps = Lists.newArrayList();
 
 		{
-			listOfMaps.add(Maps.<String, Integer> newHashMap());
+			listOfMaps.add(Maps.newHashMap());
 
 			Map<String, Integer> k = Maps.newHashMap();
 			k.put(null, 3);
@@ -436,16 +436,16 @@ public class SerializableTest {
 		}
 
 		@FieldTest
-		public Set<List<Float>> setOfLists = Sets.newHashSet();
+		public final Set<List<Float>> setOfLists = Sets.newHashSet();
 
 		{
-			setOfLists.add(Lists.<Float> newArrayList());
+			setOfLists.add(Lists.newArrayList());
 			setOfLists.add(null);
 			setOfLists.add(Lists.newArrayList(1.0f, null, 3.0f));
 		}
 
 		@FieldTest
-		public Set<Map<String, Boolean>> setOfMaps = Sets.newHashSet();
+		public final Set<Map<String, Boolean>> setOfMaps = Sets.newHashSet();
 
 		{
 			setOfMaps.add(ImmutableMap.of("a", true, "d", false));
@@ -456,23 +456,23 @@ public class SerializableTest {
 
 			setOfMaps.add(k);
 
-			setOfMaps.add(Maps.<String, Boolean> newHashMap());
+			setOfMaps.add(Maps.newHashMap());
 		}
 
 		@FieldTest
-		public Map<Set<Integer>, List<Boolean>> mapOfSetsToLists = Maps.newHashMap();
+		public final Map<Set<Integer>, List<Boolean>> mapOfSetsToLists = Maps.newHashMap();
 
 		{
 			mapOfSetsToLists.put(Sets.newHashSet(1, 2, 3), Lists.newArrayList(false, true));
 			mapOfSetsToLists.put(Sets.newHashSet(5, 9, 7), Lists.newArrayList(false, true));
-			mapOfSetsToLists.put(Sets.<Integer> newHashSet(), Lists.<Boolean> newArrayList());
-			mapOfSetsToLists.put(null, Lists.<Boolean> newArrayList(false, true, false));
+			mapOfSetsToLists.put(Sets.newHashSet(), Lists.newArrayList());
+			mapOfSetsToLists.put(null, Lists.newArrayList(false, true, false));
 			mapOfSetsToLists.put(Sets.newHashSet(4, 2, 5), null);
 		}
 	}
 
 	@Test
-	public void testGenericMixed() throws Exception {
+	public void testGenericMixed() {
 		testGenericFields(new TestGenericMixed());
 	}
 
@@ -513,7 +513,7 @@ public class SerializableTest {
 		public int intField = 9;
 
 		@Serialize
-		public SimpleSerializableClass nonNullField = new SimpleSerializableClass();
+		public final SimpleSerializableClass nonNullField = new SimpleSerializableClass();
 
 		@Serialize
 		public SimpleSerializableClass nullField = new SimpleSerializableClass();

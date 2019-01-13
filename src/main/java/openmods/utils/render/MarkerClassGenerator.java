@@ -18,8 +18,8 @@ public class MarkerClassGenerator {
 		}
 	}
 
-	public static interface IGeneratedMarkerClass {
-		public int getMarkerValue();
+	public interface IGeneratedMarkerClass {
+		int getMarkerValue();
 	}
 
 	private static final String[] interfaces = new String[] { Type.getInternalName(IGeneratedMarkerClass.class) };

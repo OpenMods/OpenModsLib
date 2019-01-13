@@ -20,7 +20,7 @@ import org.mockito.Mockito;
 
 public class EvalModelTest {
 
-	private static final ImmutableMap<String, Float> NO_ARGS = ImmutableMap.<String, Float> of();
+	private static final ImmutableMap<String, Float> NO_ARGS = ImmutableMap.of();
 
 	private static class Tester {
 		private final Map<String, Float> state = Maps.newHashMap();

@@ -26,7 +26,7 @@ public class ExtendedOutboundHandler extends ChannelOutboundHandlerAdapter {
 	}
 
 	@Override
-	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
 		if (!(msg instanceof FMLProxyPacket)) {
 			ctx.write(msg);
 			return;

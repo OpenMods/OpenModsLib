@@ -38,16 +38,16 @@ import openmods.utils.CachedInstanceFactory;
 public class GameRegistryObjectsProvider {
 
 	private interface IAnnotationAccess<A extends Annotation, I> {
-		public String getEntryId(A annotation);
+		String getEntryId(A annotation);
 
-		public Class<? extends I> getObjectType(A annotation);
+		Class<? extends I> getObjectType(A annotation);
 
-		public boolean isEnabled(String name);
+		boolean isEnabled(String name);
 	}
 
 	@FunctionalInterface
 	private interface IObjectVisitor<I, A extends Annotation> {
-		public void visit(I entry, A annotation);
+		void visit(I entry, A annotation);
 	}
 
 	private static final AbstractFeatureManager NULL_FEATURE_MANAGER = new AbstractFeatureManager() {
@@ -227,7 +227,7 @@ public class GameRegistryObjectsProvider {
 
 	@FunctionalInterface
 	private interface IdSetter {
-		public void setId(String id);
+		void setId(String id);
 	}
 
 	private static void setPrefixedId(String id, String objectName, IdDecorator decorator, IdSetter setter, String noneValue, String defaultValue) {
@@ -315,7 +315,7 @@ public class GameRegistryObjectsProvider {
 		setPrefixedId(id, blockName, decorator, setter, RegisterBlock.NONE, RegisterBlock.DEFAULT);
 	}
 
-	private static Class<?>[] ITEM_BLOCK_CTOR_ARGS = new Class<?>[] { Block.class };
+	private static final Class<?>[] ITEM_BLOCK_CTOR_ARGS = new Class<?>[] { Block.class };
 
 	private static ItemBlock initializeItemBlock(Class<? extends ItemBlock> cls, Block block) {
 		try {

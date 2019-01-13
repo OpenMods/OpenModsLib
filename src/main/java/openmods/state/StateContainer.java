@@ -20,7 +20,7 @@ public class StateContainer {
 
 	private final List<State> allStates;
 
-	private static final Comparator<IProperty<?>> PROPERTY_NAME_COMPARATOR = (o1, o2) -> o1.getName().compareTo(o2.getName());
+	private static final Comparator<IProperty<?>> PROPERTY_NAME_COMPARATOR = Comparator.comparing(IProperty::getName);
 
 	public StateContainer(IProperty<?>... properties) {
 		this(Arrays.asList(properties));
@@ -29,7 +29,7 @@ public class StateContainer {
 	public StateContainer(List<IProperty<?>> properties) {
 		List<IProperty<?>> sortedProperties = Lists.newArrayList(properties);
 
-		Collections.sort(sortedProperties, PROPERTY_NAME_COMPARATOR);
+		sortedProperties.sort(PROPERTY_NAME_COMPARATOR);
 
 		List<Collection<? extends Comparable<?>>> allAlowedValues = Lists.newArrayList();
 

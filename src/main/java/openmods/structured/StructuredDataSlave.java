@@ -81,14 +81,12 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 				} else if (c instanceof Create) {
 					final Create msg = (Create)c;
 
-					SortedSet<Integer> containers = Sets.newTreeSet();
 					SortedSet<Integer> elements = Sets.newTreeSet();
 
 					for (ContainerInfo info : msg.containers) {
 						SortedSet<Integer> newElementsId = createAndAddContainer(msg.containerPayload, info.type, info.id, info.start);
 						elements.addAll(newElementsId);
 						updatedContainers.putAll(info.id, newElementsId);
-						containers.add(info.id);
 					}
 
 					if (msg.containerPayload.readableBytes() != 0) throw new ConsistencyCheckFailed("Container payload not fully consumed");
@@ -136,12 +134,7 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 
 	private SortedSet<Integer> createAndAddContainer(PacketBuffer input, int type, int containerId, int start) {
 		C container = factory.createContainer(type);
-		try {
-			if (container instanceof ICustomCreateData) ((ICustomCreateData)container).readCustomDataFromStream(input);
-		} catch (IOException e) {
-			throw new ConsistencyCheckFailed(e, "Failed to read element %d, type %d", containerId, type);
-		}
-
+		if (container instanceof ICustomCreateData) ((ICustomCreateData)container).readCustomDataFromStream(input);
 		if (containerToElement.containsEntry(containerId, start)) throw new ConsistencyCheckFailed("Container %d already exists", containerId);
 		addContainer(containerId, container, start);
 		return containerToElement.get(containerId);

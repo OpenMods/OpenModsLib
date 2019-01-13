@@ -1,11 +1,11 @@
 package openmods.api;
 
 public interface IProxy {
-	public void preInit();
+	void preInit();
 
-	public void init();
+	void init();
 
-	public void postInit();
+	void postInit();
 
-	public void registerRenderInformation();
+	void registerRenderInformation();
 }

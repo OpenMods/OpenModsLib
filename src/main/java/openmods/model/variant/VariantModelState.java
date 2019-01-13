@@ -40,7 +40,7 @@ public class VariantModelState {
 	}
 
 	private VariantModelState() {
-		this(ImmutableMap.<String, String> of());
+		this(ImmutableMap.of());
 	}
 
 	public static VariantModelState create() {

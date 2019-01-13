@@ -27,14 +27,14 @@ public class BufferHelper {
 		return methods;
 	}
 
-	public static interface IBufferMethods {
-		public int glGenBuffers();
+	public interface IBufferMethods {
+		int glGenBuffers();
 
-		public void glBindBuffer(int target, int buffer);
+		void glBindBuffer(int target, int buffer);
 
-		public void glBufferData(int target, ByteBuffer data, int usage);
+		void glBufferData(int target, ByteBuffer data, int usage);
 
-		public void glDeleteBuffers(int buffer);
+		void glDeleteBuffers(int buffer);
 	}
 
 	private static class GLBufferMethods implements IBufferMethods {

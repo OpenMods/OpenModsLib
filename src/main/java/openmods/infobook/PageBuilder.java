@@ -27,8 +27,7 @@ import openmods.utils.TranslationUtils;
 
 public class PageBuilder {
 	public interface StackProvider<T> {
-		@Nonnull
-		public ItemStack createStack(String modId, String name, T item);
+		@Nonnull ItemStack createStack(String modId, String name, T item);
 	}
 
 	private static final CachedInstanceFactory<ICustomBookEntryProvider> PROVIDERS = CachedInstanceFactory.create();
@@ -140,7 +139,7 @@ public class PageBuilder {
 		for (ItemStackTocPage tocPage : tocPages)
 			if (tocPage.addEntry(stack, (component, x, y, button) -> book.changePage(target))) return;
 
-		throw new IllegalStateException(String.format("Tried to add more TOC entries than allocated"));
+		throw new IllegalStateException("Tried to add more TOC entries than allocated");
 	}
 
 	private void addPage(String id, String modId, String type, boolean hasVideo, @Nonnull ItemStack stack) {
@@ -155,7 +154,7 @@ public class PageBuilder {
 			final String mediaKey = getMediaLink(modId, type, id);
 			pages.put(translatedName + ":" + id, new Entry(stack, nameKey, descriptionKey, Optional.of(mediaKey)));
 		} else {
-			pages.put(translatedName + ":" + id, new Entry(stack, nameKey, descriptionKey, Optional.<String> absent()));
+			pages.put(translatedName + ":" + id, new Entry(stack, nameKey, descriptionKey, Optional.absent()));
 		}
 	}
 
