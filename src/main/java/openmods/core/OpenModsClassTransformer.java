@@ -2,16 +2,10 @@ package openmods.core;
 
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraftforge.fml.common.discovery.ASMDataTable;
-import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData;
 import openmods.Log;
 import openmods.api.IResultListener;
 import openmods.asm.TransformerState;
@@ -20,7 +14,6 @@ import openmods.asm.VisitorHelper.TransformProvider;
 import openmods.config.simple.ConfigProcessor;
 import openmods.config.simple.ConfigProcessor.UpdateListener;
 import openmods.core.fixes.HorseNullFix;
-import openmods.include.IncludingClassVisitor;
 import openmods.renderer.PlayerRendererHookVisitor;
 import openmods.renderer.PreWorldRenderHookVisitor;
 import openmods.utils.StateTracker;
@@ -32,21 +25,9 @@ public class OpenModsClassTransformer implements IClassTransformer {
 
 	private static OpenModsClassTransformer INSTANCE;
 
-	private static final List<String> IGNORED_PREFIXES = ImmutableList.of(
-			"cpw.mods.fml.",
-			"net.minecraftforge.",
-			"io.netty.",
-			"gnu.trove.",
-			"com.google.",
-			"com.mojang.",
-			"joptsimple.",
-			"tv.twitch.");
-
 	private final Map<String, TransformProvider> vanillaPatches = Maps.newHashMap();
 
 	private final StateTracker<TransformerState> states = StateTracker.create(TransformerState.DISABLED);
-
-	private Set<String> includedClasses;
 
 	private abstract class ConfigOption implements UpdateListener {
 
@@ -188,34 +169,6 @@ public class OpenModsClassTransformer implements IClassTransformer {
 
 	}
 
-	private final static TransformProvider INCLUDING_CV = new TransformProvider(0) {
-		@Override
-		public ClassVisitor createVisitor(String name, ClassVisitor cv) {
-			return new IncludingClassVisitor(cv);
-		}
-	};
-
-	public void injectAsmData(ASMDataTable table) {
-		ImmutableSet.Builder<String> includedClasses = ImmutableSet.builder();
-
-		for (ASMData data : table.getAll("openmods.include.IncludeInterface"))
-			includedClasses.add(data.getClassName());
-
-		for (ASMData data : table.getAll("openmods.include.IncludeOverride"))
-			includedClasses.add(data.getClassName());
-
-		this.includedClasses = includedClasses.build();
-	}
-
-	private boolean shouldTryIncluding(String clsName) {
-		if (includedClasses != null) return includedClasses.contains(clsName);
-
-		for (String prefix : IGNORED_PREFIXES)
-			if (clsName.startsWith(prefix)) return false;
-
-		return true;
-	}
-
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] bytes) {
 		if (bytes == null) return null;
@@ -225,18 +178,7 @@ public class OpenModsClassTransformer implements IClassTransformer {
 			return (provider != null)? VisitorHelper.apply(bytes, name, provider) : bytes;
 		}
 
-		if (shouldTryIncluding(transformedName)) return applyIncludes(name, transformedName, bytes);
-
 		return bytes;
-	}
-
-	protected byte[] applyIncludes(final String name, String transformedName, byte[] bytes) {
-		try {
-			return VisitorHelper.apply(bytes, name, INCLUDING_CV);
-		} catch (Throwable t) {
-			Log.severe(t, "Failed to apply including transformer on %s(%s)", name, transformedName);
-			throw t;
-		}
 	}
 
 	public String listStates() {

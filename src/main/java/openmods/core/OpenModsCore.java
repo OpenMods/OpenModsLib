@@ -31,9 +31,7 @@ public class OpenModsCore extends DummyModContainer {
 
 	@Subscribe
 	public void modConstruction(FMLConstructionEvent evt) {
-		OpenModsClassTransformer.instance().injectAsmData(evt.getASMHarvestedData());
 		FMLCommonHandler.instance().registerCrashCallable(new ICrashCallable() {
-
 			@Override
 			public String call() {
 				return OpenModsClassTransformer.instance().listStates();
