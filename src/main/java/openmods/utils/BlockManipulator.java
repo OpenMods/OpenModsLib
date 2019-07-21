@@ -2,10 +2,10 @@ package openmods.utils;
 
 import com.google.common.base.Preconditions;
 import javax.annotation.Nonnull;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -17,7 +17,7 @@ public class BlockManipulator {
 
 	public final World world;
 
-	public final EntityPlayer player;
+	public final PlayerEntity player;
 
 	public final BlockPos blockPos;
 
@@ -29,7 +29,7 @@ public class BlockManipulator {
 
 	private int blockPlaceFlags = BlockNotifyFlags.ALL;
 
-	public BlockManipulator(@Nonnull World world, @Nonnull EntityPlayer player, BlockPos blockPos) {
+	public BlockManipulator(@Nonnull World world, @Nonnull PlayerEntity player, BlockPos blockPos) {
 		Preconditions.checkNotNull(world);
 		this.world = world;
 
@@ -66,7 +66,7 @@ public class BlockManipulator {
 		}
 
 		if (eventCheck) {
-			final IBlockState blockState = world.getBlockState(blockPos);
+			final BlockState blockState = world.getBlockState(blockPos);
 			BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, blockPos, blockState, player);
 			event.setExpToDrop(0);
 
@@ -80,7 +80,7 @@ public class BlockManipulator {
 		return world.setBlockToAir(blockPos);
 	}
 
-	public boolean place(IBlockState state, EnumFacing direction, EnumHand hand) {
+	public boolean place(BlockState state, Direction direction, Hand hand) {
 		if (!world.isBlockLoaded(blockPos)) return false;
 
 		if (spawnProtection) {

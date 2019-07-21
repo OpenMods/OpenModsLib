@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraftforge.common.animation.Event;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.model.animation.IClip;
@@ -592,7 +592,7 @@ public class EvalModelTest {
 		final ClipStub clipStub = new ClipStub();
 		final IJointClip jointClipMock = clipStub.jointClipMock;
 
-		final TRSRTransformation transform = TRSRTransformation.from(EnumFacing.NORTH);
+		final TRSRTransformation transform = TRSRTransformation.from(Direction.NORTH);
 		Mockito.when(jointClipMock.apply(Matchers.anyFloat())).thenReturn(transform);
 
 		final float param = 1.3f;
@@ -612,7 +612,7 @@ public class EvalModelTest {
 		final ClipStub clipStub = new ClipStub();
 		final IJointClip jointClipMock = clipStub.jointClipMock;
 
-		final TRSRTransformation transform = TRSRTransformation.from(EnumFacing.NORTH);
+		final TRSRTransformation transform = TRSRTransformation.from(Direction.NORTH);
 		Mockito.when(jointClipMock.apply(Matchers.anyFloat())).thenReturn(transform);
 
 		final TRSRTransformation result = factory.createEvaluator(clips("clip", clipStub)).evaluate(DUMMY_JOINT, NO_ARGS);
@@ -630,7 +630,7 @@ public class EvalModelTest {
 		final ClipStub clipStub = new ClipStub();
 		final IJointClip jointClipMock = clipStub.jointClipMock;
 
-		final TRSRTransformation transform = TRSRTransformation.from(EnumFacing.NORTH);
+		final TRSRTransformation transform = TRSRTransformation.from(Direction.NORTH);
 		Mockito.when(jointClipMock.apply(Matchers.anyFloat())).thenReturn(transform);
 
 		final TRSRTransformation result = factory.createEvaluator(clips("clip", clipStub)).evaluate(DUMMY_JOINT, NO_ARGS);
@@ -648,7 +648,7 @@ public class EvalModelTest {
 		final ClipStub clipStub = new ClipStub();
 		final IJointClip jointClipMock = clipStub.jointClipMock;
 
-		final TRSRTransformation transform = TRSRTransformation.from(EnumFacing.NORTH);
+		final TRSRTransformation transform = TRSRTransformation.from(Direction.NORTH);
 		Mockito.when(jointClipMock.apply(Matchers.anyFloat())).thenReturn(transform);
 
 		final TRSRTransformation result = factory.createEvaluator(clips("clip", clipStub))
@@ -669,8 +669,8 @@ public class EvalModelTest {
 		final ClipStub clipStub = new ClipStub();
 		final IJointClip jointClipMock = clipStub.jointClipMock;
 
-		final TRSRTransformation transform1 = TRSRTransformation.from(EnumFacing.NORTH);
-		final TRSRTransformation transform2 = TRSRTransformation.from(EnumFacing.WEST);
+		final TRSRTransformation transform1 = TRSRTransformation.from(Direction.NORTH);
+		final TRSRTransformation transform2 = TRSRTransformation.from(Direction.WEST);
 		Mockito.when(jointClipMock.apply(1.4f)).thenReturn(transform1);
 		Mockito.when(jointClipMock.apply(2.1f)).thenReturn(transform2);
 
@@ -695,8 +695,8 @@ public class EvalModelTest {
 		final ClipStub clipStub2 = new ClipStub();
 		final IJointClip jointClipMock2 = clipStub2.jointClipMock;
 
-		final TRSRTransformation transform1 = TRSRTransformation.from(EnumFacing.EAST);
-		final TRSRTransformation transform2 = TRSRTransformation.from(EnumFacing.UP);
+		final TRSRTransformation transform1 = TRSRTransformation.from(Direction.EAST);
+		final TRSRTransformation transform2 = TRSRTransformation.from(Direction.UP);
 		Mockito.when(jointClipMock1.apply(Matchers.anyFloat())).thenReturn(transform1);
 		Mockito.when(jointClipMock2.apply(Matchers.anyFloat())).thenReturn(transform2);
 

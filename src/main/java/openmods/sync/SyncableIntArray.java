@@ -1,7 +1,7 @@
 package openmods.sync;
 
 import java.util.Arrays;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 public class SyncableIntArray extends SyncableObjectBase implements ISyncableValueProvider<int[]> {
@@ -65,12 +65,12 @@ public class SyncableIntArray extends SyncableObjectBase implements ISyncableVal
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound tag, String name) {
+	public void writeToNBT(CompoundNBT tag, String name) {
 		tag.setIntArray(name, value);
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound tag, String name) {
+	public void readFromNBT(CompoundNBT tag, String name) {
 		value = tag.getIntArray(name);
 	}
 

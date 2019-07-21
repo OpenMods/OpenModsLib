@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import openmods.block.BlockRotationMode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,7 +16,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class BlockRotationModeTest {
 
-	private static final Set<EnumFacing> HORIZONTALS = Sets.newHashSet(EnumFacing.HORIZONTALS);
+	private static final Set<Direction> HORIZONTALS = Sets.newHashSet(Direction.HORIZONTALS);
 
 	@RunWith(Parameterized.class)
 	public static class BasicProperties {
@@ -30,7 +30,7 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void testSurfacePlacementConsistency() {
-			for (EnumFacing facing : EnumFacing.values()) {
+			for (Direction facing : Direction.values()) {
 				Orientation orientation = mode.getOrientationFacing(facing);
 				if (orientation != null)
 					Assert.assertTrue("Orientation " + orientation + " is not valid",
@@ -40,7 +40,7 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void testLocalDirections() {
-			for (EnumFacing facing : EnumFacing.values()) {
+			for (Direction facing : Direction.values()) {
 				Orientation orientation = mode.getOrientationFacing(facing);
 				if (orientation != null)
 					Assert.assertNotNull("Orientation " + orientation + " is not valid",
@@ -75,7 +75,7 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void testHorizontals() {
-			for (EnumFacing facing : EnumFacing.HORIZONTALS) {
+			for (Direction facing : Direction.HORIZONTALS) {
 				Orientation orientation = mode.getOrientationFacing(facing);
 				Assert.assertNotNull(facing.toString(), orientation);
 			}
@@ -83,13 +83,13 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void testUp() {
-			Orientation orientation = mode.getOrientationFacing(EnumFacing.UP);
+			Orientation orientation = mode.getOrientationFacing(Direction.UP);
 			Assert.assertNull(orientation);
 		}
 
 		@Test
 		public void testDown() {
-			Orientation orientation = mode.getOrientationFacing(EnumFacing.DOWN);
+			Orientation orientation = mode.getOrientationFacing(Direction.DOWN);
 			Assert.assertNull(orientation);
 		}
 	}
@@ -111,7 +111,7 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void testAllDirectionsNonNull() {
-			for (EnumFacing facing : EnumFacing.values()) {
+			for (Direction facing : Direction.values()) {
 				Orientation orientation = mode.getOrientationFacing(facing);
 				Assert.assertNotNull(facing.toString(), orientation);
 			}
@@ -132,7 +132,7 @@ public class BlockRotationModeTest {
 		@Parameter
 		public BlockRotationMode mode;
 
-		private static void testTopIsHorizontalForVerticalFacing(BlockRotationMode mode, EnumFacing facing) {
+		private static void testTopIsHorizontalForVerticalFacing(BlockRotationMode mode, Direction facing) {
 			final Orientation orientation = mode.getOrientationFacing(facing);
 			Assert.assertNotNull(facing.toString(), orientation);
 			Assert.assertTrue(HORIZONTALS.contains(mode.getTop(orientation)));
@@ -140,12 +140,12 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void testTopIsHorizontalForUpFacing() {
-			testTopIsHorizontalForVerticalFacing(mode, EnumFacing.UP);
+			testTopIsHorizontalForVerticalFacing(mode, Direction.UP);
 		}
 
 		@Test
 		public void testTopIsHorizontalForDownFacing() {
-			testTopIsHorizontalForVerticalFacing(mode, EnumFacing.DOWN);
+			testTopIsHorizontalForVerticalFacing(mode, Direction.DOWN);
 		}
 	}
 
@@ -166,7 +166,7 @@ public class BlockRotationModeTest {
 		// front should be on the same axis as placement side
 		@Test
 		public void testSurfacePlacementFrontWeakConsistency() {
-			for (EnumFacing facing : EnumFacing.values()) {
+			for (Direction facing : Direction.values()) {
 				Orientation orientation = mode.getOrientationFacing(facing);
 				if (orientation != null) {
 					Assert.assertEquals("Orientation " + orientation + " has invalid placement/front combination",
@@ -193,7 +193,7 @@ public class BlockRotationModeTest {
 		// front should be on the same direction as placement side
 		@Test
 		public void testSurfacePlacementFrontStrongConsistency() {
-			for (EnumFacing facing : EnumFacing.values()) {
+			for (Direction facing : Direction.values()) {
 				Orientation orientation = mode.getOrientationFacing(facing);
 				if (orientation != null) {
 					Assert.assertEquals("Orientation " + orientation + " has invalid placement/front combination",
@@ -222,10 +222,10 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void testTopEqualsUpForAllHorizontals() {
-			for (EnumFacing facing : EnumFacing.HORIZONTALS) {
+			for (Direction facing : Direction.HORIZONTALS) {
 				final Orientation orientation = mode.getOrientationFacing(facing);
 				Assert.assertNotNull(facing.toString(), orientation);
-				Assert.assertEquals(facing.toString(), EnumFacing.UP, mode.getTop(orientation));
+				Assert.assertEquals(facing.toString(), Direction.UP, mode.getTop(orientation));
 			}
 		}
 	}
@@ -247,9 +247,9 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnFrontDoesntChangeFront() {
 			for (Orientation orientation : mode.getValidDirections()) {
-				EnumFacing front = mode.getFront(orientation);
+				Direction front = mode.getFront(orientation);
 				final Orientation rotatedOrientation = mode.calculateToolRotation(orientation, front);
-				EnumFacing rotatedFront = mode.getFront(rotatedOrientation);
+				Direction rotatedFront = mode.getFront(rotatedOrientation);
 				Assert.assertEquals(front, rotatedFront);
 			}
 		}
@@ -271,16 +271,16 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnFrontChangesFrontToOpposite() {
 			for (Orientation orientation : mode.getValidDirections()) {
-				EnumFacing front = mode.getFront(orientation);
+				Direction front = mode.getFront(orientation);
 				final Orientation rotatedOrientation = mode.calculateToolRotation(orientation, front);
-				EnumFacing rotatedFront = mode.getFront(rotatedOrientation);
+				Direction rotatedFront = mode.getFront(rotatedOrientation);
 				Assert.assertEquals(front.getOpposite(), rotatedFront);
 			}
 		}
 	}
 
-	public static void checkFrontDirectionsAfterFourRotations(BlockRotationMode mode, EnumFacing clickedSide, Orientation orientation, EnumFacing... expectedDirections) {
-		final Set<EnumFacing> results = Sets.newHashSet();
+	public static void checkFrontDirectionsAfterFourRotations(BlockRotationMode mode, Direction clickedSide, Orientation orientation, Direction... expectedDirections) {
+		final Set<Direction> results = Sets.newHashSet();
 		for (int i = 0; i < 4; i++) {
 			orientation = mode.calculateToolRotation(orientation, clickedSide);
 			Assert.assertTrue(mode.isOrientationValid(orientation));
@@ -290,8 +290,8 @@ public class BlockRotationModeTest {
 		Assert.assertEquals(Sets.newHashSet(expectedDirections), results);
 	}
 
-	public static void checkTopDirectionsAfterFourRotations(BlockRotationMode mode, EnumFacing clickedSide, Orientation orientation, EnumFacing... expectedDirections) {
-		final Set<EnumFacing> results = Sets.newHashSet();
+	public static void checkTopDirectionsAfterFourRotations(BlockRotationMode mode, Direction clickedSide, Orientation orientation, Direction... expectedDirections) {
+		final Set<Direction> results = Sets.newHashSet();
 		for (int i = 0; i < 4; i++) {
 			orientation = mode.calculateToolRotation(orientation, clickedSide);
 			Assert.assertTrue(mode.isOrientationValid(orientation));
@@ -318,10 +318,10 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnBackDoesntChangeFront() {
 			for (Orientation orientation : mode.getValidDirections()) {
-				final EnumFacing front = mode.getFront(orientation);
-				final EnumFacing back = front.getOpposite();
+				final Direction front = mode.getFront(orientation);
+				final Direction back = front.getOpposite();
 				final Orientation rotatedOrientation = mode.calculateToolRotation(orientation, back);
-				final EnumFacing rotatedFront = mode.getFront(rotatedOrientation);
+				final Direction rotatedFront = mode.getFront(rotatedOrientation);
 				Assert.assertEquals(front, rotatedFront);
 			}
 		}
@@ -344,9 +344,9 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnBackChangesFrontToOpposite() {
 			for (Orientation orientation : mode.getValidDirections()) {
-				final EnumFacing back = mode.getFront(orientation).getOpposite();
+				final Direction back = mode.getFront(orientation).getOpposite();
 				final Orientation rotatedOrientation = mode.calculateToolRotation(orientation, back);
-				final EnumFacing rotatedFront = mode.getFront(rotatedOrientation);
+				final Direction rotatedFront = mode.getFront(rotatedOrientation);
 				Assert.assertEquals(back, rotatedFront);
 			}
 		}
@@ -369,9 +369,9 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void exactlyOneOrientationForEveryFacing() {
-			final Map<EnumFacing, Orientation> stateMap = Maps.newHashMap();
+			final Map<Direction, Orientation> stateMap = Maps.newHashMap();
 			for (Orientation orientation : mode.getValidDirections()) {
-				final EnumFacing front = mode.getFront(orientation);
+				final Direction front = mode.getFront(orientation);
 				final Orientation prev = stateMap.put(front, orientation);
 				Assert.assertNull(prev);
 			}
@@ -394,7 +394,7 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnFrontDoesntChangeOrientation() {
 			for (Orientation orientation : mode.getValidDirections()) {
-				EnumFacing front = mode.getFront(orientation);
+				Direction front = mode.getFront(orientation);
 				final Orientation rotatedOrientation = mode.calculateToolRotation(orientation, front);
 				Assert.assertEquals(orientation, rotatedOrientation);
 			}
@@ -417,13 +417,13 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnHorizontalsChangesFrontToClickedSide() {
 			for (Orientation initialOrientation : mode.getValidDirections()) {
-				for (EnumFacing rotatedSide : EnumFacing.HORIZONTALS) {
+				for (Direction rotatedSide : Direction.HORIZONTALS) {
 					Orientation orientation = initialOrientation;
 					final Set<Orientation> results = Sets.newHashSet();
 					for (int i = 0; i < 4; i++) {
-						final EnumFacing preRotationFront = mode.getFront(orientation);
+						final Direction preRotationFront = mode.getFront(orientation);
 						orientation = mode.calculateToolRotation(orientation, rotatedSide);
-						final EnumFacing postRotationFront = mode.getFront(orientation);
+						final Direction postRotationFront = mode.getFront(orientation);
 						Assert.assertTrue(mode.isOrientationValid(orientation));
 						if (preRotationFront == rotatedSide)
 							Assert.assertEquals(postRotationFront, rotatedSide.getOpposite());
@@ -445,9 +445,9 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnHorizontalChangesFrontAxisToClickedSide() {
 			for (Orientation orientation : MODE.getValidDirections()) {
-				for (EnumFacing rotatedSide : EnumFacing.HORIZONTALS) {
+				for (Direction rotatedSide : Direction.HORIZONTALS) {
 					final Orientation rotatedOrientation = MODE.calculateToolRotation(orientation, rotatedSide);
-					final EnumFacing rotatedFront = MODE.getFront(rotatedOrientation);
+					final Direction rotatedFront = MODE.getFront(rotatedOrientation);
 					Assert.assertEquals(rotatedSide.getAxis(), rotatedFront.getAxis());
 				}
 			}
@@ -455,12 +455,12 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void toolTopRotationCoversHorizontals() {
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.UP, Orientation.XP_YP, EnumFacing.NORTH, EnumFacing.WEST);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, Direction.NORTH, Direction.WEST);
 		}
 
 		@Test
 		public void toolBottomRotationCoversHorizontals() {
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.DOWN, Orientation.XP_YP, EnumFacing.NORTH, EnumFacing.WEST);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, Direction.NORTH, Direction.WEST);
 		}
 	}
 
@@ -471,9 +471,9 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnAnySideChangesFrontAxisToClickedSide() {
 			for (Orientation orientation : MODE.getValidDirections()) {
-				for (EnumFacing rotatedSide : EnumFacing.VALUES) {
+				for (Direction rotatedSide : Direction.VALUES) {
 					final Orientation rotatedOrientation = MODE.calculateToolRotation(orientation, rotatedSide);
-					final EnumFacing rotatedFront = MODE.getFront(rotatedOrientation);
+					final Direction rotatedFront = MODE.getFront(rotatedOrientation);
 					Assert.assertEquals(rotatedSide.getAxis(), rotatedFront.getAxis());
 				}
 			}
@@ -485,12 +485,12 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void toolTopRotationCoversHorizontals() {
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.UP, Orientation.XP_YP, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST);
 		}
 
 		@Test
 		public void toolBottomRotationCoversHorizontals() {
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.DOWN, Orientation.XP_YP, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST);
 		}
 	}
 
@@ -501,7 +501,7 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnAnySideChangesFrontToClickedSideOrOpposite() {
 			for (Orientation orientation : MODE.getValidDirections()) {
-				for (EnumFacing rotatedSide : EnumFacing.VALUES) {
+				for (Direction rotatedSide : Direction.VALUES) {
 					checkFrontDirectionsAfterFourRotations(MODE, rotatedSide, orientation, rotatedSide, rotatedSide.getOpposite());
 				}
 			}
@@ -514,38 +514,38 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void toolRotationOnTopCoversHorizontals() {
-			checkTopDirectionsAfterFourRotations(MODE, EnumFacing.UP, Orientation.XP_YP, EnumFacing.HORIZONTALS);
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.UP, Orientation.XP_YP, EnumFacing.UP);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, Direction.HORIZONTALS);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, Direction.UP);
 		}
 
 		@Test
 		public void toolRotationOnBottomCoversHorizontals() {
-			checkTopDirectionsAfterFourRotations(MODE, EnumFacing.DOWN, Orientation.XP_YP, EnumFacing.HORIZONTALS);
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.DOWN, Orientation.XP_YP, EnumFacing.UP);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, Direction.HORIZONTALS);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, Direction.UP);
 		}
 
 		@Test
 		public void toolRotationOnEastCoversFourSides() {
-			checkTopDirectionsAfterFourRotations(MODE, EnumFacing.EAST, Orientation.XP_YP, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.UP, EnumFacing.DOWN);
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.EAST, Orientation.XP_YP, EnumFacing.WEST);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.EAST, Orientation.XP_YP, Direction.NORTH, Direction.SOUTH, Direction.UP, Direction.DOWN);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.EAST, Orientation.XP_YP, Direction.WEST);
 		}
 
 		@Test
 		public void toolRotationOnWestCoversFourSides() {
-			checkTopDirectionsAfterFourRotations(MODE, EnumFacing.WEST, Orientation.XP_YP, EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.UP, EnumFacing.DOWN);
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.WEST, Orientation.XP_YP, EnumFacing.WEST);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.WEST, Orientation.XP_YP, Direction.NORTH, Direction.SOUTH, Direction.UP, Direction.DOWN);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.WEST, Orientation.XP_YP, Direction.WEST);
 		}
 
 		@Test
 		public void toolRotationOnNorthCoversFourSides() {
-			checkTopDirectionsAfterFourRotations(MODE, EnumFacing.NORTH, Orientation.XP_YP, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.UP, EnumFacing.DOWN);
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.NORTH, Orientation.XP_YP, EnumFacing.NORTH);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.NORTH, Orientation.XP_YP, Direction.EAST, Direction.WEST, Direction.UP, Direction.DOWN);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.NORTH, Orientation.XP_YP, Direction.NORTH);
 		}
 
 		@Test
 		public void toolRotationOnSouthCoversFourSides() {
-			checkTopDirectionsAfterFourRotations(MODE, EnumFacing.SOUTH, Orientation.XP_YP, EnumFacing.EAST, EnumFacing.WEST, EnumFacing.UP, EnumFacing.DOWN);
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.SOUTH, Orientation.XP_YP, EnumFacing.NORTH);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.SOUTH, Orientation.XP_YP, Direction.EAST, Direction.WEST, Direction.UP, Direction.DOWN);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.SOUTH, Orientation.XP_YP, Direction.NORTH);
 		}
 	}
 
@@ -555,22 +555,22 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void toolRotationOnTopCoversHorizontals() {
-			checkTopDirectionsAfterFourRotations(MODE, EnumFacing.UP, Orientation.XP_YP, EnumFacing.HORIZONTALS);
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.UP, Orientation.XP_YP, EnumFacing.UP);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, Direction.HORIZONTALS);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, Direction.UP);
 		}
 
 		@Test
 		public void toolRotationOnBottomCoversHorizontals() {
-			checkTopDirectionsAfterFourRotations(MODE, EnumFacing.DOWN, Orientation.XP_YP, EnumFacing.HORIZONTALS);
-			checkFrontDirectionsAfterFourRotations(MODE, EnumFacing.DOWN, Orientation.XP_YP, EnumFacing.DOWN);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, Direction.HORIZONTALS);
+			checkFrontDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, Direction.DOWN);
 		}
 
 		@Test
 		public void toolRotationOnHorizontalChangesFrontToOpposite() {
-			for (EnumFacing front : EnumFacing.HORIZONTALS) {
+			for (Direction front : Direction.HORIZONTALS) {
 				Orientation orientation = MODE.getOrientationFacing(front);
 				final Orientation rotatedOrientation = MODE.calculateToolRotation(orientation, front);
-				EnumFacing rotatedFront = MODE.getFront(rotatedOrientation);
+				Direction rotatedFront = MODE.getFront(rotatedOrientation);
 				Assert.assertEquals(front.getOpposite(), rotatedFront);
 			}
 		}

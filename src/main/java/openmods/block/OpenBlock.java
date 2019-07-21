@@ -7,23 +7,23 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Enchantments;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.stats.StatList;
+import net.minecraft.stats.Stats;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
@@ -184,25 +184,25 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	protected Orientation getOrientation(IBlockAccess world, BlockPos pos) {
-		final IBlockState state = world.getBlockState(pos);
+		final BlockState state = world.getBlockState(pos);
 		return getOrientation(state);
 	}
 
-	public Orientation getOrientation(IBlockState state) {
+	public Orientation getOrientation(BlockState state) {
 		// sometimes we get air block...
 		if (state.getBlock() != this) return Orientation.XP_YP;
 		return state.getValue(propertyOrientation);
 	}
 
-	public EnumFacing getFront(IBlockState state) {
+	public Direction getFront(BlockState state) {
 		return rotationMode.getFront(getOrientation(state));
 	}
 
-	public EnumFacing getBack(IBlockState state) {
+	public Direction getBack(BlockState state) {
 		return getFront(state).getOpposite();
 	}
 
-	public LocalDirections getLocalDirections(IBlockState state) {
+	public LocalDirections getLocalDirections(BlockState state) {
 		return rotationMode.getLocalDirections(getOrientation(state));
 	}
 
@@ -224,7 +224,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public TileEntity createTileEntity(World world, IBlockState state) {
+	public TileEntity createTileEntity(World world, BlockState state) {
 		final TileEntity te = createTileEntity();
 		if (te instanceof OpenTileEntity)
 			((OpenTileEntity)te).setup();
@@ -251,7 +251,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	@Override
 	@Nonnull
-	public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+	public ItemStack getPickBlock(BlockState state, RayTraceResult target, World world, BlockPos pos, PlayerEntity player) {
 		if (hasCapability(TileEntityCapability.CUSTOM_PICK_ITEM)) {
 			TileEntity te = world.getTileEntity(pos);
 			if (te instanceof ICustomPickItem)
@@ -270,7 +270,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void breakBlock(World world, BlockPos pos, IBlockState state) {
+	public void breakBlock(World world, BlockPos pos, BlockState state) {
 		if (shouldDropFromTeAfterBreak()) {
 			final TileEntity te = world.getTileEntity(pos);
 			if (te != null) {
@@ -287,8 +287,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void harvestBlock(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te, @Nonnull ItemStack stack) {
-		player.addStat(StatList.getBlockStats(this));
+	public void harvestBlock(World world, PlayerEntity player, BlockPos pos, BlockState state, TileEntity te, @Nonnull ItemStack stack) {
+		player.addStat(Stats.getBlockStats(this));
 		player.addExhaustion(0.025F);
 
 		if (canSilkHarvest(world, pos, state, player) && EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0) {
@@ -298,7 +298,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		}
 	}
 
-	protected void handleNormalDrops(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te, @Nonnull ItemStack stack) {
+	protected void handleNormalDrops(World world, PlayerEntity player, BlockPos pos, BlockState state, TileEntity te, @Nonnull ItemStack stack) {
 		harvesters.set(player);
 		final int fortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, stack);
 
@@ -322,7 +322,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		harvesters.set(null);
 	}
 
-	protected void handleSilkTouchDrops(World world, EntityPlayer player, BlockPos pos, IBlockState state, TileEntity te) {
+	protected void handleSilkTouchDrops(World world, PlayerEntity player, BlockPos pos, BlockState state, TileEntity te) {
 		List<ItemStack> items = Lists.newArrayList();
 
 		boolean addNormalDrops = true;
@@ -345,7 +345,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void setupBlock(ModContainer container, String id, Class<? extends TileEntity> tileEntity, ItemBlock itemBlock) {
+	public void setupBlock(ModContainer container, String id, Class<? extends TileEntity> tileEntity, BlockItem itemBlock) {
 		this.modInstance = container.getMod();
 
 		if (tileEntity != null) {
@@ -359,19 +359,19 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public boolean hasTileEntity(IBlockState state) {
+	public boolean hasTileEntity(BlockState state) {
 		return teClass != null;
 	}
 
-	public static boolean isNeighborBlockSolid(IBlockAccess world, BlockPos blockPos, EnumFacing side) {
+	public static boolean isNeighborBlockSolid(IBlockAccess world, BlockPos blockPos, Direction side) {
 		final BlockPos pos = blockPos.offset(side);
-		final IBlockState state = world.getBlockState(pos);
+		final BlockState state = world.getBlockState(pos);
 		return isExceptionBlockForAttaching(state.getBlock()) ||
 				state.getBlockFaceShape(world, pos, side.getOpposite()) == BlockFaceShape.SOLID;
 	}
 
-	public static boolean areNeighborBlocksSolid(World world, BlockPos blockPos, EnumFacing... sides) {
-		for (EnumFacing side : sides) {
+	public static boolean areNeighborBlocksSolid(World world, BlockPos blockPos, Direction... sides) {
+		for (Direction side : sides) {
 			if (isNeighborBlockSolid(world, blockPos, side))
 				return true;
 		}
@@ -379,20 +379,20 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+	public void neighborChanged(BlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
 		if (hasCapabilities(TileEntityCapability.NEIGBOUR_LISTENER, TileEntityCapability.SURFACE_ATTACHEMENT)) {
 			final TileEntity te = world.getTileEntity(pos);
 			if (te instanceof INeighbourAwareTile)
 				((INeighbourAwareTile)te).onNeighbourChanged(fromPos, blockIn);
 
 			if (te instanceof ISurfaceAttachment) {
-				final EnumFacing direction = ((ISurfaceAttachment)te).getSurfaceDirection();
+				final Direction direction = ((ISurfaceAttachment)te).getSurfaceDirection();
 				breakBlockIfSideNotSolid(world, pos, direction);
 			}
 		}
 	}
 
-	protected void breakBlockIfSideNotSolid(World world, BlockPos blockPos, EnumFacing direction) {
+	protected void breakBlockIfSideNotSolid(World world, BlockPos blockPos, Direction direction) {
 		if (!isNeighborBlockSolid(world, blockPos, direction)) {
 			world.destroyBlock(blockPos, true);
 		}
@@ -408,7 +408,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void onBlockAdded(World world, BlockPos blockPos, IBlockState state) {
+	public void onBlockAdded(World world, BlockPos blockPos, BlockState state) {
 		super.onBlockAdded(world, blockPos, state);
 
 		if (requiresInitialization || hasCapability(TileEntityCapability.ADD_LISTENER)) {
@@ -417,7 +417,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
+	public boolean onBlockActivated(World world, BlockPos blockPos, BlockState state, PlayerEntity player, Hand hand, Direction side, float hitX, float hitY, float hitZ) {
 		if (hasCapabilities(TileEntityCapability.GUI_PROVIDER, TileEntityCapability.ACTIVATE_LISTENER)) {
 			final TileEntity te = world.getTileEntity(blockPos);
 
@@ -437,7 +437,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	@SuppressWarnings("deprecation") // TODO review
 	@Override
-	public boolean eventReceived(IBlockState state, World world, BlockPos blockPos, int eventId, int eventParam) {
+	public boolean eventReceived(BlockState state, World world, BlockPos blockPos, int eventId, int eventParam) {
 		if (eventId < 0 && !world.isRemote) {
 			switch (eventId) {
 				case EVENT_ADDED:
@@ -455,7 +455,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		}
 	}
 
-	protected boolean onBlockAddedNextTick(World world, BlockPos blockPos, IBlockState state) {
+	protected boolean onBlockAddedNextTick(World world, BlockPos blockPos, BlockState state) {
 		if (hasCapability(TileEntityCapability.ADD_LISTENER)) {
 			final IAddAwareTile te = getTileEntity(world, blockPos, IAddAwareTile.class);
 			if (te != null)
@@ -478,7 +478,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return (teClass.isInstance(te))? (U)te : null;
 	}
 
-	protected Orientation calculateOrientationAfterPlace(BlockPos pos, EnumFacing facing, EntityLivingBase placer) {
+	protected Orientation calculateOrientationAfterPlace(BlockPos pos, Direction facing, LivingEntity placer) {
 		if (blockPlacementMode == BlockPlacementMode.SURFACE) {
 			return rotationMode.getOrientationFacing(facing);
 		} else {
@@ -486,18 +486,18 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		}
 	}
 
-	public boolean canBlockBePlaced(World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ, int itemMetadata, EntityPlayer player) {
+	public boolean canBlockBePlaced(World world, BlockPos pos, Hand hand, Direction side, float hitX, float hitY, float hitZ, int itemMetadata, PlayerEntity player) {
 		return true;
 	}
 
 	@Override
-	public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+	public BlockState getStateForPlacement(World worldIn, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ, int meta, LivingEntity placer) {
 		final Orientation orientation = calculateOrientationAfterPlace(pos, facing, placer);
 		return getStateFromMeta(meta).withProperty(propertyOrientation, orientation);
 	}
 
 	@Override
-	public void onBlockPlacedBy(World world, BlockPos blockPos, IBlockState state, EntityLivingBase placer, @Nonnull ItemStack stack) {
+	public void onBlockPlacedBy(World world, BlockPos blockPos, BlockState state, LivingEntity placer, @Nonnull ItemStack stack) {
 		super.onBlockPlacedBy(world, blockPos, state, placer, stack);
 
 		if (hasCapability(TileEntityCapability.PLACE_LISTENER)) {
@@ -507,12 +507,12 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		}
 	}
 
-	protected boolean isOnTopOfSolidBlock(World world, BlockPos blockPos, EnumFacing side) {
-		return side == EnumFacing.UP
-				&& isNeighborBlockSolid(world, blockPos, EnumFacing.DOWN);
+	protected boolean isOnTopOfSolidBlock(World world, BlockPos blockPos, Direction side) {
+		return side == Direction.UP
+				&& isNeighborBlockSolid(world, blockPos, Direction.DOWN);
 	}
 
-	public void openGui(EntityPlayer player, World world, BlockPos blockPos) {
+	public void openGui(PlayerEntity player, World world, BlockPos blockPos) {
 		player.openGui(modInstance, OPEN_MODS_TE_GUI, world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
 	}
 
@@ -525,13 +525,13 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public IBlockState getStateFromMeta(int meta) {
+	public BlockState getStateFromMeta(int meta) {
 		return getDefaultState()
 				.withProperty(propertyOrientation, getOrientationFromMeta(meta));
 	}
 
 	@Override
-	public int getMetaFromState(IBlockState state) {
+	public int getMetaFromState(BlockState state) {
 		final Orientation orientation = state.getValue(propertyOrientation);
 		return getMetaFromOrientation(orientation);
 	}
@@ -543,11 +543,11 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public boolean rotateBlock(World worldObj, BlockPos blockPos, EnumFacing axis) {
+	public boolean rotateBlock(World worldObj, BlockPos blockPos, Direction axis) {
 		if (!canRotateWithTool())
 			return false;
 
-		final IBlockState currentState = worldObj.getBlockState(blockPos);
+		final BlockState currentState = worldObj.getBlockState(blockPos);
 
 		final Orientation orientation = currentState.getValue(propertyOrientation);
 
@@ -555,7 +555,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 		if (newOrientation != null) {
 			if (rotationMode.isOrientationValid(newOrientation)) {
-				final IBlockState newState = createNewStateAfterRotation(worldObj, blockPos, currentState, propertyOrientation, newOrientation);
+				final BlockState newState = createNewStateAfterRotation(worldObj, blockPos, currentState, propertyOrientation, newOrientation);
 				worldObj.setBlockState(blockPos, newState, BlockNotifyFlags.ALL);
 			} else {
 				Log.info("Invalid tool rotation: [%s] %s: (%s): %s->%s", rotationMode, axis, blockPos, orientation, newOrientation);
@@ -574,7 +574,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return true;
 	}
 
-	protected IBlockState createNewStateAfterRotation(World worldObj, BlockPos blockPos, IBlockState currentState, IProperty<Orientation> currentOrientation,
+	protected BlockState createNewStateAfterRotation(World worldObj, BlockPos blockPos, BlockState currentState, IProperty<Orientation> currentOrientation,
 			Orientation newOrientation) {
 		return currentState.withProperty(propertyOrientation, newOrientation);
 	}
@@ -584,7 +584,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public EnumFacing[] getValidRotations(World worldObj, BlockPos pos) {
+	public Direction[] getValidRotations(World worldObj, BlockPos pos) {
 		if (!canRotateWithTool())
 			return RotationAxis.NO_AXIS;
 		return rotationMode.getToolRotationAxes();

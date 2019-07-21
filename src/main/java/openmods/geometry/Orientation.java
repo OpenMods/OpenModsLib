@@ -6,7 +6,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import java.util.Locale;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.IStringSerializable;
 
 public enum Orientation implements IStringSerializable {
@@ -118,19 +118,19 @@ public enum Orientation implements IStringSerializable {
 
 	private final String lowercaseName;
 
-	private final EnumFacing[] localToGlobalDirections = new EnumFacing[EnumFacing.values().length];
-	private final EnumFacing[] globalToLocalDirections = new EnumFacing[EnumFacing.values().length];
+	private final Direction[] localToGlobalDirections = new Direction[Direction.values().length];
+	private final Direction[] globalToLocalDirections = new Direction[Direction.values().length];
 
 	private final Matrix3f blockCenterToWorld;
 
 	private final Matrix4f blockCornerToWorld;
 
-	private void addDirectionMapping(EnumFacing local, EnumFacing global) {
+	private void addDirectionMapping(Direction local, Direction global) {
 		localToGlobalDirections[local.ordinal()] = global;
 		globalToLocalDirections[global.ordinal()] = local;
 	}
 
-	private void addDirectionMappings(EnumFacing local, EnumFacing global) {
+	private void addDirectionMappings(Direction local, Direction global) {
 		addDirectionMapping(local, global);
 		addDirectionMapping(local.getOpposite(), global.getOpposite());
 	}
@@ -151,9 +151,9 @@ public enum Orientation implements IStringSerializable {
 		this.y = y;
 		this.z = x.cross(y);
 
-		addDirectionMappings(EnumFacing.EAST, x.dir);
-		addDirectionMappings(EnumFacing.UP, y.dir);
-		addDirectionMappings(EnumFacing.SOUTH, z.dir);
+		addDirectionMappings(Direction.EAST, x.dir);
+		addDirectionMappings(Direction.UP, y.dir);
+		addDirectionMappings(Direction.SOUTH, z.dir);
 
 		this.name = x.shortName + "_" + y.shortName + "_" + z.shortName;
 		this.lowercaseName = name().toLowerCase(Locale.ROOT);
@@ -168,36 +168,36 @@ public enum Orientation implements IStringSerializable {
 		this.blockCornerToWorld = blockCenterToCorner(tmp);
 	}
 
-	public EnumFacing localToGlobalDirection(EnumFacing local) {
+	public Direction localToGlobalDirection(Direction local) {
 		return localToGlobalDirections[local.ordinal()];
 	}
 
-	public EnumFacing globalToLocalDirection(EnumFacing global) {
+	public Direction globalToLocalDirection(Direction global) {
 		return globalToLocalDirections[global.ordinal()];
 	}
 
-	public EnumFacing north() {
-		return localToGlobalDirection(EnumFacing.NORTH);
+	public Direction north() {
+		return localToGlobalDirection(Direction.NORTH);
 	}
 
-	public EnumFacing south() {
-		return localToGlobalDirection(EnumFacing.SOUTH);
+	public Direction south() {
+		return localToGlobalDirection(Direction.SOUTH);
 	}
 
-	public EnumFacing east() {
-		return localToGlobalDirection(EnumFacing.EAST);
+	public Direction east() {
+		return localToGlobalDirection(Direction.EAST);
 	}
 
-	public EnumFacing west() {
-		return localToGlobalDirection(EnumFacing.WEST);
+	public Direction west() {
+		return localToGlobalDirection(Direction.WEST);
 	}
 
-	public EnumFacing up() {
-		return localToGlobalDirection(EnumFacing.UP);
+	public Direction up() {
+		return localToGlobalDirection(Direction.UP);
 	}
 
-	public EnumFacing down() {
-		return localToGlobalDirection(EnumFacing.DOWN);
+	public Direction down() {
+		return localToGlobalDirection(Direction.DOWN);
 	}
 
 	public double transformX(double x, double y, double z) {

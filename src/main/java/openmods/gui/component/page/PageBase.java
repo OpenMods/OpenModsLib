@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiConfirmOpenLink;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.screen.ConfirmOpenLinkScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.ResourceLocation;
 import openmods.Log;
 import openmods.OpenMods;
@@ -66,8 +66,8 @@ public abstract class PageBase extends BaseComposite {
 		result.setListener((IMouseDownListener)(component, clickX, clickY, button) -> {
 			final Minecraft mc = Minecraft.getMinecraft();
 			if (mc.gameSettings.chatLinksPrompt) {
-				final GuiScreen prevGui = mc.currentScreen;
-				mc.displayGuiScreen(new GuiConfirmOpenLink((response, id) -> {
+				final Screen prevGui = mc.currentScreen;
+				mc.displayGuiScreen(new ConfirmOpenLinkScreen((response, id) -> {
 					if (response) listener.onConfirm();
 					mc.displayGuiScreen(prevGui);
 				}, link, 0, false));

@@ -1,6 +1,6 @@
 package openmods.fixers;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.datafix.DataFixesManager;
 import net.minecraft.util.datafix.IDataFixer;
 import net.minecraftforge.common.util.Constants;
@@ -15,10 +15,10 @@ public class ItemInventoryWalker extends ItemTagWalker {
 	}
 
 	@Override
-	protected NBTTagCompound processTag(IDataFixer fixer, NBTTagCompound compound, int version) {
+	protected CompoundNBT processTag(IDataFixer fixer, CompoundNBT compound, int version) {
 		if (compound.hasKey(ItemInventory.TAG_INVENTORY, Constants.NBT.TAG_COMPOUND)) {
-			final NBTTagCompound inventoryTag = compound.getCompoundTag(ItemInventory.TAG_INVENTORY);
-			final NBTTagCompound newInventoryTag = DataFixesManager.processInventory(fixer, inventoryTag, version, GenericInventory.TAG_ITEMS);
+			final CompoundNBT inventoryTag = compound.getCompoundTag(ItemInventory.TAG_INVENTORY);
+			final CompoundNBT newInventoryTag = DataFixesManager.processInventory(fixer, inventoryTag, version, GenericInventory.TAG_ITEMS);
 			compound.setTag(ItemInventory.TAG_INVENTORY, newInventoryTag);
 		}
 

@@ -1,24 +1,24 @@
 package openmods.geometry;
 
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 
 public enum HalfAxis {
-	NEG_X("XN", EnumFacing.WEST),
-	NEG_Y("YN", EnumFacing.DOWN),
-	NEG_Z("ZN", EnumFacing.NORTH),
-	POS_X("XP", EnumFacing.EAST),
-	POS_Y("YP", EnumFacing.UP),
-	POS_Z("ZP", EnumFacing.SOUTH);
+	NEG_X("XN", Direction.WEST),
+	NEG_Y("YN", Direction.DOWN),
+	NEG_Z("ZN", Direction.NORTH),
+	POS_X("XP", Direction.EAST),
+	POS_Y("YP", Direction.UP),
+	POS_Z("ZP", Direction.SOUTH);
 
 	public final int x;
 	public final int y;
 	public final int z;
 
-	public final EnumFacing dir;
+	public final Direction dir;
 
 	public final String shortName;
 
-	HalfAxis(String shortName, EnumFacing dir) {
+	HalfAxis(String shortName, Direction dir) {
 		this.x = dir.getFrontOffsetX();
 		this.y = dir.getFrontOffsetY();
 		this.z = dir.getFrontOffsetZ();
@@ -65,7 +65,7 @@ public enum HalfAxis {
 		return negate(this);
 	}
 
-	public static HalfAxis fromEnumFacing(EnumFacing dir) {
+	public static HalfAxis fromEnumFacing(Direction dir) {
 		switch (dir) {
 			case EAST:
 				return POS_X;

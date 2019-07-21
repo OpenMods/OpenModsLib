@@ -1,7 +1,7 @@
 package openmods.gui;
 
-import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -18,8 +18,8 @@ public class ClientGuiHandler extends CommonGuiHandler {
 	}
 
 	@Override
-	public Object getClientGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
-		if (world instanceof WorldClient) {
+	public Object getClientGuiElement(int id, PlayerEntity player, World world, int x, int y, int z) {
+		if (world instanceof ClientWorld) {
 			if (id != OpenBlock.OPEN_MODS_TE_GUI) return wrappedHandler != null? wrappedHandler.getClientGuiElement(id, player, world, x, y, z) : null;
 			else {
 				TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));

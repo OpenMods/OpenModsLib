@@ -14,7 +14,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TranslationTextComponent;
 import openmods.Log;
 import openmods.source.ClassSourceCollector.ApiInfo;
 import openmods.source.ClassSourceCollector.ClassMeta;
@@ -49,16 +49,16 @@ public class CommandSource extends SidedCommand {
 			final String clsName = args[1];
 			final ClassMeta meta = getMeta(clsName);
 
-			sender.sendMessage(new TextComponentTranslation("openmodslib.command.class_source", meta.cls.getName(), meta.source()));
+			sender.sendMessage(new TranslationTextComponent("openmodslib.command.class_source", meta.cls.getName(), meta.source()));
 
 			final ApiInfo api = meta.api;
 			if (api != null) {
-				sender.sendMessage(new TextComponentTranslation("openmodslib.command.api_class",
+				sender.sendMessage(new TranslationTextComponent("openmodslib.command.api_class",
 						api.api, api.owner, api.version));
 			}
 
 			for (Map.Entry<File, Set<String>> e : meta.providerMods.entrySet())
-				sender.sendMessage(new TextComponentTranslation("openmodslib.command.class_provider",
+				sender.sendMessage(new TranslationTextComponent("openmodslib.command.class_provider",
 						e.getKey().getAbsolutePath(),
 						Joiner.on(',').join(e.getValue())));
 		}

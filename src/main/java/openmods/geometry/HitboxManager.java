@@ -21,7 +21,7 @@ import java.util.Map;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import openmods.Log;
@@ -32,13 +32,13 @@ public class HitboxManager implements IResourceManagerReloadListener {
 	private static class HitboxList extends ArrayList<Hitbox> {}
 
 	private static final Gson GSON = new GsonBuilder().registerTypeAdapter(Vec3d.class, (JsonDeserializer<Vec3d>)(json, typeOfT, context) -> {
-		JsonArray jsonarray = JsonUtils.getJsonArray(json, "vector");
+		JsonArray jsonarray = JSONUtils.getJsonArray(json, "vector");
 
 		if (jsonarray.size() != 3) throw new JsonParseException("Expected 3 float values, found: " + jsonarray.size());
 
 		final float[] coords = new float[3];
 		for (int i = 0; i < 3; ++i)
-			coords[i] = JsonUtils.getFloat(jsonarray.get(i), "[" + i + "]") / 16.0f;
+			coords[i] = JSONUtils.getFloat(jsonarray.get(i), "[" + i + "]") / 16.0f;
 
 		return new Vec3d(coords[0], coords[1], coords[2]);
 	}).create();

@@ -1,6 +1,6 @@
 package openmods.sync;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 public class SyncableBoolean extends SyncableObjectBase implements ISyncableValueProvider<Boolean> {
@@ -40,12 +40,12 @@ public class SyncableBoolean extends SyncableObjectBase implements ISyncableValu
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound tag, String name) {
+	public void writeToNBT(CompoundNBT tag, String name) {
 		tag.setBoolean(name, value);
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound tag, String name) {
+	public void readFromNBT(CompoundNBT tag, String name) {
 		value = tag.getBoolean(name);
 	}
 

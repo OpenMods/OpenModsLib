@@ -6,10 +6,10 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.network.INetHandler;
-import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.play.ServerPlayNetHandler;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
@@ -25,7 +25,7 @@ import openmods.gui.CommonGuiHandler;
 public final class OpenServerProxy implements IOpenModsProxy {
 
 	@Override
-	public EntityPlayer getThePlayer() {
+	public PlayerEntity getThePlayer() {
 		return null;
 	}
 
@@ -83,8 +83,8 @@ public final class OpenServerProxy implements IOpenModsProxy {
 	public void setNowPlayingTitle(String nowPlaying) {}
 
 	@Override
-	public EntityPlayer getPlayerFromHandler(INetHandler handler) {
-		if (handler instanceof NetHandlerPlayServer) return ((NetHandlerPlayServer)handler).player;
+	public PlayerEntity getPlayerFromHandler(INetHandler handler) {
+		if (handler instanceof ServerPlayNetHandler) return ((ServerPlayNetHandler)handler).player;
 
 		return null;
 	}

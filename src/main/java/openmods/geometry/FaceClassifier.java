@@ -8,26 +8,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.vecmath.Vector3f;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class FaceClassifier {
 
-	private static final Map<EnumFacing, Vector3f> BASES = Maps.newEnumMap(EnumFacing.class);
+	private static final Map<Direction, Vector3f> BASES = Maps.newEnumMap(Direction.class);
 
 	static {
-		for (EnumFacing e : EnumFacing.VALUES)
+		for (Direction e : Direction.VALUES)
 			BASES.put(e, new Vector3f(e.getFrontOffsetX(), e.getFrontOffsetY(), e.getFrontOffsetZ()));
 	}
 
-	private final List<Pair<Vector3f, EnumFacing>> sideOrder = Lists.newArrayList();
+	private final List<Pair<Vector3f, Direction>> sideOrder = Lists.newArrayList();
 
-	public FaceClassifier(Collection<EnumFacing> sideOrder) {
+	public FaceClassifier(Collection<Direction> sideOrder) {
 		this.sideOrder.addAll(Collections2.transform(sideOrder, input -> Pair.of(BASES.get(input), input)));
 	}
 
-	public Optional<EnumFacing> classify(Vector3f normalVec) {
-		for (Pair<Vector3f, EnumFacing> e : sideOrder) {
+	public Optional<Direction> classify(Vector3f normalVec) {
+		for (Pair<Vector3f, Direction> e : sideOrder) {
 			final Vector3f base = e.getKey();
 			if (normalVec.equals(base)) return Optional.of(e.getValue());
 

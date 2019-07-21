@@ -22,7 +22,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
-import net.minecraft.client.renderer.vertex.VertexFormatElement.EnumUsage;
+import net.minecraft.client.renderer.vertex.VertexFormatElement.Usage;
 import openmods.Log;
 import org.lwjgl.opengl.GL11;
 
@@ -65,7 +65,7 @@ public class CachedRendererFactory {
 				final int count = attr.getElementCount();
 				final int constant = attr.getType().getGlConstant();
 				final int index = attr.getIndex();
-				final EnumUsage usage = attr.getUsage();
+				final Usage usage = attr.getUsage();
 
 				final Runnable prevSetup = setup;
 				final Runnable prevCleanup = cleanup;

@@ -7,7 +7,7 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageCodec;
 import java.util.List;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
@@ -67,7 +67,7 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 			final BiMap<Integer, TargetTypeProvider> idToEntryMap = CommonRegistryCallbacks.getEntryIdMap(targetRegistry).inverse();
 			final TargetTypeProvider entry = idToEntryMap.get(targetId);
 			target = entry.createRpcTarget();
-			EntityPlayer player = getPlayer(msg);
+			PlayerEntity player = getPlayer(msg);
 			target.readFromStreamStream(side, player, input);
 		}
 
@@ -85,9 +85,9 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 		input.release();
 	}
 
-	protected EntityPlayer getPlayer(FMLProxyPacket msg) {
+	protected PlayerEntity getPlayer(FMLProxyPacket msg) {
 		INetHandler handler = msg.handler();
-		EntityPlayer player = OpenMods.proxy.getPlayerFromHandler(handler);
+		PlayerEntity player = OpenMods.proxy.getPlayerFromHandler(handler);
 		Preconditions.checkNotNull(player, "Can't get player from handler %s", handler);
 		return player;
 	}

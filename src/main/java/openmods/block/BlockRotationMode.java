@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import openmods.geometry.HalfAxis;
 import openmods.geometry.LocalDirections;
@@ -34,12 +34,12 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public Orientation getOrientationFacing(EnumFacing side) {
+		public Orientation getOrientationFacing(Direction side) {
 			return Orientation.XP_YP;
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, LivingEntity player) {
 			return Orientation.XP_YP;
 		}
 
@@ -49,18 +49,18 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, Direction axis) {
 			return null;
 		}
 
 		@Override
-		public EnumFacing getFront(Orientation orientation) {
-			return EnumFacing.NORTH;
+		public Direction getFront(Orientation orientation) {
+			return Direction.NORTH;
 		}
 
 		@Override
-		public EnumFacing getTop(Orientation orientation) {
-			return EnumFacing.UP;
+		public Direction getTop(Orientation orientation) {
+			return Direction.UP;
 		}
 
 	},
@@ -71,7 +71,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 	 */
 	TWO_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.ZN_YP, Orientation.XP_YP) {
 		@Override
-		public Orientation getOrientationFacing(EnumFacing side) {
+		public Orientation getOrientationFacing(Direction side) {
 			switch (side) {
 				case EAST:
 				case WEST:
@@ -85,12 +85,12 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, LivingEntity player) {
 			return getOrientationFacing(player.getHorizontalFacing());
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, Direction axis) {
 			switch (axis) {
 				case UP:
 				case DOWN:
@@ -106,12 +106,12 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public EnumFacing getFront(Orientation orientation) {
+		public Direction getFront(Orientation orientation) {
 			return orientation.north();
 		}
 
 		@Override
-		public EnumFacing getTop(Orientation orientation) {
+		public Direction getTop(Orientation orientation) {
 			return orientation.up();
 		}
 	},
@@ -122,7 +122,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 	 */
 	THREE_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YP, Orientation.ZN_XN, Orientation.XP_ZN) {
 		@Override
-		public Orientation getOrientationFacing(EnumFacing side) {
+		public Orientation getOrientationFacing(Direction side) {
 			switch (side) {
 				case EAST:
 				case WEST:
@@ -138,23 +138,23 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
-			final EnumFacing normalDir = BlockUtils.get3dOrientation(player, pos);
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, LivingEntity player) {
+			final Direction normalDir = BlockUtils.get3dOrientation(player, pos);
 			return getOrientationFacing(normalDir);
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, Direction axis) {
 			return getOrientationFacing(axis);
 		}
 
 		@Override
-		public EnumFacing getFront(Orientation orientation) {
+		public Direction getFront(Orientation orientation) {
 			return orientation.up();
 		}
 
 		@Override
-		public EnumFacing getTop(Orientation orientation) {
+		public Direction getTop(Orientation orientation) {
 			return orientation.south();
 		}
 	},
@@ -165,7 +165,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 	 */
 	FOUR_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YP, Orientation.ZN_YP, Orientation.XN_YP, Orientation.ZP_YP) {
 		@Override
-		public Orientation getOrientationFacing(EnumFacing side) {
+		public Orientation getOrientationFacing(Direction side) {
 			switch (side) {
 				case SOUTH:
 					return Orientation.XN_YP;
@@ -181,12 +181,12 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, LivingEntity player) {
 			return getOrientationFacing(player.getHorizontalFacing().getOpposite());
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, Direction axis) {
 			switch (axis) {
 				case UP:
 					return currentOrientation.rotateAround(HalfAxis.POS_Y);
@@ -196,8 +196,8 @@ public enum BlockRotationMode implements IBlockRotationMode {
 				case SOUTH:
 				case EAST:
 				case WEST: {
-					final EnumFacing currentFront = getFront(currentOrientation);
-					final EnumFacing target = (currentFront == axis)? axis.getOpposite() : axis;
+					final Direction currentFront = getFront(currentOrientation);
+					final Direction target = (currentFront == axis)? axis.getOpposite() : axis;
 					return getOrientationFacing(target);
 				}
 				default:
@@ -206,12 +206,12 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public EnumFacing getFront(Orientation orientation) {
+		public Direction getFront(Orientation orientation) {
 			return orientation.north();
 		}
 
 		@Override
-		public EnumFacing getTop(Orientation orientation) {
+		public Direction getTop(Orientation orientation) {
 			return orientation.up();
 		}
 	},
@@ -223,7 +223,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 	 */
 	SIX_DIRECTIONS(RotationAxis.THREE_AXIS, Orientation.XP_YN, Orientation.XP_YP, Orientation.XP_ZN, Orientation.XN_ZP, Orientation.ZN_XN, Orientation.ZP_XP) {
 		@Override
-		public Orientation getOrientationFacing(EnumFacing side) {
+		public Orientation getOrientationFacing(Direction side) {
 			switch (side) {
 				case DOWN:
 					return Orientation.XP_YN;
@@ -242,24 +242,24 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, LivingEntity player) {
 			return getOrientationFacing(BlockUtils.get3dOrientation(player, pos).getOpposite());
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
-			final EnumFacing currentFront = getFront(currentOrientation);
-			final EnumFacing target = (currentFront == axis)? axis.getOpposite() : axis;
+		public Orientation calculateToolRotation(Orientation currentOrientation, Direction axis) {
+			final Direction currentFront = getFront(currentOrientation);
+			final Direction target = (currentFront == axis)? axis.getOpposite() : axis;
 			return getOrientationFacing(target);
 		}
 
 		@Override
-		public EnumFacing getFront(Orientation orientation) {
+		public Direction getFront(Orientation orientation) {
 			return orientation.up();
 		}
 
 		@Override
-		public EnumFacing getTop(Orientation orientation) {
+		public Direction getTop(Orientation orientation) {
 			return orientation.south();
 		}
 	},
@@ -274,7 +274,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 			Orientation.YP_XN, Orientation.YN_XN, Orientation.ZP_XN, Orientation.ZN_XN,
 			Orientation.XP_ZN, Orientation.XN_ZN, Orientation.YP_ZN, Orientation.YN_ZN) {
 		@Override
-		public Orientation getOrientationFacing(EnumFacing side) {
+		public Orientation getOrientationFacing(Direction side) {
 			switch (side) {
 				case EAST:
 				case WEST:
@@ -290,12 +290,12 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, LivingEntity player) {
 			return getOrientationFacing(BlockUtils.get3dOrientation(player, pos));
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, Direction axis) {
 			final HalfAxis newTop = HalfAxis.fromEnumFacing(axis);
 			final HalfAxis currentTop = currentOrientation.y;
 
@@ -309,12 +309,12 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public EnumFacing getFront(Orientation orientation) {
+		public Direction getFront(Orientation orientation) {
 			return orientation.up();
 		}
 
 		@Override
-		public EnumFacing getTop(Orientation orientation) {
+		public Direction getTop(Orientation orientation) {
 			return orientation.south();
 		}
 	},
@@ -339,7 +339,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.NEG_Z),
 			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.POS_X),
 			Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.NEG_X)) {
-		public Orientation directionToOrientation(EnumFacing localTop) {
+		public Orientation directionToOrientation(Direction localTop) {
 			switch (localTop) {
 				case DOWN:
 					return Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.NEG_Z);
@@ -358,18 +358,18 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public Orientation getOrientationFacing(EnumFacing side) {
+		public Orientation getOrientationFacing(Direction side) {
 			return directionToOrientation(side);
 		}
 
 		@Override
-		public Orientation getPlacementOrientationFromEntity(BlockPos pos, EntityLivingBase player) {
-			final EnumFacing player3d = BlockUtils.get3dOrientation(player, pos).getOpposite();
-			if (player3d.equals(EnumFacing.UP)) {
-				final EnumFacing player2d = player.getHorizontalFacing().getOpposite();
+		public Orientation getPlacementOrientationFromEntity(BlockPos pos, LivingEntity player) {
+			final Direction player3d = BlockUtils.get3dOrientation(player, pos).getOpposite();
+			if (player3d.equals(Direction.UP)) {
+				final Direction player2d = player.getHorizontalFacing().getOpposite();
 				return Orientation.lookupYZ(HalfAxis.POS_Y, HalfAxis.fromEnumFacing(player2d));
-			} else if (player3d.equals(EnumFacing.DOWN)) {
-				final EnumFacing player2d = player.getHorizontalFacing().getOpposite();
+			} else if (player3d.equals(Direction.DOWN)) {
+				final Direction player2d = player.getHorizontalFacing().getOpposite();
 				return Orientation.lookupYZ(HalfAxis.NEG_Y, HalfAxis.fromEnumFacing(player2d));
 			} else {
 				return Orientation.lookupYZ(HalfAxis.fromEnumFacing(player3d), HalfAxis.POS_Y);
@@ -377,14 +377,14 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public Orientation calculateToolRotation(Orientation currentOrientation, EnumFacing axis) {
+		public Orientation calculateToolRotation(Orientation currentOrientation, Direction axis) {
 			switch (axis) {
 				case NORTH:
 				case SOUTH:
 				case EAST:
 				case WEST: {
-					final EnumFacing currentFront = getFront(currentOrientation);
-					final EnumFacing target = (currentFront == axis)? axis.getOpposite() : axis;
+					final Direction currentFront = getFront(currentOrientation);
+					final Direction target = (currentFront == axis)? axis.getOpposite() : axis;
 					return Orientation.lookupYZ(HalfAxis.fromEnumFacing(target), HalfAxis.POS_Y);
 				}
 				case UP:
@@ -399,19 +399,19 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		}
 
 		@Override
-		public EnumFacing getFront(Orientation orientation) {
+		public Direction getFront(Orientation orientation) {
 			return orientation.up();
 		}
 
 		@Override
-		public EnumFacing getTop(Orientation orientation) {
+		public Direction getTop(Orientation orientation) {
 			return orientation.south();
 		}
 	};
 
 	private static final int MAX_ORIENTATIONS = 16;
 
-	BlockRotationMode(EnumFacing[] rotations, Orientation... validOrientations) {
+	BlockRotationMode(Direction[] rotations, Orientation... validOrientations) {
 		this.rotationAxes = rotations;
 		this.validDirections = ImmutableSet.copyOf(validOrientations);
 
@@ -449,7 +449,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 
 	private final int[] orientationToId;
 
-	private final EnumFacing[] rotationAxes;
+	private final Direction[] rotationAxes;
 
 	private final Set<Orientation> validDirections;
 
@@ -503,7 +503,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 	}
 
 	@Override
-	public EnumFacing[] getToolRotationAxes() {
+	public Direction[] getToolRotationAxes() {
 		return rotationAxes;
 	}
 

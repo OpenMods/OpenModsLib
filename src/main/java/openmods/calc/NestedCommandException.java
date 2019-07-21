@@ -4,7 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import java.util.List;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TranslationTextComponent;
 
 public abstract class NestedCommandException extends RuntimeException {
 	private static final long serialVersionUID = 601967437864511783L;
@@ -34,7 +34,7 @@ public abstract class NestedCommandException extends RuntimeException {
 	protected abstract String contents();
 
 	public ITextComponent getChatComponent() {
-		return new TextComponentTranslation(contents(), getPath())
-				.appendSibling(new TextComponentTranslation(getMessage(), args));
+		return new TranslationTextComponent(contents(), getPath())
+				.appendSibling(new TranslationTextComponent(getMessage(), args));
 	}
 }

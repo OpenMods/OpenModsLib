@@ -2,7 +2,7 @@ package openmods.network.senders;
 
 import io.netty.channel.Channel;
 import java.util.Collection;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.fml.common.network.FMLOutboundHandler;
 import openmods.network.ExtendedOutboundHandler;
 import openmods.network.IPacketTargetSelector;
@@ -14,7 +14,7 @@ public class ExtPacketSenderFactory {
 		return new ExtTargetedPacketSender<>(channel, selector);
 	}
 
-	public static ITargetedPacketSender<Collection<EntityPlayerMP>> createMultiplePlayersSender(Channel channel) {
+	public static ITargetedPacketSender<Collection<ServerPlayerEntity>> createMultiplePlayersSender(Channel channel) {
 		return createSender(channel, SelectMultiplePlayers.INSTANCE);
 	}
 

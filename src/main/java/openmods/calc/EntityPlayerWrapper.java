@@ -14,18 +14,18 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import openmods.utils.EnchantmentUtils;
 
 public class EntityPlayerWrapper {
 
-	private final WeakReference<EntityPlayer> player;
+	private final WeakReference<PlayerEntity> player;
 	private final TypedValue nullValue;
 
-	public EntityPlayerWrapper(EntityPlayer player, TypedValue nullValue) {
+	public EntityPlayerWrapper(PlayerEntity player, TypedValue nullValue) {
 		this.player = new WeakReference<>(player);
 		this.nullValue = nullValue;
 	}
@@ -35,8 +35,8 @@ public class EntityPlayerWrapper {
 		return this.player.get() != null;
 	}
 
-	private EntityPlayer player() {
-		final EntityPlayer player = this.player.get();
+	private PlayerEntity player() {
+		final PlayerEntity player = this.player.get();
 		Preconditions.checkNotNull(player, "Object no longer valid");
 		return player;
 	}
@@ -244,7 +244,7 @@ public class EntityPlayerWrapper {
 
 	@ExposeMethod
 	public StructWrapper inventoryItem(BigInteger slotId) {
-		final InventoryPlayer inventory = player().inventory;
+		final PlayerInventory inventory = player().inventory;
 		final int slot = slotId.intValue();
 		Preconditions.checkState(slot >= 0 && slot < inventory.getSizeInventory(), "Invalid slot");
 		return StructWrapper.create(new ItemStackWrapper(inventory.getStackInSlot(slot)));
@@ -252,7 +252,7 @@ public class EntityPlayerWrapper {
 
 	@ExposeProperty
 	public StructWrapper currentItem() {
-		final InventoryPlayer inventory = player().inventory;
+		final PlayerInventory inventory = player().inventory;
 		return StructWrapper.create(new ItemStackWrapper(inventory.getCurrentItem()));
 	}
 }

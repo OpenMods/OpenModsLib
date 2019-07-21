@@ -2,7 +2,7 @@ package openmods.sync;
 
 import com.google.common.base.Objects;
 import java.util.UUID;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.util.Constants;
 import openmods.api.IValueProvider;
@@ -31,9 +31,9 @@ public class SyncableUUID extends SyncableObjectBase implements IValueProvider<U
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt, String name) {
+	public void writeToNBT(CompoundNBT nbt, String name) {
 		if (uuid != null) {
-			NBTTagCompound result = new NBTTagCompound();
+			CompoundNBT result = new CompoundNBT();
 			result.setLong("MSB", uuid.getMostSignificantBits());
 			result.setLong("LSB", uuid.getLeastSignificantBits());
 			nbt.setTag(name, result);
@@ -41,9 +41,9 @@ public class SyncableUUID extends SyncableObjectBase implements IValueProvider<U
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt, String name) {
+	public void readFromNBT(CompoundNBT nbt, String name) {
 		if (nbt.hasKey(name, Constants.NBT.TAG_COMPOUND)) {
-			NBTTagCompound data = nbt.getCompoundTag(name);
+			CompoundNBT data = nbt.getCompoundTag(name);
 			long msb = data.getLong("MSB");
 			long lsb = data.getLong("LSB");
 			this.uuid = new UUID(msb, lsb);

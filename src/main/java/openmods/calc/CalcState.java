@@ -7,7 +7,6 @@ import com.google.common.collect.Maps;
 import info.openmods.calc.Calculator;
 import info.openmods.calc.ExprType;
 import info.openmods.calc.IValuePrinter;
-import info.openmods.calc.symbol.ICallable;
 import info.openmods.calc.symbol.NullaryFunction;
 import info.openmods.calc.symbol.UnaryFunction;
 import info.openmods.calc.types.bigint.BigIntCalculatorFactory;
@@ -26,8 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.text.StringTextComponent;
 import org.apache.commons.lang3.math.Fraction;
 
 public class CalcState {
@@ -79,13 +78,13 @@ public class CalcState {
 				}
 
 				final String result = ": " + Joiner.on(" ").join(results);
-				sender.sendMessage(new TextComponentString(result));
+				sender.sendMessage(new StringTextComponent(result));
 			});
 
 			calculator.environment.setGlobalSymbol("print", new UnaryFunction.Direct<E>() {
 				@Override
 				protected E call(E value) {
-					sender.sendMessage(new TextComponentString(printer.str(value)));
+					sender.sendMessage(new StringTextComponent(printer.str(value)));
 					return value;
 				}
 			});
@@ -154,8 +153,8 @@ public class CalcState {
 
 					@Override
 					protected TypedValue call() {
-						if (holder.sender instanceof EntityPlayer) {
-							final EntityPlayerWrapper wrapper = new EntityPlayerWrapper((EntityPlayer)holder.sender, nullValue);
+						if (holder.sender instanceof PlayerEntity) {
+							final EntityPlayerWrapper wrapper = new EntityPlayerWrapper((PlayerEntity)holder.sender, nullValue);
 							return StructWrapper.create(domain, wrapper);
 						}
 

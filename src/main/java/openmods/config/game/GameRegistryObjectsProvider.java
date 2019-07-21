@@ -14,8 +14,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.datafix.DataFixer;
@@ -317,9 +317,9 @@ public class GameRegistryObjectsProvider {
 
 	private static final Class<?>[] ITEM_BLOCK_CTOR_ARGS = new Class<?>[] { Block.class };
 
-	private static ItemBlock initializeItemBlock(Class<? extends ItemBlock> cls, Block block) {
+	private static BlockItem initializeItemBlock(Class<? extends BlockItem> cls, Block block) {
 		try {
-			final Constructor<? extends ItemBlock> itemBlockCtor = cls.getConstructor(ITEM_BLOCK_CTOR_ARGS);
+			final Constructor<? extends BlockItem> itemBlockCtor = cls.getConstructor(ITEM_BLOCK_CTOR_ARGS);
 			return itemBlockCtor.newInstance(block);
 		} catch (Exception e) {
 			Log.warn("Failed to initialize block item for %s, class %s", block, cls);
@@ -352,7 +352,7 @@ public class GameRegistryObjectsProvider {
 					public void visit(final Block block, RegisterBlock annotation) {
 						final String id = annotation.id();
 
-						final Class<? extends ItemBlock> itemBlockClass = annotation.itemBlock();
+						final Class<? extends BlockItem> itemBlockClass = annotation.itemBlock();
 
 						final Set<String> legacyIds = Sets.newHashSet(annotation.legacyIds());
 
@@ -370,7 +370,7 @@ public class GameRegistryObjectsProvider {
 
 						registerRemaps(blockRemaps, block, selectedId, legacyIds, legacyModIds);
 
-						final ItemBlock itemBlock;
+						final BlockItem itemBlock;
 
 						if (annotation.registerItemBlock()) {
 							itemBlock = initializeItemBlock(itemBlockClass, block);

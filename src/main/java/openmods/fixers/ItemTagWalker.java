@@ -1,6 +1,6 @@
 package openmods.fixers;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.datafix.IDataFixer;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.registries.IForgeRegistryEntry;
@@ -12,15 +12,15 @@ public abstract class ItemTagWalker extends ResourceDataWalker {
 	}
 
 	@Override
-	protected final NBTTagCompound processImpl(IDataFixer fixer, NBTTagCompound compound, int version) {
+	protected final CompoundNBT processImpl(IDataFixer fixer, CompoundNBT compound, int version) {
 		if (compound.hasKey("tag", Constants.NBT.TAG_COMPOUND)) {
-			final NBTTagCompound tag = compound.getCompoundTag("tag");
-			final NBTTagCompound newTag = processTag(fixer, tag, version);
+			final CompoundNBT tag = compound.getCompoundTag("tag");
+			final CompoundNBT newTag = processTag(fixer, tag, version);
 			compound.setTag("tag", newTag);
 		}
 
 		return compound;
 	}
 
-	protected abstract NBTTagCompound processTag(IDataFixer fixer, NBTTagCompound tag, int version);
+	protected abstract CompoundNBT processTag(IDataFixer fixer, CompoundNBT tag, int version);
 }

@@ -3,7 +3,7 @@ package openmods.inventory;
 import com.google.common.base.Preconditions;
 import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import openmods.utils.ItemUtils;
 
 public class ItemInventory extends GenericInventory {
@@ -17,7 +17,7 @@ public class ItemInventory extends GenericInventory {
 		super("", false, size);
 		Preconditions.checkNotNull(containerStack);
 		this.containerStack = containerStack;
-		final NBTTagCompound tag = ItemUtils.getItemTag(containerStack);
+		final CompoundNBT tag = ItemUtils.getItemTag(containerStack);
 		readFromNBT(getInventoryTag(tag));
 
 	}
@@ -26,14 +26,14 @@ public class ItemInventory extends GenericInventory {
 	public void onInventoryChanged(int slotNumber) {
 		super.onInventoryChanged(slotNumber);
 
-		NBTTagCompound tag = ItemUtils.getItemTag(containerStack);
-		NBTTagCompound inventoryTag = getInventoryTag(tag);
+		CompoundNBT tag = ItemUtils.getItemTag(containerStack);
+		CompoundNBT inventoryTag = getInventoryTag(tag);
 		writeToNBT(inventoryTag);
 		tag.setTag(TAG_INVENTORY, inventoryTag);
 		containerStack.setTagCompound(tag);
 	}
 
-	public static NBTTagCompound getInventoryTag(NBTTagCompound tag) {
+	public static CompoundNBT getInventoryTag(CompoundNBT tag) {
 		return tag.getCompoundTag(TAG_INVENTORY);
 	}
 

@@ -6,10 +6,10 @@ import io.netty.buffer.Unpooled;
 import java.io.IOException;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
@@ -108,19 +108,19 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	// TODO verify if initial NBT send is enough
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound tag) {
+	public CompoundNBT writeToNBT(CompoundNBT tag) {
 		super.writeToNBT(tag);
 		getSyncMap().tryWrite(tag);
 		return tag;
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound tag) {
+	public void readFromNBT(CompoundNBT tag) {
 		super.readFromNBT(tag);
 		getSyncMap().tryRead(tag);
 	}
 
-	private NBTTagCompound serializeInitializationData(NBTTagCompound tag) {
+	private CompoundNBT serializeInitializationData(CompoundNBT tag) {
 		final PacketBuffer tmp = new PacketBuffer(Unpooled.buffer());
 		try {
 			getSyncMap().writeInitializationData(tmp);
@@ -134,7 +134,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		return tag;
 	}
 
-	private void applyInitializationData(NBTTagCompound tag) {
+	private void applyInitializationData(CompoundNBT tag) {
 		if (tag.hasKey(TAG_SYNC_INIT, Constants.NBT.TAG_BYTE_ARRAY)) {
 			final byte[] syncInit = tag.getByteArray(TAG_SYNC_INIT);
 			final PacketBuffer tmp = new PacketBuffer(Unpooled.buffer());
@@ -149,24 +149,24 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	}
 
 	@Override
-	public NBTTagCompound getUpdateTag() {
+	public CompoundNBT getUpdateTag() {
 		return serializeInitializationData(super.getUpdateTag());
 	}
 
 	@Override
-	public void handleUpdateTag(NBTTagCompound tag) {
+	public void handleUpdateTag(CompoundNBT tag) {
 		super.readFromNBT(tag);
 		applyInitializationData(tag);
 	}
 
 	@Override
 	@Nullable
-	public SPacketUpdateTileEntity getUpdatePacket() {
-		return new SPacketUpdateTileEntity(getPos(), 43, serializeInitializationData(new NBTTagCompound()));
+	public SUpdateTileEntityPacket getUpdatePacket() {
+		return new SUpdateTileEntityPacket(getPos(), 43, serializeInitializationData(new CompoundNBT()));
 	}
 
 	@Override
-	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
 		applyInitializationData(pkt.getNbtCompound());
 	}
 

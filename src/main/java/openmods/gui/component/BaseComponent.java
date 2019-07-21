@@ -3,8 +3,8 @@ package openmods.gui.component;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -22,7 +22,7 @@ import openmods.gui.listener.IMouseDragListener;
 import openmods.gui.listener.IMouseUpListener;
 import org.lwjgl.opengl.GL11;
 
-public abstract class BaseComponent extends Gui {
+public abstract class BaseComponent extends AbstractGui {
 
 	public final static ResourceLocation WIDGETS = OpenMods.location("textures/gui/components.png");
 

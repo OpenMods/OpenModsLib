@@ -1,7 +1,7 @@
 package openmods.sync;
 
 import com.google.common.primitives.UnsignedBytes;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 public class SyncableUnsignedByte extends SyncableObjectBase implements ISyncableValueProvider<Integer> {
@@ -42,12 +42,12 @@ public class SyncableUnsignedByte extends SyncableObjectBase implements ISyncabl
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound tag, String name) {
+	public void writeToNBT(CompoundNBT tag, String name) {
 		tag.setByte(name, (byte)(value & 0xFF));
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound tag, String name) {
+	public void readFromNBT(CompoundNBT tag, String name) {
 		value = tag.getByte(name) & 0xFF;
 	}
 

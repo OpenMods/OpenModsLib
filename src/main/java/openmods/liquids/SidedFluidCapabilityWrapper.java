@@ -3,7 +3,7 @@ package openmods.liquids;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
@@ -13,14 +13,14 @@ public abstract class SidedFluidCapabilityWrapper {
 
 	private final IFluidHandler tank;
 
-	private final Map<EnumFacing, IFluidHandler> handlers = Maps.newEnumMap(EnumFacing.class);
+	private final Map<Direction, IFluidHandler> handlers = Maps.newEnumMap(Direction.class);
 
 	private static final IFluidTankProperties[] EMPTY = new IFluidTankProperties[0];
 
 	private class Handler implements IFluidHandler {
-		private final EnumFacing side;
+		private final Direction side;
 
-		public Handler(EnumFacing side) {
+		public Handler(Direction side) {
 			this.side = side;
 		}
 
@@ -55,59 +55,59 @@ public abstract class SidedFluidCapabilityWrapper {
 	private SidedFluidCapabilityWrapper(IFluidHandler tank) {
 		this.tank = tank;
 
-		for (EnumFacing side : EnumFacing.VALUES)
+		for (Direction side : Direction.VALUES)
 			handlers.put(side, new Handler(side));
 	}
 
-	protected abstract boolean canFill(EnumFacing side);
+	protected abstract boolean canFill(Direction side);
 
-	protected abstract boolean canDrain(EnumFacing side);
+	protected abstract boolean canDrain(Direction side);
 
-	protected boolean canInteract(EnumFacing side) {
+	protected boolean canInteract(Direction side) {
 		return canFill(side) || canDrain(side);
 	}
 
-	public boolean hasHandler(EnumFacing side) {
+	public boolean hasHandler(Direction side) {
 		return side == null || canInteract(side);
 	}
 
-	public IFluidHandler getHandler(EnumFacing side) {
+	public IFluidHandler getHandler(Direction side) {
 		return side != null? handlers.get(side) : tank;
 	}
 
-	public static SidedFluidCapabilityWrapper wrap(IFluidHandler tank, final IReadableBitMap<EnumFacing> flags, boolean canDrain, boolean canFill) {
+	public static SidedFluidCapabilityWrapper wrap(IFluidHandler tank, final IReadableBitMap<Direction> flags, boolean canDrain, boolean canFill) {
 		if (canDrain && canFill) return new SidedFluidCapabilityWrapper(tank) {
 			@Override
-			protected boolean canFill(EnumFacing side) {
+			protected boolean canFill(Direction side) {
 				return flags.get(side);
 			}
 
 			@Override
-			protected boolean canDrain(EnumFacing side) {
+			protected boolean canDrain(Direction side) {
 				return flags.get(side);
 			}
 		};
 
 		if (canDrain) return new SidedFluidCapabilityWrapper(tank) {
 			@Override
-			protected boolean canFill(EnumFacing side) {
+			protected boolean canFill(Direction side) {
 				return false;
 			}
 
 			@Override
-			protected boolean canDrain(EnumFacing side) {
+			protected boolean canDrain(Direction side) {
 				return flags.get(side);
 			}
 		};
 
 		if (canFill) return new SidedFluidCapabilityWrapper(tank) {
 			@Override
-			protected boolean canFill(EnumFacing side) {
+			protected boolean canFill(Direction side) {
 				return flags.get(side);
 			}
 
 			@Override
-			protected boolean canDrain(EnumFacing side) {
+			protected boolean canDrain(Direction side) {
 				return false;
 			}
 		};
@@ -116,12 +116,12 @@ public abstract class SidedFluidCapabilityWrapper {
 		return new SidedFluidCapabilityWrapper(tank) {
 
 			@Override
-			protected boolean canFill(EnumFacing side) {
+			protected boolean canFill(Direction side) {
 				return false;
 			}
 
 			@Override
-			protected boolean canDrain(EnumFacing side) {
+			protected boolean canDrain(Direction side) {
 				return false;
 			}
 		};

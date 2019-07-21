@@ -5,8 +5,8 @@ import java.util.Random;
 import javax.annotation.Nonnull;
 import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemEnchantedBook;
+import net.minecraft.item.Items;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 
 public class VanillaEnchantLogic {
@@ -70,7 +70,7 @@ public class VanillaEnchantLogic {
 
 			for (EnchantmentData enchantment : enchantmentsToApply) {
 				if (isBook) {
-					ItemEnchantedBook.addEnchantment(enchantedItem, enchantment);
+					EnchantedBookItem.addEnchantment(enchantedItem, enchantment);
 				} else {
 					enchantedItem.addEnchantment(enchantment.enchantment, enchantment.enchantmentLevel);
 				}

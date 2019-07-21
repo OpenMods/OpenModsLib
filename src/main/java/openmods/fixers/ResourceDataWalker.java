@@ -1,6 +1,6 @@
 package openmods.fixers;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.datafix.IDataFixer;
 import net.minecraft.util.datafix.IDataWalker;
@@ -22,7 +22,7 @@ public abstract class ResourceDataWalker implements IDataWalker {
 	}
 
 	@Override
-	public NBTTagCompound process(IDataFixer fixer, NBTTagCompound compound, int version) {
+	public CompoundNBT process(IDataFixer fixer, CompoundNBT compound, int version) {
 		final ResourceLocation id = new ResourceLocation(compound.getString(idTag));
 		final ResourceLocation expected = entry.getRegistryName();
 		if (id.equals(expected)) return processImpl(fixer, compound, version);
@@ -30,6 +30,6 @@ public abstract class ResourceDataWalker implements IDataWalker {
 		return compound;
 	}
 
-	protected abstract NBTTagCompound processImpl(IDataFixer fixer, NBTTagCompound compound, int version);
+	protected abstract CompoundNBT processImpl(IDataFixer fixer, CompoundNBT compound, int version);
 
 }

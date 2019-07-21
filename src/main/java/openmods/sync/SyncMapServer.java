@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import openmods.Log;
 import openmods.utils.bitstream.OutputBitStream;
@@ -68,7 +68,7 @@ public abstract class SyncMapServer extends SyncMap {
 	}
 
 	@Override
-	public void read(NBTTagCompound tag) {
+	public void read(CompoundNBT tag) {
 		for (Map.Entry<String, ISyncableObject> entry : objects.entrySet()) {
 			String name = entry.getKey();
 			final ISyncableObject obj = entry.getValue();
@@ -82,13 +82,13 @@ public abstract class SyncMapServer extends SyncMap {
 	}
 
 	@Override
-	public boolean tryRead(NBTTagCompound tag) {
+	public boolean tryRead(CompoundNBT tag) {
 		read(tag);
 		return true;
 	}
 
 	@Override
-	public void write(NBTTagCompound tag) {
+	public void write(CompoundNBT tag) {
 		for (Map.Entry<String, ISyncableObject> entry : objects.entrySet()) {
 			final String name = entry.getKey();
 			final ISyncableObject obj = entry.getValue();
@@ -101,7 +101,7 @@ public abstract class SyncMapServer extends SyncMap {
 	}
 
 	@Override
-	public boolean tryWrite(NBTTagCompound tag) {
+	public boolean tryWrite(CompoundNBT tag) {
 		write(tag);
 		return true;
 	}
@@ -179,7 +179,7 @@ public abstract class SyncMapServer extends SyncMap {
 		public void sendUpdates(Set<ISyncableObject> changedObjects) {
 			if (changedObjects.isEmpty()) return;
 
-			final Set<EntityPlayerMP> players = getPlayersWatching();
+			final Set<ServerPlayerEntity> players = getPlayersWatching();
 
 			try {
 				final PacketBuffer deltaPayload = new PacketBuffer(Unpooled.buffer());
@@ -211,11 +211,11 @@ public abstract class SyncMapServer extends SyncMap {
 		public void sendUpdates(Set<ISyncableObject> changes) {
 			final boolean hasChanges = !changes.isEmpty();
 
-			List<EntityPlayerMP> fullPacketTargets = Lists.newArrayList();
-			List<EntityPlayerMP> deltaPacketTargets = Lists.newArrayList();
+			List<ServerPlayerEntity> fullPacketTargets = Lists.newArrayList();
+			List<ServerPlayerEntity> deltaPacketTargets = Lists.newArrayList();
 
-			Set<EntityPlayerMP> players = getPlayersWatching();
-			for (EntityPlayerMP player : players) {
+			Set<ServerPlayerEntity> players = getPlayersWatching();
+			for (ServerPlayerEntity player : players) {
 				if (knownUsers.contains(player.getEntityId())) {
 					if (hasChanges) deltaPacketTargets.add(player);
 				} else {
@@ -342,7 +342,7 @@ public abstract class SyncMapServer extends SyncMap {
 
 	protected abstract void writeOwnerData(PacketBuffer output);
 
-	protected abstract Set<EntityPlayerMP> getPlayersWatching();
+	protected abstract Set<ServerPlayerEntity> getPlayersWatching();
 
 	protected abstract boolean isInvalid();
 }

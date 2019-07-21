@@ -3,8 +3,8 @@ package openmods.sync;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
@@ -28,16 +28,16 @@ public class SyncableBlock extends SyncableObjectBase implements ISyncableValueP
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt, String name) {
+	public void writeToNBT(CompoundNBT nbt, String name) {
 		ResourceLocation location = Block.REGISTRY.getNameForObject(this.block);
 		if (location != null) {
-			final NBTTagCompound entry = NbtUtils.store(location);
+			final CompoundNBT entry = NbtUtils.store(location);
 			nbt.setTag(name, entry);
 		}
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt, String name) {
+	public void readFromNBT(CompoundNBT nbt, String name) {
 		if (nbt.hasKey(name, Constants.NBT.TAG_STRING)) {
 			final String blockName = nbt.getString(name);
 			if (!Strings.isNullOrEmpty(blockName)) {
@@ -45,7 +45,7 @@ public class SyncableBlock extends SyncableObjectBase implements ISyncableValueP
 				this.block = Block.REGISTRY.getObject(blockLocation);
 			}
 		} else if (nbt.hasKey(name, Constants.NBT.TAG_COMPOUND)) {
-			final NBTTagCompound entry = nbt.getCompoundTag(name);
+			final CompoundNBT entry = nbt.getCompoundTag(name);
 			final ResourceLocation blockLocation = NbtUtils.readResourceLocation(entry);
 			this.block = Block.REGISTRY.getObject(blockLocation);
 		} else {

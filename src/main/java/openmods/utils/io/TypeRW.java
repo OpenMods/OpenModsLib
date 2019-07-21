@@ -4,16 +4,16 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.nbt.ByteArrayNBT;
+import net.minecraft.nbt.ByteNBT;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.DoubleNBT;
+import net.minecraft.nbt.FloatNBT;
 import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagByte;
-import net.minecraft.nbt.NBTTagByteArray;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagDouble;
-import net.minecraft.nbt.NBTTagFloat;
-import net.minecraft.nbt.NBTTagInt;
-import net.minecraft.nbt.NBTTagLong;
-import net.minecraft.nbt.NBTTagShort;
-import net.minecraft.nbt.NBTTagString;
+import net.minecraft.nbt.IntNBT;
+import net.minecraft.nbt.LongNBT;
+import net.minecraft.nbt.ShortNBT;
+import net.minecraft.nbt.StringNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import openmods.utils.NbtUtils;
@@ -34,16 +34,16 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public boolean checkTagType(NBTBase tag) {
-			return tag instanceof NBTTagInt;
+			return tag instanceof IntNBT;
 		}
 
 		@Override
-		public Integer readFromNBT(NBTTagCompound tag, String name) {
+		public Integer readFromNBT(CompoundNBT tag, String name) {
 			return tag.getInteger(name);
 		}
 
 		@Override
-		public void writeToNBT(Integer o, NBTTagCompound tag, String name) {
+		public void writeToNBT(Integer o, CompoundNBT tag, String name) {
 			tag.setInteger(name, o);
 		}
 
@@ -60,18 +60,18 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 	public static final TypeRW<Float> FLOAT = new TypeRW<Float>() {
 
 		@Override
-		public Float readFromNBT(NBTTagCompound tag, String name) {
+		public Float readFromNBT(CompoundNBT tag, String name) {
 			return tag.getFloat(name);
 		}
 
 		@Override
-		public void writeToNBT(Float o, NBTTagCompound tag, String name) {
+		public void writeToNBT(Float o, CompoundNBT tag, String name) {
 			tag.setFloat(name, o);
 		}
 
 		@Override
 		public boolean checkTagType(NBTBase tag) {
-			return tag instanceof NBTTagFloat;
+			return tag instanceof FloatNBT;
 		}
 
 		@Override
@@ -98,18 +98,18 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 	public static final TypeRW<Double> DOUBLE = new TypeRW<Double>() {
 
 		@Override
-		public Double readFromNBT(NBTTagCompound tag, String name) {
+		public Double readFromNBT(CompoundNBT tag, String name) {
 			return tag.getDouble(name);
 		}
 
 		@Override
-		public void writeToNBT(Double o, NBTTagCompound tag, String name) {
+		public void writeToNBT(Double o, CompoundNBT tag, String name) {
 			tag.setDouble(name, o);
 		}
 
 		@Override
 		public boolean checkTagType(NBTBase tag) {
-			return tag instanceof NBTTagDouble;
+			return tag instanceof DoubleNBT;
 		}
 
 		@Override
@@ -135,18 +135,18 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 	public static final TypeRW<String> STRING = new TypeRW<String>() {
 
 		@Override
-		public String readFromNBT(NBTTagCompound tag, String name) {
+		public String readFromNBT(CompoundNBT tag, String name) {
 			return tag.getString(name);
 		}
 
 		@Override
-		public void writeToNBT(String o, NBTTagCompound tag, String name) {
+		public void writeToNBT(String o, CompoundNBT tag, String name) {
 			tag.setString(name, o);
 		}
 
 		@Override
 		public boolean checkTagType(NBTBase tag) {
-			return tag instanceof NBTTagString;
+			return tag instanceof StringNBT;
 		}
 
 		@Override
@@ -168,18 +168,18 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 	public static final TypeRW<Short> SHORT = new TypeRW<Short>() {
 
 		@Override
-		public Short readFromNBT(NBTTagCompound tag, String name) {
+		public Short readFromNBT(CompoundNBT tag, String name) {
 			return tag.getShort(name);
 		}
 
 		@Override
-		public void writeToNBT(Short o, NBTTagCompound tag, String name) {
+		public void writeToNBT(Short o, CompoundNBT tag, String name) {
 			tag.setShort(name, o);
 		}
 
 		@Override
 		public boolean checkTagType(NBTBase tag) {
-			return tag instanceof NBTTagShort;
+			return tag instanceof ShortNBT;
 		}
 
 		@Override
@@ -205,18 +205,18 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 	public static final TypeRW<Byte> BYTE = new TypeRW<Byte>() {
 
 		@Override
-		public Byte readFromNBT(NBTTagCompound tag, String name) {
+		public Byte readFromNBT(CompoundNBT tag, String name) {
 			return tag.getByte(name);
 		}
 
 		@Override
-		public void writeToNBT(Byte o, NBTTagCompound tag, String name) {
+		public void writeToNBT(Byte o, CompoundNBT tag, String name) {
 			tag.setByte(name, o);
 		}
 
 		@Override
 		public boolean checkTagType(NBTBase tag) {
-			return tag instanceof NBTTagByte;
+			return tag instanceof ByteNBT;
 		}
 
 		@Override
@@ -242,18 +242,18 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 	public static final TypeRW<Boolean> BOOL = new TypeRW<Boolean>() {
 
 		@Override
-		public Boolean readFromNBT(NBTTagCompound tag, String name) {
+		public Boolean readFromNBT(CompoundNBT tag, String name) {
 			return tag.getBoolean(name);
 		}
 
 		@Override
-		public void writeToNBT(Boolean o, NBTTagCompound tag, String name) {
+		public void writeToNBT(Boolean o, CompoundNBT tag, String name) {
 			tag.setBoolean(name, o);
 		}
 
 		@Override
 		public boolean checkTagType(NBTBase tag) {
-			return tag instanceof NBTTagByte;
+			return tag instanceof ByteNBT;
 		}
 
 		@Override
@@ -278,18 +278,18 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 	public static final TypeRW<Long> LONG = new TypeRW<Long>() {
 
 		@Override
-		public Long readFromNBT(NBTTagCompound tag, String name) {
+		public Long readFromNBT(CompoundNBT tag, String name) {
 			return tag.getLong(name);
 		}
 
 		@Override
-		public void writeToNBT(Long o, NBTTagCompound tag, String name) {
+		public void writeToNBT(Long o, CompoundNBT tag, String name) {
 			tag.setLong(name, o);
 		}
 
 		@Override
 		public boolean checkTagType(NBTBase tag) {
-			return tag instanceof NBTTagLong;
+			return tag instanceof LongNBT;
 		}
 
 		@Override
@@ -330,18 +330,18 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public void writeToNBT(byte[] o, NBTTagCompound tag, String name) {
+		public void writeToNBT(byte[] o, CompoundNBT tag, String name) {
 			tag.setByteArray(name, o);
 		}
 
 		@Override
-		public byte[] readFromNBT(NBTTagCompound tag, String name) {
+		public byte[] readFromNBT(CompoundNBT tag, String name) {
 			return tag.getByteArray(name);
 		}
 
 		@Override
 		public boolean checkTagType(NBTBase tag) {
-			return tag instanceof NBTTagByteArray;
+			return tag instanceof ByteArrayNBT;
 		}
 	};
 
@@ -383,19 +383,19 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public BlockPos readFromNBT(NBTTagCompound tag, String name) {
-			NBTTagCompound coordTag = tag.getCompoundTag(name);
+		public BlockPos readFromNBT(CompoundNBT tag, String name) {
+			CompoundNBT coordTag = tag.getCompoundTag(name);
 			return NbtUtils.readBlockPos(coordTag);
 		}
 
 		@Override
-		public void writeToNBT(BlockPos o, NBTTagCompound tag, String name) {
+		public void writeToNBT(BlockPos o, CompoundNBT tag, String name) {
 			tag.setTag(name, NbtUtils.store(o));
 		}
 
 		@Override
 		public boolean checkTagType(NBTBase tag) {
-			return tag instanceof NBTTagCompound;
+			return tag instanceof CompoundNBT;
 		}
 	};
 
@@ -412,18 +412,18 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public UUID readFromNBT(NBTTagCompound tag, String name) {
+		public UUID readFromNBT(CompoundNBT tag, String name) {
 			return NbtUtils.readUuid(tag);
 		}
 
 		@Override
-		public void writeToNBT(UUID o, NBTTagCompound tag, String name) {
+		public void writeToNBT(UUID o, CompoundNBT tag, String name) {
 			tag.setTag(name, NbtUtils.store(o));
 		}
 
 		@Override
 		public boolean checkTagType(NBTBase tag) {
-			return tag instanceof NBTTagCompound;
+			return tag instanceof CompoundNBT;
 		}
 	};
 

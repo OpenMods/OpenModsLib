@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.items.IItemHandler;
@@ -15,7 +15,7 @@ import openmods.utils.InventoryUtils;
 
 public class ItemMover {
 
-	private Set<EnumFacing> sides;
+	private Set<Direction> sides;
 
 	private boolean randomizeSides = false;
 
@@ -32,7 +32,7 @@ public class ItemMover {
 		this.pos = pos;
 	}
 
-	public ItemMover setSides(Set<EnumFacing> sides) {
+	public ItemMover setSides(Set<Direction> sides) {
 		this.sides = sides;
 		return this;
 	}
@@ -56,20 +56,20 @@ public class ItemMover {
 		if (sides.isEmpty()) return Collections.emptyList();
 
 		if (breakAfterFirstTry) {
-			final EnumFacing selectedSide = randomizeSides? CollectionUtils.getRandom(sides) : CollectionUtils.getFirst(sides);
+			final Direction selectedSide = randomizeSides? CollectionUtils.getRandom(sides) : CollectionUtils.getFirst(sides);
 			final IItemHandler neighbour = InventoryUtils.tryGetHandler(world, pos.offset(selectedSide), selectedSide.getOpposite());
 			return neighbour != null? Collections.singletonList(neighbour) : Collections.emptyList();
 		}
 
-		Collection<EnumFacing> sidesToCheck = sides;
+		Collection<Direction> sidesToCheck = sides;
 		if (randomizeSides) {
-			final List<EnumFacing> tmp = Lists.newArrayList(sides);
+			final List<Direction> tmp = Lists.newArrayList(sides);
 			Collections.shuffle(tmp);
 			sidesToCheck = tmp;
 		}
 
 		final List<IItemHandler> handlers = Lists.newArrayList();
-		for (EnumFacing side : sidesToCheck) {
+		for (Direction side : sidesToCheck) {
 			final IItemHandler neighbour = InventoryUtils.tryGetHandler(world, pos.offset(side), side.getOpposite());
 			if (neighbour != null) handlers.add(neighbour);
 		}

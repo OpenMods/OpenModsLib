@@ -12,14 +12,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.model.IModel;
@@ -115,13 +115,13 @@ public final class MultiLayerModel implements IModel {
 		private static void buildQuadsForLayer(List<BakedQuad> quads, IBakedModel model) {
 			quads.addAll(model.getQuads(null, null, 0));
 
-			for (EnumFacing side : EnumFacing.VALUES)
+			for (Direction side : Direction.VALUES)
 				quads.addAll(model.getQuads(null, side, 0));
 		}
 
 		@Nonnull
 		@Override
-		public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
+		public List<BakedQuad> getQuads(BlockState state, Direction side, long rand) {
 			final BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
 			if (layer == null) { return side == null? quads : ImmutableList.of(); }
 

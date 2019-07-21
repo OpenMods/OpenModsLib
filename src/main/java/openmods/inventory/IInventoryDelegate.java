@@ -1,6 +1,6 @@
 package openmods.inventory;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
@@ -47,17 +47,17 @@ public interface IInventoryDelegate extends IInventory, IInventoryProvider {
 	}
 
 	@Override
-	default boolean isUsableByPlayer(EntityPlayer player) {
+	default boolean isUsableByPlayer(PlayerEntity player) {
 		return getInventory().isUsableByPlayer(player);
 	}
 
 	@Override
-	default void openInventory(EntityPlayer player) {
+	default void openInventory(PlayerEntity player) {
 		getInventory().openInventory(player);
 	}
 
 	@Override
-	default void closeInventory(EntityPlayer player) {
+	default void closeInventory(PlayerEntity player) {
 		getInventory().closeInventory(player);
 	}
 

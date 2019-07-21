@@ -1,6 +1,6 @@
 package openmods.gui.misc;
 
-import net.minecraft.inventory.Slot;
+import net.minecraft.inventory.container.Slot;
 import openmods.gui.component.BaseComponent;
 
 public interface ISlotBackgroundRenderer {

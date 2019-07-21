@@ -2,7 +2,7 @@ package openmods.config.gui;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resources.I18n;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Property;
@@ -41,7 +41,7 @@ public class OpenModsConfigScreen extends GuiConfig {
 		}
 
 		@Override
-		protected GuiScreen buildChildScreen() {
+		protected Screen buildChildScreen() {
 			return new GuiConfig(this.owningScreen,
 					this.configElement.getChildElements(),
 					this.owningScreen.modID,
@@ -52,11 +52,11 @@ public class OpenModsConfigScreen extends GuiConfig {
 
 	}
 
-	public OpenModsConfigScreen(GuiScreen parent, String modId, String title) {
+	public OpenModsConfigScreen(Screen parent, String modId, String title) {
 		super(parent, createDefaultConfigElements(modId, Lists.newArrayList()), modId, false, true, title);
 	}
 
-	public OpenModsConfigScreen(GuiScreen parent, String modId, String title, List<IConfigElement> customElements) {
+	public OpenModsConfigScreen(Screen parent, String modId, String title, List<IConfigElement> customElements) {
 		super(parent, createDefaultConfigElements(modId, customElements), modId, false, true, title);
 	}
 

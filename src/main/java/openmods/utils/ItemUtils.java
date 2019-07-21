@@ -9,11 +9,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import javax.annotation.Nonnull;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.World;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.output.NullOutputStream;
@@ -32,27 +32,27 @@ public class ItemUtils {
 		return stack;
 	}
 
-	public static NBTTagCompound getItemTag(@Nonnull ItemStack stack) {
-		NBTTagCompound result = stack.getTagCompound();
+	public static CompoundNBT getItemTag(@Nonnull ItemStack stack) {
+		CompoundNBT result = stack.getTagCompound();
 		if (result == null) {
-			result = new NBTTagCompound();
+			result = new CompoundNBT();
 			stack.setTagCompound(result);
 		}
 		return result;
 	}
 
-	public static EntityItem createDrop(Entity dropper, @Nonnull ItemStack is) {
+	public static ItemEntity createDrop(Entity dropper, @Nonnull ItemStack is) {
 		return createEntityItem(dropper.world, dropper.posX, dropper.posY, dropper.posZ, is);
 	}
 
-	public static EntityItem createEntityItem(World world, double x, double y, double z, @Nonnull ItemStack is) {
-		return new EntityItem(world, x, y, z, is.copy());
+	public static ItemEntity createEntityItem(World world, double x, double y, double z, @Nonnull ItemStack is) {
+		return new ItemEntity(world, x, y, z, is.copy());
 	}
 
 	/**
 	 * This function returns fingerprint of NBTTag. It can be used to compare two tags
 	 */
-	public static String getNBTHash(NBTTagCompound tag) {
+	public static String getNBTHash(CompoundNBT tag) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("MD5");
 			OutputStream dump = new NullOutputStream();
@@ -67,7 +67,7 @@ public class ItemUtils {
 	}
 
 	// because vanilla is not really good with null stacks
-	public static void setEntityItemStack(EntityItem entity, @Nonnull ItemStack stack) {
+	public static void setEntityItemStack(ItemEntity entity, @Nonnull ItemStack stack) {
 		if (stack.isEmpty()) {
 			entity.setDead();
 		} else {

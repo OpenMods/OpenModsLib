@@ -1,7 +1,7 @@
 package openmods.utils;
 
 import javax.annotation.Nonnull;
-import net.minecraft.inventory.InventoryCrafting;
+import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.NonNullList;
@@ -33,7 +33,7 @@ public abstract class CustomRecipeBase extends IForgeRegistryEntry.Impl<IRecipe>
 	}
 
 	@Override
-	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
+	public NonNullList<ItemStack> getRemainingItems(CraftingInventory inv) {
 		NonNullList<ItemStack> result = NonNullList.withSize(inv.getSizeInventory(), ItemStack.EMPTY);
 
 		for (int i = 0; i < result.size(); ++i) {

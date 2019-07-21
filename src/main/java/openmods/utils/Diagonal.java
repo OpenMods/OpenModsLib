@@ -2,20 +2,20 @@ package openmods.utils;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.Vec3i;
 
 public enum Diagonal {
-	NW(EnumFacing.NORTH, EnumFacing.WEST),
-	NE(EnumFacing.NORTH, EnumFacing.EAST),
-	SW(EnumFacing.SOUTH, EnumFacing.WEST),
-	SE(EnumFacing.SOUTH, EnumFacing.EAST);
+	NW(Direction.NORTH, Direction.WEST),
+	NE(Direction.NORTH, Direction.EAST),
+	SW(Direction.SOUTH, Direction.WEST),
+	SE(Direction.SOUTH, Direction.EAST);
 
 	public final int offsetX;
 	public final int offsetY;
 	public final int offsetZ;
 
-	Diagonal(EnumFacing a, EnumFacing b) {
+	Diagonal(Direction a, Direction b) {
 		final Vec3i va = a.getDirectionVec();
 		final Vec3i vb = b.getDirectionVec();
 		this.offsetX = va.getX() + vb.getX();

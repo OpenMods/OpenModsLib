@@ -11,14 +11,14 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentData;
-import net.minecraft.init.Items;
-import net.minecraft.inventory.InventoryCrafting;
-import net.minecraft.item.ItemEnchantedBook;
+import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.item.EnchantedBookItem;
+import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -36,7 +36,7 @@ public class EnchantingRecipe extends IForgeRegistryEntry.Impl<IRecipe> implemen
 
 		@Override
 		public BooleanSupplier parse(JsonContext context, JsonObject json) {
-			final String enchId = JsonUtils.getString(json, "id");
+			final String enchId = JSONUtils.getString(json, "id");
 			return () -> Enchantment.REGISTRY.containsKey(new ResourceLocation(enchId));
 		}
 	}
@@ -46,12 +46,12 @@ public class EnchantingRecipe extends IForgeRegistryEntry.Impl<IRecipe> implemen
 
 		@Override
 		public IRecipe parse(JsonContext context, JsonObject json) {
-			final JsonObject sourceData = JsonUtils.getJsonObject(json, "source");
+			final JsonObject sourceData = JSONUtils.getJsonObject(json, "source");
 			final IRecipe source = CraftingHelper.getRecipe(sourceData, context);
 
 			final Map<ResourceLocation, Integer> enchantmentMap = Maps.newHashMap();
 
-			final JsonObject enchData = JsonUtils.getJsonObject(json, "enchantments");
+			final JsonObject enchData = JSONUtils.getJsonObject(json, "enchantments");
 			for (Map.Entry<String, JsonElement> e : enchData.entrySet()) {
 				final ResourceLocation enchId = new ResourceLocation(e.getKey());
 				final int enchLevel = e.getValue().getAsInt();
@@ -84,14 +84,14 @@ public class EnchantingRecipe extends IForgeRegistryEntry.Impl<IRecipe> implemen
 		if (output == null) return null;
 
 		if (output.getItem() == Items.BOOK) {
-			final NBTTagCompound originalTag = output.getTagCompound();
+			final CompoundNBT originalTag = output.getTagCompound();
 			output = new ItemStack(Items.ENCHANTED_BOOK);
 			output.setTagCompound(originalTag != null? originalTag.copy() : null);
 			for (EnchantmentData e : enchantments)
-				ItemEnchantedBook.addEnchantment(output, e);
+				EnchantedBookItem.addEnchantment(output, e);
 		} else if (output.getItem() == Items.ENCHANTED_BOOK) {
 			for (EnchantmentData e : enchantments)
-				ItemEnchantedBook.addEnchantment(output, e);
+				EnchantedBookItem.addEnchantment(output, e);
 		} else {
 			for (EnchantmentData e : enchantments)
 				output.addEnchantment(e.enchantment, e.enchantmentLevel);
@@ -106,12 +106,12 @@ public class EnchantingRecipe extends IForgeRegistryEntry.Impl<IRecipe> implemen
 	}
 
 	@Override
-	public ItemStack getCraftingResult(InventoryCrafting inv) {
+	public ItemStack getCraftingResult(CraftingInventory inv) {
 		return enchantItem(source.getCraftingResult(inv));
 	}
 
 	@Override
-	public boolean matches(InventoryCrafting inv, World worldIn) {
+	public boolean matches(CraftingInventory inv, World worldIn) {
 		return source.matches(inv, worldIn);
 	}
 
@@ -121,7 +121,7 @@ public class EnchantingRecipe extends IForgeRegistryEntry.Impl<IRecipe> implemen
 	}
 
 	@Override
-	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
+	public NonNullList<ItemStack> getRemainingItems(CraftingInventory inv) {
 		return source.getRemainingItems(inv);
 	}
 

@@ -1,7 +1,7 @@
 package openmods.gui.component;
 
 import javax.annotation.Nonnull;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.item.ItemStack;
 import openmods.gui.misc.BoxRenderer;
 
@@ -20,13 +20,13 @@ public class GuiComponentTab extends GuiComponentResizableComposite {
 
 	private static final BoxRenderer BOX_RENDERER = new BoxRenderer(0, 5) {
 		@Override
-		protected void renderTopLeftCorner(Gui gui) {}
+		protected void renderTopLeftCorner(AbstractGui gui) {}
 
 		@Override
-		protected void renderBottomLeftCorner(Gui gui, int height) {}
+		protected void renderBottomLeftCorner(AbstractGui gui, int height) {}
 
 		@Override
-		protected void renderLeftEdge(Gui gui, int height) {}
+		protected void renderLeftEdge(AbstractGui gui, int height) {}
 	};
 
 	public GuiComponentTab(int color, @Nonnull ItemStack iconStack, int expandedWidth, int expandedHeight) {

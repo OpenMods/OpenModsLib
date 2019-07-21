@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import openmods.sync.ISyncListener;
 import openmods.utils.bitmap.IReadableBitMap;
@@ -20,18 +20,18 @@ public class SidedItemHandlerAdapter {
 
 	private class SlotConfig {
 		private final int index;
-		private final IReadableBitMap<EnumFacing> reachability;
+		private final IReadableBitMap<Direction> reachability;
 		private final boolean canInsert;
 		private final boolean canExtract;
 
-		private SlotConfig(int index, IReadableBitMap<EnumFacing> sideFlags, boolean canInsert, boolean canExtract) {
+		private SlotConfig(int index, IReadableBitMap<Direction> sideFlags, boolean canInsert, boolean canExtract) {
 			this.index = index;
 			this.reachability = sideFlags;
 			this.canInsert = canInsert;
 			this.canExtract = canExtract;
 		}
 
-		private boolean canAccessFromSide(EnumFacing side) {
+		private boolean canAccessFromSide(Direction side) {
 			return side == null || reachability.get(side);
 		}
 	}
@@ -87,12 +87,12 @@ public class SidedItemHandlerAdapter {
 	}
 
 	private class SideHandler {
-		private final EnumFacing side;
+		private final Direction side;
 
 		private boolean isValid;
 		private ItemHandler value;
 
-		public SideHandler(EnumFacing side) {
+		public SideHandler(Direction side) {
 			this.side = side;
 		}
 
@@ -111,11 +111,11 @@ public class SidedItemHandlerAdapter {
 		}
 	}
 
-	private final Map<EnumFacing, SideHandler> handlers;
+	private final Map<Direction, SideHandler> handlers;
 
 	{
-		final Map<EnumFacing, SideHandler> handlers = Maps.newEnumMap(EnumFacing.class);
-		for (EnumFacing side : EnumFacing.VALUES)
+		final Map<Direction, SideHandler> handlers = Maps.newEnumMap(Direction.class);
+		for (Direction side : Direction.VALUES)
 			handlers.put(side, new SideHandler(side));
 
 		this.handlers = Collections.unmodifiableMap(handlers);
@@ -130,15 +130,15 @@ public class SidedItemHandlerAdapter {
 		this.inventory = inventory;
 	}
 
-	public IItemHandlerModifiable getHandler(EnumFacing side) {
+	public IItemHandlerModifiable getHandler(Direction side) {
 		return (side != null? handlers.get(side) : selfHandler).get();
 	}
 
-	public boolean hasHandler(EnumFacing side) {
+	public boolean hasHandler(Direction side) {
 		return getHandler(side) != null;
 	}
 
-	private ItemHandler createHandlerForSide(EnumFacing side) {
+	private ItemHandler createHandlerForSide(Direction side) {
 		final List<SlotConfig> sideConfig = Lists.newArrayListWithCapacity(slots.size());
 		for (SlotConfig config : slots.values())
 			if (config.canAccessFromSide(side))
@@ -158,21 +158,21 @@ public class SidedItemHandlerAdapter {
 		return changes -> invalidate();
 	}
 
-	public void registerSlots(int start, int count, IReadableBitMap<EnumFacing> sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerSlots(int start, int count, IReadableBitMap<Direction> sideFlags, boolean canInsert, boolean canExtract) {
 		for (int i = start; i < start + count; i++)
 			registerSlot(i, sideFlags, canInsert, canExtract);
 	}
 
-	public void registerAllSlots(IReadableBitMap<EnumFacing> sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerAllSlots(IReadableBitMap<Direction> sideFlags, boolean canInsert, boolean canExtract) {
 		for (int i = 0; i < inventory.getSlots(); i++)
 			registerSlot(i, sideFlags, canInsert, canExtract);
 	}
 
-	public void registerSlot(Enum<?> slot, IReadableBitMap<EnumFacing> sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerSlot(Enum<?> slot, IReadableBitMap<Direction> sideFlags, boolean canInsert, boolean canExtract) {
 		registerSlot(slot.ordinal(), sideFlags, canInsert, canExtract);
 	}
 
-	public void registerSlot(int slot, IReadableBitMap<EnumFacing> sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerSlot(int slot, IReadableBitMap<Direction> sideFlags, boolean canInsert, boolean canExtract) {
 		final int sizeInventory = inventory.getSlots();
 		Preconditions.checkArgument(slot >= 0 && slot < sizeInventory, "Tried to register invalid slot: %s (inventory size: %s)", slot, sizeInventory);
 		slots.put(slot, new SlotConfig(slot, sideFlags, canInsert, canExtract));

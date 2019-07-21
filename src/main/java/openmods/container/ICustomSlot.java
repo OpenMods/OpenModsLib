@@ -1,12 +1,12 @@
 package openmods.container;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.ClickType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.ClickType;
 import net.minecraft.item.ItemStack;
 
 public interface ICustomSlot {
 
-	ItemStack onClick(EntityPlayer player, int dragType, ClickType clickType);
+	ItemStack onClick(PlayerEntity player, int dragType, ClickType clickType);
 
 	boolean canDrag();
 

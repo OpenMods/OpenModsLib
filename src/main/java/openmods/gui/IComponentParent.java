@@ -7,7 +7,7 @@ import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
@@ -15,7 +15,7 @@ public interface IComponentParent {
 
 	Minecraft getMinecraft();
 
-	TextureMap getBlocksTextureMap();
+	AtlasTexture getBlocksTextureMap();
 
 	TextureAtlasSprite getIcon(ResourceLocation location);
 

@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.text.ITextComponent;
 import openmods.utils.bitmap.IReadableBitMap;
 
@@ -21,17 +21,17 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	private final IInventory inventory;
 
 	private class SlotInfo {
-		private final IReadableBitMap<EnumFacing> sideFlags;
+		private final IReadableBitMap<Direction> sideFlags;
 		private final boolean canInsert;
 		private final boolean canExtract;
 
-		private SlotInfo(IReadableBitMap<EnumFacing> sideFlags, boolean canInsert, boolean canExtract) {
+		private SlotInfo(IReadableBitMap<Direction> sideFlags, boolean canInsert, boolean canExtract) {
 			this.sideFlags = sideFlags;
 			this.canInsert = canInsert;
 			this.canExtract = canExtract;
 		}
 
-		private boolean canAccessFromSide(EnumFacing side) {
+		private boolean canAccessFromSide(Direction side) {
 			return sideFlags.get(side);
 		}
 	}
@@ -42,22 +42,22 @@ public class SidedInventoryAdapter implements ISidedInventory {
 		this.inventory = inventory;
 	}
 
-	public void registerSlot(Enum<?> slot, IReadableBitMap<EnumFacing> sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerSlot(Enum<?> slot, IReadableBitMap<Direction> sideFlags, boolean canInsert, boolean canExtract) {
 		registerSlot(slot.ordinal(), sideFlags, canInsert, canExtract);
 	}
 
-	public void registerSlot(int slot, IReadableBitMap<EnumFacing> sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerSlot(int slot, IReadableBitMap<Direction> sideFlags, boolean canInsert, boolean canExtract) {
 		final int sizeInventory = inventory.getSizeInventory();
 		Preconditions.checkArgument(slot >= 0 && slot < sizeInventory, "Tried to register invalid slot: %s (inventory size: %s)", slot, sizeInventory);
 		slots.put(slot, new SlotInfo(sideFlags, canInsert, canExtract));
 	}
 
-	public void registerSlots(int start, int count, IReadableBitMap<EnumFacing> sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerSlots(int start, int count, IReadableBitMap<Direction> sideFlags, boolean canInsert, boolean canExtract) {
 		for (int i = start; i < start + count; i++)
 			registerSlot(i, sideFlags, canInsert, canExtract);
 	}
 
-	public void registerAllSlots(IReadableBitMap<EnumFacing> sideFlags, boolean canInsert, boolean canExtract) {
+	public void registerAllSlots(IReadableBitMap<Direction> sideFlags, boolean canInsert, boolean canExtract) {
 		for (int i = 0; i < inventory.getSizeInventory(); i++)
 			registerSlot(i, sideFlags, canInsert, canExtract);
 	}
@@ -96,7 +96,7 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public boolean isUsableByPlayer(EntityPlayer entityplayer) {
+	public boolean isUsableByPlayer(PlayerEntity entityplayer) {
 		return inventory.isUsableByPlayer(entityplayer);
 	}
 
@@ -106,7 +106,7 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public int[] getSlotsForFace(EnumFacing dir) {
+	public int[] getSlotsForFace(Direction dir) {
 		Set<Integer> result = Sets.newHashSet();
 		for (Entry<Integer, SlotInfo> entry : slots.entrySet()) {
 			if (entry.getValue().canAccessFromSide(dir)) result.add(entry.getKey());
@@ -116,14 +116,14 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public boolean canInsertItem(int slotIndex, @Nonnull ItemStack itemstack, EnumFacing dir) {
+	public boolean canInsertItem(int slotIndex, @Nonnull ItemStack itemstack, Direction dir) {
 		SlotInfo slot = slots.get(slotIndex);
 		if (slot == null) return false;
 		return slot.canInsert && slot.canAccessFromSide(dir) && inventory.isItemValidForSlot(slotIndex, itemstack);
 	}
 
 	@Override
-	public boolean canExtractItem(int slotIndex, @Nonnull ItemStack itemstack, EnumFacing dir) {
+	public boolean canExtractItem(int slotIndex, @Nonnull ItemStack itemstack, Direction dir) {
 		SlotInfo slot = slots.get(slotIndex);
 		if (slot == null) return false;
 		return slot.canExtract && slot.canAccessFromSide(dir);
@@ -145,12 +145,12 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public void openInventory(EntityPlayer player) {
+	public void openInventory(PlayerEntity player) {
 		inventory.openInventory(player);
 	}
 
 	@Override
-	public void closeInventory(EntityPlayer player) {
+	public void closeInventory(PlayerEntity player) {
 		inventory.closeInventory(player);
 	}
 

@@ -1,14 +1,14 @@
 package openmods.inventory;
 
 import javax.annotation.Nonnull;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import openmods.Log;
 import openmods.utils.ItemUtils;
 
 public class PlayerItemInventory extends ItemInventory {
 
-	private final EntityPlayer player;
+	private final PlayerEntity player;
 	private final int inventorySlot;
 	private final int selfId = System.identityHashCode(this);
 
@@ -25,24 +25,24 @@ public class PlayerItemInventory extends ItemInventory {
 	}
 
 	// Potentially unsecure: player can switch item before inventory opens
-	public PlayerItemInventory(EntityPlayer player, int size) {
+	public PlayerItemInventory(PlayerEntity player, int size) {
 		this(player, size, player.inventory.currentItem);
 	}
 
-	public PlayerItemInventory(EntityPlayer player, int size, int inventorySlot) {
+	public PlayerItemInventory(PlayerEntity player, int size, int inventorySlot) {
 		super(player.inventory.getStackInSlot(inventorySlot), size);
 		this.player = player;
 		this.inventorySlot = inventorySlot;
 		setGuiId(containerStack, selfId);
 	}
 
-	private void invalidate(EntityPlayer player) {
+	private void invalidate(PlayerEntity player) {
 		Log.info("Player %s tried to trigger item duplication bug", player);
 		this.isValid = false;
 	}
 
 	@Override
-	public boolean isUsableByPlayer(EntityPlayer player) {
+	public boolean isUsableByPlayer(PlayerEntity player) {
 		if (!(player == this.player && player.inventory.currentItem == inventorySlot)) {
 			invalidate(player);
 			return false;

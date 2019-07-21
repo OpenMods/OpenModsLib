@@ -7,7 +7,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -15,10 +15,10 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformT
 import net.minecraft.client.renderer.block.model.ItemOverride;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.world.World;
 import openmods.state.State;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,7 +34,7 @@ public class ItemStateOverrideList extends ItemOverrideList {
 		}
 
 		@Override
-		public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, long rand) {
 			return original.getQuads(state, side, rand);
 		}
 
@@ -87,7 +87,7 @@ public class ItemStateOverrideList extends ItemOverrideList {
 	}
 
 	@Override
-	public IBakedModel handleItemState(IBakedModel originalModel, @Nonnull ItemStack stack, World world, EntityLivingBase entity) {
+	public IBakedModel handleItemState(IBakedModel originalModel, @Nonnull ItemStack stack, World world, LivingEntity entity) {
 		final Item item = stack.getItem();
 		if (item instanceof IStateItem) {
 			final State state = ((IStateItem)item).getState(stack, world, entity);

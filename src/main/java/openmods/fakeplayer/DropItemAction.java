@@ -2,7 +2,7 @@ package openmods.fakeplayer;
 
 import javax.annotation.Nonnull;
 import javax.vecmath.Vector3f;
-import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.MinecraftForge;
@@ -46,7 +46,7 @@ public class DropItemAction implements PlayerUser {
 	public void usePlayer(OpenModsFakePlayer player) {
 		player.setPositionAndRotation(x, y - player.getEyeHeight(), z, yaw, pitch);
 
-		final EntityItem itemToDrop = new EntityItem(player.getEntityWorld(), x, y, z, stack.copy());
+		final ItemEntity itemToDrop = new ItemEntity(player.getEntityWorld(), x, y, z, stack.copy());
 		itemToDrop.setPosition(itemToDrop.posX, itemToDrop.posY - itemToDrop.height, itemToDrop.posZ);
 		itemToDrop.setPickupDelay(40);
 
@@ -54,7 +54,7 @@ public class DropItemAction implements PlayerUser {
 		if (MinecraftForge.EVENT_BUS.post(event)) {
 			Log.info("Item %s drop from this %s aborted by event", stack, this);
 		} else {
-			final EntityItem droppedItem = event.getEntityItem();
+			final ItemEntity droppedItem = event.getEntityItem();
 
 			droppedItem.motionX = v.x;
 			droppedItem.motionY = v.y;

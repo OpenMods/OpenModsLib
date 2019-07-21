@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.fml.common.network.FMLOutboundHandler.OutboundTarget;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
@@ -31,7 +31,7 @@ public abstract class Dispatcher {
 
 		public final IPacketSender nowhere = FmlPacketSenderFactory.createSender(serverChannel(), OutboundTarget.NOWHERE);
 
-		public final ITargetedPacketSender<EntityPlayer> player = FmlPacketSenderFactory.createPlayerSender(serverChannel());
+		public final ITargetedPacketSender<PlayerEntity> player = FmlPacketSenderFactory.createPlayerSender(serverChannel());
 
 		public final ITargetedPacketSender<Integer> dimension = FmlPacketSenderFactory.createDimensionSender(serverChannel());
 

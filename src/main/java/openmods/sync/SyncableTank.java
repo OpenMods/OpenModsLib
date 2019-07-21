@@ -2,7 +2,7 @@ package openmods.sync;
 
 import java.io.IOException;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
@@ -75,17 +75,17 @@ public class SyncableTank extends GenericTank implements ISyncableObject, IValue
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound tag, String name) {
-		final NBTTagCompound tankTag = new NBTTagCompound();
+	public void writeToNBT(CompoundNBT tag, String name) {
+		final CompoundNBT tankTag = new CompoundNBT();
 		this.writeToNBT(tankTag);
 
 		tag.setTag(name, tankTag);
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound tag, String name) {
+	public void readFromNBT(CompoundNBT tag, String name) {
 		if (tag.hasKey(name, Constants.NBT.TAG_COMPOUND)) {
-			final NBTTagCompound tankTag = tag.getCompoundTag(name);
+			final CompoundNBT tankTag = tag.getCompoundTag(name);
 			this.readFromNBT(tankTag);
 		} else {
 			// For legacy worlds - tag was saved in wrong place due to bug

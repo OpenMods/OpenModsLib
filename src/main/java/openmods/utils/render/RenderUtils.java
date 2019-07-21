@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -77,39 +77,39 @@ public class RenderUtils {
 	}
 
 	public interface IQuadSink {
-		void addVertex(EnumFacing quad, int vertex, double x, double y, double z);
+		void addVertex(Direction quad, int vertex, double x, double y, double z);
 	}
 
 	public static void renderCube(IQuadSink sink, AxisAlignedBB aabb) {
-		sink.addVertex(EnumFacing.NORTH, 0, aabb.minX, aabb.minY, aabb.minZ);
-		sink.addVertex(EnumFacing.NORTH, 1, aabb.minX, aabb.maxY, aabb.minZ);
-		sink.addVertex(EnumFacing.NORTH, 2, aabb.maxX, aabb.maxY, aabb.minZ);
-		sink.addVertex(EnumFacing.NORTH, 3, aabb.maxX, aabb.minY, aabb.minZ);
+		sink.addVertex(Direction.NORTH, 0, aabb.minX, aabb.minY, aabb.minZ);
+		sink.addVertex(Direction.NORTH, 1, aabb.minX, aabb.maxY, aabb.minZ);
+		sink.addVertex(Direction.NORTH, 2, aabb.maxX, aabb.maxY, aabb.minZ);
+		sink.addVertex(Direction.NORTH, 3, aabb.maxX, aabb.minY, aabb.minZ);
 
-		sink.addVertex(EnumFacing.SOUTH, 0, aabb.minX, aabb.minY, aabb.maxZ);
-		sink.addVertex(EnumFacing.SOUTH, 1, aabb.maxX, aabb.minY, aabb.maxZ);
-		sink.addVertex(EnumFacing.SOUTH, 2, aabb.maxX, aabb.maxY, aabb.maxZ);
-		sink.addVertex(EnumFacing.SOUTH, 3, aabb.minX, aabb.maxY, aabb.maxZ);
+		sink.addVertex(Direction.SOUTH, 0, aabb.minX, aabb.minY, aabb.maxZ);
+		sink.addVertex(Direction.SOUTH, 1, aabb.maxX, aabb.minY, aabb.maxZ);
+		sink.addVertex(Direction.SOUTH, 2, aabb.maxX, aabb.maxY, aabb.maxZ);
+		sink.addVertex(Direction.SOUTH, 3, aabb.minX, aabb.maxY, aabb.maxZ);
 
-		sink.addVertex(EnumFacing.WEST, 0, aabb.minX, aabb.minY, aabb.minZ);
-		sink.addVertex(EnumFacing.WEST, 1, aabb.minX, aabb.minY, aabb.maxZ);
-		sink.addVertex(EnumFacing.WEST, 2, aabb.minX, aabb.maxY, aabb.maxZ);
-		sink.addVertex(EnumFacing.WEST, 3, aabb.minX, aabb.maxY, aabb.minZ);
+		sink.addVertex(Direction.WEST, 0, aabb.minX, aabb.minY, aabb.minZ);
+		sink.addVertex(Direction.WEST, 1, aabb.minX, aabb.minY, aabb.maxZ);
+		sink.addVertex(Direction.WEST, 2, aabb.minX, aabb.maxY, aabb.maxZ);
+		sink.addVertex(Direction.WEST, 3, aabb.minX, aabb.maxY, aabb.minZ);
 
-		sink.addVertex(EnumFacing.EAST, 0, aabb.maxX, aabb.minY, aabb.minZ);
-		sink.addVertex(EnumFacing.EAST, 1, aabb.maxX, aabb.maxY, aabb.minZ);
-		sink.addVertex(EnumFacing.EAST, 2, aabb.maxX, aabb.maxY, aabb.maxZ);
-		sink.addVertex(EnumFacing.EAST, 3, aabb.maxX, aabb.minY, aabb.maxZ);
+		sink.addVertex(Direction.EAST, 0, aabb.maxX, aabb.minY, aabb.minZ);
+		sink.addVertex(Direction.EAST, 1, aabb.maxX, aabb.maxY, aabb.minZ);
+		sink.addVertex(Direction.EAST, 2, aabb.maxX, aabb.maxY, aabb.maxZ);
+		sink.addVertex(Direction.EAST, 3, aabb.maxX, aabb.minY, aabb.maxZ);
 
-		sink.addVertex(EnumFacing.DOWN, 0, aabb.minX, aabb.minY, aabb.minZ);
-		sink.addVertex(EnumFacing.DOWN, 1, aabb.maxX, aabb.minY, aabb.minZ);
-		sink.addVertex(EnumFacing.DOWN, 2, aabb.maxX, aabb.minY, aabb.maxZ);
-		sink.addVertex(EnumFacing.DOWN, 3, aabb.minX, aabb.minY, aabb.maxZ);
+		sink.addVertex(Direction.DOWN, 0, aabb.minX, aabb.minY, aabb.minZ);
+		sink.addVertex(Direction.DOWN, 1, aabb.maxX, aabb.minY, aabb.minZ);
+		sink.addVertex(Direction.DOWN, 2, aabb.maxX, aabb.minY, aabb.maxZ);
+		sink.addVertex(Direction.DOWN, 3, aabb.minX, aabb.minY, aabb.maxZ);
 
-		sink.addVertex(EnumFacing.UP, 0, aabb.minX, aabb.maxY, aabb.minZ);
-		sink.addVertex(EnumFacing.UP, 1, aabb.minX, aabb.maxY, aabb.maxZ);
-		sink.addVertex(EnumFacing.UP, 2, aabb.maxX, aabb.maxY, aabb.maxZ);
-		sink.addVertex(EnumFacing.UP, 3, aabb.maxX, aabb.maxY, aabb.minZ);
+		sink.addVertex(Direction.UP, 0, aabb.minX, aabb.maxY, aabb.minZ);
+		sink.addVertex(Direction.UP, 1, aabb.minX, aabb.maxY, aabb.maxZ);
+		sink.addVertex(Direction.UP, 2, aabb.maxX, aabb.maxY, aabb.maxZ);
+		sink.addVertex(Direction.UP, 3, aabb.maxX, aabb.maxY, aabb.minZ);
 	}
 
 	public interface IVertexSink {

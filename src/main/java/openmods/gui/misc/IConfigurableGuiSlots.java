@@ -1,15 +1,15 @@
 package openmods.gui.misc;
 
 import java.util.Set;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;
 import openmods.utils.bitmap.IWriteableBitMap;
 
 public interface IConfigurableGuiSlots<T extends Enum<T>> {
-	IValueProvider<Set<EnumFacing>> createAllowedDirectionsProvider(T slot);
+	IValueProvider<Set<Direction>> createAllowedDirectionsProvider(T slot);
 
-	IWriteableBitMap<EnumFacing> createAllowedDirectionsReceiver(T slot);
+	IWriteableBitMap<Direction> createAllowedDirectionsReceiver(T slot);
 
 	IValueProvider<Boolean> createAutoFlagProvider(T slot);
 

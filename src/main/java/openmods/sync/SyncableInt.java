@@ -1,6 +1,6 @@
 package openmods.sync;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 public class SyncableInt extends SyncableObjectBase implements ISyncableValueProvider<Integer> {
@@ -44,12 +44,12 @@ public class SyncableInt extends SyncableObjectBase implements ISyncableValuePro
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound tag, String name) {
+	public void writeToNBT(CompoundNBT tag, String name) {
 		tag.setInteger(name, value);
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound tag, String name) {
+	public void readFromNBT(CompoundNBT tag, String name) {
 		if (tag.hasKey(name)) {
 			value = tag.getInteger(name);
 		}

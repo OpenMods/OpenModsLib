@@ -1,7 +1,7 @@
 package openmods.sync;
 
 import java.io.IOException;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 public interface ISyncableObject {
@@ -15,7 +15,7 @@ public interface ISyncableObject {
 
 	void writeToStream(PacketBuffer buf) throws IOException;
 
-	void writeToNBT(NBTTagCompound nbt, String name);
+	void writeToNBT(CompoundNBT nbt, String name);
 
-	void readFromNBT(NBTTagCompound nbt, String name);
+	void readFromNBT(CompoundNBT nbt, String name);
 }

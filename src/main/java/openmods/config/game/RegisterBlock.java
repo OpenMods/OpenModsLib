@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import net.minecraft.block.Block;
-import net.minecraft.item.ItemBlock;
+import net.minecraft.item.BlockItem;
 import net.minecraft.tileentity.TileEntity;
 import openmods.item.ItemOpenBlock;
 
@@ -30,7 +30,7 @@ public @interface RegisterBlock {
 
 	boolean registerItemBlock() default true;
 
-	Class<? extends ItemBlock> itemBlock() default ItemOpenBlock.class;
+	Class<? extends BlockItem> itemBlock() default ItemOpenBlock.class;
 
 	Class<? extends TileEntity> tileEntity() default TileEntity.class;
 

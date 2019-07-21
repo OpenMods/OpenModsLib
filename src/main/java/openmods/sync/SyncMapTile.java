@@ -1,12 +1,12 @@
 package openmods.sync;
 
 import java.util.Set;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.ServerWorld;
 import openmods.tileentity.SyncedTileEntity;
 import openmods.utils.NetUtils;
 
@@ -44,9 +44,9 @@ public class SyncMapTile extends SyncMapServer {
 	}
 
 	@Override
-	protected Set<EntityPlayerMP> getPlayersWatching() {
+	protected Set<ServerPlayerEntity> getPlayersWatching() {
 		final BlockPos pos = owner.getPos();
-		return NetUtils.getPlayersWatchingBlock((WorldServer)owner.getWorld(), pos.getX(), pos.getZ());
+		return NetUtils.getPlayersWatchingBlock((ServerWorld)owner.getWorld(), pos.getX(), pos.getZ());
 	}
 
 	@Override

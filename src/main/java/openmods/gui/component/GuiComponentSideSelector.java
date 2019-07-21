@@ -4,18 +4,18 @@ import com.google.common.collect.Lists;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.MathHelper;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IListenerBase;
@@ -31,32 +31,32 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-public class GuiComponentSideSelector extends BaseComponent implements IValueReceiver<Set<EnumFacing>> {
+public class GuiComponentSideSelector extends BaseComponent implements IValueReceiver<Set<Direction>> {
 
 	private static final double SQRT_3 = Math.sqrt(3);
 
 	@FunctionalInterface
 	public interface ISideSelectedListener extends IListenerBase {
-		void onSideToggled(EnumFacing side, boolean currentState);
+		void onSideToggled(Direction side, boolean currentState);
 	}
 
 	private final TrackballWrapper trackball = new TrackballWrapper(1, 40);
 
 	private final int diameter;
 	private final double scale;
-	private EnumFacing lastSideHovered;
-	private final Set<EnumFacing> selectedSides = EnumSet.noneOf(EnumFacing.class);
+	private Direction lastSideHovered;
+	private final Set<Direction> selectedSides = EnumSet.noneOf(Direction.class);
 	private boolean highlightSelectedSides;
 
 	private boolean isInInitialPosition;
 
 	private ISideSelectedListener sideSelectedListener;
 
-	private final IBlockState blockState;
+	private final BlockState blockState;
 	private final TileEntity te;
 	private final FakeBlockAccess access;
 
-	public GuiComponentSideSelector(int x, int y, double scale, IBlockState blockState, TileEntity te, boolean highlightSelectedSides) {
+	public GuiComponentSideSelector(int x, int y, double scale, BlockState blockState, TileEntity te, boolean highlightSelectedSides) {
 		super(x, y);
 		this.scale = scale;
 		this.diameter = MathHelper.ceil(scale * SQRT_3);
@@ -82,12 +82,12 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		GL11.glScaled(scale, -scale, scale);
 		trackball.update(mouseX - width, -(mouseY - height));
 
-		parent.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+		parent.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 		GlStateManager.enableTexture2D();
 
 		if (te != null) TileEntityRendererDispatcher.instance.render(te, -0.5, -0.5, -0.5, 0.0F);
 
-		parent.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+		parent.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 		if (blockState != null) drawBlock();
 
 		SidePicker picker = new SidePicker(0.5);
@@ -97,7 +97,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		if (coord != null) selections.add(Pair.of(coord.side, 0x444444));
 
 		if (highlightSelectedSides) {
-			for (EnumFacing dir : selectedSides)
+			for (Direction dir : selectedSides)
 				selections.add(Pair.of(Side.fromForgeDirection(dir), 0xCC0000));
 		}
 
@@ -186,13 +186,13 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		GlStateManager.enableTexture2D();
 	}
 
-	private void toggleSide(EnumFacing side) {
+	private void toggleSide(Direction side) {
 		boolean wasntPresent = !selectedSides.remove(side);
 		if (wasntPresent) selectedSides.add(side);
 		notifyListeners(side, wasntPresent);
 	}
 
-	private void notifyListeners(EnumFacing side, boolean wasntPresent) {
+	private void notifyListeners(Direction side, boolean wasntPresent) {
 		if (sideSelectedListener != null) sideSelectedListener.onSideToggled(side, wasntPresent);
 	}
 
@@ -221,15 +221,15 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	}
 
 	@Override
-	public void setValue(Set<EnumFacing> dirs) {
+	public void setValue(Set<Direction> dirs) {
 		selectedSides.clear();
 		selectedSides.addAll(dirs);
 	}
 
-	public void setValue(IReadableBitMap<EnumFacing> dirs) {
+	public void setValue(IReadableBitMap<Direction> dirs) {
 		selectedSides.clear();
 
-		for (EnumFacing dir : EnumFacing.VALUES)
+		for (Direction dir : Direction.VALUES)
 			if (dirs.get(dir)) selectedSides.add(dir);
 	}
 

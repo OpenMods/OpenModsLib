@@ -1,7 +1,7 @@
 package openmods.model.itemstate;
 
 import javax.annotation.Nonnull;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import openmods.state.State;
@@ -11,6 +11,6 @@ public interface IStateItem {
 
 	StateContainer getStateContainer();
 
-	State getState(@Nonnull ItemStack stack, World world, EntityLivingBase entity);
+	State getState(@Nonnull ItemStack stack, World world, LivingEntity entity);
 
 }

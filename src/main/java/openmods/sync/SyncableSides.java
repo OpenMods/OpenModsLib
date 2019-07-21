@@ -4,17 +4,17 @@ import com.google.common.collect.Iterators;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import openmods.utils.ByteUtils;
 import openmods.utils.DirUtils;
 import openmods.utils.bitmap.IBitMap;
 import openmods.utils.bitmap.IRpcDirectionBitMap;
 
-public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBitMap, IBitMap<EnumFacing>, ISyncableValueProvider<Set<EnumFacing>> {
+public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBitMap, IBitMap<Direction>, ISyncableValueProvider<Set<Direction>> {
 
-	private final Set<EnumFacing> dirs = EnumSet.noneOf(EnumFacing.class);
+	private final Set<Direction> dirs = EnumSet.noneOf(Direction.class);
 
 	private void read(int bits) {
 		dirs.clear();
@@ -36,32 +36,32 @@ public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBi
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt, String name) {
+	public void writeToNBT(CompoundNBT nbt, String name) {
 		nbt.setByte(name, (byte)write());
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt, String name) {
+	public void readFromNBT(CompoundNBT nbt, String name) {
 		read(nbt.getByte(name));
 	}
 
 	@Override
-	public Set<EnumFacing> getValue() {
+	public Set<Direction> getValue() {
 		return Collections.unmodifiableSet(dirs);
 	}
 
 	@Override
-	public void mark(EnumFacing dir) {
+	public void mark(Direction dir) {
 		if (dirs.add(dir)) markDirty();
 	}
 
 	@Override
-	public void clear(EnumFacing dir) {
+	public void clear(Direction dir) {
 		if (dirs.remove(dir)) markDirty();
 	}
 
 	@Override
-	public boolean get(EnumFacing dir) {
+	public boolean get(Direction dir) {
 		return dirs.contains(dir);
 	}
 
@@ -72,13 +72,13 @@ public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBi
 	}
 
 	@Override
-	public void toggle(EnumFacing value) {
+	public void toggle(Direction value) {
 		if (!dirs.remove(value)) dirs.add(value);
 		markDirty();
 	}
 
 	@Override
-	public void set(EnumFacing key, boolean value) {
+	public void set(Direction key, boolean value) {
 		if (value) dirs.add(key);
 		else dirs.remove(key);
 		markDirty();

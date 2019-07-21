@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -29,7 +29,7 @@ import openmods.fakeplayer.FakePlayerPool.PlayerUserReturning;
 import openmods.world.DropCapture;
 import openmods.world.DropCapture.CaptureContext;
 
-public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
+public class BreakBlockAction implements PlayerUserReturning<List<ItemEntity>> {
 	private final World worldObj;
 	private final BlockPos blockPos;
 
@@ -68,7 +68,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 		}
 	}
 
-	private static final Cache<IBlockState, ItemStack> effectiveToolCache = CacheBuilder.newBuilder()
+	private static final Cache<BlockState, ItemStack> effectiveToolCache = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.build();
 
@@ -92,7 +92,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 		return this;
 	}
 
-	private void selectTool(IBlockState state, OpenModsFakePlayer fakePlayer) {
+	private void selectTool(BlockState state, OpenModsFakePlayer fakePlayer) {
 		if (findEffectiveTool) {
 			final ItemStack optimalTool = effectiveToolCache.getIfPresent(state);
 
@@ -122,7 +122,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 		fakePlayer.inventory.setInventorySlotContents(0, tool.copy());
 	}
 
-	private boolean removeBlock(EntityPlayer player, BlockPos pos, IBlockState state, boolean canHarvest) {
+	private boolean removeBlock(PlayerEntity player, BlockPos pos, BlockState state, boolean canHarvest) {
 		final Block block = state.getBlock();
 		block.onBlockHarvested(worldObj, pos, state, player);
 		final boolean result = block.removedByPlayer(state, worldObj, pos, player, canHarvest);
@@ -131,18 +131,18 @@ public class BreakBlockAction implements PlayerUserReturning<List<EntityItem>> {
 	}
 
 	@Override
-	public List<EntityItem> usePlayer(OpenModsFakePlayer fakePlayer) {
+	public List<ItemEntity> usePlayer(OpenModsFakePlayer fakePlayer) {
 		if (!worldObj.isBlockModifiable(fakePlayer, blockPos)) return Lists.newArrayList();
 
 		// this mirrors ItemInWorldManager.tryHarvestBlock
-		final IBlockState state = worldObj.getBlockState(blockPos);
+		final BlockState state = worldObj.getBlockState(blockPos);
 
 		fakePlayer.inventory.currentItem = 0;
 		selectTool(state, fakePlayer);
 
 		final CaptureContext dropsCapturer = DropCapture.instance.start(blockPos);
 
-		final List<EntityItem> drops;
+		final List<ItemEntity> drops;
 		try {
 			BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(worldObj, blockPos, state, fakePlayer);
 			if (MinecraftForge.EVENT_BUS.post(event)) return Lists.newArrayList();

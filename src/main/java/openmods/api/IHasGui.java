@@ -1,11 +1,11 @@
 package openmods.api;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 
 public interface IHasGui {
-	Object getServerGui(EntityPlayer player);
+	Object getServerGui(PlayerEntity player);
 
-	Object getClientGui(EntityPlayer player);
+	Object getClientGui(PlayerEntity player);
 
-	boolean canOpenGui(EntityPlayer player);
+	boolean canOpenGui(PlayerEntity player);
 }

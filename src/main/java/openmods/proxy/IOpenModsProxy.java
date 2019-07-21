@@ -4,7 +4,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.network.INetHandler;
 import net.minecraft.util.ResourceLocation;
@@ -21,7 +21,7 @@ public interface IOpenModsProxy {
 
 	World getServerWorld(int dimension);
 
-	EntityPlayer getThePlayer();
+	PlayerEntity getThePlayer();
 
 	boolean isClientPlayer(Entity player);
 
@@ -43,7 +43,7 @@ public interface IOpenModsProxy {
 
 	void setNowPlayingTitle(String nowPlaying);
 
-	EntityPlayer getPlayerFromHandler(INetHandler handler);
+	PlayerEntity getPlayerFromHandler(INetHandler handler);
 
 	void bindItemModelToItemMeta(Item item, int metadata, ResourceLocation resourceLocation);
 

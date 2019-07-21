@@ -2,23 +2,23 @@ package openmods.geometry;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 
 public class LocalDirections {
 
-	public final EnumFacing front;
+	public final Direction front;
 
-	public final EnumFacing back;
+	public final Direction back;
 
-	public final EnumFacing top;
+	public final Direction top;
 
-	public final EnumFacing bottom;
+	public final Direction bottom;
 
-	public final EnumFacing left;
+	public final Direction left;
 
-	public final EnumFacing right;
+	public final Direction right;
 
-	private LocalDirections(EnumFacing front, EnumFacing top) {
+	private LocalDirections(Direction front, Direction top) {
 		this.front = front;
 		this.back = front.getOpposite();
 		this.top = top;
@@ -31,17 +31,17 @@ public class LocalDirections {
 		this.left = topHa.cross(frontHa).dir;
 	}
 
-	private static final Table<EnumFacing, EnumFacing, LocalDirections> frontAndTop = HashBasedTable.create();
+	private static final Table<Direction, Direction, LocalDirections> frontAndTop = HashBasedTable.create();
 
 	static {
-		for (EnumFacing front : EnumFacing.VALUES)
-			for (EnumFacing top : EnumFacing.VALUES) {
+		for (Direction front : Direction.VALUES)
+			for (Direction top : Direction.VALUES) {
 				if (top.getAxis() != front.getAxis())
 					frontAndTop.put(front, top, new LocalDirections(front, top));
 			}
 	}
 
-	public static LocalDirections fromFrontAndTop(EnumFacing front, EnumFacing top) {
+	public static LocalDirections fromFrontAndTop(Direction front, Direction top) {
 		return frontAndTop.get(front, top);
 	}
 }

@@ -2,9 +2,9 @@ package openmods.inventory;
 
 import java.util.Arrays;
 import java.util.List;
-import net.minecraft.init.Bootstrap;
+import net.minecraft.util.registry.Bootstrap;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import openmods.inventory.StackEqualityTesterBuilder.IEqualityTester;
 import org.junit.Assert;
 import org.junit.Test;
@@ -80,21 +80,21 @@ public class EqualTest {
 	public void testNBTComparator() {
 		ItemStack stackAa1 = new ItemStack(Utils.ITEM_A, 1);
 		{
-			NBTTagCompound stackTagCompound = new NBTTagCompound();
+			CompoundNBT stackTagCompound = new CompoundNBT();
 			stackTagCompound.setBoolean("test", true);
 			stackAa1.setTagCompound(stackTagCompound);
 		}
 
 		ItemStack stackAa2 = new ItemStack(Utils.ITEM_A, 2);
 		{
-			NBTTagCompound stackTagCompound = new NBTTagCompound();
+			CompoundNBT stackTagCompound = new CompoundNBT();
 			stackTagCompound.setBoolean("test", true);
 			stackAa2.setTagCompound(stackTagCompound);
 		}
 
 		ItemStack stackAb = new ItemStack(Utils.ITEM_A);
 		{
-			NBTTagCompound stackTagCompound = new NBTTagCompound();
+			CompoundNBT stackTagCompound = new CompoundNBT();
 			stackTagCompound.setBoolean("test", false);
 			stackAb.setTagCompound(stackTagCompound);
 		}

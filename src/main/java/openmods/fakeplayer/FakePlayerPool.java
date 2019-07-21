@@ -6,7 +6,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.ServerWorld;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import openmods.LibConfig;
@@ -33,7 +33,7 @@ public class FakePlayerPool {
 		private final Queue<OpenModsFakePlayer> pool = new ConcurrentLinkedQueue<>();
 		private final AtomicInteger playerCount = new AtomicInteger();
 
-		public <T> T executeOnPlayer(WorldServer world, PlayerUserReturning<T> user) {
+		public <T> T executeOnPlayer(ServerWorld world, PlayerUserReturning<T> user) {
 			OpenModsFakePlayer player = pool.poll();
 
 			if (player == null) {
@@ -66,11 +66,11 @@ public class FakePlayerPool {
 		worldPools.remove(evt.getWorld());
 	}
 
-	public void executeOnPlayer(WorldServer world, PlayerUser user) {
+	public void executeOnPlayer(ServerWorld world, PlayerUser user) {
 		executeOnPlayer(world, wrap(user));
 	}
 
-	public <T> T executeOnPlayer(WorldServer world, PlayerUserReturning<T> user) {
+	public <T> T executeOnPlayer(ServerWorld world, PlayerUserReturning<T> user) {
 		WorldPool pool = worldPools.get(world);
 		if (pool != null) return pool.executeOnPlayer(world, user);
 		else Log.warn("Trying to execute %s on world %s, but it's not loaded", user, world);

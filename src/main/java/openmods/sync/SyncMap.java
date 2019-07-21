@@ -3,7 +3,7 @@ package openmods.sync;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 public abstract class SyncMap {
@@ -23,13 +23,13 @@ public abstract class SyncMap {
 	// Note: try... methods are non-throwing variants of read/write methods
 	// They are convenient when methods can be called via client-side HUD modifiers
 
-	public abstract void read(NBTTagCompound tag);
+	public abstract void read(CompoundNBT tag);
 
-	public abstract boolean tryRead(NBTTagCompound tag);
+	public abstract boolean tryRead(CompoundNBT tag);
 
-	public abstract void write(NBTTagCompound tag);
+	public abstract void write(CompoundNBT tag);
 
-	public abstract boolean tryWrite(NBTTagCompound tag);
+	public abstract boolean tryWrite(CompoundNBT tag);
 
 	public abstract void readIntializationData(PacketBuffer dis) throws IOException;
 

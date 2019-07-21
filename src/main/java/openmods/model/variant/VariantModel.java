@@ -11,14 +11,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
@@ -46,7 +46,7 @@ public class VariantModel implements IModel {
 		}
 
 		@Override
-		public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, long rand) {
 			final VariantModelState modelState = getModelSelectors(state);
 
 			final List<BakedQuad> result = Lists.newArrayList(base.getQuads(state, side, rand));
@@ -59,7 +59,7 @@ public class VariantModel implements IModel {
 			return result;
 		}
 
-		private static VariantModelState getModelSelectors(IBlockState state) {
+		private static VariantModelState getModelSelectors(BlockState state) {
 			if (state instanceof IExtendedBlockState) {
 				final IExtendedBlockState extendedState = (IExtendedBlockState)state;
 				if (extendedState.getUnlistedNames().contains(VariantModelState.PROPERTY)) {

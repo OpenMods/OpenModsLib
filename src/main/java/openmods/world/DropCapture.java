@@ -3,7 +3,7 @@ package openmods.world;
 import com.google.common.collect.Lists;
 import java.util.List;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -14,13 +14,13 @@ public class DropCapture {
 	public class CaptureContext {
 		private final AxisAlignedBB aabb;
 
-		private final List<EntityItem> drops = Lists.newArrayList();
+		private final List<ItemEntity> drops = Lists.newArrayList();
 
 		public CaptureContext(AxisAlignedBB aabb) {
 			this.aabb = aabb;
 		}
 
-		private boolean check(EntityItem item) {
+		private boolean check(ItemEntity item) {
 			if (!item.isDead && aabb.intersects(item.getEntityBoundingBox())) {
 				drops.add(item);
 				return true;
@@ -29,7 +29,7 @@ public class DropCapture {
 			return false;
 		}
 
-		public List<EntityItem> stop() {
+		public List<ItemEntity> stop() {
 			captures.remove(this);
 			return drops;
 		}
@@ -57,9 +57,9 @@ public class DropCapture {
 	public void onEntityConstruct(EntityJoinWorldEvent evt) {
 		final Entity e = evt.getEntity();
 		if (e != null
-				&& e.getClass() == EntityItem.class
+				&& e.getClass() == ItemEntity.class
 				&& !e.world.isRemote) {
-			final EntityItem ei = (EntityItem)e;
+			final ItemEntity ei = (ItemEntity)e;
 
 			for (CaptureContext c : captures)
 				if (c.check(ei)) break;

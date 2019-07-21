@@ -2,7 +2,7 @@ package openmods.gui.misc;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.Vec3d;
 import openmods.utils.render.ProjectionHelper;
 import org.lwjgl.input.Mouse;
@@ -19,7 +19,7 @@ public class SidePicker {
 		ZNeg,
 		ZPos;
 
-		public static Side fromForgeDirection(EnumFacing dir) {
+		public static Side fromForgeDirection(Direction dir) {
 			switch (dir) {
 				case WEST:
 					return XNeg;
@@ -39,20 +39,20 @@ public class SidePicker {
 			return null;
 		}
 
-		public EnumFacing toForgeDirection() {
+		public Direction toForgeDirection() {
 			switch (this) {
 				case XNeg:
-					return EnumFacing.WEST;
+					return Direction.WEST;
 				case XPos:
-					return EnumFacing.EAST;
+					return Direction.EAST;
 				case YNeg:
-					return EnumFacing.DOWN;
+					return Direction.DOWN;
 				case YPos:
-					return EnumFacing.UP;
+					return Direction.UP;
 				case ZNeg:
-					return EnumFacing.NORTH;
+					return Direction.NORTH;
 				case ZPos:
-					return EnumFacing.SOUTH;
+					return Direction.SOUTH;
 				default:
 					throw new IllegalArgumentException(toString());
 			}

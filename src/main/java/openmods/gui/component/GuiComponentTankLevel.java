@@ -3,8 +3,8 @@ package openmods.gui.component;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.util.List;
+import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -43,7 +43,7 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 		final Fluid fluid = fluidStack.getFluid();
 		if (fluid == null) return;
 
-		parent.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+		parent.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 
 		final ResourceLocation textureLocation = fluid.getStill(fluidStack);
 		TextureAtlasSprite icon = parent.getIcon(textureLocation);

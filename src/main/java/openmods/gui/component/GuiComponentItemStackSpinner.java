@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.GlStateManager.CullFace;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
@@ -48,7 +48,7 @@ public class GuiComponentItemStackSpinner extends BaseComponent {
 	}
 
 	private void renderItem(ItemStack itemStack) {
-		parent.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+		parent.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 
 		final RenderItem itemRenderer = parent.getItemRenderer();
 		final ItemModelMesher itemModelMesher = itemRenderer.getItemModelMesher();

@@ -1,10 +1,10 @@
 package openmods.serializable;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 public interface INbtSerializable {
 
-	void writeToNBT(NBTTagCompound nbt);
+	void writeToNBT(CompoundNBT nbt);
 
-	void readFromNBT(NBTTagCompound nbt);
+	void readFromNBT(CompoundNBT nbt);
 }

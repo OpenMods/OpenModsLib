@@ -8,8 +8,8 @@ import java.util.Locale;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 
 public class CommandUtils {
 
@@ -37,11 +37,11 @@ public class CommandUtils {
 	}
 
 	public static void respondText(ICommandSender sender, String message) {
-		sender.sendMessage(new TextComponentString(message));
+		sender.sendMessage(new StringTextComponent(message));
 	}
 
 	public static void respond(ICommandSender sender, String format, Object... args) {
-		sender.sendMessage(new TextComponentTranslation(format, args));
+		sender.sendMessage(new TranslationTextComponent(format, args));
 	}
 
 	public static CommandException error(String format, Object... args) throws CommandException {

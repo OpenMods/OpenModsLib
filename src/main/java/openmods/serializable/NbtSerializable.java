@@ -1,6 +1,6 @@
 package openmods.serializable;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import openmods.utils.io.INBTSerializer;
 import openmods.utils.io.INbtReader;
 import openmods.utils.io.INbtWriter;
@@ -30,12 +30,12 @@ public class NbtSerializable<T> implements INbtSerializable {
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt) {
+	public void writeToNBT(CompoundNBT nbt) {
 		nbtWriter.writeToNBT(value, nbt, name);
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt) {
+	public void readFromNBT(CompoundNBT nbt) {
 		value = nbtReader.readFromNBT(nbt, name);
 	}
 

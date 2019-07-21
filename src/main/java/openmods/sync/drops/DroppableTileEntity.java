@@ -2,9 +2,9 @@ package openmods.sync.drops;
 
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import openmods.api.ICustomHarvestDrops;
 import openmods.api.ICustomPickItem;
@@ -23,29 +23,29 @@ public abstract class DroppableTileEntity extends SyncedTileEntity implements IP
 	}
 
 	@Nonnull
-	protected ItemStack getRawDrop(IBlockState blockState) {
+	protected ItemStack getRawDrop(BlockState blockState) {
 		return new ItemStack(blockState.getBlock());
 	}
 
 	@Override
-	public void addHarvestDrops(EntityPlayer player, List<ItemStack> drops, IBlockState blockState, int fortune, boolean isSilkTouch) {
+	public void addHarvestDrops(PlayerEntity player, List<ItemStack> drops, BlockState blockState, int fortune, boolean isSilkTouch) {
 		drops.add(getDropStack(blockState));
 	}
 
 	@Override
 	@Nonnull
-	public ItemStack getPickBlock(EntityPlayer player) {
-		final IBlockState state = world.getBlockState(pos);
+	public ItemStack getPickBlock(PlayerEntity player) {
+		final BlockState state = world.getBlockState(pos);
 		return getDropStack(state);
 	}
 
 	@Nonnull
-	protected ItemStack getDropStack(IBlockState blockState) {
+	protected ItemStack getDropStack(BlockState blockState) {
 		return getDropSerializer().write(getRawDrop(blockState));
 	}
 
 	@Override
-	public void onBlockPlacedBy(IBlockState state, EntityLivingBase placer, @Nonnull ItemStack stack) {
+	public void onBlockPlacedBy(BlockState state, LivingEntity placer, @Nonnull ItemStack stack) {
 		getDropSerializer().read(stack, true);
 	}
 

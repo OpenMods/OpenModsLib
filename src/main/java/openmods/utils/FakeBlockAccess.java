@@ -1,9 +1,9 @@
 package openmods.utils;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -11,18 +11,18 @@ import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 
 public class FakeBlockAccess implements IBlockAccess {
-	private final IBlockState state;
+	private final BlockState state;
 	private final TileEntity tileEntity;
 
 	private static final ResourceLocation BIOME_DESERT = new ResourceLocation("desert");
 	private final Biome biome = Biome.REGISTRY.getObject(BIOME_DESERT);
 
-	public FakeBlockAccess(IBlockState state, TileEntity tileEntity) {
+	public FakeBlockAccess(BlockState state, TileEntity tileEntity) {
 		this.state = state;
 		this.tileEntity = tileEntity;
 	}
 
-	public FakeBlockAccess(IBlockState state) {
+	public FakeBlockAccess(BlockState state) {
 		this(state, null);
 	}
 
@@ -33,7 +33,7 @@ public class FakeBlockAccess implements IBlockAccess {
 	}
 
 	@Override
-	public IBlockState getBlockState(BlockPos blockPos) {
+	public BlockState getBlockState(BlockPos blockPos) {
 		return isOrigin(blockPos)? state : Blocks.AIR.getDefaultState();
 	}
 
@@ -48,7 +48,7 @@ public class FakeBlockAccess implements IBlockAccess {
 	}
 
 	@Override
-	public int getStrongPower(BlockPos pos, EnumFacing direction) {
+	public int getStrongPower(BlockPos pos, Direction direction) {
 		return 0;
 	}
 
@@ -63,7 +63,7 @@ public class FakeBlockAccess implements IBlockAccess {
 	}
 
 	@Override
-	public boolean isSideSolid(BlockPos blockPos, EnumFacing side, boolean _default) {
+	public boolean isSideSolid(BlockPos blockPos, Direction side, boolean _default) {
 		return (isOrigin(blockPos))? state.isSideSolid(this, blockPos, side) : _default;
 	}
 

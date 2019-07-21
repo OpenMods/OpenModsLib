@@ -2,10 +2,10 @@ package openmods.sync;
 
 import java.util.Set;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.world.ServerWorld;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import openmods.Log;
 import openmods.utils.NetUtils;
 
@@ -41,8 +41,8 @@ public class SyncMapEntity extends SyncMapServer {
 	}
 
 	@Override
-	protected Set<EntityPlayerMP> getPlayersWatching() {
-		return NetUtils.getPlayersWatchingEntity((WorldServer)owner.world, owner);
+	protected Set<ServerPlayerEntity> getPlayersWatching() {
+		return NetUtils.getPlayersWatchingEntity((ServerWorld)owner.world, owner);
 	}
 
 	@Override

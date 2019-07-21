@@ -2,7 +2,7 @@ package openmods.network.rpc.targets;
 
 import java.io.IOException;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.relauncher.Side;
@@ -51,7 +51,7 @@ public abstract class SyncRpcTarget implements IRpcTarget {
 	}
 
 	@Override
-	public void readFromStreamStream(Side side, EntityPlayer player, PacketBuffer input) throws IOException {
+	public void readFromStreamStream(Side side, PlayerEntity player, PacketBuffer input) throws IOException {
 		syncProvider.readFromStreamStream(side, player, input);
 
 		SyncMap map = getSyncMap();

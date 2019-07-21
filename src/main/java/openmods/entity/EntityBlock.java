@@ -3,31 +3,30 @@ package openmods.entity;
 import io.netty.buffer.ByteBuf;
 import java.util.Random;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MoverType;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.util.datafix.FixTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.ServerWorld;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import openmods.fakeplayer.FakePlayerPool;
-import openmods.fakeplayer.FakePlayerPool.PlayerUserReturning;
 import openmods.utils.BlockManipulator;
 import openmods.utils.NbtUtils;
 
@@ -37,7 +36,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	private static final String TAG_BLOCK_META = "BlockMeta";
 	private static final String TAG_BLOCK_ID = "BlockId";
 
-	public static final EnumFacing[] PLACE_DIRECTIONS = { EnumFacing.NORTH, EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.EAST, EnumFacing.DOWN, EnumFacing.UP };
+	public static final Direction[] PLACE_DIRECTIONS = { Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST, Direction.DOWN, Direction.UP };
 	private static final String TAG_BLOCK_STATE_ID = "BlockState";
 
 	private boolean hasGravity = false;
@@ -45,15 +44,15 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	private boolean shouldDrop = true;
 	private boolean hasAirResistance = true;
 
-	private IBlockState blockState;
-	private NBTTagCompound tileEntity;
+	private BlockState blockState;
+	private CompoundNBT tileEntity;
 
 	public EntityBlock(World world) {
 		super(world);
 		setSize(0.925F, 0.925F);
 	}
 
-	public EntityBlock(World world, IBlockState state, NBTTagCompound tileEntity) {
+	public EntityBlock(World world, BlockState state, CompoundNBT tileEntity) {
 		super(world);
 		setSize(0.925F, 0.925F);
 	}
@@ -62,8 +61,8 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		fixers.registerWalker(FixTypes.ENTITY, (fixer, compound, versionIn) -> {
 			if (EntityList.getKey(cls).equals(new ResourceLocation(compound.getString("id")))) {
 				if (compound.hasKey(TAG_TILE_ENTITY, Constants.NBT.TAG_COMPOUND)) {
-					final NBTTagCompound teTag = compound.getCompoundTag(TAG_TILE_ENTITY);
-					final NBTTagCompound fixedTeTag = fixer.process(FixTypes.BLOCK_ENTITY, teTag, versionIn);
+					final CompoundNBT teTag = compound.getCompoundTag(TAG_TILE_ENTITY);
+					final CompoundNBT fixedTeTag = fixer.process(FixTypes.BLOCK_ENTITY, teTag, versionIn);
 					compound.setTag(TAG_TILE_ENTITY, fixedTeTag);
 				}
 			}
@@ -76,16 +75,16 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		EntityBlock create(World world);
 	}
 
-	public static EntityBlock create(EntityPlayer player, World world, BlockPos pos) {
+	public static EntityBlock create(PlayerEntity player, World world, BlockPos pos) {
 		return create(player, world, pos, EntityBlock::new);
 	}
 
-	public static EntityBlock create(EntityLivingBase creator, World world, BlockPos pos, EntityFactory factory) {
+	public static EntityBlock create(LivingEntity creator, World world, BlockPos pos, EntityFactory factory) {
 		if (world.isAirBlock(pos)) return null;
 
-		if (!(creator instanceof EntityPlayer)) return null;
+		if (!(creator instanceof PlayerEntity)) return null;
 
-		final EntityPlayer player = (EntityPlayer)creator;
+		final PlayerEntity player = (PlayerEntity)creator;
 
 		final EntityBlock entity = factory.create(world);
 
@@ -93,7 +92,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 		final TileEntity te = world.getTileEntity(pos);
 		if (te != null) {
-			entity.tileEntity = te.writeToNBT(new NBTTagCompound());
+			entity.tileEntity = te.writeToNBT(new CompoundNBT());
 		}
 
 		final boolean blockRemoved = new BlockManipulator(world, player, pos).setSilentTeRemove(true).remove();
@@ -104,7 +103,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		return entity;
 	}
 
-	public IBlockState getBlockState() {
+	public BlockState getBlockState() {
 		return blockState;
 	}
 
@@ -118,7 +117,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	@SuppressWarnings("deprecation")
-	protected void readEntityFromNBT(NBTTagCompound tag) {
+	protected void readEntityFromNBT(CompoundNBT tag) {
 		if (tag.hasKey(TAG_BLOCK_STATE_ID)) {
 			final int blockStateId = tag.getInteger(TAG_BLOCK_STATE_ID);
 			this.blockState = Block.getStateById(blockStateId);
@@ -134,7 +133,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	}
 
 	@Override
-	protected void writeEntityToNBT(NBTTagCompound tag) {
+	protected void writeEntityToNBT(CompoundNBT tag) {
 		tag.setInteger(TAG_BLOCK_STATE_ID, Block.getStateId(blockState));
 		if (tileEntity != null) tag.setTag(TAG_TILE_ENTITY, tileEntity.copy());
 	}
@@ -178,9 +177,9 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		// TODO missing functionality, fix (fake world access?)
 		// setHeight((float)block.getBlockBoundsMaxY());
 
-		if (world instanceof WorldServer && shouldPlaceBlock()) {
+		if (world instanceof ServerWorld && shouldPlaceBlock()) {
 			final BlockPos dropPos = new BlockPos(getEntityBoundingBox().getCenter());
-			if (!tryPlaceBlock((WorldServer)world, dropPos)) dropBlock();
+			if (!tryPlaceBlock((ServerWorld)world, dropPos)) dropBlock();
 
 			setDead();
 		}
@@ -190,11 +189,11 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 		return onGround && shouldDrop;
 	}
 
-	private boolean tryPlaceBlock(final WorldServer world, final BlockPos pos) {
+	private boolean tryPlaceBlock(final ServerWorld world, final BlockPos pos) {
 		return FakePlayerPool.instance.executeOnPlayer(world, fakePlayer -> {
-			if (tryPlaceBlock(fakePlayer, world, pos, EnumFacing.UP)) return true;
+			if (tryPlaceBlock(fakePlayer, world, pos, Direction.UP)) return true;
 
-			for (EnumFacing dir : PLACE_DIRECTIONS) {
+			for (Direction dir : PLACE_DIRECTIONS) {
 				if (tryPlaceBlock(fakePlayer, world, pos.offset(dir), dir)) return true;
 			}
 			return false;
@@ -202,10 +201,10 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	}
 
-	private boolean tryPlaceBlock(EntityPlayer player, WorldServer world, BlockPos pos, EnumFacing fromSide) {
+	private boolean tryPlaceBlock(PlayerEntity player, ServerWorld world, BlockPos pos, Direction fromSide) {
 		if (!world.isAirBlock(pos)) return false;
 
-		boolean blockPlaced = new BlockManipulator(world, player, pos).place(blockState, fromSide, EnumHand.MAIN_HAND);
+		boolean blockPlaced = new BlockManipulator(world, player, pos).place(blockState, fromSide, Hand.MAIN_HAND);
 		if (!blockPlaced) return false;
 
 		if (tileEntity != null) {

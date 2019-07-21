@@ -1,6 +1,6 @@
 package openmods.network.rpc.targets;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -31,7 +31,7 @@ public class TileEntityRpcTarget implements IRpcTarget {
 	}
 
 	@Override
-	public void readFromStreamStream(Side side, EntityPlayer player, PacketBuffer input) {
+	public void readFromStreamStream(Side side, PlayerEntity player, PacketBuffer input) {
 		int worldId = input.readInt();
 		BlockPos pos = input.readBlockPos();
 

@@ -2,12 +2,12 @@ package openmods.utils;
 
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -21,15 +21,15 @@ import openmods.inventory.IInventoryProvider;
 public class BlockUtils {
 
 	@Deprecated
-	public static EnumFacing get2dOrientation(EntityLivingBase entity) {
+	public static Direction get2dOrientation(LivingEntity entity) {
 		return entity.getHorizontalFacing();
 	}
 
-	public static EnumFacing get2dOrientation(double yaw) {
-		return EnumFacing.getHorizontal(MathHelper.floor((yaw * 4.0 / 360.0) + 0.5) & 3);
+	public static Direction get2dOrientation(double yaw) {
+		return Direction.getHorizontal(MathHelper.floor((yaw * 4.0 / 360.0) + 0.5) & 3);
 	}
 
-	public static float getRotationFromDirection(EnumFacing direction) {
+	public static float getRotationFromDirection(Direction direction) {
 		switch (direction) {
 			case NORTH:
 				return 180F;
@@ -63,26 +63,26 @@ public class BlockUtils {
 		}
 	}
 
-	public static EnumFacing get3dOrientation(EntityLivingBase entity, BlockPos pos) {
+	public static Direction get3dOrientation(LivingEntity entity, BlockPos pos) {
 		if (MathHelper.abs((float)entity.posX - pos.getX()) < 2.0F && MathHelper.abs((float)entity.posZ - pos.getZ()) < 2.0F) {
 			final double entityEyes = entity.posY + entity.getEyeHeight();
-			if (entityEyes - pos.getY() > 2.0D) return EnumFacing.DOWN;
-			if (pos.getY() - entityEyes > 0.0D) return EnumFacing.UP;
+			if (entityEyes - pos.getY() > 2.0D) return Direction.DOWN;
+			if (pos.getY() - entityEyes > 0.0D) return Direction.UP;
 		}
 
 		return entity.getHorizontalFacing();
 	}
 
-	public static EntityItem dropItemStackInWorld(World worldObj, Vec3i pos, @Nonnull ItemStack stack) {
+	public static ItemEntity dropItemStackInWorld(World worldObj, Vec3i pos, @Nonnull ItemStack stack) {
 		return dropItemStackInWorld(worldObj, pos.getX(), pos.getY(), pos.getZ(), stack);
 	}
 
-	public static EntityItem dropItemStackInWorld(World worldObj, double x, double y, double z, @Nonnull ItemStack stack) {
+	public static ItemEntity dropItemStackInWorld(World worldObj, double x, double y, double z, @Nonnull ItemStack stack) {
 		float f = 0.7F;
 		float d0 = worldObj.rand.nextFloat() * f + (1.0F - f) * 0.5F;
 		float d1 = worldObj.rand.nextFloat() * f + (1.0F - f) * 0.5F;
 		float d2 = worldObj.rand.nextFloat() * f + (1.0F - f) * 0.5F;
-		EntityItem entityitem = new EntityItem(worldObj, x + d0, y + d1, z + d2, stack);
+		ItemEntity entityitem = new ItemEntity(worldObj, x + d0, y + d1, z + d2, stack);
 		entityitem.setDefaultPickupDelay();
 		if (stack.hasTagCompound()) {
 			entityitem.getItem().setTagCompound(stack.getTagCompound().copy());
@@ -91,8 +91,8 @@ public class BlockUtils {
 		return entityitem;
 	}
 
-	public static EntityItem ejectItemInDirection(World world, double x, double y, double z, EnumFacing direction, @Nonnull ItemStack stack) {
-		EntityItem item = BlockUtils.dropItemStackInWorld(world, x, y, z, stack);
+	public static ItemEntity ejectItemInDirection(World world, double x, double y, double z, Direction direction, @Nonnull ItemStack stack) {
+		ItemEntity item = BlockUtils.dropItemStackInWorld(world, x, y, z, stack);
 		final Vec3i v = direction.getDirectionVec();
 		item.motionX = v.getX() / 5F;
 		item.motionY = v.getY() / 5F;
@@ -128,16 +128,16 @@ public class BlockUtils {
 		dropInventory(inventory, world, x + 0.5, y + 0.5, z + 0.5);
 	}
 
-	public static TileEntity getTileInDirection(TileEntity tile, EnumFacing direction) {
+	public static TileEntity getTileInDirection(TileEntity tile, Direction direction) {
 		final BlockPos offset = tile.getPos().offset(direction);
 		return tile.getWorld().getTileEntity(offset);
 	}
 
-	public static TileEntity getTileInDirection(World world, BlockPos coord, EnumFacing direction) {
+	public static TileEntity getTileInDirection(World world, BlockPos coord, Direction direction) {
 		return world.getTileEntity(coord.offset(direction));
 	}
 
-	public static TileEntity getTileInDirectionSafe(World world, BlockPos coord, EnumFacing direction) {
+	public static TileEntity getTileInDirectionSafe(World world, BlockPos coord, Direction direction) {
 		BlockPos n = coord.offset(direction);
 		return world.isBlockLoaded(n)? world.getTileEntity(n) : null;
 	}

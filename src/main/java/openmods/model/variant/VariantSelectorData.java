@@ -17,7 +17,7 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 
 public class VariantSelectorData {
@@ -162,7 +162,7 @@ public class VariantSelectorData {
 				return parseArrayOfLocations(name, value);
 			} else if (value.isJsonPrimitive()) { return parseSingleLocation(value); }
 
-			throw new JsonSyntaxException("Expected " + name + " to be a string, was " + JsonUtils.toString(value));
+			throw new JsonSyntaxException("Expected " + name + " to be a string, was " + JSONUtils.toString(value));
 		}
 
 		private static Set<ResourceLocation> parseSingleLocation(JsonElement value) {
@@ -178,7 +178,7 @@ public class VariantSelectorData {
 					final ResourceLocation loc = new ModelResourceLocation(value.getAsString());
 					result.add(loc);
 				} else {
-					throw new JsonSyntaxException("Expected elements of " + name + " to be a string, was " + JsonUtils.toString(e));
+					throw new JsonSyntaxException("Expected elements of " + name + " to be a string, was " + JSONUtils.toString(e));
 				}
 			}
 

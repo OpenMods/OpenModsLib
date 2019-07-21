@@ -7,7 +7,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
@@ -20,7 +20,7 @@ import openmods.utils.CompatibilityUtils;
 
 public class GenericTank extends FluidTank {
 
-	private List<EnumFacing> surroundingTanks = Lists.newArrayList();
+	private List<Direction> surroundingTanks = Lists.newArrayList();
 	private final IFluidFilter filter;
 
 	@FunctionalInterface
@@ -56,15 +56,15 @@ public class GenericTank extends FluidTank {
 		this.filter = filter(CollectionUtils.transform(FluidStack.class, acceptableFluids, input -> new FluidStack(input, 0)));
 	}
 
-	private static boolean isNeighbourTank(World world, BlockPos coord, EnumFacing dir) {
+	private static boolean isNeighbourTank(World world, BlockPos coord, Direction dir) {
 		TileEntity tile = BlockUtils.getTileInDirectionSafe(world, coord, dir);
 		return CompatibilityUtils.isFluidHandler(tile, dir.getOpposite());
 	}
 
-	private static Set<EnumFacing> getSurroundingTanks(World world, BlockPos coord) {
-		final Set<EnumFacing> result = EnumSet.noneOf(EnumFacing.class);
+	private static Set<Direction> getSurroundingTanks(World world, BlockPos coord) {
+		final Set<Direction> result = EnumSet.noneOf(Direction.class);
 
-		for (EnumFacing dir : EnumFacing.VALUES)
+		for (Direction dir : Direction.VALUES)
 			if (isNeighbourTank(world, coord, dir)) result.add(dir);
 
 		return result;
@@ -79,7 +79,7 @@ public class GenericTank extends FluidTank {
 		return fluid != null && filter.canAcceptFluid(fluid);
 	}
 
-	public void updateNeighbours(World world, BlockPos coord, Set<EnumFacing> sides) {
+	public void updateNeighbours(World world, BlockPos coord, Set<Direction> sides) {
 		this.surroundingTanks = Lists.newArrayList(Sets.difference(getSurroundingTanks(world, coord), sides));
 	}
 
@@ -87,22 +87,22 @@ public class GenericTank extends FluidTank {
 		this.surroundingTanks = Lists.newArrayList(getSurroundingTanks(world, coord));
 	}
 
-	private static int tryFillNeighbour(FluidStack drainedFluid, EnumFacing side, TileEntity otherTank) {
+	private static int tryFillNeighbour(FluidStack drainedFluid, Direction side, TileEntity otherTank) {
 		final FluidStack toFill = drainedFluid.copy();
-		final EnumFacing fillSide = side.getOpposite();
+		final Direction fillSide = side.getOpposite();
 
 		final IFluidHandler fluidHandler = CompatibilityUtils.getFluidHandler(otherTank, fillSide);
 		return fluidHandler != null? fluidHandler.fill(toFill, true) : 0;
 	}
 
-	public void distributeToSides(int amount, World world, BlockPos coord, Set<EnumFacing> allowedSides) {
+	public void distributeToSides(int amount, World world, BlockPos coord, Set<Direction> allowedSides) {
 		if (world == null) return;
 
 		if (getFluidAmount() <= 0) return;
 
 		if (surroundingTanks.isEmpty()) return;
 
-		final List<EnumFacing> sides = Lists.newArrayList(surroundingTanks);
+		final List<Direction> sides = Lists.newArrayList(surroundingTanks);
 
 		if (allowedSides != null) {
 			sides.retainAll(allowedSides);
@@ -115,7 +115,7 @@ public class GenericTank extends FluidTank {
 			int startingAmount = drainedFluid.amount;
 			Collections.shuffle(sides);
 
-			for (EnumFacing side : surroundingTanks) {
+			for (Direction side : surroundingTanks) {
 				if (drainedFluid.amount <= 0) break;
 
 				TileEntity otherTank = BlockUtils.getTileInDirection(world, coord, side);
@@ -132,7 +132,7 @@ public class GenericTank extends FluidTank {
 		fillFromSides(maxAmount, world, coord, null);
 	}
 
-	public void fillFromSides(int maxAmount, World world, BlockPos coord, Set<EnumFacing> allowedSides) {
+	public void fillFromSides(int maxAmount, World world, BlockPos coord, Set<Direction> allowedSides) {
 		if (world == null) return;
 
 		int toDrain = Math.min(maxAmount, getSpace());
@@ -140,7 +140,7 @@ public class GenericTank extends FluidTank {
 
 		if (surroundingTanks.isEmpty()) return;
 
-		final List<EnumFacing> sides = Lists.newArrayList(surroundingTanks);
+		final List<Direction> sides = Lists.newArrayList(surroundingTanks);
 
 		if (allowedSides != null) {
 			sides.retainAll(allowedSides);
@@ -148,30 +148,30 @@ public class GenericTank extends FluidTank {
 		}
 
 		Collections.shuffle(sides);
-		for (EnumFacing side : sides) {
+		for (Direction side : sides) {
 			if (toDrain <= 0) break;
 			toDrain -= fillInternal(world, coord, side, toDrain);
 		}
 	}
 
-	public int fillFromSide(World world, BlockPos coord, EnumFacing side) {
+	public int fillFromSide(World world, BlockPos coord, Direction side) {
 		int maxDrain = getSpace();
 		if (maxDrain <= 0) return 0;
 
 		return fillInternal(world, coord, side, maxDrain);
 	}
 
-	public int fillFromSide(int maxDrain, World world, BlockPos coord, EnumFacing side) {
+	public int fillFromSide(int maxDrain, World world, BlockPos coord, Direction side) {
 		maxDrain = Math.min(maxDrain, getSpace());
 		if (maxDrain <= 0) return 0;
 
 		return fillInternal(world, coord, side, maxDrain);
 	}
 
-	private int fillInternal(World world, BlockPos coord, EnumFacing side, int maxDrain) {
+	private int fillInternal(World world, BlockPos coord, Direction side, int maxDrain) {
 		final TileEntity otherTank = BlockUtils.getTileInDirection(world, coord, side);
 
-		final EnumFacing drainSide = side.getOpposite();
+		final Direction drainSide = side.getOpposite();
 		final IFluidHandler handler = CompatibilityUtils.getFluidHandler(otherTank, drainSide);
 
 		if (handler != null) {

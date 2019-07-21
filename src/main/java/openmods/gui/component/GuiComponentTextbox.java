@@ -1,6 +1,6 @@
 package openmods.gui.component;
 
-import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import openmods.api.IValueReceiver;
 import openmods.gui.IComponentParent;
 import openmods.gui.listener.IValueChangedListener;
@@ -10,7 +10,7 @@ public class GuiComponentTextbox extends BaseComponent implements IValueReceiver
 	private final int width;
 	private final int height;
 
-	private GuiTextField textfield;
+	private TextFieldWidget textfield;
 
 	private IValueChangedListener<String> listener;
 
@@ -24,7 +24,7 @@ public class GuiComponentTextbox extends BaseComponent implements IValueReceiver
 	@Override
 	public void init(IComponentParent parent) {
 		super.init(parent);
-		textfield = new GuiTextField(0, parent.getFontRenderer(), x, y, width, height);
+		textfield = new TextFieldWidget(0, parent.getFontRenderer(), x, y, width, height);
 	}
 
 	@Override

@@ -4,16 +4,16 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.network.play.ClientPlayNetHandler;
 import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.network.INetHandler;
-import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.play.ServerPlayNetHandler;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -57,13 +57,13 @@ public final class OpenClientProxy implements IOpenModsProxy {
 	private final HitboxManager hitboxManager = new HitboxManager();
 
 	@Override
-	public EntityPlayer getThePlayer() {
+	public PlayerEntity getThePlayer() {
 		return FMLClientHandler.instance().getClient().player;
 	}
 
 	@Override
 	public boolean isClientPlayer(Entity player) {
-		return player instanceof EntityPlayerSP;
+		return player instanceof ClientPlayerEntity;
 	}
 
 	@Override
@@ -151,10 +151,10 @@ public final class OpenClientProxy implements IOpenModsProxy {
 	}
 
 	@Override
-	public EntityPlayer getPlayerFromHandler(INetHandler handler) {
-		if (handler instanceof NetHandlerPlayServer) return ((NetHandlerPlayServer)handler).player;
+	public PlayerEntity getPlayerFromHandler(INetHandler handler) {
+		if (handler instanceof ServerPlayNetHandler) return ((ServerPlayNetHandler)handler).player;
 
-		if (handler instanceof NetHandlerPlayClient) return getThePlayer();
+		if (handler instanceof ClientPlayNetHandler) return getThePlayer();
 
 		return null;
 	}

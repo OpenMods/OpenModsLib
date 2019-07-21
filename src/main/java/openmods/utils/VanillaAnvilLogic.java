@@ -5,8 +5,8 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemEnchantedBook;
+import net.minecraft.item.EnchantedBookItem;
+import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AnvilUpdateEvent;
@@ -44,7 +44,7 @@ public class VanillaAnvilLogic {
 
 			if (!itemstack2.isEmpty()) {
 				if (!onAnvilChange(inputStack, itemstack2, repairedItemName, j)) return;
-				flag = itemstack2.getItem() == Items.ENCHANTED_BOOK && !ItemEnchantedBook.getEnchantments(itemstack2).hasNoTags();
+				flag = itemstack2.getItem() == Items.ENCHANTED_BOOK && !EnchantedBookItem.getEnchantments(itemstack2).hasNoTags();
 
 				if (itemstack1.isItemStackDamageable() && itemstack1.getItem().getIsRepairable(inputStack, itemstack2)) {
 					int l2 = Math.min(itemstack1.getItemDamage(), itemstack1.getMaxDamage() / 4);

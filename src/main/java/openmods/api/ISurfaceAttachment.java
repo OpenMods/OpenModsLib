@@ -1,7 +1,7 @@
 package openmods.api;
 
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 
 public interface ISurfaceAttachment {
-	EnumFacing getSurfaceDirection();
+	Direction getSurfaceDirection();
 }

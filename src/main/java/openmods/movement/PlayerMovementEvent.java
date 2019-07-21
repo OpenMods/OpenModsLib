@@ -1,6 +1,6 @@
 package openmods.movement;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.eventhandler.Cancelable;
 
@@ -14,7 +14,7 @@ public class PlayerMovementEvent extends PlayerEvent {
 
 	public final Type type;
 
-	public PlayerMovementEvent(EntityPlayer player, Type type) {
+	public PlayerMovementEvent(PlayerEntity player, Type type) {
 		super(player);
 		this.type = type;
 	}

@@ -4,13 +4,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IContainerListener;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.ClickType;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.IContainerListener;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import openmods.inventory.GenericInventory;
 import openmods.utils.InventoryUtils;
@@ -89,7 +89,7 @@ public abstract class ContainerBase<T> extends Container {
 	}
 
 	@Override
-	public boolean canInteractWith(EntityPlayer entityplayer) {
+	public boolean canInteractWith(PlayerEntity entityplayer) {
 		return inventory.isUsableByPlayer(entityplayer);
 	}
 
@@ -145,7 +145,7 @@ public abstract class ContainerBase<T> extends Container {
 
 	@Override
 	@Nonnull
-	public ItemStack transferStackInSlot(EntityPlayer player, int slotId) {
+	public ItemStack transferStackInSlot(PlayerEntity player, int slotId) {
 		final Slot slot = inventorySlots.get(slotId);
 
 		if (slot != null && canTransferItemOut(slot) && slot.getHasStack()) {
@@ -180,26 +180,26 @@ public abstract class ContainerBase<T> extends Container {
 		return inventorySlots;
 	}
 
-	public Set<EntityPlayer> getPlayers() {
-		Set<EntityPlayer> players = new HashSet<>();
+	public Set<PlayerEntity> getPlayers() {
+		Set<PlayerEntity> players = new HashSet<>();
 		for (IContainerListener crafter : listeners) {
-			if (crafter instanceof EntityPlayerMP) {
-				players.add((EntityPlayerMP)crafter);
+			if (crafter instanceof ServerPlayerEntity) {
+				players.add((ServerPlayerEntity)crafter);
 			}
 		}
 		return players;
 	}
 
-	public void onButtonClicked(EntityPlayer player, int buttonId) {}
+	public void onButtonClicked(PlayerEntity player, int buttonId) {}
 
 	@Override
-	public boolean enchantItem(EntityPlayer player, int buttonId) {
+	public boolean enchantItem(PlayerEntity player, int buttonId) {
 		onButtonClicked(player, buttonId);
 		return false;
 	}
 
 	@Override
-	public ItemStack slotClick(int slotId, int dragType, ClickType clickType, EntityPlayer player) {
+	public ItemStack slotClick(int slotId, int dragType, ClickType clickType, PlayerEntity player) {
 		if (slotId >= 0 && slotId < inventorySlots.size()) {
 			Slot slot = getSlot(slotId);
 			if (slot instanceof ICustomSlot) return ((ICustomSlot)slot).onClick(player, dragType, clickType);

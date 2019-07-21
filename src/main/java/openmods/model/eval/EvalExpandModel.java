@@ -7,13 +7,13 @@ import java.util.Optional;
 import java.util.function.Function;
 import jline.internal.Log;
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.block.Blocks;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.PerspectiveMapWrapper;
@@ -30,16 +30,16 @@ public class EvalExpandModel extends EvalModelBase {
 
 		private final IVarExpander expander;
 
-		private final IBlockState defaultBlockState;
+		private final BlockState defaultBlockState;
 
-		public BakedEvalExpandModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, IBlockState defaultBlockState, IVarExpander expander) {
+		public BakedEvalExpandModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, BlockState defaultBlockState, IVarExpander expander) {
 			super(model.bake(state, format, bakedTextureGetter), PerspectiveMapWrapper.getTransforms(state));
 			this.expander = expander;
 			this.defaultBlockState = defaultBlockState;
 		}
 
 		@Override
-		public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
+		public List<BakedQuad> getQuads(BlockState state, Direction side, long rand) {
 			if (state == null)
 				state = defaultBlockState;
 
@@ -65,7 +65,7 @@ public class EvalExpandModel extends EvalModelBase {
 	public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
 		final IModel model = loadBaseModel(state, format, bakedTextureGetter);
 
-		IBlockState blockState = null;
+		BlockState blockState = null;
 
 		if (defaultBlockState.isPresent()) {
 			final Block defaultBlock = Block.REGISTRY.getObject(defaultBlockState.get());

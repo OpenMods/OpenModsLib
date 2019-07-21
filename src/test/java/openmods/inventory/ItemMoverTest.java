@@ -1,7 +1,7 @@
 package openmods.inventory;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.init.Bootstrap;
+import net.minecraft.util.registry.Bootstrap;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;

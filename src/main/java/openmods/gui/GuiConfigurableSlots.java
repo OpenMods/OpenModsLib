@@ -1,9 +1,9 @@
 package openmods.gui;
 
 import java.util.Set;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;
 import openmods.container.ContainerBase;
@@ -30,7 +30,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 
 	protected abstract GuiComponentTab createTab(E slot);
 
-	protected GuiComponentSideSelector createSideSelector(E slot, IBlockState state, T te) {
+	protected GuiComponentSideSelector createSideSelector(E slot, BlockState state, T te) {
 		return new GuiComponentSideSelector(15, 15, 40.0, state, te, true);
 	}
 
@@ -44,7 +44,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 	protected final BaseComposite createRoot() {
 		T te = getContainer().getOwner();
 
-		final IBlockState state = te.getWorld().getBlockState(te.getPos());
+		final BlockState state = te.getWorld().getBlockState(te.getPos());
 
 		BaseComposite main = super.createRoot();
 		addCustomizations(main);
@@ -69,7 +69,7 @@ public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvid
 		return tabs;
 	}
 
-	private void setupSelector(GuiComponentSideSelector selector, IValueProvider<Set<EnumFacing>> source, final IWriteableBitMap<EnumFacing> updater) {
+	private void setupSelector(GuiComponentSideSelector selector, IValueProvider<Set<Direction>> source, final IWriteableBitMap<Direction> updater) {
 		selector.setListener(updater::set);
 		addSyncUpdateListener(ValueCopyAction.create(source, selector));
 	}

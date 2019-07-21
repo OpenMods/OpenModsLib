@@ -9,7 +9,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -85,14 +85,14 @@ public class InventoryUtils {
 		};
 	}
 
-	public static IItemHandler tryGetHandler(World world, BlockPos pos, EnumFacing side) {
+	public static IItemHandler tryGetHandler(World world, BlockPos pos, Direction side) {
 		if (!world.isBlockLoaded(pos)) return null;
 		final TileEntity te = world.getTileEntity(pos);
 
 		return tryGetHandler(te, side);
 	}
 
-	public static IItemHandler tryGetHandler(TileEntity te, EnumFacing side) {
+	public static IItemHandler tryGetHandler(TileEntity te, Direction side) {
 		if (te == null) return null;
 
 		if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side))

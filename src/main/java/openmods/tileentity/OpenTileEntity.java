@@ -1,10 +1,10 @@
 package openmods.tileentity;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -37,11 +37,11 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public Orientation getOrientation() {
-		final IBlockState state = world.getBlockState(pos);
+		final BlockState state = world.getBlockState(pos);
 		return getOrientation(state);
 	}
 
-	public Orientation getOrientation(IBlockState state) {
+	public Orientation getOrientation(BlockState state) {
 		final Block block = state.getBlock();
 		if (!(block instanceof OpenBlock)) return Orientation.XP_YP;
 		final OpenBlock openBlock = (OpenBlock)block;
@@ -49,37 +49,37 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public IBlockRotationMode getRotationMode() {
-		final IBlockState state = world.getBlockState(pos);
+		final BlockState state = world.getBlockState(pos);
 		return getRotationMode(state);
 	}
 
-	public IBlockRotationMode getRotationMode(IBlockState state) {
+	public IBlockRotationMode getRotationMode(BlockState state) {
 		final Block block = state.getBlock();
 		if (!(block instanceof OpenBlock)) return BlockRotationMode.NONE;
 		final OpenBlock openBlock = (OpenBlock)block;
 		return openBlock.rotationMode;
 	}
 
-	public EnumFacing getFront() {
-		final IBlockState state = world.getBlockState(pos);
+	public Direction getFront() {
+		final BlockState state = world.getBlockState(pos);
 		return getFront(state);
 	}
 
-	public EnumFacing getFront(IBlockState state) {
+	public Direction getFront(BlockState state) {
 		final Block block = state.getBlock();
-		if (!(block instanceof OpenBlock)) return EnumFacing.NORTH;
+		if (!(block instanceof OpenBlock)) return Direction.NORTH;
 		final OpenBlock openBlock = (OpenBlock)block;
 		return openBlock.getFront(state);
 	}
 
-	public EnumFacing getBack() {
+	public Direction getBack() {
 		return getFront().getOpposite();
 	}
 
 	public LocalDirections getLocalDirections() {
-		final IBlockState state = world.getBlockState(pos);
+		final BlockState state = world.getBlockState(pos);
 		final Block block = state.getBlock();
-		if (!(block instanceof OpenBlock)) return LocalDirections.fromFrontAndTop(EnumFacing.NORTH, EnumFacing.UP);
+		if (!(block instanceof OpenBlock)) return LocalDirections.fromFrontAndTop(Direction.NORTH, Direction.UP);
 		final OpenBlock openBlock = (OpenBlock)block;
 		return openBlock.getLocalDirections(state);
 	}
@@ -92,11 +92,11 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return (world != null && world.isBlockLoaded(blockPos))? world.getTileEntity(blockPos) : null;
 	}
 
-	public TileEntity getTileInDirection(EnumFacing direction) {
+	public TileEntity getTileInDirection(Direction direction) {
 		return getTileEntity(pos.offset(direction));
 	}
 
-	public boolean isAirBlock(EnumFacing direction) {
+	public boolean isAirBlock(Direction direction) {
 		return world != null && world.isAirBlock(getPos().offset(direction));
 	}
 
@@ -121,11 +121,11 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	@Override
-	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+	public boolean shouldRefresh(World world, BlockPos pos, BlockState oldState, BlockState newState) {
 		return oldState.getBlock() != newState.getBlock();
 	}
 
-	public void openGui(Object instance, EntityPlayer player) {
+	public void openGui(Object instance, PlayerEntity player) {
 		player.openGui(instance, -1, world, pos.getX(), pos.getY(), pos.getZ());
 	}
 
@@ -165,7 +165,7 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return inventory.addCallback(createInventoryCallback());
 	}
 
-	public boolean isValid(EntityPlayer player) {
+	public boolean isValid(PlayerEntity player) {
 		return (world.getTileEntity(pos) == this) && (player.getDistanceSqToCenter(pos) <= 64.0D);
 	}
 }

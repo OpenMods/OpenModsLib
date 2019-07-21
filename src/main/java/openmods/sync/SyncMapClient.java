@@ -11,29 +11,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import openmods.utils.bitstream.InputBitStream;
 
 public class SyncMapClient extends SyncMap {
 
 	@Override
-	public void read(NBTTagCompound tag) {
+	public void read(CompoundNBT tag) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean tryRead(NBTTagCompound tag) {
+	public boolean tryRead(CompoundNBT tag) {
 		return false; // NO-OP
 	}
 
 	@Override
-	public void write(NBTTagCompound tag) {
+	public void write(CompoundNBT tag) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean tryWrite(NBTTagCompound tag) {
+	public boolean tryWrite(CompoundNBT tag) {
 		return false; // NO-OP
 	}
 

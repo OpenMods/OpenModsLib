@@ -1,18 +1,18 @@
 package openmods.sync;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
 
-public class SyncableBlockState extends SyncableObjectBase implements ISyncableValueProvider<IBlockState> {
+public class SyncableBlockState extends SyncableObjectBase implements ISyncableValueProvider<BlockState> {
 
 	private static final String TAG_BLOCK_META = "Meta";
 	private static final String TAG_BLOCK_ID = "Id";
-	private IBlockState state = Blocks.AIR.getDefaultState();
+	private BlockState state = Blocks.AIR.getDefaultState();
 
 	@Override
 	public void readFromStream(PacketBuffer buf) {
@@ -27,8 +27,8 @@ public class SyncableBlockState extends SyncableObjectBase implements ISyncableV
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt, String name) {
-		final NBTTagCompound tag = new NBTTagCompound();
+	public void writeToNBT(CompoundNBT nbt, String name) {
+		final CompoundNBT tag = new CompoundNBT();
 
 		final Block block = state.getBlock();
 
@@ -43,11 +43,11 @@ public class SyncableBlockState extends SyncableObjectBase implements ISyncableV
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public void readFromNBT(NBTTagCompound nbt, String name) {
+	public void readFromNBT(CompoundNBT nbt, String name) {
 		state = Blocks.AIR.getDefaultState();
 
 		if (nbt.hasKey(name, Constants.NBT.TAG_COMPOUND)) {
-			final NBTTagCompound tag = nbt.getCompoundTag(name);
+			final CompoundNBT tag = nbt.getCompoundTag(name);
 
 			if (tag.hasKey(TAG_BLOCK_ID, Constants.NBT.TAG_STRING)) {
 				final ResourceLocation blockId = new ResourceLocation(tag.getString(TAG_BLOCK_ID));
@@ -60,11 +60,11 @@ public class SyncableBlockState extends SyncableObjectBase implements ISyncableV
 	}
 
 	@Override
-	public IBlockState getValue() {
+	public BlockState getValue() {
 		return state;
 	}
 
-	public void setValue(IBlockState state) {
+	public void setValue(BlockState state) {
 		this.state = state;
 		markDirty();
 	}

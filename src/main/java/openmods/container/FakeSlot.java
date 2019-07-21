@@ -1,9 +1,9 @@
 package openmods.container;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.ClickType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.ClickType;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 
 public class FakeSlot extends Slot implements ICustomSlot {
@@ -16,7 +16,7 @@ public class FakeSlot extends Slot implements ICustomSlot {
 	}
 
 	@Override
-	public ItemStack onClick(EntityPlayer player, int dragType, ClickType clickType) {
+	public ItemStack onClick(PlayerEntity player, int dragType, ClickType clickType) {
 		if (clickType == ClickType.CLONE && player.capabilities.isCreativeMode) {
 			ItemStack contents = getStack();
 			if (!contents.isEmpty()) {

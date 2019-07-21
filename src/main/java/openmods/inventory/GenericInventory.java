@@ -3,17 +3,17 @@ package openmods.inventory;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.InvWrapper;
@@ -103,7 +103,7 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
-	public boolean isUsableByPlayer(EntityPlayer entityplayer) {
+	public boolean isUsableByPlayer(PlayerEntity entityplayer) {
 		return true;
 	}
 
@@ -127,19 +127,19 @@ public class GenericInventory implements IInventory {
 		inventoryContents.clear();
 	}
 
-	public void readFromNBT(NBTTagCompound tag) {
+	public void readFromNBT(CompoundNBT tag) {
 		readFromNBT(tag, true);
 	}
 
-	public void readFromNBT(NBTTagCompound tag, boolean readSize) {
+	public void readFromNBT(CompoundNBT tag, boolean readSize) {
 		if (readSize && tag.hasKey(TAG_SIZE)) {
 			this.slotsCount = tag.getInteger(TAG_SIZE);
 		}
 
-		final NBTTagList nbttaglist = tag.getTagList(TAG_ITEMS, Constants.NBT.TAG_COMPOUND);
+		final ListNBT nbttaglist = tag.getTagList(TAG_ITEMS, Constants.NBT.TAG_COMPOUND);
 		inventoryContents = NonNullList.withSize(this.slotsCount, ItemStack.EMPTY);
 		for (int i = 0; i < nbttaglist.tagCount(); i++) {
-			NBTTagCompound stacktag = nbttaglist.getCompoundTagAt(i);
+			CompoundNBT stacktag = nbttaglist.getCompoundTagAt(i);
 			int j = stacktag.getByte(TAG_SLOT);
 			if (j >= 0 && j < inventoryContents.size()) {
 				final ItemStack stack = new ItemStack(stacktag);
@@ -159,13 +159,13 @@ public class GenericInventory implements IInventory {
 		onInventoryChanged(index);
 	}
 
-	public void writeToNBT(NBTTagCompound tag) {
+	public void writeToNBT(CompoundNBT tag) {
 		tag.setInteger(TAG_SIZE, getSizeInventory());
-		NBTTagList nbttaglist = new NBTTagList();
+		ListNBT nbttaglist = new ListNBT();
 		for (int i = 0; i < inventoryContents.size(); i++) {
 			final ItemStack stack = inventoryContents.get(i);
 			if (!stack.isEmpty()) {
-				NBTTagCompound stacktag = new NBTTagCompound();
+				CompoundNBT stacktag = new CompoundNBT();
 				stack.writeToNBT(stacktag);
 				stacktag.setByte(TAG_SLOT, (byte)i);
 				nbttaglist.appendTag(stacktag);
@@ -203,17 +203,17 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
-	public void openInventory(EntityPlayer player) {}
+	public void openInventory(PlayerEntity player) {}
 
 	@Override
-	public void closeInventory(EntityPlayer player) {}
+	public void closeInventory(PlayerEntity player) {}
 
 	@Override
 	public ITextComponent getDisplayName() {
 		final String name = getName();
 		return hasCustomName()
-				? new TextComponentString(name)
-				: new TextComponentTranslation(name);
+				? new StringTextComponent(name)
+				: new TranslationTextComponent(name);
 	}
 
 	// TODO: figure if it's usable

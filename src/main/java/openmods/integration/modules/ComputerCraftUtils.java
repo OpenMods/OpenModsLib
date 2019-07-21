@@ -1,11 +1,11 @@
 package openmods.integration.modules;
 
 import java.util.List;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.inventory.Container;
-import net.minecraft.inventory.InventoryCrafting;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.item.Items;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
@@ -18,7 +18,7 @@ public final class ComputerCraftUtils {
 	private static final Container DUMMY_CONTAINER = new Container() {
 
 		@Override
-		public boolean canInteractWith(EntityPlayer playerIn) {
+		public boolean canInteractWith(PlayerEntity playerIn) {
 			return false;
 		}
 
@@ -68,7 +68,7 @@ public final class ComputerCraftUtils {
 	}
 
 	private static void addTurtleForUpgrade(List<ItemStack> result, IRecipe recipe, ItemStack turtle, ItemStack left, ItemStack right) {
-		final InventoryCrafting inv = new InventoryCrafting(DUMMY_CONTAINER, 3, 3);
+		final CraftingInventory inv = new CraftingInventory(DUMMY_CONTAINER, 3, 3);
 		inv.setInventorySlotContents(0, left);
 		inv.setInventorySlotContents(1, turtle);
 		inv.setInventorySlotContents(2, right);

@@ -1,6 +1,6 @@
 package openmods.movement;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.MovementInput;
 import net.minecraftforge.client.event.InputUpdateEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -20,7 +20,7 @@ public class PlayerMovementManager {
 	@SubscribeEvent
 	public static void updateMovementState(InputUpdateEvent evt) {
 		final MovementInput input = evt.getMovementInput();
-		final EntityPlayer owner = evt.getEntityPlayer();
+		final PlayerEntity owner = evt.getEntityPlayer();
 		if (input.jump && !wasJumping) input.jump = postMovementEvent(owner, PlayerMovementEvent.Type.JUMP);
 		if (input.sneak && !wasSneaking) input.sneak = postMovementEvent(owner, PlayerMovementEvent.Type.SNEAK);
 
@@ -28,7 +28,7 @@ public class PlayerMovementManager {
 		wasSneaking = input.sneak;
 	}
 
-	private static boolean postMovementEvent(EntityPlayer player, Type type) {
+	private static boolean postMovementEvent(PlayerEntity player, Type type) {
 		return !MinecraftForge.EVENT_BUS.post(new PlayerMovementEvent(player, type));
 	}
 }

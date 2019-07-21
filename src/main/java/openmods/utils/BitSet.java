@@ -3,7 +3,7 @@ package openmods.utils;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 // NOTE: I'm aware of java.util.BitSet, but it has no byte[] convenrsion functions in Java < 7, so here is derpy version
@@ -64,11 +64,11 @@ public class BitSet {
 		bits = input.readByteArray();
 	}
 
-	public void writeToNBT(NBTTagCompound tag) {
+	public void writeToNBT(CompoundNBT tag) {
 		tag.setByteArray("Bits", bits);
 	}
 
-	public void readFromNBT(NBTTagCompound tag) {
+	public void readFromNBT(CompoundNBT tag) {
 		bits = tag.getByteArray("Bits").clone();
 	}
 

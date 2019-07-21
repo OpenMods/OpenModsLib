@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.block.model.ItemOverride;
 import net.minecraft.client.renderer.block.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -55,12 +55,12 @@ public class TexturedItemOverrides extends ItemOverrideList {
 	}
 
 	@Override
-	public IBakedModel handleItemState(IBakedModel originalModel, @Nonnull ItemStack stack, World world, EntityLivingBase entity) {
+	public IBakedModel handleItemState(IBakedModel originalModel, @Nonnull ItemStack stack, World world, LivingEntity entity) {
 		final Optional<ResourceLocation> texture = getTextureFromStack(stack);
 		return texture.isPresent()? rebakeModel(texture.get(), stack, world, entity) : untexturedModel;
 	}
 
-	private IBakedModel rebakeModel(ResourceLocation texture, @Nonnull ItemStack stack, World world, EntityLivingBase entity) {
+	private IBakedModel rebakeModel(ResourceLocation texture, @Nonnull ItemStack stack, World world, LivingEntity entity) {
 		@SuppressWarnings("deprecation")
 		final Optional<ResourceLocation> overrideLocation = Optional.ofNullable(applyOverride(stack, world, entity));
 		return textureOverrides.getUnchecked(Pair.of(texture, overrideLocation));

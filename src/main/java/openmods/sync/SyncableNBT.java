@@ -1,30 +1,30 @@
 package openmods.sync;
 
 import java.io.IOException;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 /***
  * Note: you must manually .markDirty() right now
  */
-public class SyncableNBT extends SyncableObjectBase implements ISyncableValueProvider<NBTTagCompound> {
+public class SyncableNBT extends SyncableObjectBase implements ISyncableValueProvider<CompoundNBT> {
 
-	private NBTTagCompound tag;
+	private CompoundNBT tag;
 
 	public SyncableNBT() {
-		tag = new NBTTagCompound();
+		tag = new CompoundNBT();
 	}
 
-	public SyncableNBT(NBTTagCompound nbt) {
+	public SyncableNBT(CompoundNBT nbt) {
 		tag = nbt.copy();
 	}
 
 	@Override
-	public NBTTagCompound getValue() {
+	public CompoundNBT getValue() {
 		return tag.copy();
 	}
 
-	public void setValue(NBTTagCompound tag) {
+	public void setValue(CompoundNBT tag) {
 		this.tag = tag.copy();
 	}
 
@@ -40,12 +40,12 @@ public class SyncableNBT extends SyncableObjectBase implements ISyncableValuePro
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt, String name) {
+	public void writeToNBT(CompoundNBT nbt, String name) {
 		nbt.setTag(name, nbt);
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt, String name) {
+	public void readFromNBT(CompoundNBT nbt, String name) {
 		nbt.getCompoundTag(name);
 	}
 

@@ -1,27 +1,27 @@
 package openmods.utils;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
 
 public class PlayerUtils {
 
-	public static NBTTagCompound getModPlayerPersistTag(EntityPlayer player, String modName) {
+	public static CompoundNBT getModPlayerPersistTag(PlayerEntity player, String modName) {
 
-		NBTTagCompound tag = player.getEntityData();
+		CompoundNBT tag = player.getEntityData();
 
-		final NBTTagCompound persistTag;
-		if (tag.hasKey(EntityPlayer.PERSISTED_NBT_TAG)) {
-			persistTag = tag.getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG);
+		final CompoundNBT persistTag;
+		if (tag.hasKey(PlayerEntity.PERSISTED_NBT_TAG)) {
+			persistTag = tag.getCompoundTag(PlayerEntity.PERSISTED_NBT_TAG);
 		} else {
-			persistTag = new NBTTagCompound();
-			tag.setTag(EntityPlayer.PERSISTED_NBT_TAG, persistTag);
+			persistTag = new CompoundNBT();
+			tag.setTag(PlayerEntity.PERSISTED_NBT_TAG, persistTag);
 		}
 
-		final NBTTagCompound modTag;
+		final CompoundNBT modTag;
 		if (persistTag.hasKey(modName)) {
 			modTag = persistTag.getCompoundTag(modName);
 		} else {
-			modTag = new NBTTagCompound();
+			modTag = new CompoundNBT();
 			persistTag.setTag(modName, modTag);
 		}
 

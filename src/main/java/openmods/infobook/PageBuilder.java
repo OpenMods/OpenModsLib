@@ -15,7 +15,7 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.RegistryNamespaced;
+import net.minecraft.util.registry.SimpleRegistry;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.gui.component.BaseComponent;
@@ -71,7 +71,7 @@ public class PageBuilder {
 		return "https://videos.openmods.info/" + lang + "/tutorial." + modId + "." + type + "." + id;
 	}
 
-	public <T> void addPages(String type, RegistryNamespaced<ResourceLocation, T> registry, StackProvider<T> provider) {
+	public <T> void addPages(String type, SimpleRegistry<ResourceLocation, T> registry, StackProvider<T> provider) {
 		Set<ResourceLocation> ids = registry.getKeys();
 
 		for (ResourceLocation id : ids) {

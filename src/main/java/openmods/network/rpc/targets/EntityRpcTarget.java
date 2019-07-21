@@ -1,7 +1,7 @@
 package openmods.network.rpc.targets;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -30,7 +30,7 @@ public class EntityRpcTarget implements IRpcTarget {
 	}
 
 	@Override
-	public void readFromStreamStream(Side side, EntityPlayer player, PacketBuffer input) {
+	public void readFromStreamStream(Side side, PlayerEntity player, PacketBuffer input) {
 		int worldId = input.readInt();
 		int entityId = input.readInt();
 

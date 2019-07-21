@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 
 public class ModelUpdater {
@@ -21,29 +21,29 @@ public class ModelUpdater {
 	}
 
 	public static final ValueConverter<ResourceLocation> RESOURCE_LOCATION = (name, element) -> {
-		final String value = JsonUtils.getString(element, name);
+		final String value = JSONUtils.getString(element, name);
 		return new ResourceLocation(value);
 	};
 
 	public static final ValueConverter<ModelResourceLocation> MODEL_RESOURCE_LOCATION = (name, element) -> {
-		final String value = JsonUtils.getString(element, name);
+		final String value = JSONUtils.getString(element, name);
 		return new ModelResourceLocation(value);
 	};
 
 	public static final ValueConverter<ResourceLocation> MODEL_LOCATION = (name, element) -> {
-		final String value = JsonUtils.getString(element, name);
+		final String value = JSONUtils.getString(element, name);
 		return value.contains("#")? new ModelResourceLocation(value) : new ResourceLocation(value);
 	};
 
-	public static final ValueConverter<String> TO_STRING = (name, element) -> JsonUtils.getString(element, name);
+	public static final ValueConverter<String> TO_STRING = (name, element) -> JSONUtils.getString(element, name);
 
-	public static final ValueConverter<Integer> TO_INT = (name, element) -> JsonUtils.getInt(element, name);
+	public static final ValueConverter<Integer> TO_INT = (name, element) -> JSONUtils.getInt(element, name);
 
 	public static final ValueConverter<Long> TO_LONG = (name, element) -> {
 		if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isNumber())
 			return element.getAsLong();
 
-		throw new JsonSyntaxException("Expected " + name + " to be a Int, was " + JsonUtils.toString(element));
+		throw new JsonSyntaxException("Expected " + name + " to be a Int, was " + JSONUtils.toString(element));
 	};
 
 	public static <T extends Enum<T>> ValueConverter<T> enumConverter(Class<T> enumCls) {
@@ -54,7 +54,7 @@ public class ModelUpdater {
 		final ImmutableMap<String, T> values = valuesBuilder.build();
 
 		return (name, element) -> {
-			final String enumName = JsonUtils.getString(element, name);
+			final String enumName = JSONUtils.getString(element, name);
 			return values.get(enumName.toLowerCase(Locale.ROOT));
 		};
 	}

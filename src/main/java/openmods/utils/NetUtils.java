@@ -6,10 +6,10 @@ import io.netty.channel.ChannelHandlerContext;
 import java.util.Set;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityTracker;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.util.IThreadListener;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.ServerWorld;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
@@ -17,20 +17,20 @@ import openmods.Log;
 
 public class NetUtils {
 
-	public static NetworkDispatcher getPlayerDispatcher(EntityPlayerMP player) {
+	public static NetworkDispatcher getPlayerDispatcher(ServerPlayerEntity player) {
 		NetworkDispatcher dispatcher = player.connection.netManager.channel().attr(NetworkDispatcher.FML_DISPATCHER).get();
 		return dispatcher;
 	}
 
-	public static Set<EntityPlayerMP> getPlayersWatchingEntity(WorldServer server, Entity entity) {
+	public static Set<ServerPlayerEntity> getPlayersWatchingEntity(ServerWorld server, Entity entity) {
 		final EntityTracker tracker = server.getEntityTracker();
 
 		@SuppressWarnings("unchecked")
-		final Set<? extends EntityPlayerMP> trackingPlayers = (Set<? extends EntityPlayerMP>)tracker.getTrackingPlayers(entity);
+		final Set<? extends ServerPlayerEntity> trackingPlayers = (Set<? extends ServerPlayerEntity>)tracker.getTrackingPlayers(entity);
 		return ImmutableSet.copyOf(trackingPlayers);
 	}
 
-	public static Set<EntityPlayerMP> getPlayersWatchingChunk(WorldServer world, int chunkX, int chunkZ) {
+	public static Set<ServerPlayerEntity> getPlayersWatchingChunk(ServerWorld world, int chunkX, int chunkZ) {
 		final PlayerChunkMapEntry playerChunkMap = world.getPlayerChunkMap().getEntry(chunkX, chunkZ);
 
 		if (playerChunkMap == null)
@@ -39,7 +39,7 @@ public class NetUtils {
 		return ImmutableSet.copyOf(playerChunkMap.getWatchingPlayers());
 	}
 
-	public static Set<EntityPlayerMP> getPlayersWatchingBlock(WorldServer world, int blockX, int blockZ) {
+	public static Set<ServerPlayerEntity> getPlayersWatchingBlock(ServerWorld world, int blockX, int blockZ) {
 		return getPlayersWatchingChunk(world, blockX >> 4, blockZ >> 4);
 	}
 

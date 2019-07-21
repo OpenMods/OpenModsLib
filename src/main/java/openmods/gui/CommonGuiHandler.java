@@ -1,6 +1,6 @@
 package openmods.gui;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -20,7 +20,7 @@ public class CommonGuiHandler implements IGuiHandler {
 	}
 
 	@Override
-	public Object getServerGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
+	public Object getServerGuiElement(int id, PlayerEntity player, World world, int x, int y, int z) {
 		if (id != OpenBlock.OPEN_MODS_TE_GUI) return wrappedHandler != null? wrappedHandler.getServerGuiElement(id, player, world, x, y, z) : null;
 		else {
 			TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
@@ -30,7 +30,7 @@ public class CommonGuiHandler implements IGuiHandler {
 	}
 
 	@Override
-	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+	public Object getClientGuiElement(int ID, PlayerEntity player, World world, int x, int y, int z) {
 		return null;
 	}
 }

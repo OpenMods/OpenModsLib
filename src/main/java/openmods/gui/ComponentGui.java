@@ -6,20 +6,20 @@ import javax.annotation.Nonnull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.inventory.Container;
+import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import openmods.gui.component.BaseComposite;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-public abstract class ComponentGui extends GuiContainer {
+public abstract class ComponentGui extends ContainerScreen {
 
 	protected final BaseComposite root;
 
@@ -49,7 +49,7 @@ public abstract class ComponentGui extends GuiContainer {
 			}
 
 			@Override
-			public TextureMap getBlocksTextureMap() {
+			public AtlasTexture getBlocksTextureMap() {
 				return mc.getTextureMapBlocks();
 			}
 

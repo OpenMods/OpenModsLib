@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import openmods.shapes.IShapeable;
@@ -15,17 +15,17 @@ import openmods.utils.MathUtils;
 public class GeometryUtils {
 
 	public enum Axis {
-		X(1, 0, 0, EnumFacing.EAST, EnumFacing.WEST),
-		Y(0, 1, 0, EnumFacing.UP, EnumFacing.DOWN),
-		Z(0, 0, 1, EnumFacing.SOUTH, EnumFacing.NORTH);
+		X(1, 0, 0, Direction.EAST, Direction.WEST),
+		Y(0, 1, 0, Direction.UP, Direction.DOWN),
+		Z(0, 0, 1, Direction.SOUTH, Direction.NORTH);
 		public final int dx;
 		public final int dy;
 		public final int dz;
 
-		public final EnumFacing positive;
-		public final EnumFacing negative;
+		public final Direction positive;
+		public final Direction negative;
 
-		Axis(int dx, int dy, int dz, EnumFacing positive, EnumFacing negative) {
+		Axis(int dx, int dy, int dz, Direction positive, Direction negative) {
 			this.dx = dx;
 			this.dy = dy;
 			this.dz = dz;
@@ -35,24 +35,24 @@ public class GeometryUtils {
 	}
 
 	public enum Octant {
-		TopSouthWest("Top South West", EnumFacing.WEST, EnumFacing.UP, EnumFacing.SOUTH),
-		TopNorthEast("Top North East", EnumFacing.EAST, EnumFacing.UP, EnumFacing.NORTH),
-		TopNorthWest("Top North West", EnumFacing.WEST, EnumFacing.UP, EnumFacing.NORTH),
-		TopSouthEast("Top South East", EnumFacing.EAST, EnumFacing.UP, EnumFacing.SOUTH),
-		BottomSouthWest("Bottom South West", EnumFacing.WEST, EnumFacing.DOWN, EnumFacing.SOUTH),
-		BottomNorthEast("Bottom North East", EnumFacing.EAST, EnumFacing.DOWN, EnumFacing.NORTH),
-		BottomNorthWest("Bottom North West", EnumFacing.WEST, EnumFacing.DOWN, EnumFacing.NORTH),
-		BottomSouthEast("Bottom South East", EnumFacing.EAST, EnumFacing.DOWN, EnumFacing.SOUTH);
+		TopSouthWest("Top South West", Direction.WEST, Direction.UP, Direction.SOUTH),
+		TopNorthEast("Top North East", Direction.EAST, Direction.UP, Direction.NORTH),
+		TopNorthWest("Top North West", Direction.WEST, Direction.UP, Direction.NORTH),
+		TopSouthEast("Top South East", Direction.EAST, Direction.UP, Direction.SOUTH),
+		BottomSouthWest("Bottom South West", Direction.WEST, Direction.DOWN, Direction.SOUTH),
+		BottomNorthEast("Bottom North East", Direction.EAST, Direction.DOWN, Direction.NORTH),
+		BottomNorthWest("Bottom North West", Direction.WEST, Direction.DOWN, Direction.NORTH),
+		BottomSouthEast("Bottom South East", Direction.EAST, Direction.DOWN, Direction.SOUTH);
 
 		public static final EnumSet<Octant> ALL = EnumSet.allOf(Octant.class);
-		public static final EnumSet<Octant> TOP = select(EnumFacing.UP);
-		public static final EnumSet<Octant> BOTTOM = select(EnumFacing.DOWN);
-		public static final EnumSet<Octant> NORTH = select(EnumFacing.NORTH);
-		public static final EnumSet<Octant> SOUTH = select(EnumFacing.SOUTH);
-		public static final EnumSet<Octant> EAST = select(EnumFacing.EAST);
-		public static final EnumSet<Octant> WEST = select(EnumFacing.WEST);
+		public static final EnumSet<Octant> TOP = select(Direction.UP);
+		public static final EnumSet<Octant> BOTTOM = select(Direction.DOWN);
+		public static final EnumSet<Octant> NORTH = select(Direction.NORTH);
+		public static final EnumSet<Octant> SOUTH = select(Direction.SOUTH);
+		public static final EnumSet<Octant> EAST = select(Direction.EAST);
+		public static final EnumSet<Octant> WEST = select(Direction.WEST);
 
-		public final EnumSet<EnumFacing> dirs;
+		public final EnumSet<Direction> dirs;
 		public final int x, y, z;
 		public final String name;
 
@@ -72,7 +72,7 @@ public class GeometryUtils {
 			return name;
 		}
 
-		Octant(String friendlyName, EnumFacing dirX, EnumFacing dirY, EnumFacing dirZ) {
+		Octant(String friendlyName, Direction dirX, Direction dirY, Direction dirZ) {
 			this.x = dirX.getFrontOffsetX() + dirY.getFrontOffsetX() + dirZ.getFrontOffsetX();
 			this.y = dirX.getFrontOffsetY() + dirY.getFrontOffsetY() + dirZ.getFrontOffsetY();
 			this.z = dirX.getFrontOffsetZ() + dirY.getFrontOffsetZ() + dirZ.getFrontOffsetZ();
@@ -80,7 +80,7 @@ public class GeometryUtils {
 			this.name = friendlyName;
 		}
 
-		private static EnumSet<Octant> select(EnumFacing dir) {
+		private static EnumSet<Octant> select(Direction dir) {
 			Set<Octant> result = Sets.newIdentityHashSet();
 			for (Octant o : values())
 				if (o.dirs.contains(dir))
@@ -114,7 +114,7 @@ public class GeometryUtils {
 	/**
 	 * Makes a link of blocks in a shape
 	 */
-	public static void makeLine(int startX, int startY, int startZ, EnumFacing direction, int length, IShapeable shapeable) {
+	public static void makeLine(int startX, int startY, int startZ, Direction direction, int length, IShapeable shapeable) {
 		if (length < 0) return;
 		final Vec3i v = direction.getDirectionVec();
 		for (int offset = 0; offset <= length; offset++)
@@ -133,7 +133,7 @@ public class GeometryUtils {
 	/**
 	 * Makes a flat plane along two directions
 	 */
-	public static void makePlane(int startX, int startY, int startZ, int width, int height, EnumFacing right, EnumFacing up, IShapeable shapeable) {
+	public static void makePlane(int startX, int startY, int startZ, int width, int height, Direction right, Direction up, IShapeable shapeable) {
 		if (width < 0 || height < 0) return;
 		int lineOffsetX, lineOffsetY, lineOffsetZ;
 		// We offset each line by up, and then apply it right

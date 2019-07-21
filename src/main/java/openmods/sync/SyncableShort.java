@@ -1,6 +1,6 @@
 package openmods.sync;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 public class SyncableShort extends SyncableObjectBase implements ISyncableValueProvider<Short> {
@@ -44,12 +44,12 @@ public class SyncableShort extends SyncableObjectBase implements ISyncableValueP
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound tag, String name) {
+	public void writeToNBT(CompoundNBT tag, String name) {
 		tag.setShort(name, value);
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound tag, String name) {
+	public void readFromNBT(CompoundNBT tag, String name) {
 		value = tag.getShort(name);
 	}
 }

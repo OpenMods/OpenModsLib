@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import openmods.reflection.FieldAccess;
 import openmods.sync.ISyncableObject;
 import openmods.utils.ItemUtils;
@@ -44,12 +44,12 @@ public class DropTagSerializer {
 		}
 	}
 
-	public void write(NBTTagCompound tag) {
+	public void write(CompoundNBT tag) {
 		for (Map.Entry<String, ISyncableObject> e : objects.entrySet())
 			e.getValue().writeToNBT(tag, e.getKey());
 	}
 
-	public void read(NBTTagCompound tag, boolean skipEmpty) {
+	public void read(CompoundNBT tag, boolean skipEmpty) {
 		for (Map.Entry<String, ISyncableObject> e : objects.entrySet()) {
 			final String key = e.getKey();
 			if (!skipEmpty || tag.hasKey(key)) e.getValue().readFromNBT(tag, key);
@@ -58,14 +58,14 @@ public class DropTagSerializer {
 
 	@Nonnull
 	public ItemStack write(ItemStack stack) {
-		NBTTagCompound tag = ItemUtils.getItemTag(stack);
+		CompoundNBT tag = ItemUtils.getItemTag(stack);
 		write(tag);
 		return stack;
 	}
 
 	@Nonnull
 	public void read(ItemStack stack, boolean skipEmpty) {
-		NBTTagCompound tag = ItemUtils.getItemTag(stack);
+		CompoundNBT tag = ItemUtils.getItemTag(stack);
 		read(tag, skipEmpty);
 	}
 

@@ -2,14 +2,14 @@ package openmods.network.senders;
 
 import io.netty.channel.Channel;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.fml.common.network.FMLOutboundHandler;
 import net.minecraftforge.fml.common.network.FMLOutboundHandler.OutboundTarget;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 public class FmlPacketSenderFactory {
 
-	public static ITargetedPacketSender<EntityPlayer> createPlayerSender(Channel channel) {
+	public static ITargetedPacketSender<PlayerEntity> createPlayerSender(Channel channel) {
 		return new FmlTargetedPacketSender<>(channel, OutboundTarget.PLAYER);
 	}
 

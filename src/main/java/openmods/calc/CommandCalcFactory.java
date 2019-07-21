@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 import openmods.calc.CalcState.CalculatorType;
 import openmods.calc.CalcState.NoSuchNameException;
 import openmods.config.simpler.ConfigurableClassAdapter.NoSuchPropertyException;
@@ -224,7 +224,7 @@ public class CommandCalcFactory {
 			.put("echo", new TerminalCommandComponent("<str>") {
 				@Override
 				public void execute(ICommandSender sender, IWhitespaceSplitter args) {
-					sender.sendMessage(new TextComponentString(args.getTail()));
+					sender.sendMessage(new StringTextComponent(args.getTail()));
 				}
 			})
 			.build();

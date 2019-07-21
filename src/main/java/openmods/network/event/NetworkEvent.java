@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.List;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
@@ -17,7 +17,7 @@ public abstract class NetworkEvent extends Event {
 
 	NetworkDispatcher dispatcher;
 
-	public EntityPlayer sender;
+	public PlayerEntity sender;
 
 	public Side side;
 
@@ -41,7 +41,7 @@ public abstract class NetworkEvent extends Event {
 		NetworkEventManager.dispatcher().senders.client.sendMessage(this);
 	}
 
-	public void sendToPlayer(EntityPlayer player) {
+	public void sendToPlayer(PlayerEntity player) {
 		NetworkEventManager.dispatcher().senders.player.sendMessage(this, player);
 	}
 

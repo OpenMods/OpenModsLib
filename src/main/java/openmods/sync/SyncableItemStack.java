@@ -3,7 +3,7 @@ package openmods.sync;
 import java.io.IOException;
 import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.util.Constants;
 
@@ -24,18 +24,18 @@ public class SyncableItemStack extends SyncableObjectBase {
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt, String name) {
+	public void writeToNBT(CompoundNBT nbt, String name) {
 		if (stack.isEmpty()) {
-			NBTTagCompound serialized = new NBTTagCompound();
+			CompoundNBT serialized = new CompoundNBT();
 			stack.writeToNBT(serialized);
 			nbt.setTag(name, serialized);
 		}
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt, String name) {
+	public void readFromNBT(CompoundNBT nbt, String name) {
 		if (nbt.hasKey(name, Constants.NBT.TAG_COMPOUND)) {
-			NBTTagCompound serialized = nbt.getCompoundTag(name);
+			CompoundNBT serialized = nbt.getCompoundTag(name);
 			stack = new ItemStack(serialized);
 		} else {
 			stack = ItemStack.EMPTY;

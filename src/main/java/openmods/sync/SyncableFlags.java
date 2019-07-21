@@ -1,7 +1,7 @@
 package openmods.sync;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import openmods.utils.ByteUtils;
 import openmods.utils.bitmap.IBitMap;
@@ -21,12 +21,12 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 		}
 
 		@Override
-		public void writeToNBT(NBTTagCompound tag, String name) {
+		public void writeToNBT(CompoundNBT tag, String name) {
 			tag.setByte(name, (byte)value);
 		}
 
 		@Override
-		public void readFromNBT(NBTTagCompound tag, String name) {
+		public void readFromNBT(CompoundNBT tag, String name) {
 			value = tag.getByte(name);
 		}
 	}
@@ -43,12 +43,12 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 		}
 
 		@Override
-		public void writeToNBT(NBTTagCompound tag, String name) {
+		public void writeToNBT(CompoundNBT tag, String name) {
 			tag.setShort(name, (short)value);
 		}
 
 		@Override
-		public void readFromNBT(NBTTagCompound tag, String name) {
+		public void readFromNBT(CompoundNBT tag, String name) {
 			value = tag.getShort(name);
 		}
 	}
@@ -65,12 +65,12 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 		}
 
 		@Override
-		public void writeToNBT(NBTTagCompound tag, String name) {
+		public void writeToNBT(CompoundNBT tag, String name) {
 			tag.setInteger(name, value);
 		}
 
 		@Override
-		public void readFromNBT(NBTTagCompound tag, String name) {
+		public void readFromNBT(CompoundNBT tag, String name) {
 			value = tag.getInteger(name);
 		}
 	}

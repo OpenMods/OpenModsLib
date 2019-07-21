@@ -2,8 +2,8 @@ package openmods.fakeplayer;
 
 import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import openmods.fakeplayer.FakePlayerPool.PlayerUserReturning;
@@ -17,13 +17,13 @@ public class UseItemAction implements PlayerUserReturning<ItemStack> {
 	private final Vec3d playerPos;
 	private final Vec3d clickPos;
 	private final Vec3d hitPos;
-	private final EnumFacing side;
-	private final EnumHand hand;
+	private final Direction side;
+	private final Hand hand;
 
 	private final float yaw;
 	private final float pitch;
 
-	public UseItemAction(ItemStack stack, Vec3d playerPos, Vec3d clickPos, Vec3d hitPos, EnumFacing side, EnumHand hand) {
+	public UseItemAction(ItemStack stack, Vec3d playerPos, Vec3d clickPos, Vec3d hitPos, Direction side, Hand hand) {
 		super();
 		this.stack = stack;
 		this.playerPos = playerPos;

@@ -1,6 +1,6 @@
 package openmods.sync;
 
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 public class SyncableByteArray extends SyncableObjectBase implements ISyncableValueProvider<byte[]> {
@@ -40,12 +40,12 @@ public class SyncableByteArray extends SyncableObjectBase implements ISyncableVa
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt, String name) {
+	public void writeToNBT(CompoundNBT nbt, String name) {
 		nbt.setByteArray(name, value);
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt, String name) {
+	public void readFromNBT(CompoundNBT nbt, String name) {
 		nbt.getByteArray(name);
 	}
 

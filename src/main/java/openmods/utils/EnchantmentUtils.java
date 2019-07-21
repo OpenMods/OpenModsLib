@@ -3,8 +3,8 @@ package openmods.utils;
 import java.util.List;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentData;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemEnchantedBook;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -19,11 +19,11 @@ public class EnchantmentUtils {
 	 * @param player
 	 * @return
 	 */
-	public static int getPlayerXP(EntityPlayer player) {
+	public static int getPlayerXP(PlayerEntity player) {
 		return (int)(EnchantmentUtils.getExperienceForLevel(player.experienceLevel) + (player.experience * player.xpBarCap()));
 	}
 
-	public static void addPlayerXP(EntityPlayer player, int amount) {
+	public static void addPlayerXP(PlayerEntity player, int amount) {
 		int experience = getPlayerXP(player) + amount;
 		player.experienceTotal = experience;
 		player.experienceLevel = EnchantmentUtils.getLevelForExperience(experience);
@@ -92,6 +92,6 @@ public class EnchantmentUtils {
 
 	public static void addAllBooks(Enchantment enchantment, List<ItemStack> items) {
 		for (int i = enchantment.getMinLevel(); i <= enchantment.getMaxLevel(); i++)
-			items.add(ItemEnchantedBook.getEnchantedItemStack(new EnchantmentData(enchantment, i)));
+			items.add(EnchantedBookItem.getEnchantedItemStack(new EnchantmentData(enchantment, i)));
 	}
 }

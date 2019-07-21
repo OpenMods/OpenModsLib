@@ -1,6 +1,6 @@
 package openmods.renderer;
 
-import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
 import openmods.Log;
 import openmods.api.IResultListener;
@@ -22,7 +22,7 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 			super(Opcodes.ASM5, mv);
 
 			try {
-				postMethod = Method.getMethod(PlayerRendererHookVisitor.class.getMethod("post", AbstractClientPlayer.class, float.class));
+				postMethod = Method.getMethod(PlayerRendererHookVisitor.class.getMethod("post", AbstractClientPlayerEntity.class, float.class));
 			} catch (NoSuchMethodException e) {
 				throw new RuntimeException(e);
 			}
@@ -44,7 +44,7 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 		}
 	}
 
-	public static void post(AbstractClientPlayer player, float partialTickTime) {
+	public static void post(AbstractClientPlayerEntity player, float partialTickTime) {
 		MinecraftForge.EVENT_BUS.post(new PlayerBodyRenderEvent(player, partialTickTime));
 	}
 
@@ -56,7 +56,7 @@ public class PlayerRendererHookVisitor extends ClassVisitor {
 		super(Opcodes.ASM5, cv);
 		this.listener = listener;
 
-		Type injectedMethodType = Type.getMethodType(Type.VOID_TYPE, MappedType.of(AbstractClientPlayer.class).type(), Type.FLOAT_TYPE, Type.FLOAT_TYPE, Type.FLOAT_TYPE);
+		Type injectedMethodType = Type.getMethodType(Type.VOID_TYPE, MappedType.of(AbstractClientPlayerEntity.class).type(), Type.FLOAT_TYPE, Type.FLOAT_TYPE, Type.FLOAT_TYPE);
 		modifiedMethod = new MethodMatcher(rendererTypeCls, injectedMethodType.getDescriptor(), "applyRotations", "func_77043_a");
 	}
 

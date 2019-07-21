@@ -2,7 +2,7 @@ package openmods.sync;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 
 public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implements ISyncableValueProvider<E> {
@@ -19,10 +19,10 @@ public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implemen
 		}
 
 		@Override
-		public void writeToNBT(NBTTagCompound nbt, String name) {}
+		public void writeToNBT(CompoundNBT nbt, String name) {}
 
 		@Override
-		public void readFromNBT(NBTTagCompound nbt, String name) {}
+		public void readFromNBT(CompoundNBT nbt, String name) {}
 	};
 
 	private final E[] values;
@@ -50,12 +50,12 @@ public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implemen
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt, String name) {
+	public void writeToNBT(CompoundNBT nbt, String name) {
 		nbt.setInteger(name, value.ordinal());
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt, String name) {
+	public void readFromNBT(CompoundNBT nbt, String name) {
 		int original = nbt.getInteger(name);
 		value = values[original];
 	}

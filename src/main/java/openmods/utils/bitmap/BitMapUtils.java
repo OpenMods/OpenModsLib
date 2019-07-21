@@ -6,7 +6,7 @@ import com.google.common.collect.UnmodifiableIterator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;
 
@@ -62,20 +62,20 @@ public class BitMapUtils {
 		return value -> map.set(key, value);
 	}
 
-	public static IWriteableBitMap<EnumFacing> createRpcAdapter(final IRpcDirectionBitMap map) {
-		return new IWriteableBitMap<EnumFacing>() {
+	public static IWriteableBitMap<Direction> createRpcAdapter(final IRpcDirectionBitMap map) {
+		return new IWriteableBitMap<Direction>() {
 			@Override
-			public void toggle(EnumFacing value) {
+			public void toggle(Direction value) {
 				map.toggle(value);
 			}
 
 			@Override
-			public void set(EnumFacing key, boolean value) {
+			public void set(Direction key, boolean value) {
 				map.set(key, value);
 			}
 
 			@Override
-			public void mark(EnumFacing value) {
+			public void mark(Direction value) {
 				map.mark(value);
 			}
 
@@ -85,7 +85,7 @@ public class BitMapUtils {
 			}
 
 			@Override
-			public void clear(EnumFacing value) {
+			public void clear(Direction value) {
 				map.clear(value);
 			}
 		};
