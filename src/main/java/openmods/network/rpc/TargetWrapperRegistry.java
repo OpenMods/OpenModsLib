@@ -4,9 +4,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import openmods.datastore.IDataVisitor;
 
 public class TargetWrapperRegistry implements IDataVisitor<String, Integer> {
+
+	private Map<String, Class<? extends IRpcTarget>> targets = ImmutableMap.of();
 
 	private BiMap<Class<? extends IRpcTarget>, Integer> wrapperCls = HashBiMap.create();
 
@@ -17,14 +21,7 @@ public class TargetWrapperRegistry implements IDataVisitor<String, Integer> {
 
 	@Override
 	public void entry(String clsName, Integer clsId) {
-		Class<?> cls;
-		try {
-			cls = Class.forName(clsName);
-		} catch (ClassNotFoundException e) {
-			throw new IllegalArgumentException(String.format("Failed to load class %s", clsName), e);
-		}
-
-		Preconditions.checkArgument(IRpcTarget.class.isAssignableFrom(cls), "Class %s is not ITargetWrapper", cls);
+		Class<? extends IRpcTarget> cls = targets.get(clsName);
 
 		try {
 			cls.getConstructor();
@@ -34,9 +31,7 @@ public class TargetWrapperRegistry implements IDataVisitor<String, Integer> {
 			throw Throwables.propagate(e);
 		}
 
-		@SuppressWarnings("unchecked")
-		final Class<? extends IRpcTarget> wrapperCls = (Class<? extends IRpcTarget>)cls;
-		this.wrapperCls.put(wrapperCls, clsId);
+		this.wrapperCls.put(cls, clsId);
 	}
 
 	@Override
@@ -57,5 +52,9 @@ public class TargetWrapperRegistry implements IDataVisitor<String, Integer> {
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
+	}
+
+	public void addTargets(final Map<String, Class<? extends IRpcTarget>> targets) {
+		this.targets = ImmutableMap.copyOf(targets);
 	}
 }

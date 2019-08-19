@@ -9,7 +9,9 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import cpw.mods.fml.common.network.NetworkHandshakeEstablished;
 import cpw.mods.fml.common.network.NetworkRegistry;
+import cpw.mods.fml.common.network.handshake.NetworkDispatcher;
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
+import cpw.mods.fml.relauncher.Side;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
@@ -27,6 +29,8 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.datastore.DataStoreBuilder;
@@ -46,6 +50,16 @@ public class IdSyncManager extends DataStoreManager {
 		@Override
 		protected void channelRead0(ChannelHandlerContext ctx, FMLProxyPacket msg) throws Exception {
 			ByteBuf buf = msg.payload();
+
+			if (ctx.channel().attr(NetworkRegistry.CHANNEL_SOURCE).get() == Side.SERVER) {
+				final NetworkDispatcher dispatcher = msg.getDispatcher();
+				final EntityPlayer player = OpenMods.proxy.getPlayerFromHandler(dispatcher.getNetHandler());
+				Log.warn("Illegal message received from player %s, disconnecting", player);
+				if (player instanceof EntityPlayerMP) {
+					((EntityPlayerMP)player).playerNetServerHandler.kickPlayerFromServer("Hacker!");
+				}
+				return;
+			}
 
 			try {
 				decodeIds(buf);

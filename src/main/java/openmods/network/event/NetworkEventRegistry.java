@@ -2,12 +2,15 @@ package openmods.network.event;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import java.util.Map;
 import openmods.datastore.IDataVisitor;
 
 public class NetworkEventRegistry implements IDataVisitor<String, Integer> {
+
+	private Map<String, Class<? extends NetworkEvent>> knownClasses = ImmutableMap.of();
 
 	private final TIntObjectHashMap<INetworkEventType> idToType = new TIntObjectHashMap<INetworkEventType>();
 
@@ -31,6 +34,10 @@ public class NetworkEventRegistry implements IDataVisitor<String, Integer> {
 	public void begin(int size) {
 		idToType.clear();
 		clsToId.clear();
+	}
+
+	public void registerClasses(final Map<String, Class<? extends NetworkEvent>> events) {
+		this.knownClasses = ImmutableMap.copyOf(events);
 	}
 
 	public static INetworkEventType createPacketType(final Class<? extends NetworkEvent> cls) {
@@ -89,18 +96,10 @@ public class NetworkEventRegistry implements IDataVisitor<String, Integer> {
 
 	@Override
 	public void entry(String clsKey, Integer eventId) {
-		Class<?> candidateCls;
-		try {
-			candidateCls = Class.forName(clsKey);
-		} catch (ClassNotFoundException e) {
-			throw new IllegalArgumentException(String.format("Can't find class %s", clsKey), e);
+		Class<? extends NetworkEvent> cls = knownClasses.get(clsKey);
+		if (cls == null) {
+			throw new IllegalArgumentException("Unknown event class " + clsKey);
 		}
-
-		Preconditions.checkArgument(NetworkEvent.class.isAssignableFrom(candidateCls));
-
-		@SuppressWarnings("unchecked")
-		Class<? extends NetworkEvent> cls = (Class<? extends NetworkEvent>)candidateCls;
-
 		INetworkEventType type = createPacketType(cls);
 		idToType.put(eventId, type);
 		clsToId.put(cls, eventId);

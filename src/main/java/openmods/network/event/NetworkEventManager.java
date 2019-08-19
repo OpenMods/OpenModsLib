@@ -1,10 +1,11 @@
 package openmods.network.event;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.LoaderState;
+import java.util.Map;
 import openmods.datastore.DataStoreBuilder;
-import openmods.datastore.IDataVisitor;
 import openmods.network.IdSyncManager;
 import openmods.utils.io.TypeRW;
 
@@ -14,6 +15,8 @@ public class NetworkEventManager {
 		private int currentId = 0;
 
 		private final DataStoreBuilder<String, Integer> builder;
+
+		private final Map<String, Class<? extends NetworkEvent>> events = Maps.newHashMap();
 
 		private RegistrationContext() {
 			this.builder = IdSyncManager.INSTANCE.createDataStore("events", String.class, Integer.class);
@@ -25,11 +28,14 @@ public class NetworkEventManager {
 		public RegistrationContext register(Class<? extends NetworkEvent> cls) {
 			Preconditions.checkState(Loader.instance().isInState(LoaderState.PREINITIALIZATION), "This method can only be called in pre-initialization state");
 
-			builder.addEntry(cls.getName(), currentId++);
+			final String id = cls.getName();
+			builder.addEntry(id, currentId++);
+			events.put(id, cls);
 			return this;
 		}
 
-		void register(IDataVisitor<String, Integer> eventIdVisitor) {
+		void register(NetworkEventRegistry eventIdVisitor) {
+			eventIdVisitor.registerClasses(events);
 			builder.addVisitor(eventIdVisitor);
 			builder.register();
 		}
