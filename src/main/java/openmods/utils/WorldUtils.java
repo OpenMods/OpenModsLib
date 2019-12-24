@@ -28,10 +28,11 @@ public class WorldUtils {
 	}
 
 	public static boolean isTileEntityValid(TileEntity te) {
-		if (te.isRemoved()) return false;
+		if (te.isRemoved()) {
+			return false;
+		}
 
 		final World world = te.getWorld();
 		return (world != null) && world.isBlockLoaded(te.getPos());
 	}
-
 }
