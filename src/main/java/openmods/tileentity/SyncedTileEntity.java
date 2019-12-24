@@ -1,6 +1,5 @@
 package openmods.tileentity;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import io.netty.buffer.Unpooled;
 import java.io.IOException;
@@ -11,8 +10,8 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import openmods.network.rpc.IRpcTarget;
 import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.SyncRpcTarget;
@@ -40,29 +39,17 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		createSyncedFields();
 	}
 
-	private void createSyncMap(World world) {
-		final SyncMap syncMap = world.isRemote? new SyncMapClient() : new SyncMapTile(this, UpdateStrategy.WITH_INITIAL_PACKET);
-
+	private SyncMap createSyncMap() {
+		final SyncMap syncMap = FMLCommonHandler.instance().getEffectiveSide().isClient()
+				? new SyncMapClient()
+				: new SyncMapTile(this, UpdateStrategy.WITH_INITIAL_PACKET);
 		SyncObjectScanner.INSTANCE.registerAllFields(syncMap, this);
-
 		syncMap.addSyncListener(changes -> markUpdated());
-
-		this.syncMap = syncMap;
 		onSyncMapCreate(syncMap);
+		return syncMap;
 	}
 
 	protected void onSyncMapCreate(SyncMap syncMap) {}
-
-	@Override
-	public void validate() {
-		super.validate();
-		createSyncMap(world);
-	}
-
-	@Override
-	protected void setWorldCreate(World worldIn) {
-		createSyncMap(worldIn);
-	}
 
 	protected DropTagSerializer getDropSerializer() {
 		if (tagSerializer == null) tagSerializer = new DropTagSerializer();
@@ -101,7 +88,9 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 
 	@Override
 	public SyncMap getSyncMap() {
-		Preconditions.checkState(syncMap != null, "Tile entity not initialized properly");
+		if (syncMap == null) {
+			syncMap = createSyncMap();
+		}
 		return syncMap;
 	}
 
