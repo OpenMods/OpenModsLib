@@ -1,0 +1,87 @@
+openmodslib.command.no_enough_args=Inte tillräckligt många argument
+openmodslib.command.unknown_modid=Okänt mod-ID
+openmodslib.command.unknown_value=Okänt konfigurationsvärde
+openmodslib.command.saved=Sparade konfigurationen till %s
+openmodslib.command.not_multiple=Denna egenskap accepterar inte flera värden
+openmodslib.command.online_change=Konfigurationsegenskap ändrades. Använder nytt värde.
+openmodslib.command.offline_change=Konfigurationsegenskap ändrades. Nytt värde kommer att verkställas efter omstart
+openmodslib.command.cancelled=Ändring av konfiguration avbröts!
+openmodslib.command.unknown_error=Okänt fel när konfigurationsegenskap ändrades: %s
+openmodslib.command.invalid_command="%s" är ett ogiltigt kommando
+openmodslib.command.invalid_type=Kan inte omvandla värdet %s till %s
+openmodslib.command.invalid_class_name=%s är ett ogiltigt klassnamn
+openmodslib.command.unknown_error_details=Okänt fel. Kontrollera loggarna för fler detaljer.
+openmodslib.command.class_source=Klassen "%s" lästes in från "%s"
+openmodslib.command.api_class=API-information: name="%s", ownerMod="%s", version="%s"
+openmodslib.command.class_provider=Klassen tillhandahålls av filen %s (moddar: %s)
+
+openmodslib.command.calc_set=Värdet %s ändrades till %s
+openmodslib.command.calc_no_type=Ange kalkylatorns nya typ
+openmodslib.command.calc_no_name=Ange kalkylatorns namn
+openmodslib.command.calc_invalid_name=Ogiltigt kalkylatornamn
+openmodslib.command.calc_invalid_type=Ogiltig kalkylatortyp. Tillåtna typer: %s
+openmodslib.command.calc_invalid_mode=Ogiltigt kalkylatorläge. Tillåtna lägen: %s
+openmodslib.command.calc_no_key=Ange egenskapens namn
+openmodslib.command.calc_no_value=Ange egenskapens nya värde
+openmodslib.command.calc_invalid_key=Ogiltigt egenskapsnamn
+openmodslib.command.calc_cant_set=Misslyckades att ändra egenskap
+openmodslib.command.calc_function_defined=Definierade funktionen %s
+openmodslib.command.calc_error=Misslyckades att köra: "%s"
+openmodslib.command.calc_syntax_error_path=Misslyckades att tolka kommandot "%s": 
+openmodslib.command.calc_runtime_error_path=Misslyckade att köra kommandot "%s": 
+openmodslib.command.calc_stack_underflow=Kalkylatorns stack är tom
+openmodslib.command.calc_after_push=Lade till element i kalkylatorn, stackstorlek: %s
+openmodslib.command.calc_after_pop=Tog bort element från kalkylatorn, stackstorlek: %s
+openmodslib.command.calc_stack_size=Stackstorlek: %s
+openmodslib.command.calc_extra_args=Otolkade argument är kvar i kommandot: %s
+openmodslib.command.calc_invalid_number="%s" är inte en giltig siffra
+openmodslib.command.no_subcommand=Kan inte hitta underkommando: %s
+openmodslib.command.no_subcommands=Kommandot har inga underkommandon
+openmodslib.command.not_enough_arguments=Inte tillräckligt många argument
+openmodslib.command.calc_executed_count=Körde %d kommandon
+openmodslib.command.calc_not_child=Sökvägen %s finns inte i %s
+openmodslib.command.calc_not_file=Sökvägen %s är inte en giltig fil
+
+openmodslib.color.black=Svart
+openmodslib.color.red=Röd
+openmodslib.color.green=Grön
+openmodslib.color.brown=Brun
+openmodslib.color.blue=Blå
+openmodslib.color.purple=Lila
+openmodslib.color.cyan=Turkos
+openmodslib.color.lightGray=Ljusgrå
+openmodslib.color.gray=Grå
+openmodslib.color.pink=Rosa
+openmodslib.color.lime=Limegrön
+openmodslib.color.yellow=Gul
+openmodslib.color.lightBlue=Ljusblå
+openmodslib.color.magenta=Ljuslila
+openmodslib.color.orange=Orange
+openmodslib.color.white=Vit
+
+openmodslib.gui.watch_video=Titta på video
+
+openmodslib.locale.book.scale.pageNumber=0.5
+openmodslib.locale.book.scale.sectionTitle=2.0
+openmodslib.locale.book.scale.pageTitle=1.0
+openmodslib.locale.book.scale.pageContent=0.5
+
+openmodslib.locale.book.lineSpace.titledPage=2
+openmodslib.locale.book.lineSpace.recipePage=4
+
+openmodslib.book.page=Sida %d av %d
+
+openmodslib.config.features=Aktivera/inaktivera funktioner
+openmodslib.config.features.blocks=Aktivera/inaktivera block
+openmodslib.config.features.items=Aktivera/inaktivera föremål
+openmodslib.config.config=Modspecifika konfigurationer
+openmodslib.config.update_warning=§c§lOBS:§r Ändra konfigurationen med §l/om_config_s§r eller §l/om_config_m§r
+
+openmodslib.structure.endcity=Endstad
+openmodslib.structure.mineshaft=Gruva
+openmodslib.structure.fortress=Netherfästning
+openmodslib.structure.temple=Tempel
+openmodslib.structure.stronghold=Fäste
+openmodslib.structure.village=By
+openmodslib.structure.monument=Havsmonument
+openmodslib.structure.mansion=Skogsherrgård
