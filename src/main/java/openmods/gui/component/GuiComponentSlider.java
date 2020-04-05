@@ -1,9 +1,9 @@
 package openmods.gui.component;
 
 import com.google.common.primitives.Ints;
+import com.mojang.blaze3d.platform.GlStateManager;
 import joptsimple.internal.Strings;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.GlStateManager;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
 import org.lwjgl.opengl.GL11;
@@ -59,18 +59,18 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		GlStateManager.color(1, 1, 1, 1);
+		GlStateManager.color4f(1, 1, 1, 1);
 		final int left = offsetX + x;
 		final int top = offsetY + y;
 		int barStartX = left + 1;
 		bindComponentsSheet();
-		drawTexturedModalRect(left, top, 0, 70, 1, getHeight());
+		blit(left, top, 0, 70, 1, getHeight());
 		GL11.glPushMatrix();
 		GL11.glTranslated(left + 1, top, 0);
 		GL11.glScaled(getWidth() - 2, 1, 1);
-		drawTexturedModalRect(0, 0, 1, 70, 1, getHeight());
+		blit(0, 0, 1, 70, 1, getHeight());
 		GL11.glPopMatrix();
-		drawTexturedModalRect(left + getWidth() - 1, top, 2, 70, 1, getHeight());
+		blit(left + getWidth() - 1, top, 2, 70, 1, getHeight());
 
 		if (!Strings.isNullOrEmpty(label)) {
 			final FontRenderer fr = parent.getFontRenderer();
@@ -78,10 +78,10 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 			fr.drawString(label, left + getWidth() / 2 - strWidth / 2, top + 2, 4210752);
 		}
 
-		GlStateManager.color(1, 1, 1, 1);
+		GlStateManager.color4f(1, 1, 1, 1);
 		bindComponentsSheet();
 		int handleX = (int)Math.floor(barStartX + stepSize * step);
-		drawTexturedModalRect(handleX, top + 1, 3, 70, 9, 10);
+		blit(handleX, top + 1, 3, 70, 9, 10);
 		if (showValue) {
 			final double value = stepToValue(step);
 			String label = formatValue(value);
@@ -92,8 +92,8 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 	}
 
 	@Override
-	public void mouseDrag(int mouseX, int mouseY, int button, long time) {
-		super.mouseDrag(mouseX, mouseY, button, time);
+	public void mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
+		super.mouseDrag(mouseX, mouseY, button, dx, dy);
 		if (button == 0) {
 			int offX = mouseX - HANDLE_SIZE / 2;
 			if (offX < 0) return;

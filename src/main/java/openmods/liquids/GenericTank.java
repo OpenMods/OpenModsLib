@@ -6,14 +6,14 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 import openmods.utils.BlockUtils;
 import openmods.utils.CollectionUtils;
 import openmods.utils.CompatibilityUtils;
@@ -64,7 +64,7 @@ public class GenericTank extends FluidTank {
 	private static Set<Direction> getSurroundingTanks(World world, BlockPos coord) {
 		final Set<Direction> result = EnumSet.noneOf(Direction.class);
 
-		for (Direction dir : Direction.VALUES)
+		for (Direction dir : Direction.values())
 			if (isNeighbourTank(world, coord, dir)) result.add(dir);
 
 		return result;
@@ -75,8 +75,8 @@ public class GenericTank extends FluidTank {
 	}
 
 	@Override
-	public boolean canFillFluidType(FluidStack fluid) {
-		return fluid != null && filter.canAcceptFluid(fluid);
+	public boolean isFluidValid(FluidStack fluid) {
+		return filter.canAcceptFluid(fluid);
 	}
 
 	public void updateNeighbours(World world, BlockPos coord, Set<Direction> sides) {
@@ -92,7 +92,7 @@ public class GenericTank extends FluidTank {
 		final Direction fillSide = side.getOpposite();
 
 		final IFluidHandler fluidHandler = CompatibilityUtils.getFluidHandler(otherTank, fillSide);
-		return fluidHandler != null? fluidHandler.fill(toFill, true) : 0;
+		return fluidHandler != null? fluidHandler.fill(toFill, FluidAction.EXECUTE) : 0;
 	}
 
 	public void distributeToSides(int amount, World world, BlockPos coord, Set<Direction> allowedSides) {
@@ -109,22 +109,23 @@ public class GenericTank extends FluidTank {
 			if (sides.isEmpty()) return;
 		}
 
-		FluidStack drainedFluid = drain(amount, false);
+		FluidStack drainedFluid = drain(amount, FluidAction.SIMULATE);
 
-		if (drainedFluid != null && drainedFluid.amount > 0) {
-			int startingAmount = drainedFluid.amount;
+		if (drainedFluid.getAmount() > 0) {
+			int startingAmount = drainedFluid.getAmount();
 			Collections.shuffle(sides);
 
 			for (Direction side : surroundingTanks) {
-				if (drainedFluid.amount <= 0) break;
+				if (drainedFluid.getAmount() <= 0) break;
 
 				TileEntity otherTank = BlockUtils.getTileInDirection(world, coord, side);
-				if (otherTank != null) drainedFluid.amount -= tryFillNeighbour(drainedFluid, side, otherTank);
+				// TODO Shrink needed?
+				if (otherTank != null) drainedFluid.shrink(tryFillNeighbour(drainedFluid, side, otherTank));
 			}
 
 			// return any remainder
-			int distributed = startingAmount - drainedFluid.amount;
-			if (distributed > 0) drain(distributed, true);
+			int distributed = startingAmount - drainedFluid.getAmount();
+			if (distributed > 0) drain(distributed, FluidAction.EXECUTE);
 		}
 	}
 
@@ -175,11 +176,11 @@ public class GenericTank extends FluidTank {
 		final IFluidHandler handler = CompatibilityUtils.getFluidHandler(otherTank, drainSide);
 
 		if (handler != null) {
-			final FluidStack drained = handler.drain(maxDrain, false);
-			if (drained != null && filter.canAcceptFluid(drained)) {
-				final int filled = fill(drained, true);
+			final FluidStack drained = handler.drain(maxDrain, FluidAction.SIMULATE);
+			if (drained.isEmpty() && filter.canAcceptFluid(drained)) {
+				final int filled = fill(drained, FluidAction.EXECUTE);
 				if (filled > 0) {
-					handler.drain(filled, true);
+					handler.drain(filled, FluidAction.EXECUTE);
 					return filled;
 				}
 			}

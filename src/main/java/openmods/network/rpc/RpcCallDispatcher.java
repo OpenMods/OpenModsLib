@@ -1,34 +1,41 @@
 package openmods.network.rpc;
 
 import com.google.common.base.Preconditions;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Map;
+import java.util.function.Consumer;
+import net.minecraft.network.IPacket;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.FMLEmbeddedChannel;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.network.ICustomPacket;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.event.EventNetworkChannel;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
+import openmods.Log;
 import openmods.OpenMods;
-import openmods.network.Dispatcher;
-import openmods.network.ExtendedOutboundHandler;
-import openmods.network.senders.IPacketSender;
 import openmods.utils.CommonRegistryCallbacks;
 import openmods.utils.RegistrationContextBase;
+import openmods.utils.SneakyThrower;
+import org.apache.commons.lang3.tuple.Pair;
 import org.objectweb.asm.Type;
 
 @EventBusSubscriber
-public class RpcCallDispatcher extends Dispatcher {
+public class RpcCallDispatcher {
 
 	private static RpcCallDispatcher INSTANCE;
 
 	public static RpcCallDispatcher instance() {
 		return INSTANCE;
 	}
+
+	private RpcCallCodec codec;
 
 	private static class MethodsCallbacks extends CommonRegistryCallbacks<Method, MethodEntry> {
 		@Override
@@ -65,30 +72,60 @@ public class RpcCallDispatcher extends Dispatcher {
 		INSTANCE = new RpcCallDispatcher(methodRegistry, targetRegistry);
 	}
 
-	public static final String CHANNEL_NAME = "OpenMods|RPC";
-
-	public final Senders senders;
+	private static final ResourceLocation CHANNEL_ID = OpenMods.location("rpc");
+	private static final String PROTOCOL_VERSION = Integer.toString(1);
 
 	private final RpcProxyFactory proxyFactory;
 
-	private final Map<Side, FMLEmbeddedChannel> channels;
-
 	private RpcCallDispatcher(IForgeRegistry<MethodEntry> methodRegistry, IForgeRegistry<TargetTypeProvider> targetRegistry) {
-		this.channels = NetworkRegistry.INSTANCE.newChannel(CHANNEL_NAME, new RpcCallCodec(targetRegistry, methodRegistry), new RpcCallInboundHandler());
-		ExtendedOutboundHandler.install(this.channels);
-
-		this.senders = new Senders();
-
 		this.proxyFactory = new RpcProxyFactory(methodRegistry);
+		codec = new RpcCallCodec(targetRegistry, methodRegistry);
+
+		EventNetworkChannel channel = NetworkRegistry.ChannelBuilder.named(CHANNEL_ID)
+				.clientAcceptedVersions(PROTOCOL_VERSION::equals)
+				.serverAcceptedVersions(PROTOCOL_VERSION::equals)
+				.networkProtocolVersion(() -> PROTOCOL_VERSION)
+				.eventNetworkChannel();
+
+		channel.addListener(evt -> {
+			final NetworkEvent.Context source = evt.getSource().get();
+			source.enqueueWork(() -> {
+				try {
+					executeCall(codec.decode(evt.getPayload(), source));
+				} catch (final IOException e) {
+					Log.warn(e, "Failed to receive message");
+				}
+			});
+			source.setPacketHandled(true);
+		});
 	}
 
-	@Override
-	protected FMLEmbeddedChannel getChannel(Side side) {
-		return channels.get(side);
+	private void executeCall(RpcCall call) {
+		try {
+			Object target = call.target.getTarget();
+			Preconditions.checkNotNull(target, "Target wrapper %s returned null object");
+			call.method.method.invoke(target, call.args);
+			call.target.afterCall();
+		} catch (Throwable t) {
+			throw SneakyThrower.sneakyThrow(t);
+		}
 	}
 
-	public <T> T createProxy(IRpcTarget wrapper, IPacketSender sender, Class<? extends T> mainIntf, Class<?>... extraIntf) {
-		return proxyFactory.createProxy(getClass().getClassLoader(), sender, wrapper, mainIntf, extraIntf);
+	public <T> T createProxy(IRpcTarget wrapper, PacketDistributor.PacketTarget sender, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+		return proxyFactory.createProxy(getClass().getClassLoader(), wrapSender(sender), wrapper, mainIntf, extraIntf);
+	}
+
+	private Consumer<RpcCall> wrapSender(PacketDistributor.PacketTarget sender) {
+		return rpcCall -> {
+			try {
+				final PacketBuffer payload = codec.encode(rpcCall);
+				// TODO 1.14 Do something with that int
+				final ICustomPacket<IPacket<?>> packet = sender.getDirection().buildPacket(Pair.of(payload, 0), CHANNEL_ID);
+				sender.send(packet.getThis());
+			} catch (final IOException e) {
+				Log.warn(e, "Failed to send RPC call");
+			}
+		};
 	}
 
 	public static final String ID_FIELDS_SEPARATOR = ";";

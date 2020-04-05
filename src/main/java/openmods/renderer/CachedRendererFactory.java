@@ -15,9 +15,9 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 
 import com.google.common.base.Preconditions;
+import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -57,7 +57,7 @@ public class CachedRendererFactory {
 			Runnable setup = () -> {};
 			Runnable cleanup = () -> {};
 
-			final int stride = vf.getNextOffset();
+			final int stride = vf.getSize();
 
 			for (int i = vf.getElementCount() - 1; i >= 0; i--) {
 				final VertexFormatElement attr = vf.getElement(i);
@@ -105,23 +105,23 @@ public class CachedRendererFactory {
 
 						cleanup = () -> {
 							glDisableClientState(GL_COLOR_ARRAY);
-							GlStateManager.resetColor();
+							GlStateManager.clearCurrentColor();
 							prevCleanup.run();
 						};
 						break;
 					case UV:
 						setup = () -> {
-							OpenGlHelper.setClientActiveTexture(OpenGlHelper.defaultTexUnit + index);
+							GLX.glClientActiveTexture(GLX.GL_TEXTURE0 + attr.getIndex());
 							glTexCoordPointer(count, constant, stride, offset);
 							glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-							OpenGlHelper.setClientActiveTexture(OpenGlHelper.defaultTexUnit);
+							GLX.glClientActiveTexture(GLX.GL_TEXTURE0);
 							prevSetup.run();
 						};
 
 						cleanup = () -> {
-							OpenGlHelper.setClientActiveTexture(OpenGlHelper.defaultTexUnit + index);
+							GLX.glClientActiveTexture(GLX.GL_TEXTURE0 + attr.getIndex());
 							glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-							OpenGlHelper.setClientActiveTexture(OpenGlHelper.defaultTexUnit);
+							GLX.glClientActiveTexture(GLX.GL_TEXTURE0);
 							prevCleanup.run();
 						};
 						break;
@@ -198,7 +198,8 @@ public class CachedRendererFactory {
 	}
 
 	public CachedRenderer createRenderer(Tessellator tes) {
-		if (OpenGlHelper.useVbo()) {
+		// TODO 1.14 Cleanup?
+		if (true) {
 			return new VboRenderer(tes);
 		} else {
 			return new DisplayListRenderer(tes);

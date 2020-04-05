@@ -1,9 +1,10 @@
 package openmods.inventory;
 
+import java.util.Set;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.ITextComponent;
 
 public interface IInventoryDelegate extends IInventory, IInventoryProvider {
 	@Override
@@ -67,37 +68,16 @@ public interface IInventoryDelegate extends IInventory, IInventoryProvider {
 	}
 
 	@Override
-	default int getField(int id) {
-		return getInventory().getField(id);
-	}
-
-	@Override
-	default void setField(int id, int value) {
-		getInventory().setField(id, value);
-	}
-
-	@Override
-	default int getFieldCount() {
-		return getInventory().getFieldCount();
-	}
-
-	@Override
 	default void clear() {
 		getInventory().clear();
 	}
 
 	@Override
-	default String getName() {
-		return getInventory().getName();
+	default int count(Item item) {
+		return getInventory().count(item);
 	}
 
-	@Override
-	default boolean hasCustomName() {
-		return getInventory().hasCustomName();
-	}
-
-	@Override
-	default ITextComponent getDisplayName() {
-		return getInventory().getDisplayName();
+	@Override default boolean hasAny(Set<Item> items) {
+		return getInventory().hasAny(items);
 	}
 }

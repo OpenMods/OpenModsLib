@@ -1,31 +1,79 @@
 package openmods.network.event;
 
-import java.util.Map;
-import net.minecraftforge.fml.common.network.FMLEmbeddedChannel;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.relauncher.Side;
+import java.io.IOException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import net.minecraft.network.IPacket;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.server.ServerChunkProvider;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.network.ICustomPacket;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.event.EventNetworkChannel;
 import net.minecraftforge.registries.IForgeRegistry;
-import openmods.network.Dispatcher;
-import openmods.network.ExtendedOutboundHandler;
+import openmods.OpenMods;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class NetworkEventDispatcher extends Dispatcher {
+public class NetworkEventDispatcher {
+	private static final Logger LOGGER = LogManager.getLogger();
 
-	public static final String CHANNEL_NAME = "OpenMods|E";
+	private static final ResourceLocation CHANNEL_ID = OpenMods.location("events");
 
-	private final Map<Side, FMLEmbeddedChannel> channels;
+	private static final String PROTOCOL_VERSION = Integer.toString(1);
 
-	public final Senders senders;
+	private final NetworkEventCodec codec;
 
 	public NetworkEventDispatcher(IForgeRegistry<NetworkEventEntry> registry) {
-		this.channels = NetworkRegistry.INSTANCE.newChannel(CHANNEL_NAME, new NetworkEventCodec(registry), new NetworkEventInboundHandler());
-		ExtendedOutboundHandler.install(this.channels);
+		this.codec = new NetworkEventCodec(registry);
+		EventNetworkChannel channel = NetworkRegistry.ChannelBuilder.named(CHANNEL_ID)
+				.clientAcceptedVersions(PROTOCOL_VERSION::equals)
+				.serverAcceptedVersions(PROTOCOL_VERSION::equals)
+				.networkProtocolVersion(() -> PROTOCOL_VERSION)
+				.eventNetworkChannel();
 
-		this.senders = new Senders();
+		channel.addListener(evt -> {
+			final net.minecraftforge.fml.network.NetworkEvent.Context context = evt.getSource().get();
+			context.enqueueWork(() -> {
+				try {
+					final NetworkEvent event = codec.decode(evt.getLoginIndex(), evt.getPayload(), context);
+					// TODO 1.14 In thread?
+					MinecraftForge.EVENT_BUS.post(event);
+				} catch (final IOException e) {
+					LOGGER.error("Failed to receive message: {}", e);
+				}
+			});
+			// TODO 1.14 Needed?
+			context.setPacketHandled(true);
+		});
 	}
 
-	@Override
-	protected FMLEmbeddedChannel getChannel(Side side) {
-		return channels.get(side);
+	public void send(final NetworkEvent event, final PacketDistributor.PacketTarget target) {
+		send(event, target.getDirection(), target::send);
 	}
 
+	public void send(final NetworkEvent event, final NetworkDirection direction, Consumer<IPacket<?>> output) {
+		try {
+			final Pair<PacketBuffer, Integer> payload = codec.encode(event, direction.getOriginationSide());
+			final ICustomPacket<IPacket<?>> packet = direction.buildPacket(payload, CHANNEL_ID);
+			output.accept(packet.getThis());
+		} catch (final IOException e) {
+			LOGGER.error("Failed to send message: {}", e);
+		}
+	}
+
+	private static Consumer<IPacket<?>> trackingChunk(final PacketDistributor<?> distributor, final Supplier<Pair<IWorld, ChunkPos>> chunkPosSupplier) {
+		return p -> {
+			final Pair<IWorld, ChunkPos> info = chunkPosSupplier.get();
+			((ServerChunkProvider)info.getKey().getChunkProvider()).chunkManager.getTrackingPlayers(info.getRight(), false).forEach(e -> e.connection.sendPacket(p));
+		};
+	}
+
+	public static final PacketDistributor<Pair<IWorld, ChunkPos>> TRACKING_CHUNK = new PacketDistributor<>(NetworkEventDispatcher::trackingChunk, NetworkDirection.PLAY_TO_CLIENT);
 }

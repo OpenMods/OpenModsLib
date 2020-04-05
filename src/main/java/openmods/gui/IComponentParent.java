@@ -5,9 +5,9 @@ import javax.annotation.Nonnull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.RenderItem;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
@@ -21,7 +21,7 @@ public interface IComponentParent {
 
 	FontRenderer getFontRenderer();
 
-	RenderItem getItemRenderer();
+	ItemRenderer getItemRenderer();
 
 	SoundHandler getSoundHandler();
 

@@ -2,16 +2,19 @@ package openmods.utils;
 
 import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.item.crafting.RecipeManager;
 import net.minecraft.util.NonNullList;
+import net.minecraft.world.World;
 
 public class RecipeUtils {
+	public static IRecipe getFirstRecipeForItemStack(World world, @Nonnull ItemStack resultingItem) {
+		return getFirstRecipeForItemStack(world.getRecipeManager(), resultingItem);
+	}
 
-	public static IRecipe getFirstRecipeForItemStack(@Nonnull ItemStack resultingItem) {
-
-		for (IRecipe recipe : CraftingManager.REGISTRY) {
+	public static IRecipe getFirstRecipeForItemStack(RecipeManager recipeManager, @Nonnull ItemStack resultingItem) {
+		for (IRecipe recipe : recipeManager.getRecipes()) {
 			if (recipe == null) continue;
 
 			ItemStack result = recipe.getRecipeOutput();
@@ -21,7 +24,7 @@ public class RecipeUtils {
 		return null;
 	}
 
-	public static ItemStack[][] getFullRecipeInput(IRecipe recipe) {
+	public static ItemStack[][] getFullRecipeInput(IRecipe<?> recipe) {
 		final NonNullList<Ingredient> ingredients = recipe.getIngredients();
 		final int ingredientCount = ingredients.size();
 		final ItemStack[][] result = new ItemStack[ingredientCount][];

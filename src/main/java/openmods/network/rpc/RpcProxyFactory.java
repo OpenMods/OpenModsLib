@@ -3,8 +3,8 @@ package openmods.network.rpc;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
+import java.util.function.Consumer;
 import net.minecraftforge.registries.IForgeRegistry;
-import openmods.network.senders.IPacketSender;
 import openmods.utils.CommonRegistryCallbacks;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -17,7 +17,7 @@ public class RpcProxyFactory {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T createProxy(ClassLoader loader, final IPacketSender sender, final IRpcTarget wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+	public <T> T createProxy(ClassLoader loader, final Consumer<RpcCall> sender, final IRpcTarget wrapper, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		Class<?> allInterfaces[] = ArrayUtils.add(extraIntf, mainIntf);
 
 		final Map<Method, MethodEntry> methodMap = CommonRegistryCallbacks.getObjectToEntryMap(registry);
@@ -25,8 +25,7 @@ public class RpcProxyFactory {
 		Object proxy = Proxy.newProxyInstance(loader, allInterfaces, (self, method, args) -> {
 			final MethodEntry entry = methodMap.get(method);
 			if (entry != null) {
-				RpcCall call = new RpcCall(wrapper, entry, args);
-				sender.sendMessage(call);
+				sender.accept(new RpcCall(wrapper, entry, args));
 			}
 			return null;
 		});

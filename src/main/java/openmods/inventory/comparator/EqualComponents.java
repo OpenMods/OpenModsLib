@@ -15,9 +15,9 @@ public class EqualComponents {
 
 	public static final IItemStackTester ITEM_ID_TESTER = (left, right) -> Item.getIdFromItem(left.getItem()) == Item.getIdFromItem(right.getItem());
 
-	public static final IItemStackTester DAMAGE_TESTER = (left, right) -> left.getItemDamage() == right.getItemDamage();
+	public static final IItemStackTester DAMAGE_TESTER = (left, right) -> left.getDamage() == right.getDamage();
 
 	public static final IItemStackTester SIZE_TESTER = (left, right) -> left.getCount() == right.getCount();
 
-	public static final IItemStackTester NBT_TESTER = (left, right) -> Objects.equal(left.getTagCompound(), right.getTagCompound());
+	public static final IItemStackTester NBT_TESTER = (left, right) -> Objects.equal(left.getTag(), right.getTag());
 }

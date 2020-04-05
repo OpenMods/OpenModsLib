@@ -3,6 +3,7 @@ package openmods.utils;
 import com.google.common.base.Preconditions;
 import javax.annotation.Nonnull;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -10,6 +11,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.world.BlockEvent;
 
@@ -27,7 +29,7 @@ public class BlockManipulator {
 
 	private boolean silentTeRemove = false;
 
-	private int blockPlaceFlags = BlockNotifyFlags.ALL;
+	private int blockPlaceFlags = Constants.BlockFlags.DEFAULT;
 
 	public BlockManipulator(@Nonnull World world, @Nonnull PlayerEntity player, BlockPos blockPos) {
 		Preconditions.checkNotNull(world);
@@ -77,7 +79,7 @@ public class BlockManipulator {
 
 		if (silentTeRemove) world.removeTileEntity(blockPos);
 
-		return world.setBlockToAir(blockPos);
+		return world.setBlockState(blockPos, Blocks.AIR.getDefaultState());
 	}
 
 	public boolean place(BlockState state, Direction direction, Hand hand) {
@@ -91,7 +93,7 @@ public class BlockManipulator {
 
 		if (!world.setBlockState(blockPos, state, blockPlaceFlags)) return false;
 
-		if (ForgeEventFactory.onPlayerBlockPlace(player, snapshot, direction, hand).isCanceled()) {
+		if (ForgeEventFactory.onBlockPlace(player, snapshot, direction)) {
 			world.restoringBlockSnapshots = true;
 			snapshot.restore(true, false);
 			world.restoringBlockSnapshots = false;

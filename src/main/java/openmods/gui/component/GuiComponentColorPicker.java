@@ -1,7 +1,7 @@
 package openmods.gui.component;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import java.awt.Color;
-import net.minecraft.client.renderer.GlStateManager;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
 import org.lwjgl.opengl.GL11;
@@ -56,8 +56,9 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 
 	// Drag support
 	@Override
-	public void mouseDrag(int mouseX, int mouseY, int button, long time) {
-		super.mouseDrag(mouseX, mouseY, button, time);
+	public void mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
+		// TODO 1.14 use dx, dy
+		super.mouseDrag(mouseX, mouseY, button, dx, dy);
 		if (mouseY > getColorsHeight()) { return; }
 		pointX = mouseX;
 		pointY = mouseY;
@@ -70,32 +71,32 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		GlStateManager.color(1, 1, 1, 1);
+		GlStateManager.color4f(1, 1, 1, 1);
 
 		int renderX = offsetX + x;
 		int renderY = offsetY + y;
 
 		bindComponentsSheet();
-		drawTexturedModalRect(renderX, renderY, 156, 206, getWidth(), getColorsHeight());
-		drawRect(renderX, renderY, renderX + getWidth(), renderY + getColorsHeight(), (tone << 24) | 0xFFFFFF);
+		blit(renderX, renderY, 156, 206, getWidth(), getColorsHeight());
+		fill(renderX, renderY, renderX + getWidth(), renderY + getColorsHeight(), (tone << 24) | 0xFFFFFF);
 
 		GlStateManager.enableBlend();
-		GlStateManager.disableTexture2D();
-		GlStateManager.disableAlpha();
+		GlStateManager.disableTexture();
+		GlStateManager.disableAlphaTest();
 		GlStateManager.shadeModel(GL11.GL_SMOOTH);
 		GL11.glBegin(GL11.GL_QUADS);
-		GlStateManager.color(0, 0, 0, 1.0f);
+		GlStateManager.color4f(0, 0, 0, 1.0f);
 		GL11.glVertex3d(renderX, renderY + getColorsHeight(), 0.0);
 		GL11.glVertex3d(renderX + getWidth(), renderY + getColorsHeight(), 0.0);
-		GlStateManager.color(0, 0, 0, 0f);
+		GlStateManager.color4f(0, 0, 0, 0f);
 		GL11.glVertex3d(renderX + getWidth(), renderY, 0.0D);
 		GL11.glVertex3d(renderX, renderY, 0.0);
 		GL11.glEnd();
 		GlStateManager.shadeModel(GL11.GL_FLAT);
 		GlStateManager.disableBlend();
-		GlStateManager.enableTexture2D();
-		GlStateManager.enableAlpha();
-		drawRect(renderX + pointX - 1,
+		GlStateManager.enableTexture();
+		GlStateManager.enableAlphaTest();
+		fill(renderX + pointX - 1,
 				renderY + pointY - 1,
 				renderX + pointX + 1,
 				renderY + pointY + 1, 0xCCCC0000);

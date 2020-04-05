@@ -41,7 +41,7 @@ public class SyncableDouble extends SyncableObjectBase implements ISyncableValue
 
 	@Override
 	public void writeToNBT(CompoundNBT tag, String name) {
-		tag.setDouble(name, value);
+		tag.putDouble(name, value);
 	}
 
 	@Override

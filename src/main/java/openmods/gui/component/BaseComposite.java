@@ -137,13 +137,13 @@ public abstract class BaseComposite extends BaseComponent {
 	}
 
 	@Override
-	public void mouseDrag(int mouseX, int mouseY, int button, /* love you */long time) {
-		super.mouseDrag(mouseX, mouseY, button, time);
+	public void mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
+		super.mouseDrag(mouseX, mouseY, button, dx, dy);
 
 		if (!areChildrenActive()) return;
 
 		for (BaseComponent component : selectComponentsCapturingMouse(mouseX, mouseY))
-			component.mouseDrag(mouseX - component.x, mouseY - component.y, button, time);
+			component.mouseDrag(mouseX - component.x, mouseY - component.y, button, dx, dy);
 	}
 
 	@Override

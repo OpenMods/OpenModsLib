@@ -1,6 +1,6 @@
 package openmods.gui.component;
 
-import net.minecraft.client.renderer.GlStateManager;
+import com.mojang.blaze3d.platform.GlStateManager;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
 
@@ -15,9 +15,9 @@ public class GuiComponentCheckbox extends BaseComponent implements IValueReceive
 
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		GlStateManager.color(1, 1, 1, 1);
+		GlStateManager.color4f(1, 1, 1, 1);
 		bindComponentsSheet();
-		drawTexturedModalRect(offsetX + x, offsetY + y, value? 16 : 0, 62, 8, 8);
+		blit(offsetX + x, offsetY + y, value? 16 : 0, 62, 8, 8);
 	}
 
 	@Override

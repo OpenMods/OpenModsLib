@@ -13,7 +13,7 @@ public class DirUtils {
 
 		@Override
 		protected Direction convert(int bit) {
-			return Direction.VALUES[bit];
+			return Direction.values()[bit];
 		}
 	}
 

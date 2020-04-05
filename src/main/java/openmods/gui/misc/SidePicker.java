@@ -5,7 +5,6 @@ import java.util.Map;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.Vec3d;
 import openmods.utils.render.ProjectionHelper;
-import org.lwjgl.input.Mouse;
 
 public class SidePicker {
 
@@ -87,7 +86,8 @@ public class SidePicker {
 	}
 
 	private static Vec3d getMouseVector(float z) {
-		return projectionHelper.unproject(Mouse.getX(), Mouse.getY(), z);
+		// TODO 1.14 supply from caller (was: mouseX, mouseY)
+		return projectionHelper.unproject(0, 0, z);
 	}
 
 	private Vec3d calculateXPoint(Vec3d near, Vec3d diff, double x) {
@@ -164,7 +164,7 @@ public class SidePicker {
 
 		// yeah, I know there are two entries max, but... meh
 		for (Map.Entry<Side, Vec3d> e : hits.entrySet()) {
-			double dist = e.getValue().subtract(near).lengthVector();
+			double dist = e.getValue().subtract(near).length();
 			if (dist < minDist) {
 				minDist = dist;
 				minSide = e.getKey();

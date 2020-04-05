@@ -1,14 +1,14 @@
 package openmods.gui.component;
 
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.texture.AtlasTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import openmods.gui.Icon;
 
 public class GuiComponentSprite extends BaseComponent {
 
 	public static Icon adaptSprite(TextureAtlasSprite icon) {
-		return new Icon(AtlasTexture.LOCATION_BLOCKS_TEXTURE, icon.getMinU(), icon.getMaxU(), icon.getMinV(), icon.getMaxV(), icon.getIconWidth(), icon.getIconHeight());
+		return new Icon(AtlasTexture.LOCATION_BLOCKS_TEXTURE, icon.getMinU(), icon.getMaxU(), icon.getMinV(), icon.getMaxV(), icon.getWidth(), icon.getHeight());
 	}
 
 	protected Icon icon;
@@ -63,7 +63,7 @@ public class GuiComponentSprite extends BaseComponent {
 	protected void doRender(int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (icon == null) return;
 
-		GlStateManager.color(r, g, b);
+		GlStateManager.color3f(r, g, b);
 		drawSprite(icon, offsetX + x, offsetY + y);
 	}
 

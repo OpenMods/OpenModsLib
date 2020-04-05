@@ -43,7 +43,7 @@ public class SyncableUnsignedByte extends SyncableObjectBase implements ISyncabl
 
 	@Override
 	public void writeToNBT(CompoundNBT tag, String name) {
-		tag.setByte(name, (byte)(value & 0xFF));
+		tag.putByte(name, (byte)(value & 0xFF));
 	}
 
 	@Override

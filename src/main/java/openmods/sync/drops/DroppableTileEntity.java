@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
 import openmods.api.ICustomHarvestDrops;
 import openmods.api.ICustomPickItem;
 import openmods.api.IPlaceAwareTile;
@@ -13,7 +14,8 @@ import openmods.tileentity.SyncedTileEntity;
 
 public abstract class DroppableTileEntity extends SyncedTileEntity implements IPlaceAwareTile, ICustomHarvestDrops, ICustomPickItem {
 
-	public DroppableTileEntity() {
+	public DroppableTileEntity(final TileEntityType<?> type) {
+		super(type);
 		getDropSerializer().addFields(this);
 	}
 

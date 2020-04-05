@@ -9,7 +9,7 @@ import java.util.WeakHashMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class DelayedEntityLoadManager {
 	public static final DelayedEntityLoadManager instance = new DelayedEntityLoadManager();

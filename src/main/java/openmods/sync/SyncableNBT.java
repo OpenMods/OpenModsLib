@@ -41,12 +41,12 @@ public class SyncableNBT extends SyncableObjectBase implements ISyncableValuePro
 
 	@Override
 	public void writeToNBT(CompoundNBT nbt, String name) {
-		nbt.setTag(name, nbt);
+		nbt.put(name, nbt);
 	}
 
 	@Override
 	public void readFromNBT(CompoundNBT nbt, String name) {
-		nbt.getCompoundTag(name);
+		nbt.getCompound(name);
 	}
 
 }

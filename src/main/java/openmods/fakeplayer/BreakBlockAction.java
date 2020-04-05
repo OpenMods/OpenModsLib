@@ -10,9 +10,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -20,8 +20,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import openmods.LibConfig;
 import openmods.Log;
 import openmods.config.properties.ConfigurationChange;
@@ -54,7 +55,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<ItemEntity>> {
 			if (probeTools == null) {
 				final List<ItemStack> items = Lists.newArrayList();
 				for (String itemId : LibConfig.toolProbes) {
-					final Item item = Item.REGISTRY.getObject(new ResourceLocation(itemId));
+					final Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemId));
 					if (item != null) {
 						items.add(createToolStack(item));
 					} else {
@@ -79,7 +80,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<ItemEntity>> {
 	}
 
 	private static ItemStack createToolStack(Item tool) {
-		return new ItemStack(tool, 1, 0);
+		return new ItemStack(tool, 1);
 	}
 
 	public BreakBlockAction setStackToUse(@Nonnull ItemStack stack) {
@@ -102,7 +103,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<ItemEntity>> {
 				for (ItemStack tool : ConfigAccess.probeTools()) {
 					setPlayerTool(fakePlayer, tool);
 
-					if (ForgeHooks.canHarvestBlock(state.getBlock(), fakePlayer, worldObj, blockPos)) {
+					if (ForgeHooks.canHarvestBlock(state, fakePlayer, worldObj, blockPos)) {
 						effectiveToolCache.put(state, tool);
 						return;
 					}
@@ -125,13 +126,15 @@ public class BreakBlockAction implements PlayerUserReturning<List<ItemEntity>> {
 	private boolean removeBlock(PlayerEntity player, BlockPos pos, BlockState state, boolean canHarvest) {
 		final Block block = state.getBlock();
 		block.onBlockHarvested(worldObj, pos, state, player);
-		final boolean result = block.removedByPlayer(state, worldObj, pos, player, canHarvest);
-		if (result) block.onBlockDestroyedByPlayer(worldObj, pos, state);
+		// TODO 1.14 What fluid?
+		final boolean result = block.removedByPlayer(state, worldObj, pos, player, canHarvest, state.getFluidState());
+		if (result) block.onPlayerDestroy(worldObj, pos, state);
 		return result;
 	}
 
 	@Override
 	public List<ItemEntity> usePlayer(OpenModsFakePlayer fakePlayer) {
+		// TODO 1.14 - re-do
 		if (!worldObj.isBlockModifiable(fakePlayer, blockPos)) return Lists.newArrayList();
 
 		// this mirrors ItemInWorldManager.tryHarvestBlock
@@ -149,7 +152,7 @@ public class BreakBlockAction implements PlayerUserReturning<List<ItemEntity>> {
 
 			final TileEntity te = worldObj.getTileEntity(blockPos); // OHHHHH YEEEEAAAH
 
-			boolean canHarvest = state.getBlock().canHarvestBlock(worldObj, blockPos, fakePlayer);
+			boolean canHarvest = state.canHarvestBlock(worldObj, blockPos, fakePlayer);
 			boolean isRemoved = removeBlock(fakePlayer, blockPos, state, canHarvest);
 			if (isRemoved && canHarvest) {
 				state.getBlock().harvestBlock(worldObj, fakePlayer, blockPos, state, te, stackToUse);

@@ -6,7 +6,7 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.ServerWorld;
+import net.minecraft.world.server.ServerWorld;
 import openmods.tileentity.SyncedTileEntity;
 import openmods.utils.NetUtils;
 
@@ -51,6 +51,6 @@ public class SyncMapTile extends SyncMapServer {
 
 	@Override
 	protected boolean isInvalid() {
-		return owner.isInvalid();
+		return owner.isRemoved();
 	}
 }

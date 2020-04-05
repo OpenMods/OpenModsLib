@@ -2,11 +2,10 @@ package openmods.liquids;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import net.minecraft.util.Direction;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import openmods.utils.bitmap.IReadableBitMap;
 
 public abstract class SidedFluidCapabilityWrapper {
@@ -14,8 +13,6 @@ public abstract class SidedFluidCapabilityWrapper {
 	private final IFluidHandler tank;
 
 	private final Map<Direction, IFluidHandler> handlers = Maps.newEnumMap(Direction.class);
-
-	private static final IFluidTankProperties[] EMPTY = new IFluidTankProperties[0];
 
 	private class Handler implements IFluidHandler {
 		private final Direction side;
@@ -25,29 +22,42 @@ public abstract class SidedFluidCapabilityWrapper {
 		}
 
 		@Override
-		public IFluidTankProperties[] getTankProperties() {
-			if (!canInteract(side)) return EMPTY;
-			return tank.getTankProperties();
+		public int getTanks() {
+			return canInteract(side) ? 1 : 0;
+		}
+
+		@Nonnull
+		@Override
+		public FluidStack getFluidInTank(int tank) {
+			return canInteract(side) ? SidedFluidCapabilityWrapper.this.tank.getFluidInTank(tank) : FluidStack.EMPTY;
 		}
 
 		@Override
-		public int fill(FluidStack resource, boolean doFill) {
+		public int getTankCapacity(int tank) {
+			return canInteract(side) ? SidedFluidCapabilityWrapper.this.tank.getTankCapacity(tank) : 0;
+		}
+
+		@Override
+		public boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
+			return canInteract(side) && SidedFluidCapabilityWrapper.this.tank.isFluidValid(tank, stack);
+		}
+
+		@Override
+		public int fill(FluidStack resource, FluidAction doFill) {
 			if (!canFill(side)) return 0;
 			return tank.fill(resource, doFill);
 		}
 
 		@Override
-		@Nullable
-		public FluidStack drain(FluidStack resource, boolean doDrain) {
-			if (!canDrain(side)) return null;
-			return tank.drain(resource, doDrain);
+		public FluidStack drain(FluidStack resource, FluidAction action) {
+			if (!canDrain(side)) return FluidStack.EMPTY;
+			return tank.drain(resource, action);
 		}
 
 		@Override
-		@Nullable
-		public FluidStack drain(int maxDrain, boolean doDrain) {
-			if (!canDrain(side)) return null;
-			return tank.drain(maxDrain, doDrain);
+		public FluidStack drain(int maxDrain, FluidAction action) {
+			if (!canDrain(side)) return FluidStack.EMPTY;
+			return tank.drain(maxDrain, action);
 		}
 
 	}
@@ -55,7 +65,7 @@ public abstract class SidedFluidCapabilityWrapper {
 	private SidedFluidCapabilityWrapper(IFluidHandler tank) {
 		this.tank = tank;
 
-		for (Direction side : Direction.VALUES)
+		for (Direction side : Direction.values())
 			handlers.put(side, new Handler(side));
 	}
 

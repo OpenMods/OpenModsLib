@@ -1,5 +1,7 @@
 package openmods.gui;
 
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.util.text.ITextComponent;
 import openmods.container.ContainerBase;
 import openmods.gui.logic.IValueUpdateAction;
 import openmods.gui.logic.SyncObjectUpdateDispatcher;
@@ -9,8 +11,8 @@ public class SyncedGuiContainer<T extends ContainerBase<? extends ISyncMapProvid
 
 	private SyncObjectUpdateDispatcher dispatcher;
 
-	public SyncedGuiContainer(T container, int width, int height, String name) {
-		super(container, width, height, name);
+	public SyncedGuiContainer(T container, PlayerInventory inv, ITextComponent name, int width, int height) {
+		super(container, inv, name, width, height);
 
 		if (dispatcher != null) dispatcher.triggerAll();
 	}
@@ -29,14 +31,14 @@ public class SyncedGuiContainer<T extends ContainerBase<? extends ISyncMapProvid
 	}
 
 	@Override
-	public void initGui() {
-		super.initGui();
+	public void init() {
+		super.init();
 		if (dispatcher != null) dispatcher.triggerAll();
 	}
 
 	@Override
-	public void onGuiClosed() {
-		super.onGuiClosed();
+	public void removed() {
+		super.removed();
 
 		if (dispatcher != null) getContainer().getOwner().getSyncMap().removeUpdateListener(dispatcher);
 	}

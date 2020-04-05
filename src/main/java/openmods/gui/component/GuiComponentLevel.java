@@ -54,8 +54,8 @@ public class GuiComponentLevel extends BaseComponent implements IValueReceiver<F
 		int oX = x + offsetX;
 		int oY = y + offsetY;
 		// Fill with background
-		drawRect(oX, oY, oX + width, oY + height, bColor);
+		fill(oX, oY, oX + width, oY + height, bColor);
 		// Draw level
-		drawRect(oX, oY + (height - (int)getFillHeight()), oX + width, oY + height, fColor);
+		fill(oX, oY + (height - (int)getFillHeight()), oX + width, oY + height, fColor);
 	}
 }

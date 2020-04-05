@@ -1,25 +1,26 @@
 package openmods.liquids;
 
-import com.google.common.base.Preconditions;
 import javax.annotation.Nonnull;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fml.common.eventhandler.Event.Result;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
+import net.minecraftforge.registries.ObjectHolder;
 
 public class SingleFluidBucketFillHandler {
 
 	@ObjectHolder("minecraft:bucket")
-	private static final Item EMPTY_BUCKET = null;
+	private static Item EMPTY_BUCKET = null;
 
 	@Nonnull
 	private final ItemStack filledBucket;
@@ -28,32 +29,31 @@ public class SingleFluidBucketFillHandler {
 
 	public SingleFluidBucketFillHandler(@Nonnull ItemStack filledBucket) {
 		this.filledBucket = filledBucket;
-		this.containedFluid = FluidUtil.getFluidContained(filledBucket);
-		Preconditions.checkState(containedFluid != null, "Item %s is not a filled bucket", filledBucket);
+		final LazyOptional<FluidStack> fluidContained = FluidUtil.getFluidContained(filledBucket);
+		this.containedFluid = fluidContained.orElseThrow(() -> new IllegalStateException("Item " + filledBucket + " is not a filled bucket"));
 	}
 
 	@SubscribeEvent(priority = EventPriority.HIGH)
 	public void onBucketFill(FillBucketEvent evt) {
-		if (evt.getResult() != Result.DEFAULT) return;
+		if (evt.getResult() != Event.Result.DEFAULT) return;
 
 		if (evt.getEmptyBucket().getItem() != EMPTY_BUCKET) return;
 
 		final RayTraceResult target = evt.getTarget();
-		if (target == null || target.typeOfHit != RayTraceResult.Type.BLOCK) return;
-
-		final TileEntity te = evt.getWorld().getTileEntity(target.getBlockPos());
+		if (target == null || target.getType() != RayTraceResult.Type.BLOCK) return;
+		final BlockRayTraceResult blockTarget = (BlockRayTraceResult)target;
+		final TileEntity te = evt.getWorld().getTileEntity(blockTarget.getPos());
 		if (te == null) return;
 
-		if (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, target.sideHit)) {
-			final IFluidHandler source = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, target.sideHit);
-
-			final FluidStack drained = source.drain(containedFluid, false);
+		final LazyOptional<IFluidHandler> capability = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, blockTarget.getFace());
+		capability.ifPresent(source -> {
+			final FluidStack drained = source.drain(containedFluid, IFluidHandler.FluidAction.SIMULATE);
 			if (containedFluid.isFluidStackIdentical(drained)) {
-				source.drain(containedFluid, true);
+				source.drain(containedFluid, IFluidHandler.FluidAction.EXECUTE);
 				evt.setFilledBucket(filledBucket.copy());
-				evt.setResult(Result.ALLOW);
+				evt.setResult(Event.Result.ALLOW);
 			}
-		}
+		});
 	}
 
 }

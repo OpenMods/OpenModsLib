@@ -34,22 +34,13 @@ public class SyncableUUID extends SyncableObjectBase implements IValueProvider<U
 	public void writeToNBT(CompoundNBT nbt, String name) {
 		if (uuid != null) {
 			CompoundNBT result = new CompoundNBT();
-			result.setLong("MSB", uuid.getMostSignificantBits());
-			result.setLong("LSB", uuid.getLeastSignificantBits());
-			nbt.setTag(name, result);
+			result.putUniqueId(name, uuid);
 		}
 	}
 
 	@Override
 	public void readFromNBT(CompoundNBT nbt, String name) {
-		if (nbt.hasKey(name, Constants.NBT.TAG_COMPOUND)) {
-			CompoundNBT data = nbt.getCompoundTag(name);
-			long msb = data.getLong("MSB");
-			long lsb = data.getLong("LSB");
-			this.uuid = new UUID(msb, lsb);
-		} else {
-			this.uuid = null;
-		}
+		this.uuid = nbt.getUniqueId(name);
 	}
 
 	public void setValue(UUID value) {

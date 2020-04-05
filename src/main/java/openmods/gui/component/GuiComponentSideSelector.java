@@ -1,13 +1,15 @@
 package openmods.gui.component;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
@@ -17,6 +19,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.client.model.data.EmptyModelData;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IListenerBase;
 import openmods.gui.misc.SidePicker;
@@ -28,7 +31,6 @@ import openmods.utils.MathUtils;
 import openmods.utils.bitmap.IReadableBitMap;
 import openmods.utils.render.RenderUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentSideSelector extends BaseComponent implements IValueReceiver<Set<Direction>> {
@@ -68,8 +70,9 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (!isInInitialPosition || Mouse.isButtonDown(2)) {
-			final Entity rve = parent.getMinecraft().getRenderViewEntity();
+		final Minecraft minecraft = parent.getMinecraft();
+		if (!isInInitialPosition || minecraft.mouseHelper.isMiddleDown()) {
+			final Entity rve = minecraft.getRenderViewEntity();
 			trackball.setTransform(MathUtils.createEntityRotateMatrix(rve));
 			isInInitialPosition = true;
 		}
@@ -83,7 +86,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		trackball.update(mouseX - width, -(mouseY - height));
 
 		parent.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
-		GlStateManager.enableTexture2D();
+		GlStateManager.enableTexture();
 
 		if (te != null) TileEntityRendererDispatcher.instance.render(te, -0.5, -0.5, -0.5, 0.0F);
 
@@ -117,7 +120,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 				net.minecraftforge.client.ForgeHooksClient.setRenderLayer(layer);
 				wr.setTranslation(-0.5, -0.5, -0.5);
 				wr.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-				dispatcher.renderBlock(blockState, FakeBlockAccess.ORIGIN, access, wr);
+				dispatcher.renderBlock(blockState, FakeBlockAccess.ORIGIN, access, wr, new Random(), EmptyModelData.INSTANCE);
 				tessellator.draw();
 			}
 		}
@@ -130,8 +133,8 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		GlStateManager.disableLighting();
 		GlStateManager.enableBlend();
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		GlStateManager.disableDepth();
-		GlStateManager.disableTexture2D();
+		GlStateManager.disableDepthTest();
+		GlStateManager.disableTexture();
 
 		GL11.glBegin(GL11.GL_QUADS);
 		for (Pair<Side, Integer> p : selections) {
@@ -182,8 +185,8 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		GL11.glEnd();
 
 		GlStateManager.disableBlend();
-		GlStateManager.enableDepth();
-		GlStateManager.enableTexture2D();
+		GlStateManager.enableDepthTest();
+		GlStateManager.enableTexture();
 	}
 
 	private void toggleSide(Direction side) {
@@ -229,7 +232,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	public void setValue(IReadableBitMap<Direction> dirs) {
 		selectedSides.clear();
 
-		for (Direction dir : Direction.VALUES)
+		for (Direction dir : Direction.values())
 			if (dirs.get(dir)) selectedSides.add(dir);
 	}
 

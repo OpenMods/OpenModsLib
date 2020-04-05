@@ -10,13 +10,14 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.network.PacketDistributor;
 import openmods.network.rpc.IRpcTarget;
 import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.SyncRpcTarget;
-import openmods.network.senders.IPacketSender;
 import openmods.reflection.TypeUtils;
 import openmods.sync.ISyncListener;
 import openmods.sync.ISyncMapProvider;
@@ -36,7 +37,8 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 
 	private DropTagSerializer tagSerializer;
 
-	public SyncedTileEntity() {
+	public SyncedTileEntity(TileEntityType<?> type) {
+		super(type);
 		createSyncedFields();
 	}
 
@@ -60,7 +62,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	}
 
 	@Override
-	protected void setWorldCreate(World worldIn) {
+	public void setWorld(World worldIn) {
 		createSyncMap(worldIn);
 	}
 
@@ -86,7 +88,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	}
 
 	protected void markBlockForRenderUpdate(BlockPos pos) {
-		world.markBlockRangeForRenderUpdate(pos, pos);
+		world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), Constants.BlockFlags.DEFAULT);
 	}
 
 	protected abstract void createSyncedFields();
@@ -108,15 +110,15 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	// TODO verify if initial NBT send is enough
 
 	@Override
-	public CompoundNBT writeToNBT(CompoundNBT tag) {
-		super.writeToNBT(tag);
+	public CompoundNBT write(CompoundNBT tag) {
+		super.write(tag);
 		getSyncMap().tryWrite(tag);
 		return tag;
 	}
 
 	@Override
-	public void readFromNBT(CompoundNBT tag) {
-		super.readFromNBT(tag);
+	public void read(CompoundNBT tag) {
+		super.read(tag);
 		getSyncMap().tryRead(tag);
 	}
 
@@ -129,13 +131,13 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 		}
 		byte[] data = new byte[tmp.readableBytes()];
 		tmp.readBytes(data);
-		tag.setByteArray(TAG_SYNC_INIT, data);
+		tag.putByteArray(TAG_SYNC_INIT, data);
 
 		return tag;
 	}
 
 	private void applyInitializationData(CompoundNBT tag) {
-		if (tag.hasKey(TAG_SYNC_INIT, Constants.NBT.TAG_BYTE_ARRAY)) {
+		if (tag.contains(TAG_SYNC_INIT, Constants.NBT.TAG_BYTE_ARRAY)) {
 			final byte[] syncInit = tag.getByteArray(TAG_SYNC_INIT);
 			final PacketBuffer tmp = new PacketBuffer(Unpooled.buffer());
 			tmp.writeBytes(syncInit);
@@ -155,7 +157,7 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 
 	@Override
 	public void handleUpdateTag(CompoundNBT tag) {
-		super.readFromNBT(tag);
+		super.read(tag);
 		applyInitializationData(tag);
 	}
 
@@ -173,7 +175,6 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	public <T> T createRpcProxy(ISyncableObject object, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		TypeUtils.isInstance(object, mainIntf, extraIntf);
 		IRpcTarget target = new SyncRpcTarget.SyncTileEntityRpcTarget(this, object);
-		final IPacketSender sender = RpcCallDispatcher.instance().senders.client;
-		return RpcCallDispatcher.instance().createProxy(target, sender, mainIntf, extraIntf);
+		return RpcCallDispatcher.instance().createProxy(target, PacketDistributor.SERVER.noArg(), mainIntf, extraIntf);
 	}
 }

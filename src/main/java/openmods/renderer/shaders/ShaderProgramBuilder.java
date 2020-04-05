@@ -14,7 +14,6 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.OpenGLException;
 
 public class ShaderProgramBuilder {
 
@@ -29,7 +28,7 @@ public class ShaderProgramBuilder {
 	public ShaderProgram build() {
 		final int program = ShaderHelper.methods().glCreateProgram();
 		final List<Integer> shaders = Lists.newArrayList();
-		if (program == 0) throw new OpenGLException("Error creating program object");
+		if (program == 0) throw new IllegalStateException("Error creating program object");
 
 		for (Map.Entry<ResourceLocation, Integer> e : shadersToLoad.entrySet()) {
 			final int shader = createShader(e.getKey(), e.getValue());
@@ -38,26 +37,27 @@ public class ShaderProgramBuilder {
 		}
 
 		ShaderHelper.methods().glLinkProgram(program);
-		if (ShaderHelper.methods().glGetProgrami(program, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) throw new OpenGLException("Shader link error: " + ShaderHelper.methods().getProgramLogInfo(program));
+		if (ShaderHelper.methods().glGetProgrami(program, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) throw new IllegalStateException("Shader link error: " + ShaderHelper.methods().getProgramLogInfo(program));
 
 		for (Integer shader : shaders)
 			ShaderHelper.methods().glDetachShader(program, shader);
 
 		ShaderHelper.methods().glValidateProgram(program);
-		if (ShaderHelper.methods().glGetProgrami(program, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE) throw new OpenGLException("Shader validate error: " + ShaderHelper.methods().getProgramLogInfo(program));
+		if (ShaderHelper.methods().glGetProgrami(program, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE) throw new IllegalStateException("Shader validate error: " + ShaderHelper.methods().getProgramLogInfo(program));
 
 		return new ShaderProgram(program, shaders);
 	}
 
+	// TODO 1.14 How about proper resource manager?
 	private static int createShader(ResourceLocation source, int type) {
 		int shader = 0;
 		try {
 			shader = ShaderHelper.methods().glCreateShader(type);
-			if (shader == 0) throw new OpenGLException("Error creating shader object");
+			if (shader == 0) throw new IllegalStateException("Error creating shader object");
 
 			ShaderHelper.methods().glShaderSource(shader, readShaderSource(source));
 			ShaderHelper.methods().glCompileShader(shader);
-			if (ShaderHelper.methods().glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) throw new OpenGLException("Shader compile error: " + ShaderHelper.methods().getShaderLogInfo(shader));
+			if (ShaderHelper.methods().glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) throw new IllegalStateException("Shader compile error: " + ShaderHelper.methods().getShaderLogInfo(shader));
 
 			return shader;
 		} catch (Throwable t) {
@@ -68,13 +68,13 @@ public class ShaderProgramBuilder {
 
 	private static String readShaderSource(ResourceLocation source) {
 		try {
-			final InputStream is = Minecraft.getMinecraft().getResourceManager().getResource(source).getInputStream();
+			final InputStream is = Minecraft.getInstance().getResourceManager().getResource(source).getInputStream();
 			final Iterator<String> lines = IOUtils.lineIterator(is, StandardCharsets.UTF_8);
 			final StringBuilder out = new StringBuilder();
 			Joiner.on('\n').appendTo(out, lines);
 			return out.toString();
 		} catch (IOException e) {
-			throw new OpenGLException("Failed to read resource " + source, e);
+			throw new IllegalStateException("Failed to read resource " + source, e);
 		}
 
 	}

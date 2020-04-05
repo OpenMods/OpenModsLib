@@ -6,32 +6,38 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
-import net.minecraft.client.renderer.block.model.ItemOverrideList;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.IUnbakedModel;
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.model.ItemOverrideList;
+import net.minecraft.client.renderer.model.ModelBakery;
+import net.minecraft.client.renderer.texture.ISprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.BasicState;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.client.model.ModelStateComposition;
 import net.minecraftforge.client.model.PerspectiveMapWrapper;
-import net.minecraftforge.common.model.IModelState;
+import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.common.model.TRSRTransformation;
-import net.minecraftforge.common.property.IExtendedBlockState;
 import openmods.model.BakedModelAdapter;
 import openmods.model.ModelUpdater;
 import openmods.utils.CollectionUtils;
 
-public class VariantModel implements IModel {
+public class VariantModel implements IUnbakedModel {
 
 	private static class BakedModel extends BakedModelAdapter {
 
@@ -39,34 +45,31 @@ public class VariantModel implements IModel {
 
 		private final Map<ResourceLocation, IBakedModel> bakedSubModels;
 
-		public BakedModel(IBakedModel base, VariantModelData modelData, Map<ResourceLocation, IBakedModel> bakedSubModels, ImmutableMap<TransformType, TRSRTransformation> cameraTransforms) {
+		public BakedModel(IBakedModel base, VariantModelData modelData, Map<ResourceLocation, IBakedModel> bakedSubModels, ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> cameraTransforms) {
 			super(base, cameraTransforms);
 			this.modelData = modelData;
 			this.bakedSubModels = bakedSubModels;
 		}
 
 		@Override
-		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, long rand) {
-			final VariantModelState modelState = getModelSelectors(state);
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand, IModelData extState) {
+			final VariantModelState modelState = getModelSelectors(extState);
 
-			final List<BakedQuad> result = Lists.newArrayList(base.getQuads(state, side, rand));
+			final List<BakedQuad> result = Lists.newArrayList(base.getQuads(state, side, rand, extState));
 
 			for (ResourceLocation subModel : modelData.getModels(modelState.getSelectors())) {
 				final IBakedModel bakedSubModel = bakedSubModels.get(subModel);
-				result.addAll(bakedSubModel.getQuads(state, side, rand));
+				result.addAll(bakedSubModel.getQuads(state, side, rand, extState));
 			}
 
 			return result;
 		}
 
-		private static VariantModelState getModelSelectors(BlockState state) {
-			if (state instanceof IExtendedBlockState) {
-				final IExtendedBlockState extendedState = (IExtendedBlockState)state;
-				if (extendedState.getUnlistedNames().contains(VariantModelState.PROPERTY)) {
-					final VariantModelState result = extendedState.getValue(VariantModelState.PROPERTY);
-					if (result != null)
-						return result;
-				}
+		private static VariantModelState getModelSelectors(IModelData state) {
+			if (state != null) {
+				final VariantModelState data = state.getData(VariantModelState.PROPERTY);
+				if (data != null)
+					return data;
 			}
 
 			return VariantModelState.EMPTY;
@@ -74,7 +77,7 @@ public class VariantModel implements IModel {
 
 		@Override
 		public ItemOverrideList getOverrides() {
-			return ItemOverrideList.NONE;
+			return ItemOverrideList.EMPTY;
 		}
 	}
 
@@ -96,12 +99,12 @@ public class VariantModel implements IModel {
 	}
 
 	@Override
-	public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+	public IBakedModel bake(ModelBakery bakery, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, ISprite state, VertexFormat format) {
 		final Map<ResourceLocation, IBakedModel> bakedSubModels = Maps.newHashMap();
 
 		for (ResourceLocation subModel : modelData.getAllModels()) {
 			IModel model = ModelLoaderRegistry.getModelOrLogError(subModel, "Couldn't load sub-model dependency: " + subModel);
-			bakedSubModels.put(subModel, model.bake(new ModelStateComposition(state, model.getDefaultState()), format, bakedTextureGetter));
+			bakedSubModels.put(subModel, model.bake(bakery, bakedTextureGetter, new BasicState(new ModelStateComposition(state.getState(), model.getDefaultState()), state.isUvLock()), format));
 		}
 
 		final IModel baseModel;
@@ -112,13 +115,13 @@ public class VariantModel implements IModel {
 			baseModel = ModelLoaderRegistry.getMissingModel();
 		}
 
-		final IBakedModel bakedBaseModel = baseModel.bake(new ModelStateComposition(state, baseModel.getDefaultState()), format, bakedTextureGetter);
+		final IBakedModel bakedBaseModel = baseModel.bake(bakery, bakedTextureGetter, new BasicState(new ModelStateComposition(state.getState(), baseModel.getDefaultState()), state.isUvLock()), format);
 
-		return new BakedModel(bakedBaseModel, modelData, bakedSubModels, PerspectiveMapWrapper.getTransforms(state));
+		return new BakedModel(bakedBaseModel, modelData, bakedSubModels, PerspectiveMapWrapper.getTransforms(state.getState()));
 	}
 
 	@Override
-	public IModel process(ImmutableMap<String, String> customData) {
+	public IUnbakedModel process(ImmutableMap<String, String> customData) {
 		final ModelUpdater updater = new ModelUpdater(customData);
 
 		final Optional<ResourceLocation> base = updater.get(KEY_BASE, ModelUpdater.MODEL_LOCATION, this.base);
@@ -139,4 +142,7 @@ public class VariantModel implements IModel {
 		return ImmutableList.copyOf(Sets.union(modelData.getAllModels(), CollectionUtils.asSet(base)));
 	}
 
+	@Override public Collection<ResourceLocation> getTextures(Function<ResourceLocation, IUnbakedModel> modelGetter, Set<String> missingTextureErrors) {
+		return Collections.emptyList();
+	}
 }

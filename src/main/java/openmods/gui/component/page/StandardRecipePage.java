@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import javax.annotation.Nonnull;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.RecipeManager;
 import net.minecraftforge.common.crafting.IShapedRecipe;
 import openmods.gui.Icon;
 import openmods.gui.component.GuiComponentCraftingGrid;
@@ -19,12 +20,12 @@ public class StandardRecipePage extends PageBase {
 	public static final Icon iconCraftingGrid = Icon.createSheetIcon(BOOK_TEXTURE, 0, 180, 56, 56);
 	public static final Icon iconArrow = Icon.createSheetIcon(BOOK_TEXTURE, 60, 198, 48, 15);
 
-	public StandardRecipePage(String title, String description, @Nonnull ItemStack resultingItem) {
+	public StandardRecipePage(String title, String description, final RecipeManager manager, @Nonnull ItemStack resultingItem) {
 		addComponent(new GuiComponentSprite(75, 40, iconArrow));
 		addComponent(new GuiComponentItemStackSpinner(140, 30, resultingItem));
 
 		{
-			final IRecipe recipe = RecipeUtils.getFirstRecipeForItemStack(resultingItem);
+			final IRecipe recipe = RecipeUtils.getFirstRecipeForItemStack(manager, resultingItem);
 			if (recipe != null) {
 				final ItemStack[][] input = RecipeUtils.getFullRecipeInput(recipe);
 				if (input != null) {
@@ -50,8 +51,8 @@ public class StandardRecipePage extends PageBase {
 		}
 	}
 
-	public StandardRecipePage(String title, String description, String videoLink, @Nonnull ItemStack resultingItem) {
-		this(title, description, resultingItem);
+	public StandardRecipePage(String title, String description, String videoLink, final RecipeManager manager, @Nonnull ItemStack resultingItem) {
+		this(title, description, manager, resultingItem);
 
 		if (!Strings.isNullOrEmpty(videoLink)) {
 			addActionButton(10, 133, videoLink, ActionIcon.YOUTUBE.icon, "openmodslib.gui.watch_video");

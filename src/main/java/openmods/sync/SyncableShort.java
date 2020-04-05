@@ -45,7 +45,7 @@ public class SyncableShort extends SyncableObjectBase implements ISyncableValueP
 
 	@Override
 	public void writeToNBT(CompoundNBT tag, String name) {
-		tag.setShort(name, value);
+		tag.putShort(name, value);
 	}
 
 	@Override

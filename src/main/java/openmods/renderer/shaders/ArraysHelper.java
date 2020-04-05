@@ -3,11 +3,11 @@ package openmods.renderer.shaders;
 import org.lwjgl.opengl.ARBDrawInstanced;
 import org.lwjgl.opengl.ARBInstancedArrays;
 import org.lwjgl.opengl.ARBVertexArrayObject;
-import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL33;
-import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.GLCapabilities;
 
 public class ArraysHelper {
 	static {
@@ -17,7 +17,7 @@ public class ArraysHelper {
 	public static IArrayMethods methods;
 
 	static void initialize() {
-		ContextCapabilities caps = GLContext.getCapabilities();
+		GLCapabilities caps = GL.getCapabilities();
 		if (GLArrayMethods.isSupported(caps)) methods = new GLArrayMethods();
 		else if (ARBArrayMethods.isSupported(caps)) methods = new ARBArrayMethods();
 	}
@@ -42,7 +42,7 @@ public class ArraysHelper {
 
 	private static class GLArrayMethods implements IArrayMethods {
 
-		public static boolean isSupported(ContextCapabilities caps) {
+		public static boolean isSupported(GLCapabilities caps) {
 			return caps.OpenGL33;
 		}
 
@@ -69,7 +69,7 @@ public class ArraysHelper {
 
 	private static class ARBArrayMethods implements IArrayMethods {
 
-		public static boolean isSupported(ContextCapabilities caps) {
+		public static boolean isSupported(GLCapabilities caps) {
 			return caps.GL_ARB_instanced_arrays && caps.GL_ARB_vertex_array_object;
 		}
 

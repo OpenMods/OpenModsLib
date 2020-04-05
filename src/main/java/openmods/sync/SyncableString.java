@@ -40,7 +40,7 @@ public class SyncableString extends SyncableObjectBase implements ISyncableValue
 
 	@Override
 	public void writeToNBT(CompoundNBT nbt, String name) {
-		nbt.setString(name, value);
+		nbt.putString(name, value);
 	}
 
 	@Override

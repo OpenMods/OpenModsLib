@@ -1,14 +1,13 @@
 package openmods.model.itemstate;
 
 import javax.annotation.Nonnull;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import openmods.state.State;
-import openmods.state.StateContainer;
+import net.minecraft.state.StateContainer;
+import openmods.state.ItemState;
 
 public interface ISimpleStateItem {
+	StateContainer<Item, ItemState> getStateContainer();
 
-	StateContainer getStateContainer();
-
-	State getState(@Nonnull ItemStack stack);
-
+	ItemState getState(@Nonnull ItemStack stack);
 }

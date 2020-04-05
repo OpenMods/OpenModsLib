@@ -2,23 +2,28 @@ package openmods.reflection;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import java.lang.annotation.ElementType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.TypeVariable;
 import java.util.Map;
-import net.minecraftforge.fml.common.discovery.ASMDataTable;
-import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.forgespi.language.ModFileScanData;
 import openmods.Log;
 import org.objectweb.asm.Type;
 
 public class TypeVariableHolderHandler {
 
-	public void fillAllHolders(ASMDataTable data) {
+	private final Type HOLDER_ANNOTATION = Type.getType(TypeVariableHolder.class);
+
+	public void fillAllHolders() {
 		final Map<Field, Class<?>> classTargetToSource = Maps.newHashMap();
 		final Map<Field, Class<?>> fieldTargetToSource = Maps.newHashMap();
 
-		for (ASMData target : data.getAll(TypeVariableHolder.class.getName()))
-			findTargets(target, classTargetToSource, fieldTargetToSource);
+		ModList.get().getAllScanData().stream()
+				.flatMap(s -> s.getAnnotations().stream())
+				.filter(a -> HOLDER_ANNOTATION.equals(a.getAnnotationType()))
+				.forEach(a -> findTargets(a, classTargetToSource, fieldTargetToSource));
 
 		fillFields(classTargetToSource, fieldTargetToSource);
 	}
@@ -70,25 +75,26 @@ public class TypeVariableHolderHandler {
 
 	private static final Type USE_DECLARING_TYPE_MARKER = Type.getType(TypeVariableHolder.UseDeclaringType.class);
 
-	private static void findTargets(ASMData target, Map<Field, Class<?>> classTargetToSource, Map<Field, Class<?>> fieldTargetToSource) {
-		final String targetClassName = target.getClassName();
-		final String targetObject = target.getObjectName();
-		final Type sourceClassName = (Type)target.getAnnotationInfo().get("value");
+	private static void findTargets(ModFileScanData.AnnotationData target, Map<Field, Class<?>> classTargetToSource, Map<Field, Class<?>> fieldTargetToSource) {
+		final Type targetClassType = target.getClassType();
+		final String targetObject = target.getMemberName();
+
+		final Type sourceClassName = (Type)target.getAnnotationData().get("value");
 
 		try {
-			final Class<?> targetClass = Class.forName(targetClassName);
+			final Class<?> targetClass = Class.forName(targetClassType.getClassName());
 			final Class<?> sourceClass;
 			if (sourceClassName == null || sourceClassName.equals(USE_DECLARING_TYPE_MARKER))
 				sourceClass = targetClass;
 			else
 				sourceClass = Class.forName(sourceClassName.getClassName());
 
-			if (targetClassName.equals(targetObject))
+			if (target.getTargetType() == ElementType.TYPE)
 				addClassFields(classTargetToSource, targetClass, sourceClass);
 			else
 				addField(fieldTargetToSource, targetClass, targetObject, sourceClass);
 		} catch (Exception e) {
-			Log.warn(e, "Failed to fill type variable holder at %s:%s", targetClassName, targetObject);
+			Log.warn(e, "Failed to fill type variable holder at %s:%s", targetClassType, targetObject);
 		}
 	}
 

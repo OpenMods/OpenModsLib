@@ -19,15 +19,15 @@ public class NbtUtils {
 	private static final String TAG_X = "X";
 
 	public static boolean hasCoordinates(CompoundNBT tag) {
-		return tag.hasKey(TAG_X, Constants.NBT.TAG_ANY_NUMERIC) &&
-				tag.hasKey(TAG_Y, Constants.NBT.TAG_ANY_NUMERIC) &&
-				tag.hasKey(TAG_Z, Constants.NBT.TAG_ANY_NUMERIC);
+		return tag.contains(TAG_X, Constants.NBT.TAG_ANY_NUMERIC) &&
+				tag.contains(TAG_Y, Constants.NBT.TAG_ANY_NUMERIC) &&
+				tag.contains(TAG_Z, Constants.NBT.TAG_ANY_NUMERIC);
 	}
 
 	public static CompoundNBT store(CompoundNBT tag, int x, int y, int z) {
-		tag.setInteger(TAG_X, x);
-		tag.setInteger(TAG_Y, y);
-		tag.setInteger(TAG_Z, z);
+		tag.putInt(TAG_X, x);
+		tag.putInt(TAG_Y, y);
+		tag.putInt(TAG_Z, z);
 		return tag;
 	}
 
@@ -36,9 +36,9 @@ public class NbtUtils {
 	}
 
 	public static CompoundNBT store(CompoundNBT tag, double x, double y, double z) {
-		tag.setDouble(TAG_X, x);
-		tag.setDouble(TAG_Y, y);
-		tag.setDouble(TAG_Z, z);
+		tag.putDouble(TAG_X, x);
+		tag.putDouble(TAG_Y, y);
+		tag.putDouble(TAG_Z, z);
 		return tag;
 	}
 
@@ -71,8 +71,8 @@ public class NbtUtils {
 	}
 
 	public static CompoundNBT store(CompoundNBT tag, UUID uuid) {
-		tag.setLong("UUIDMost", uuid.getMostSignificantBits());
-		tag.setLong("UUIDLeast", uuid.getLeastSignificantBits());
+		tag.putLong("UUIDMost", uuid.getMostSignificantBits());
+		tag.putLong("UUIDLeast", uuid.getLeastSignificantBits());
 		return tag;
 	}
 
@@ -85,8 +85,8 @@ public class NbtUtils {
 	}
 
 	public static CompoundNBT store(CompoundNBT tag, ResourceLocation location) {
-		tag.setString(KEY, location.getResourceDomain());
-		tag.setString(VALUE, location.getResourcePath());
+		tag.putString(KEY, location.getNamespace());
+		tag.putString(VALUE, location.getPath());
 		return tag;
 	}
 
@@ -95,16 +95,16 @@ public class NbtUtils {
 	}
 
 	public static Coord readCoord(CompoundNBT tag) {
-		final int x = tag.getInteger(TAG_X);
-		final int y = tag.getInteger(TAG_Y);
-		final int z = tag.getInteger(TAG_Z);
+		final int x = tag.getInt(TAG_X);
+		final int y = tag.getInt(TAG_Y);
+		final int z = tag.getInt(TAG_Z);
 		return new Coord(x, y, z);
 	}
 
 	public static BlockPos readBlockPos(CompoundNBT tag) {
-		final int x = tag.getInteger(TAG_X);
-		final int y = tag.getInteger(TAG_Y);
-		final int z = tag.getInteger(TAG_Z);
+		final int x = tag.getInt(TAG_X);
+		final int y = tag.getInt(TAG_Y);
+		final int z = tag.getInt(TAG_Z);
 		return new BlockPos(x, y, z);
 	}
 
@@ -129,8 +129,8 @@ public class NbtUtils {
 	}
 
 	public static <T extends Enum<T>> T readEnum(CompoundNBT tag, String name, Class<T> cls) {
-		if (tag.hasKey(name, Constants.NBT.TAG_ANY_NUMERIC)) {
-			int ordinal = tag.getInteger(name);
+		if (tag.contains(name, Constants.NBT.TAG_ANY_NUMERIC)) {
+			int ordinal = tag.getInt(name);
 			return EnumUtils.fromOrdinal(cls, ordinal);
 		}
 

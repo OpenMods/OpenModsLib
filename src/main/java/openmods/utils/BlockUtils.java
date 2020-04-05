@@ -25,10 +25,6 @@ public class BlockUtils {
 		return entity.getHorizontalFacing();
 	}
 
-	public static Direction get2dOrientation(double yaw) {
-		return Direction.getHorizontal(MathHelper.floor((yaw * 4.0 / 360.0) + 0.5) & 3);
-	}
-
 	public static float getRotationFromDirection(Direction direction) {
 		switch (direction) {
 			case NORTH:
@@ -84,19 +80,17 @@ public class BlockUtils {
 		float d2 = worldObj.rand.nextFloat() * f + (1.0F - f) * 0.5F;
 		ItemEntity entityitem = new ItemEntity(worldObj, x + d0, y + d1, z + d2, stack);
 		entityitem.setDefaultPickupDelay();
-		if (stack.hasTagCompound()) {
-			entityitem.getItem().setTagCompound(stack.getTagCompound().copy());
+		if (stack.hasTag()) {
+			entityitem.getItem().setTag(stack.getTag().copy());
 		}
-		worldObj.spawnEntity(entityitem);
+		worldObj.addEntity(entityitem);
 		return entityitem;
 	}
 
 	public static ItemEntity ejectItemInDirection(World world, double x, double y, double z, Direction direction, @Nonnull ItemStack stack) {
 		ItemEntity item = BlockUtils.dropItemStackInWorld(world, x, y, z, stack);
 		final Vec3i v = direction.getDirectionVec();
-		item.motionX = v.getX() / 5F;
-		item.motionY = v.getY() / 5F;
-		item.motionZ = v.getZ() / 5F;
+		item.setMotion(v.getX() / 5F, v.getY() / 5F, v.getZ() / 5F);
 		return item;
 	}
 

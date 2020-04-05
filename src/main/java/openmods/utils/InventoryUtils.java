@@ -5,6 +5,7 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Lists;
 import java.util.List;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
@@ -12,6 +13,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
@@ -92,11 +94,15 @@ public class InventoryUtils {
 		return tryGetHandler(te, side);
 	}
 
+	@Nullable
 	public static IItemHandler tryGetHandler(TileEntity te, Direction side) {
 		if (te == null) return null;
 
-		if (te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side))
-			return te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side);
+		final LazyOptional<IItemHandler> cap = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side);
+
+		if (cap.isPresent()) {
+			return cap.orElse(null);
+		}
 
 		if (te instanceof ISidedInventory)
 			return new SidedInvWrapper((ISidedInventory)te, side);

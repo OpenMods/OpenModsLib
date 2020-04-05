@@ -4,8 +4,13 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 
 public abstract class SimpleNetTileEntity extends OpenTileEntity {
+
+	public SimpleNetTileEntity(TileEntityType<?> type) {
+		super(type);
+	}
 
 	@Override
 	public SUpdateTileEntityPacket getUpdatePacket() {
@@ -14,12 +19,12 @@ public abstract class SimpleNetTileEntity extends OpenTileEntity {
 
 	public static SUpdateTileEntityPacket writeToPacket(TileEntity te) {
 		CompoundNBT data = new CompoundNBT();
-		te.writeToNBT(data);
+		te.write(data);
 		return new SUpdateTileEntityPacket(te.getPos(), 42, data);
 	}
 
 	@Override
 	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-		readFromNBT(pkt.getNbtCompound());
+		read(pkt.getNbtCompound());
 	}
 }

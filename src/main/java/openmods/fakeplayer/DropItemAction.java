@@ -1,10 +1,10 @@
 package openmods.fakeplayer;
 
 import javax.annotation.Nonnull;
-import javax.vecmath.Vector3f;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import openmods.Log;
@@ -16,7 +16,7 @@ public class DropItemAction implements PlayerUser {
 	private final double y;
 	private final double z;
 
-	private final Vector3f v;
+	private final Vec3d v;
 
 	private final float yaw;
 	private final float pitch;
@@ -29,10 +29,9 @@ public class DropItemAction implements PlayerUser {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		this.v = new Vector3f(vx, vy, vz);
+		this.v = new Vec3d(vx, vy, vz);
 
-		final Vector3f nv = new Vector3f();
-		nv.normalize(this.v);
+		final Vec3d nv = v.normalize();
 
 		this.pitch = -(float)Math.toDegrees(Math.asin(nv.y));
 		this.yaw = -(float)Math.toDegrees(Math.atan2(nv.x, nv.z));
@@ -46,8 +45,9 @@ public class DropItemAction implements PlayerUser {
 	public void usePlayer(OpenModsFakePlayer player) {
 		player.setPositionAndRotation(x, y - player.getEyeHeight(), z, yaw, pitch);
 
+		// TODO 1.14 Check dropper for changes
 		final ItemEntity itemToDrop = new ItemEntity(player.getEntityWorld(), x, y, z, stack.copy());
-		itemToDrop.setPosition(itemToDrop.posX, itemToDrop.posY - itemToDrop.height, itemToDrop.posZ);
+		itemToDrop.setPosition(itemToDrop.posX, itemToDrop.posY - itemToDrop.getHeight(), itemToDrop.posZ);
 		itemToDrop.setPickupDelay(40);
 
 		ItemTossEvent event = new ItemTossEvent(itemToDrop, player);
@@ -56,11 +56,9 @@ public class DropItemAction implements PlayerUser {
 		} else {
 			final ItemEntity droppedItem = event.getEntityItem();
 
-			droppedItem.motionX = v.x;
-			droppedItem.motionY = v.y;
-			droppedItem.motionZ = v.z;
+			droppedItem.setMotion(v);
 
-			player.getEntityWorld().spawnEntity(droppedItem);
+			player.getEntityWorld().addEntity(droppedItem);
 		}
 	}
 

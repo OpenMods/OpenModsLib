@@ -1,49 +1,49 @@
 package openmods.renderer;
 
 import com.google.common.base.Preconditions;
+import com.mojang.blaze3d.platform.TextureUtil;
+import javax.annotation.Nullable;
+import net.minecraft.client.renderer.texture.NativeImage;
 import net.minecraft.client.renderer.texture.Texture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.renderer.texture.TextureUtil;
-import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-@SideOnly(Side.CLIENT)
-public class DisposableDynamicTexture extends Texture {
-	private int[] dynamicTextureData;
-	private int width;
-	private int height;
+public class DisposableDynamicTexture extends Texture implements AutoCloseable {
+	@Nullable
+	private NativeImage dynamicTextureData;
+	private int width = -1;
+	private int height = -1;
 
 	private static int textureCounter;
 
 	public DisposableDynamicTexture() {}
 
-	public void resize(int width, int height) {
+	public NativeImage prepareImage(int width, int height) {
 		if (width != this.width || height != this.height) {
 			this.width = width;
 			this.height = height;
-			TextureUtil.allocateTexture(getGlTextureId(), width, height);
+			TextureUtil.prepareImage(getGlTextureId(), width, height);
+			if (dynamicTextureData != null) {
+				dynamicTextureData.close();
+				dynamicTextureData = null;
+			}
 		}
+
+		if (dynamicTextureData == null) {
+			dynamicTextureData = new NativeImage(width, height, true);
+		}
+
+		return dynamicTextureData;
 	}
 
 	@Override
 	public void loadTexture(IResourceManager par1ResourceManager) {}
 
-	public void update() {
+	public void upload() {
 		Preconditions.checkNotNull(dynamicTextureData, "Texture not allocated");
-		TextureUtil.uploadTexture(getGlTextureId(), dynamicTextureData, width, height);
-	}
-
-	public void updateAndDeallocate() {
-		update();
-		dynamicTextureData = null;
-	}
-
-	public int[] allocate() {
-		if (dynamicTextureData == null) dynamicTextureData = new int[width * height];
-
-		return this.dynamicTextureData;
+		bindTexture();
+		dynamicTextureData.uploadTextureSub(0, 0, 0, false);
 	}
 
 	public ResourceLocation register(TextureManager manager, String prefix) {
@@ -54,4 +54,10 @@ public class DisposableDynamicTexture extends Texture {
 		return location;
 	}
 
+	@Override
+	public void close() {
+		if (dynamicTextureData != null) {
+			dynamicTextureData.close();
+		}
+	}
 }

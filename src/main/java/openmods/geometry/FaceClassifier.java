@@ -16,8 +16,8 @@ public class FaceClassifier {
 	private static final Map<Direction, Vector3f> BASES = Maps.newEnumMap(Direction.class);
 
 	static {
-		for (Direction e : Direction.VALUES)
-			BASES.put(e, new Vector3f(e.getFrontOffsetX(), e.getFrontOffsetY(), e.getFrontOffsetZ()));
+		for (Direction e : Direction.values())
+			BASES.put(e, new Vector3f(e.getXOffset(), e.getYOffset(), e.getZOffset()));
 	}
 
 	private final List<Pair<Vector3f, Direction>> sideOrder = Lists.newArrayList();

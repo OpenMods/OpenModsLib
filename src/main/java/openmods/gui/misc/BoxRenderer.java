@@ -4,6 +4,7 @@ import net.minecraft.client.gui.AbstractGui;
 import openmods.utils.render.RenderUtils;
 import org.lwjgl.opengl.GL11;
 
+//TODO single tesselator call plz
 public class BoxRenderer {
 	private final int u;
 	private final int v;
@@ -15,22 +16,22 @@ public class BoxRenderer {
 
 	// 4x4 pixels starting at 0,0
 	protected void renderTopLeftCorner(AbstractGui gui) {
-		gui.drawTexturedModalRect(0, 0, u, v, 4, 4);
+		gui.blit(0, 0, u, v, 4, 4);
 	}
 
 	// 3x3 pixels starting at 5,0
 	protected void renderTopRightCorner(AbstractGui gui, int width) {
-		gui.drawTexturedModalRect(width - 3, 0, u + 5, v, 3, 3);
+		gui.blit(width - 3, 0, u + 5, v, 3, 3);
 	}
 
 	// 3x3 pixels starting at 11,0
 	protected void renderBottomLeftCorner(AbstractGui gui, int height) {
-		gui.drawTexturedModalRect(0, height - 3, u + 11, v, 3, 3);
+		gui.blit(0, height - 3, u + 11, v, 3, 3);
 	}
 
 	// 4x4 pixels starting at 15,0
 	protected void renderBottomRightCorner(AbstractGui gui, int width, int height) {
-		gui.drawTexturedModalRect(width - 4, height - 4, u + 15, v, 4, 4);
+		gui.blit(width - 4, height - 4, u + 15, v, 4, 4);
 	}
 
 	// 1x3 pixels starting at 14,0
@@ -38,7 +39,7 @@ public class BoxRenderer {
 		GL11.glPushMatrix();
 		GL11.glTranslatef(3, height - 3, 0);
 		GL11.glScaled(width - 7, 1, 0);
-		gui.drawTexturedModalRect(0, 0, u + 14, v, 1, 3);
+		gui.blit(0, 0, u + 14, v, 1, 3);
 		GL11.glPopMatrix();
 	}
 
@@ -47,7 +48,7 @@ public class BoxRenderer {
 		GL11.glPushMatrix();
 		GL11.glTranslatef(4, 0, 0);
 		GL11.glScaled(width - 7, 1, 0);
-		gui.drawTexturedModalRect(0, 0, u + 4, v, 1, 3);
+		gui.blit(0, 0, u + 4, v, 1, 3);
 		GL11.glPopMatrix();
 	}
 
@@ -56,7 +57,7 @@ public class BoxRenderer {
 		GL11.glPushMatrix();
 		GL11.glTranslatef(0, 4, 0);
 		GL11.glScaled(1, height - 7, 0);
-		gui.drawTexturedModalRect(0, 0, u, v + 4, 3, 1);
+		gui.blit(0, 0, u, v + 4, 3, 1);
 		GL11.glPopMatrix();
 	}
 
@@ -65,7 +66,7 @@ public class BoxRenderer {
 		GL11.glPushMatrix();
 		GL11.glTranslatef(width - 3, 3, 0);
 		GL11.glScaled(1, height - 7, 0);
-		gui.drawTexturedModalRect(0, 0, u + 8, v, 3, 1);
+		gui.blit(0, 0, u + 8, v, 3, 1);
 		GL11.glPopMatrix();
 	}
 
@@ -74,7 +75,7 @@ public class BoxRenderer {
 		GL11.glPushMatrix();
 		GL11.glTranslatef(2, 2, 0);
 		GL11.glScalef(width - 4, height - 4, 0);
-		gui.drawTexturedModalRect(0, 0, u + 19, v, 1, 1);
+		gui.blit(0, 0, u + 19, v, 1, 1);
 		GL11.glPopMatrix();
 	}
 

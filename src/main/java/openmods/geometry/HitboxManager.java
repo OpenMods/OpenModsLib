@@ -1,32 +1,28 @@
 package openmods.geometry;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.io.Closer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourceManagerReloadListener;
+import net.minecraft.client.resources.JsonReloadListener;
+import net.minecraft.profiler.IProfiler;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
-import openmods.Log;
 
-public class HitboxManager implements IResourceManagerReloadListener {
+public class HitboxManager extends JsonReloadListener {
+
+	public HitboxManager() {
+		super(GSON, "hitboxes");
+	}
 
 	@SuppressWarnings("serial")
 	private static class HitboxList extends ArrayList<Hitbox> {}
@@ -51,11 +47,11 @@ public class HitboxManager implements IResourceManagerReloadListener {
 		private Map<String, Hitbox> map;
 
 		public Holder(ResourceLocation location) {
-			this.location = new ResourceLocation(location.getResourceDomain(), "hitboxes/" + location.getResourcePath() + ".json");
+			this.location = new ResourceLocation(location.getNamespace(), "hitboxes/" + location.getPath() + ".json");
 		}
 
 		private void reload() {
-			this.list = ImmutableList.copyOf(load(location));
+			this.list = resources.get(location);
 
 			final Map<String, Hitbox> builder = Maps.newLinkedHashMap();
 			for (Hitbox hb : list)
@@ -82,56 +78,22 @@ public class HitboxManager implements IResourceManagerReloadListener {
 
 	}
 
-	private IResourceManager resourceManager;
-
 	private final Map<ResourceLocation, Holder> holders = Maps.newHashMap();
 
-	private List<Hitbox> load(ResourceLocation location) {
-		final List<Hitbox> result = Lists.newArrayList();
-		if (resourceManager != null) {
-			try {
-				IResource resource = resourceManager.getResource(location);
-
-				Closer closer = Closer.create();
-				try {
-					final InputStream is = closer.register(resource.getInputStream());
-					final Reader reader = closer.register(new InputStreamReader(is, Charsets.UTF_8));
-					final HitboxList list = GSON.fromJson(reader, HitboxList.class);
-					result.addAll(list);
-				} catch (Throwable t) {
-					throw closer.rethrow(t);
-				} finally {
-					closer.close();
-				}
-			} catch (IOException e) {
-				Log.warn(e, "Failed to find hitbox %s", location);
-			}
-		}
-
-		return result;
-	}
+	private final Map<ResourceLocation, HitboxList> resources = Maps.newHashMap();
 
 	public IHitboxSupplier get(ResourceLocation location) {
 		synchronized (holders) {
-			Holder result = holders.get(location);
-			if (result == null) {
-				result = new Holder(location);
-				holders.put(location, result);
-			}
-			return result;
+			return holders.computeIfAbsent(location, Holder::new);
 		}
 	}
 
-	@Override
-	public void onResourceManagerReload(IResourceManager resourceManager) {
-		this.resourceManager = resourceManager;
+	@Override protected void apply(Map<ResourceLocation, JsonObject> data, IResourceManager resourceManagerIn, IProfiler profilerIn) {
+		resources.clear();
+		data.forEach((resourceLocation, jsonObject) -> {
+			resources.put(resourceLocation, GSON.fromJson(jsonObject, HitboxList.class));
+		});
 
-		if (resourceManager != null) {
-			synchronized (holders) {
-				for (Holder holder : holders.values())
-					holder.reload();
-			}
-		}
+		holders.values().forEach(Holder::reload);
 	}
-
 }

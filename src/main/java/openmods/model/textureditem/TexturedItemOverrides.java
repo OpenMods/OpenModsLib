@@ -5,16 +5,18 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemOverride;
-import net.minecraft.client.renderer.block.model.ItemOverrideList;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.IUnbakedModel;
+import net.minecraft.client.renderer.model.ItemOverride;
+import net.minecraft.client.renderer.model.ItemOverrideList;
+import net.minecraft.client.renderer.model.ModelBakery;
+import net.minecraft.client.renderer.texture.ISprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.entity.LivingEntity;
@@ -23,7 +25,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
-import net.minecraftforge.common.model.IModelState;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class TexturedItemOverrides extends ItemOverrideList {
@@ -31,39 +32,54 @@ public class TexturedItemOverrides extends ItemOverrideList {
 	private final IBakedModel untexturedModel;
 	private final IModel texturedModel;
 	private final Set<String> texturesToReplace;
-	private final IModelState state;
+	private final ISprite state;
 	private final VertexFormat format;
 	private final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter;
+	private final ModelBakery bakery;
+	private final List<ItemOverride> texturedModelOverrides;
 
 	private final LoadingCache<Pair<ResourceLocation, Optional<ResourceLocation>>, IBakedModel> textureOverrides = CacheBuilder.newBuilder().expireAfterAccess(5, TimeUnit.SECONDS).build(new CacheLoader<Pair<ResourceLocation, Optional<ResourceLocation>>, IBakedModel>() {
 		@Override
 		public IBakedModel load(Pair<ResourceLocation, Optional<ResourceLocation>> key) {
 			final IModel overrideModel = getOverrideModel(key.getRight());
 			final IModel retexturedModel = retextureModel(overrideModel, key.getKey());
-			return retexturedModel.bake(state, format, bakedTextureGetter);
+			return retexturedModel.bake(bakery, bakedTextureGetter, state, format);
 		}
 	});
 
-	public TexturedItemOverrides(IBakedModel untexturedModel, IModel texturedModel, List<ItemOverride> texturedModelOverrides, Set<String> texturesToReplace, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-		super(Lists.reverse(texturedModelOverrides));
+	public TexturedItemOverrides(IBakedModel untexturedModel, IUnbakedModel texturedModel, final ModelBakery bakery, List<ItemOverride> texturedModelOverrides, Set<String> texturesToReplace, ISprite state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+		super();
 		this.untexturedModel = untexturedModel;
 		this.texturedModel = texturedModel;
+		this.bakery = bakery;
 		this.texturesToReplace = ImmutableSet.copyOf(texturesToReplace);
 		this.state = state;
 		this.format = format;
 		this.bakedTextureGetter = bakedTextureGetter;
+		this.texturedModelOverrides = texturedModelOverrides;
 	}
 
 	@Override
-	public IBakedModel handleItemState(IBakedModel originalModel, @Nonnull ItemStack stack, World world, LivingEntity entity) {
+	public IBakedModel getModelWithOverrides(IBakedModel originalModel, @Nonnull ItemStack stack, World world, LivingEntity entity) {
 		final Optional<ResourceLocation> texture = getTextureFromStack(stack);
 		return texture.isPresent()? rebakeModel(texture.get(), stack, world, entity) : untexturedModel;
 	}
 
 	private IBakedModel rebakeModel(ResourceLocation texture, @Nonnull ItemStack stack, World world, LivingEntity entity) {
 		@SuppressWarnings("deprecation")
-		final Optional<ResourceLocation> overrideLocation = Optional.ofNullable(applyOverride(stack, world, entity));
+		final Optional<ResourceLocation> overrideLocation = applyOverride(stack, world, entity);
 		return textureOverrides.getUnchecked(Pair.of(texture, overrideLocation));
+	}
+
+	private Optional<ResourceLocation> applyOverride(ItemStack stack, World world, LivingEntity entity) {
+		// TODO 1.14 AT transform
+		for (ItemOverride override : texturedModelOverrides) {
+			if (override.matchesItemStack(stack, world, entity)) {
+				return Optional.of(override.getLocation());
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	private IModel getOverrideModel(Optional<ResourceLocation> overrideLocation) {
@@ -84,11 +100,9 @@ public class TexturedItemOverrides extends ItemOverrideList {
 	}
 
 	private static Optional<ResourceLocation> getTextureFromStack(@Nonnull ItemStack stack) {
-		if (stack.hasCapability(ItemTextureCapability.CAPABILITY, null)) {
-			final IItemTexture fluidRender = stack.getCapability(ItemTextureCapability.CAPABILITY, null);
-			return fluidRender.getTexture();
-		}
-
-		return Optional.empty();
+		// TODO 1.14 Request flat map from Forge!
+		return stack.getCapability(ItemTextureCapability.CAPABILITY, null)
+				.map(IItemTexture::getTexture)
+				.orElse(Optional.empty());
 	}
 }

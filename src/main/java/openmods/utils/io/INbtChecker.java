@@ -1,7 +1,7 @@
 package openmods.utils.io;
 
-import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.INBT;
 
 public interface INbtChecker {
-	boolean checkTagType(NBTBase tag);
+	boolean checkTagType(INBT tag);
 }

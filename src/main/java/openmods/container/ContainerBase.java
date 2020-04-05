@@ -1,15 +1,13 @@
 package openmods.container;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.container.ClickType;
 import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.IContainerListener;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import openmods.inventory.GenericInventory;
@@ -41,7 +39,9 @@ public abstract class ContainerBase<T> extends Container {
 		}
 	}
 
-	public ContainerBase(IInventory playerInventory, IInventory ownerInventory, T owner) {
+	// TODO 1.14 Re-design (custom factory at registration, get TE from there)
+	public ContainerBase(@Nullable ContainerType<?> type, int id, IInventory playerInventory, IInventory ownerInventory, T owner) {
+		super(type, id);
 		this.owner = owner;
 		this.inventory = ownerInventory;
 		this.inventorySize = inventory.getSizeInventory();
@@ -52,7 +52,7 @@ public abstract class ContainerBase<T> extends Container {
 		int height = (int)Math.ceil((double)inventorySize / width);
 		for (int y = 0, slotId = 0; y < height; y++) {
 			for (int x = 0; x < width; x++, slotId++) {
-				addSlotToContainer(new RestrictedSlot(inventory, slotId,
+				addSlot(new RestrictedSlot(inventory, slotId,
 						xOffset + x * 18,
 						yOffset + y * 18));
 			}
@@ -65,7 +65,7 @@ public abstract class ContainerBase<T> extends Container {
 
 	protected void addInventoryLine(int xOffset, int yOffset, int start, int count, int margin) {
 		for (int x = 0, slotId = start; x < count; x++, slotId++) {
-			addSlotToContainer(new RestrictedSlot(inventory, slotId,
+			addSlot(new RestrictedSlot(inventory, slotId,
 					xOffset + x * (18 + margin),
 					yOffset));
 		}
@@ -78,13 +78,13 @@ public abstract class ContainerBase<T> extends Container {
 	protected void addPlayerInventorySlots(int offsetX, int offsetY) {
 		for (int row = 0; row < 3; row++)
 			for (int column = 0; column < 9; column++)
-				addSlotToContainer(new Slot(playerInventory,
+				addSlot(new Slot(playerInventory,
 						column + row * 9 + 9,
 						offsetX + column * 18,
 						offsetY + row * 18));
 
 		for (int slot = 0; slot < 9; slot++)
-			addSlotToContainer(new Slot(playerInventory, slot, offsetX + slot
+			addSlot(new Slot(playerInventory, slot, offsetX + slot
 					* 18, offsetY + 58));
 	}
 
@@ -178,16 +178,6 @@ public abstract class ContainerBase<T> extends Container {
 
 	protected List<Slot> getSlots() {
 		return inventorySlots;
-	}
-
-	public Set<PlayerEntity> getPlayers() {
-		Set<PlayerEntity> players = new HashSet<>();
-		for (IContainerListener crafter : listeners) {
-			if (crafter instanceof ServerPlayerEntity) {
-				players.add((ServerPlayerEntity)crafter);
-			}
-		}
-		return players;
 	}
 
 	public void onButtonClicked(PlayerEntity player, int buttonId) {}

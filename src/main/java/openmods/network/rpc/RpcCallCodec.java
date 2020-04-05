@@ -3,22 +3,17 @@ package openmods.network.rpc;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToMessageCodec;
+import java.io.IOException;
 import java.util.List;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.INetHandler;
+import java.util.function.Supplier;
 import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.registries.IForgeRegistry;
-import openmods.OpenMods;
 import openmods.utils.CommonRegistryCallbacks;
 
-@Sharable
-public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall> {
+public class RpcCallCodec {
 
 	private final IForgeRegistry<TargetTypeProvider> targetRegistry;
 
@@ -29,8 +24,7 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 		this.methodRegistry = methodRegistry;
 	}
 
-	@Override
-	protected void encode(ChannelHandlerContext ctx, RpcCall call, List<Object> out) throws Exception {
+	protected PacketBuffer encode(RpcCall call) throws IOException {
 		final PacketBuffer output = new PacketBuffer(Unpooled.buffer());
 
 		{
@@ -48,15 +42,11 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 			paramsCodec.writeArgs(output, call.args);
 		}
 
-		FMLProxyPacket packet = new FMLProxyPacket(output, RpcCallDispatcher.CHANNEL_NAME);
-		out.add(packet);
+		return output;
 	}
 
-	@Override
-	protected void decode(ChannelHandlerContext ctx, FMLProxyPacket msg, List<Object> out) throws Exception {
-		final PacketBuffer input = new PacketBuffer(msg.payload());
-
-		final Side side = ctx.channel().attr(NetworkRegistry.CHANNEL_SOURCE).get();
+	protected RpcCall decode(PacketBuffer input,NetworkEvent.Context context) throws IOException {
+		final LogicalSide side = context.getDirection().getReceptionSide();
 
 		final IRpcTarget target;
 		final MethodEntry method;
@@ -67,8 +57,7 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 			final BiMap<Integer, TargetTypeProvider> idToEntryMap = CommonRegistryCallbacks.getEntryIdMap(targetRegistry).inverse();
 			final TargetTypeProvider entry = idToEntryMap.get(targetId);
 			target = entry.createRpcTarget();
-			PlayerEntity player = getPlayer(msg);
-			target.readFromStreamStream(side, player, input);
+			target.readFromStreamStream(side, input);
 		}
 
 		{
@@ -81,15 +70,6 @@ public class RpcCallCodec extends MessageToMessageCodec<FMLProxyPacket, RpcCall>
 		int bufferJunkSize = input.readableBytes();
 		Preconditions.checkState(bufferJunkSize == 0, "%s junk bytes left in buffer, method = %s", bufferJunkSize, method);
 
-		out.add(new RpcCall(target, method, args));
-		input.release();
+		return new RpcCall(target, method, args);
 	}
-
-	protected PlayerEntity getPlayer(FMLProxyPacket msg) {
-		INetHandler handler = msg.handler();
-		PlayerEntity player = OpenMods.proxy.getPlayerFromHandler(handler);
-		Preconditions.checkNotNull(player, "Can't get player from handler %s", handler);
-		return player;
-	}
-
 }

@@ -185,7 +185,7 @@ public abstract class SyncMapServer extends SyncMap {
 				final PacketBuffer deltaPayload = new PacketBuffer(Unpooled.buffer());
 				writeOwnerInfo(deltaPayload);
 				writeUpdatePacket(deltaPayload, changedObjects);
-				SyncChannelHolder.INSTANCE.sendPayloadToPlayers(deltaPayload, players);
+				SyncChannelHolder.INSTANCE.sendPayload(deltaPayload, players);
 			} catch (IOException e) {
 				Log.warn(e, "IOError during delta sync");
 			}
@@ -229,7 +229,7 @@ public abstract class SyncMapServer extends SyncMap {
 					final PacketBuffer deltaPayload = new PacketBuffer(Unpooled.buffer());
 					writeOwnerInfo(deltaPayload);
 					writeUpdatePacket(deltaPayload, changes);
-					SyncChannelHolder.INSTANCE.sendPayloadToPlayers(deltaPayload, deltaPacketTargets);
+					SyncChannelHolder.INSTANCE.sendPayload(deltaPayload, deltaPacketTargets);
 				}
 			} catch (IOException e) {
 				Log.warn(e, "IOError during delta sync");
@@ -240,7 +240,7 @@ public abstract class SyncMapServer extends SyncMap {
 					final PacketBuffer fullPayload = new PacketBuffer(Unpooled.buffer());
 					writeOwnerInfo(fullPayload);
 					writeSyncObjectInitialization(fullPayload);
-					SyncChannelHolder.INSTANCE.sendPayloadToPlayers(fullPayload, fullPacketTargets);
+					SyncChannelHolder.INSTANCE.sendPayload(fullPayload, fullPacketTargets);
 				}
 			} catch (IOException e) {
 				Log.warn(e, "IOError during full sync");

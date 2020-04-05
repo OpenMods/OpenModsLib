@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import net.minecraft.item.Item;
 
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface RegisterItem {
@@ -23,11 +24,7 @@ public @interface RegisterItem {
 
 	boolean isConfigurable() default true;
 
-	boolean registerDefaultModel() default true;
-
 	boolean addToModCreativeTab() default true;
-
-	Class<? extends ICustomItemModelProvider> customItemModels() default ICustomItemModelProvider.class;
 
 	String[] legacyIds() default {};
 }

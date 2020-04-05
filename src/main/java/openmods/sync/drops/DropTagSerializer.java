@@ -10,7 +10,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import openmods.reflection.FieldAccess;
 import openmods.sync.ISyncableObject;
-import openmods.utils.ItemUtils;
 
 public class DropTagSerializer {
 
@@ -52,20 +51,20 @@ public class DropTagSerializer {
 	public void read(CompoundNBT tag, boolean skipEmpty) {
 		for (Map.Entry<String, ISyncableObject> e : objects.entrySet()) {
 			final String key = e.getKey();
-			if (!skipEmpty || tag.hasKey(key)) e.getValue().readFromNBT(tag, key);
+			if (!skipEmpty || tag.contains(key)) e.getValue().readFromNBT(tag, key);
 		}
 	}
 
 	@Nonnull
 	public ItemStack write(ItemStack stack) {
-		CompoundNBT tag = ItemUtils.getItemTag(stack);
+		CompoundNBT tag = stack.getOrCreateTag();
 		write(tag);
 		return stack;
 	}
 
 	@Nonnull
 	public void read(ItemStack stack, boolean skipEmpty) {
-		CompoundNBT tag = ItemUtils.getItemTag(stack);
+		CompoundNBT tag = stack.getOrCreateTag();
 		read(tag, skipEmpty);
 	}
 

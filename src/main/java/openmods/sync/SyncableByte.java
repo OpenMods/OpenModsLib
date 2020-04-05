@@ -42,7 +42,7 @@ public class SyncableByte extends SyncableObjectBase implements ISyncableValuePr
 
 	@Override
 	public void writeToNBT(CompoundNBT tag, String name) {
-		tag.setByte(name, value);
+		tag.putByte(name, value);
 	}
 
 	@Override

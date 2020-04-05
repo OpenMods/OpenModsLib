@@ -46,7 +46,7 @@ public class SyncableFloat extends SyncableObjectBase implements ISyncableValueP
 
 	@Override
 	public void writeToNBT(CompoundNBT tag, String name) {
-		tag.setFloat(name, value);
+		tag.putFloat(name, value);
 	}
 
 	@Override

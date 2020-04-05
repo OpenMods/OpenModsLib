@@ -7,7 +7,7 @@ import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class DropCapture {
 
@@ -21,7 +21,7 @@ public class DropCapture {
 		}
 
 		private boolean check(ItemEntity item) {
-			if (!item.isDead && aabb.intersects(item.getEntityBoundingBox())) {
+			if (!item.isAlive() && aabb.intersects(item.getBoundingBox())) {
 				drops.add(item);
 				return true;
 			}

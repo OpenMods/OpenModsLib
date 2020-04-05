@@ -84,6 +84,11 @@ public class SidedItemHandlerAdapter {
 		public int getSlotLimit(int slot) {
 			return inventory.getSlotLimit(slot);
 		}
+
+		@Override
+		public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+			return inventory.isItemValid(slot, stack);
+		}
 	}
 
 	private class SideHandler {
@@ -115,7 +120,7 @@ public class SidedItemHandlerAdapter {
 
 	{
 		final Map<Direction, SideHandler> handlers = Maps.newEnumMap(Direction.class);
-		for (Direction side : Direction.VALUES)
+		for (Direction side : Direction.values())
 			handlers.put(side, new SideHandler(side));
 
 		this.handlers = Collections.unmodifiableMap(handlers);

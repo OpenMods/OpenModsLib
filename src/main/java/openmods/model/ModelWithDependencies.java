@@ -7,16 +7,19 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import net.minecraft.client.renderer.block.model.IBakedModel;
+import javax.annotation.Nullable;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.IUnbakedModel;
+import net.minecraft.client.renderer.model.ModelBakery;
+import net.minecraft.client.renderer.texture.ISprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
-import net.minecraftforge.common.model.IModelState;
 import openmods.utils.CollectionUtils;
 
-public class ModelWithDependencies implements IModel {
+public class ModelWithDependencies implements IUnbakedModel {
 	public static final ModelWithDependencies EMPTY = new ModelWithDependencies(Optional.empty(), ImmutableSet.of(), new ModelTextureMap());
 
 	private final Optional<ResourceLocation> base;
@@ -37,12 +40,11 @@ public class ModelWithDependencies implements IModel {
 	}
 
 	@Override
-	public Collection<ResourceLocation> getTextures() {
+	public Collection<ResourceLocation> getTextures(Function<ResourceLocation, IUnbakedModel> modelGetter, Set<String> missingTextureErrors) {
 		return textures.getTextures();
 	}
 
-	@Override
-	public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+	@Nullable @Override public IBakedModel bake(ModelBakery bakery, Function<ResourceLocation, TextureAtlasSprite> spriteGetter, ISprite sprite, VertexFormat format) {
 		final IModel model;
 		if (base.isPresent()) {
 			model = ModelLoaderRegistry.getModelOrLogError(base.get(), "Couldn't load MultiLayerModel dependency: " + base.get());
@@ -50,11 +52,11 @@ public class ModelWithDependencies implements IModel {
 			model = ModelLoaderRegistry.getMissingModel();
 		}
 
-		return model.bake(state, format, bakedTextureGetter);
+		return model.bake(bakery, spriteGetter, sprite, format);
 	}
 
 	@Override
-	public IModel process(ImmutableMap<String, String> customData) {
+	public IUnbakedModel process(ImmutableMap<String, String> customData) {
 		final ModelUpdater updater = new ModelUpdater(customData);
 
 		final Optional<ResourceLocation> base = updater.get("base", ModelUpdater.MODEL_LOCATION, this.base);
@@ -64,7 +66,7 @@ public class ModelWithDependencies implements IModel {
 	}
 
 	@Override
-	public IModel retexture(ImmutableMap<String, String> updates) {
+	public IUnbakedModel retexture(ImmutableMap<String, String> updates) {
 		final Optional<ModelTextureMap> newTextures = textures.update(updates);
 		return newTextures.isPresent()? new ModelWithDependencies(base, dependencies, newTextures.get()) : this;
 	}

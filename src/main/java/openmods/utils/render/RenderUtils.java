@@ -1,9 +1,9 @@
 package openmods.utils.render;
 
+import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -13,8 +13,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import openmods.colors.RGB;
 import org.lwjgl.opengl.GL11;
 
@@ -46,7 +46,7 @@ public class RenderUtils {
 	 * @return Returns a world for rendering with
 	 */
 	public static World getRenderWorld() {
-		if (Minecraft.getMinecraft() != null) return Minecraft.getMinecraft().world;
+		if (Minecraft.getInstance() != null) return Minecraft.getInstance().world;
 		return null;
 	}
 
@@ -159,7 +159,7 @@ public class RenderUtils {
 		final float r = (float)((rgb >> 16) & 0xFF) / 255;
 		final float g = (float)((rgb >> 8) & 0xFF) / 255;
 		final float b = (float)((rgb >> 0) & 0xFF) / 255;
-		GlStateManager.color(r, g, b);
+		GlStateManager.color3f(r, g, b);
 	}
 
 	public static void setColor(int rgb, float alpha) {
@@ -167,19 +167,19 @@ public class RenderUtils {
 		final float g = (float)((rgb >> 8) & 0xFF) / 255;
 		final float b = (float)((rgb >> 0) & 0xFF) / 255;
 
-		GlStateManager.color(r, g, b, alpha);
+		GlStateManager.color4f(r, g, b, alpha);
 	}
 
 	public static void disableLightmap() {
-		GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-		GlStateManager.disableTexture2D();
-		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+		GlStateManager.activeTexture(GLX.GL_TEXTURE1);
+		GlStateManager.disableTexture();
+		GlStateManager.activeTexture(GLX.GL_TEXTURE0);
 	}
 
 	public static void enableLightmap() {
-		GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit);
-		GlStateManager.enableTexture2D();
-		GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit);
+		GlStateManager.activeTexture(GLX.GL_TEXTURE1);
+		GlStateManager.enableTexture();
+		GlStateManager.activeTexture(GLX.GL_TEXTURE1);
 	}
 
 	public static RGB getFogColor() {

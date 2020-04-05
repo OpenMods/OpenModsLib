@@ -1,27 +1,20 @@
 package openmods;
 
-import java.io.File;
+import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.EntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.util.CompoundDataFixer;
+import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
-import openmods.config.ConfigChangeListener;
-import openmods.config.ConfigStorage;
-import openmods.config.properties.CommandConfig;
-import openmods.config.properties.ConfigProcessing;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import openmods.entity.DelayedEntityLoadManager;
 import openmods.entity.EntityBlock;
 import openmods.fakeplayer.FakePlayerPool;
@@ -33,11 +26,12 @@ import openmods.network.rpc.targets.EntityRpcTarget;
 import openmods.network.rpc.targets.SyncRpcTarget;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
 import openmods.proxy.IOpenModsProxy;
+import openmods.proxy.OpenClientProxy;
+import openmods.proxy.OpenServerProxy;
+import openmods.recipe.EnchantingRecipe;
 import openmods.reflection.TypeVariableHolderHandler;
 import openmods.source.ClassSourceCollector;
-import openmods.source.CommandSource;
 import openmods.sync.SyncChannelHolder;
-import openmods.sync.SyncableBlock;
 import openmods.sync.SyncableBlockState;
 import openmods.sync.SyncableBoolean;
 import openmods.sync.SyncableByte;
@@ -64,24 +58,13 @@ import openmods.utils.bitmap.IRpcIntBitMap;
 import openmods.world.DelayedActionTickHandler;
 import openmods.world.DropCapture;
 
-@Mod(modid = OpenMods.MODID, name = OpenMods.MODID, version = OpenMods.VERSION, dependencies = OpenMods.DEPENDENCIES, guiFactory = OpenMods.GUI_FACTORY, updateJSON = OpenMods.UPDATE_JSON, certificateFingerprint = OpenMods.CERTIFICATE_FINGERPRINT)
+@Mod(OpenMods.MODID)
 public class OpenMods {
 
 	public static final String MODID = "openmods";
-	public static final String MODNAME = "OpenModsLib";
-	public static final String VERSION = "$LIB-VERSION$";
-	public static final String DEPENDENCIES = "required:forge@[14.23.4.2705,);required-after:openmodscore";
-	public static final String GUI_FACTORY = "openmods.GuiFactory";
-	public static final String UPDATE_JSON = "http://openmods.info/versions/openmodslib.json";
-	public static final String CERTIFICATE_FINGERPRINT = "d2a9a8e8440196e26a268d1f3ddc01b2e9c572a5";
 
-	private static final int ENTITY_BLOCK_ID = 804;
-
-	@Instance(MODID)
-	public static OpenMods instance;
-
-	@SidedProxy(clientSide = "openmods.proxy.OpenClientProxy", serverSide = "openmods.proxy.OpenServerProxy")
-	public static IOpenModsProxy proxy;
+	public static final IOpenModsProxy proxy = DistExecutor.runForDist(() -> OpenClientProxy::new, () -> OpenServerProxy::new);
+	public static final String ENTITY_BLOCK_ID = MODID + ":block";
 
 	private ClassSourceCollector collector;
 
@@ -93,6 +76,14 @@ public class OpenMods {
 		return new ResourceLocation(MODID, id);
 	}
 
+	public OpenMods() {
+		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+		modEventBus.addListener(this::preInit);
+		modEventBus.addListener(this::postInit);
+
+		MinecraftForge.EVENT_BUS.addListener(this::severStart);
+	}
+
 	@EventBusSubscriber
 	public static class DefaultRegistryEntries {
 
@@ -100,7 +91,6 @@ public class OpenMods {
 		public static void registerSyncTypes(RegistryEvent.Register<SyncableObjectType> type) {
 			SyncableObjectTypeRegistry.startRegistration(type.getRegistry())
 					.register(SyncableTank.class)
-					.register(SyncableBlock.class)
 					.register(SyncableBlockState.class)
 					.register(SyncableBoolean.class)
 					.register(SyncableByte.class)
@@ -139,20 +129,31 @@ public class OpenMods {
 					.registerTargetWrapper(SyncRpcTarget.SyncTileEntityRpcTarget.class);
 		}
 
+		@SubscribeEvent
+		public static void registerEntities(RegistryEvent.Register<EntityType<?>> evt) {
+			evt.getRegistry().register(
+					EntityType.Builder.create(EntityBlock::new, EntityClassification.MISC)
+							.setTrackingRange(64)
+							.setUpdateInterval(1)
+							.size(0.925F, 0.925F)
+							.setCustomClientFactory((spawnEntity, world) -> new EntityBlock(EntityBlock.TYPE, world))
+							.build(ENTITY_BLOCK_ID)
+			);
+		}
 	}
 
-	@EventHandler
-	public void preInit(FMLPreInitializationEvent evt) {
-		new TypeVariableHolderHandler().fillAllHolders(evt.getAsmData());
+	private void preInit(FMLCommonSetupEvent evt) {
+		new TypeVariableHolderHandler().fillAllHolders();
 
 		SyncChannelHolder.ensureLoaded();
 
-		final File configFile = evt.getSuggestedConfigurationFile();
-		Configuration config = new Configuration(configFile);
-		ConfigProcessing.processAnnotations(MODID, config, LibConfig.class);
-		MinecraftForge.EVENT_BUS.register(new ConfigChangeListener(MODID, config));
+		// TODO: 1.14 config handling
+		//final File configFile = evt.getSuggestedConfigurationFile();
+		//Configuration config = new Configuration(configFile);
+		//ConfigProcessing.processAnnotations(MODID, config, LibConfig.class);
+		//MinecraftForge.EVENT_BUS.register(new ConfigChangeListener(MODID, config));
 
-		if (config.hasChanged()) config.save();
+		//if (config.hasChanged()) config.save();
 
 		MinecraftForge.EVENT_BUS.register(DelayedEntityLoadManager.instance);
 
@@ -162,31 +163,23 @@ public class OpenMods {
 
 		MinecraftForge.EVENT_BUS.register(DelayedActionTickHandler.INSTANCE);
 
-		MinecraftForge.EVENT_BUS.register(ConfigStorage.instance);
+		MinecraftForge.EVENT_BUS.register(EnchantingRecipe.class);
 
-		collector = new ClassSourceCollector(evt.getAsmData());
+		collector = new ClassSourceCollector();
 
-		final CompoundDataFixer dataFixer = FMLCommonHandler.instance().getDataFixer();
+		CraftingHelper.register(new EnchantingRecipe.EchantmentExistsConditionSerializer());
 
-		EntityRegistry.registerModEntity(OpenMods.location("block"), EntityBlock.class, "Block", ENTITY_BLOCK_ID, instance, 64, 1, true);
-		EntityBlock.registerFixes(dataFixer, EntityBlock.class);
 		proxy.preInit();
 	}
 
-	@EventHandler
-	public void init(FMLInitializationEvent evt) {
-		proxy.init();
-	}
-
-	@EventHandler
-	public void postInit(FMLPostInitializationEvent evt) {
+	private void postInit(InterModProcessEvent evt) {
 		Integration.loadModules();
 		proxy.postInit();
 	}
 
-	@EventHandler
-	public void severStart(FMLServerStartingEvent evt) {
-		evt.registerServerCommand(new CommandConfig("om_config_s", true));
-		evt.registerServerCommand(new CommandSource("om_source_s", true, collector));
+	private void severStart(FMLServerStartingEvent evt) {
+		// TODO 1.14 Redo commands
+		//evt.registerServerCommand(new CommandConfig("om_config_s", true));
+		//evt.registerServerCommand(new CommandSource("om_source_s", true, collector));
 	}
 }

@@ -2,8 +2,8 @@ package openmods.gui.component;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.Map;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.Slot;
 import openmods.gui.Icon;
@@ -15,17 +15,17 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 
 	private static final BoxRenderer BOX_RENDERER = new BoxRenderer(0, 5);
 
-	public static final ISlotBackgroundRenderer normalSlot = (gui, slot) -> gui.drawTexturedModalRect(slot.xPos - 1, slot.yPos - 1, 0, 20, 18, 18);
+	public static final ISlotBackgroundRenderer normalSlot = (gui, slot) -> gui.blit(slot.xPos - 1, slot.yPos - 1, 0, 20, 18, 18);
 
-	public static final ISlotBackgroundRenderer bigSlot = (gui, slot) -> gui.drawTexturedModalRect(slot.xPos - 5, slot.yPos - 5, 29, 20, 26, 26);
+	public static final ISlotBackgroundRenderer bigSlot = (gui, slot) -> gui.blit(slot.xPos - 5, slot.yPos - 5, 29, 20, 26, 26);
 
 	public static final ISlotBackgroundRenderer noRenderSlot = (gui, slot) -> {};
 
 	public static ISlotBackgroundRenderer coloredSlot(final int color) {
 		return (gui, slot) -> {
 			RenderUtils.setColor(color);
-			gui.drawTexturedModalRect(slot.xPos - 1, slot.yPos - 1, 0, 20, 18, 18);
-			GlStateManager.color(1, 1, 1);
+			gui.blit(slot.xPos - 1, slot.yPos - 1, 0, 20, 18, 18);
+			GlStateManager.color3f(1, 1, 1);
 		};
 	}
 
@@ -48,14 +48,14 @@ public class GuiComponentPanel extends GuiComponentResizableComposite {
 
 	@Override
 	protected void renderComponentBackground(int x, int y, int mouseX, int mouseY) {
-		GlStateManager.color(1, 1, 1);
+		GlStateManager.color3f(1, 1, 1);
 		bindComponentsSheet();
 		BOX_RENDERER.render(this, this.x + x, this.y + y, width, height, 0xFFFFFFFF);
 	}
 
 	@Override
 	protected void renderComponentForeground(int x, int y, int mouseX, int mouseY) {
-		GlStateManager.color(1, 1, 1);
+		GlStateManager.color3f(1, 1, 1);
 
 		if (container != null) {
 			for (Slot slot : container.inventorySlots) {

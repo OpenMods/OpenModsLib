@@ -8,8 +8,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.Log;
 import openmods.api.IValueReceiver;
@@ -78,9 +78,10 @@ public class MiscUtils {
 	public static String getTranslatedFluidName(FluidStack fluidStack) {
 		if (fluidStack == null) return "";
 		final Fluid fluid = fluidStack.getFluid();
-		String localizedName = fluid.getLocalizedName(fluidStack);
-		if (!Strings.isNullOrEmpty(localizedName) && !localizedName.equals(fluid.getUnlocalizedName())) {
-			return fluid.getRarity(fluidStack).rarityColor.toString() + localizedName;
+		String localizedName = fluid.getAttributes().getTranslationKey(fluidStack);
+		final String translatedName = TranslationUtils.translateToLocal(localizedName);
+		if (!Strings.isNullOrEmpty(localizedName) && !localizedName.equals(translatedName)) {
+			return fluid.getAttributes().getRarity(fluidStack).color.toString() + localizedName;
 		} else {
 			return TextFormatting.OBFUSCATED + "LOLNOPE" + TextFormatting.RESET;
 		}

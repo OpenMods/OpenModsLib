@@ -51,12 +51,12 @@ public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implemen
 
 	@Override
 	public void writeToNBT(CompoundNBT nbt, String name) {
-		nbt.setInteger(name, value.ordinal());
+		nbt.putInt(name, value.ordinal());
 	}
 
 	@Override
 	public void readFromNBT(CompoundNBT nbt, String name) {
-		int original = nbt.getInteger(name);
+		int original = nbt.getInt(name);
 		value = values[original];
 	}
 

@@ -4,34 +4,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Set;
-import net.minecraftforge.common.property.IUnlistedProperty;
+import net.minecraftforge.client.model.data.ModelProperty;
 
 public class VariantModelState {
 
 	public static final String DEFAULT_MARKER = "<default>";
 
-	public static final IUnlistedProperty<VariantModelState> PROPERTY = new IUnlistedProperty<VariantModelState>() {
-
-		@Override
-		public String valueToString(VariantModelState value) {
-			return value.selectors.toString();
-		}
-
-		@Override
-		public boolean isValid(VariantModelState value) {
-			return true;
-		}
-
-		@Override
-		public Class<VariantModelState> getType() {
-			return VariantModelState.class;
-		}
-
-		@Override
-		public String getName() {
-			return "selectors";
-		}
-	};
+	public static final ModelProperty<VariantModelState> PROPERTY = new ModelProperty<VariantModelState>();
 
 	public static final VariantModelState EMPTY = new VariantModelState();
 

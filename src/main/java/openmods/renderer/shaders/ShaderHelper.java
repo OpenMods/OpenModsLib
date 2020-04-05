@@ -2,9 +2,9 @@ package openmods.renderer.shaders;
 
 import org.lwjgl.opengl.ARBShaderObjects;
 import org.lwjgl.opengl.ARBVertexShader;
-import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.GLCapabilities;
 
 public class ShaderHelper {
 	/*
@@ -20,7 +20,7 @@ public class ShaderHelper {
 	public static IShaderMethods methods;
 
 	static void initialize() {
-		ContextCapabilities caps = GLContext.getCapabilities();
+		GLCapabilities caps = GL.getCapabilities();
 
 		if (GL20ShaderMethods.isSupported(caps)) methods = new GL20ShaderMethods();
 		else if (ARBShaderMethods.isSupported(caps)) methods = new ARBShaderMethods();
@@ -83,7 +83,7 @@ public class ShaderHelper {
 	}
 
 	private static class GL20ShaderMethods implements IShaderMethods {
-		public static boolean isSupported(ContextCapabilities caps) {
+		public static boolean isSupported(GLCapabilities caps) {
 			return caps.OpenGL20;
 		}
 
@@ -204,7 +204,7 @@ public class ShaderHelper {
 	}
 
 	private static class ARBShaderMethods implements IShaderMethods {
-		public static boolean isSupported(ContextCapabilities caps) {
+		public static boolean isSupported(GLCapabilities caps) {
 			return caps.GL_ARB_shader_objects && caps.GL_ARB_vertex_shader && caps.GL_ARB_fragment_shader;
 		}
 

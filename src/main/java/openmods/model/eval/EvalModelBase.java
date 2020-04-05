@@ -3,9 +3,12 @@ package openmods.model.eval;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
+import net.minecraft.client.renderer.model.IUnbakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
@@ -16,7 +19,7 @@ import openmods.model.ModelUpdater;
 import openmods.model.ModelUpdater.ValueConverter;
 import openmods.utils.CollectionUtils;
 
-public abstract class EvalModelBase implements IModel {
+public abstract class EvalModelBase implements IUnbakedModel {
 
 	protected final Optional<ResourceLocation> baseModel;
 
@@ -32,6 +35,11 @@ public abstract class EvalModelBase implements IModel {
 		return CollectionUtils.asSet(baseModel);
 	}
 
+	@Override
+	public Collection<ResourceLocation> getTextures(Function<ResourceLocation, IUnbakedModel> modelGetter, Set<String> missingTextureErrors) {
+		return Collections.emptyList();
+	}
+
 	protected IModel loadBaseModel(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
 		if (baseModel.isPresent()) {
 			return ModelLoaderRegistry.getModelOrLogError(baseModel.get(), "Couldn't load eval model dependency: " + baseModel.get());
@@ -41,7 +49,7 @@ public abstract class EvalModelBase implements IModel {
 	}
 
 	@Override
-	public IModel process(ImmutableMap<String, String> customData) {
+	public IUnbakedModel process(ImmutableMap<String, String> customData) {
 		final ModelUpdater updater = new ModelUpdater(customData);
 
 		final Optional<ResourceLocation> baseModel = updater.get("base", ModelUpdater.MODEL_LOCATION, this.baseModel);
@@ -68,6 +76,6 @@ public abstract class EvalModelBase implements IModel {
 		return update(customData, updater, baseModel, evaluatorFactory);
 	}
 
-	protected abstract IModel update(Map<String, String> customData, ModelUpdater updater, Optional<ResourceLocation> baseModel, EvaluatorFactory evaluator);
+	protected abstract IUnbakedModel update(Map<String, String> customData, ModelUpdater updater, Optional<ResourceLocation> baseModel, EvaluatorFactory evaluator);
 
 }

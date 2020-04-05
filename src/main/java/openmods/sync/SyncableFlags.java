@@ -22,7 +22,7 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 
 		@Override
 		public void writeToNBT(CompoundNBT tag, String name) {
-			tag.setByte(name, (byte)value);
+			tag.putByte(name, (byte)value);
 		}
 
 		@Override
@@ -44,7 +44,7 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 
 		@Override
 		public void writeToNBT(CompoundNBT tag, String name) {
-			tag.setShort(name, (short)value);
+			tag.putShort(name, (short)value);
 		}
 
 		@Override
@@ -66,12 +66,12 @@ public abstract class SyncableFlags extends SyncableObjectBase implements IRpcIn
 
 		@Override
 		public void writeToNBT(CompoundNBT tag, String name) {
-			tag.setInteger(name, value);
+			tag.putInt(name, value);
 		}
 
 		@Override
 		public void readFromNBT(CompoundNBT tag, String name) {
-			value = tag.getInteger(name);
+			value = tag.getInt(name);
 		}
 	}
 

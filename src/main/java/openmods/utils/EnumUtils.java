@@ -1,12 +1,12 @@
 package openmods.utils;
 
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class EnumUtils {
 
 	private static class EnumMappings<T extends Enum<T>> {
-		private final TIntObjectMap<T> idToValue = new TIntObjectHashMap<>();
+		private final Int2ObjectMap<T> idToValue = new Int2ObjectOpenHashMap<>();
 
 		public EnumMappings(Class<T> enumCls) {
 

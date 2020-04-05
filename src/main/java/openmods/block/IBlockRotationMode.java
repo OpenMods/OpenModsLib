@@ -1,8 +1,8 @@
 package openmods.block;
 
 import java.util.Set;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.state.Property;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import openmods.geometry.LocalDirections;
@@ -10,7 +10,7 @@ import openmods.geometry.Orientation;
 
 public interface IBlockRotationMode {
 
-	IProperty<Orientation> getProperty();
+	Property<Orientation> getProperty();
 
 	int getMask();
 

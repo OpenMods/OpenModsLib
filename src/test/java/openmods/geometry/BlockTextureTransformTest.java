@@ -30,7 +30,7 @@ public class BlockTextureTransformTest {
 	}
 
 	public void testInversion(BlockTextureTransform t) {
-		for (Direction dir : Direction.VALUES)
+		for (Direction dir : Direction.values())
 			testInversion(t, dir);
 	}
 
@@ -41,37 +41,37 @@ public class BlockTextureTransformTest {
 
 	@Test
 	public void testInversionAfterCWRotation() {
-		for (Direction dir : Direction.VALUES)
+		for (Direction dir : Direction.values())
 			testInversion(BlockTextureTransform.builder().rotateCW(dir).build());
 	}
 
 	@Test
 	public void testInversionAfterCCWRotation() {
-		for (Direction dir : Direction.VALUES)
+		for (Direction dir : Direction.values())
 			testInversion(BlockTextureTransform.builder().rotateCCW(dir).build());
 	}
 
 	@Test
 	public void testInversionAfterUWSwapRotation() {
-		for (Direction dir : Direction.VALUES)
+		for (Direction dir : Direction.values())
 			testInversion(BlockTextureTransform.builder().swapUV(dir).build());
 	}
 
 	@Test
 	public void testInversionAfterMirrorURotation() {
-		for (Direction dir : Direction.VALUES)
+		for (Direction dir : Direction.values())
 			testInversion(BlockTextureTransform.builder().mirrorU(dir).build());
 	}
 
 	@Test
 	public void testInversionAfterMirrorUVRotation() {
-		for (Direction dir : Direction.VALUES)
+		for (Direction dir : Direction.values())
 			testInversion(BlockTextureTransform.builder().mirrorUV(dir).build());
 	}
 
 	@Test
 	public void testInversionAfterMirrorVRotation() {
-		for (Direction dir : Direction.VALUES)
+		for (Direction dir : Direction.values())
 			testInversion(BlockTextureTransform.builder().mirrorV(dir).build());
 	}
 
@@ -94,7 +94,7 @@ public class BlockTextureTransformTest {
 	}
 
 	private static void testIdentity(final BlockTextureTransform a, final BlockTextureTransform b) {
-		for (Direction dir : Direction.VALUES) {
+		for (Direction dir : Direction.values()) {
 			testIdentity(dir, 0, 0, 0, a, b);
 			testIdentity(dir, 0, 1, 0, a, b);
 			testIdentity(dir, 1, 1, 0, a, b);
@@ -104,7 +104,7 @@ public class BlockTextureTransformTest {
 
 	@Test
 	public void testIdentities() {
-		for (Direction dir : Direction.VALUES) {
+		for (Direction dir : Direction.values()) {
 			{
 				final BlockTextureTransform normal = BlockTextureTransform.builder().build();
 

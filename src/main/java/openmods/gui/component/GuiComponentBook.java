@@ -2,7 +2,7 @@ package openmods.gui.component;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.audio.SimpleSound;
 import openmods.Sounds;
 import openmods.gui.Icon;
 import openmods.gui.component.page.BookScaleConfig;
@@ -114,7 +114,7 @@ public class GuiComponentBook extends BaseComposite {
 	}
 
 	private void playPageTurnSound() {
-		parent.getSoundHandler().playSound(PositionedSoundRecord.getMasterRecord(Sounds.PAGE_TURN, 1.0f));
+		parent.getSoundHandler().play(SimpleSound.master(Sounds.PAGE_TURN, 1.0f));
 	}
 
 	public IMouseDownListener createBookmarkListener(final int index) {

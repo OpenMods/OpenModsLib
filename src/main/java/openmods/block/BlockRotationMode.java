@@ -3,9 +3,9 @@ package openmods.block;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.state.EnumProperty;
+import net.minecraft.state.Property;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import openmods.geometry.HalfAxis;
@@ -420,7 +420,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 		Preconditions.checkArgument(this.validDirections.size() == count, "Duplicated directions");
 		Preconditions.checkArgument(count <= MAX_ORIENTATIONS, "Too many values: %s", count);
 
-		this.property = PropertyEnum.create("orientation", Orientation.class, validDirections);
+		this.property = EnumProperty.create("orientation", Orientation.class, validDirections);
 
 		this.idToOrientation = new Orientation[MAX_ORIENTATIONS];
 		this.orientationToId = new int[Orientation.VALUES.length];
@@ -457,7 +457,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 
 	private final int mask;
 
-	private final PropertyEnum<Orientation> property;
+	private final EnumProperty<Orientation> property;
 
 	@Override
 	public Orientation fromValue(int value) {
@@ -493,7 +493,7 @@ public enum BlockRotationMode implements IBlockRotationMode {
 	}
 
 	@Override
-	public IProperty<Orientation> getProperty() {
+	public Property<Orientation> getProperty() {
 		return property;
 	}
 

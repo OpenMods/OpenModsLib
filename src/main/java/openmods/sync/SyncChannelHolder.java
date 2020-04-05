@@ -1,45 +1,80 @@
 package openmods.sync;
 
-import com.google.common.collect.Maps;
 import java.util.Collection;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.IPacket;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.common.network.FMLEmbeddedChannel;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
-import net.minecraftforge.fml.relauncher.Side;
-import openmods.network.ExtendedOutboundHandler;
-import openmods.network.senders.ExtPacketSenderFactory;
-import openmods.network.senders.ITargetedPacketSender;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.network.ICustomPacket;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fml.network.event.EventNetworkChannel;
+import openmods.OpenMods;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class SyncChannelHolder {
 
-	public static final String CHANNEL_NAME = "OpenMods|M";
+	private static final ResourceLocation CHANNEL_ID = OpenMods.location("sync");
+	private static final String PROTOCOL_VERSION = Integer.toString(1);
 
-	public static final SyncChannelHolder INSTANCE = new SyncChannelHolder();
+	public static class SyncException extends RuntimeException {
+		private static final long serialVersionUID = 2585053869917082095L;
 
-	private final Map<Side, ITargetedPacketSender<Collection<ServerPlayerEntity>>> senders = Maps.newEnumMap(Side.class);
-
-	private SyncChannelHolder() {
-		final EnumMap<Side, FMLEmbeddedChannel> channels = NetworkRegistry.INSTANCE.newChannel(CHANNEL_NAME, new InboundSyncHandler());
-
-		for (Map.Entry<Side, FMLEmbeddedChannel> e : channels.entrySet()) {
-			final FMLEmbeddedChannel channel = e.getValue();
-			ExtendedOutboundHandler.install(channel);
-			senders.put(e.getKey(), ExtPacketSenderFactory.createMultiplePlayersSender(channel));
+		public SyncException(Throwable cause, ISyncMapProvider provider) {
+			super(String.format("Failed to sync %s (%s)", provider, provider.getClass()), cause);
 		}
 	}
 
-	public static IPacket<?> createPacket(PacketBuffer payload) {
-		return new FMLProxyPacket(payload, CHANNEL_NAME);
+	private ISyncMapProvider findSyncMapProvider(PacketBuffer payload) {
+		final int ownerType = payload.readVarInt();
+
+		final World world = OpenMods.proxy.getClientWorld();
+
+		switch (ownerType) {
+			case SyncMapEntity.OWNER_TYPE:
+				return SyncMapEntity.findOwner(world, payload);
+			case SyncMapTile.OWNER_TYPE:
+				return SyncMapTile.findOwner(world, payload);
+			default:
+				throw new IllegalArgumentException("Unknown sync map owner type: " + ownerType);
+		}
 	}
 
-	public void sendPayloadToPlayers(PacketBuffer payload, Collection<ServerPlayerEntity> players) {
-		FMLProxyPacket packet = new FMLProxyPacket(payload, CHANNEL_NAME);
-		senders.get(Side.SERVER).sendMessage(packet, players);
+	private void handle(PacketBuffer payload, Supplier<NetworkEvent.Context> source) {
+		final NetworkEvent.Context context = source.get();
+		context.enqueueWork(() -> {
+			final ISyncMapProvider provider = findSyncMapProvider(payload);
+			try {
+				if (provider != null) provider.getSyncMap().readUpdate(payload);
+			} catch (Throwable e) {
+				throw new SyncException(e, provider);
+			}
+		});
+	}
+
+	public static final SyncChannelHolder INSTANCE = new SyncChannelHolder();
+
+	private SyncChannelHolder() {
+		EventNetworkChannel channel = NetworkRegistry.ChannelBuilder.named(CHANNEL_ID)
+				.clientAcceptedVersions(PROTOCOL_VERSION::equals)
+				.serverAcceptedVersions(PROTOCOL_VERSION::equals)
+				.networkProtocolVersion(() -> PROTOCOL_VERSION)
+				.eventNetworkChannel();
+
+		channel.addListener((NetworkEvent.ClientCustomPayloadEvent evt) -> handle(evt.getPayload(), evt.getSource()));
+	}
+
+	public void sendPayload(PacketBuffer payload, final Collection<ServerPlayerEntity> players) {
+		final List<NetworkManager> managers = players.stream().map(p -> p.connection.netManager).collect(Collectors.toList());
+		final PacketDistributor.PacketTarget target = PacketDistributor.NMLIST.with(() -> managers);
+		final ICustomPacket<IPacket<?>> packet = target.getDirection().buildPacket(Pair.of(payload, 0), CHANNEL_ID);
+		target.send(packet.getThis());
 	}
 
 	public static void ensureLoaded() {}

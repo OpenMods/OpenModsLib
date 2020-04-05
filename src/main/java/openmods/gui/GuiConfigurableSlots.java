@@ -2,8 +2,10 @@ package openmods.gui;
 
 import java.util.Set;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.text.ITextComponent;
 import openmods.api.IValueProvider;
 import openmods.api.IValueReceiver;
 import openmods.container.ContainerBase;
@@ -20,8 +22,8 @@ import openmods.utils.bitmap.IWriteableBitMap;
 
 public abstract class GuiConfigurableSlots<T extends TileEntity & ISyncMapProvider & IConfigurableGuiSlots<E>, C extends ContainerBase<T>, E extends Enum<E>> extends SyncedGuiContainer<C> {
 
-	public GuiConfigurableSlots(C container, int width, int height, String name) {
-		super(container, width, height, name);
+	public GuiConfigurableSlots(C container, PlayerInventory player, ITextComponent name, int width, int height) {
+		super(container, player, name, width, height);
 	}
 
 	protected abstract Iterable<E> getSlots();

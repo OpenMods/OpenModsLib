@@ -19,12 +19,13 @@ import info.openmods.calc.types.multi.TypedValue;
 import info.openmods.calc.types.multi.TypedValueCalculatorFactory;
 import info.openmods.calc.utils.Stack;
 import info.openmods.calc.utils.StackValidationException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.command.ICommandSender;
+import net.minecraft.command.CommandSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.text.StringTextComponent;
 import org.apache.commons.lang3.math.Fraction;
@@ -44,21 +45,21 @@ public class CalcState {
 	}
 
 	private static class SenderHolder {
-		private ICommandSender sender;
+		private CommandSource sender;
 
-		public int getX() {
+		public double getX() {
 			Preconditions.checkNotNull(sender, "DERP");
-			return sender.getPosition().getX();
+			return sender.getPos().getX();
 		}
 
-		public int getY() {
+		public double getY() {
 			Preconditions.checkNotNull(sender, "DERP");
-			return sender.getPosition().getY();
+			return sender.getPos().getY();
 		}
 
-		public int getZ() {
+		public double getZ() {
 			Preconditions.checkNotNull(sender, "DERP");
-			return sender.getPosition().getZ();
+			return sender.getPos().getZ();
 		}
 
 		public <E> Calculator<E, ExprType> addPrinter(Calculator<E, ExprType> calculator) {
@@ -78,20 +79,20 @@ public class CalcState {
 				}
 
 				final String result = ": " + Joiner.on(" ").join(results);
-				sender.sendMessage(new StringTextComponent(result));
+				sender.sendFeedback(new StringTextComponent(result), false);
 			});
 
 			calculator.environment.setGlobalSymbol("print", new UnaryFunction.Direct<E>() {
 				@Override
 				protected E call(E value) {
-					sender.sendMessage(new StringTextComponent(printer.str(value)));
+					sender.sendFeedback(new StringTextComponent(printer.str(value)), false);
 					return value;
 				}
 			});
 			return calculator;
 		}
 
-		public synchronized <E> E call(ICommandSender sender, IFunction<E> function) {
+		public synchronized <E> E call(CommandSource sender, IFunction<E> function) {
 			this.sender = sender;
 			final E result = function.call();
 			this.sender = null;
@@ -105,11 +106,11 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<Double, ExprType> calculator = DoubleCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("_x", () -> Double.valueOf(holder.getX()));
+				calculator.environment.setGlobalSymbol("_x", holder::getX);
 
-				calculator.environment.setGlobalSymbol("_y", () -> Double.valueOf(holder.getY()));
+				calculator.environment.setGlobalSymbol("_y", holder::getY);
 
-				calculator.environment.setGlobalSymbol("_z", () -> Double.valueOf(holder.getZ()));
+				calculator.environment.setGlobalSymbol("_z", holder::getZ);
 
 				return calculator;
 			}
@@ -119,11 +120,11 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<Fraction, ExprType> calculator = FractionCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("_x", () -> Fraction.getFraction(holder.getX(), 1));
+				calculator.environment.setGlobalSymbol("_x", () -> Fraction.getFraction(holder.getX()));
 
-				calculator.environment.setGlobalSymbol("_y", () -> Fraction.getFraction(holder.getY(), 1));
+				calculator.environment.setGlobalSymbol("_y", () -> Fraction.getFraction(holder.getY()));
 
-				calculator.environment.setGlobalSymbol("_z", () -> Fraction.getFraction(holder.getZ(), 1));
+				calculator.environment.setGlobalSymbol("_z", () -> Fraction.getFraction(holder.getZ()));
 
 				return calculator;
 			}
@@ -133,11 +134,11 @@ public class CalcState {
 			public Calculator<?, ExprType> newCalculator(final SenderHolder holder) {
 				final Calculator<BigInteger, ExprType> calculator = BigIntCalculatorFactory.createDefault();
 
-				calculator.environment.setGlobalSymbol("_x", () -> BigInteger.valueOf(holder.getX()));
+				calculator.environment.setGlobalSymbol("_x", () -> BigDecimal.valueOf(holder.getX()).toBigInteger());
 
-				calculator.environment.setGlobalSymbol("_y", () -> BigInteger.valueOf(holder.getY()));
+				calculator.environment.setGlobalSymbol("_y", () -> BigDecimal.valueOf(holder.getY()).toBigInteger());
 
-				calculator.environment.setGlobalSymbol("_z", () -> BigInteger.valueOf(holder.getZ()));
+				calculator.environment.setGlobalSymbol("_z", () -> BigDecimal.valueOf(holder.getZ()).toBigInteger());
 
 				return calculator;
 			}
@@ -153,8 +154,8 @@ public class CalcState {
 
 					@Override
 					protected TypedValue call() {
-						if (holder.sender instanceof PlayerEntity) {
-							final EntityPlayerWrapper wrapper = new EntityPlayerWrapper((PlayerEntity)holder.sender, nullValue);
+						if (holder.sender.getEntity() instanceof PlayerEntity) {
+							final EntityPlayerWrapper wrapper = new EntityPlayerWrapper((PlayerEntity)holder.sender.getEntity(), nullValue);
 							return StructWrapper.create(domain, wrapper);
 						}
 
@@ -235,22 +236,22 @@ public class CalcState {
 		setActiveCalculator(newCalculator);
 	}
 
-	public void compileAndExecute(ICommandSender sender, final String expr) {
+	public void compileAndExecute(CommandSource sender, final String expr) {
 		senderHolder.call(sender, () -> {
 			active.compileAndExecute(exprType, expr);
 			return null;
 		});
 	}
 
-	public String compileExecuteAndPrint(ICommandSender sender, final String expr) {
+	public String compileExecuteAndPrint(CommandSource sender, final String expr) {
 		return senderHolder.call(sender, () -> active.compileExecuteAndPrint(exprType, expr));
 	}
 
-	public Object compileAndSetGlobalSymbol(ICommandSender sender, final String id, final String expr) {
+	public Object compileAndSetGlobalSymbol(CommandSource sender, final String id, final String expr) {
 		return senderHolder.call(sender, () -> active.compileAndSetGlobalSymbol(exprType, id, expr));
 	}
 
-	public void compileAndDefineGlobalFunction(ICommandSender sender, final String id, final int argCount, final String expr) {
+	public void compileAndDefineGlobalFunction(CommandSource sender, final String id, final int argCount, final String expr) {
 		senderHolder.call(sender, () -> {
 			active.compileAndDefineGlobalFunction(exprType, id, argCount, expr);
 			return null;

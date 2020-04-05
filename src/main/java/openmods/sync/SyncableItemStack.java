@@ -27,16 +27,16 @@ public class SyncableItemStack extends SyncableObjectBase {
 	public void writeToNBT(CompoundNBT nbt, String name) {
 		if (stack.isEmpty()) {
 			CompoundNBT serialized = new CompoundNBT();
-			stack.writeToNBT(serialized);
-			nbt.setTag(name, serialized);
+			stack.write(serialized);
+			nbt.put(name, serialized);
 		}
 	}
 
 	@Override
 	public void readFromNBT(CompoundNBT nbt, String name) {
-		if (nbt.hasKey(name, Constants.NBT.TAG_COMPOUND)) {
-			CompoundNBT serialized = nbt.getCompoundTag(name);
-			stack = new ItemStack(serialized);
+		if (nbt.contains(name, Constants.NBT.TAG_COMPOUND)) {
+			CompoundNBT serialized = nbt.getCompound(name);
+			stack = ItemStack.read(serialized);
 		} else {
 			stack = ItemStack.EMPTY;
 		}

@@ -11,14 +11,11 @@ public class CompatibilityUtils {
 	@Nullable
 	public static IFluidHandler getFluidHandler(TileEntity te, Direction side) {
 		if (te == null) return null;
-		final IFluidHandler nativeCapability = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side);
-		if (nativeCapability != null) return nativeCapability;
-
-		return null;
+		return te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side).orElse(null);
 	}
 
 	public static boolean isFluidHandler(TileEntity te, Direction side) {
-		return te != null && (te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side));
+		return te != null && (te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, side).isPresent());
 	}
 
 }

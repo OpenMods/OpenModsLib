@@ -31,7 +31,7 @@ public class BlockTextureTransform {
 		private final Map<Direction, Matrix2d> transforms = Maps.newEnumMap(Direction.class);
 
 		private Builder() {
-			for (Direction dir : Direction.VALUES)
+			for (Direction dir : Direction.values())
 				transforms.put(dir, Matrix2d.createIdentity());
 		}
 

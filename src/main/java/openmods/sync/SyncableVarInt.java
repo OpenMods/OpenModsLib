@@ -48,12 +48,12 @@ public class SyncableVarInt extends SyncableObjectBase implements ISyncableValue
 
 	@Override
 	public void writeToNBT(CompoundNBT tag, String name) {
-		tag.setInteger(name, value);
+		tag.putInt(name, value);
 	}
 
 	@Override
 	public void readFromNBT(CompoundNBT tag, String name) {
-		if (tag.hasKey(name)) value = tag.getInteger(name);
+		if (tag.contains(name)) value = tag.getInt(name);
 	}
 
 }

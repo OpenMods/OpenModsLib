@@ -31,7 +31,7 @@ public class VanillaEnchantLogic {
 	private int xpLevels;
 
 	public boolean setup(@Nonnull ItemStack stack, Level level, int power) {
-		if (stack.isEmpty() || !stack.isItemEnchantable()) return false;
+		if (stack.isEmpty() || !stack.isEnchantable()) return false;
 
 		rand.setSeed(seed);
 		this.toEnchant = stack.copy();

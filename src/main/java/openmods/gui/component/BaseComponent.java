@@ -1,14 +1,14 @@
 package openmods.gui.component;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.List;
 import javax.annotation.Nonnull;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
@@ -114,8 +114,8 @@ public abstract class BaseComponent extends AbstractGui {
 		if (mouseUpListener != null) mouseUpListener.componentMouseUp(this, mouseX, mouseY, button);
 	}
 
-	public void mouseDrag(int mouseX, int mouseY, int button, /* love you */long time) {
-		if (mouseDragListener != null) mouseDragListener.componentMouseDrag(this, mouseX, mouseY, button, time);
+	public void mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
+		if (mouseDragListener != null) mouseDragListener.componentMouseDrag(this, mouseX, mouseY, button, dx, dy);
 	}
 
 	public boolean isTicking() {
@@ -128,9 +128,9 @@ public abstract class BaseComponent extends AbstractGui {
 		if (stack.isEmpty()) return;
 
 		RenderHelper.enableGUIStandardItemLighting();
-		final RenderItem itemRenderer = parent.getItemRenderer();
-		GlStateManager.translate(0.0F, 0.0F, 32.0F);
-		this.zLevel = 200.0F;
+		final ItemRenderer itemRenderer = parent.getItemRenderer();
+		GlStateManager.translatef(0.0F, 0.0F, 32.0F);
+		this.blitOffset = 200;
 		itemRenderer.zLevel = 200.0F;
 
 		FontRenderer font;
@@ -139,7 +139,7 @@ public abstract class BaseComponent extends AbstractGui {
 
 		itemRenderer.renderItemAndEffectIntoGUI(stack, x, y);
 		itemRenderer.renderItemOverlayIntoGUI(font, stack, x, y, overlayText);
-		this.zLevel = 0.0F;
+		this.blitOffset = 0;
 		itemRenderer.zLevel = 0.0F;
 		RenderHelper.disableStandardItemLighting();
 	}
@@ -148,13 +148,13 @@ public abstract class BaseComponent extends AbstractGui {
 		if (stack.isEmpty()) return;
 
 		RenderHelper.enableGUIStandardItemLighting();
-		final RenderItem itemRenderer = parent.getItemRenderer();
-		GlStateManager.translate(0.0F, 0.0F, 32.0F);
-		this.zLevel = 200.0F;
+		final ItemRenderer itemRenderer = parent.getItemRenderer();
+		GlStateManager.translated(0.0F, 0.0F, 32.0F);
+		this.blitOffset = 200;
 		itemRenderer.zLevel = 200.0F;
 
 		itemRenderer.renderItemAndEffectIntoGUI(stack, x, y);
-		this.zLevel = 0.0F;
+		this.blitOffset = 0;
 		itemRenderer.zLevel = 0.0F;
 		RenderHelper.disableStandardItemLighting();
 	}
@@ -165,10 +165,10 @@ public abstract class BaseComponent extends AbstractGui {
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder worldrenderer = tessellator.getBuffer();
 		worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-		worldrenderer.pos(x + 0, y + height, this.zLevel).tex(icon.minU, icon.maxV).endVertex();
-		worldrenderer.pos(x + width, y + height, this.zLevel).tex(icon.maxU, icon.maxV).endVertex();
-		worldrenderer.pos(x + width, y + 0, this.zLevel).tex(icon.maxU, icon.minV).endVertex();
-		worldrenderer.pos(x + 0, y + 0, this.zLevel).tex(icon.minU, icon.minV).endVertex();
+		worldrenderer.pos(x + 0, y + height, this.blitOffset).tex(icon.minU, icon.maxV).endVertex();
+		worldrenderer.pos(x + width, y + height, this.blitOffset).tex(icon.maxU, icon.maxV).endVertex();
+		worldrenderer.pos(x + width, y + 0, this.blitOffset).tex(icon.maxU, icon.minV).endVertex();
+		worldrenderer.pos(x + 0, y + 0, this.blitOffset).tex(icon.minU, icon.minV).endVertex();
 		tessellator.draw();
 	}
 

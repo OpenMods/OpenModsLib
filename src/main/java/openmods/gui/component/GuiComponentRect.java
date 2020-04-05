@@ -25,7 +25,7 @@ public class GuiComponentRect extends GuiComponentResizable implements IValueRec
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
 		int oX = x + offsetX;
 		int oY = y + offsetY;
-		drawRect(oX, oY, oX + width, oY + height, getColorForRender());
+		fill(oX, oY, oX + width, oY + height, getColorForRender());
 	}
 
 	@Override

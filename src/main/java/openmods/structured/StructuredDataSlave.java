@@ -102,7 +102,7 @@ public abstract class StructuredDataSlave<C extends IStructureContainer<E>, E ex
 					final Update msg = (Update)c;
 					readElementPayload(msg.idList, msg.elementPayload);
 
-					for (Integer elementId : msg.idList) {
+					for (int elementId : msg.idList) {
 						int containerId = elementToContainer.get(elementId);
 						if (containerId == NULL) throw new ConsistencyCheckFailed("Orphaned element %d", elementId);
 						updatedContainers.put(containerId, elementId);

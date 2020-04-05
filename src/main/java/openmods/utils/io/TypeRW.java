@@ -9,7 +9,7 @@ import net.minecraft.nbt.ByteNBT;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.DoubleNBT;
 import net.minecraft.nbt.FloatNBT;
-import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.IntNBT;
 import net.minecraft.nbt.LongNBT;
 import net.minecraft.nbt.ShortNBT;
@@ -33,18 +33,18 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public boolean checkTagType(NBTBase tag) {
+		public boolean checkTagType(INBT tag) {
 			return tag instanceof IntNBT;
 		}
 
 		@Override
 		public Integer readFromNBT(CompoundNBT tag, String name) {
-			return tag.getInteger(name);
+			return tag.getInt(name);
 		}
 
 		@Override
 		public void writeToNBT(Integer o, CompoundNBT tag, String name) {
-			tag.setInteger(name, o);
+			tag.putInt(name, o);
 		}
 
 		@Override
@@ -66,11 +66,11 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public void writeToNBT(Float o, CompoundNBT tag, String name) {
-			tag.setFloat(name, o);
+			tag.putFloat(name, o);
 		}
 
 		@Override
-		public boolean checkTagType(NBTBase tag) {
+		public boolean checkTagType(INBT tag) {
 			return tag instanceof FloatNBT;
 		}
 
@@ -104,11 +104,11 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public void writeToNBT(Double o, CompoundNBT tag, String name) {
-			tag.setDouble(name, o);
+			tag.putDouble(name, o);
 		}
 
 		@Override
-		public boolean checkTagType(NBTBase tag) {
+		public boolean checkTagType(INBT tag) {
 			return tag instanceof DoubleNBT;
 		}
 
@@ -141,11 +141,11 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public void writeToNBT(String o, CompoundNBT tag, String name) {
-			tag.setString(name, o);
+			tag.putString(name, o);
 		}
 
 		@Override
-		public boolean checkTagType(NBTBase tag) {
+		public boolean checkTagType(INBT tag) {
 			return tag instanceof StringNBT;
 		}
 
@@ -174,11 +174,11 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public void writeToNBT(Short o, CompoundNBT tag, String name) {
-			tag.setShort(name, o);
+			tag.putShort(name, o);
 		}
 
 		@Override
-		public boolean checkTagType(NBTBase tag) {
+		public boolean checkTagType(INBT tag) {
 			return tag instanceof ShortNBT;
 		}
 
@@ -211,11 +211,11 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public void writeToNBT(Byte o, CompoundNBT tag, String name) {
-			tag.setByte(name, o);
+			tag.putByte(name, o);
 		}
 
 		@Override
-		public boolean checkTagType(NBTBase tag) {
+		public boolean checkTagType(INBT tag) {
 			return tag instanceof ByteNBT;
 		}
 
@@ -248,11 +248,11 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public void writeToNBT(Boolean o, CompoundNBT tag, String name) {
-			tag.setBoolean(name, o);
+			tag.putBoolean(name, o);
 		}
 
 		@Override
-		public boolean checkTagType(NBTBase tag) {
+		public boolean checkTagType(INBT tag) {
 			return tag instanceof ByteNBT;
 		}
 
@@ -284,11 +284,11 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public void writeToNBT(Long o, CompoundNBT tag, String name) {
-			tag.setLong(name, o);
+			tag.putLong(name, o);
 		}
 
 		@Override
-		public boolean checkTagType(NBTBase tag) {
+		public boolean checkTagType(INBT tag) {
 			return tag instanceof LongNBT;
 		}
 
@@ -331,7 +331,7 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public void writeToNBT(byte[] o, CompoundNBT tag, String name) {
-			tag.setByteArray(name, o);
+			tag.putByteArray(name, o);
 		}
 
 		@Override
@@ -340,7 +340,7 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 
 		@Override
-		public boolean checkTagType(NBTBase tag) {
+		public boolean checkTagType(INBT tag) {
 			return tag instanceof ByteArrayNBT;
 		}
 	};
@@ -384,17 +384,17 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public BlockPos readFromNBT(CompoundNBT tag, String name) {
-			CompoundNBT coordTag = tag.getCompoundTag(name);
+			CompoundNBT coordTag = tag.getCompound(name);
 			return NbtUtils.readBlockPos(coordTag);
 		}
 
 		@Override
 		public void writeToNBT(BlockPos o, CompoundNBT tag, String name) {
-			tag.setTag(name, NbtUtils.store(o));
+			tag.put(name, NbtUtils.store(o));
 		}
 
 		@Override
-		public boolean checkTagType(NBTBase tag) {
+		public boolean checkTagType(INBT tag) {
 			return tag instanceof CompoundNBT;
 		}
 	};
@@ -418,11 +418,11 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public void writeToNBT(UUID o, CompoundNBT tag, String name) {
-			tag.setTag(name, NbtUtils.store(o));
+			tag.put(name, NbtUtils.store(o));
 		}
 
 		@Override
-		public boolean checkTagType(NBTBase tag) {
+		public boolean checkTagType(INBT tag) {
 			return tag instanceof CompoundNBT;
 		}
 	};

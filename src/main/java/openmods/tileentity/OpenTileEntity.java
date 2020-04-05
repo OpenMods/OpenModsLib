@@ -1,17 +1,21 @@
 package openmods.tileentity;
 
+import java.util.stream.Collectors;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.particles.IParticleData;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
-import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.server.ChunkManager;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.fml.network.PacketDistributor;
 import openmods.api.IInventoryCallback;
 import openmods.block.BlockRotationMode;
 import openmods.block.IBlockRotationMode;
@@ -23,18 +27,17 @@ import openmods.network.rpc.IRpcTarget;
 import openmods.network.rpc.IRpcTargetProvider;
 import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.targets.TileEntityRpcTarget;
-import openmods.network.senders.IPacketSender;
 import openmods.reflection.TypeUtils;
 import openmods.utils.BlockUtils;
 
 public abstract class OpenTileEntity extends TileEntity implements IRpcTargetProvider {
 
+	public OpenTileEntity(TileEntityType<?> type) {
+		super(type);
+	}
+
 	/** Place for TE specific setup. Called once upon creation */
 	public void setup() {}
-
-	public TargetPoint getDimCoords() {
-		return new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 0);
-	}
 
 	public Orientation getOrientation() {
 		final BlockState state = world.getBlockState(pos);
@@ -108,25 +111,16 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		playSoundAtBlock(sound, SoundCategory.BLOCKS, volume, pitch);
 	}
 
-	protected void spawnParticle(EnumParticleTypes particle, double dx, double dy, double dz, double vx, double vy, double vz, int... args) {
-		world.spawnParticle(particle, pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz, vx, vy, vz, args);
+	protected void spawnParticle(IParticleData particle, double dx, double dy, double dz, double vx, double vy, double vz) {
+		world.addParticle(particle, pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz, vx, vy, vz);
 	}
 
-	protected void spawnParticle(EnumParticleTypes particle, double vx, double vy, double vz, int... args) {
-		spawnParticle(particle, 0.5, 0.5, 0.5, vx, vy, vz, args);
+	protected void spawnParticle(IParticleData particle, double vx, double vy, double vz) {
+		spawnParticle(particle, 0.5, 0.5, 0.5, vx, vy, vz);
 	}
 
 	public void sendBlockEvent(int event, int param) {
-		world.addBlockEvent(pos, getBlockType(), event, param);
-	}
-
-	@Override
-	public boolean shouldRefresh(World world, BlockPos pos, BlockState oldState, BlockState newState) {
-		return oldState.getBlock() != newState.getBlock();
-	}
-
-	public void openGui(Object instance, PlayerEntity player) {
-		player.openGui(instance, -1, world, pos.getX(), pos.getY(), pos.getZ());
+		world.addBlockEvent(pos, getBlockState().getBlock(), event, param);
 	}
 
 	public AxisAlignedBB getBB() {
@@ -138,19 +132,22 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 		return new TileEntityRpcTarget(this);
 	}
 
-	public <T> T createProxy(final IPacketSender sender, Class<? extends T> mainIntf, Class<?>... extraIntf) {
+	public <T> T createProxy(final PacketDistributor.PacketTarget sender, Class<? extends T> mainIntf, Class<?>... extraIntf) {
 		TypeUtils.isInstance(this, mainIntf, extraIntf);
 		return RpcCallDispatcher.instance().createProxy(createRpcTarget(), sender, mainIntf, extraIntf);
 	}
 
 	public <T> T createClientRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
-		final IPacketSender sender = RpcCallDispatcher.instance().senders.client;
-		return createProxy(sender, mainIntf, extraIntf);
+		return createProxy(PacketDistributor.SERVER.noArg(), mainIntf, extraIntf);
 	}
 
 	public <T> T createServerRpcProxy(Class<? extends T> mainIntf, Class<?>... extraIntf) {
-		final IPacketSender sender = RpcCallDispatcher.instance().senders.block.bind(getDimCoords());
-		return createProxy(sender, mainIntf, extraIntf);
+		final ChunkManager chunkManager = ((ServerWorld)getWorld()).getChunkProvider().chunkManager;
+		return createProxy(PacketDistributor.NMLIST.with(() ->
+						chunkManager.getTrackingPlayers(new ChunkPos(pos), false)
+								.map(p -> p.connection.netManager)
+								.collect(Collectors.toList())),
+				mainIntf, extraIntf);
 	}
 
 	public void markUpdated() {
@@ -166,6 +163,6 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 	}
 
 	public boolean isValid(PlayerEntity player) {
-		return (world.getTileEntity(pos) == this) && (player.getDistanceSqToCenter(pos) <= 64.0D);
+		return (world.getTileEntity(pos) == this) && (player.getDistanceSq((double)this.pos.getX() + 0.5D, (double)this.pos.getY() + 0.5D, (double)this.pos.getZ() + 0.5D) > 64.0D);
 	}
 }

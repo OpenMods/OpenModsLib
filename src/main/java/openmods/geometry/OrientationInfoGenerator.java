@@ -23,8 +23,7 @@ import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
-import net.minecraft.client.renderer.block.model.ModelRotation;
-import net.minecraftforge.common.model.TRSRTransformation;
+import net.minecraft.client.renderer.model.ModelRotation;
 import openmods.block.BlockRotationMode;
 import org.apache.commons.io.IOUtils;
 
@@ -225,7 +224,7 @@ public class OrientationInfoGenerator {
 		final Multimap<Orientation, ModelRotation> toVanilla = HashMultimap.create();
 
 		for (ModelRotation rot : ModelRotation.values()) {
-			final Matrix4f rotMatrix = TRSRTransformation.toVecmath(rot.getMatrix4d());
+			final Matrix4f rotMatrix = rot.getMatrixVec();
 			final Matrix3f key = roundAndReduceMatrixElements(rotMatrix);
 			final Orientation orientation = fromMatrix.get(key);
 			Preconditions.checkNotNull(orientation, rot);

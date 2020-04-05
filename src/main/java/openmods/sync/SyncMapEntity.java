@@ -4,8 +4,8 @@ import java.util.Set;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.world.ServerWorld;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import openmods.Log;
 import openmods.utils.NetUtils;
 
@@ -47,6 +47,6 @@ public class SyncMapEntity extends SyncMapServer {
 
 	@Override
 	protected boolean isInvalid() {
-		return owner.isDead;
+		return owner.isAlive();
 	}
 }

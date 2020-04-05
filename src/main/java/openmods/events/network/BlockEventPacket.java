@@ -1,56 +1,54 @@
 package openmods.events.network;
 
-import java.util.List;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ChunkManager;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.LogicalSidedProvider;
+import net.minecraftforge.fml.network.NetworkDirection;
 import openmods.network.event.NetworkEvent;
 import openmods.network.event.NetworkEventManager;
 import openmods.utils.WorldUtils;
 
 public abstract class BlockEventPacket extends NetworkEvent {
-	public int dimension;
+	public DimensionType dimension;
 	public BlockPos blockPos;
 
 	public BlockEventPacket() {}
 
-	public BlockEventPacket(int dimension, BlockPos blockPos) {
+	public BlockEventPacket(DimensionType dimension, BlockPos blockPos) {
 		this.dimension = dimension;
 		this.blockPos = blockPos;
 	}
 
 	public BlockEventPacket(TileEntity tile) {
-		this(tile.getWorld().provider.getDimension(), tile.getPos());
+		this(tile.getWorld().getDimension().getType(), tile.getPos());
 	}
 
 	@Override
 	protected void readFromStream(PacketBuffer input) {
-		dimension = input.readInt();
+		DimensionType.getById(input.readInt());
 		blockPos = input.readBlockPos();
 	}
 
 	@Override
 	protected void writeToStream(PacketBuffer output) {
-		output.writeInt(dimension);
+		output.writeInt(dimension.getId());
 		output.writeBlockPos(blockPos);
 	}
 
-	@Override
-	protected void appendLogInfo(List<String> info) {
-		info.add(String.format("%d -> %s", dimension, blockPos));
+	private static MinecraftServer getServer() {
+		return LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER);
 	}
 
 	public void sendToWatchers() {
-		NetworkEventManager.dispatcher().senders.block.sendMessage(this, getDimCoords());
-	}
-
-	public TargetPoint getDimCoords() {
-		return new TargetPoint(dimension, blockPos.getX(), blockPos.getY(), blockPos.getZ(), 0);
-	}
-
-	public World getWorld() {
-		return WorldUtils.getWorld(side, dimension);
+		final ChunkPos pos = new ChunkPos(blockPos);
+		final ChunkManager chunkManager = getServer().getWorld(dimension).getChunkProvider().chunkManager;
+		NetworkEventManager.dispatcher().send(this, NetworkDirection.PLAY_TO_CLIENT, p -> chunkManager.getTrackingPlayers(pos, false).forEach(e -> e.connection.sendPacket(p)));
 	}
 }

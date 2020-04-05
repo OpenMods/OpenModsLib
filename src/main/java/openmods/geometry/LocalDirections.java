@@ -34,8 +34,8 @@ public class LocalDirections {
 	private static final Table<Direction, Direction, LocalDirections> frontAndTop = HashBasedTable.create();
 
 	static {
-		for (Direction front : Direction.VALUES)
-			for (Direction top : Direction.VALUES) {
+		for (Direction front : Direction.values())
+			for (Direction top : Direction.values()) {
 				if (top.getAxis() != front.getAxis())
 					frontAndTop.put(front, top, new LocalDirections(front, top));
 			}

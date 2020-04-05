@@ -37,7 +37,7 @@ public class SyncableSides extends SyncableObjectBase implements IRpcDirectionBi
 
 	@Override
 	public void writeToNBT(CompoundNBT nbt, String name) {
-		nbt.setByte(name, (byte)write());
+		nbt.putByte(name, (byte)write());
 	}
 
 	@Override

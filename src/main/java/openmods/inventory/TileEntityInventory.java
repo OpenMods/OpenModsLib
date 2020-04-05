@@ -8,8 +8,8 @@ public class TileEntityInventory extends GenericInventory {
 
 	private final TileEntity owner;
 
-	public TileEntityInventory(TileEntity owner, String name, boolean isInvNameLocalized, int size) {
-		super(name, isInvNameLocalized, size);
+	public TileEntityInventory(TileEntity owner, int size) {
+		super(size);
 		this.owner = owner;
 	}
 
@@ -17,7 +17,7 @@ public class TileEntityInventory extends GenericInventory {
 	public boolean isUsableByPlayer(PlayerEntity player) {
 		final BlockPos pos = owner.getPos();
 		return (owner.getWorld().getTileEntity(pos) == owner)
-				&& (player.getDistanceSq(pos) <= 64.0D);
+				&& player.getDistanceSq((double)pos.getX() + 0.5D, (double)pos.getY() + 0.5D, (double)pos.getZ() + 0.5D) <= 64.0D;
 	}
 
 }

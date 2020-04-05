@@ -3,11 +3,12 @@ package openmods.structured;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.TreeMultimap;
-import gnu.trove.impl.Constants;
-import gnu.trove.map.hash.TIntIntHashMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 public abstract class StructuredData<C extends IStructureContainer<E>, E extends IStructureElement> {
@@ -16,7 +17,7 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 	protected final SortedMap<Integer, E> elements = Maps.newTreeMap();
 	protected final SortedMap<Integer, C> containers = Maps.newTreeMap();
 	protected final TreeMultimap<Integer, Integer> containerToElement = TreeMultimap.create();
-	protected final TIntIntHashMap elementToContainer = new TIntIntHashMap(Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, NULL, NULL);
+	protected final Int2IntMap elementToContainer = Util.make(new Int2IntOpenHashMap(), map -> map.defaultReturnValue(NULL));
 
 	public boolean isEmpty() {
 		return elements.isEmpty() && containers.isEmpty();
@@ -58,7 +59,7 @@ public abstract class StructuredData<C extends IStructureContainer<E>, E extends
 		final C container = containers.remove(containerId);
 		observer.onContainerRemoved(containerId, container);
 
-		for (Integer elementId : removedElements) {
+		for (int elementId : removedElements) {
 			final E element = elements.remove(elementId);
 			elementToContainer.remove(elementId);
 			observer.onElementRemoved(containerId, container, elementId, element);

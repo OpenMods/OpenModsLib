@@ -2,14 +2,14 @@ package openmods.movement;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.MovementInput;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputUpdateEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
 import openmods.movement.PlayerMovementEvent.Type;
 
-@EventBusSubscriber(Side.CLIENT)
+@EventBusSubscriber(Dist.CLIENT)
 public class PlayerMovementManager {
 
 	private static boolean wasJumping = false;

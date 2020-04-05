@@ -65,7 +65,7 @@ public class BitSet {
 	}
 
 	public void writeToNBT(CompoundNBT tag) {
-		tag.setByteArray("Bits", bits);
+		tag.putByteArray("Bits", bits);
 	}
 
 	public void readFromNBT(CompoundNBT tag) {

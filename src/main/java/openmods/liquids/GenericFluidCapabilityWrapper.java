@@ -1,9 +1,9 @@
 package openmods.liquids;
 
-import net.minecraftforge.fluids.Fluid;
+import javax.annotation.Nonnull;
+import net.minecraft.fluid.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
 public class GenericFluidCapabilityWrapper implements IFluidHandler {
 
@@ -18,7 +18,7 @@ public class GenericFluidCapabilityWrapper implements IFluidHandler {
 		}
 
 		@Override
-		public int fill(FluidStack resource, boolean doFill) {
+		public int fill(FluidStack resource, FluidAction doFill) {
 			return 0;
 		}
 	}
@@ -34,13 +34,13 @@ public class GenericFluidCapabilityWrapper implements IFluidHandler {
 		}
 
 		@Override
-		public FluidStack drain(FluidStack resource, boolean doDrain) {
-			return null;
+		public FluidStack drain(FluidStack resource, FluidAction doDrain) {
+			return FluidStack.EMPTY;
 		}
 
 		@Override
-		public FluidStack drain(int maxDrain, boolean doDrain) {
-			return null;
+		public FluidStack drain(int maxDrain, FluidAction doDrain) {
+			return FluidStack.EMPTY;
 		}
 	}
 
@@ -51,20 +51,20 @@ public class GenericFluidCapabilityWrapper implements IFluidHandler {
 	}
 
 	@Override
-	public int fill(FluidStack resource, boolean doFill) {
+	public int fill(FluidStack resource, FluidAction doFill) {
 		if (resource == null || !canFill(resource.getFluid())) return 0;
 		return tank.fill(resource, doFill);
 	}
 
 	@Override
-	public FluidStack drain(FluidStack resource, boolean doDrain) {
-		if (resource == null || !canDrain(resource.getFluid())) { return null; }
-		return tank.drain(resource.amount, doDrain);
+	public FluidStack drain(FluidStack resource, FluidAction doDrain) {
+		if (resource == null || !canDrain(resource.getFluid())) { return FluidStack.EMPTY; }
+		return tank.drain(resource.getAmount(), doDrain);
 	}
 
 	@Override
-	public FluidStack drain(int maxDrain, boolean doDrain) {
-		if (!canDrain(null)) return null;
+	public FluidStack drain(int maxDrain, FluidAction doDrain) {
+		if (!canDrain(null)) return FluidStack.EMPTY;
 		return tank.drain(maxDrain, doDrain);
 	}
 
@@ -77,8 +77,27 @@ public class GenericFluidCapabilityWrapper implements IFluidHandler {
 	}
 
 	@Override
-	public IFluidTankProperties[] getTankProperties() {
-		return tank.getTankProperties();
+	public int getTanks() {
+		return this.tank.getTanks();
+	}
+
+	@Nonnull
+	@Override
+	public FluidStack getFluidInTank(int tank) {
+		return this.tank.getFluidInTank(tank);
+	}
+
+	@Override
+	public int getTankCapacity(int tank) {
+		return this.tank.getTankCapacity(tank);
+	}
+
+	@Override
+	public boolean isFluidValid(int tank, FluidStack stack) {
+		if (!canDrain(stack.getFluid())) {
+			return false;
+		}
+		return this.tank.isFluidValid(tank, stack);
 	}
 
 }

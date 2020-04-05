@@ -1,55 +1,44 @@
 package openmods.network.event;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.List;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.common.network.handshake.NetworkDispatcher;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 public abstract class NetworkEvent extends Event {
 
 	final List<NetworkEvent> replies = Lists.newArrayList();
 
-	NetworkDispatcher dispatcher;
-
 	public PlayerEntity sender;
 
-	public Side side;
+	public net.minecraftforge.fml.network.NetworkEvent.Context context;
 
 	protected abstract void readFromStream(PacketBuffer input) throws IOException;
 
 	protected abstract void writeToStream(PacketBuffer output) throws IOException;
 
-	protected void appendLogInfo(List<String> info) {}
-
 	public void reply(NetworkEvent reply) {
-		Preconditions.checkState(dispatcher != null, "Can't call this method outside event handler");
-		reply.dispatcher = dispatcher;
-		this.replies.add(reply);
+		// TODO 1.14 Revise (problems with index)
 	}
 
 	public void sendToAll() {
-		NetworkEventManager.dispatcher().senders.global.sendMessage(this);
+		NetworkEventManager.dispatcher().send(this, PacketDistributor.ALL.noArg());
 	}
 
 	public void sendToServer() {
-		NetworkEventManager.dispatcher().senders.client.sendMessage(this);
+		NetworkEventManager.dispatcher().send(this, PacketDistributor.SERVER.noArg());
 	}
 
-	public void sendToPlayer(PlayerEntity player) {
-		NetworkEventManager.dispatcher().senders.player.sendMessage(this, player);
+	public void sendToPlayer(ServerPlayerEntity player) {
+		NetworkEventManager.dispatcher().send(this, PacketDistributor.PLAYER.with(() -> player));
 	}
 
 	public void sendToEntity(Entity entity) {
-		NetworkEventManager.dispatcher().senders.entity.sendMessage(this, entity);
-	}
-
-	public List<Object> serialize() {
-		return NetworkEventManager.dispatcher().senders.serialize(this);
+		NetworkEventManager.dispatcher().send(this, PacketDistributor.TRACKING_ENTITY.with(() -> entity));
 	}
 }

@@ -27,7 +27,7 @@ public class GuiComponentItemStack extends BaseComponent {
 		this.scale = scale;
 
 		this.size = MathHelper.floor(16 * scale);
-		this.displayName = ImmutableList.of(stack.getDisplayName());
+		this.displayName = ImmutableList.of(stack.getDisplayName().getFormattedText());
 	}
 
 	@Override

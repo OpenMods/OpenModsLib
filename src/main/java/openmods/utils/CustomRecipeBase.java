@@ -1,15 +1,12 @@
 package openmods.utils;
 
 import javax.annotation.Nonnull;
-import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 
-public abstract class CustomRecipeBase extends IForgeRegistryEntry.Impl<IRecipe> implements IRecipe {
+public abstract class CustomRecipeBase<T extends IInventory> implements IRecipe<T> {
 
 	private final String group;
 
@@ -30,18 +27,6 @@ public abstract class CustomRecipeBase extends IForgeRegistryEntry.Impl<IRecipe>
 	@Nonnull
 	public ItemStack getRecipeOutput() {
 		return ItemStack.EMPTY;
-	}
-
-	@Override
-	public NonNullList<ItemStack> getRemainingItems(CraftingInventory inv) {
-		NonNullList<ItemStack> result = NonNullList.withSize(inv.getSizeInventory(), ItemStack.EMPTY);
-
-		for (int i = 0; i < result.size(); ++i) {
-			ItemStack itemstack = inv.getStackInSlot(i);
-			result.set(i, ForgeHooks.getContainerItem(itemstack));
-		}
-
-		return result;
 	}
 
 	@Override

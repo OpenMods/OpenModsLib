@@ -1,10 +1,10 @@
 package openmods.renderer.shaders;
 
 import java.nio.ByteBuffer;
-import org.lwjgl.opengl.ARBBufferObject;
-import org.lwjgl.opengl.ContextCapabilities;
+import org.lwjgl.opengl.ARBVertexBufferObject;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.GLCapabilities;
 
 public class BufferHelper {
 	static {
@@ -14,7 +14,7 @@ public class BufferHelper {
 	public static IBufferMethods methods;
 
 	static void initialize() {
-		ContextCapabilities caps = GLContext.getCapabilities();
+		GLCapabilities caps = GL.getCapabilities();
 		if (GLBufferMethods.isSupported(caps)) methods = new GLBufferMethods();
 		else if (ARBBufferMethods.isSupported(caps)) methods = new ARBBufferMethods();
 	}
@@ -39,7 +39,7 @@ public class BufferHelper {
 
 	private static class GLBufferMethods implements IBufferMethods {
 
-		public static boolean isSupported(ContextCapabilities caps) {
+		public static boolean isSupported(GLCapabilities caps) {
 			return caps.OpenGL15;
 		}
 
@@ -66,28 +66,28 @@ public class BufferHelper {
 
 	private static class ARBBufferMethods implements IBufferMethods {
 
-		public static boolean isSupported(ContextCapabilities caps) {
-			return caps.OpenGL15;
+		public static boolean isSupported(GLCapabilities caps) {
+			return caps.GL_ARB_vertex_buffer_object;
 		}
 
 		@Override
 		public int glGenBuffers() {
-			return ARBBufferObject.glGenBuffersARB();
+			return ARBVertexBufferObject.glGenBuffersARB();
 		}
 
 		@Override
 		public void glBindBuffer(int target, int buffer) {
-			ARBBufferObject.glBindBufferARB(target, buffer);
+			ARBVertexBufferObject.glBindBufferARB(target, buffer);
 		}
 
 		@Override
 		public void glBufferData(int target, ByteBuffer data, int usage) {
-			ARBBufferObject.glBufferDataARB(target, data, usage);
+			ARBVertexBufferObject.glBufferDataARB(target, data, usage);
 		}
 
 		@Override
 		public void glDeleteBuffers(int buffer) {
-			ARBBufferObject.glDeleteBuffersARB(buffer);
+			ARBVertexBufferObject.glDeleteBuffersARB(buffer);
 		}
 	}
 }

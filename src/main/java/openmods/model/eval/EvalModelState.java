@@ -3,32 +3,11 @@ package openmods.model.eval;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
-import net.minecraftforge.common.property.IUnlistedProperty;
+import net.minecraftforge.client.model.data.ModelProperty;
 
 public class EvalModelState {
 
-	public static final IUnlistedProperty<EvalModelState> PROPERTY = new IUnlistedProperty<EvalModelState>() {
-
-		@Override
-		public String valueToString(EvalModelState value) {
-			return value.args.toString();
-		}
-
-		@Override
-		public boolean isValid(EvalModelState value) {
-			return true;
-		}
-
-		@Override
-		public Class<EvalModelState> getType() {
-			return EvalModelState.class;
-		}
-
-		@Override
-		public String getName() {
-			return "eval_args";
-		}
-	};
+	public static final ModelProperty<EvalModelState> PROPERTY = new ModelProperty<>();
 
 	public static final EvalModelState EMPTY = new EvalModelState();
 

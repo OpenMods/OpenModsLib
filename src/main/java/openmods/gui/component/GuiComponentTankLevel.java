@@ -5,8 +5,8 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueReceiver;
 import openmods.gui.misc.BoxRenderer;
@@ -18,7 +18,7 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 	private static final BoxRenderer BOX_RENDERER = new BoxRenderer(0, 0);
 	private static final int BORDER_COLOR = 0xc6c6c6;
 
-	private FluidStack fluidStack;
+	private FluidStack fluidStack = FluidStack.EMPTY;
 
 	private int capacity;
 
@@ -39,17 +39,16 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 		bindComponentsSheet();
 		BOX_RENDERER.render(this, x + offsetX, y + offsetY, width, height, BORDER_COLOR);
 
-		if (fluidStack == null) return;
+		if (fluidStack.isEmpty()) return;
 		final Fluid fluid = fluidStack.getFluid();
-		if (fluid == null) return;
 
 		parent.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 
-		final ResourceLocation textureLocation = fluid.getStill(fluidStack);
+		final ResourceLocation textureLocation = fluid.getAttributes().getStill(fluidStack);
 		TextureAtlasSprite icon = parent.getIcon(textureLocation);
 
 		if (icon != null) {
-			double percentFull = Math.max(0, Math.min(1, (double)fluidStack.amount / (double)capacity));
+			double percentFull = Math.max(0, Math.min(1, (double)fluidStack.getAmount() / (double)capacity));
 			double fluidHeight = (height - 3) * percentFull;
 			final int posX = offsetX + x;
 			final int posY = offsetY + y;
@@ -61,17 +60,17 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 			final float maxV = icon.getMaxV();
 
 			GL11.glBegin(GL11.GL_QUADS);
-			addVertexWithUV(posX + 3, posY + height - 3, this.zLevel, minU, maxV);
-			addVertexWithUV(posX + width - 3, posY + height - 3, this.zLevel, maxU, maxV);
-			addVertexWithUV(posX + width - 3, posY + (height - fluidHeight), this.zLevel, maxU, minV);
-			addVertexWithUV(posX + 3, posY + (height - fluidHeight), this.zLevel, minU, minV);
+			addVertexWithUV(posX + 3, posY + height - 3, this.blitOffset, minU, maxV);
+			addVertexWithUV(posX + width - 3, posY + height - 3, this.blitOffset, maxU, maxV);
+			addVertexWithUV(posX + width - 3, posY + (height - fluidHeight), this.blitOffset, maxU, minV);
+			addVertexWithUV(posX + 3, posY + (height - fluidHeight), this.blitOffset, minU, minV);
 			GL11.glEnd();
 		}
 	}
 
 	@Override
 	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (fluidStack != null && isMouseOver(mouseX, mouseY)) {
+		if (!fluidStack.isEmpty() && isMouseOver(mouseX, mouseY)) {
 			final List<String> lines = Lists.newArrayListWithCapacity(2);
 			if (displayFluidName) {
 				final String translatedFluidName = MiscUtils.getTranslatedFluidName(fluidStack);
@@ -79,7 +78,7 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 					lines.add(translatedFluidName);
 			}
 
-			lines.add(String.format("%d/%d", fluidStack.amount, capacity));
+			lines.add(String.format("%d/%d", fluidStack.getAmount(), capacity));
 			parent.drawHoveringText(lines, offsetX + mouseX, offsetY + mouseY);
 		}
 	}

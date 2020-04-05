@@ -1,15 +1,15 @@
 package openmods.structured;
 
-import gnu.trove.impl.Constants;
-import gnu.trove.map.TObjectIntMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.lang.reflect.Field;
+import net.minecraft.util.Util;
 
 public abstract class FieldContainer implements IStructureContainer<IStructureElement> {
 
 	private static final int NULL = -1;
 
-	private final TObjectIntMap<Field> fields = new TObjectIntHashMap<>(Constants.DEFAULT_CAPACITY, Constants.DEFAULT_LOAD_FACTOR, NULL);
+	private final Object2IntMap<Field> fields = Util.make(new Object2IntOpenHashMap<>(), map -> map.defaultReturnValue(NULL));
 
 	@Override
 	public void createElements(IElementAddCallback<IStructureElement> callback) {
@@ -24,7 +24,7 @@ public abstract class FieldContainer implements IStructureContainer<IStructureEl
 	}
 
 	public Integer getElementIdForField(Field field) {
-		final int id = fields.get(field);
+		final int id = fields.getInt(field);
 		return id != NULL? id : null;
 	}
 

@@ -1,43 +1,43 @@
 package openmods.network.event;
 
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.LogicalSide;
 
 public enum EventDirection {
 	C2S {
 		@Override
-		public boolean validateSend(Side side) {
-			return side == Side.CLIENT;
+		public boolean validateSend(LogicalSide side) {
+			return side == LogicalSide.CLIENT;
 		}
 
 		@Override
-		public boolean validateReceive(Side side) {
-			return side == Side.SERVER;
+		public boolean validateReceive(LogicalSide side) {
+			return side == LogicalSide.SERVER;
 		}
 	},
 	S2C {
 		@Override
-		public boolean validateSend(Side side) {
-			return side == Side.SERVER;
+		public boolean validateSend(LogicalSide side) {
+			return side == LogicalSide.SERVER;
 		}
 
 		@Override
-		public boolean validateReceive(Side side) {
-			return side == Side.CLIENT;
+		public boolean validateReceive(LogicalSide side) {
+			return side == LogicalSide.CLIENT;
 		}
 	},
 	ANY {
 		@Override
-		public boolean validateSend(Side side) {
+		public boolean validateSend(LogicalSide side) {
 			return true;
 		}
 
 		@Override
-		public boolean validateReceive(Side side) {
+		public boolean validateReceive(LogicalSide side) {
 			return true;
 		}
 	};
 
-	public abstract boolean validateSend(Side side);
+	public abstract boolean validateSend(LogicalSide side);
 
-	public abstract boolean validateReceive(Side side);
+	public abstract boolean validateReceive(LogicalSide side);
 }

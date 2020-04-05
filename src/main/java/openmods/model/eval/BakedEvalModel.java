@@ -6,35 +6,41 @@ import com.google.common.cache.LoadingCache;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.ModelBakery;
+import net.minecraft.client.renderer.texture.ISprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.model.BasicState;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.ModelStateComposition;
 import net.minecraftforge.client.model.PerspectiveMapWrapper;
+import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.common.model.IModelPart;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.animation.IJoint;
-import net.minecraftforge.common.property.IExtendedBlockState;
 import openmods.model.BakedModelAdapter;
 
 public class BakedEvalModel extends BakedModelAdapter {
 
 	private final IModel model;
-	private final IModelState originalState;
+	private final ModelBakery bakery;
+	private final ISprite originalState;
 	private final VertexFormat format;
 	private final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter;
 	private final ITransformEvaluator evaluator;
 
-	public BakedEvalModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, ITransformEvaluator evaluator) {
-		super(model.bake(state, format, bakedTextureGetter), PerspectiveMapWrapper.getTransforms(state));
+	public BakedEvalModel(IModel model, final ModelBakery bakery, ISprite state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, ITransformEvaluator evaluator) {
+		super(model.bake(bakery, bakedTextureGetter, state, format), PerspectiveMapWrapper.getTransforms(state.getState()));
 		this.model = model;
+		this.bakery = bakery;
 		this.originalState = state;
 		this.format = format;
 		this.bakedTextureGetter = bakedTextureGetter;
@@ -42,8 +48,8 @@ public class BakedEvalModel extends BakedModelAdapter {
 	}
 
 	private IBakedModel bakeModelWithTransform(IModelState transform) {
-		final IModelState compositeState = new ModelStateComposition(this.originalState, transform);
-		return model.bake(compositeState, format, bakedTextureGetter);
+		final ISprite compositeState = new BasicState(new ModelStateComposition(this.originalState.getState(), transform), originalState.isUvLock());
+		return model.bake(bakery, bakedTextureGetter, compositeState, format);
 	}
 
 	private final CacheLoader<Map<String, Float>, IBakedModel> loader = new CacheLoader<Map<String, Float>, IBakedModel>() {
@@ -72,15 +78,14 @@ public class BakedEvalModel extends BakedModelAdapter {
 			.build(loader);
 
 	@Override
-	public List<BakedQuad> getQuads(BlockState state, Direction side, long rand) {
-
-		if (state instanceof IExtendedBlockState) {
-			final IExtendedBlockState extState = (IExtendedBlockState)state;
-
-			final EvalModelState args = extState.getValue(EvalModelState.PROPERTY);
-			if (args != null) { return (args.isShortLived()? shortTermCache : longTermCache).getUnchecked(args.getArgs()).getQuads(state, side, rand); }
+	public List<BakedQuad> getQuads(BlockState state, Direction side, Random rand, IModelData extState) {
+		if (extState != null) {
+			final EvalModelState args = extState.getData(EvalModelState.PROPERTY);
+			if (args != null) {
+				return (args.isShortLived()? shortTermCache : longTermCache).getUnchecked(args.getArgs()).getQuads(state, side, rand, extState);
+			}
 		}
 
-		return super.getQuads(state, side, rand);
+		return super.getQuads(state, side, rand, extState);
 	}
 }

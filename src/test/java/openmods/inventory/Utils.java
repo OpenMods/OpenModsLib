@@ -8,24 +8,11 @@ import org.hamcrest.Matcher;
 
 public class Utils {
 
-	public static final Item ITEM_A = new Item() {
-		{
-			setUnlocalizedName("itemA");
-		}
-	}.setRegistryName("itemA");
+	public static final Item ITEM_A = new Item(new Item.Properties()).setRegistryName("itemA");
 
-	public static final Item ITEM_B = new Item() {
-		{
-			setUnlocalizedName("itemB");
-		}
-	}.setRegistryName("itemB");
+	public static final Item ITEM_B = new Item(new Item.Properties()).setRegistryName("itemB");
 
-	public static final Item ITEM_C = new Item() {
-		{
-			setUnlocalizedName("itemC");
-			setMaxStackSize(2);
-		}
-	}.setRegistryName("itemC");
+	public static final Item ITEM_C = new Item(new Item.Properties().maxStackSize(2)).setRegistryName("itemC");
 
 	public static ItemStack itemA(int amount) {
 		return new ItemStack(ITEM_A, amount);
@@ -53,7 +40,7 @@ public class Utils {
 
 			@Override
 			public void describeTo(Description arg0) {
-				arg0.appendText(String.format("%dx%s", size, item.getUnlocalizedName()));
+				arg0.appendText(String.format("%dx%s", size, item.getTranslationKey()));
 			}
 		};
 	}
@@ -72,7 +59,7 @@ public class Utils {
 
 			@Override
 			public void describeTo(Description arg0) {
-				arg0.appendText(String.format("%s", item.getUnlocalizedName()));
+				arg0.appendText(String.format("%s", item.getTranslationKey()));
 			}
 		};
 	}

@@ -1,9 +1,10 @@
 package openmods.config.properties;
 
 import com.google.common.base.Preconditions;
-import net.minecraftforge.fml.common.eventhandler.Cancelable;
-import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.eventbus.api.Cancelable;
+import net.minecraftforge.eventbus.api.Event;
 
+// TODO 1.15 Reimplement
 public class ConfigurationChange extends Event {
 
 	public final String name;

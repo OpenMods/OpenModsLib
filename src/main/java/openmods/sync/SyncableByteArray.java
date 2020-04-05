@@ -41,7 +41,7 @@ public class SyncableByteArray extends SyncableObjectBase implements ISyncableVa
 
 	@Override
 	public void writeToNBT(CompoundNBT nbt, String name) {
-		nbt.setByteArray(name, value);
+		nbt.putByteArray(name, value);
 	}
 
 	@Override

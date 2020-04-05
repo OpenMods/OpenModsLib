@@ -11,9 +11,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.wrapper.InvWrapper;
@@ -27,17 +24,13 @@ public class GenericInventory implements IInventory {
 	public static final String TAG_SIZE = "size";
 
 	protected final List<IInventoryCallback> callbacks;
-	protected final String inventoryTitle;
 	protected int slotsCount;
 	protected NonNullList<ItemStack> inventoryContents;
-	protected final boolean isInvNameLocalized;
 	private IItemHandlerModifiable handler;
 
-	public GenericInventory(String name, boolean isInvNameLocalized, int size) {
+	public GenericInventory(int size) {
 		callbacks = new ArrayList<>();
-		this.isInvNameLocalized = isInvNameLocalized;
 		this.slotsCount = size;
-		this.inventoryTitle = name;
 		this.inventoryContents = NonNullList.withSize(size, ItemStack.EMPTY);
 	}
 
@@ -132,17 +125,17 @@ public class GenericInventory implements IInventory {
 	}
 
 	public void readFromNBT(CompoundNBT tag, boolean readSize) {
-		if (readSize && tag.hasKey(TAG_SIZE)) {
-			this.slotsCount = tag.getInteger(TAG_SIZE);
+		if (readSize && tag.contains(TAG_SIZE)) {
+			this.slotsCount = tag.getInt(TAG_SIZE);
 		}
 
-		final ListNBT nbttaglist = tag.getTagList(TAG_ITEMS, Constants.NBT.TAG_COMPOUND);
+		final ListNBT nbttaglist = tag.getList(TAG_ITEMS, Constants.NBT.TAG_COMPOUND);
 		inventoryContents = NonNullList.withSize(this.slotsCount, ItemStack.EMPTY);
-		for (int i = 0; i < nbttaglist.tagCount(); i++) {
-			CompoundNBT stacktag = nbttaglist.getCompoundTagAt(i);
+		for (int i = 0; i < nbttaglist.size(); i++) {
+			CompoundNBT stacktag = nbttaglist.getCompound(i);
 			int j = stacktag.getByte(TAG_SLOT);
 			if (j >= 0 && j < inventoryContents.size()) {
-				final ItemStack stack = new ItemStack(stacktag);
+				final ItemStack stack = ItemStack.read(stacktag);
 				if (!stack.isEmpty()) inventoryContents.set(j, stack);
 			}
 		}
@@ -160,18 +153,18 @@ public class GenericInventory implements IInventory {
 	}
 
 	public void writeToNBT(CompoundNBT tag) {
-		tag.setInteger(TAG_SIZE, getSizeInventory());
+		tag.putInt(TAG_SIZE, getSizeInventory());
 		ListNBT nbttaglist = new ListNBT();
 		for (int i = 0; i < inventoryContents.size(); i++) {
 			final ItemStack stack = inventoryContents.get(i);
 			if (!stack.isEmpty()) {
 				CompoundNBT stacktag = new CompoundNBT();
-				stack.writeToNBT(stacktag);
-				stacktag.setByte(TAG_SLOT, (byte)i);
-				nbttaglist.appendTag(stacktag);
+				stack.write(stacktag);
+				stacktag.putByte(TAG_SLOT, (byte)i);
+				nbttaglist.add(stacktag);
 			}
 		}
-		tag.setTag(TAG_ITEMS, nbttaglist);
+		tag.put(TAG_ITEMS, nbttaglist);
 	}
 
 	@Override
@@ -193,43 +186,10 @@ public class GenericInventory implements IInventory {
 	}
 
 	@Override
-	public String getName() {
-		return this.inventoryTitle;
-	}
-
-	@Override
-	public boolean hasCustomName() {
-		return this.isInvNameLocalized;
-	}
-
-	@Override
 	public void openInventory(PlayerEntity player) {}
 
 	@Override
 	public void closeInventory(PlayerEntity player) {}
-
-	@Override
-	public ITextComponent getDisplayName() {
-		final String name = getName();
-		return hasCustomName()
-				? new StringTextComponent(name)
-				: new TranslationTextComponent(name);
-	}
-
-	// TODO: figure if it's usable
-
-	@Override
-	public int getField(int id) {
-		return 0;
-	}
-
-	@Override
-	public void setField(int id, int value) {}
-
-	@Override
-	public int getFieldCount() {
-		return 0;
-	}
 
 	public IItemHandlerModifiable getHandler() {
 		if (handler == null) handler = new InvWrapper(this);

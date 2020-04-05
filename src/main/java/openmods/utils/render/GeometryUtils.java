@@ -73,9 +73,9 @@ public class GeometryUtils {
 		}
 
 		Octant(String friendlyName, Direction dirX, Direction dirY, Direction dirZ) {
-			this.x = dirX.getFrontOffsetX() + dirY.getFrontOffsetX() + dirZ.getFrontOffsetX();
-			this.y = dirX.getFrontOffsetY() + dirY.getFrontOffsetY() + dirZ.getFrontOffsetY();
-			this.z = dirX.getFrontOffsetZ() + dirY.getFrontOffsetZ() + dirZ.getFrontOffsetZ();
+			this.x = dirX.getXOffset() + dirY.getXOffset() + dirZ.getXOffset();
+			this.y = dirX.getYOffset() + dirY.getYOffset() + dirZ.getYOffset();
+			this.z = dirX.getZOffset() + dirY.getZOffset() + dirZ.getZOffset();
 			this.dirs = EnumSet.of(dirX, dirY, dirZ);
 			this.name = friendlyName;
 		}

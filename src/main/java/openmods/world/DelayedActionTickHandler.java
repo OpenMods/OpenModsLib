@@ -5,10 +5,10 @@ import com.google.common.collect.Queues;
 import java.util.Map;
 import java.util.Queue;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.LogicalSide;
 
 // TODO maybe replace with IThreadListener?
 public class DelayedActionTickHandler {
@@ -17,9 +17,9 @@ public class DelayedActionTickHandler {
 
 	private DelayedActionTickHandler() {}
 
-	private final Map<Integer, Queue<Runnable>> callbacks = Maps.newHashMap();
+	private final Map<DimensionType, Queue<Runnable>> callbacks = Maps.newHashMap();
 
-	private Queue<Runnable> getWorldQueue(int worldId) {
+	private Queue<Runnable> getWorldQueue(DimensionType worldId) {
 		synchronized (callbacks) {
 			Queue<Runnable> result = callbacks.get(worldId);
 
@@ -33,14 +33,14 @@ public class DelayedActionTickHandler {
 	}
 
 	public void addTickCallback(World world, Runnable callback) {
-		int worldId = world.provider.getDimension();
+		DimensionType worldId = world.getDimension().getType();
 		getWorldQueue(worldId).add(callback);
 	}
 
 	@SubscribeEvent
-	public void onWorldTick(WorldTickEvent evt) {
-		if (evt.side == Side.SERVER && evt.phase == Phase.END) {
-			int worldId = evt.world.provider.getDimension();
+	public void onWorldTick(TickEvent.WorldTickEvent evt) {
+		if (evt.side == LogicalSide.SERVER && evt.phase == TickEvent.Phase.END) {
+			DimensionType worldId = evt.world.getDimension().getType();
 			Queue<Runnable> callbacks = getWorldQueue(worldId);
 
 			Runnable callback;

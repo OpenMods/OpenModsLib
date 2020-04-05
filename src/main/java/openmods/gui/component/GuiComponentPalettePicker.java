@@ -3,16 +3,17 @@ package openmods.gui.component;
 import com.google.common.collect.ImmutableList;
 import java.util.Iterator;
 import java.util.List;
+import openmods.colors.ColorMeta;
 import openmods.gui.listener.IValueChangedListener;
 
 public class GuiComponentPalettePicker extends BaseComponent {
 
 	public static class PaletteEntry {
-		public final int callback;
+		public final ColorMeta callback;
 		public final int rgb;
 		public final String name;
 
-		public PaletteEntry(int callback, int rgb, String name) {
+		public PaletteEntry(ColorMeta callback, int rgb, String name) {
 			this.callback = callback;
 			this.rgb = rgb;
 			this.name = name;
@@ -95,7 +96,7 @@ public class GuiComponentPalettePicker extends BaseComponent {
 				final PaletteEntry entry = it.next();
 
 				final int nx = rx + areaSize;
-				drawRect(rx, ry, nx, ny, 0xFF000000 | entry.rgb);
+				fill(rx, ry, nx, ny, 0xFF000000 | entry.rgb);
 				rx = nx;
 			}
 

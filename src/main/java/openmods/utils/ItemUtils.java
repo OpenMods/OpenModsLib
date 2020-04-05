@@ -1,5 +1,6 @@
 package openmods.utils;
 
+import com.google.common.io.BaseEncoding;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,10 +13,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.world.World;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.output.NullOutputStream;
 
 public class ItemUtils {
@@ -27,18 +27,9 @@ public class ItemUtils {
 			if (item.hasContainerItem(stack)) return item.getContainerItem(stack);
 			return ItemStack.EMPTY;
 		}
-		stack.splitStack(1);
+		stack.split(1);
 
 		return stack;
-	}
-
-	public static CompoundNBT getItemTag(@Nonnull ItemStack stack) {
-		CompoundNBT result = stack.getTagCompound();
-		if (result == null) {
-			result = new CompoundNBT();
-			stack.setTagCompound(result);
-		}
-		return result;
 	}
 
 	public static ItemEntity createDrop(Entity dropper, @Nonnull ItemStack is) {
@@ -60,7 +51,7 @@ public class ItemUtils {
 			DataOutput output = new DataOutputStream(hasher);
 			CompressedStreamTools.write(tag, output);
 			byte[] hash = digest.digest();
-			return new String(Hex.encodeHex(hash));
+			return BaseEncoding.base16().encode(hash);
 		} catch (IOException | NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
 		}
@@ -69,7 +60,7 @@ public class ItemUtils {
 	// because vanilla is not really good with null stacks
 	public static void setEntityItemStack(ItemEntity entity, @Nonnull ItemStack stack) {
 		if (stack.isEmpty()) {
-			entity.setDead();
+			entity.remove();
 		} else {
 			entity.setItem(stack);
 		}

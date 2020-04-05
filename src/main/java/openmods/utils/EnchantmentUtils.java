@@ -8,7 +8,6 @@ import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeHooks;
 
 public class EnchantmentUtils {
 
@@ -68,6 +67,10 @@ public class EnchantmentUtils {
 		}
 	}
 
+	private static float getEnchantPower(net.minecraft.world.World world, net.minecraft.util.math.BlockPos pos) {
+		return world.getBlockState(pos).getEnchantPowerBonus(world, pos);
+	}
+
 	public static float getPower(World world, BlockPos position) {
 		float power = 0;
 
@@ -76,13 +79,13 @@ public class EnchantmentUtils {
 				if ((deltaZ != 0 || deltaX != 0)
 						&& world.isAirBlock(position.add(deltaX, 0, deltaZ))
 						&& world.isAirBlock(position.add(deltaX, 1, deltaZ))) {
-					power += ForgeHooks.getEnchantPower(world, position.add(deltaX * 2, 0, deltaZ * 2));
-					power += ForgeHooks.getEnchantPower(world, position.add(deltaX * 2, 1, deltaZ * 2));
+					power += getEnchantPower(world, position.add(deltaX * 2, 0, deltaZ * 2));
+					power += getEnchantPower(world, position.add(deltaX * 2, 1, deltaZ * 2));
 					if (deltaX != 0 && deltaZ != 0) {
-						power += ForgeHooks.getEnchantPower(world, position.add(deltaX * 2, 0, deltaZ));
-						power += ForgeHooks.getEnchantPower(world, position.add(deltaX * 2, 1, deltaZ));
-						power += ForgeHooks.getEnchantPower(world, position.add(deltaX, 0, deltaZ * 2));
-						power += ForgeHooks.getEnchantPower(world, position.add(deltaX, 1, deltaZ * 2));
+						power += getEnchantPower(world, position.add(deltaX * 2, 0, deltaZ));
+						power += getEnchantPower(world, position.add(deltaX * 2, 1, deltaZ));
+						power += getEnchantPower(world, position.add(deltaX, 0, deltaZ * 2));
+						power += getEnchantPower(world, position.add(deltaX, 1, deltaZ * 2));
 					}
 				}
 			}

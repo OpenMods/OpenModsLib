@@ -4,7 +4,6 @@ import javax.annotation.Nonnull;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import openmods.Log;
-import openmods.utils.ItemUtils;
 
 public class PlayerItemInventory extends ItemInventory {
 
@@ -17,11 +16,11 @@ public class PlayerItemInventory extends ItemInventory {
 	private static final String TAG_INV = "openedInGui";
 
 	private static void setGuiId(@Nonnull ItemStack stack, int id) {
-		ItemUtils.getItemTag(stack).setInteger(TAG_INV, id);
+		stack.getOrCreateTag().putInt(TAG_INV, id);
 	}
 
 	private static int getGuiId(@Nonnull ItemStack stack) {
-		return ItemUtils.getItemTag(stack).getInteger(TAG_INV);
+		return stack.getOrCreateTag().getInt(TAG_INV);
 	}
 
 	// Potentially unsecure: player can switch item before inventory opens

@@ -14,8 +14,11 @@ import javax.annotation.Nonnull;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.RecipeManager;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.SimpleRegistry;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.IForgeRegistryEntry;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.gui.component.BaseComponent;
@@ -32,7 +35,7 @@ public class PageBuilder {
 
 	private static final CachedInstanceFactory<ICustomBookEntryProvider> PROVIDERS = CachedInstanceFactory.create();
 
-	private static class Entry {
+	private class Entry {
 		@Nonnull
 		public final ItemStack stack;
 
@@ -51,9 +54,9 @@ public class PageBuilder {
 
 		public BaseComponent getPage() {
 			if (mediaKey.isPresent()) {
-				return new StandardRecipePage(nameKey, descriptionKey, mediaKey.get(), stack);
+				return new StandardRecipePage(nameKey, descriptionKey, mediaKey.get(), recipeManager, stack);
 			} else {
-				return new StandardRecipePage(nameKey, descriptionKey, stack);
+				return new StandardRecipePage(nameKey, descriptionKey, recipeManager, stack);
 			}
 		}
 	}
@@ -66,16 +69,22 @@ public class PageBuilder {
 
 	private final Set<String> alreadyAdded = Sets.newHashSet();
 
+	private final RecipeManager recipeManager;
+
+	public PageBuilder(RecipeManager recipeManager) {
+		this.recipeManager = recipeManager;
+	}
+
 	protected String getMediaLink(String modId, String type, String id) {
 		final String lang = OpenMods.proxy.getLanguage().or("unknown");
 		return "https://videos.openmods.info/" + lang + "/tutorial." + modId + "." + type + "." + id;
 	}
 
-	public <T> void addPages(String type, SimpleRegistry<ResourceLocation, T> registry, StackProvider<T> provider) {
+	public <T extends IForgeRegistryEntry<T>> void addPages(String type, IForgeRegistry<T> registry, StackProvider<T> provider) {
 		Set<ResourceLocation> ids = registry.getKeys();
 
 		for (ResourceLocation id : ids) {
-			final T obj = registry.getObject(id);
+			final T obj = registry.getValue(id);
 			if (obj == null) continue;
 
 			final BookDocumentation doc;
@@ -91,11 +100,11 @@ public class PageBuilder {
 
 			if (doc == null) continue;
 
-			final String modId = id.getResourceDomain().toLowerCase(Locale.ENGLISH);
+			final String modId = id.getNamespace().toLowerCase(Locale.ENGLISH);
 
 			if (modIds != null && !modIds.contains(modId)) continue;
 
-			final String itemId = id.getResourcePath();
+			final String itemId = id.getPath();
 			final Class<? extends ICustomBookEntryProvider> customProviderCls = doc.customProvider();
 
 			if (customProviderCls == BookDocumentation.EMPTY.class) {
@@ -168,7 +177,7 @@ public class PageBuilder {
 	}
 
 	public void addItemPages(StackProvider<Item> provider) {
-		addPages("item", Item.REGISTRY, provider);
+		addPages("item", ForgeRegistries.ITEMS, provider);
 	}
 
 	public void createItemPages() {
@@ -176,7 +185,7 @@ public class PageBuilder {
 	}
 
 	public void addBlockPages(StackProvider<Block> provider) {
-		addPages("tile", Block.REGISTRY, provider);
+		addPages("tile", ForgeRegistries.BLOCKS, provider);
 	}
 
 	public void createBlockPages() {

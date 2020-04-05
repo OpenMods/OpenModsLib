@@ -2,31 +2,41 @@ package openmods.model;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
-import net.minecraft.client.renderer.block.model.ItemOverrideList;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Direction;
 import net.minecraftforge.client.model.PerspectiveMapWrapper;
+import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.common.model.TRSRTransformation;
 import org.apache.commons.lang3.tuple.Pair;
 
+// TODO 1.14 IForgeBakedModel
 public class BakedModelAdapter implements IBakedModel {
 
 	protected final IBakedModel base;
-	private final ImmutableMap<TransformType, TRSRTransformation> cameraTransforms;
+	private final ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> cameraTransforms;
 
-	public BakedModelAdapter(IBakedModel base, ImmutableMap<TransformType, TRSRTransformation> cameraTransforms) {
+	public BakedModelAdapter(IBakedModel base, Map<ItemCameraTransforms.TransformType, TRSRTransformation> cameraTransforms) {
 		this.base = base;
-		this.cameraTransforms = cameraTransforms;
+		this.cameraTransforms = ImmutableMap.copyOf(cameraTransforms);
 	}
 
 	@Override
-	public List<BakedQuad> getQuads(BlockState state, Direction side, long rand) {
+	public List<BakedQuad> getQuads(BlockState state, Direction side, Random rand, IModelData extData) {
+		return base.getQuads(state, side, rand, extData);
+	}
+
+	@Override
+	public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
 		return base.getQuads(state, side, rand);
 	}
 
@@ -50,6 +60,10 @@ public class BakedModelAdapter implements IBakedModel {
 		return base.getParticleTexture();
 	}
 
+	@Override public TextureAtlasSprite getParticleTexture(@Nonnull IModelData data) {
+		return base.getParticleTexture(data);
+	}
+
 	@Override
 	@Deprecated
 	public ItemCameraTransforms getItemCameraTransforms() {
@@ -62,7 +76,7 @@ public class BakedModelAdapter implements IBakedModel {
 	}
 
 	@Override
-	public Pair<? extends IBakedModel, Matrix4f> handlePerspective(TransformType cameraTransformType) {
+	public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
 		return PerspectiveMapWrapper.handlePerspective(this, cameraTransforms, cameraTransformType);
 	}
 }

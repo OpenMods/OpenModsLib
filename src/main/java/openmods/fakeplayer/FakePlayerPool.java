@@ -5,10 +5,10 @@ import java.util.Queue;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import net.minecraft.world.World;
-import net.minecraft.world.ServerWorld;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import openmods.LibConfig;
 import openmods.Log;
 
@@ -42,9 +42,9 @@ public class FakePlayerPool {
 				player = new OpenModsFakePlayer(world, id);
 			}
 
-			player.isDead = false;
+			player.revive();
 			T result = user.usePlayer(player);
-			player.setDead();
+			player.remove();
 			pool.add(player);
 			return result;
 		}
@@ -54,7 +54,7 @@ public class FakePlayerPool {
 
 	public static final FakePlayerPool instance = new FakePlayerPool();
 
-	private static final Map<World, WorldPool> worldPools = new WeakHashMap<>();
+	private static final Map<IWorld, WorldPool> worldPools = new WeakHashMap<>();
 
 	@SubscribeEvent
 	public void onWorldLoad(WorldEvent.Load evt) {

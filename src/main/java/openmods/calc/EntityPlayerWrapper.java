@@ -18,6 +18,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.minecraftforge.registries.ForgeRegistries;
 import openmods.utils.EnchantmentUtils;
 
 public class EntityPlayerWrapper {
@@ -88,17 +89,17 @@ public class EntityPlayerWrapper {
 
 	@ExposeProperty
 	public Double vx() {
-		return player().motionX;
+		return player().getMotion().x;
 	}
 
 	@ExposeProperty
 	public Double vy() {
-		return player().motionY;
+		return player().getMotion().y;
 	}
 
 	@ExposeProperty
 	public Double vz() {
-		return player().motionZ;
+		return player().getMotion().z;
 	}
 
 	@ExposeProperty
@@ -113,12 +114,12 @@ public class EntityPlayerWrapper {
 
 	@ExposeProperty
 	public Boolean creative() {
-		return player().capabilities.isCreativeMode;
+		return player().abilities.isCreativeMode;
 	}
 
 	@ExposeProperty
 	public Boolean flying() {
-		return player().capabilities.isFlying;
+		return player().abilities.isFlying;
 	}
 
 	@ExposeProperty
@@ -158,17 +159,17 @@ public class EntityPlayerWrapper {
 
 		@ExposeProperty
 		public BigInteger dimension() {
-			return BigInteger.valueOf(world().provider.getDimension());
+			return BigInteger.valueOf(world().getDimension().getType().getId());
 		}
 
 		@ExposeProperty
 		public BigInteger totalTime() {
-			return BigInteger.valueOf(world().getTotalWorldTime());
+			return BigInteger.valueOf(world().getGameTime());
 		}
 
 		@ExposeProperty
 		public BigInteger time() {
-			return BigInteger.valueOf(world().getWorldTime());
+			return BigInteger.valueOf(world().getDayTime());
 		}
 	}
 
@@ -214,17 +215,17 @@ public class EntityPlayerWrapper {
 
 		@ExposeProperty
 		public BigInteger damage() {
-			return BigInteger.valueOf(itemStack.getItemDamage());
+			return BigInteger.valueOf(itemStack.getDamage());
 		}
 
 		@ExposeProperty
 		public String name() {
-			return itemStack.getUnlocalizedName();
+			return ForgeRegistries.ITEMS.getKey(itemStack.getItem()).toString();
 		}
 
 		@ExposeProperty
 		public String displayName() {
-			return itemStack.getDisplayName();
+			return itemStack.getDisplayName().toString();
 		}
 
 		@ExposeProperty(raw = true)

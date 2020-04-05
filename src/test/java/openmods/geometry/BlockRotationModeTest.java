@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import net.minecraft.util.Direction;
 import openmods.block.BlockRotationMode;
 import org.junit.Assert;
@@ -16,7 +17,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class BlockRotationModeTest {
 
-	private static final Set<Direction> HORIZONTALS = Sets.newHashSet(Direction.HORIZONTALS);
+	private static final Set<Direction> HORIZONTALS = Arrays.stream(Direction.values()).filter(d -> d.getAxis().isHorizontal()).collect(Collectors.toSet());
 
 	@RunWith(Parameterized.class)
 	public static class BasicProperties {
@@ -75,7 +76,7 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void testHorizontals() {
-			for (Direction facing : Direction.HORIZONTALS) {
+			for (Direction facing : HORIZONTALS) {
 				Orientation orientation = mode.getOrientationFacing(facing);
 				Assert.assertNotNull(facing.toString(), orientation);
 			}
@@ -222,7 +223,7 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void testTopEqualsUpForAllHorizontals() {
-			for (Direction facing : Direction.HORIZONTALS) {
+			for (Direction facing : HORIZONTALS) {
 				final Orientation orientation = mode.getOrientationFacing(facing);
 				Assert.assertNotNull(facing.toString(), orientation);
 				Assert.assertEquals(facing.toString(), Direction.UP, mode.getTop(orientation));
@@ -291,6 +292,10 @@ public class BlockRotationModeTest {
 	}
 
 	public static void checkTopDirectionsAfterFourRotations(BlockRotationMode mode, Direction clickedSide, Orientation orientation, Direction... expectedDirections) {
+		checkTopDirectionsAfterFourRotations(mode, clickedSide, orientation, Sets.newHashSet(expectedDirections));
+	}
+
+	public static void checkTopDirectionsAfterFourRotations(BlockRotationMode mode, Direction clickedSide, Orientation orientation, Set<Direction> expectedDirections) {
 		final Set<Direction> results = Sets.newHashSet();
 		for (int i = 0; i < 4; i++) {
 			orientation = mode.calculateToolRotation(orientation, clickedSide);
@@ -298,7 +303,7 @@ public class BlockRotationModeTest {
 			results.add(mode.getTop(orientation));
 		}
 
-		Assert.assertEquals(Sets.newHashSet(expectedDirections), results);
+		Assert.assertEquals(expectedDirections, results);
 	}
 
 	@RunWith(Parameterized.class)
@@ -417,7 +422,7 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnHorizontalsChangesFrontToClickedSide() {
 			for (Orientation initialOrientation : mode.getValidDirections()) {
-				for (Direction rotatedSide : Direction.HORIZONTALS) {
+				for (Direction rotatedSide : HORIZONTALS) {
 					Orientation orientation = initialOrientation;
 					final Set<Orientation> results = Sets.newHashSet();
 					for (int i = 0; i < 4; i++) {
@@ -445,7 +450,7 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnHorizontalChangesFrontAxisToClickedSide() {
 			for (Orientation orientation : MODE.getValidDirections()) {
-				for (Direction rotatedSide : Direction.HORIZONTALS) {
+				for (Direction rotatedSide : HORIZONTALS) {
 					final Orientation rotatedOrientation = MODE.calculateToolRotation(orientation, rotatedSide);
 					final Direction rotatedFront = MODE.getFront(rotatedOrientation);
 					Assert.assertEquals(rotatedSide.getAxis(), rotatedFront.getAxis());
@@ -471,7 +476,7 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnAnySideChangesFrontAxisToClickedSide() {
 			for (Orientation orientation : MODE.getValidDirections()) {
-				for (Direction rotatedSide : Direction.VALUES) {
+				for (Direction rotatedSide : Direction.values()) {
 					final Orientation rotatedOrientation = MODE.calculateToolRotation(orientation, rotatedSide);
 					final Direction rotatedFront = MODE.getFront(rotatedOrientation);
 					Assert.assertEquals(rotatedSide.getAxis(), rotatedFront.getAxis());
@@ -501,7 +506,7 @@ public class BlockRotationModeTest {
 		@Test
 		public void toolRotationOnAnySideChangesFrontToClickedSideOrOpposite() {
 			for (Orientation orientation : MODE.getValidDirections()) {
-				for (Direction rotatedSide : Direction.VALUES) {
+				for (Direction rotatedSide : Direction.values()) {
 					checkFrontDirectionsAfterFourRotations(MODE, rotatedSide, orientation, rotatedSide, rotatedSide.getOpposite());
 				}
 			}
@@ -514,13 +519,13 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void toolRotationOnTopCoversHorizontals() {
-			checkTopDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, Direction.HORIZONTALS);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, HORIZONTALS);
 			checkFrontDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, Direction.UP);
 		}
 
 		@Test
 		public void toolRotationOnBottomCoversHorizontals() {
-			checkTopDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, Direction.HORIZONTALS);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, HORIZONTALS);
 			checkFrontDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, Direction.UP);
 		}
 
@@ -555,19 +560,19 @@ public class BlockRotationModeTest {
 
 		@Test
 		public void toolRotationOnTopCoversHorizontals() {
-			checkTopDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, Direction.HORIZONTALS);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, HORIZONTALS);
 			checkFrontDirectionsAfterFourRotations(MODE, Direction.UP, Orientation.XP_YP, Direction.UP);
 		}
 
 		@Test
 		public void toolRotationOnBottomCoversHorizontals() {
-			checkTopDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, Direction.HORIZONTALS);
+			checkTopDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, HORIZONTALS);
 			checkFrontDirectionsAfterFourRotations(MODE, Direction.DOWN, Orientation.XP_YP, Direction.DOWN);
 		}
 
 		@Test
 		public void toolRotationOnHorizontalChangesFrontToOpposite() {
-			for (Direction front : Direction.HORIZONTALS) {
+			for (Direction front : HORIZONTALS) {
 				Orientation orientation = MODE.getOrientationFacing(front);
 				final Orientation rotatedOrientation = MODE.calculateToolRotation(orientation, front);
 				Direction rotatedFront = MODE.getFront(rotatedOrientation);

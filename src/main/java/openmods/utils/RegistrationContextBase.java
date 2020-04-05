@@ -1,8 +1,8 @@
 package openmods.utils;
 
 import com.google.common.base.Preconditions;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -13,10 +13,9 @@ public class RegistrationContextBase<T extends IForgeRegistryEntry<T>> {
 	protected final String domain;
 
 	private static String getCurrentMod() {
-		ModContainer mc = Loader.instance().activeModContainer();
+		final ModContainer mc = ModLoadingContext.get().getActiveContainer();
 		Preconditions.checkState(mc != null, "This method can be only used during mod initialization");
-		String prefix = mc.getModId().toLowerCase();
-		return prefix;
+		return mc.getModId().toLowerCase();
 	}
 
 	public RegistrationContextBase(IForgeRegistry<T> registry, String domain) {

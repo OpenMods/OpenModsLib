@@ -1,26 +1,25 @@
 package openmods.model.itemstate;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType;
-import net.minecraft.client.renderer.block.model.ItemOverride;
-import net.minecraft.client.renderer.block.model.ItemOverrideList;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.world.World;
-import openmods.state.State;
+import net.minecraftforge.client.model.data.IModelData;
+import openmods.state.ItemState;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class ItemStateOverrideList extends ItemOverrideList {
@@ -34,8 +33,12 @@ public class ItemStateOverrideList extends ItemOverrideList {
 		}
 
 		@Override
-		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, long rand) {
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
 			return original.getQuads(state, side, rand);
+		}
+
+		@Nonnull @Override public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
+			return original.getQuads(state, side, rand, extraData);
 		}
 
 		@Override
@@ -58,6 +61,10 @@ public class ItemStateOverrideList extends ItemOverrideList {
 			return original.getParticleTexture();
 		}
 
+		@Override public TextureAtlasSprite getParticleTexture(@Nonnull IModelData data) {
+			return original.getParticleTexture(data);
+		}
+
 		@Override
 		@SuppressWarnings("deprecation")
 		public ItemCameraTransforms getItemCameraTransforms() {
@@ -70,7 +77,7 @@ public class ItemStateOverrideList extends ItemOverrideList {
 		}
 
 		@Override
-		public Pair<? extends IBakedModel, Matrix4f> handlePerspective(TransformType cameraTransformType) {
+		public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
 			return original.handlePerspective(cameraTransformType);
 		}
 	}
@@ -79,18 +86,18 @@ public class ItemStateOverrideList extends ItemOverrideList {
 		return new BakedModelWrapper(original);
 	}
 
-	private final Map<State, IBakedModel> models;
+	private final Map<ItemState, IBakedModel> models;
 
-	public ItemStateOverrideList(Map<State, IBakedModel> models) {
-		super(ImmutableList.of());
+	public ItemStateOverrideList(Map<ItemState, IBakedModel> models) {
+		super();
 		this.models = ImmutableMap.copyOf(models);
 	}
 
 	@Override
-	public IBakedModel handleItemState(IBakedModel originalModel, @Nonnull ItemStack stack, World world, LivingEntity entity) {
+	public IBakedModel getModelWithOverrides(IBakedModel originalModel, @Nonnull ItemStack stack, World world, LivingEntity entity) {
 		final Item item = stack.getItem();
 		if (item instanceof IStateItem) {
-			final State state = ((IStateItem)item).getState(stack, world, entity);
+			final ItemState state = ((IStateItem)item).getState(stack, world, entity);
 			final IBakedModel result = models.get(state);
 			if (result != null)
 				return result;

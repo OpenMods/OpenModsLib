@@ -41,7 +41,7 @@ public class SyncableBoolean extends SyncableObjectBase implements ISyncableValu
 
 	@Override
 	public void writeToNBT(CompoundNBT tag, String name) {
-		tag.setBoolean(name, value);
+		tag.putBoolean(name, value);
 	}
 
 	@Override

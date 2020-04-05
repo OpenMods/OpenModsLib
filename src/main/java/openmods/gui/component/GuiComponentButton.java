@@ -1,7 +1,6 @@
 package openmods.gui.component;
 
 import openmods.gui.misc.BoxRenderer;
-import org.lwjgl.input.Mouse;
 
 public abstract class GuiComponentButton extends GuiComponentResizable {
 
@@ -28,7 +27,7 @@ public abstract class GuiComponentButton extends GuiComponentResizable {
 
 	@Override
 	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		boolean pressed = isMouseOver(mouseX, mouseY) && Mouse.isButtonDown(0);
+		boolean pressed = isMouseOver(mouseX, mouseY) && parent.getMinecraft().mouseHelper.isLeftDown();
 		BoxRenderer box = buttonEnabled? (pressed? BOX_RENDERER_PRESSED : BOX_RENDERER_NORMAL) : BOX_RENDERER_DISABLED;
 		bindComponentsSheet();
 		box.render(this, x + offsetX, y + offsetY, width, height, borderColor);

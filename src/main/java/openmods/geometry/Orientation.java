@@ -1,8 +1,8 @@
 package openmods.geometry;
 
 import com.google.common.base.Preconditions;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Locale;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
@@ -43,9 +43,9 @@ public enum Orientation implements IStringSerializable {
 
 	public static final Orientation[] VALUES = values();
 
-	private static final TIntObjectMap<Orientation> LOOKUP_XY = new TIntObjectHashMap<>(VALUES.length);
-	private static final TIntObjectMap<Orientation> LOOKUP_XZ = new TIntObjectHashMap<>(VALUES.length);
-	private static final TIntObjectMap<Orientation> LOOKUP_YZ = new TIntObjectHashMap<>(VALUES.length);
+	private static final Int2ObjectMap<Orientation> LOOKUP_XY = new Int2ObjectOpenHashMap<>(VALUES.length);
+	private static final Int2ObjectMap<Orientation> LOOKUP_XZ = new Int2ObjectOpenHashMap<>(VALUES.length);
+	private static final Int2ObjectMap<Orientation> LOOKUP_YZ = new Int2ObjectOpenHashMap<>(VALUES.length);
 
 	private static final Orientation[][] ROTATIONS = new Orientation[VALUES.length][HalfAxis.VALUES.length];
 
@@ -53,7 +53,7 @@ public enum Orientation implements IStringSerializable {
 		return (a.ordinal() << 3) | (b.ordinal() << 0);
 	}
 
-	private static void addToLookup(TIntObjectMap<Orientation> lookup, Orientation o, HalfAxis a, HalfAxis b) {
+	private static void addToLookup(Int2ObjectMap<Orientation> lookup, Orientation o, HalfAxis a, HalfAxis b) {
 		final int key = lookupKey(a, b);
 		final Orientation prev = lookup.put(key, o);
 		Preconditions.checkState(prev == null, "Key %s duplicate: %s->%s", key, prev, o);

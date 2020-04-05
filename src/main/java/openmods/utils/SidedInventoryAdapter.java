@@ -11,9 +11,9 @@ import javax.annotation.Nonnull;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
-import net.minecraft.util.text.ITextComponent;
 import openmods.utils.bitmap.IReadableBitMap;
 
 public class SidedInventoryAdapter implements ISidedInventory {
@@ -130,16 +130,6 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public String getName() {
-		return inventory.getName();
-	}
-
-	@Override
-	public boolean hasCustomName() {
-		return inventory.hasCustomName();
-	}
-
-	@Override
 	public void markDirty() {
 		inventory.markDirty();
 	}
@@ -155,32 +145,20 @@ public class SidedInventoryAdapter implements ISidedInventory {
 	}
 
 	@Override
-	public int getField(int id) {
-		return inventory.getField(id);
-	}
-
-	@Override
-	public void setField(int id, int value) {
-		inventory.setField(id, value);
-	}
-
-	@Override
-	public int getFieldCount() {
-		return inventory.getFieldCount();
-	}
-
-	@Override
 	public void clear() {
-		inventory.getFieldCount();
-	}
-
-	@Override
-	public ITextComponent getDisplayName() {
-		return inventory.getDisplayName();
+		inventory.clear();
 	}
 
 	@Override
 	public boolean isEmpty() {
 		return inventory.isEmpty();
 	}
+
+	@Override
+	public int count(Item item) {
+		return inventory.count(item);
+	}
+
+	@Override public boolean hasAny(Set<Item> p_213902_1_) {return inventory.hasAny(p_213902_1_);}
+
 }

@@ -1,9 +1,9 @@
 package openmods.entity.renderer;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
 import net.minecraft.client.renderer.texture.AtlasTexture;
@@ -23,12 +23,12 @@ public class EntityBlockRenderer extends EntityRenderer<EntityBlock> {
 
 		if (blockState.getRenderType() != BlockRenderType.INVISIBLE) {
 			GlStateManager.pushMatrix();
-			GlStateManager.translate(x - 0.5, y, z + 0.5);
+			GlStateManager.translated(x - 0.5, y, z + 0.5);
 			GlStateManager.disableLighting();
 
 			bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 
-			Minecraft.getMinecraft().getBlockRendererDispatcher().renderBlockBrightness(blockState, entity.getBrightness());
+			Minecraft.getInstance().getBlockRendererDispatcher().renderBlockBrightness(blockState, entity.getBrightness());
 
 			GlStateManager.enableLighting();
 			GlStateManager.popMatrix();

@@ -64,6 +64,31 @@ configurations {
 dependencies {
     minecraft 'net.minecraftforge:forge:' + forge_version
 
+    compile "org.lwjgl:lwjgl:3.2.2"
+    compile "org.lwjgl:lwjgl-openal:3.2.2"
+    compile "org.lwjgl:lwjgl-opengl:3.2.2"
+
+    compile 'com.mojang:datafixerupper:2.0.24'
+    compile 'com.google.code.findbugs:jsr305:2.0.1'
+    compile 'com.google.guava:guava:21.0'
+    compile 'org.apache.commons:commons-lang3:3.5'
+    compile 'commons-io:commons-io:2.5'
+    compile 'com.google.code.gson:gson:2.8.0'
+    compile 'org.apache.logging.log4j:log4j-api:2.8.1'
+    compile 'org.apache.logging.log4j:log4j-core:2.8.1'
+    compile 'com.mojang:authlib:1.5.25'
+    compile 'com.mojang:brigadier:1.0.17'
+    compile 'io.netty:netty-all:4.1.25.Final'
+    compile 'it.unimi.dsi:fastutil:8.2.1'
+    compile 'net.sf.jopt-simple:jopt-simple:5.0.3'
+    compile 'org.ow2.asm:asm:7.2'
+    compile 'org.ow2.asm:asm-commons:7.2'
+    compile 'org.ow2.asm:asm-tree:7.2'
+
+    compile 'java3d:vecmath:1.5.2' // TODO not provider, solve!
+
+    compileOnly 'com.google.errorprone:error_prone_annotations:2.0.15'
+
     shade group: 'info.openmods', name: 'calc', version: '0.3'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -116,19 +141,26 @@ if (env.BUILD_NUMBER != null) {
 
 def gitManifest = manifest {
     if (branch != null) {
-        attributes("Git-Branch": branch, "Git-Hash": hash)
+        attributes("Git-Branch": branch,
+                "Git-Hash": hash,
+                "Implementation-Version": mod_version,
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        )
     }
 }
 
 minecraft {
     mappings channel: 'snapshot', version: mcp_mappings
+    
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    
     runs {
         client {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
             mods {
-                openblocks {
+                openmods {
                     source sourceSets.main
                 }
             }
@@ -139,19 +171,7 @@ minecraft {
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
 
             mods {
-                openblocks {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        data {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-            args '--mod', 'examplemod', '--all', '--output', file('src/generated/resources/')
-            mods {
-                openblocks {
+                openmods {
                     source sourceSets.main
                 }
             }
@@ -176,10 +196,6 @@ processResources {
 }
 
 def fmlManifest = manifest {
-    attributes(
-        "FMLCorePlugin": "openmods.core.OpenModsCorePlugin",
-        "FMLCorePluginContainsFMLMod": "true",
-    )
 }
 
 if (project.hasProperty('keyStore')) {

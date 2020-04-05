@@ -1,8 +1,7 @@
 package openmods.gui.component;
 
-import net.minecraft.client.renderer.GlStateManager;
+import com.mojang.blaze3d.platform.GlStateManager;
 import openmods.gui.Icon;
-import org.lwjgl.input.Mouse;
 
 public class GuiComponentSpriteButton extends GuiComponentSprite {
 
@@ -17,9 +16,9 @@ public class GuiComponentSpriteButton extends GuiComponentSprite {
 	protected void doRender(int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (icon == null) { return; }
 
-		GlStateManager.color(r, g, b);
+		GlStateManager.color3f(r, g, b);
 		boolean mouseOver = isMouseOver(mouseX, mouseY);
-		boolean pressed = mouseOver && Mouse.isButtonDown(0);
+		boolean pressed = mouseOver && parent.getMinecraft().mouseHelper.isLeftDown();
 		int offset = pressed? 1 : 0;
 		Icon useIcon = hoverIcon != null && mouseOver? hoverIcon : icon;
 		drawSprite(useIcon, offsetX + x + offset, offsetY + y + offset);

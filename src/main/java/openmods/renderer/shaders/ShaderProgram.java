@@ -1,8 +1,8 @@
 package openmods.renderer.shaders;
 
 import com.google.common.collect.ImmutableList;
-import gnu.trove.map.TObjectIntMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.List;
 
 public class ShaderProgram {
@@ -10,37 +10,9 @@ public class ShaderProgram {
 
 	private final List<Integer> shaders;
 
-	private abstract static class ComputingObjectIntMap<T> extends TObjectIntHashMap<T> {
-		@Override
-		public int get(Object key) {
-			int index = index(key);
-			if (index < 0) {
-				@SuppressWarnings("unchecked")
-				final T k = (T)key;
-				final int result = computeValue(k);
-				put(k, result);
-				return result;
-			} else {
-				return _values[index];
-			}
-		}
+	private final Object2IntMap<String> uniforms = new Object2IntOpenHashMap<>();
 
-		protected abstract int computeValue(T key);
-	}
-
-	private final TObjectIntMap<String> uniforms = new ComputingObjectIntMap<String>() {
-		@Override
-		protected int computeValue(String key) {
-			return ShaderHelper.methods().glGetUniformLocation(program, key);
-		}
-	};
-
-	private final TObjectIntMap<String> attributes = new ComputingObjectIntMap<String>() {
-		@Override
-		protected int computeValue(String key) {
-			return ShaderHelper.methods().glGetAttribLocation(program, key);
-		}
-	};
+	private final Object2IntMap<String> attributes = new Object2IntOpenHashMap<>();
 
 	ShaderProgram(int program, List<Integer> shaders) {
 		this.program = program;
@@ -64,11 +36,11 @@ public class ShaderProgram {
 	}
 
 	private int getUniformLocation(String uniform) {
-		return uniforms.get(uniform);
+		return uniforms.computeIntIfAbsent(uniform, key -> ShaderHelper.methods().glGetUniformLocation(program, key));
 	}
 
 	private int getAttributeLocation(String attribute) {
-		return attributes.get(attribute);
+		return attributes.computeIntIfAbsent(attribute, key -> ShaderHelper.methods().glGetAttribLocation(program, key));
 	}
 
 	public void uniform1i(String name, int val) {

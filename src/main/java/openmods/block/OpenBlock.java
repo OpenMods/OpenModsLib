@@ -1,36 +1,30 @@
 package openmods.block;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.BlockFaceShape;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.stats.Stats;
+import net.minecraft.state.Property;
+import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
-import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.fml.common.ModContainer;
-import openmods.Log;
+import net.minecraftforge.fml.ModContainer;
 import openmods.api.IActivateAwareTile;
 import openmods.api.IAddAwareTile;
 import openmods.api.IBreakAwareTile;
@@ -47,14 +41,12 @@ import openmods.geometry.LocalDirections;
 import openmods.geometry.Orientation;
 import openmods.inventory.IInventoryProvider;
 import openmods.tileentity.OpenTileEntity;
-import openmods.utils.BlockNotifyFlags;
-import openmods.utils.BlockUtils;
 
 public class OpenBlock extends Block implements IRegisterableBlock {
 
 	public static class TwoDirections extends OpenBlock {
-		public TwoDirections(Material material) {
-			super(material);
+		public TwoDirections(Properties properties) {
+			super(properties);
 		}
 
 		@Override
@@ -64,8 +56,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public static class ThreeDirections extends OpenBlock {
-		public ThreeDirections(Material material) {
-			super(material);
+		public ThreeDirections(Properties properties) {
+			super(properties);
 		}
 
 		@Override
@@ -75,8 +67,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public static class FourDirections extends OpenBlock {
-		public FourDirections(Material material) {
-			super(material);
+		public FourDirections(Properties properties) {
+			super(properties);
 		}
 
 		@Override
@@ -86,8 +78,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public static class SixDirections extends OpenBlock {
-		public SixDirections(Material material) {
-			super(material);
+		public SixDirections(Properties properties) {
+			super(properties);
 		}
 
 		@Override
@@ -135,7 +127,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	public final IBlockRotationMode rotationMode;
 
-	public final IProperty<Orientation> propertyOrientation;
+	public final Property<Orientation> propertyOrientation;
 
 	private boolean requiresInitialization;
 
@@ -155,13 +147,8 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return false;
 	}
 
-	public OpenBlock(Material material) {
-		super(material);
-		setHardness(1.0F);
-
-		// I dont think vanilla actually uses this..
-		this.hasTileEntity = false;
-
+	public OpenBlock(Block.Properties properties) {
+		super(properties);
 		this.rotationMode = getRotationMode();
 		Preconditions.checkNotNull(this.rotationMode);
 		this.propertyOrientation = this.rotationMode.getProperty();
@@ -175,7 +162,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return BlockRotationMode.NONE;
 	}
 
-	protected IProperty<Orientation> getPropertyOrientation() {
+	protected Property<Orientation> getPropertyOrientation() {
 		return getRotationMode().getProperty();
 	}
 
@@ -183,7 +170,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return this.blockPlacementMode;
 	}
 
-	protected Orientation getOrientation(IBlockAccess world, BlockPos pos) {
+	protected Orientation getOrientation(IBlockReader world, BlockPos pos) {
 		final BlockState state = world.getBlockState(pos);
 		return getOrientation(state);
 	}
@@ -191,7 +178,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	public Orientation getOrientation(BlockState state) {
 		// sometimes we get air block...
 		if (state.getBlock() != this) return Orientation.XP_YP;
-		return state.getValue(propertyOrientation);
+		return state.get(propertyOrientation);
 	}
 
 	public Direction getFront(BlockState state) {
@@ -214,7 +201,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return hasCapability(TileEntityCapability.CUSTOM_HARVEST_DROPS);
 	}
 
-	public static OpenBlock getOpenBlock(IBlockAccess world, BlockPos blockPos) {
+	public static OpenBlock getOpenBlock(IBlockReader world, BlockPos blockPos) {
 		if (world == null)
 			return null;
 		Block block = world.getBlockState(blockPos).getBlock();
@@ -223,8 +210,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return null;
 	}
 
-	@Override
-	public TileEntity createTileEntity(World world, BlockState state) {
+	@Nullable @Override public TileEntity createTileEntity(BlockState state, IBlockReader world) {
 		final TileEntity te = createTileEntity();
 		if (te instanceof OpenTileEntity)
 			((OpenTileEntity)te).setup();
@@ -249,9 +235,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return false;
 	}
 
-	@Override
-	@Nonnull
-	public ItemStack getPickBlock(BlockState state, RayTraceResult target, World world, BlockPos pos, PlayerEntity player) {
+	@Override public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
 		if (hasCapability(TileEntityCapability.CUSTOM_PICK_ITEM)) {
 			TileEntity te = world.getTileEntity(pos);
 			if (te instanceof ICustomPickItem)
@@ -261,88 +245,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return suppressPickBlock()? ItemStack.EMPTY : super.getPickBlock(state, target, world, pos, player);
 	}
 
-	private static List<ItemStack> getTileBreakDrops(TileEntity te) {
-		List<ItemStack> breakDrops = Lists.newArrayList();
-		BlockUtils.getTileInventoryDrops(te, breakDrops);
-		if (te instanceof ICustomBreakDrops)
-			breakDrops = ((ICustomBreakDrops)te).getDrops(breakDrops);
-		return breakDrops;
-	}
-
-	@Override
-	public void breakBlock(World world, BlockPos pos, BlockState state) {
-		if (shouldDropFromTeAfterBreak()) {
-			final TileEntity te = world.getTileEntity(pos);
-			if (te != null) {
-				if (te instanceof IBreakAwareTile)
-					((IBreakAwareTile)te).onBlockBroken();
-
-				for (ItemStack stack : getTileBreakDrops(te))
-					BlockUtils.dropItemStackInWorld(world, pos, stack);
-
-				world.removeTileEntity(pos);
-			}
-		}
-		super.breakBlock(world, pos, state);
-	}
-
-	@Override
-	public void harvestBlock(World world, PlayerEntity player, BlockPos pos, BlockState state, TileEntity te, @Nonnull ItemStack stack) {
-		player.addStat(Stats.getBlockStats(this));
-		player.addExhaustion(0.025F);
-
-		if (canSilkHarvest(world, pos, state, player) && EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, stack) > 0) {
-			handleSilkTouchDrops(world, player, pos, state, te);
-		} else {
-			handleNormalDrops(world, player, pos, state, te, stack);
-		}
-	}
-
-	protected void handleNormalDrops(World world, PlayerEntity player, BlockPos pos, BlockState state, TileEntity te, @Nonnull ItemStack stack) {
-		harvesters.set(player);
-		final int fortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, stack);
-
-		boolean addNormalDrops = true;
-
-		if (te instanceof ICustomHarvestDrops) {
-			final ICustomHarvestDrops dropper = (ICustomHarvestDrops)te;
-			final List<ItemStack> drops = Lists.newArrayList();
-			dropper.addHarvestDrops(player, drops, state, fortune, false);
-
-			ForgeEventFactory.fireBlockHarvesting(drops, world, pos, state, fortune, 1.0f, false, player);
-			for (ItemStack drop : drops)
-				spawnAsEntity(world, pos, drop);
-
-			addNormalDrops = !dropper.suppressBlockHarvestDrops();
-		}
-
-		if (addNormalDrops)
-			dropBlockAsItem(world, pos, state, fortune);
-
-		harvesters.set(null);
-	}
-
-	protected void handleSilkTouchDrops(World world, PlayerEntity player, BlockPos pos, BlockState state, TileEntity te) {
-		List<ItemStack> items = Lists.newArrayList();
-
-		boolean addNormalDrops = true;
-
-		if (te instanceof ICustomHarvestDrops) {
-			final ICustomHarvestDrops dropper = (ICustomHarvestDrops)te;
-
-			dropper.addHarvestDrops(player, items, state, 0, true);
-			addNormalDrops = !dropper.suppressBlockHarvestDrops();
-		}
-
-		if (addNormalDrops) {
-			final ItemStack drop = new ItemStack(Item.getItemFromBlock(this), 1, damageDropped(state));
-			items.add(drop);
-		}
-
-		ForgeEventFactory.fireBlockHarvesting(items, world, pos, state, 0, 1.0f, true, player);
-		for (ItemStack stack : items)
-			spawnAsEntity(world, pos, stack);
-	}
+	// TODO 1.14 Block drops!
 
 	@Override
 	public void setupBlock(ModContainer container, String id, Class<? extends TileEntity> tileEntity, BlockItem itemBlock) {
@@ -350,7 +253,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 		if (tileEntity != null) {
 			this.teClass = tileEntity;
-			hasTileEntity = true;
 
 			for (TileEntityCapability capability : TileEntityCapability.values())
 				if (capability.intf.isAssignableFrom(teClass))
@@ -363,11 +265,9 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return teClass != null;
 	}
 
-	public static boolean isNeighborBlockSolid(IBlockAccess world, BlockPos blockPos, Direction side) {
-		final BlockPos pos = blockPos.offset(side);
-		final BlockState state = world.getBlockState(pos);
-		return isExceptionBlockForAttaching(state.getBlock()) ||
-				state.getBlockFaceShape(world, pos, side.getOpposite()) == BlockFaceShape.SOLID;
+	// TODO 1.14 review rules
+	public static boolean isNeighborBlockSolid(IWorldReader world, BlockPos blockPos, Direction side) {
+		return func_220055_a(world, blockPos, side);
 	}
 
 	public static boolean areNeighborBlocksSolid(World world, BlockPos blockPos, Direction... sides) {
@@ -379,7 +279,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void neighborChanged(BlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+	public void neighborChanged(BlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
 		if (hasCapabilities(TileEntityCapability.NEIGBOUR_LISTENER, TileEntityCapability.SURFACE_ATTACHEMENT)) {
 			final TileEntity te = world.getTileEntity(pos);
 			if (te instanceof INeighbourAwareTile)
@@ -399,7 +299,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@Override
-	public void onNeighborChange(IBlockAccess world, BlockPos pos, BlockPos neighbor) {
+	public void onNeighborChange(BlockState state, IWorldReader world, BlockPos pos, BlockPos neighbor) {
 		if (hasCapability(TileEntityCapability.NEIGBOUR_TE_LISTENER)) {
 			final TileEntity te = world.getTileEntity(pos);
 			if (te instanceof INeighbourTeAwareTile)
@@ -407,17 +307,15 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		}
 	}
 
-	@Override
-	public void onBlockAdded(World world, BlockPos blockPos, BlockState state) {
-		super.onBlockAdded(world, blockPos, state);
+	@Override public void onBlockAdded(BlockState state, World world, BlockPos blockPos, BlockState oldState, boolean isMoving) {
+		super.onBlockAdded(state, world, blockPos, oldState, isMoving);
 
 		if (requiresInitialization || hasCapability(TileEntityCapability.ADD_LISTENER)) {
 			world.addBlockEvent(blockPos, this, EVENT_ADDED, 0);
 		}
 	}
 
-	@Override
-	public boolean onBlockActivated(World world, BlockPos blockPos, BlockState state, PlayerEntity player, Hand hand, Direction side, float hitX, float hitY, float hitZ) {
+	@Override public boolean onBlockActivated(BlockState state, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
 		if (hasCapabilities(TileEntityCapability.GUI_PROVIDER, TileEntityCapability.ACTIVATE_LISTENER)) {
 			final TileEntity te = world.getTileEntity(blockPos);
 
@@ -429,7 +327,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 			// TODO Expand for new args
 			if (te instanceof IActivateAwareTile)
-				return ((IActivateAwareTile)te).onBlockActivated(player, hand, side, hitX, hitY, hitZ);
+				return ((IActivateAwareTile)te).onBlockActivated(player, hand, hit);
 		}
 
 		return false;
@@ -446,7 +344,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 			return false;
 		}
-		if (hasTileEntity) {
+		if (teClass != null) {
 			super.eventReceived(state, world, blockPos, eventId, eventParam);
 			TileEntity te = world.getTileEntity(blockPos);
 			return te != null && te.receiveClientEvent(eventId, eventParam);
@@ -466,13 +364,13 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <U> U getTileEntity(IBlockAccess world, BlockPos blockPos, Class<? extends U> cls) {
+	public static <U> U getTileEntity(IBlockReader world, BlockPos blockPos, Class<? extends U> cls) {
 		final TileEntity te = world.getTileEntity(blockPos);
 		return (cls.isInstance(te))? (U)te : null;
 	}
 
 	@SuppressWarnings("unchecked")
-	public <U extends TileEntity> U getTileEntity(IBlockAccess world, BlockPos blockPos) {
+	public <U extends TileEntity> U getTileEntity(IBlockReader world, BlockPos blockPos) {
 		Preconditions.checkNotNull(teClass, "This block has no tile entity");
 		final TileEntity te = world.getTileEntity(blockPos);
 		return (teClass.isInstance(te))? (U)te : null;
@@ -490,10 +388,11 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 		return true;
 	}
 
-	@Override
-	public BlockState getStateForPlacement(World worldIn, BlockPos pos, Direction facing, float hitX, float hitY, float hitZ, int meta, LivingEntity placer) {
-		final Orientation orientation = calculateOrientationAfterPlace(pos, facing, placer);
-		return getStateFromMeta(meta).withProperty(propertyOrientation, orientation);
+	// TODO re-eval with whole context
+	@Nullable @Override
+	public BlockState getStateForPlacement(BlockItemUseContext context) {
+		final Orientation orientation = calculateOrientationAfterPlace(context.getPos(), context.getFace(), context.getPlayer());
+		return getDefaultState().with(propertyOrientation, orientation);
 	}
 
 	@Override
@@ -513,78 +412,19 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 	}
 
 	public void openGui(PlayerEntity player, World world, BlockPos blockPos) {
-		player.openGui(modInstance, OPEN_MODS_TE_GUI, world, blockPos.getX(), blockPos.getY(), blockPos.getZ());
+		// TODO 1.14 reimplement
 	}
 
-	public Orientation getOrientationFromMeta(int meta) {
-		return rotationMode.fromValue(meta & rotationMode.getMask());
+	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+		builder.add(getPropertyOrientation());
 	}
 
-	public int getMetaFromOrientation(Orientation orientation) {
-		return rotationMode.toValue(orientation);
-	}
-
-	@Override
-	public BlockState getStateFromMeta(int meta) {
-		return getDefaultState()
-				.withProperty(propertyOrientation, getOrientationFromMeta(meta));
-	}
-
-	@Override
-	public int getMetaFromState(BlockState state) {
-		final Orientation orientation = state.getValue(propertyOrientation);
-		return getMetaFromOrientation(orientation);
-	}
-
-	@Override
-	protected BlockStateContainer createBlockState() {
-		// WARNING: this is called from superclass, so rotationMode is not set yet
-		return new BlockStateContainer(this, getPropertyOrientation());
-	}
-
-	@Override
-	public boolean rotateBlock(World worldObj, BlockPos blockPos, Direction axis) {
-		if (!canRotateWithTool())
-			return false;
-
-		final BlockState currentState = worldObj.getBlockState(blockPos);
-
-		final Orientation orientation = currentState.getValue(propertyOrientation);
-
-		final Orientation newOrientation = rotationMode.calculateToolRotation(orientation, axis);
-
-		if (newOrientation != null) {
-			if (rotationMode.isOrientationValid(newOrientation)) {
-				final BlockState newState = createNewStateAfterRotation(worldObj, blockPos, currentState, propertyOrientation, newOrientation);
-				worldObj.setBlockState(blockPos, newState, BlockNotifyFlags.ALL);
-			} else {
-				Log.info("Invalid tool rotation: [%s] %s: (%s): %s->%s", rotationMode, axis, blockPos, orientation, newOrientation);
-				return false;
-			}
-		}
-
-		if (teCapabilities.contains(TileEntityCapability.SURFACE_ATTACHEMENT)) {
-			final ISurfaceAttachment te = getTileEntity(worldObj, blockPos, ISurfaceAttachment.class);
-			if (te == null)
-				return false;
-
-			breakBlockIfSideNotSolid(worldObj, blockPos, te.getSurfaceDirection());
-		}
-
-		return true;
-	}
-
-	protected BlockState createNewStateAfterRotation(World worldObj, BlockPos blockPos, BlockState currentState, IProperty<Orientation> currentOrientation,
-			Orientation newOrientation) {
-		return currentState.withProperty(propertyOrientation, newOrientation);
-	}
-
+	// TODO 1.14 Reimplement when hook available
 	public boolean canRotateWithTool() {
 		return rotationMode.toolRotationAllowed();
 	}
 
-	@Override
-	public Direction[] getValidRotations(World worldObj, BlockPos pos) {
+	@Nullable @Override public Direction[] getValidRotations(BlockState state, IBlockReader world, BlockPos pos) {
 		if (!canRotateWithTool())
 			return RotationAxis.NO_AXIS;
 		return rotationMode.getToolRotationAxes();

@@ -7,8 +7,8 @@ import java.lang.annotation.Target;
 import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.tileentity.TileEntity;
-import openmods.item.ItemOpenBlock;
 
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface RegisterBlock {
@@ -30,7 +30,7 @@ public @interface RegisterBlock {
 
 	boolean registerItemBlock() default true;
 
-	Class<? extends BlockItem> itemBlock() default ItemOpenBlock.class;
+	Class<? extends BlockItem> itemBlock() default BlockItem.class;
 
 	Class<? extends TileEntity> tileEntity() default TileEntity.class;
 
@@ -42,11 +42,7 @@ public @interface RegisterBlock {
 
 	boolean isConfigurable() default true;
 
-	boolean registerDefaultItemModel() default true;
-
 	boolean addToModCreativeTab() default true;
-
-	Class<? extends ICustomItemModelProvider> customItemModels() default ICustomItemModelProvider.class;
 
 	String[] legacyIds() default {};
 }

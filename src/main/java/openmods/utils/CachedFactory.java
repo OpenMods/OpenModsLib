@@ -3,19 +3,13 @@ package openmods.utils;
 import com.google.common.collect.Maps;
 import java.util.Map;
 
+@Deprecated
 public abstract class CachedFactory<K, V> {
 
 	private final Map<K, V> cache = Maps.newHashMap();
 
 	public V getOrCreate(K key) {
-		V value = cache.get(key);
-
-		if (value == null) {
-			value = create(key);
-			cache.put(key, value);
-		}
-
-		return value;
+		return cache.computeIfAbsent(key, this::create);
 	}
 
 	public V remove(K key) {

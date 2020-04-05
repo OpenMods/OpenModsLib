@@ -4,18 +4,17 @@ import java.util.List;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.Items;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.Items;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
+import net.minecraftforge.registries.ObjectHolder;
 import openmods.Mods;
 
 public final class ComputerCraftUtils {
 
-	private static final Container DUMMY_CONTAINER = new Container() {
+	private static final Container DUMMY_CONTAINER = new Container(null, -1) {
 
 		@Override
 		public boolean canInteractWith(PlayerEntity playerIn) {
@@ -27,10 +26,10 @@ public final class ComputerCraftUtils {
 	@ObjectHolder(Mods.COMPUTERCRAFT)
 	private static class Turtles {
 
-		@ObjectHolder("CC-TurtleExpanded")
+		@ObjectHolder("turtle_expanded")
 		public static Item normalTurtle;
 
-		@ObjectHolder("CC-TurtleAdvanced")
+		@ObjectHolder("turtle_advanced")
 		public static Item advancedTurtle;
 
 	}
@@ -40,9 +39,7 @@ public final class ComputerCraftUtils {
 	}
 
 	protected static IRecipe findTurtleUpgradeRecipe() {
-		for (IRecipe recipe : CraftingManager.REGISTRY)
-			if (recipe.getClass().getSimpleName().equals("TurtleUpgradeRecipe")) return recipe;
-
+		// TODO 1.14 Old method requires world, re-do?
 		return null;
 	}
 

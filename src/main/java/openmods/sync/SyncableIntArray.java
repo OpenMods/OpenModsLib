@@ -66,7 +66,7 @@ public class SyncableIntArray extends SyncableObjectBase implements ISyncableVal
 
 	@Override
 	public void writeToNBT(CompoundNBT tag, String name) {
-		tag.setIntArray(name, value);
+		tag.putIntArray(name, value);
 	}
 
 	@Override

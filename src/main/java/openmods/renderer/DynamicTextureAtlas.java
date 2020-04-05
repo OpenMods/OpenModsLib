@@ -3,11 +3,12 @@ package openmods.renderer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.List;
+import net.minecraft.client.renderer.texture.NativeImage;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.util.ResourceLocation;
 import openmods.utils.ByteUtils;
 
-public class DynamicTextureAtlas {
+public class DynamicTextureAtlas implements AutoCloseable {
 
 	public class AtlasCell {
 		private int[] pixels;
@@ -60,11 +61,7 @@ public class DynamicTextureAtlas {
 		int area = width * width;
 		int height = (count <= area / 2)? width / 2 : width;
 
-		textureWrapper.resize(width * cellSize, height * cellSize);
-		int[] buffer = textureWrapper.allocate();
-
-		final int pixelsPerLine = width * cellSize;
-		final int pixelsPerCellRow = pixelsPerLine * cellSize;
+		final NativeImage image = textureWrapper.prepareImage(width * cellSize, height * cellSize);
 
 		final float cellU = 1.0f / width;
 		final float cellV = 1.0f / height;
@@ -73,13 +70,16 @@ public class DynamicTextureAtlas {
 			int cellX = cell % width;
 			int cellY = cell / width;
 
+			int baseX = cellX * width;
+			int baseY = cellY * width;
+
 			AtlasCell cellData = cells.get(cell);
 
-			int cellStart = cellY * pixelsPerCellRow + cellX * cellSize;
-			for (int row = 0; row < cellSize; row++) {
-				int dstPos = cellStart + row * pixelsPerLine;
-				int srcPos = row * cellSize;
-				System.arraycopy(cellData.pixels, srcPos, buffer, dstPos, 64);
+			int index = 0;
+			for (int column = 0; column < cellSize; column++) {
+				for (int row = 0; row < cellSize; row++) {
+					image.setPixelRGBA(baseX + column, baseY + row, cellData.pixels[index++]);
+				}
 			}
 
 			cellData.pixels = null;
@@ -89,6 +89,10 @@ public class DynamicTextureAtlas {
 			cellData.maxV = cellData.minV + cellV;
 		}
 
-		textureWrapper.updateAndDeallocate();
+		textureWrapper.upload();
+	}
+
+	@Override public void close() {
+		textureWrapper.close();
 	}
 }

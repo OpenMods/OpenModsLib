@@ -64,13 +64,13 @@ public abstract class PageBase extends BaseComposite {
 		result.addComponent(image);
 
 		result.setListener((IMouseDownListener)(component, clickX, clickY, button) -> {
-			final Minecraft mc = Minecraft.getMinecraft();
+			final Minecraft mc = Minecraft.getInstance();
 			if (mc.gameSettings.chatLinksPrompt) {
 				final Screen prevGui = mc.currentScreen;
-				mc.displayGuiScreen(new ConfirmOpenLinkScreen((response, id) -> {
+				mc.displayGuiScreen(new ConfirmOpenLinkScreen(response -> {
 					if (response) listener.onConfirm();
 					mc.displayGuiScreen(prevGui);
-				}, link, 0, false));
+				}, link, false));
 			} else {
 				listener.onConfirm();
 			}

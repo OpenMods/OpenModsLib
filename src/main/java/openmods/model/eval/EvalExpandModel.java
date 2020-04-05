@@ -4,91 +4,81 @@ import com.google.common.base.MoreObjects;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.function.Function;
-import jline.internal.Log;
-import net.minecraft.block.Block;
+import javax.annotation.Nullable;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.IUnbakedModel;
+import net.minecraft.client.renderer.model.ModelBakery;
+import net.minecraft.client.renderer.texture.ISprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.block.Blocks;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.PerspectiveMapWrapper;
-import net.minecraftforge.common.model.IModelState;
-import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraftforge.client.model.data.IModelData;
+import net.minecraftforge.client.model.data.ModelProperty;
 import openmods.model.BakedModelAdapter;
 import openmods.model.ModelUpdater;
 
 public class EvalExpandModel extends EvalModelBase {
 
-	public static final IModel EMPTY = new EvalExpandModel(Optional.empty(), Optional.empty(), new EvaluatorFactory());
+	public static final IUnbakedModel EMPTY = new EvalExpandModel(Optional.empty(), new EvaluatorFactory());
 
 	private static class BakedEvalExpandModel extends BakedModelAdapter {
 
 		private final IVarExpander expander;
 
-		private final BlockState defaultBlockState;
-
-		public BakedEvalExpandModel(IModel model, IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, BlockState defaultBlockState, IVarExpander expander) {
-			super(model.bake(state, format, bakedTextureGetter), PerspectiveMapWrapper.getTransforms(state));
+		public BakedEvalExpandModel(ModelBakery bakery, IModel model, ISprite state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, IVarExpander expander) {
+			super(model.bake(bakery, bakedTextureGetter, state, format), PerspectiveMapWrapper.getTransforms(state.getState()));
 			this.expander = expander;
-			this.defaultBlockState = defaultBlockState;
 		}
 
 		@Override
-		public List<BakedQuad> getQuads(BlockState state, Direction side, long rand) {
-			if (state == null)
-				state = defaultBlockState;
-
-			if (state instanceof IExtendedBlockState) {
-				final IExtendedBlockState extState = (IExtendedBlockState)state;
-				final EvalModelState originalArgs = MoreObjects.firstNonNull(extState.getValue(EvalModelState.PROPERTY), EvalModelState.EMPTY);
+		public List<BakedQuad> getQuads(BlockState state, Direction side, Random rand, IModelData extState) {
+			if (extState != null) {
+				final EvalModelState originalArgs = MoreObjects.firstNonNull(extState.getData(EvalModelState.PROPERTY), EvalModelState.EMPTY);
 				final EvalModelState updatedArgs = EvalModelState.create(expander.expand(originalArgs.getArgs()), originalArgs.isShortLived());
-				state = extState.withProperty(EvalModelState.PROPERTY, updatedArgs);
+
+				final IModelData originalState = extState;
+				extState = new IModelData() {
+					@Override public boolean hasProperty(ModelProperty<?> prop) {
+						return prop == EvalModelState.PROPERTY || originalState.hasProperty(prop);
+					}
+
+					@Nullable
+					@Override public <T> T getData(ModelProperty<T> prop) {
+						return prop == EvalModelState.PROPERTY? (T)updatedArgs : originalState.getData(prop);
+					}
+
+					@Nullable @Override public <T> T setData(ModelProperty<T> prop, T data) {
+						return originalState.setData(prop, data);
+					}
+				};
 			}
 
-			return super.getQuads(state, side, rand);
+			return super.getQuads(state, side, rand, extState);
 		}
 	}
 
-	private final Optional<ResourceLocation> defaultBlockState;
-
-	private EvalExpandModel(Optional<ResourceLocation> defaultBlockState, Optional<ResourceLocation> baseModel, EvaluatorFactory evaluator) {
+	private EvalExpandModel(Optional<ResourceLocation> baseModel, EvaluatorFactory evaluator) {
 		super(baseModel, evaluator);
-		this.defaultBlockState = defaultBlockState;
 	}
 
 	@Override
-	public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-		final IModel model = loadBaseModel(state, format, bakedTextureGetter);
-
-		BlockState blockState = null;
-
-		if (defaultBlockState.isPresent()) {
-			final Block defaultBlock = Block.REGISTRY.getObject(defaultBlockState.get());
-			if (defaultBlock != Blocks.AIR) {
-				blockState = defaultBlock.getDefaultState();
-				if (!(blockState instanceof IExtendedBlockState) ||
-						!((IExtendedBlockState)blockState).getUnlistedNames().contains(EvalModelState.PROPERTY)) {
-					Log.warn("State %s does not contain eval state property", blockState);
-				}
-			} else {
-				Log.warn("Can't find default block: %s", defaultBlockState.get());
-			}
-		}
+	public IBakedModel bake(final ModelBakery bakery, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, ISprite state, VertexFormat format) {
+		final IModel model = loadBaseModel(state.getState(), format, bakedTextureGetter);
 
 		final IVarExpander expander = evaluatorFactory.createExpander();
-		return new BakedEvalExpandModel(model, state, format, bakedTextureGetter, blockState, expander);
+		return new BakedEvalExpandModel(bakery, model, state, format, bakedTextureGetter, expander);
 	}
 
 	@Override
-	protected IModel update(Map<String, String> customData, ModelUpdater updater, Optional<ResourceLocation> baseModel, EvaluatorFactory evaluator) {
-		final Optional<ResourceLocation> defaultStateBlock = updater.get("default_state", ModelUpdater.RESOURCE_LOCATION, this.defaultBlockState);
-
-		return updater.hasChanged()? new EvalExpandModel(defaultStateBlock, baseModel, evaluator) : this;
+	protected IUnbakedModel update(Map<String, String> customData, ModelUpdater updater, Optional<ResourceLocation> baseModel, EvaluatorFactory evaluator) {
+		return updater.hasChanged()? new EvalExpandModel(baseModel, evaluator) : this;
 	}
 
 }
