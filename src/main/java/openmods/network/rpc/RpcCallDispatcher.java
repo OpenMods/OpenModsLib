@@ -2,9 +2,9 @@ package openmods.network.rpc;
 
 import com.google.common.base.Preconditions;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import net.minecraft.network.IPacket;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
@@ -21,12 +21,10 @@ import net.minecraftforge.registries.RegistryBuilder;
 import openmods.Log;
 import openmods.OpenMods;
 import openmods.utils.CommonRegistryCallbacks;
-import openmods.utils.RegistrationContextBase;
 import openmods.utils.SneakyThrower;
 import org.apache.commons.lang3.tuple.Pair;
-import org.objectweb.asm.Type;
 
-@EventBusSubscriber
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class RpcCallDispatcher {
 
 	private static RpcCallDispatcher INSTANCE;
@@ -88,14 +86,15 @@ public class RpcCallDispatcher {
 				.eventNetworkChannel();
 
 		channel.addListener(evt -> {
+			if (evt instanceof NetworkEvent.LoginPayloadEvent) {
+				return;
+			}
 			final NetworkEvent.Context source = evt.getSource().get();
-			source.enqueueWork(() -> {
-				try {
-					executeCall(codec.decode(evt.getPayload(), source));
-				} catch (final IOException e) {
-					Log.warn(e, "Failed to receive message");
-				}
-			});
+			try {
+				executeCall(codec.decode(evt.getPayload(), source));
+			} catch (final IOException e) {
+				Log.warn(e, "Failed to receive message");
+			}
 			source.setPacketHandled(true);
 		});
 	}
@@ -119,7 +118,6 @@ public class RpcCallDispatcher {
 		return rpcCall -> {
 			try {
 				final PacketBuffer payload = codec.encode(rpcCall);
-				// TODO 1.14 Do something with that int
 				final ICustomPacket<IPacket<?>> packet = sender.getDirection().buildPacket(Pair.of(payload, 0), CHANNEL_ID);
 				sender.send(packet.getThis());
 			} catch (final IOException e) {
@@ -128,29 +126,23 @@ public class RpcCallDispatcher {
 		};
 	}
 
-	public static final String ID_FIELDS_SEPARATOR = ";";
-
-	public static class MethodRegistrationContext extends RegistrationContextBase<MethodEntry> {
-
-		public MethodRegistrationContext(IForgeRegistry<MethodEntry> registry, String domain) {
-			super(registry, domain);
-		}
+	public static class MethodRegistrationContext {
+		private IForgeRegistry<MethodEntry> registry;
 
 		public MethodRegistrationContext(IForgeRegistry<MethodEntry> registry) {
-			super(registry);
+			this.registry = registry;
 		}
 
-		public MethodRegistrationContext registerInterface(Class<?> intf) {
+		public MethodRegistrationContext registerInterface(final ResourceLocation id, final Class<?> intf) {
 			Preconditions.checkArgument(intf.isInterface(), "Class %s is not interface", intf);
 
 			for (Method m : intf.getMethods()) {
-				if (m.isAnnotationPresent(RpcIgnore.class)) continue;
 				Preconditions.checkArgument(m.getReturnType() == void.class, "RPC methods cannot have return type (method = %s)", m);
-
-				final String entry = m.getDeclaringClass().getName() + ID_FIELDS_SEPARATOR + m.getName() + ID_FIELDS_SEPARATOR + Type.getMethodDescriptor(m);
-				final ResourceLocation location = new ResourceLocation(domain, entry);
-
-				registry.register(new MethodEntry(m).setRegistryName(location));
+				final RpcMethod method = m.getAnnotation(RpcMethod.class);
+				if (method != null) {
+					final ResourceLocation location = new ResourceLocation(id.getNamespace(), id.getPath() + "/" + method.value());
+					registry.register(new MethodEntry(m).setRegistryName(location));
+				}
 			}
 			return this;
 		}
@@ -161,32 +153,15 @@ public class RpcCallDispatcher {
 		return new MethodRegistrationContext(registry);
 	}
 
-	public static MethodRegistrationContext startMethodRegistration(String domain, IForgeRegistry<MethodEntry> registry) {
-		return new MethodRegistrationContext(registry, domain);
-	}
-
-	public static class TargetRegistrationContext extends RegistrationContextBase<TargetTypeProvider> {
-
-		public TargetRegistrationContext(IForgeRegistry<TargetTypeProvider> registry, String domain) {
-			super(registry, domain);
-		}
+	public static class TargetRegistrationContext {
+		private IForgeRegistry<TargetTypeProvider> registry;
 
 		public TargetRegistrationContext(IForgeRegistry<TargetTypeProvider> registry) {
-			super(registry);
+			this.registry = registry;
 		}
 
-		public TargetRegistrationContext registerTargetWrapper(final Class<? extends IRpcTarget> cls) {
-			final Constructor<? extends IRpcTarget> ctor;
-			try {
-				ctor = cls.getConstructor();
-			} catch (Exception e) {
-				throw new IllegalArgumentException("Class " + cls + " has no parameterless constructor");
-			}
-
-			final ResourceLocation targetId = new ResourceLocation(domain, cls.getName());
-
+		public <T extends IRpcTarget> TargetRegistrationContext registerTargetWrapper(final ResourceLocation id, final Class<T> cls, final Supplier<T> ctor) {
 			registry.register(new TargetTypeProvider() {
-
 				@Override
 				public Class<? extends IRpcTarget> getTargetClass() {
 					return cls;
@@ -194,18 +169,14 @@ public class RpcCallDispatcher {
 
 				@Override
 				public IRpcTarget createRpcTarget() {
-					try {
-						return ctor.newInstance();
-					} catch (ReflectiveOperationException e) {
-						throw new RuntimeException(e);
-					}
+					return ctor.get();
 				}
 
 				@Override
 				public String toString() {
 					return "RPC target wrapper{" + cls + "}";
 				}
-			}.setRegistryName(targetId));
+			}.setRegistryName(id));
 
 			return this;
 		}
@@ -213,10 +184,6 @@ public class RpcCallDispatcher {
 
 	public static TargetRegistrationContext startTargetRegistration(IForgeRegistry<TargetTypeProvider> registry) {
 		return new TargetRegistrationContext(registry);
-	}
-
-	public static TargetRegistrationContext startTargetRegistration(String domain, IForgeRegistry<TargetTypeProvider> registry) {
-		return new TargetRegistrationContext(registry, domain);
 	}
 
 }

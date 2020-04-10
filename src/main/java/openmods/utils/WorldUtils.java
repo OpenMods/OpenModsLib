@@ -17,9 +17,9 @@ public class WorldUtils {
 	public static World getWorld(LogicalSide side, DimensionType dimension) {
 		final World result;
 		if (side == LogicalSide.SERVER) {
-			result = OpenMods.proxy.getServerWorld(dimension);
+			result = OpenMods.PROXY.getServerWorld(dimension);
 		} else {
-			result = OpenMods.proxy.getClientWorld();
+			result = OpenMods.PROXY.getClientWorld();
 			Preconditions.checkArgument(result.getDimension().getType().equals(dimension), "Invalid client dimension id %s", dimension);
 		}
 

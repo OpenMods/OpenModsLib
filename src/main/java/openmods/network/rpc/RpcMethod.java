@@ -7,4 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RpcIgnore {}
+public @interface RpcMethod {
+	public String value();
+}

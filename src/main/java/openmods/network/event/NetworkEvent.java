@@ -11,9 +11,6 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 public abstract class NetworkEvent extends Event {
-
-	final List<NetworkEvent> replies = Lists.newArrayList();
-
 	public PlayerEntity sender;
 
 	public net.minecraftforge.fml.network.NetworkEvent.Context context;

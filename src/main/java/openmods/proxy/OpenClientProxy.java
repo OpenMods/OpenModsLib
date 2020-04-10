@@ -60,7 +60,12 @@ public final class OpenClientProxy implements IOpenModsProxy {
 	}
 
 	@Override
-	public void preInit() {
+	public void earlySyncInit() {
+		((IReloadableResourceManager)getClient().getResourceManager()).addReloadListener(hitboxManager);
+	}
+
+	@Override
+	public void clientInit() {
 		//ClientCommandHandler.instance.registerCommand(new CommandConfig("om_config_c", false));
 		//ClientCommandHandler.instance.registerCommand(new CommandSource("om_source_c", false, OpenMods.instance.getCollector()));
 		//ClientCommandHandler.instance.registerCommand(new CommandGlDebug());
@@ -84,15 +89,9 @@ public final class OpenClientProxy implements IOpenModsProxy {
 				.put("perspective-aware", PerspectiveAwareModel.EMPTY)
 				.build(OpenMods.MODID));
 
-		// TODO 1.14 investigate thread safety
-		((IReloadableResourceManager)getClient().getResourceManager()).addReloadListener(hitboxManager);
-
 		// Stuff to run on main thread
 		Minecraft.getInstance().deferTask(FramebufferBlitter::setup);
 	}
-
-	@Override
-	public void postInit() {}
 
 	@Override
 	public void setNowPlayingTitle(String nowPlaying) {

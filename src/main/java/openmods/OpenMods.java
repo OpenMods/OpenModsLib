@@ -11,6 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
@@ -63,8 +64,8 @@ public class OpenMods {
 
 	public static final String MODID = "openmods";
 
-	public static final IOpenModsProxy proxy = DistExecutor.runForDist(() -> OpenClientProxy::new, () -> OpenServerProxy::new);
-	public static final String ENTITY_BLOCK_ID = MODID + ":block";
+	public static final IOpenModsProxy PROXY = DistExecutor.runForDist(() -> OpenClientProxy::new, () -> OpenServerProxy::new);
+	public static final String ENTITY_BLOCK = MODID + ":block";
 
 	private ClassSourceCollector collector;
 
@@ -79,54 +80,63 @@ public class OpenMods {
 	public OpenMods() {
 		final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		modEventBus.addListener(this::preInit);
-		modEventBus.addListener(this::postInit);
+		modEventBus.addListener(this::clientInit);
+		modEventBus.addListener(this::processImc);
+		modEventBus.addListener(this::registerRegistry);
 
 		MinecraftForge.EVENT_BUS.addListener(this::severStart);
 	}
 
-	@EventBusSubscriber
+	private void registerRegistry(RegistryEvent.NewRegistry e) {
+		// Now this not a right place for that, but only one that works:
+		// - it's fired synchronously
+		// - before most things (like resource managers) have chance to run
+		PROXY.earlySyncInit();
+	}
+
+	@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 	public static class DefaultRegistryEntries {
 
 		@SubscribeEvent
 		public static void registerSyncTypes(RegistryEvent.Register<SyncableObjectType> type) {
 			SyncableObjectTypeRegistry.startRegistration(type.getRegistry())
-					.register(SyncableTank.class)
-					.register(SyncableBlockState.class)
-					.register(SyncableBoolean.class)
-					.register(SyncableByte.class)
-					.register(SyncableByteArray.class)
-					.register(SyncableDouble.class)
-					.register(SyncableEnum.class, SyncableEnum.DUMMY_SUPPLIER)
-					.register(SyncableFlags.ByteFlags.class)
-					.register(SyncableFlags.ShortFlags.class)
-					.register(SyncableFlags.IntFlags.class)
-					.register(SyncableFloat.class)
-					.register(SyncableInt.class)
-					.register(SyncableIntArray.class)
-					.register(SyncableItemStack.class)
-					.register(SyncableNBT.class)
-					.register(SyncableShort.class)
-					.register(SyncableSides.class)
-					.register(SyncableString.class)
-					.register(SyncableUnsignedByte.class)
-					.register(SyncableUUID.class)
-					.register(SyncableVarInt.class);
+					.register(location("tank"), SyncableTank.class, SyncableTank::new)
+					.register(location("block_state"), SyncableBlockState.class, SyncableBlockState::new)
+					.register(location("bool"), SyncableBoolean.class, SyncableBoolean::new)
+					.register(location("byte"), SyncableByte.class, SyncableByte::new)
+					.register(location("byte_array"), SyncableByteArray.class, SyncableByteArray::new)
+					.register(location("double"), SyncableDouble.class, SyncableDouble::new)
+					.register(location("enum"), SyncableEnum.class, SyncableEnum.DUMMY_SUPPLIER)
+					.register(location("flags8"), SyncableFlags.ByteFlags.class, SyncableFlags.ByteFlags::new)
+					.register(location("flags16"), SyncableFlags.ShortFlags.class, SyncableFlags.ShortFlags::new)
+					.register(location("flags32"), SyncableFlags.IntFlags.class, SyncableFlags.IntFlags::new)
+					.register(location("float"), SyncableFloat.class, SyncableFloat::new)
+					.register(location("int"), SyncableInt.class, SyncableInt::new)
+					.register(location("int_array"), SyncableIntArray.class, SyncableIntArray::new)
+					.register(location("item_stack"), SyncableItemStack.class, SyncableItemStack::new)
+					.register(location("nbt"), SyncableNBT.class, SyncableNBT::new)
+					.register(location("short"), SyncableShort.class, SyncableShort::new)
+					.register(location("sides"), SyncableSides.class, SyncableSides::new)
+					.register(location("string"), SyncableString.class, SyncableString::new)
+					.register(location("ubyte"), SyncableUnsignedByte.class, SyncableUnsignedByte::new)
+					.register(location("uuid"), SyncableUUID.class, SyncableUUID::new)
+					.register(location("var_int"), SyncableVarInt.class, SyncableVarInt::new);
 		}
 
 		@SubscribeEvent
 		public static void registerMethodTypes(RegistryEvent.Register<MethodEntry> evt) {
 			RpcCallDispatcher.startMethodRegistration(evt.getRegistry())
-					.registerInterface(IRpcDirectionBitMap.class)
-					.registerInterface(IRpcIntBitMap.class);
+					.registerInterface(location("dir_bit_map"), IRpcDirectionBitMap.class)
+					.registerInterface(location("int_bit_map"), IRpcIntBitMap.class);
 		}
 
 		@SubscribeEvent
 		public static void registerTargets(RegistryEvent.Register<TargetTypeProvider> evt) {
 			RpcCallDispatcher.startTargetRegistration(evt.getRegistry())
-					.registerTargetWrapper(EntityRpcTarget.class)
-					.registerTargetWrapper(TileEntityRpcTarget.class)
-					.registerTargetWrapper(SyncRpcTarget.SyncEntityRpcTarget.class)
-					.registerTargetWrapper(SyncRpcTarget.SyncTileEntityRpcTarget.class);
+					.registerTargetWrapper(location("entity"), EntityRpcTarget.class, EntityRpcTarget::new)
+					.registerTargetWrapper(location("tile_entity"), TileEntityRpcTarget.class, TileEntityRpcTarget::new)
+					.registerTargetWrapper(location("sync_entity"), SyncRpcTarget.SyncEntityRpcTarget.class, SyncRpcTarget.SyncEntityRpcTarget::new)
+					.registerTargetWrapper(location("sync_tile_entity"), SyncRpcTarget.SyncTileEntityRpcTarget.class, SyncRpcTarget.SyncTileEntityRpcTarget::new);
 		}
 
 		@SubscribeEvent
@@ -137,7 +147,8 @@ public class OpenMods {
 							.setUpdateInterval(1)
 							.size(0.925F, 0.925F)
 							.setCustomClientFactory((spawnEntity, world) -> new EntityBlock(EntityBlock.TYPE, world))
-							.build(ENTITY_BLOCK_ID)
+							.build("")
+							.setRegistryName(ENTITY_BLOCK)
 			);
 		}
 	}
@@ -168,13 +179,14 @@ public class OpenMods {
 		collector = new ClassSourceCollector();
 
 		CraftingHelper.register(new EnchantingRecipe.EchantmentExistsConditionSerializer());
-
-		proxy.preInit();
 	}
 
-	private void postInit(InterModProcessEvent evt) {
+	public void clientInit(FMLClientSetupEvent evt) {
+		PROXY.clientInit();
+	}
+
+	private void processImc(InterModProcessEvent evt) {
 		Integration.loadModules();
-		proxy.postInit();
 	}
 
 	private void severStart(FMLServerStartingEvent evt) {

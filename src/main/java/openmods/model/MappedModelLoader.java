@@ -14,7 +14,7 @@ public class MappedModelLoader implements ICustomModelLoader {
 		private final ImmutableMap.Builder<String, IUnbakedModel> modelsBuilder = ImmutableMap.builder();
 
 		public Builder put(String id, IUnbakedModel model) {
-			modelsBuilder.put(id, model);
+			modelsBuilder.put("models/" + id, model);
 			modelsBuilder.put("models/block/" + id, model);
 			modelsBuilder.put("models/item/" + id, model);
 			return this;
@@ -39,7 +39,8 @@ public class MappedModelLoader implements ICustomModelLoader {
 		this.models = models;
 	}
 
-	@Override public void onResourceManagerReload(IResourceManager resourceManager) {
+	@Override
+	public void onResourceManagerReload(IResourceManager resourceManager) {
 	}
 
 	@Override

@@ -1,13 +1,14 @@
 package openmods.sync;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
+import java.util.function.Supplier;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.Unit;
 
 public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implements ISyncableValueProvider<E> {
 
-	public static final Supplier<ISyncableObject> DUMMY_SUPPLIER = () -> new SyncableObjectBase() {
+	public static final Supplier<SyncableEnum> DUMMY_SUPPLIER = () -> new SyncableEnum<Unit>(Unit.INSTANCE) {
 		@Override
 		public void writeToStream(PacketBuffer buf) {
 			buf.writeVarInt(0);
@@ -79,16 +80,14 @@ public class SyncableEnum<E extends Enum<E>> extends SyncableObjectBase implemen
 
 	public E increment() {
 		final int next = value.ordinal() + 1;
-		if (next >= values.length) value = values[0];
-		else value = values[next];
+		if (next >= values.length) { value = values[0]; } else { value = values[next]; }
 		markDirty();
 		return value;
 	}
 
 	public E decrement() {
 		final int prev = value.ordinal() - 1;
-		if (prev < 0) value = values[values.length - 1];
-		else value = values[prev];
+		if (prev < 0) { value = values[values.length - 1]; } else { value = values[prev]; }
 		markDirty();
 		return value;
 	}

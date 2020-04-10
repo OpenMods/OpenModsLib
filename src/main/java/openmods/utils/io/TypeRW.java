@@ -4,6 +4,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.nbt.ByteArrayNBT;
 import net.minecraft.nbt.ByteNBT;
 import net.minecraft.nbt.CompoundNBT;
@@ -12,6 +14,7 @@ import net.minecraft.nbt.FloatNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.IntNBT;
 import net.minecraft.nbt.LongNBT;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.nbt.ShortNBT;
 import net.minecraft.nbt.StringNBT;
 import net.minecraft.network.PacketBuffer;
@@ -268,8 +271,7 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 
 		@Override
 		public Boolean readFromString(String s) {
-			if (s.equalsIgnoreCase("true")) return Boolean.TRUE;
-			else if (s.equalsIgnoreCase("false")) return Boolean.FALSE;
+			if (s.equalsIgnoreCase("true")) { return Boolean.TRUE; } else if (s.equalsIgnoreCase("false")) { return Boolean.FALSE; }
 
 			throw new StringConversionException("bool", s, "true", "false");
 		}
@@ -399,6 +401,35 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 		}
 	};
 
+	public static final ISerializer<BlockState> BLOCK_STATE = new ISerializer<BlockState>() {
+
+		@Override
+		public BlockState readFromStream(PacketBuffer input) {
+			return Block.getStateById(input.readVarInt());
+		}
+
+		@Override
+		public void writeToStream(BlockState o, PacketBuffer output) {
+			output.writeVarInt(Block.getStateId(o));
+		}
+
+		@Override
+		public BlockState readFromNBT(CompoundNBT tag, String name) {
+			CompoundNBT stateTag = tag.getCompound(name);
+			return NBTUtil.readBlockState(stateTag);
+		}
+
+		@Override
+		public void writeToNBT(BlockState o, CompoundNBT tag, String name) {
+			tag.put(name, NBTUtil.writeBlockState(o));
+		}
+
+		@Override
+		public boolean checkTagType(INBT tag) {
+			return tag instanceof CompoundNBT;
+		}
+	};
+
 	public static final ISerializer<UUID> UUID = new ISerializer<UUID>() {
 
 		@Override
@@ -451,12 +482,14 @@ public abstract class TypeRW<T> implements INBTSerializer<T>, IStreamSerializer<
 			.put(char.class, CHAR)
 			.put(BlockPos.class, BLOCK_POS)
 			.put(UUID.class, UUID)
+			.put(BlockState.class, BLOCK_STATE)
 			.build();
 
 	public static final Map<Class<?>, INBTSerializer<?>> NBT_SERIALIZERS = ImmutableMap.<Class<?>, INBTSerializer<?>> builder()
 			.putAll(UNIVERSAL_SERIALIZERS)
 			.put(BlockPos.class, BLOCK_POS)
 			.put(UUID.class, UUID)
+			.put(BlockState.class, BLOCK_STATE)
 			.build();
 
 	public static final Map<Class<?>, IStringSerializer<?>> STRING_SERIALIZERS = ImmutableMap.<Class<?>, IStringSerializer<?>> builder()

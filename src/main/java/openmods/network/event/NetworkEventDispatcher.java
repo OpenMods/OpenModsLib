@@ -39,17 +39,17 @@ public class NetworkEventDispatcher {
 				.eventNetworkChannel();
 
 		channel.addListener(evt -> {
+			if (evt instanceof net.minecraftforge.fml.network.NetworkEvent.LoginPayloadEvent) {
+				return;
+			}
+
 			final net.minecraftforge.fml.network.NetworkEvent.Context context = evt.getSource().get();
-			context.enqueueWork(() -> {
-				try {
-					final NetworkEvent event = codec.decode(evt.getLoginIndex(), evt.getPayload(), context);
-					// TODO 1.14 In thread?
-					MinecraftForge.EVENT_BUS.post(event);
-				} catch (final IOException e) {
-					LOGGER.error("Failed to receive message: {}", e);
-				}
-			});
-			// TODO 1.14 Needed?
+			try {
+				final NetworkEvent event = codec.decode(evt.getPayload(), context);
+				MinecraftForge.EVENT_BUS.post(event);
+			} catch (final IOException e) {
+				LOGGER.error("Failed to receive message: {}", e);
+			}
 			context.setPacketHandled(true);
 		});
 	}
@@ -60,8 +60,8 @@ public class NetworkEventDispatcher {
 
 	public void send(final NetworkEvent event, final NetworkDirection direction, Consumer<IPacket<?>> output) {
 		try {
-			final Pair<PacketBuffer, Integer> payload = codec.encode(event, direction.getOriginationSide());
-			final ICustomPacket<IPacket<?>> packet = direction.buildPacket(payload, CHANNEL_ID);
+			final PacketBuffer payload = codec.encode(event, direction.getOriginationSide());
+			final ICustomPacket<IPacket<?>> packet = direction.buildPacket(Pair.of(payload, 0), CHANNEL_ID);
 			output.accept(packet.getThis());
 		} catch (final IOException e) {
 			LOGGER.error("Failed to send message: {}", e);

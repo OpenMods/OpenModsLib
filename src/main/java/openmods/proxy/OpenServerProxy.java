@@ -43,10 +43,11 @@ public final class OpenServerProxy implements IOpenModsProxy {
 	}
 
 	@Override
-	public void preInit() {}
+	public void earlySyncInit() {
+	}
 
 	@Override
-	public void postInit() {}
+	public void clientInit() {}
 
 	@Override
 	public void setNowPlayingTitle(String nowPlaying) {}

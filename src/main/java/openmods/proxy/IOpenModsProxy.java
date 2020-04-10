@@ -25,9 +25,9 @@ public interface IOpenModsProxy {
 
 	IGuiHandler wrapHandler(IGuiHandler modSpecificHandler);
 
-	void preInit();
+	void earlySyncInit();
 
-	void postInit();
+	void clientInit();
 
 	void setNowPlayingTitle(String nowPlaying);
 

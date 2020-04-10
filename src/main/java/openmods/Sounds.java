@@ -8,19 +8,21 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.ObjectHolder;
 
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 @ObjectHolder(OpenMods.MODID)
-@EventBusSubscriber
 public class Sounds {
-	@ObjectHolder("pageturn")
+	private static final String ID_PAGETURN = "pageturn";
+
+	@ObjectHolder(ID_PAGETURN)
 	public static final SoundEvent PAGE_TURN = null;
 
 	@SubscribeEvent
-	public static void registerSounds(RegistryEvent.Register<SoundEvent> evt) {
+	public static void registerSounds(final RegistryEvent.Register<SoundEvent> evt) {
 		final IForgeRegistry<SoundEvent> registry = evt.getRegistry();
-		registerSound(registry, "pageturn");
+		registerSound(registry, ID_PAGETURN);
 	}
 
-	private static void registerSound(IForgeRegistry<SoundEvent> registry, String id) {
+	private static void registerSound(final IForgeRegistry<SoundEvent> registry, final String id) {
 		final ResourceLocation resourceLocation = OpenMods.location(id);
 		registry.register(new SoundEvent(resourceLocation).setRegistryName(resourceLocation));
 	}

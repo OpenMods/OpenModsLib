@@ -8,6 +8,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,10 @@ public class HitboxManager extends JsonReloadListener {
 	}
 
 	@SuppressWarnings("serial")
-	private static class HitboxList extends ArrayList<Hitbox> {}
+	private static class Hitboxes {
+		@SerializedName("boxes")
+		private List<Hitbox> hitboxes;
+	}
 
 	private static final Gson GSON = new GsonBuilder().registerTypeAdapter(Vec3d.class, (JsonDeserializer<Vec3d>)(json, typeOfT, context) -> {
 		JsonArray jsonarray = JSONUtils.getJsonArray(json, "vector");
@@ -47,11 +51,11 @@ public class HitboxManager extends JsonReloadListener {
 		private Map<String, Hitbox> map;
 
 		public Holder(ResourceLocation location) {
-			this.location = new ResourceLocation(location.getNamespace(), "hitboxes/" + location.getPath() + ".json");
+			this.location = location;
 		}
 
 		private void reload() {
-			this.list = resources.get(location);
+			this.list = resources.get(location).hitboxes;
 
 			final Map<String, Hitbox> builder = Maps.newLinkedHashMap();
 			for (Hitbox hb : list)
@@ -62,17 +66,11 @@ public class HitboxManager extends JsonReloadListener {
 
 		@Override
 		public List<Hitbox> asList() {
-			if (list == null)
-				reload();
-
 			return list;
 		}
 
 		@Override
 		public Map<String, Hitbox> asMap() {
-			if (map == null)
-				reload();
-
 			return map;
 		}
 
@@ -80,7 +78,7 @@ public class HitboxManager extends JsonReloadListener {
 
 	private final Map<ResourceLocation, Holder> holders = Maps.newHashMap();
 
-	private final Map<ResourceLocation, HitboxList> resources = Maps.newHashMap();
+	private final Map<ResourceLocation, Hitboxes> resources = Maps.newHashMap();
 
 	public IHitboxSupplier get(ResourceLocation location) {
 		synchronized (holders) {
@@ -88,10 +86,11 @@ public class HitboxManager extends JsonReloadListener {
 		}
 	}
 
-	@Override protected void apply(Map<ResourceLocation, JsonObject> data, IResourceManager resourceManagerIn, IProfiler profilerIn) {
+	@Override
+	protected void apply(final Map<ResourceLocation, JsonObject> data, final IResourceManager resourceManagerIn, final IProfiler profilerIn) {
 		resources.clear();
 		data.forEach((resourceLocation, jsonObject) -> {
-			resources.put(resourceLocation, GSON.fromJson(jsonObject, HitboxList.class));
+			resources.put(resourceLocation, GSON.fromJson(jsonObject, Hitboxes.class));
 		});
 
 		holders.values().forEach(Holder::reload);

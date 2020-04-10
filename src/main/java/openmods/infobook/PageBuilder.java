@@ -76,7 +76,7 @@ public class PageBuilder {
 	}
 
 	protected String getMediaLink(String modId, String type, String id) {
-		final String lang = OpenMods.proxy.getLanguage().or("unknown");
+		final String lang = OpenMods.PROXY.getLanguage().or("unknown");
 		return "https://videos.openmods.info/" + lang + "/tutorial." + modId + "." + type + "." + id;
 	}
 

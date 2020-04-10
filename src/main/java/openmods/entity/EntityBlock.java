@@ -31,7 +31,7 @@ import openmods.utils.BlockManipulator;
 
 public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
-	@ObjectHolder(OpenMods.ENTITY_BLOCK_ID)
+	@ObjectHolder(OpenMods.ENTITY_BLOCK)
 	public static EntityType<?> TYPE;
 
 	public static final Direction[] PLACE_DIRECTIONS = { Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST, Direction.DOWN, Direction.UP };

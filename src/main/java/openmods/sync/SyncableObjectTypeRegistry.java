@@ -1,10 +1,7 @@
 package openmods.sync;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.function.Supplier;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -13,9 +10,8 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 import openmods.OpenMods;
 import openmods.utils.CommonRegistryCallbacks;
-import openmods.utils.RegistrationContextBase;
 
-@EventBusSubscriber
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class SyncableObjectTypeRegistry {
 
 	private static IForgeRegistry<SyncableObjectType> REGISTRY;
@@ -56,44 +52,16 @@ public class SyncableObjectTypeRegistry {
 		return new RegistrationContext(registry);
 	}
 
-	public static RegistrationContext startRegistration(IForgeRegistry<SyncableObjectType> registry, String domain) {
-		return new RegistrationContext(registry, domain);
-	}
+	public static class RegistrationContext {
 
-	public static class RegistrationContext extends RegistrationContextBase<SyncableObjectType> {
-
-		public RegistrationContext(IForgeRegistry<SyncableObjectType> registry, String domain) {
-			super(registry, domain);
-		}
+		private IForgeRegistry<SyncableObjectType> registry;
 
 		public RegistrationContext(IForgeRegistry<SyncableObjectType> registry) {
-			super(registry);
+			this.registry = registry;
 		}
 
-		public RegistrationContext register(Class<? extends ISyncableObject> cls) {
-			Preconditions.checkState(!Modifier.isAbstract(cls.getModifiers()), "Class %s is abstract", cls);
-
-			final Constructor<? extends ISyncableObject> ctor;
-			try {
-				ctor = cls.getConstructor();
-			} catch (Exception e) {
-				throw new IllegalArgumentException("Class " + cls + " has no parameterless constructor");
-			}
-
-			return register(cls, () -> {
-				try {
-					return ctor.newInstance();
-				} catch (ReflectiveOperationException e) {
-					throw new RuntimeException(e);
-				}
-			});
-		}
-
-		public RegistrationContext register(final Class<? extends ISyncableObject> cls, final Supplier<ISyncableObject> supplier) {
-			final ResourceLocation typeId = new ResourceLocation(domain, cls.getName());
-
+		public <T extends ISyncableObject> RegistrationContext register(final ResourceLocation id, Class<T> cls, final Supplier<T> ctor) {
 			registry.register(new SyncableObjectType() {
-
 				@Override
 				public Class<? extends ISyncableObject> getObjectClass() {
 					return cls;
@@ -101,14 +69,14 @@ public class SyncableObjectTypeRegistry {
 
 				@Override
 				public ISyncableObject createDummyObject() {
-					return supplier.get();
+					return ctor.get();
 				}
 
 				@Override
 				public String toString() {
 					return "Wrapper{" + cls + "}";
 				}
-			}.setRegistryName(typeId));
+			}.setRegistryName(id));
 
 			return this;
 		}

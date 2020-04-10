@@ -10,7 +10,7 @@ public abstract class NetworkEventEntry implements IForgeRegistryEntry<NetworkEv
 
 	public abstract Class<? extends NetworkEvent> getPacketType();
 
-	public abstract NetworkEvent createPacket();
+	public abstract NetworkEvent createInstance();
 
 	public abstract EventDirection getDirection();
 

@@ -10,12 +10,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.item.BlockItem;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.Property;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -24,7 +24,6 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.ModContainer;
 import openmods.api.IActivateAwareTile;
 import openmods.api.IAddAwareTile;
 import openmods.api.IBreakAwareTile;
@@ -36,13 +35,12 @@ import openmods.api.INeighbourAwareTile;
 import openmods.api.INeighbourTeAwareTile;
 import openmods.api.IPlaceAwareTile;
 import openmods.api.ISurfaceAttachment;
-import openmods.config.game.IRegisterableBlock;
 import openmods.geometry.LocalDirections;
 import openmods.geometry.Orientation;
 import openmods.inventory.IInventoryProvider;
 import openmods.tileentity.OpenTileEntity;
 
-public class OpenBlock extends Block implements IRegisterableBlock {
+public class OpenBlock extends Block {
 
 	public static class TwoDirections extends OpenBlock {
 		public TwoDirections(Properties properties) {
@@ -120,7 +118,6 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	private final Set<TileEntityCapability> teCapabilities = EnumSet.noneOf(TileEntityCapability.class);
 
-	private Object modInstance = null;
 	private Class<? extends TileEntity> teClass = null;
 
 	private BlockPlacementMode blockPlacementMode = BlockPlacementMode.ENTITY_ANGLE;
@@ -247,10 +244,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 
 	// TODO 1.14 Block drops!
 
-	@Override
-	public void setupBlock(ModContainer container, String id, Class<? extends TileEntity> tileEntity, BlockItem itemBlock) {
-		this.modInstance = container.getMod();
-
+	public OpenBlock setTileEntity(final Class<? extends TileEntity> tileEntity) {
 		if (tileEntity != null) {
 			this.teClass = tileEntity;
 
@@ -258,6 +252,7 @@ public class OpenBlock extends Block implements IRegisterableBlock {
 				if (capability.intf.isAssignableFrom(teClass))
 					teCapabilities.add(capability);
 		}
+		return this;
 	}
 
 	@Override

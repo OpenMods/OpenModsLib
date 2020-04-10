@@ -4,13 +4,11 @@ import com.google.common.base.Preconditions;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler.Sharable;
 import java.io.IOException;
-import java.util.function.Supplier;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.registries.IForgeRegistry;
 import openmods.Log;
 import openmods.utils.CommonRegistryCallbacks;
-import org.apache.commons.lang3.tuple.Pair;
 
 @Sharable
 public class NetworkEventCodec {
@@ -20,7 +18,7 @@ public class NetworkEventCodec {
 		this.registry = registry;
 	}
 
-	Pair<PacketBuffer, Integer> encode(NetworkEvent msg, LogicalSide side) throws IOException {
+	PacketBuffer encode(NetworkEvent msg, LogicalSide side) throws IOException {
 		final NetworkEventEntry entry = CommonRegistryCallbacks.getObjectToEntryMap(registry).get(msg.getClass());
 		Preconditions.checkState(entry != null, "Can't find registration for class %s", msg.getClass());
 		final int id = CommonRegistryCallbacks.getEntryIdMap(registry).get(entry);
@@ -30,11 +28,13 @@ public class NetworkEventCodec {
 				"Invalid direction: sending packet %s on side %s", msg.getClass(), side);
 
 		final PacketBuffer buf = new PacketBuffer(Unpooled.buffer());
+		buf.writeVarInt(id);
 		msg.writeToStream(buf);
-		return Pair.of(buf, id);
+		return buf;
 	}
 
-	NetworkEvent decode(int typeId, PacketBuffer payload, net.minecraftforge.fml.network.NetworkEvent.Context context) throws IOException {
+	NetworkEvent decode(PacketBuffer payload, net.minecraftforge.fml.network.NetworkEvent.Context context) throws IOException {
+		final int typeId = payload.readVarInt();
 		final NetworkEventEntry type = CommonRegistryCallbacks.getEntryIdMap(registry).inverse().get(typeId);
 
 		final EventDirection validator = type.getDirection();
@@ -42,7 +42,7 @@ public class NetworkEventCodec {
 		Preconditions.checkState(validator != null && validator.validateReceive(side),
 				"Invalid direction: receiving packet %s on side %s", registry.getKey(type), side);
 
-		final NetworkEvent event = type.createPacket();
+		final NetworkEvent event = type.createInstance();
 		event.readFromStream(payload);
 
 		event.context = context;

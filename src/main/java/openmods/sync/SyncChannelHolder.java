@@ -34,7 +34,7 @@ public class SyncChannelHolder {
 	private ISyncMapProvider findSyncMapProvider(PacketBuffer payload) {
 		final int ownerType = payload.readVarInt();
 
-		final World world = OpenMods.proxy.getClientWorld();
+		final World world = OpenMods.PROXY.getClientWorld();
 
 		switch (ownerType) {
 			case SyncMapEntity.OWNER_TYPE:
@@ -47,15 +47,12 @@ public class SyncChannelHolder {
 	}
 
 	private void handle(PacketBuffer payload, Supplier<NetworkEvent.Context> source) {
-		final NetworkEvent.Context context = source.get();
-		context.enqueueWork(() -> {
-			final ISyncMapProvider provider = findSyncMapProvider(payload);
-			try {
-				if (provider != null) provider.getSyncMap().readUpdate(payload);
-			} catch (Throwable e) {
-				throw new SyncException(e, provider);
-			}
-		});
+		final ISyncMapProvider provider = findSyncMapProvider(payload);
+		try {
+			if (provider != null) { provider.getSyncMap().readUpdate(payload); }
+		} catch (Throwable e) {
+			throw new SyncException(e, provider);
+		}
 	}
 
 	public static final SyncChannelHolder INSTANCE = new SyncChannelHolder();
@@ -70,7 +67,7 @@ public class SyncChannelHolder {
 		channel.addListener((NetworkEvent.ClientCustomPayloadEvent evt) -> handle(evt.getPayload(), evt.getSource()));
 	}
 
-	public void sendPayload(PacketBuffer payload, final Collection<ServerPlayerEntity> players) {
+	void sendPayload(PacketBuffer payload, final Collection<ServerPlayerEntity> players) {
 		final List<NetworkManager> managers = players.stream().map(p -> p.connection.netManager).collect(Collectors.toList());
 		final PacketDistributor.PacketTarget target = PacketDistributor.NMLIST.with(() -> managers);
 		final ICustomPacket<IPacket<?>> packet = target.getDirection().buildPacket(Pair.of(payload, 0), CHANNEL_ID);

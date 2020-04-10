@@ -1,6 +1,6 @@
 package openmods.network.event;
 
-import java.lang.reflect.Constructor;
+import java.util.function.Supplier;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -9,9 +9,8 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 import openmods.OpenMods;
 import openmods.utils.CommonRegistryCallbacks;
-import openmods.utils.RegistrationContextBase;
 
-@EventBusSubscriber
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class NetworkEventManager {
 
 	private static NetworkEventDispatcher DISPATCHER;
@@ -40,30 +39,16 @@ public class NetworkEventManager {
 		DISPATCHER = new NetworkEventDispatcher(registry);
 	}
 
-	public static class RegistrationContext extends RegistrationContextBase<NetworkEventEntry> {
-
-		public RegistrationContext(IForgeRegistry<NetworkEventEntry> registry, String domain) {
-			super(registry, domain);
-		}
+	public static class RegistrationContext {
+		private final IForgeRegistry<NetworkEventEntry> registry;
 
 		public RegistrationContext(IForgeRegistry<NetworkEventEntry> registry) {
-			super(registry);
+			this.registry = registry;
 		}
 
-		public RegistrationContext register(final Class<? extends NetworkEvent> cls) {
+		public <T extends NetworkEvent> RegistrationContext register(final ResourceLocation id, final Class<T> cls, final Supplier<T> ctor) {
 			final NetworkEventMeta meta = cls.getAnnotation(NetworkEventMeta.class);
-
 			final EventDirection direction = (meta != null)? meta.direction() : EventDirection.ANY;
-
-			final Constructor<? extends NetworkEvent> ctor;
-			try {
-				ctor = cls.getConstructor();
-			} catch (Exception e) {
-				throw new IllegalArgumentException("Class " + cls + " has no parameterless constructor");
-			}
-
-			final ResourceLocation eventId = new ResourceLocation(domain, cls.getName());
-
 			registry.register(new NetworkEventEntry() {
 				@Override
 				public EventDirection getDirection() {
@@ -71,12 +56,8 @@ public class NetworkEventManager {
 				}
 
 				@Override
-				public NetworkEvent createPacket() {
-					try {
-						return ctor.newInstance();
-					} catch (ReflectiveOperationException e) {
-						throw new RuntimeException(e);
-					}
+				public NetworkEvent createInstance() {
+					return ctor.get();
 				}
 
 				@Override
@@ -88,7 +69,7 @@ public class NetworkEventManager {
 				public String toString() {
 					return "Wrapper{" + cls + "}";
 				}
-			}.setRegistryName(eventId));
+			}.setRegistryName(id));
 
 			return this;
 		}
@@ -97,9 +78,5 @@ public class NetworkEventManager {
 
 	public static RegistrationContext startRegistration(IForgeRegistry<NetworkEventEntry> registry) {
 		return new RegistrationContext(registry);
-	}
-
-	public static RegistrationContext startRegistration(IForgeRegistry<NetworkEventEntry> registry, String domain) {
-		return new RegistrationContext(registry, domain);
 	}
 }
