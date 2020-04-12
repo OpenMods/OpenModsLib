@@ -2,22 +2,21 @@ package openmods.utils;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.fluid.IFluidState;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IEnviromentBlockReader;
+import net.minecraft.world.IBlockDisplayReader;
 import net.minecraft.world.LightType;
-import net.minecraft.world.biome.Biome;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.lighting.WorldLightManager;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class FakeBlockAccess implements IEnviromentBlockReader {
+public class FakeBlockAccess implements IBlockDisplayReader {
 	private final BlockState state;
 	private final TileEntity tileEntity;
-
-	private static final ResourceLocation BIOME_DESERT = new ResourceLocation("desert");
-	private final Biome biome = ForgeRegistries.BIOMES.getValue(BIOME_DESERT);
 
 	public FakeBlockAccess(BlockState state, TileEntity tileEntity) {
 		this.state = state;
@@ -40,25 +39,37 @@ public class FakeBlockAccess implements IEnviromentBlockReader {
 	}
 
 	@Override
+	public FluidState getFluidState(BlockPos pos) {
+		return isOrigin(pos)? state.getFluidState() : Fluids.EMPTY.getDefaultState();
+	}
+
+	@Override
 	public TileEntity getTileEntity(BlockPos blockPos) {
 		return isOrigin(blockPos)? tileEntity : null;
 	}
 
 	@Override
-	public int getCombinedLight(BlockPos blockPos, int p_72802_4_) {
+	public int getLightSubtracted(BlockPos blockPos, int amount) {
 		return 0xF000F0;
-	}
-
-	@Override
-	public Biome getBiome(BlockPos pos) {
-		return biome;
 	}
 
 	@Override public int getLightFor(LightType type, BlockPos pos) {
 		return 0xF000F0;
 	}
 
-	@Override public IFluidState getFluidState(BlockPos pos) {
-		return Fluids.EMPTY.getDefaultState();
+	@OnlyIn(Dist.CLIENT)
+	@Override
+	public float func_230487_a_(Direction p_230487_1_, boolean p_230487_2_) {
+		return 1.0f;
+	}
+
+	@Override
+	public WorldLightManager getLightManager() {
+		return null; // Should not be used?
+	}
+
+	@Override
+	public int getBlockColor(BlockPos blockPosIn, ColorResolver colorResolverIn) {
+		return 0xFFFFFFFF;
 	}
 }

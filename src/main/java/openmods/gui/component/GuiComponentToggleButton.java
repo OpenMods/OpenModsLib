@@ -1,6 +1,7 @@
 package openmods.gui.component;
 
 import com.google.common.collect.ImmutableMap;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import java.util.Collection;
 import java.util.Map;
 import openmods.api.IValueReceiver;
@@ -21,29 +22,31 @@ public class GuiComponentToggleButton<T> extends GuiComponentButton implements I
 
 	private static int getMaxWidth(Collection<Icon> icons) {
 		int result = 0;
-		for (Icon icon : icons)
+		for (Icon icon : icons) {
 			result = Math.max(result, icon.width);
+		}
 
 		return result;
 	}
 
 	private static int getMaxHeight(Collection<Icon> icons) {
 		int result = 0;
-		for (Icon icon : icons)
+		for (Icon icon : icons) {
 			result = Math.max(result, icon.height);
+		}
 
 		return result;
 	}
 
 	@Override
-	protected void renderContents(int offsetX, int offsetY, int mouseX, int mouseY, boolean pressed) {
+	protected void renderContents(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY, boolean pressed) {
 		int offset = (buttonEnabled && pressed)? 3 : 2;
 
 		final Icon icon = icons.get(value);
 		if (icon != null) {
 			final int middleX = (width - BORDER_SIZE - icon.width) / 2;
 			final int middleY = (height - BORDER_SIZE - icon.height) / 2;
-			drawSprite(icon, offsetX + x + offset + middleX, offsetY + y + offset + middleY);
+			drawSprite(icon, matrixStack, offsetX + x + offset + middleX, offsetY + y + offset + middleY);
 		}
 	}
 

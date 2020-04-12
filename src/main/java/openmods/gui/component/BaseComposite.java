@@ -2,6 +2,7 @@ package openmods.gui.component;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import java.util.List;
 import openmods.gui.IComponentParent;
 
@@ -50,13 +51,13 @@ public abstract class BaseComposite extends BaseComponent {
 		return isComponentEnabled(component) && component.isMouseOver(mouseX, mouseY);
 	}
 
-	protected void renderComponentBackground(int offsetX, int offsetY, int mouseX, int mouseY) {}
+	protected void renderComponentBackground(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
-	protected void renderComponentForeground(int offsetX, int offsetY, int mouseX, int mouseY) {}
+	protected void renderComponentForeground(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	@Override
-	public final void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		renderComponentBackground(offsetX, offsetY, mouseX, mouseY);
+	public final void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
+		renderComponentBackground(matrixStack, offsetX, offsetY, mouseX, mouseY);
 
 		if (!areChildrenActive()) return;
 
@@ -68,16 +69,16 @@ public abstract class BaseComposite extends BaseComponent {
 		for (BaseComponent component : components)
 			if (isComponentEnabled(component)) {
 
-				component.render(ownX, ownY, relMouseX, relMouseY);
+				component.render(matrixStack, ownX, ownY, relMouseX, relMouseY);
 			}
 
-		renderComponentForeground(offsetX, offsetY, mouseX, mouseY);
+		renderComponentForeground(matrixStack, offsetX, offsetY, mouseX, mouseY);
 	}
 
 	protected void renderComponentOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	@Override
-	public final void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public final void renderOverlay(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		renderComponentOverlay(offsetX, offsetY, mouseX, mouseY);
 
 		if (!areChildrenActive()) return;
@@ -89,7 +90,7 @@ public abstract class BaseComposite extends BaseComponent {
 
 		for (BaseComponent component : components)
 			if (isComponentEnabled(component)) {
-				component.renderOverlay(ownX, ownY, relMouseX, relMouseY);
+				component.renderOverlay(matrixStack, ownX, ownY, relMouseX, relMouseY);
 			}
 
 	}

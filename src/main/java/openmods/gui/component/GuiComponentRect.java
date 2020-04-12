@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import openmods.api.IValueReceiver;
 
 public class GuiComponentRect extends GuiComponentResizable implements IValueReceiver<Integer> {
@@ -22,10 +23,10 @@ public class GuiComponentRect extends GuiComponentResizable implements IValueRec
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		int oX = x + offsetX;
 		int oY = y + offsetY;
-		fill(oX, oY, oX + width, oY + height, getColorForRender());
+		fill(matrixStack, oX, oY, oX + width, oY + height, getColorForRender());
 	}
 
 	@Override

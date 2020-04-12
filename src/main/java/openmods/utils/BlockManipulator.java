@@ -89,7 +89,7 @@ public class BlockManipulator {
 			if (!world.isBlockModifiable(player, blockPos)) return false;
 		}
 
-		final BlockSnapshot snapshot = BlockSnapshot.getBlockSnapshot(world, blockPos);
+		final BlockSnapshot snapshot = BlockSnapshot.create(world.getDimensionKey(), world, blockPos);
 
 		if (!world.setBlockState(blockPos, state, blockPlaceFlags)) return false;
 

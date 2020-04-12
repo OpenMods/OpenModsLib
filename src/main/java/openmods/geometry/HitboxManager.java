@@ -6,10 +6,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.annotations.SerializedName;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.resources.JsonReloadListener;
@@ -17,7 +16,7 @@ import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class HitboxManager extends JsonReloadListener {
 
@@ -31,7 +30,7 @@ public class HitboxManager extends JsonReloadListener {
 		private List<Hitbox> hitboxes;
 	}
 
-	private static final Gson GSON = new GsonBuilder().registerTypeAdapter(Vec3d.class, (JsonDeserializer<Vec3d>)(json, typeOfT, context) -> {
+	private static final Gson GSON = new GsonBuilder().registerTypeAdapter(Vector3d.class, (JsonDeserializer<Vector3d>)(json, typeOfT, context) -> {
 		JsonArray jsonarray = JSONUtils.getJsonArray(json, "vector");
 
 		if (jsonarray.size() != 3) throw new JsonParseException("Expected 3 float values, found: " + jsonarray.size());
@@ -40,7 +39,7 @@ public class HitboxManager extends JsonReloadListener {
 		for (int i = 0; i < 3; ++i)
 			coords[i] = JSONUtils.getFloat(jsonarray.get(i), "[" + i + "]") / 16.0f;
 
-		return new Vec3d(coords[0], coords[1], coords[2]);
+		return new Vector3d(coords[0], coords[1], coords[2]);
 	}).create();
 
 	private class Holder implements IHitboxSupplier {
@@ -87,7 +86,7 @@ public class HitboxManager extends JsonReloadListener {
 	}
 
 	@Override
-	protected void apply(final Map<ResourceLocation, JsonObject> data, final IResourceManager resourceManagerIn, final IProfiler profilerIn) {
+	protected void apply(final Map<ResourceLocation, JsonElement> data, final IResourceManager resourceManagerIn, final IProfiler profilerIn) {
 		resources.clear();
 		data.forEach((resourceLocation, jsonObject) -> {
 			resources.put(resourceLocation, GSON.fromJson(jsonObject, Hitboxes.class));

@@ -1,11 +1,9 @@
 package openmods.utils.render;
 
-import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
@@ -60,20 +58,6 @@ public class RenderUtils {
 
 	public static float interpolatePitch(Entity e, float f) {
 		return e.prevRotationPitch + (e.rotationPitch - e.prevRotationPitch) * f;
-	}
-
-	public static void translateToPlayer(Entity e, float partialTickTime) {
-		GL11.glTranslated(
-				interpolateValue(e.posX, e.prevPosX, partialTickTime) - TileEntityRendererDispatcher.staticPlayerX,
-				interpolateValue(e.posY, e.prevPosY, partialTickTime) - TileEntityRendererDispatcher.staticPlayerY,
-				interpolateValue(e.posZ, e.prevPosZ, partialTickTime) - TileEntityRendererDispatcher.staticPlayerZ);
-	}
-
-	public static void translateToWorld(Entity e, float partialTickTime) {
-		GL11.glTranslated(
-				interpolateValue(e.posX, e.prevPosX, partialTickTime),
-				interpolateValue(e.posY, e.prevPosY, partialTickTime),
-				interpolateValue(e.posZ, e.prevPosZ, partialTickTime));
 	}
 
 	public interface IQuadSink {
@@ -159,7 +143,7 @@ public class RenderUtils {
 		final float r = (float)((rgb >> 16) & 0xFF) / 255;
 		final float g = (float)((rgb >> 8) & 0xFF) / 255;
 		final float b = (float)((rgb >> 0) & 0xFF) / 255;
-		GlStateManager.color3f(r, g, b);
+		GlStateManager.color4f(r, g, b, 1.0f);
 	}
 
 	public static void setColor(int rgb, float alpha) {
@@ -168,18 +152,6 @@ public class RenderUtils {
 		final float b = (float)((rgb >> 0) & 0xFF) / 255;
 
 		GlStateManager.color4f(r, g, b, alpha);
-	}
-
-	public static void disableLightmap() {
-		GlStateManager.activeTexture(GLX.GL_TEXTURE1);
-		GlStateManager.disableTexture();
-		GlStateManager.activeTexture(GLX.GL_TEXTURE0);
-	}
-
-	public static void enableLightmap() {
-		GlStateManager.activeTexture(GLX.GL_TEXTURE1);
-		GlStateManager.enableTexture();
-		GlStateManager.activeTexture(GLX.GL_TEXTURE1);
 	}
 
 	public static RGB getFogColor() {

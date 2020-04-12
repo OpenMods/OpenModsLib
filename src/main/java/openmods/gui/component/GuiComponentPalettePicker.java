@@ -1,8 +1,10 @@
 package openmods.gui.component;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import java.util.Iterator;
 import java.util.List;
+import net.minecraft.util.text.ITextComponent;
 import openmods.colors.ColorMeta;
 import openmods.gui.listener.IValueChangedListener;
 
@@ -11,9 +13,9 @@ public class GuiComponentPalettePicker extends BaseComponent {
 	public static class PaletteEntry {
 		public final ColorMeta callback;
 		public final int rgb;
-		public final String name;
+		public final ITextComponent name;
 
-		public PaletteEntry(ColorMeta callback, int rgb, String name) {
+		public PaletteEntry(ColorMeta callback, int rgb, ITextComponent name) {
 			this.callback = callback;
 			this.rgb = rgb;
 			this.name = name;
@@ -78,7 +80,7 @@ public class GuiComponentPalettePicker extends BaseComponent {
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		Iterator<PaletteEntry> it = palette.iterator();
 
 		final int bx = x + offsetX;
@@ -96,7 +98,7 @@ public class GuiComponentPalettePicker extends BaseComponent {
 				final PaletteEntry entry = it.next();
 
 				final int nx = rx + areaSize;
-				fill(rx, ry, nx, ny, 0xFF000000 | entry.rgb);
+				fill(matrixStack, rx, ry, nx, ny, 0xFF000000 | entry.rgb);
 				rx = nx;
 			}
 
@@ -106,10 +108,10 @@ public class GuiComponentPalettePicker extends BaseComponent {
 	}
 
 	@Override
-	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void renderOverlay(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (drawTooltip && isMouseOver(mouseX, mouseY)) {
 			final PaletteEntry entry = findEntry(mouseX - x, mouseY - y);
-			if (entry != null) drawHoveringText(entry.name, offsetX + mouseX, offsetY + mouseY);
+			if (entry != null) drawHoveringText(matrixStack, entry.name.func_241878_f(), offsetX + mouseX, offsetY + mouseY);
 		}
 	}
 

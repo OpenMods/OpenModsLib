@@ -1,6 +1,7 @@
 package openmods.gui.component;
 
 import com.google.common.base.Preconditions;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import java.util.Random;
 import net.minecraft.item.ItemStack;
 import openmods.gui.Icon;
@@ -48,8 +49,8 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.render(offsetX, offsetY, mouseX, mouseY);
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
+		super.render(matrixStack, offsetX, offsetY, mouseX, mouseY);
 
 		final int gridOffsetX = 1;
 		final int gridOffsetY = 1;
@@ -79,8 +80,8 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 	}
 
 	@Override
-	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
-		super.renderOverlay(offsetX, offsetY, mouseX, mouseY);
+	public void renderOverlay(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
+		super.renderOverlay(matrixStack, offsetX, offsetY, mouseX, mouseY);
 
 		final int relativeMouseX = mouseX + offsetX - x;
 		final int relativeMouseY = mouseY + offsetY - y;
@@ -105,7 +106,7 @@ public class GuiComponentCraftingGrid extends GuiComponentSprite {
 			}
 
 			if (!tooltip.isEmpty()) {
-				parent.drawItemStackTooltip(tooltip, relativeMouseX + 25, relativeMouseY + 30);
+				parent.drawItemStackTooltip(matrixStack, tooltip, relativeMouseX + 25, relativeMouseY + 30);
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 package openmods.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -14,10 +15,10 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.IReorderingProcessor;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import openmods.gui.component.BaseComposite;
-import org.lwjgl.opengl.GL11;
 
 // TODO 1.14 Move to IGuiEventListener
 public abstract class ComponentGui<T extends Container> extends ContainerScreen<T> {
@@ -46,12 +47,12 @@ public abstract class ComponentGui<T extends Container> extends ContainerScreen<
 
 			@Override
 			public TextureAtlasSprite getIcon(ResourceLocation location) {
-				return minecraft.getTextureMap().getAtlasSprite(location.toString());
+				return minecraft.getAtlasSpriteGetter(AtlasTexture.LOCATION_BLOCKS_TEXTURE).apply(location);
 			}
 
 			@Override
 			public AtlasTexture getBlocksTextureMap() {
-				return minecraft.getTextureMap();
+				return minecraft.getModelManager().getAtlasTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 			}
 
 			@Override
@@ -65,18 +66,18 @@ public abstract class ComponentGui<T extends Container> extends ContainerScreen<
 			}
 
 			@Override
-			public void drawItemStackTooltip(@Nonnull ItemStack stack, int x, int y) {
-				ComponentGui.this.renderTooltip(stack, x, y);
+			public void drawItemStackTooltip(MatrixStack matrixStack, @Nonnull ItemStack stack, int x, int y) {
+				ComponentGui.this.renderTooltip(matrixStack, stack, x, y);
 			}
 
 			@Override
-			public void drawHoveringText(List<String> textLines, int x, int y) {
-				ComponentGui.this.renderTooltip(textLines, x, y);
+			public void drawHoveringText(MatrixStack matrixStack, List<? extends IReorderingProcessor> textLines, int x, int y) {
+				ComponentGui.this.renderTooltip(matrixStack, textLines, x, y);
 			}
 
 			@Override
-			public void drawGradientRect(int left, int top, int right, int bottom, int startColor, int endColor) {
-				ComponentGui.this.fillGradient(left, top, right, bottom, startColor, endColor);
+			public void drawGradientRect(MatrixStack matrixStack, int left, int top, int right, int bottom, int startColor, int endColor) {
+				ComponentGui.this.fillGradient(matrixStack, left, top, right, bottom, startColor, endColor);
 			}
 
 			@Override
@@ -94,8 +95,8 @@ public abstract class ComponentGui<T extends Container> extends ContainerScreen<
 	}
 
 	@Override
-	public void removed() {
-		super.removed();
+	public void onClose() {
+		super.onClose();
 		minecraft.keyboardListener.enableRepeatEvents(false);
 	}
 
@@ -157,32 +158,33 @@ public abstract class ComponentGui<T extends Container> extends ContainerScreen<
 	public void postRender(int mouseX, int mouseY) {}
 
 	@Override
-	protected void drawGuiContainerBackgroundLayer(float f, int mouseX, int mouseY) {
+	protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float f, int mouseX, int mouseY) {
 		preRender(mouseX, mouseY);
-		GL11.glPushMatrix();
-		GL11.glTranslated(this.guiLeft, this.guiTop, 0);
-		root.render(0, 0, mouseX - this.guiLeft, mouseY - this.guiTop);
-		GL11.glPopMatrix();
+		matrixStack.push();
+		matrixStack.translate(this.guiLeft, this.guiTop, 0);
+		root.render(matrixStack, 0, 0, mouseX - this.guiLeft, mouseY - this.guiTop);
+		matrixStack.pop();
 	}
 
 	@Override
-	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+	protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int mouseX, int mouseY) {
 		postRender(mouseX, mouseY);
 	}
 
 	@Override
-	public void render(int mouseX, int mouseY, float partialTicks) {
-		this.renderBackground();
-		super.render(mouseX, mouseY, partialTicks);
-		renderOverlay(mouseX, mouseY);
-		renderHoveredToolTip(mouseX, mouseY);
+	public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+		this.renderBackground(matrixStack);
+		super.render(matrixStack, mouseX, mouseY, partialTicks);
+		renderOverlay(matrixStack, mouseX, mouseY);
+		// TODO 1.16 what was that doing?
+		// renderHoveredToolTip(mouseX, mouseY);
 	}
 
-	private void renderOverlay(int mouseX, int mouseY) {
+	private void renderOverlay(MatrixStack matrixStack, int mouseX, int mouseY) {
 		prepareRenderState();
-		GL11.glPushMatrix();
-		root.renderOverlay(this.guiLeft, this.guiTop, mouseX - this.guiLeft, mouseY - this.guiTop);
-		GL11.glPopMatrix();
+		matrixStack.push();
+		root.renderOverlay(matrixStack, this.guiLeft, this.guiTop, mouseX - this.guiLeft, mouseY - this.guiTop);
+		matrixStack.pop();
 		restoreRenderState();
 	}
 

@@ -1,6 +1,8 @@
 package openmods.gui.component;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.util.text.StringTextComponent;
 import openmods.api.IValueReceiver;
 import openmods.gui.IComponentParent;
 import openmods.gui.listener.IValueChangedListener;
@@ -24,7 +26,7 @@ public class GuiComponentTextbox extends BaseComponent implements IValueReceiver
 	@Override
 	public void init(IComponentParent parent) {
 		super.init(parent);
-		textfield = new TextFieldWidget( parent.getFontRenderer(), x, y, width, height, "");
+		textfield = new TextFieldWidget( parent.getFontRenderer(), x, y, width, height, StringTextComponent.EMPTY);
 	}
 
 	@Override
@@ -38,8 +40,8 @@ public class GuiComponentTextbox extends BaseComponent implements IValueReceiver
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		textfield.renderButton(mouseX, mouseY, 0);
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
+		textfield.renderButton(matrixStack, mouseX, mouseY, 0);
 	}
 
 	// TODO 1.14 keyPressed != charTyped

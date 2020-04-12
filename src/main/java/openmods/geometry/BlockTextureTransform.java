@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class BlockTextureTransform {
 
@@ -134,7 +134,7 @@ public class BlockTextureTransform {
 		return new TexCoords(u, v, h);
 	}
 
-	public Vec3d textureCoordsToWorldVec(Direction side, double u, double v, double h) {
+	public Vector3d textureCoordsToWorldVec(Direction side, double u, double v, double h) {
 		final Matrix2d transformation = inverseTransforms.get(side);
 		if (transformation == null) throw new IllegalArgumentException(side.toString());
 
@@ -180,7 +180,7 @@ public class BlockTextureTransform {
 				throw new IllegalArgumentException(side.toString());
 		}
 
-		return new Vec3d(globalX, globalY, globalZ);
+		return new Vector3d(globalX, globalY, globalZ);
 	}
 
 	public static Builder builder() {

@@ -1,8 +1,6 @@
 package openmods.network.event;
 
-import com.google.common.collect.Lists;
 import java.io.IOException;
-import java.util.List;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;

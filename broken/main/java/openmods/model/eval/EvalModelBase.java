@@ -2,13 +2,16 @@ package openmods.model.eval;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
+import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.IUnbakedModel;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.ResourceLocation;
@@ -36,11 +39,11 @@ public abstract class EvalModelBase implements IUnbakedModel {
 	}
 
 	@Override
-	public Collection<ResourceLocation> getTextures(Function<ResourceLocation, IUnbakedModel> modelGetter, Set<String> missingTextureErrors) {
+	public Collection<RenderMaterial> getTextures(Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
 		return Collections.emptyList();
 	}
 
-	protected IModel loadBaseModel(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+	protected IBakedModel loadBaseModel(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
 		if (baseModel.isPresent()) {
 			return ModelLoaderRegistry.getModelOrLogError(baseModel.get(), "Couldn't load eval model dependency: " + baseModel.get());
 		} else {
@@ -48,7 +51,6 @@ public abstract class EvalModelBase implements IUnbakedModel {
 		}
 	}
 
-	@Override
 	public IUnbakedModel process(ImmutableMap<String, String> customData) {
 		final ModelUpdater updater = new ModelUpdater(customData);
 

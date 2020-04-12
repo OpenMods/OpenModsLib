@@ -26,6 +26,7 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.registries.ForgeRegistries;
 import openmods.model.ModelUpdater;
 import openmods.state.ItemState;
+import openmods.state.StateItem;
 import openmods.utils.CollectionUtils;
 
 public class ItemStateModel implements IUnbakedModel {
@@ -50,9 +51,9 @@ public class ItemStateModel implements IUnbakedModel {
 
 		final Item item = ForgeRegistries.ITEMS.getValue(itemLocation.get());
 
-		if (!(item instanceof IStateItem)) return ImmutableMap.of();
+		if (!(item instanceof StateItem)) return ImmutableMap.of();
 
-		final StateContainer<Item, ItemState> stateContainer = ((IStateItem)item).getStateContainer();
+		final StateContainer<StateItem, ItemState> stateContainer = ((StateItem)item).getStateContainer();
 
 		final ImmutableMap.Builder<ItemState, ResourceLocation> result = ImmutableMap.builder();
 

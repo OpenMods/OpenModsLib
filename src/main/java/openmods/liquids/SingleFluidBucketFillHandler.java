@@ -1,5 +1,6 @@
 package openmods.liquids;
 
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -29,7 +30,7 @@ public class SingleFluidBucketFillHandler {
 
 	public SingleFluidBucketFillHandler(@Nonnull ItemStack filledBucket) {
 		this.filledBucket = filledBucket;
-		final LazyOptional<FluidStack> fluidContained = FluidUtil.getFluidContained(filledBucket);
+		final Optional<FluidStack> fluidContained = FluidUtil.getFluidContained(filledBucket);
 		this.containedFluid = fluidContained.orElseThrow(() -> new IllegalStateException("Item " + filledBucket + " is not a filled bucket"));
 	}
 

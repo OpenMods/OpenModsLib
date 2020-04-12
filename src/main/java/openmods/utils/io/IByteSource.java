@@ -1,6 +1,5 @@
 package openmods.utils.io;
 
-import java.io.EOFException;
 import java.io.IOException;
 
 @FunctionalInterface

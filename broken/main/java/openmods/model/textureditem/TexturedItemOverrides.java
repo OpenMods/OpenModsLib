@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.IUnbakedModel;
 import net.minecraft.client.renderer.model.ItemOverride;
@@ -19,6 +20,7 @@ import net.minecraft.client.renderer.model.ModelBakery;
 import net.minecraft.client.renderer.texture.ISprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -30,9 +32,8 @@ import org.apache.commons.lang3.tuple.Pair;
 public class TexturedItemOverrides extends ItemOverrideList {
 
 	private final IBakedModel untexturedModel;
-	private final IModel texturedModel;
+	private final IUnbakedModel texturedModel;
 	private final Set<String> texturesToReplace;
-	private final ISprite state;
 	private final VertexFormat format;
 	private final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter;
 	private final ModelBakery bakery;
@@ -41,7 +42,7 @@ public class TexturedItemOverrides extends ItemOverrideList {
 	private final LoadingCache<Pair<ResourceLocation, Optional<ResourceLocation>>, IBakedModel> textureOverrides = CacheBuilder.newBuilder().expireAfterAccess(5, TimeUnit.SECONDS).build(new CacheLoader<Pair<ResourceLocation, Optional<ResourceLocation>>, IBakedModel>() {
 		@Override
 		public IBakedModel load(Pair<ResourceLocation, Optional<ResourceLocation>> key) {
-			final IModel overrideModel = getOverrideModel(key.getRight());
+			final IUnbakedModel overrideModel = getOverrideModel(key.getRight());
 			final IModel retexturedModel = retextureModel(overrideModel, key.getKey());
 			return retexturedModel.bake(bakery, bakedTextureGetter, state, format);
 		}
@@ -60,9 +61,9 @@ public class TexturedItemOverrides extends ItemOverrideList {
 	}
 
 	@Override
-	public IBakedModel getModelWithOverrides(IBakedModel originalModel, @Nonnull ItemStack stack, World world, LivingEntity entity) {
+	public IBakedModel getOverrideModel(IBakedModel model, ItemStack stack, @Nullable ClientWorld world, @Nullable LivingEntity livingEntity) {
 		final Optional<ResourceLocation> texture = getTextureFromStack(stack);
-		return texture.isPresent()? rebakeModel(texture.get(), stack, world, entity) : untexturedModel;
+		return texture.isPresent()? rebakeModel(texture.get(), stack, world, livingEntity) : untexturedModel;
 	}
 
 	private IBakedModel rebakeModel(ResourceLocation texture, @Nonnull ItemStack stack, World world, LivingEntity entity) {
@@ -74,7 +75,7 @@ public class TexturedItemOverrides extends ItemOverrideList {
 	private Optional<ResourceLocation> applyOverride(ItemStack stack, World world, LivingEntity entity) {
 		// TODO 1.14 AT transform
 		for (ItemOverride override : texturedModelOverrides) {
-			if (override.matchesItemStack(stack, world, entity)) {
+			if (override.matchesOverride(stack, world, entity)) {
 				return Optional.of(override.getLocation());
 			}
 		}
@@ -82,7 +83,7 @@ public class TexturedItemOverrides extends ItemOverrideList {
 		return Optional.empty();
 	}
 
-	private IModel getOverrideModel(Optional<ResourceLocation> overrideLocation) {
+	private IUnbakedModel getOverrideModel(Optional<ResourceLocation> overrideLocation) {
 		if (overrideLocation.isPresent()) {
 			final ResourceLocation location = overrideLocation.get();
 			return ModelLoaderRegistry.getModelOrLogError(location, "Couldn't load model: " + location);
@@ -91,7 +92,7 @@ public class TexturedItemOverrides extends ItemOverrideList {
 		}
 	}
 
-	private IModel retextureModel(IModel overrideModel, ResourceLocation texture) {
+	private IBakedModel retextureModel(IBakedModel overrideModel, ResourceLocation texture) {
 		final ImmutableMap.Builder<String, String> textures = ImmutableMap.builder();
 		for (String t : texturesToReplace)
 			textures.put(t, texture.toString());

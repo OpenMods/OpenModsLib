@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import openmods.api.IValueReceiver;
 
@@ -14,12 +15,12 @@ public class GuiComponentProgress extends BaseComponent {
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		bindComponentsSheet();
-		GlStateManager.color3f(1, 1, 1);
-		blit(offsetX + x, offsetY + y, 0, 38, getWidth(), getHeight());
+		GlStateManager.color4f(1, 1, 1, 1);
+		blit(matrixStack, offsetX + x, offsetY + y, 0, 38, getWidth(), getHeight());
 		int pxProgress = Math.round(progress * scale);
-		blit(offsetX + x, offsetY + y, 0, 50, pxProgress, getHeight());
+		blit(matrixStack, offsetX + x, offsetY + y, 0, 50, pxProgress, getHeight());
 	}
 
 	@Override

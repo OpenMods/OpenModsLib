@@ -37,8 +37,8 @@ public class SyncedGuiContainer<T extends ContainerBase<? extends ISyncMapProvid
 	}
 
 	@Override
-	public void removed() {
-		super.removed();
+	public void onClose() {
+		super.onClose();
 
 		if (dispatcher != null) getContainer().getOwner().getSyncMap().removeUpdateListener(dispatcher);
 	}

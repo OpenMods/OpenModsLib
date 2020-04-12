@@ -13,7 +13,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.World;
 import openmods.geometry.Orientation;
 import openmods.inventory.IInventoryProvider;
@@ -60,8 +60,8 @@ public class BlockUtils {
 	}
 
 	public static Direction get3dOrientation(LivingEntity entity, BlockPos pos) {
-		if (MathHelper.abs((float)entity.posX - pos.getX()) < 2.0F && MathHelper.abs((float)entity.posZ - pos.getZ()) < 2.0F) {
-			final double entityEyes = entity.posY + entity.getEyeHeight();
+		if (MathHelper.abs((float)entity.getPosX() - pos.getX()) < 2.0F && MathHelper.abs((float)entity.getPosZ() - pos.getZ()) < 2.0F) {
+			final double entityEyes = entity.getPosYEye();
 			if (entityEyes - pos.getY() > 2.0D) return Direction.DOWN;
 			if (pos.getY() - entityEyes > 0.0D) return Direction.UP;
 		}
@@ -69,7 +69,7 @@ public class BlockUtils {
 		return entity.getHorizontalFacing();
 	}
 
-	public static ItemEntity dropItemStackInWorld(World worldObj, Vec3i pos, @Nonnull ItemStack stack) {
+	public static ItemEntity dropItemStackInWorld(World worldObj, Vector3i pos, @Nonnull ItemStack stack) {
 		return dropItemStackInWorld(worldObj, pos.getX(), pos.getY(), pos.getZ(), stack);
 	}
 
@@ -89,7 +89,7 @@ public class BlockUtils {
 
 	public static ItemEntity ejectItemInDirection(World world, double x, double y, double z, Direction direction, @Nonnull ItemStack stack) {
 		ItemEntity item = BlockUtils.dropItemStackInWorld(world, x, y, z, stack);
-		final Vec3i v = direction.getDirectionVec();
+		final Vector3i v = direction.getDirectionVec();
 		item.setMotion(v.getX() / 5F, v.getY() / 5F, v.getZ() / 5F);
 		return item;
 	}

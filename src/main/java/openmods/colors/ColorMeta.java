@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 import net.minecraft.item.DyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.ITag;
 import net.minecraft.util.IStringSerializable;
 import net.minecraftforge.common.Tags;
 
@@ -34,13 +34,13 @@ public enum ColorMeta implements IStringSerializable {
 
 	public final int rgb;
 	public final DyeColor vanillaEnum;
-	public final Tag<Item> tag;
+	public final ITag<Item> tag;
 	public final String id;
 	public final String unlocalizedName;
 	public final RGB rgbWrap;
 	public final CYMK cymkWrap;
 
-	ColorMeta(String id, int rgb, DyeColor vanilla, Tag<Item> tag) {
+	ColorMeta(String id, int rgb, DyeColor vanilla, ITag<Item> tag) {
 		this.id = id;
 		this.tag = tag;
 		this.unlocalizedName = "openmodslib.color." + id;
@@ -86,7 +86,7 @@ public enum ColorMeta implements IStringSerializable {
 	}
 
 	@Override
-	public String getName() {
+	public String getString() {
 		return id;
 	}
 }

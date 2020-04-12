@@ -1,8 +1,8 @@
 package openmods.gui.misc;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.AbstractGui;
 import openmods.utils.render.RenderUtils;
-import org.lwjgl.opengl.GL11;
 
 //TODO single tesselator call plz
 public class BoxRenderer {
@@ -15,86 +15,86 @@ public class BoxRenderer {
 	}
 
 	// 4x4 pixels starting at 0,0
-	protected void renderTopLeftCorner(AbstractGui gui) {
-		gui.blit(0, 0, u, v, 4, 4);
+	protected void renderTopLeftCorner(AbstractGui gui, MatrixStack matrixStack) {
+		gui.blit(matrixStack, 0, 0, u, v, 4, 4);
 	}
 
 	// 3x3 pixels starting at 5,0
-	protected void renderTopRightCorner(AbstractGui gui, int width) {
-		gui.blit(width - 3, 0, u + 5, v, 3, 3);
+	protected void renderTopRightCorner(AbstractGui gui, MatrixStack matrixStack, int width) {
+		gui.blit(matrixStack, width - 3, 0, u + 5, v, 3, 3);
 	}
 
 	// 3x3 pixels starting at 11,0
-	protected void renderBottomLeftCorner(AbstractGui gui, int height) {
-		gui.blit(0, height - 3, u + 11, v, 3, 3);
+	protected void renderBottomLeftCorner(AbstractGui gui, MatrixStack matrixStack, int height) {
+		gui.blit(matrixStack, 0, height - 3, u + 11, v, 3, 3);
 	}
 
 	// 4x4 pixels starting at 15,0
-	protected void renderBottomRightCorner(AbstractGui gui, int width, int height) {
-		gui.blit(width - 4, height - 4, u + 15, v, 4, 4);
+	protected void renderBottomRightCorner(AbstractGui gui, MatrixStack matrixStack, int width, int height) {
+		gui.blit(matrixStack, width - 4, height - 4, u + 15, v, 4, 4);
 	}
 
 	// 1x3 pixels starting at 14,0
-	protected void renderBottomEdge(AbstractGui gui, int width, int height) {
-		GL11.glPushMatrix();
-		GL11.glTranslatef(3, height - 3, 0);
-		GL11.glScaled(width - 7, 1, 0);
-		gui.blit(0, 0, u + 14, v, 1, 3);
-		GL11.glPopMatrix();
+	protected void renderBottomEdge(AbstractGui gui, MatrixStack matrixStack, int width, int height) {
+		matrixStack.push();
+		matrixStack.translate(3, height - 3, 0);
+		matrixStack.scale(width - 7, 1, 0);
+		gui.blit(matrixStack, 0, 0, u + 14, v, 1, 3);
+		matrixStack.pop();
 	}
 
 	// 1x3 pixels starting at 4,0
-	protected void renderTopEdge(AbstractGui gui, int width) {
-		GL11.glPushMatrix();
-		GL11.glTranslatef(4, 0, 0);
-		GL11.glScaled(width - 7, 1, 0);
-		gui.blit(0, 0, u + 4, v, 1, 3);
-		GL11.glPopMatrix();
+	protected void renderTopEdge(AbstractGui gui, MatrixStack matrixStack, int width) {
+		matrixStack.push();
+		matrixStack.translate(4, 0, 0);
+		matrixStack.scale(width - 7, 1, 0);
+		gui.blit(matrixStack, 0, 0, u + 4, v, 1, 3);
+		matrixStack.pop();
 	}
 
 	// 3x1 pixels starting at 0,4
-	protected void renderLeftEdge(AbstractGui gui, int height) {
-		GL11.glPushMatrix();
-		GL11.glTranslatef(0, 4, 0);
-		GL11.glScaled(1, height - 7, 0);
-		gui.blit(0, 0, u, v + 4, 3, 1);
-		GL11.glPopMatrix();
+	protected void renderLeftEdge(AbstractGui gui, MatrixStack matrixStack, int height) {
+		matrixStack.push();
+		matrixStack.translate(0, 4, 0);
+		matrixStack.scale(1, height - 7, 0);
+		gui.blit(matrixStack, 0, 0, u, v + 4, 3, 1);
+		matrixStack.pop();
 	}
 
 	// 3x1 pixels starting at 8,0
-	protected void renderRightEdge(AbstractGui gui, int width, int height) {
-		GL11.glPushMatrix();
-		GL11.glTranslatef(width - 3, 3, 0);
-		GL11.glScaled(1, height - 7, 0);
-		gui.blit(0, 0, u + 8, v, 3, 1);
-		GL11.glPopMatrix();
+	protected void renderRightEdge(AbstractGui gui, MatrixStack matrixStack, int width, int height) {
+		matrixStack.push();
+		matrixStack.translate(width - 3, 3, 0);
+		matrixStack.scale(1, height - 7, 0);
+		gui.blit(matrixStack, 0, 0, u + 8, v, 3, 1);
+		matrixStack.pop();
 	}
 
 	// 1x1 pixels starting at 19,0
-	protected void renderBackground(AbstractGui gui, int width, int height) {
-		GL11.glPushMatrix();
-		GL11.glTranslatef(2, 2, 0);
-		GL11.glScalef(width - 4, height - 4, 0);
-		gui.blit(0, 0, u + 19, v, 1, 1);
-		GL11.glPopMatrix();
+	protected void renderBackground(AbstractGui gui, MatrixStack matrixStack, int width, int height) {
+		matrixStack.push();
+		matrixStack.translate(2, 2, 0);
+		matrixStack.scale(width - 4, height - 4, 0);
+		gui.blit(matrixStack, 0, 0, u + 19, v, 1, 1);
+		matrixStack.pop();
 	}
 
-	public void render(AbstractGui gui, int x, int y, int width, int height, int color) {
+	public void render(AbstractGui gui, MatrixStack matrixStack, int x, int y, int width, int height, int color) {
 		RenderUtils.setColor(color);
 
-		GL11.glPushMatrix();
-		GL11.glTranslatef(x, y, 0);
-		renderBackground(gui, width, height);
-		renderTopEdge(gui, width);
-		renderBottomEdge(gui, width, height);
-		renderLeftEdge(gui, height);
-		renderRightEdge(gui, width, height);
+		matrixStack.push();
+		matrixStack.translate(x, y, 0);
+		renderBackground(gui, matrixStack, width, height);
+		renderTopEdge(gui, matrixStack, width);
+		renderBottomEdge(gui, matrixStack, width, height);
+		renderLeftEdge(gui, matrixStack, height);
+		renderRightEdge(gui, matrixStack, width, height);
 
-		renderTopLeftCorner(gui);
-		renderTopRightCorner(gui, width);
-		renderBottomLeftCorner(gui, height);
-		renderBottomRightCorner(gui, width, height);
-		GL11.glPopMatrix();
+		renderTopLeftCorner(gui, matrixStack);
+		renderTopRightCorner(gui, matrixStack, width);
+		renderBottomLeftCorner(gui, matrixStack, height);
+		renderBottomRightCorner(gui, matrixStack, width, height);
+		matrixStack.pop();
 	}
 
 }

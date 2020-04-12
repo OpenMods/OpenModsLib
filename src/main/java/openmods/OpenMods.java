@@ -2,8 +2,9 @@ package openmods;
 
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
+import net.minecraft.loot.LootFunctionType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.storage.loot.functions.LootFunctionManager;
+import net.minecraft.util.registry.Registry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.event.RegistryEvent;
@@ -87,15 +88,20 @@ public class OpenMods {
 		modEventBus.addListener(this::registerRegistry);
 
 		MinecraftForge.EVENT_BUS.addListener(this::severStart);
+
+		PROXY.eventInit();
 	}
+
+	public static final LootFunctionType SYNC_DROPS_TYPE = new LootFunctionType(new SyncDropsFunction.Serializer());
 
 	private void registerRegistry(RegistryEvent.NewRegistry e) {
 		// Now this not a right place for that, but only one that works:
 		// - it's fired synchronously
 		// - before most things (like resource managers) have chance to run
 		PROXY.earlySyncInit();
-		// It should be in registry!
-		LootFunctionManager.registerFunction(new SyncDropsFunction.Serializer());
+
+
+		Registry.register(Registry.LOOT_FUNCTION_TYPE, location("sync_drops"), SYNC_DROPS_TYPE);
 	}
 
 	@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)

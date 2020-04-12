@@ -3,7 +3,7 @@ package openmods.utils;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3i;
 
 public enum Diagonal {
 	NW(Direction.NORTH, Direction.WEST),
@@ -16,8 +16,8 @@ public enum Diagonal {
 	public final int offsetZ;
 
 	Diagonal(Direction a, Direction b) {
-		final Vec3i va = a.getDirectionVec();
-		final Vec3i vb = b.getDirectionVec();
+		final Vector3i va = a.getDirectionVec();
+		final Vector3i vb = b.getDirectionVec();
 		this.offsetX = va.getX() + vb.getX();
 		this.offsetY = va.getY() + vb.getY();
 		this.offsetZ = va.getZ() + vb.getZ();

@@ -1,209 +1,55 @@
 package openmods.renderer;
 
-import static org.lwjgl.opengl.GL11.GL_COLOR_ARRAY;
-import static org.lwjgl.opengl.GL11.GL_NORMAL_ARRAY;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_COORD_ARRAY;
-import static org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY;
-import static org.lwjgl.opengl.GL11.glColorPointer;
-import static org.lwjgl.opengl.GL11.glDisableClientState;
-import static org.lwjgl.opengl.GL11.glEnableClientState;
-import static org.lwjgl.opengl.GL11.glNormalPointer;
-import static org.lwjgl.opengl.GL11.glTexCoordPointer;
-import static org.lwjgl.opengl.GL11.glVertexPointer;
-import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-
-import com.google.common.base.Preconditions;
-import com.mojang.blaze3d.platform.GLX;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.client.renderer.vertex.VertexFormatElement;
-import net.minecraft.client.renderer.vertex.VertexFormatElement.Usage;
-import openmods.Log;
-import org.lwjgl.opengl.GL11;
 
 public class CachedRendererFactory {
 
-	public interface CachedRenderer {
-		void render();
+	public interface CachedRenderer extends AutoCloseable {
+		void render(final MatrixStack matrixStack);
 
-		void dispose();
+		void close();
 	}
 
 	private static class VboRenderer implements CachedRenderer {
-
 		private final VertexBuffer vb;
 
 		private final int drawMode;
 
-		private final Runnable setup;
+		private final VertexFormat vf;
 
-		private final Runnable cleanup;
+		public VboRenderer(int drawMode, Tessellator tes) {
+			this.drawMode = drawMode;
+			final BufferBuilder inputBuffer = tes.getBuffer();
+			inputBuffer.finishDrawing();
+			vf = inputBuffer.getVertexFormat();
+			vb = new VertexBuffer(vf);
 
-		public VboRenderer(Tessellator tes) {
-			final BufferBuilder buffer = tes.getBuffer();
-			final VertexFormat vf = buffer.getVertexFormat();
-			this.vb = new VertexBuffer(vf);
-			this.drawMode = buffer.getDrawMode();
-
-			buffer.finishDrawing();
-			buffer.reset();
-			vb.bufferData(buffer.getByteBuffer());
-
-			Runnable setup = () -> {};
-			Runnable cleanup = () -> {};
-
-			final int stride = vf.getSize();
-
-			for (int i = vf.getElementCount() - 1; i >= 0; i--) {
-				final VertexFormatElement attr = vf.getElement(i);
-				final int offset = vf.getOffset(i);
-				final int count = attr.getElementCount();
-				final int constant = attr.getType().getGlConstant();
-				final int index = attr.getIndex();
-				final Usage usage = attr.getUsage();
-
-				final Runnable prevSetup = setup;
-				final Runnable prevCleanup = cleanup;
-
-				switch (usage) {
-					case POSITION:
-						setup = () -> {
-							glVertexPointer(count, constant, stride, offset);
-							glEnableClientState(GL_VERTEX_ARRAY);
-							prevSetup.run();
-						};
-
-						cleanup = () -> {
-							glDisableClientState(GL_VERTEX_ARRAY);
-							prevCleanup.run();
-						};
-						break;
-					case NORMAL:
-						Preconditions.checkArgument(count == 3, "Normal attribute %s should have the size 3", attr);
-						setup = () -> {
-							glNormalPointer(constant, stride, offset);
-							glEnableClientState(GL_NORMAL_ARRAY);
-							prevSetup.run();
-						};
-
-						cleanup = () -> {
-							glDisableClientState(GL_NORMAL_ARRAY);
-							prevCleanup.run();
-						};
-						break;
-					case COLOR:
-						setup = () -> {
-							glColorPointer(count, constant, stride, offset);
-							glEnableClientState(GL_COLOR_ARRAY);
-							prevSetup.run();
-						};
-
-						cleanup = () -> {
-							glDisableClientState(GL_COLOR_ARRAY);
-							GlStateManager.clearCurrentColor();
-							prevCleanup.run();
-						};
-						break;
-					case UV:
-						setup = () -> {
-							GLX.glClientActiveTexture(GLX.GL_TEXTURE0 + attr.getIndex());
-							glTexCoordPointer(count, constant, stride, offset);
-							glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-							GLX.glClientActiveTexture(GLX.GL_TEXTURE0);
-							prevSetup.run();
-						};
-
-						cleanup = () -> {
-							GLX.glClientActiveTexture(GLX.GL_TEXTURE0 + attr.getIndex());
-							glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-							GLX.glClientActiveTexture(GLX.GL_TEXTURE0);
-							prevCleanup.run();
-						};
-						break;
-					case PADDING:
-						break;
-					case GENERIC:
-						setup = () -> {
-							glEnableVertexAttribArray(index);
-							glVertexAttribPointer(index, count, constant, false, stride, offset);
-							prevSetup.run();
-						};
-
-						cleanup = () -> {
-							glDisableVertexAttribArray(index);
-							prevCleanup.run();
-						};
-					default:
-						Log.severe("Unimplemented vanilla attribute upload: %s", usage.getDisplayName());
-				}
-			}
-
-			this.setup = setup;
-			this.cleanup = cleanup;
+			inputBuffer.reset();
+			vb.upload(inputBuffer);
 		}
 
 		@Override
-		public void render() {
+		public void render(final MatrixStack matrixStack) {
 			vb.bindBuffer();
-
-			setup.run();
-			vb.drawArrays(drawMode);
-			cleanup.run();
-			vb.unbindBuffer();
+			vf.setupBufferState(0);
+			vb.draw(matrixStack.getLast().getMatrix(), drawMode);
+			vf.clearBufferState();
+			VertexBuffer.unbindBuffer();
 		}
 
 		@Override
-		public void dispose() {
-			vb.deleteGlBuffers();
+		public void close() {
+			vb.close();
 		}
 
 	}
 
-	private static class DisplayListRenderer implements CachedRenderer {
-
-		private int displayList = GL11.GL_ZERO;
-
-		private boolean isDisplayListValid() {
-			return displayList != GL11.GL_ZERO;
-		}
-
-		public DisplayListRenderer(Tessellator tes) {
-			displayList = GL11.glGenLists(1);
-			if (isDisplayListValid()) {
-				GL11.glNewList(displayList, GL11.GL_COMPILE);
-				tes.draw();
-				GL11.glEndList();
-			}
-		}
-
-		@Override
-		public void render() {
-			if (isDisplayListValid()) {
-				GL11.glCallList(displayList);
-			}
-		}
-
-		@Override
-		public void dispose() {
-			if (isDisplayListValid()) {
-				GL11.glDeleteLists(displayList, 1);
-			}
-		}
-
-	}
-
-	public CachedRenderer createRenderer(Tessellator tes) {
-		// TODO 1.14 Cleanup?
-		if (true) {
-			return new VboRenderer(tes);
-		} else {
-			return new DisplayListRenderer(tes);
-		}
+	public CachedRenderer createRenderer(int drawMode, Tessellator tes) {
+		return new VboRenderer(drawMode, tes);
 	}
 
 }

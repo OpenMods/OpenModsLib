@@ -3,7 +3,7 @@ package openmods.colors;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IEnviromentBlockReader;
+import net.minecraft.world.IBlockDisplayReader;
 
 public class BlockFixedColorHandler implements IBlockColor {
 	private static final int WHITE = 0xFFFFFFFF;
@@ -18,7 +18,7 @@ public class BlockFixedColorHandler implements IBlockColor {
 	}
 
 	@Override
-	public int getColor(BlockState state, IEnviromentBlockReader worldIn, BlockPos pos, int tintIndex) {
+	public int getColor(BlockState state, IBlockDisplayReader worldIn, BlockPos pos, int tintIndex) {
 		return tintIndex == 0? color : WHITE;
 	}
 }

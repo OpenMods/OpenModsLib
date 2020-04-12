@@ -1,7 +1,6 @@
 package openmods.utils;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 
 public class PlayerUtils {

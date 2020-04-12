@@ -33,7 +33,7 @@ public class ItemUtils {
 	}
 
 	public static ItemEntity createDrop(Entity dropper, @Nonnull ItemStack is) {
-		return createEntityItem(dropper.world, dropper.posX, dropper.posY, dropper.posZ, is);
+		return createEntityItem(dropper.world, dropper.getPosX(), dropper.getPosY(), dropper.getPosZ(), is);
 	}
 
 	public static ItemEntity createEntityItem(World world, double x, double y, double z, @Nonnull ItemStack is) {

@@ -1,5 +1,6 @@
 package openmods.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.text.ITextComponent;
 import openmods.container.ContainerBase;
@@ -17,13 +18,13 @@ public abstract class BaseGuiContainer<T extends ContainerBase<?>> extends Compo
 	}
 
 	@Override
-	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-		final String machineName = getTitle().getFormattedText();
-		int x = this.xSize / 2 - (font.getStringWidth(machineName) / 2);
-		font.drawString(machineName, x, 6, 0x404040);
-		String translatedName = playerInventory.getDisplayName().getFormattedText();
-		font.drawString(translatedName, 8, this.ySize - 96 + 2, 0x404040);
+	protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int mouseX, int mouseY) {
+		super.drawGuiContainerForegroundLayer(matrixStack, mouseX, mouseY);
+		final ITextComponent machineName = getTitle();
+
+		drawCenteredString(matrixStack, font, machineName, this.xSize / 2, 6, 0x404040);
+		ITextComponent translatedName = playerInventory.getDisplayName();
+		drawString(matrixStack, font, translatedName, 8, this.ySize - 96 + 2, 0x404040);
 	}
 
 	public void sendButtonClick(int buttonId) {

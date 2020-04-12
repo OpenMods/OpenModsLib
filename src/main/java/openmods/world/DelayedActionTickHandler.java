@@ -4,8 +4,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import java.util.Map;
 import java.util.Queue;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
@@ -17,9 +17,9 @@ public class DelayedActionTickHandler {
 
 	private DelayedActionTickHandler() {}
 
-	private final Map<DimensionType, Queue<Runnable>> callbacks = Maps.newHashMap();
+	private final Map<RegistryKey<World>, Queue<Runnable>> callbacks = Maps.newHashMap();
 
-	private Queue<Runnable> getWorldQueue(DimensionType worldId) {
+	private Queue<Runnable> getWorldQueue(RegistryKey<World> worldId) {
 		synchronized (callbacks) {
 			Queue<Runnable> result = callbacks.get(worldId);
 
@@ -33,14 +33,14 @@ public class DelayedActionTickHandler {
 	}
 
 	public void addTickCallback(World world, Runnable callback) {
-		DimensionType worldId = world.getDimension().getType();
+		RegistryKey<World> worldId = world.getDimensionKey();
 		getWorldQueue(worldId).add(callback);
 	}
 
 	@SubscribeEvent
 	public void onWorldTick(TickEvent.WorldTickEvent evt) {
 		if (evt.side == LogicalSide.SERVER && evt.phase == TickEvent.Phase.END) {
-			DimensionType worldId = evt.world.getDimension().getType();
+			RegistryKey<World> worldId = evt.world.getDimensionKey();
 			Queue<Runnable> callbacks = getWorldQueue(worldId);
 
 			Runnable callback;

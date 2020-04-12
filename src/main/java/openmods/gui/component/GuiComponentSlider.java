@@ -1,12 +1,12 @@
 package openmods.gui.component;
 
 import com.google.common.primitives.Ints;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import joptsimple.internal.Strings;
 import net.minecraft.client.gui.FontRenderer;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
-import org.lwjgl.opengl.GL11;
 
 public class GuiComponentSlider extends BaseComponent implements IValueReceiver<Double> {
 
@@ -58,36 +58,36 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		GlStateManager.color4f(1, 1, 1, 1);
 		final int left = offsetX + x;
 		final int top = offsetY + y;
 		int barStartX = left + 1;
 		bindComponentsSheet();
-		blit(left, top, 0, 70, 1, getHeight());
-		GL11.glPushMatrix();
-		GL11.glTranslated(left + 1, top, 0);
-		GL11.glScaled(getWidth() - 2, 1, 1);
-		blit(0, 0, 1, 70, 1, getHeight());
-		GL11.glPopMatrix();
-		blit(left + getWidth() - 1, top, 2, 70, 1, getHeight());
+		blit(matrixStack, left, top, 0, 70, 1, getHeight());
+		matrixStack.push();
+		matrixStack.translate(left + 1, top, 0);
+		matrixStack.scale(getWidth() - 2, 1, 1);
+		blit(matrixStack, 0, 0, 1, 70, 1, getHeight());
+		matrixStack.pop();
+		blit(matrixStack, left + getWidth() - 1, top, 2, 70, 1, getHeight());
 
 		if (!Strings.isNullOrEmpty(label)) {
 			final FontRenderer fr = parent.getFontRenderer();
 			int strWidth = fr.getStringWidth(label);
-			fr.drawString(label, left + getWidth() / 2 - strWidth / 2, top + 2, 4210752);
+			fr.drawString(matrixStack, label, left + getWidth() / 2 - strWidth / 2, top + 2, 4210752);
 		}
 
 		GlStateManager.color4f(1, 1, 1, 1);
 		bindComponentsSheet();
 		int handleX = (int)Math.floor(barStartX + stepSize * step);
-		blit(handleX, top + 1, 3, 70, 9, 10);
+		blit(matrixStack, handleX, top + 1, 3, 70, 9, 10);
 		if (showValue) {
 			final double value = stepToValue(step);
 			String label = formatValue(value);
 			final FontRenderer fr = parent.getFontRenderer();
 			int strWidth = fr.getStringWidth(label);
-			fr.drawString(label, handleX + 4 - (strWidth / 2), top + 15, 4210752);
+			fr.drawString(matrixStack, label, handleX + 4 - (strWidth / 2), top + 15, 4210752);
 		}
 	}
 

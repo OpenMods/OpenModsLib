@@ -12,6 +12,7 @@ import java.util.function.Function;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.IUnbakedModel;
 import net.minecraft.client.renderer.model.ModelBakery;
 import net.minecraft.client.renderer.texture.ISprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -30,15 +31,15 @@ import openmods.model.BakedModelAdapter;
 
 public class BakedEvalModel extends BakedModelAdapter {
 
-	private final IModel model;
+	private final IUnbakedModel model;
 	private final ModelBakery bakery;
 	private final ISprite originalState;
 	private final VertexFormat format;
 	private final Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter;
 	private final ITransformEvaluator evaluator;
 
-	public BakedEvalModel(IModel model, final ModelBakery bakery, ISprite state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, ITransformEvaluator evaluator) {
-		super(model.bake(bakery, bakedTextureGetter, state, format), PerspectiveMapWrapper.getTransforms(state.getState()));
+	public BakedEvalModel(IUnbakedModel model, final ModelBakery bakery, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, ITransformEvaluator evaluator) {
+		super(model.bakeModel(bakery, bakedTextureGetter, format), PerspectiveMapWrapper.getTransforms(state.getState()));
 		this.model = model;
 		this.bakery = bakery;
 		this.originalState = state;

@@ -1,15 +1,15 @@
 package openmods.geometry;
 
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class Hitbox {
 
 	public String name;
 
-	public Vec3d from;
+	public Vector3d from;
 
-	public Vec3d to;
+	public Vector3d to;
 
 	private transient AxisAlignedBB aabb;
 

@@ -6,8 +6,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 import openmods.shapes.IShapeable;
 import openmods.utils.Coord;
 import openmods.utils.MathUtils;
@@ -116,7 +116,7 @@ public class GeometryUtils {
 	 */
 	public static void makeLine(int startX, int startY, int startZ, Direction direction, int length, IShapeable shapeable) {
 		if (length < 0) return;
-		final Vec3i v = direction.getDirectionVec();
+		final Vector3i v = direction.getDirectionVec();
 		for (int offset = 0; offset <= length; offset++)
 			// Create a line in the direction of direction, length in size
 			shapeable.setBlock(
@@ -138,7 +138,7 @@ public class GeometryUtils {
 		int lineOffsetX, lineOffsetY, lineOffsetZ;
 		// We offset each line by up, and then apply it right
 
-		final Vec3i v = up.getDirectionVec();
+		final Vector3i v = up.getDirectionVec();
 		for (int h = 0; h <= height; h++) {
 			lineOffsetX = startX + (h * v.getX());
 			lineOffsetY = startY + (h * v.getY());
@@ -367,7 +367,7 @@ public class GeometryUtils {
 		}
 	}
 
-	public static void line3D(Vec3d start, Vec3d end, IShapeable shapeable) {
+	public static void line3D(Vector3d start, Vector3d end, IShapeable shapeable) {
 		line3D((int)start.x, (int)start.y, (int)start.z, (int)end.x, (int)end.y, (int)end.z, shapeable);
 	}
 
@@ -375,7 +375,7 @@ public class GeometryUtils {
 		line3D(start.x, start.y, start.z, end.x, end.y, end.z, shapeable);
 	}
 
-	public static void line3D(Vec3i start, Vec3i end, IShapeable shapeable) {
+	public static void line3D(Vector3i start, Vector3i end, IShapeable shapeable) {
 		line3D(start.getX(), start.getY(), start.getZ(), end.getX(), end.getY(), end.getZ(), shapeable);
 	}
 

@@ -1,12 +1,14 @@
 package openmods.gui.component;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import java.util.List;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.util.IReorderingProcessor;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.Style;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueReceiver;
 import openmods.gui.misc.BoxRenderer;
@@ -35,16 +37,16 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		bindComponentsSheet();
-		BOX_RENDERER.render(this, x + offsetX, y + offsetY, width, height, BORDER_COLOR);
+		BOX_RENDERER.render(this, matrixStack, x + offsetX, y + offsetY, width, height, BORDER_COLOR);
 
-		if (fluidStack.isEmpty()) return;
+		if (fluidStack.isEmpty()) { return; }
 		final Fluid fluid = fluidStack.getFluid();
 
 		parent.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 
-		final ResourceLocation textureLocation = fluid.getAttributes().getStill(fluidStack);
+		final ResourceLocation textureLocation = fluid.getAttributes().getStillTexture(fluidStack);
 		TextureAtlasSprite icon = parent.getIcon(textureLocation);
 
 		if (icon != null) {
@@ -59,27 +61,27 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 			final float minV = icon.getMinV();
 			final float maxV = icon.getMaxV();
 
+			// TODO 1.16 Tessellator
 			GL11.glBegin(GL11.GL_QUADS);
-			addVertexWithUV(posX + 3, posY + height - 3, this.blitOffset, minU, maxV);
-			addVertexWithUV(posX + width - 3, posY + height - 3, this.blitOffset, maxU, maxV);
-			addVertexWithUV(posX + width - 3, posY + (height - fluidHeight), this.blitOffset, maxU, minV);
-			addVertexWithUV(posX + 3, posY + (height - fluidHeight), this.blitOffset, minU, minV);
+			addVertexWithUV(posX + 3, posY + height - 3, this.getBlitOffset(), minU, maxV);
+			addVertexWithUV(posX + width - 3, posY + height - 3, this.getBlitOffset(), maxU, maxV);
+			addVertexWithUV(posX + width - 3, posY + (height - fluidHeight), this.getBlitOffset(), maxU, minV);
+			addVertexWithUV(posX + 3, posY + (height - fluidHeight), this.getBlitOffset(), minU, minV);
 			GL11.glEnd();
 		}
 	}
 
 	@Override
-	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void renderOverlay(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		if (!fluidStack.isEmpty() && isMouseOver(mouseX, mouseY)) {
-			final List<String> lines = Lists.newArrayListWithCapacity(2);
+			final List<IReorderingProcessor> lines = Lists.newArrayListWithCapacity(2);
 			if (displayFluidName) {
-				final String translatedFluidName = MiscUtils.getTranslatedFluidName(fluidStack);
-				if (!Strings.isNullOrEmpty(translatedFluidName))
-					lines.add(translatedFluidName);
+				final IReorderingProcessor translatedFluidName = MiscUtils.getTranslatedFluidName(fluidStack).func_241878_f();
+				lines.add(translatedFluidName);
 			}
 
-			lines.add(String.format("%d/%d", fluidStack.getAmount(), capacity));
-			parent.drawHoveringText(lines, offsetX + mouseX, offsetY + mouseY);
+			lines.add(IReorderingProcessor.fromString(String.format("%d/%d", fluidStack.getAmount(), capacity), Style.EMPTY));
+			parent.drawHoveringText(matrixStack, lines, offsetX + mouseX, offsetY + mouseY);
 		}
 	}
 

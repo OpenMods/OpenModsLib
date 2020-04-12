@@ -5,8 +5,8 @@ import java.util.UUID;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraftforge.common.util.Constants;
 
 public class NbtUtils {
@@ -46,11 +46,11 @@ public class NbtUtils {
 		return store(new CompoundNBT(), x, y, z);
 	}
 
-	public static CompoundNBT store(CompoundNBT tag, Vec3i coords) {
+	public static CompoundNBT store(CompoundNBT tag, Vector3i coords) {
 		return store(tag, coords.getX(), coords.getY(), coords.getZ());
 	}
 
-	public static CompoundNBT store(Vec3i coords) {
+	public static CompoundNBT store(Vector3i coords) {
 		return store(new CompoundNBT(), coords.getX(), coords.getY(), coords.getZ());
 	}
 
@@ -80,7 +80,7 @@ public class NbtUtils {
 		return store(new CompoundNBT(), uuid);
 	}
 
-	public static CompoundNBT store(Vec3d vec) {
+	public static CompoundNBT store(Vector3d vec) {
 		return store(vec.x, vec.y, vec.z);
 	}
 
@@ -108,11 +108,11 @@ public class NbtUtils {
 		return new BlockPos(x, y, z);
 	}
 
-	public static Vec3d readVec(CompoundNBT tag) {
+	public static Vector3d readVec(CompoundNBT tag) {
 		final double x = tag.getDouble(TAG_X);
 		final double y = tag.getDouble(TAG_Y);
 		final double z = tag.getDouble(TAG_Z);
-		return new Vec3d(x, y, z);
+		return new Vector3d(x, y, z);
 	}
 
 	public static UUID readUuid(CompoundNBT tag) {

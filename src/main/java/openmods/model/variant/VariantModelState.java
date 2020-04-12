@@ -10,7 +10,7 @@ public class VariantModelState {
 
 	public static final String DEFAULT_MARKER = "<default>";
 
-	public static final ModelProperty<VariantModelState> PROPERTY = new ModelProperty<VariantModelState>();
+	public static final ModelProperty<VariantModelState> PROPERTY = new ModelProperty<>();
 
 	public static final VariantModelState EMPTY = new VariantModelState();
 
@@ -50,7 +50,12 @@ public class VariantModelState {
 		return new VariantModelState(copy);
 	}
 
-	Map<String, String> getSelectors() {
-		return selectors;
+	public boolean testKey(String name) {
+		return selectors.containsKey(name);
+	}
+
+	public boolean testKeyValue(String name, String value) {
+		String v = selectors.get(name);
+		return v != null && v.equals(value);
 	}
 }

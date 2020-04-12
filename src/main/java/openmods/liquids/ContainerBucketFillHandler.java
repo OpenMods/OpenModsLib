@@ -2,7 +2,7 @@ package openmods.liquids;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import net.minecraft.fluid.Fluid;
+import java.util.Optional;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -19,7 +19,6 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.registries.ObjectHolder;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -33,7 +32,7 @@ public abstract class ContainerBucketFillHandler {
 	private final List<Pair<FluidStack, ItemStack>> buckets = Lists.newArrayList();
 
 	public ContainerBucketFillHandler addFilledBucket(ItemStack filledBucket) {
-		LazyOptional<FluidStack> containedFluid = FluidUtil.getFluidContained(filledBucket);
+		Optional<FluidStack> containedFluid = FluidUtil.getFluidContained(filledBucket);
 		containedFluid.ifPresent(fluidStack -> {
 			buckets.add(Pair.of(fluidStack, filledBucket.copy()));
 		});

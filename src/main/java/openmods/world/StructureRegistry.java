@@ -6,8 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.Feature;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.gen.feature.structure.Structure;
 import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraft.world.server.ServerWorld;
@@ -18,40 +17,33 @@ public class StructureRegistry {
 	public static final int RADIUS = 128;
 
 	private interface IStructureVisitor {
-		void visit(ChunkGenerator generator, String structureName, Structure<?> structure);
+		void visit(ServerWorld world, Structure<?> structure);
 	}
 
 	private void visitStructures(ServerWorld world, IStructureVisitor visitor) {
 		ServerChunkProvider provider = world.getChunkProvider();
-		ChunkGenerator inner = provider.getChunkGenerator();
-		Feature.STRUCTURES.forEach((name, structure) -> visitor.visit(inner, name, structure));
+		Registry.STRUCTURE_FEATURE.forEach(structure -> visitor.visit(world, structure));
 	}
 
-	public Map<String, BlockPos> getNearestStructures(final ServerWorld world, final BlockPos pos) {
-		final ImmutableMap.Builder<String, BlockPos> result = ImmutableMap.builder();
-		visitStructures(world, (generator, name, structure) -> {
-			try {
-				BlockPos structPos = generator.findNearestStructure(world, name, pos, RADIUS, false);
-				if (structPos != null) {
-					result.put(name, structPos);
-				}
-			} catch (IndexOutOfBoundsException e) {
-				// bug in MC, just ignore
-				// hopefully fixed by magic of ASM
+	public Map<Structure<?>, BlockPos> getNearestStructures(final ServerWorld world, final BlockPos pos) {
+		final ImmutableMap.Builder<Structure<?>, BlockPos> result = ImmutableMap.builder();
+		visitStructures(world, (w, structure) -> {
+			BlockPos structPos = w.func_241117_a_(structure, pos, RADIUS, false);
+			if (structPos != null) {
+				result.put(structure, structPos);
 			}
 		});
 
 		return result.build();
 	}
 
-	public Set<BlockPos> getNearestInstance(final String name, final ServerWorld world, final BlockPos blockPos) {
+	public Set<BlockPos> getNearestInstance(final Structure<?> structure, final ServerWorld world, final BlockPos blockPos) {
 		final ImmutableSet.Builder<BlockPos> result = ImmutableSet.builder();
-		visitStructures(world, (generator, structureName, structure) -> {
-			if (name.equals(structureName)) {
-				BlockPos structPos = generator.findNearestStructure(world, structureName, blockPos, RADIUS, false);
-				if (structPos != null) result.add(structPos);
-			}
-		});
+
+		BlockPos structPos = world.func_241117_a_(structure, blockPos, RADIUS, false);
+		if (structPos != null) {
+			result.add(structPos);
+		}
 
 		return result.build();
 	}

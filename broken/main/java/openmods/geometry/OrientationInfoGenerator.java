@@ -106,7 +106,7 @@ public class OrientationInfoGenerator {
 			for (Orientation o : Sets.newTreeSet(brm.getValidDirections())) {
 				final StringBuilder line = new StringBuilder();
 				line.append('"');
-				line.append(o.getName().toLowerCase(Locale.ROOT));
+				line.append(o.getString().toLowerCase(Locale.ROOT));
 				line.append("\": {");
 				final Collection<ModelRotation> v = vanilla.get(o);
 				if (!v.isEmpty()) {
@@ -224,7 +224,7 @@ public class OrientationInfoGenerator {
 		final Multimap<Orientation, ModelRotation> toVanilla = HashMultimap.create();
 
 		for (ModelRotation rot : ModelRotation.values()) {
-			final Matrix4f rotMatrix = rot.getMatrixVec();
+			final Matrix4f rotMatrix = rot.getRotation().getMatrix();
 			final Matrix3f key = roundAndReduceMatrixElements(rotMatrix);
 			final Orientation orientation = fromMatrix.get(key);
 			Preconditions.checkNotNull(orientation, rot);

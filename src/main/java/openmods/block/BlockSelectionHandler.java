@@ -6,14 +6,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.DrawBlockHighlightEvent;
+import net.minecraftforge.client.event.DrawHighlightEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import openmods.api.ISelectionAware;
 
 public class BlockSelectionHandler {
 
 	@SubscribeEvent
-	public void onHighlightDraw(DrawBlockHighlightEvent evt) {
+	public void onHighlightDraw(DrawHighlightEvent evt) {
 		final RayTraceResult mop = evt.getTarget();
 
 		if (mop != null && mop.getType() == RayTraceResult.Type.BLOCK) {

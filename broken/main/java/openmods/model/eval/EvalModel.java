@@ -4,8 +4,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.IModelTransform;
 import net.minecraft.client.renderer.model.IUnbakedModel;
 import net.minecraft.client.renderer.model.ModelBakery;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.ISprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -22,8 +24,8 @@ public class EvalModel extends EvalModelBase {
 	}
 
 	@Override
-	public IBakedModel bake(ModelBakery bakery, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter, ISprite state, VertexFormat format) {
-		final IModel model = loadBaseModel(state.getState(), format, bakedTextureGetter);
+	public IBakedModel bake(ModelBakery modelBakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform transform, ResourceLocation location) {
+		final IBakedModel model = loadBaseModel(state.getState(), format, bakedTextureGetter);
 
 		final ITransformEvaluator evaluator = evaluatorFactory.createEvaluator(model::getClip);
 		return new BakedEvalModel(model, bakery, state, format, bakedTextureGetter, evaluator);

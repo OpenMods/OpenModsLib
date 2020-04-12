@@ -3,12 +3,12 @@ package openmods.gui.component;
 import com.google.common.collect.Lists;
 import java.util.List;
 import net.minecraft.client.audio.SimpleSound;
+import net.minecraft.util.text.TranslationTextComponent;
 import openmods.Sounds;
 import openmods.gui.Icon;
 import openmods.gui.component.page.BookScaleConfig;
 import openmods.gui.component.page.PageBase;
 import openmods.gui.listener.IMouseDownListener;
-import openmods.utils.TranslationUtils;
 
 public class GuiComponentBook extends BaseComposite {
 
@@ -100,8 +100,8 @@ public class GuiComponentBook extends BaseComposite {
 
 		imgNext.setEnabled(index < pages.size() - 2);
 		imgPrev.setEnabled(index > 0);
-		pageNumberLeft.setText(TranslationUtils.translateToLocalFormatted("openmodslib.book.page", index + 1, totalPageCount));
-		pageNumberRight.setText(TranslationUtils.translateToLocalFormatted("openmodslib.book.page", index + 2, totalPageCount));
+		pageNumberLeft.setText(new TranslationTextComponent("openmodslib.book.page", index + 1, totalPageCount));
+		pageNumberRight.setText(new TranslationTextComponent("openmodslib.book.page", index + 2, totalPageCount));
 	}
 
 	public void changePage(int newPage) {

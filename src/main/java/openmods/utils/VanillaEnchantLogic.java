@@ -5,9 +5,9 @@ import java.util.Random;
 import javax.annotation.Nonnull;
 import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.item.Items;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 
 public class VanillaEnchantLogic {
 

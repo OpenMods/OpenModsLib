@@ -1,11 +1,11 @@
 package openmods.renderer;
 
 import com.google.common.base.Preconditions;
-import com.mojang.blaze3d.platform.TextureUtil;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.NativeImage;
 import net.minecraft.client.renderer.texture.Texture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 

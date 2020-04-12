@@ -1,6 +1,7 @@
 package openmods.gui.component;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.EnumSet;
 import java.util.List;
@@ -10,13 +11,13 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.AtlasTexture;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.model.data.EmptyModelData;
@@ -69,7 +70,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		final Minecraft minecraft = parent.getMinecraft();
 		if (!isInInitialPosition || minecraft.mouseHelper.isMiddleDown()) {
 			final Entity rve = minecraft.getRenderViewEntity();
@@ -88,7 +89,8 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		parent.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 		GlStateManager.enableTexture();
 
-		if (te != null) TileEntityRendererDispatcher.instance.render(te, -0.5, -0.5, -0.5, 0.0F);
+		// TODO 1.16 Figure out TESR rendering
+		//if (te != null) TileEntityRendererDispatcher.instance.render(te, -0.5, -0.5, -0.5, 0.0F);
 
 		parent.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 		if (blockState != null) drawBlock();
@@ -115,16 +117,17 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		final Tessellator tessellator = Tessellator.getInstance();
 		final BufferBuilder wr = tessellator.getBuffer();
 		final BlockRendererDispatcher dispatcher = parent.getMinecraft().getBlockRendererDispatcher();
-		for (BlockRenderLayer layer : BlockRenderLayer.values()) {
-			if (blockState.getBlock().canRenderInLayer(blockState, layer)) {
+		final MatrixStack pose = new MatrixStack();
+		pose.getLast().getMatrix().setTranslation(-0.5f, -0.5f, -0.5f);
+
+		for (RenderType layer : RenderType.getBlockRenderTypes()) {
+			if (RenderTypeLookup.canRenderInLayer(blockState, layer)) {
 				net.minecraftforge.client.ForgeHooksClient.setRenderLayer(layer);
-				wr.setTranslation(-0.5, -0.5, -0.5);
 				wr.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-				dispatcher.renderBlock(blockState, FakeBlockAccess.ORIGIN, access, wr, new Random(), EmptyModelData.INSTANCE);
+				dispatcher.renderModel(blockState, FakeBlockAccess.ORIGIN, access, pose, wr, false, new Random(), EmptyModelData.INSTANCE);
 				tessellator.draw();
 			}
 		}
-		wr.setTranslation(0.0D, 0.0D, 0.0D);
 
 		net.minecraftforge.client.ForgeHooksClient.setRenderLayer(null);
 	}

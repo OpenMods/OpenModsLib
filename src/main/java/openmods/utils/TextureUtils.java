@@ -1,7 +1,6 @@
 package openmods.utils;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.ResourceLocation;
 import openmods.Log;
 
@@ -18,10 +17,6 @@ public class TextureUtils {
 		} else {
 			Log.warn("Invalid texture location '%s'", texture);
 		}
-	}
-
-	public static TextureAtlasSprite getTextureAtlasLocation(final ResourceLocation textureLocation) {
-		return Minecraft.getInstance().getTextureMap().getAtlasSprite(textureLocation.toString());
 	}
 
 	public static int getRandomNumber() {

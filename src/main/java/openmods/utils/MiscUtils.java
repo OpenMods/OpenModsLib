@@ -1,6 +1,5 @@
 package openmods.utils;
 
-import com.google.common.base.Strings;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -8,14 +7,20 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Scanner;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.Log;
 import openmods.api.IValueReceiver;
 
 public class MiscUtils {
 	private static final String[] EMPTY = new String[] {};
+	public static final ITextComponent UNKNOWN_FLUID = new StringTextComponent("LOLNOPE").mergeStyle(TextFormatting.OBFUSCATED);
 
 	public static int getHoliday() {
 		Calendar today = Calendar.getInstance();
@@ -75,15 +80,12 @@ public class MiscUtils {
 		return value -> target.setValue(value != null? value.toString() : null);
 	}
 
-	public static String getTranslatedFluidName(FluidStack fluidStack) {
-		if (fluidStack == null) return "";
+	public static ITextComponent getTranslatedFluidName(FluidStack fluidStack) {
 		final Fluid fluid = fluidStack.getFluid();
 		String localizedName = fluid.getAttributes().getTranslationKey(fluidStack);
-		final String translatedName = TranslationUtils.translateToLocal(localizedName);
-		if (!Strings.isNullOrEmpty(localizedName) && !localizedName.equals(translatedName)) {
-			return fluid.getAttributes().getRarity(fluidStack).color.toString() + localizedName;
-		} else {
-			return TextFormatting.OBFUSCATED + "LOLNOPE" + TextFormatting.RESET;
+		if (I18n.hasKey(localizedName)) {
+			return new TranslationTextComponent(localizedName).mergeStyle(fluid.getAttributes().getRarity(fluidStack).color);
 		}
+		return UNKNOWN_FLUID;
 	}
 }

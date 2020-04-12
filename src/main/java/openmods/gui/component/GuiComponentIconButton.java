@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import openmods.gui.Icon;
 
 public class GuiComponentIconButton extends GuiComponentButton {
@@ -14,9 +15,9 @@ public class GuiComponentIconButton extends GuiComponentButton {
 	}
 
 	@Override
-	public void renderContents(int offsetX, int offsetY, int mouseX, int mouseY, boolean pressed) {
+	public void renderContents(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY, boolean pressed) {
 		int offset = (buttonEnabled && pressed)? 3 : 2;
 
-		drawSprite(icon, offsetX + x + offset, offsetY + y + offset);
+		drawSprite(icon, matrixStack, offsetX + x + offset, offsetY + y + offset);
 	}
 }

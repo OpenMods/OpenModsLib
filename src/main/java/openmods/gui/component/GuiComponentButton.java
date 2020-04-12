@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import openmods.gui.misc.BoxRenderer;
 
 public abstract class GuiComponentButton extends GuiComponentResizable {
@@ -26,14 +27,14 @@ public abstract class GuiComponentButton extends GuiComponentResizable {
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		boolean pressed = isMouseOver(mouseX, mouseY) && parent.getMinecraft().mouseHelper.isLeftDown();
 		BoxRenderer box = buttonEnabled? (pressed? BOX_RENDERER_PRESSED : BOX_RENDERER_NORMAL) : BOX_RENDERER_DISABLED;
 		bindComponentsSheet();
-		box.render(this, x + offsetX, y + offsetY, width, height, borderColor);
-		renderContents(offsetX, offsetY, mouseX, mouseY, pressed);
+		box.render(this, matrixStack, x + offsetX, y + offsetY, width, height, borderColor);
+		renderContents(matrixStack, offsetX, offsetY, mouseX, mouseY, pressed);
 	}
 
-	protected abstract void renderContents(int offsetX, int offsetY, int mouseX, int mouseY, boolean pressed);
+	protected abstract void renderContents(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY, boolean pressed);
 
 }

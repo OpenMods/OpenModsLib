@@ -2,9 +2,10 @@ package openmods.network.rpc.targets;
 
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.fml.LogicalSide;
 import openmods.network.rpc.IRpcTarget;
 import openmods.utils.WorldUtils;
@@ -26,13 +27,13 @@ public class TileEntityRpcTarget implements IRpcTarget {
 
 	@Override
 	public void writeToStream(PacketBuffer output) {
-		output.writeInt(te.getWorld().getDimension().getType().getId());
+		output.writeResourceLocation(te.getWorld().getDimensionKey().getLocation());
 		output.writeBlockPos(te.getPos());
 	}
 
 	@Override
 	public void readFromStreamStream(LogicalSide side, PacketBuffer input) {
-		DimensionType worldId = DimensionType.getById(input.readInt());
+		RegistryKey<World> worldId = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, input.readResourceLocation());
 		BlockPos pos = input.readBlockPos();
 
 		World world = WorldUtils.getWorld(side, worldId);

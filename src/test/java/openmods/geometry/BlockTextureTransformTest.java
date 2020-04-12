@@ -1,7 +1,7 @@
 package openmods.geometry;
 
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import openmods.geometry.BlockTextureTransform.TexCoords;
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,7 +12,7 @@ public class BlockTextureTransformTest {
 
 	private static void testInversion(BlockTextureTransform t, Direction dir, double x, double y, double z) {
 		TexCoords c = t.worldVecToTextureCoords(dir, x, y, z);
-		Vec3d r = t.textureCoordsToWorldVec(dir, c.u, c.v, c.h);
+		Vector3d r = t.textureCoordsToWorldVec(dir, c.u, c.v, c.h);
 		Assert.assertEquals(x, r.x, DELTA);
 		Assert.assertEquals(y, r.y, DELTA);
 		Assert.assertEquals(z, r.z, DELTA);
@@ -85,8 +85,8 @@ public class BlockTextureTransformTest {
 		}
 
 		{
-			final Vec3d aw = a.textureCoordsToWorldVec(dir, x, y, z);
-			final Vec3d bw = b.textureCoordsToWorldVec(dir, x, y, z);
+			final Vector3d aw = a.textureCoordsToWorldVec(dir, x, y, z);
+			final Vector3d bw = b.textureCoordsToWorldVec(dir, x, y, z);
 			Assert.assertEquals(aw.x, bw.x, DELTA);
 			Assert.assertEquals(aw.y, bw.y, DELTA);
 			Assert.assertEquals(aw.z, bw.z, DELTA);
@@ -204,7 +204,7 @@ public class BlockTextureTransformTest {
 		}
 
 		{
-			final Vec3d w = mapper.textureCoordsToWorldVec(direction, u, v, h);
+			final Vector3d w = mapper.textureCoordsToWorldVec(direction, u, v, h);
 			Assert.assertEquals(x, w.x, DELTA);
 			Assert.assertEquals(y, w.y, DELTA);
 			Assert.assertEquals(z, w.z, DELTA);

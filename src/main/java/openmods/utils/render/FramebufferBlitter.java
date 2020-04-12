@@ -1,6 +1,6 @@
 package openmods.utils.render;
 
-import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.shader.Framebuffer;
 import openmods.Log;
 import org.lwjgl.opengl.EXTFramebufferBlit;
@@ -92,34 +92,30 @@ public abstract class FramebufferBlitter {
 	}
 
 	public static boolean setup() {
-		if (GLX.isUsingFBOs()) {
-			final GLCapabilities caps = GL.getCapabilities();
+		final GLCapabilities caps = GL.getCapabilities();
 
-			if (caps.OpenGL30) {
-				Log.debug("Using OpenGL 3.0 FB blit");
-				INSTANCE = new GL30Impl();
-				return true;
-			}
-
-			if (caps.GL_EXT_framebuffer_blit) {
-				Log.debug("Using EXT FB blit");
-				INSTANCE = new ExtImpl();
-				return true;
-			}
+		if (caps.OpenGL30) {
+			Log.debug("Using OpenGL 3.0 FB blit");
+			INSTANCE = new GL30Impl();
+			return true;
 		}
 
-		Log.debug("FB blit not supported");
+		if (caps.GL_EXT_framebuffer_blit) {
+			Log.debug("Using EXT FB blit");
+			INSTANCE = new ExtImpl();
+			return true;
+		}
 		return false;
 	}
 
 	public void blitFramebuffer(Framebuffer in, Framebuffer out) {
-		GLX.glBindFramebuffer(getReadConst(), in.framebufferObject);
-		GLX.glBindFramebuffer(getDrawConst(), out.framebufferObject);
+		GlStateManager.bindFramebuffer(getReadConst(), in.framebufferObject);
+		GlStateManager.bindFramebuffer(getDrawConst(), out.framebufferObject);
 
 		blitFramebufferOp(in, out);
 
-		GLX.glBindFramebuffer(getReadConst(), 0);
-		GLX.glBindFramebuffer(getDrawConst(), 0);
+		GlStateManager.bindFramebuffer(getReadConst(), 0);
+		GlStateManager.bindFramebuffer(getDrawConst(), 0);
 	}
 
 	protected abstract void blitFramebufferOp(Framebuffer in, Framebuffer out);

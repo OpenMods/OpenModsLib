@@ -15,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.state.Property;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -251,7 +252,7 @@ public class OpenBlock extends Block {
 
 	// TODO 1.14 review rules
 	public static boolean isNeighborBlockSolid(IWorldReader world, BlockPos blockPos, Direction side) {
-		return func_220055_a(world, blockPos, side);
+		return hasEnoughSolidSide(world, blockPos, side);
 	}
 
 	public static boolean areNeighborBlocksSolid(World world, BlockPos blockPos, Direction... sides) {
@@ -299,14 +300,14 @@ public class OpenBlock extends Block {
 		}
 	}
 
-	@Override public boolean onBlockActivated(BlockState state, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
+	@Override public ActionResultType onBlockActivated(BlockState state, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult hit) {
 		if (hasCapabilities(TileEntityCapability.GUI_PROVIDER, TileEntityCapability.ACTIVATE_LISTENER)) {
 			final TileEntity te = world.getTileEntity(blockPos);
 
 			if (te instanceof IHasGui && ((IHasGui)te).canOpenGui(player) && !player.isSneaking()) {
 				if (!world.isRemote)
 					openGui(player, world, blockPos);
-				return true;
+				return ActionResultType.SUCCESS;
 			}
 
 			// TODO Expand for new args
@@ -314,7 +315,7 @@ public class OpenBlock extends Block {
 				return ((IActivateAwareTile)te).onBlockActivated(player, hand, hit);
 		}
 
-		return false;
+		return ActionResultType.PASS;
 	}
 
 	@SuppressWarnings("deprecation") // TODO review
@@ -408,7 +409,8 @@ public class OpenBlock extends Block {
 		return rotationMode.toolRotationAllowed();
 	}
 
-	@Nullable @Override public Direction[] getValidRotations(BlockState state, IBlockReader world, BlockPos pos) {
+	@Nullable
+	public Direction[] getValidRotations(BlockState state, IBlockReader world, BlockPos pos) {
 		if (!canRotateWithTool())
 			return RotationAxis.NO_AXIS;
 		return rotationMode.getToolRotationAxes();

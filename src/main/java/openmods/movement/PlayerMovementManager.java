@@ -20,12 +20,12 @@ public class PlayerMovementManager {
 	@SubscribeEvent
 	public static void updateMovementState(InputUpdateEvent evt) {
 		final MovementInput input = evt.getMovementInput();
-		final PlayerEntity owner = evt.getEntityPlayer();
+		final PlayerEntity owner = evt.getPlayer();
 		if (input.jump && !wasJumping) input.jump = postMovementEvent(owner, PlayerMovementEvent.Type.JUMP);
-		if (input.sneak && !wasSneaking) input.sneak = postMovementEvent(owner, PlayerMovementEvent.Type.SNEAK);
+		if (input.sneaking && !wasSneaking) input.sneaking = postMovementEvent(owner, PlayerMovementEvent.Type.SNEAK);
 
 		wasJumping = input.jump;
-		wasSneaking = input.sneak;
+		wasSneaking = input.sneaking;
 	}
 
 	private static boolean postMovementEvent(PlayerEntity player, Type type) {

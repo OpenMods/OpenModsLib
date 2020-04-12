@@ -183,7 +183,7 @@ public class VanillaAnvilLogic {
 				}
 
 				if (k != i || k == 0) {
-					k2 = RepairContainer.func_216977_d(k2);
+					k2 = RepairContainer.getNewRepairCost(k2);
 				}
 
 				itemstack1.setRepairCost(k2);

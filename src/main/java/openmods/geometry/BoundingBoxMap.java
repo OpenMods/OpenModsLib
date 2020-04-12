@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class BoundingBoxMap<T> {
 
@@ -18,14 +18,14 @@ public class BoundingBoxMap<T> {
 		entries.add(Maps.immutableEntry(aabb, value));
 	}
 
-	public Map.Entry<AxisAlignedBB, T> findEntryContainingPoint(Vec3d point) {
+	public Map.Entry<AxisAlignedBB, T> findEntryContainingPoint(Vector3d point) {
 		for (Map.Entry<AxisAlignedBB, T> e : entries)
 			if (e.getKey().contains(point)) return e;
 
 		return null;
 	}
 
-	public void findAllEntriesContainingPoint(Vec3d point, Collection<Map.Entry<AxisAlignedBB, T>> output) {
+	public void findAllEntriesContainingPoint(Vector3d point, Collection<Map.Entry<AxisAlignedBB, T>> output) {
 		for (Map.Entry<AxisAlignedBB, T> e : entries)
 			if (e.getKey().contains(point)) output.add(e);
 	}

@@ -7,7 +7,6 @@ import com.mojang.blaze3d.platform.GLX;
 import java.nio.FloatBuffer;
 import java.util.Set;
 import javax.vecmath.Matrix4f;
-import net.minecraftforge.common.model.TRSRTransformation;
 import openmods.Log;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -16,9 +15,27 @@ public class OpenGLUtils {
 
 	private static final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
 
-	public static synchronized void loadMatrix(Matrix4f transform) {
-		net.minecraft.client.renderer.Matrix4f m = TRSRTransformation.toMojang(transform);
-		m.write(matrixBuffer);
+	private static int bufferIndex(int column, int row) {
+		return row * 4 + column;
+	}
+
+	public static synchronized void loadMatrix(Matrix4f m) {
+		matrixBuffer.put(bufferIndex(0, 0), m.m00);
+		matrixBuffer.put(bufferIndex(0, 1), m.m01);
+		matrixBuffer.put(bufferIndex(0, 2), m.m02);
+		matrixBuffer.put(bufferIndex(0, 3), m.m03);
+		matrixBuffer.put(bufferIndex(1, 0), m.m10);
+		matrixBuffer.put(bufferIndex(1, 1), m.m11);
+		matrixBuffer.put(bufferIndex(1, 2), m.m12);
+		matrixBuffer.put(bufferIndex(1, 3), m.m13);
+		matrixBuffer.put(bufferIndex(2, 0), m.m20);
+		matrixBuffer.put(bufferIndex(2, 1), m.m21);
+		matrixBuffer.put(bufferIndex(2, 2), m.m22);
+		matrixBuffer.put(bufferIndex(2, 3), m.m23);
+		matrixBuffer.put(bufferIndex(3, 0), m.m30);
+		matrixBuffer.put(bufferIndex(3, 1), m.m31);
+		matrixBuffer.put(bufferIndex(3, 2), m.m32);
+		matrixBuffer.put(bufferIndex(3, 3), m.m33);
 		matrixBuffer.flip();
 		GL11.glMultMatrixf(matrixBuffer);
 	}

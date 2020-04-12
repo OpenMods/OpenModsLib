@@ -1,12 +1,12 @@
 package openmods.model;
 
 import com.google.common.collect.ImmutableMap;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.vecmath.Matrix4f;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
@@ -14,18 +14,17 @@ import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Direction;
+import net.minecraft.util.math.vector.TransformationMatrix;
 import net.minecraftforge.client.model.PerspectiveMapWrapper;
 import net.minecraftforge.client.model.data.IModelData;
-import net.minecraftforge.common.model.TRSRTransformation;
-import org.apache.commons.lang3.tuple.Pair;
 
 // TODO 1.14 IForgeBakedModel
 public class BakedModelAdapter implements IBakedModel {
 
 	protected final IBakedModel base;
-	private final ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> cameraTransforms;
+	private final ImmutableMap<ItemCameraTransforms.TransformType, TransformationMatrix> cameraTransforms;
 
-	public BakedModelAdapter(IBakedModel base, Map<ItemCameraTransforms.TransformType, TRSRTransformation> cameraTransforms) {
+	public BakedModelAdapter(IBakedModel base, Map<ItemCameraTransforms.TransformType, TransformationMatrix> cameraTransforms) {
 		this.base = base;
 		this.cameraTransforms = ImmutableMap.copyOf(cameraTransforms);
 	}
@@ -76,7 +75,14 @@ public class BakedModelAdapter implements IBakedModel {
 	}
 
 	@Override
-	public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
-		return PerspectiveMapWrapper.handlePerspective(this, cameraTransforms, cameraTransformType);
+	public IBakedModel handlePerspective(ItemCameraTransforms.TransformType cameraTransformType, MatrixStack mat) {
+		return PerspectiveMapWrapper.handlePerspective(this, cameraTransforms, cameraTransformType, mat);
 	}
+
+	@Override
+	public boolean isSideLit() {
+		return base.isSideLit();
+	}
+
+
 }

@@ -2,7 +2,6 @@ package openmods.entity;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.WeakHashMap;

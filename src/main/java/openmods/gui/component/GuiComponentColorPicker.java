@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import java.awt.Color;
 import openmods.api.IValueReceiver;
@@ -66,20 +67,21 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 	}
 
 	private void notifyListeners() {
-		if (listener != null) listener.valueChanged(getColor());
+		if (listener != null) { listener.valueChanged(getColor()); }
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		GlStateManager.color4f(1, 1, 1, 1);
 
 		int renderX = offsetX + x;
 		int renderY = offsetY + y;
 
 		bindComponentsSheet();
-		blit(renderX, renderY, 156, 206, getWidth(), getColorsHeight());
-		fill(renderX, renderY, renderX + getWidth(), renderY + getColorsHeight(), (tone << 24) | 0xFFFFFF);
+		blit(matrixStack, renderX, renderY, 156, 206, getWidth(), getColorsHeight());
+		fill(matrixStack, renderX, renderY, renderX + getWidth(), renderY + getColorsHeight(), (tone << 24) | 0xFFFFFF);
 
+		// TODO 1.16 tesselator
 		GlStateManager.enableBlend();
 		GlStateManager.disableTexture();
 		GlStateManager.disableAlphaTest();
@@ -96,7 +98,7 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 		GlStateManager.disableBlend();
 		GlStateManager.enableTexture();
 		GlStateManager.enableAlphaTest();
-		fill(renderX + pointX - 1,
+		fill(matrixStack, renderX + pointX - 1,
 				renderY + pointY - 1,
 				renderX + pointX + 1,
 				renderY + pointY + 1, 0xCCCC0000);

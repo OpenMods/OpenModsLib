@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import openmods.gui.listener.IMouseDownListener;
 
 public class GuiComponentTabWrapper extends BaseComposite {
@@ -33,7 +34,7 @@ public class GuiComponentTabWrapper extends BaseComposite {
 	}
 
 	@Override
-	protected void renderComponentBackground(int offsetX, int offsetY, int mouseX, int mouseY) {
+	protected void renderComponentBackground(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		realignTabsVertically();
 	}
 

@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import openmods.api.IValueReceiver;
 
 public class GuiComponentLevel extends BaseComponent implements IValueReceiver<Float> {
@@ -50,12 +51,12 @@ public class GuiComponentLevel extends BaseComponent implements IValueReceiver<F
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		int oX = x + offsetX;
 		int oY = y + offsetY;
 		// Fill with background
-		fill(oX, oY, oX + width, oY + height, bColor);
+		fill(matrixStack, oX, oY, oX + width, oY + height, bColor);
 		// Draw level
-		fill(oX, oY + (height - (int)getFillHeight()), oX + width, oY + height, fColor);
+		fill(matrixStack, oX, oY + (height - (int)getFillHeight()), oX + width, oY + height, fColor);
 	}
 }

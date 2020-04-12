@@ -1,6 +1,5 @@
 package openmods.sync.drops;
 
-import java.util.List;
 import javax.annotation.Nonnull;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
@@ -40,7 +39,6 @@ public abstract class DroppableTileEntity extends SyncedTileEntity implements IP
 	public void onBlockPlacedBy(BlockState state, LivingEntity placer, @Nonnull ItemStack stack) {
 		getDropSerializer().read(stack, true);
 	}
-
 
 	public DropTagSerializer getDropSerializer() {
 		if (tagSerializer == null) {

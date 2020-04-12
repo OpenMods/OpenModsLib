@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IValueChangedListener;
@@ -14,10 +15,10 @@ public class GuiComponentCheckbox extends BaseComponent implements IValueReceive
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		GlStateManager.color4f(1, 1, 1, 1);
 		bindComponentsSheet();
-		blit(offsetX + x, offsetY + y, value? 16 : 0, 62, 8, 8);
+		blit(matrixStack, offsetX + x, offsetY + y, value? 16 : 0, 62, 8, 8);
 	}
 
 	@Override

@@ -2,7 +2,7 @@ package openmods.utils;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 
 public class Coord implements Cloneable {
 	public final int x;
@@ -29,7 +29,7 @@ public class Coord implements Cloneable {
 		this(pos.getX(), pos.getY(), pos.getZ());
 	}
 
-	public Coord(Vec3d vec) {
+	public Coord(Vector3d vec) {
 		this(vec.x, vec.y, vec.z);
 	}
 
@@ -63,8 +63,8 @@ public class Coord implements Cloneable {
 		return new BlockPos(x, y, z);
 	}
 
-	public Vec3d asVector() {
-		return new Vec3d(x, y, z);
+	public Vector3d asVector() {
+		return new Vector3d(x, y, z);
 	}
 
 	public Coord add(Coord other) {

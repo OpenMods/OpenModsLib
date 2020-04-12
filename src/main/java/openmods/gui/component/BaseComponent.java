@@ -1,6 +1,7 @@
 package openmods.gui.component;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -12,7 +13,9 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.IReorderingProcessor;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Matrix4f;
 import openmods.OpenMods;
 import openmods.gui.IComponentParent;
 import openmods.gui.Icon;
@@ -98,24 +101,24 @@ public abstract class BaseComponent extends AbstractGui {
 		this.mouseDragListener = mouseDragListener;
 	}
 
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {}
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
-	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {}
+	public void renderOverlay(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {}
 
 	public void keyTyped(char keyChar, int keyCode) {
-		if (keyListener != null) keyListener.componentKeyTyped(this, keyChar, keyCode);
+		if (keyListener != null) { keyListener.componentKeyTyped(this, keyChar, keyCode); }
 	}
 
 	public void mouseDown(int mouseX, int mouseY, int button) {
-		if (mouseDownListener != null) mouseDownListener.componentMouseDown(this, mouseX, mouseY, button);
+		if (mouseDownListener != null) { mouseDownListener.componentMouseDown(this, mouseX, mouseY, button); }
 	}
 
 	public void mouseUp(int mouseX, int mouseY, int button) {
-		if (mouseUpListener != null) mouseUpListener.componentMouseUp(this, mouseX, mouseY, button);
+		if (mouseUpListener != null) { mouseUpListener.componentMouseUp(this, mouseX, mouseY, button); }
 	}
 
 	public void mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
-		if (mouseDragListener != null) mouseDragListener.componentMouseDrag(this, mouseX, mouseY, button, dx, dy);
+		if (mouseDragListener != null) { mouseDragListener.componentMouseDrag(this, mouseX, mouseY, button, dx, dy); }
 	}
 
 	public boolean isTicking() {
@@ -125,62 +128,64 @@ public abstract class BaseComponent extends AbstractGui {
 	public void tick() {}
 
 	protected void drawItemStack(@Nonnull ItemStack stack, int x, int y, String overlayText) {
-		if (stack.isEmpty()) return;
+		if (stack.isEmpty()) { return; }
 
-		RenderHelper.enableGUIStandardItemLighting();
+		RenderHelper.enableStandardItemLighting();
 		final ItemRenderer itemRenderer = parent.getItemRenderer();
 		GlStateManager.translatef(0.0F, 0.0F, 32.0F);
-		this.blitOffset = 200;
+		setBlitOffset(200);
 		itemRenderer.zLevel = 200.0F;
 
 		FontRenderer font;
 		font = stack.getItem().getFontRenderer(stack);
-		if (font == null) font = parent.getFontRenderer();
+		if (font == null) { font = parent.getFontRenderer(); }
 
 		itemRenderer.renderItemAndEffectIntoGUI(stack, x, y);
 		itemRenderer.renderItemOverlayIntoGUI(font, stack, x, y, overlayText);
-		this.blitOffset = 0;
+		setBlitOffset(0);
 		itemRenderer.zLevel = 0.0F;
 		RenderHelper.disableStandardItemLighting();
 	}
 
 	protected void drawItemStack(@Nonnull ItemStack stack, int x, int y) {
-		if (stack.isEmpty()) return;
+		if (stack.isEmpty()) { return; }
 
-		RenderHelper.enableGUIStandardItemLighting();
+		RenderHelper.enableStandardItemLighting();
 		final ItemRenderer itemRenderer = parent.getItemRenderer();
 		GlStateManager.translated(0.0F, 0.0F, 32.0F);
-		this.blitOffset = 200;
+		setBlitOffset(200);
 		itemRenderer.zLevel = 200.0F;
 
 		itemRenderer.renderItemAndEffectIntoGUI(stack, x, y);
-		this.blitOffset = 0;
+		setBlitOffset(0);
 		itemRenderer.zLevel = 0.0F;
 		RenderHelper.disableStandardItemLighting();
 	}
 
-	protected void drawSprite(Icon icon, int x, int y, int width, int height) {
+	protected void drawSprite(Icon icon, final MatrixStack matrixStack, int x, int y, int width, int height) {
 		parent.bindTexture(icon.texture);
 
+		// TODO 1.16 blit?
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder worldrenderer = tessellator.getBuffer();
+		Matrix4f m = matrixStack.getLast().getMatrix();
 		worldrenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-		worldrenderer.pos(x + 0, y + height, this.blitOffset).tex(icon.minU, icon.maxV).endVertex();
-		worldrenderer.pos(x + width, y + height, this.blitOffset).tex(icon.maxU, icon.maxV).endVertex();
-		worldrenderer.pos(x + width, y + 0, this.blitOffset).tex(icon.maxU, icon.minV).endVertex();
-		worldrenderer.pos(x + 0, y + 0, this.blitOffset).tex(icon.minU, icon.minV).endVertex();
+		worldrenderer.pos(m, x + 0, y + height, getBlitOffset()).tex(icon.minU, icon.maxV).endVertex();
+		worldrenderer.pos(m, x + width, y + height, getBlitOffset()).tex(icon.maxU, icon.maxV).endVertex();
+		worldrenderer.pos(m, x + width, y + 0, getBlitOffset()).tex(icon.maxU, icon.minV).endVertex();
+		worldrenderer.pos(m, x + 0, y + 0, getBlitOffset()).tex(icon.minU, icon.minV).endVertex();
 		tessellator.draw();
 	}
 
-	protected void drawSprite(Icon icon, int x, int y) {
-		drawSprite(icon, x, y, icon.width, icon.height);
+	protected void drawSprite(Icon icon, final MatrixStack matrixStack, int x, int y) {
+		drawSprite(icon, matrixStack, x, y, icon.width, icon.height);
 	}
 
-	protected void drawHoveringText(List<String> textLines, int x, int y) {
-		parent.drawHoveringText(textLines, x, y);
+	protected void drawHoveringText(MatrixStack matrixStack, List<? extends IReorderingProcessor> textLines, int x, int y) {
+		parent.drawHoveringText(matrixStack, textLines, x, y);
 	}
 
-	protected void drawHoveringText(String line, int x, int y) {
-		parent.drawHoveringText(ImmutableList.of(line), x, y);
+	protected void drawHoveringText(MatrixStack matrixStack, IReorderingProcessor line, int x, int y) {
+		parent.drawHoveringText(matrixStack, ImmutableList.of(line), x, y);
 	}
 }

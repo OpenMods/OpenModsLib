@@ -7,7 +7,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import openmods.Log;
-import openmods.config.simple.ConfigProcessor.UpdateListener;
 import openmods.reflection.FieldAccess;
 
 public class ClassFrontend {

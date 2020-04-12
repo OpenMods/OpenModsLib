@@ -243,7 +243,7 @@ public enum Orientation implements IStringSerializable {
 	}
 
 	@Override
-	public String getName() {
+	public String getString() {
 		return lowercaseName;
 	}
 

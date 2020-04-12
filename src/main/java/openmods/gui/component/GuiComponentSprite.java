@@ -1,5 +1,6 @@
 package openmods.gui.component;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -51,20 +52,20 @@ public class GuiComponentSprite extends BaseComponent {
 	}
 
 	@Override
-	public void render(int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (!overlay_mode) doRender(offsetX, offsetY, mouseX, mouseY);
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
+		if (!overlay_mode) { doRender(matrixStack, offsetX, offsetY, mouseX, mouseY); }
 	}
 
 	@Override
-	public void renderOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (overlay_mode) doRender(offsetX, offsetY, mouseX, mouseY);
+	public void renderOverlay(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
+		if (overlay_mode) { doRender(matrixStack, offsetX, offsetY, mouseX, mouseY); }
 	}
 
-	protected void doRender(int offsetX, int offsetY, int mouseX, int mouseY) {
-		if (icon == null) return;
+	protected void doRender(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
+		if (icon == null) { return; }
 
-		GlStateManager.color3f(r, g, b);
-		drawSprite(icon, offsetX + x, offsetY + y);
+		GlStateManager.color4f(r, g, b, 1.0f);
+		drawSprite(icon, matrixStack, offsetX + x, offsetY + y);
 	}
 
 	@Override

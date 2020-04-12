@@ -5,7 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import openmods.fakeplayer.FakePlayerPool.PlayerUserReturning;
 import openmods.utils.InventoryUtils;
 
@@ -14,16 +14,16 @@ public class UseItemAction implements PlayerUserReturning<ItemStack> {
 	@Nonnull
 	private final ItemStack stack;
 
-	private final Vec3d playerPos;
-	private final Vec3d clickPos;
-	private final Vec3d hitPos;
+	private final Vector3d playerPos;
+	private final Vector3d clickPos;
+	private final Vector3d hitPos;
 	private final Direction side;
 	private final Hand hand;
 
 	private final float yaw;
 	private final float pitch;
 
-	public UseItemAction(ItemStack stack, Vec3d playerPos, Vec3d clickPos, Vec3d hitPos, Direction side, Hand hand) {
+	public UseItemAction(ItemStack stack, Vector3d playerPos, Vector3d clickPos, Vector3d hitPos, Direction side, Hand hand) {
 		super();
 		this.stack = stack;
 		this.playerPos = playerPos;

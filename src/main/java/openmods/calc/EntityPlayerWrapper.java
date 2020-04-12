@@ -74,17 +74,17 @@ public class EntityPlayerWrapper {
 
 	@ExposeProperty
 	public Double x() {
-		return player().posX;
+		return player().getPosX();
 	}
 
 	@ExposeProperty
 	public Double y() {
-		return player().posY;
+		return player().getPosY();
 	}
 
 	@ExposeProperty
 	public Double z() {
-		return player().posX;
+		return player().getPosZ();
 	}
 
 	@ExposeProperty
@@ -149,7 +149,7 @@ public class EntityPlayerWrapper {
 
 		@ExposeProperty
 		public String name() {
-			return world().getWorldInfo().getWorldName();
+			return world().getServer().getServerConfiguration().getWorldName();
 		}
 
 		@ExposeProperty
@@ -158,8 +158,8 @@ public class EntityPlayerWrapper {
 		}
 
 		@ExposeProperty
-		public BigInteger dimension() {
-			return BigInteger.valueOf(world().getDimension().getType().getId());
+		public String dimension() {
+			return world().getDimensionKey().getLocation().toString();
 		}
 
 		@ExposeProperty

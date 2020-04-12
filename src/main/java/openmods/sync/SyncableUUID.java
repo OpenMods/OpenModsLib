@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.common.util.Constants;
 import openmods.api.IValueProvider;
 
 public class SyncableUUID extends SyncableObjectBase implements IValueProvider<UUID> {

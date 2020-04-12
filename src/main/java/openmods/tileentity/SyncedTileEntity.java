@@ -5,6 +5,7 @@ import io.netty.buffer.Unpooled;
 import java.io.IOException;
 import java.util.Set;
 import javax.annotation.Nullable;
+import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
@@ -102,8 +103,8 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	}
 
 	@Override
-	public void read(CompoundNBT tag) {
-		super.read(tag);
+	public void read(BlockState blockState, CompoundNBT tag) {
+		super.read(blockState, tag);
 		getSyncMap().tryRead(tag);
 	}
 
@@ -141,8 +142,8 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	}
 
 	@Override
-	public void handleUpdateTag(CompoundNBT tag) {
-		super.read(tag);
+	public void handleUpdateTag(BlockState state, CompoundNBT tag) {
+		super.read(state, tag);
 		applyInitializationData(tag);
 	}
 

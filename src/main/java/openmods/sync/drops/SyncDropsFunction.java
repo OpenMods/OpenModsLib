@@ -3,14 +3,16 @@ package openmods.sync.drops;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
 import java.util.Set;
 import net.minecraft.item.ItemStack;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootFunction;
+import net.minecraft.loot.LootFunctionType;
+import net.minecraft.loot.LootParameter;
+import net.minecraft.loot.LootParameters;
+import net.minecraft.loot.conditions.ILootCondition;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.storage.loot.LootContext;
-import net.minecraft.world.storage.loot.LootFunction;
-import net.minecraft.world.storage.loot.LootParameter;
-import net.minecraft.world.storage.loot.LootParameters;
-import net.minecraft.world.storage.loot.conditions.ILootCondition;
 import openmods.OpenMods;
 
 public class SyncDropsFunction extends LootFunction {
@@ -36,13 +38,18 @@ public class SyncDropsFunction extends LootFunction {
 		return builder(SyncDropsFunction::new);
 	}
 
-	public static class Serializer extends LootFunction.Serializer<SyncDropsFunction> {
-		public Serializer() {
-			super(OpenMods.location("sync_drops"), SyncDropsFunction.class);
-		}
+	@Override
+	public LootFunctionType getFunctionType() {
+		return OpenMods.SYNC_DROPS_TYPE;
+	}
 
+	public static class Serializer extends LootFunction.Serializer<SyncDropsFunction> {
 		public SyncDropsFunction deserialize(JsonObject object, JsonDeserializationContext deserializationContext, ILootCondition[] conditionsIn) {
 			return new SyncDropsFunction(conditionsIn);
+		}
+
+		@Override
+		public void serialize(JsonObject p_230424_1_, SyncDropsFunction p_230424_2_, JsonSerializationContext p_230424_3_) {
 		}
 	}
 }

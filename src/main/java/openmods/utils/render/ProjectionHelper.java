@@ -2,7 +2,7 @@ package openmods.utils.render;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -114,14 +114,14 @@ public class ProjectionHelper {
 		}
 	}
 
-	public Vec3d project(float x, float y, float z) {
+	public Vector3d project(float x, float y, float z) {
 		float[] in = new float[] { x, y, z, 1.0f };
 		float[] out = new float[4];
 
 		multMatrixVec(pmv, in, out);
 
 		if (in[3] == 0.0)
-			return Vec3d.ZERO;
+			return Vector3d.ZERO;
 
 		in[3] = (1.0f / in[3]) * 0.5f;
 
@@ -132,10 +132,10 @@ public class ProjectionHelper {
 		float wx = in[0] * viewport.get(2) + viewport.get(0);
 		float wy = in[1] * viewport.get(3) + viewport.get(1);
 		float wz = in[2];
-		return new Vec3d(wx, wy, wz);
+		return new Vector3d(wx, wy, wz);
 	}
 
-	public Vec3d unproject(float x, float y, float z) {
+	public Vector3d unproject(float x, float y, float z) {
 		float[] in = new float[] { x, y, z, 1.0f };
 		float[] out = new float[4];
 
@@ -149,13 +149,13 @@ public class ProjectionHelper {
 		multMatrixVec(ipmv, in, out);
 
 		if (out[3] == 0.0)
-			return Vec3d.ZERO;
+			return Vector3d.ZERO;
 
 		out[3] = 1.0f / out[3];
 
 		final float ox = out[0] * out[3];
 		final float oy = out[1] * out[3];
 		final float oz = out[2] * out[3];
-		return new Vec3d(ox, oy, oz);
+		return new Vector3d(ox, oy, oz);
 	}
 }

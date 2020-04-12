@@ -13,7 +13,6 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.IPacket;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.SSpawnObjectPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Direction;
@@ -126,7 +125,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	@Override
 	public void tick() {
-		if (posY < -500.0D) {
+		if (getPosY() < -500.0D) {
 			remove();
 			return;
 		}
@@ -139,9 +138,9 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 			this.setMotion(getMotion().scale(0.98));
 		}
 
-		prevPosX = posX;
-		prevPosY = posY;
-		prevPosZ = posZ;
+		prevPosX = getPosX();
+		prevPosY = getPosY();
+		prevPosZ = getPosZ();
 
 		extinguish();
 		this.move(MoverType.SELF, this.getMotion());
@@ -186,7 +185,7 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 			tileEntity.putInt("y", pos.getY());
 			tileEntity.putInt("z", pos.getZ());
 			TileEntity te = world.getTileEntity(pos);
-			te.read(tileEntity);
+			te.read(blockState, tileEntity);
 		}
 
 		return true;
@@ -227,9 +226,6 @@ public class EntityBlock extends Entity implements IEntityAdditionalSpawnData {
 	public boolean canBePushed() {
 		return !removed;
 	}
-
-	@Override
-	protected void dealFireDamage(int i) {}
 
 	@Override
 	public boolean attackEntityFrom(DamageSource p_70097_1_, float p_70097_2_) {
