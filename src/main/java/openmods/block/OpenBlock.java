@@ -15,7 +15,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.state.Property;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -28,7 +27,6 @@ import openmods.api.IActivateAwareTile;
 import openmods.api.IAddAwareTile;
 import openmods.api.IBreakAwareTile;
 import openmods.api.ICustomBreakDrops;
-import openmods.api.ICustomHarvestDrops;
 import openmods.api.ICustomPickItem;
 import openmods.api.IHasGui;
 import openmods.api.INeighbourAwareTile;
@@ -98,7 +96,6 @@ public class OpenBlock extends Block {
 		ADD_LISTENER(IAddAwareTile.class),
 		CUSTOM_PICK_ITEM(ICustomPickItem.class),
 		CUSTOM_BREAK_DROPS(ICustomBreakDrops.class),
-		CUSTOM_HARVEST_DROPS(ICustomHarvestDrops.class),
 		INVENTORY(IInventory.class),
 		INVENTORY_PROVIDER(IInventoryProvider.class),
 		NEIGBOUR_LISTENER(INeighbourAwareTile.class),
@@ -188,14 +185,6 @@ public class OpenBlock extends Block {
 
 	public LocalDirections getLocalDirections(BlockState state) {
 		return rotationMode.getLocalDirections(getOrientation(state));
-	}
-
-	public boolean shouldDropFromTeAfterBreak() {
-		return true;
-	}
-
-	public boolean shouldOverrideHarvestWithTeLogic() {
-		return hasCapability(TileEntityCapability.CUSTOM_HARVEST_DROPS);
 	}
 
 	public static OpenBlock getOpenBlock(IBlockReader world, BlockPos blockPos) {

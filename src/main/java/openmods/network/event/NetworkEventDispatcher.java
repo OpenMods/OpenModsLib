@@ -39,7 +39,7 @@ public class NetworkEventDispatcher {
 				.eventNetworkChannel();
 
 		channel.addListener(evt -> {
-			if (evt instanceof net.minecraftforge.fml.network.NetworkEvent.LoginPayloadEvent) {
+			if (evt instanceof net.minecraftforge.fml.network.NetworkEvent.LoginPayloadEvent || evt instanceof net.minecraftforge.fml.network.NetworkEvent.ChannelRegistrationChangeEvent) {
 				return;
 			}
 

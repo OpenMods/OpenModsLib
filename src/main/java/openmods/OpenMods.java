@@ -3,6 +3,7 @@ package openmods;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.storage.loot.functions.LootFunctionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.event.RegistryEvent;
@@ -54,6 +55,7 @@ import openmods.sync.SyncableTank;
 import openmods.sync.SyncableUUID;
 import openmods.sync.SyncableUnsignedByte;
 import openmods.sync.SyncableVarInt;
+import openmods.sync.drops.SyncDropsFunction;
 import openmods.utils.bitmap.IRpcDirectionBitMap;
 import openmods.utils.bitmap.IRpcIntBitMap;
 import openmods.world.DelayedActionTickHandler;
@@ -92,6 +94,8 @@ public class OpenMods {
 		// - it's fired synchronously
 		// - before most things (like resource managers) have chance to run
 		PROXY.earlySyncInit();
+		// It should be in registry!
+		LootFunctionManager.registerFunction(new SyncDropsFunction.Serializer());
 	}
 
 	@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)

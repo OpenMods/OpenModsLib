@@ -49,10 +49,13 @@ public class SyncChannelHolder {
 	private void handle(PacketBuffer payload, Supplier<NetworkEvent.Context> source) {
 		final ISyncMapProvider provider = findSyncMapProvider(payload);
 		try {
-			if (provider != null) { provider.getSyncMap().readUpdate(payload); }
+			if (provider != null) {
+				provider.getSyncMap().readUpdate(payload);
+			}
 		} catch (Throwable e) {
 			throw new SyncException(e, provider);
 		}
+		source.get().setPacketHandled(true);
 	}
 
 	public static final SyncChannelHolder INSTANCE = new SyncChannelHolder();
@@ -64,7 +67,7 @@ public class SyncChannelHolder {
 				.networkProtocolVersion(() -> PROTOCOL_VERSION)
 				.eventNetworkChannel();
 
-		channel.addListener((NetworkEvent.ClientCustomPayloadEvent evt) -> handle(evt.getPayload(), evt.getSource()));
+		channel.addListener((NetworkEvent.ServerCustomPayloadEvent evt) -> handle(evt.getPayload(), evt.getSource()));
 	}
 
 	void sendPayload(PacketBuffer payload, final Collection<ServerPlayerEntity> players) {

@@ -49,9 +49,6 @@ public class NetworkEventCodec {
 		event.sender = context.getSender();
 		final int bufferJunkSize = payload.readableBytes();
 		if (bufferJunkSize > 0) Log.warn("%s junk bytes left in buffer, event %s", bufferJunkSize, event);
-		// TODO 1.14 Needed?
-		payload.release();
-
 		return event;
 	}
 }

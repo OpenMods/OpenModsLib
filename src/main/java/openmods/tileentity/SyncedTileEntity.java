@@ -26,15 +26,12 @@ import openmods.sync.SyncMapClient;
 import openmods.sync.SyncMapServer.UpdateStrategy;
 import openmods.sync.SyncMapTile;
 import openmods.sync.SyncObjectScanner;
-import openmods.sync.drops.DropTagSerializer;
 
 public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMapProvider {
 
 	private static final String TAG_SYNC_INIT = "SyncInit";
 
 	private SyncMap syncMap;
-
-	private DropTagSerializer tagSerializer;
 
 	public SyncedTileEntity(TileEntityType<?> type) {
 		super(type);
@@ -52,13 +49,6 @@ public abstract class SyncedTileEntity extends OpenTileEntity implements ISyncMa
 	}
 
 	protected void onSyncMapCreate(SyncMap syncMap) {}
-
-	protected DropTagSerializer getDropSerializer() {
-		if (tagSerializer == null) {
-			tagSerializer = new DropTagSerializer();
-		}
-		return tagSerializer;
-	}
 
 	protected ISyncListener createRenderUpdateListener() {
 		return changes -> markBlockForRenderUpdate(getPos());

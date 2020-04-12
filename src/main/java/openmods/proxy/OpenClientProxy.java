@@ -61,7 +61,11 @@ public final class OpenClientProxy implements IOpenModsProxy {
 
 	@Override
 	public void earlySyncInit() {
-		((IReloadableResourceManager)getClient().getResourceManager()).addReloadListener(hitboxManager);
+		final Minecraft client = Minecraft.getInstance();
+		// May happen in datagen
+		if (client != null) {
+			((IReloadableResourceManager)client.getResourceManager()).addReloadListener(hitboxManager);
+		}
 	}
 
 	@Override

@@ -7,31 +7,21 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityType;
-import openmods.api.ICustomHarvestDrops;
 import openmods.api.ICustomPickItem;
 import openmods.api.IPlaceAwareTile;
 import openmods.tileentity.SyncedTileEntity;
 
-public abstract class DroppableTileEntity extends SyncedTileEntity implements IPlaceAwareTile, ICustomHarvestDrops, ICustomPickItem {
+public abstract class DroppableTileEntity extends SyncedTileEntity implements IPlaceAwareTile, ICustomPickItem {
+	private DropTagSerializer tagSerializer;
 
 	public DroppableTileEntity(final TileEntityType<?> type) {
 		super(type);
 		getDropSerializer().addFields(this);
 	}
 
-	@Override
-	public boolean suppressBlockHarvestDrops() {
-		return true;
-	}
-
 	@Nonnull
 	protected ItemStack getRawDrop(BlockState blockState) {
 		return new ItemStack(blockState.getBlock());
-	}
-
-	@Override
-	public void addHarvestDrops(PlayerEntity player, List<ItemStack> drops, BlockState blockState, int fortune, boolean isSilkTouch) {
-		drops.add(getDropStack(blockState));
 	}
 
 	@Override
@@ -51,4 +41,11 @@ public abstract class DroppableTileEntity extends SyncedTileEntity implements IP
 		getDropSerializer().read(stack, true);
 	}
 
+
+	public DropTagSerializer getDropSerializer() {
+		if (tagSerializer == null) {
+			tagSerializer = new DropTagSerializer();
+		}
+		return tagSerializer;
+	}
 }

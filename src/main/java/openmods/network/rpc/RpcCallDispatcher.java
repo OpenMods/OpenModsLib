@@ -86,7 +86,7 @@ public class RpcCallDispatcher {
 				.eventNetworkChannel();
 
 		channel.addListener(evt -> {
-			if (evt instanceof NetworkEvent.LoginPayloadEvent) {
+			if (evt instanceof NetworkEvent.LoginPayloadEvent || evt instanceof NetworkEvent.ChannelRegistrationChangeEvent) {
 				return;
 			}
 			final NetworkEvent.Context source = evt.getSource().get();
