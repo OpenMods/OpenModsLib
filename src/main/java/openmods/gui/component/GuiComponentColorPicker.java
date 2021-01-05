@@ -47,27 +47,37 @@ public class GuiComponentColorPicker extends BaseComponent implements IValueRece
 	}
 
 	@Override
-	public void mouseDown(int mouseX, int mouseY, int button) {
-		super.mouseDown(mouseX, mouseY, button);
-		if (mouseY > getColorsHeight()) { return; }
-		pointX = mouseX;
-		pointY = mouseY;
-		notifyListeners();
+	public boolean mouseDown(int mouseX, int mouseY, int button) {
+		boolean result = super.mouseDown(mouseX, mouseY, button);
+
+		if (mouseY <= getColorsHeight()) {
+			pointX = mouseX;
+			pointY = mouseY;
+			notifyListeners();
+			return true;
+		}
+		return result;
 	}
 
 	// Drag support
 	@Override
-	public void mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
+	public boolean mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
+		boolean result = super.mouseDrag(mouseX, mouseY, button, dx, dy);
 		// TODO 1.14 use dx, dy
-		super.mouseDrag(mouseX, mouseY, button, dx, dy);
-		if (mouseY > getColorsHeight()) { return; }
-		pointX = mouseX;
-		pointY = mouseY;
-		notifyListeners();
+
+		if (mouseY <= getColorsHeight()) {
+			pointX = mouseX;
+			pointY = mouseY;
+			notifyListeners();
+			return result;
+		}
+		return result;
 	}
 
 	private void notifyListeners() {
-		if (listener != null) { listener.valueChanged(getColor()); }
+		if (listener != null) {
+			listener.valueChanged(getColor());
+		}
 	}
 
 	@Override

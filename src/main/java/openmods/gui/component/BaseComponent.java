@@ -101,34 +101,50 @@ public abstract class BaseComponent extends AbstractGui {
 		this.mouseDragListener = mouseDragListener;
 	}
 
-	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {}
+	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
+	}
 
-	public void renderOverlay(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {}
+	public void renderOverlay(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
+	}
 
 	public void keyTyped(char keyChar, int keyCode) {
-		if (keyListener != null) { keyListener.componentKeyTyped(this, keyChar, keyCode); }
+		if (keyListener != null) {
+			keyListener.componentKeyTyped(this, keyChar, keyCode);
+		}
 	}
 
-	public void mouseDown(int mouseX, int mouseY, int button) {
-		if (mouseDownListener != null) { mouseDownListener.componentMouseDown(this, mouseX, mouseY, button); }
+	public boolean mouseDown(int mouseX, int mouseY, int button) {
+		if (mouseDownListener != null) {
+			return mouseDownListener.componentMouseDown(this, mouseX, mouseY, button);
+		}
+		return false;
 	}
 
-	public void mouseUp(int mouseX, int mouseY, int button) {
-		if (mouseUpListener != null) { mouseUpListener.componentMouseUp(this, mouseX, mouseY, button); }
+	public boolean mouseUp(int mouseX, int mouseY, int button) {
+		if (mouseUpListener != null) {
+			return mouseUpListener.componentMouseUp(this, mouseX, mouseY, button);
+		}
+		return false;
 	}
 
-	public void mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
-		if (mouseDragListener != null) { mouseDragListener.componentMouseDrag(this, mouseX, mouseY, button, dx, dy); }
+	public boolean mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
+		if (mouseDragListener != null) {
+			return mouseDragListener.componentMouseDrag(this, mouseX, mouseY, button, dx, dy);
+		}
+		return false;
 	}
 
 	public boolean isTicking() {
 		return false;
 	}
 
-	public void tick() {}
+	public void tick() {
+	}
 
 	protected void drawItemStack(@Nonnull ItemStack stack, int x, int y, String overlayText) {
-		if (stack.isEmpty()) { return; }
+		if (stack.isEmpty()) {
+			return;
+		}
 
 		RenderHelper.enableStandardItemLighting();
 		final ItemRenderer itemRenderer = parent.getItemRenderer();
@@ -138,7 +154,9 @@ public abstract class BaseComponent extends AbstractGui {
 
 		FontRenderer font;
 		font = stack.getItem().getFontRenderer(stack);
-		if (font == null) { font = parent.getFontRenderer(); }
+		if (font == null) {
+			font = parent.getFontRenderer();
+		}
 
 		itemRenderer.renderItemAndEffectIntoGUI(stack, x, y);
 		itemRenderer.renderItemOverlayIntoGUI(font, stack, x, y, overlayText);
@@ -148,7 +166,9 @@ public abstract class BaseComponent extends AbstractGui {
 	}
 
 	protected void drawItemStack(@Nonnull ItemStack stack, int x, int y) {
-		if (stack.isEmpty()) { return; }
+		if (stack.isEmpty()) {
+			return;
+		}
 
 		RenderHelper.enableStandardItemLighting();
 		final ItemRenderer itemRenderer = parent.getItemRenderer();

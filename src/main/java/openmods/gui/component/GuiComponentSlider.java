@@ -92,20 +92,26 @@ public class GuiComponentSlider extends BaseComponent implements IValueReceiver<
 	}
 
 	@Override
-	public void mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
-		super.mouseDrag(mouseX, mouseY, button, dx, dy);
+	public boolean mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
+		boolean result = super.mouseDrag(mouseX, mouseY, button, dx, dy);
 		if (button == 0) {
 			int offX = mouseX - HANDLE_SIZE / 2;
-			if (offX < 0) return;
-			final int newStep = Ints.saturatedCast(Math.round(offX / stepSize));
-			final int boundedNewStep = Math.max(0, Math.min(steps, newStep));
+			if (offX >= 0) {
+				final int newStep = Ints.saturatedCast(Math.round(offX / stepSize));
+				final int boundedNewStep = Math.max(0, Math.min(steps, newStep));
 
-			if (boundedNewStep != step) {
-				step = boundedNewStep;
-				final double newValue = stepToValue(step);
-				if (listener != null) listener.valueChanged(newValue);
+				if (boundedNewStep != step) {
+					step = boundedNewStep;
+					final double newValue = stepToValue(step);
+					if (listener != null) {
+						listener.valueChanged(newValue);
+					}
+					return true;
+				}
 			}
 		}
+
+		return result;
 	}
 
 	protected String formatValue(double value) {

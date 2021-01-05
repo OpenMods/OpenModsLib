@@ -22,10 +22,13 @@ public class GuiComponentCheckbox extends BaseComponent implements IValueReceive
 	}
 
 	@Override
-	public void mouseDown(int x, int y, int button) {
+	public boolean mouseDown(int x, int y, int button) {
 		super.mouseDown(x, y, button);
 		value = !value;
-		if (listener != null) listener.valueChanged(value);
+		if (listener != null) {
+			listener.valueChanged(value);
+		}
+		return true;
 	}
 
 	@Override

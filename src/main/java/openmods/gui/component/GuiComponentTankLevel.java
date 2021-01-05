@@ -3,11 +3,15 @@ package openmods.gui.component;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import java.util.List;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.util.IReorderingProcessor;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.text.Style;
 import net.minecraftforge.fluids.FluidStack;
 import openmods.api.IValueReceiver;
@@ -31,11 +35,6 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 		this.capacity = capacity;
 	}
 
-	private static void addVertexWithUV(double x, double y, double z, float u, float v) {
-		GL11.glTexCoord2f(u, v);
-		GL11.glVertex3d(x, y, z);
-	}
-
 	@Override
 	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		bindComponentsSheet();
@@ -50,8 +49,8 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 		TextureAtlasSprite icon = parent.getIcon(textureLocation);
 
 		if (icon != null) {
-			double percentFull = Math.max(0, Math.min(1, (double)fluidStack.getAmount() / (double)capacity));
-			double fluidHeight = (height - 3) * percentFull;
+			float percentFull = Math.max(0, Math.min(1, (float)fluidStack.getAmount() / capacity));
+			float fluidHeight = (height - 3) * percentFull;
 			final int posX = offsetX + x;
 			final int posY = offsetY + y;
 
@@ -61,13 +60,16 @@ public class GuiComponentTankLevel extends GuiComponentResizable {
 			final float minV = icon.getMinV();
 			final float maxV = icon.getMaxV();
 
-			// TODO 1.16 Tessellator
-			GL11.glBegin(GL11.GL_QUADS);
-			addVertexWithUV(posX + 3, posY + height - 3, this.getBlitOffset(), minU, maxV);
-			addVertexWithUV(posX + width - 3, posY + height - 3, this.getBlitOffset(), maxU, maxV);
-			addVertexWithUV(posX + width - 3, posY + (height - fluidHeight), this.getBlitOffset(), maxU, minV);
-			addVertexWithUV(posX + 3, posY + (height - fluidHeight), this.getBlitOffset(), minU, minV);
-			GL11.glEnd();
+			Matrix4f matrix = matrixStack.getLast().getMatrix();
+			float blitOffset = getBlitOffset();
+
+			BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+			buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+			buffer.pos(matrix, posX + 3, posY + height - 3, blitOffset).tex(minU, maxV).endVertex();
+			buffer.pos(matrix, posX + width - 3, posY + height - 3, blitOffset).tex(maxU, maxV).endVertex();
+			buffer.pos(matrix, posX + width - 3, posY + (height - fluidHeight), blitOffset).tex(maxU, minV).endVertex();
+			buffer.pos(matrix, posX + 3, posY + (height - fluidHeight), blitOffset).tex(minU, minV).endVertex();
+			Tessellator.getInstance().draw();
 		}
 	}
 

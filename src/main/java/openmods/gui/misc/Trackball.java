@@ -1,38 +1,33 @@
 package openmods.gui.misc;
 
 import com.google.common.base.Preconditions;
-import javax.vecmath.AxisAngle4f;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-import openmods.utils.render.OpenGLUtils;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3f;
 
 public class Trackball {
 	public static class TrackballWrapper {
 		private final Trackball target = new Trackball();
 		private final float radius;
-		private final int mouseButton;
 		private boolean isDragging;
 
-		public TrackballWrapper(int mouseButton, int radiusPx) {
-			this.mouseButton = mouseButton;
+		public TrackballWrapper(int radiusPx) {
 			this.radius = radiusPx;
 		}
 
-		public void update(int mouseX, int mouseY) {
+		public void update(final Matrix4f matrix, int mouseX, int mouseY, boolean isButtonDown) {
 			float mx = mouseX / radius;
 			float my = mouseY / radius;
 
-			/// TODO 1.14 Provide button
-			boolean buttonState = false; //Mouse.isButtonDown(mouseButton);
-			if (!isDragging && buttonState) {
+			if (!isDragging && isButtonDown) {
 				isDragging = true;
 				target.startDrag(mx, my);
-			} else if (isDragging && !buttonState) {
+			} else if (isDragging && !isButtonDown) {
 				isDragging = false;
 				target.endDrag(mx, my);
 			}
 
-			target.applyTransform(mx, my, isDragging);
+			target.applyTransform(matrix, mx, my, isDragging);
 		}
 
 		public void setTransform(Matrix4f transform) {
@@ -45,6 +40,7 @@ public class Trackball {
 
 	public Trackball() {
 		lastTransform = new Matrix4f();
+		lastTransform.setIdentity();
 	}
 
 	private static Vector3f calculateSpherePoint(float x, float y) {
@@ -52,9 +48,11 @@ public class Trackball {
 
 		float sqrZ = 1 - result.dot(result);
 
-		if (sqrZ > 0) result.z = (float)Math.sqrt(sqrZ);
-		else result.normalize();
+		if (sqrZ > 0) {
+			result.setZ((float)Math.sqrt(sqrZ));
+		}
 
+		result.normalize();
 		return result;
 	}
 
@@ -63,37 +61,36 @@ public class Trackball {
 		Vector3f current = calculateSpherePoint(mouseX, mouseY);
 
 		float dot = dragStart.dot(current);
-		if (Math.abs(dot - 1) < 0.0001) return lastTransform;
+		if (Math.abs(dot - 1) < 0.0001) {
+			return lastTransform;
+		}
 
-		Vector3f axis = new Vector3f();
-		axis.cross(dragStart, current);
+		Vector3f axis = dragStart.copy();
+		axis.cross(current);
 
-		try {
-			axis.normalize();
-		} catch (IllegalStateException e) { // Zero length vector
+		if (!axis.normalize()) {
 			return lastTransform;
 		}
 
 		float angle = 2 * (float)(Math.acos(dot));
 
-		final AxisAngle4f rotParam = new AxisAngle4f();
-		rotParam.set(axis, angle);
-		Matrix4f rotation = new Matrix4f();
-		rotation.setRotation(rotParam);
+		final Quaternion rot = new Quaternion(axis, angle, false);
+
+		Matrix4f rotation = new Matrix4f(rot);
 		rotation.mul(lastTransform);
 		return rotation;
 
 	}
 
-	public void applyTransform(float mouseX, float mouseY, boolean isDragging) {
-		OpenGLUtils.loadMatrix(isDragging? getTransform(mouseX, mouseY) : lastTransform);
+	private void applyTransform(final Matrix4f matrix, float mouseX, float mouseY, boolean isDragging) {
+		matrix.mul(isDragging? getTransform(mouseX, mouseY) : lastTransform);
 	}
 
-	public void startDrag(float mouseX, float mouseY) {
+	private void startDrag(float mouseX, float mouseY) {
 		dragStart = calculateSpherePoint(mouseX, mouseY);
 	}
 
-	public void endDrag(float mouseX, float mouseY) {
+	private void endDrag(float mouseX, float mouseY) {
 		lastTransform = getTransform(mouseX, mouseY);
 	}
 }

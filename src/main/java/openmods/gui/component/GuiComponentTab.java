@@ -4,6 +4,8 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import javax.annotation.Nonnull;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector4f;
 import openmods.gui.misc.BoxRenderer;
 
 public class GuiComponentTab extends GuiComponentResizableComposite {
@@ -21,13 +23,16 @@ public class GuiComponentTab extends GuiComponentResizableComposite {
 
 	private static final BoxRenderer BOX_RENDERER = new BoxRenderer(0, 5) {
 		@Override
-		protected void renderTopLeftCorner(AbstractGui gui, MatrixStack matrixStack) {}
+		protected void renderTopLeftCorner(AbstractGui gui, MatrixStack matrixStack) {
+		}
 
 		@Override
-		protected void renderBottomLeftCorner(AbstractGui gui, MatrixStack matrixStack, int height) {}
+		protected void renderBottomLeftCorner(AbstractGui gui, MatrixStack matrixStack, int height) {
+		}
 
 		@Override
-		protected void renderLeftEdge(AbstractGui gui, MatrixStack matrixStack, int height) {}
+		protected void renderLeftEdge(AbstractGui gui, MatrixStack matrixStack, int height) {
+		}
 	};
 
 	public GuiComponentTab(int color, @Nonnull ItemStack iconStack, int expandedWidth, int expandedHeight) {
@@ -47,8 +52,12 @@ public class GuiComponentTab extends GuiComponentResizableComposite {
 	public void renderComponentBackground(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		double targetWidth = active? expandedWidth : FOLDED_WIDTH;
 		double targetHeight = active? expandedHeight : FOLDED_HEIGHT;
-		if (width != targetWidth) { dWidth += (targetWidth - dWidth) / 4; }
-		if (height != targetHeight) { dHeight += (targetHeight - dHeight) / 4; }
+		if (width != targetWidth) {
+			dWidth += (targetWidth - dWidth) / 4;
+		}
+		if (height != targetHeight) {
+			dHeight += (targetHeight - dHeight) / 4;
+		}
 
 		width = (int)Math.round(dWidth);
 		height = (int)Math.round(dHeight);
@@ -56,7 +65,10 @@ public class GuiComponentTab extends GuiComponentResizableComposite {
 		bindComponentsSheet();
 		BOX_RENDERER.render(this, matrixStack, offsetX + x, offsetY + y, width, height, color);
 
-		drawItemStack(iconStack, offsetX + x + 3, offsetY + y + 3);
+		Matrix4f transform = matrixStack.getLast().getMatrix();
+		Vector4f pos = new Vector4f(offsetX + x + 3, offsetY + y + 3, 0, 1);
+		pos.transform(transform);
+		drawItemStack(iconStack, (int)pos.getX(), (int)pos.getY());
 	}
 
 	public boolean isOrigin(int x, int y) {

@@ -104,13 +104,14 @@ public class GuiComponentBook extends BaseComposite {
 		pageNumberRight.setText(new TranslationTextComponent("openmodslib.book.page", index + 2, totalPageCount));
 	}
 
-	public void changePage(int newPage) {
+	public boolean changePage(int newPage) {
 		newPage &= ~1;
 		if (newPage != index) {
 			index = newPage;
 			enablePages();
 			playPageTurnSound();
 		}
+		return true;
 	}
 
 	private void playPageTurnSound() {
@@ -121,12 +122,18 @@ public class GuiComponentBook extends BaseComposite {
 		return (component, x, y, button) -> changePage(index);
 	}
 
-	public void prevPage() {
-		if (index > 0) changePage(index - 2);
+	public boolean prevPage() {
+		if (index > 0) {
+			changePage(index - 2);
+		}
+		return true;
 	}
 
-	public void nextPage() {
-		if (index < pages.size() - 2) changePage(index + 2);
+	public boolean nextPage() {
+		if (index < pages.size() - 2) {
+			changePage(index + 2);
+		}
+		return true;
 	}
 
 	public void firstPage() {

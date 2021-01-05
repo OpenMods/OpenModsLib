@@ -20,7 +20,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.math.vector.Vector4f;
 import net.minecraftforge.client.model.data.EmptyModelData;
+import net.minecraftforge.client.model.data.IModelData;
 import openmods.api.IValueReceiver;
 import openmods.gui.listener.IListenerBase;
 import openmods.gui.misc.SidePicker;
@@ -30,8 +34,8 @@ import openmods.gui.misc.Trackball.TrackballWrapper;
 import openmods.utils.FakeBlockAccess;
 import openmods.utils.MathUtils;
 import openmods.utils.bitmap.IReadableBitMap;
-import openmods.utils.render.RenderUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 public class GuiComponentSideSelector extends BaseComponent implements IValueReceiver<Set<Direction>> {
@@ -43,15 +47,16 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 		void onSideToggled(Direction side, boolean currentState);
 	}
 
-	private final TrackballWrapper trackball = new TrackballWrapper(1, 40);
+	private final TrackballWrapper trackball = new TrackballWrapper(40);
 
 	private final int diameter;
-	private final double scale;
+	private final float scale;
 	private Direction lastSideHovered;
 	private final Set<Direction> selectedSides = EnumSet.noneOf(Direction.class);
-	private boolean highlightSelectedSides;
+	private final boolean highlightSelectedSides;
+	private boolean isDragging;
 
-	private boolean isInInitialPosition;
+	private boolean setToInitialPosition = true;
 
 	private ISideSelectedListener sideSelectedListener;
 
@@ -59,7 +64,7 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	private final TileEntity te;
 	private final FakeBlockAccess access;
 
-	public GuiComponentSideSelector(int x, int y, double scale, BlockState blockState, TileEntity te, boolean highlightSelectedSides) {
+	public GuiComponentSideSelector(int x, int y, float scale, BlockState blockState, TileEntity te, boolean highlightSelectedSides) {
 		super(x, y);
 		this.scale = scale;
 		this.diameter = MathHelper.ceil(scale * SQRT_3);
@@ -72,148 +77,201 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	@Override
 	public void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		final Minecraft minecraft = parent.getMinecraft();
-		if (!isInInitialPosition || minecraft.mouseHelper.isMiddleDown()) {
+		if (setToInitialPosition) {
 			final Entity rve = minecraft.getRenderViewEntity();
 			trackball.setTransform(MathUtils.createEntityRotateMatrix(rve));
-			isInInitialPosition = true;
+			setToInitialPosition = false;
 		}
 
 		final int width = getWidth();
-		final int height = getWidth();
+		final int height = getHeight();
 		// assumption: block is rendered in (0,0,0) - (1,1,1) coordinates
-		GL11.glPushMatrix();
-		GL11.glTranslatef(offsetX + x + width / 2, offsetY + y + height / 2, diameter);
-		GL11.glScaled(scale, -scale, scale);
-		trackball.update(mouseX - width, -(mouseY - height));
+		matrixStack.push();
+		final Matrix4f cubeTransform = new Matrix4f();
+		cubeTransform.setIdentity();
+		cubeTransform.mul(Matrix4f.makeTranslate((float)((double)(offsetX + x + width / 2)), (float)((double)(offsetY + y + height / 2)), (float)(double)diameter));
+		cubeTransform.mul(Matrix4f.makeScale(scale, -scale, scale));
+		trackball.update(cubeTransform, mouseX - width, -(mouseY - height), isDragging);
+
+		matrixStack.getLast().getMatrix().mul(cubeTransform);
 
 		parent.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
 		GlStateManager.enableTexture();
+		GlStateManager.enableDepthTest();
 
 		// TODO 1.16 Figure out TESR rendering
 		//if (te != null) TileEntityRendererDispatcher.instance.render(te, -0.5, -0.5, -0.5, 0.0F);
 
 		parent.bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
-		if (blockState != null) drawBlock();
-
-		SidePicker picker = new SidePicker(0.5);
-
-		List<Pair<Side, Integer>> selections = Lists.newArrayListWithCapacity(6 + 1);
-		final HitCoord coord = picker.getNearestHit();
-		if (coord != null) selections.add(Pair.of(coord.side, 0x444444));
-
-		if (highlightSelectedSides) {
-			for (Direction dir : selectedSides)
-				selections.add(Pair.of(Side.fromForgeDirection(dir), 0xCC0000));
+		if (blockState != null) {
+			final IModelData modelData = te != null? te.getModelData() : EmptyModelData.INSTANCE;
+			drawBlock(matrixStack, modelData);
 		}
 
-		if (selections != null) drawHighlight(selections);
+		SidePicker picker = new SidePicker(0.5f);
+
+		final HitCoord coord;
+		List<Pair<Side, Integer>> selections = Lists.newArrayListWithCapacity(6 + 1);
+		if (!isDragging) {
+			Matrix4f invPose = cubeTransform.copy();
+			invPose.invert();
+			int mx = offsetX + mouseX;
+			int my = offsetY + mouseY;
+			final Vector4f near = createCursorVector(invPose, mx, my, 1000);
+			final Vector4f far = createCursorVector(invPose, mx, my, -1000);
+
+			coord = picker.getNearestHit(new Vector3f(near.getX(), near.getY(), near.getZ()), new Vector3f(far.getX(), far.getY(), far.getZ()));
+			if (coord != null) {
+				selections.add(Pair.of(coord.side, 0x444444));
+			}
+		} else {
+			coord = null;
+		}
+
+		if (highlightSelectedSides) {
+			for (Direction dir : selectedSides) {
+				selections.add(Pair.of(Side.fromForgeDirection(dir), 0xCC0000));
+			}
+		}
+
+		drawHighlight(matrixStack, selections);
 
 		lastSideHovered = coord == null? null : coord.side.toForgeDirection();
 
-		GL11.glPopMatrix();
+		matrixStack.pop();
 	}
 
-	private void drawBlock() {
+	private Vector4f createCursorVector(Matrix4f invPose, int mouseX, int mouseY, int depth) {
+		final Vector4f result = new Vector4f(mouseX, mouseY, depth, 1);
+		result.transform(invPose);
+		float w = result.getW();
+		result.set(result.getX() / w, result.getY() / w, result.getZ() / w, 1.0f);
+		return result;
+	}
+
+	private void drawBlock(MatrixStack matrixStack, IModelData modelData) {
 		final Tessellator tessellator = Tessellator.getInstance();
 		final BufferBuilder wr = tessellator.getBuffer();
 		final BlockRendererDispatcher dispatcher = parent.getMinecraft().getBlockRendererDispatcher();
-		final MatrixStack pose = new MatrixStack();
-		pose.getLast().getMatrix().setTranslation(-0.5f, -0.5f, -0.5f);
+		matrixStack.push();
+		matrixStack.translate(-0.5f, -0.5f, -0.5f);
 
 		for (RenderType layer : RenderType.getBlockRenderTypes()) {
 			if (RenderTypeLookup.canRenderInLayer(blockState, layer)) {
 				net.minecraftforge.client.ForgeHooksClient.setRenderLayer(layer);
 				wr.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
-				dispatcher.renderModel(blockState, FakeBlockAccess.ORIGIN, access, pose, wr, false, new Random(), EmptyModelData.INSTANCE);
+				dispatcher.renderModel(blockState, FakeBlockAccess.ORIGIN, access, matrixStack, wr, false, new Random(), modelData);
 				tessellator.draw();
 			}
 		}
 
 		net.minecraftforge.client.ForgeHooksClient.setRenderLayer(null);
+		matrixStack.pop();
 	}
 
-	private static void drawHighlight(List<Pair<Side, Integer>> selections) {
-		GlStateManager.disableLighting();
+	private static void drawHighlight(MatrixStack matrixStack, List<Pair<Side, Integer>> selections) {
 		GlStateManager.enableBlend();
 		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		GlStateManager.disableDepthTest();
+		//GlStateManager.disableDepthTest();
 		GlStateManager.disableTexture();
+		GlStateManager.disableCull();
 
-		GL11.glBegin(GL11.GL_QUADS);
+		Matrix4f matrix = matrixStack.getLast().getMatrix();
+
+		BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+		buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
 		for (Pair<Side, Integer> p : selections) {
-			final Integer color = p.getRight();
-			RenderUtils.setColor(color, 0.5f);
+			final int color = p.getRight();
+
+			final float r = (float)((color >> 16) & 0xFF) / 255;
+			final float g = (float)((color >> 8) & 0xFF) / 255;
+			final float b = (float)((color >> 0) & 0xFF) / 255;
+			final float a = 0.5f;
 
 			switch (p.getLeft()) {
 				case XPos:
-					GL11.glVertex3d(0.5, -0.5, -0.5);
-					GL11.glVertex3d(0.5, 0.5, -0.5);
-					GL11.glVertex3d(0.5, 0.5, 0.5);
-					GL11.glVertex3d(0.5, -0.5, 0.5);
+					buffer.pos(matrix, 0.5f, -0.5f, -0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, 0.5f, 0.5f, -0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, 0.5f, 0.5f, 0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, 0.5f, -0.5f, 0.5f).color(r, g, b, a).endVertex();
 					break;
 				case YPos:
-					GL11.glVertex3d(-0.5, 0.5, -0.5);
-					GL11.glVertex3d(-0.5, 0.5, 0.5);
-					GL11.glVertex3d(0.5, 0.5, 0.5);
-					GL11.glVertex3d(0.5, 0.5, -0.5);
+					buffer.pos(matrix, -0.5f, 0.5f, -0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, -0.5f, 0.5f, 0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, 0.5f, 0.5f, 0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, 0.5f, 0.5f, -0.5f).color(r, g, b, a).endVertex();
 					break;
 				case ZPos:
-					GL11.glVertex3d(-0.5, -0.5, 0.5);
-					GL11.glVertex3d(0.5, -0.5, 0.5);
-					GL11.glVertex3d(0.5, 0.5, 0.5);
-					GL11.glVertex3d(-0.5, 0.5, 0.5);
+					buffer.pos(matrix, -0.5f, -0.5f, 0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, 0.5f, -0.5f, 0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, 0.5f, 0.5f, 0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, -0.5f, 0.5f, 0.5f).color(r, g, b, a).endVertex();
 					break;
 				case XNeg:
-					GL11.glVertex3d(-0.5, -0.5, -0.5);
-					GL11.glVertex3d(-0.5, -0.5, 0.5);
-					GL11.glVertex3d(-0.5, 0.5, 0.5);
-					GL11.glVertex3d(-0.5, 0.5, -0.5);
+					buffer.pos(matrix, -0.5f, -0.5f, -0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, -0.5f, -0.5f, 0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, -0.5f, 0.5f, 0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, -0.5f, 0.5f, -0.5f).color(r, g, b, a).endVertex();
 					break;
 				case YNeg:
-					GL11.glVertex3d(-0.5, -0.5, -0.5);
-					GL11.glVertex3d(0.5, -0.5, -0.5);
-					GL11.glVertex3d(0.5, -0.5, 0.5);
-					GL11.glVertex3d(-0.5, -0.5, 0.5);
+					buffer.pos(matrix, -0.5f, -0.5f, -0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, 0.5f, -0.5f, -0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, 0.5f, -0.5f, 0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, -0.5f, -0.5f, 0.5f).color(r, g, b, a).endVertex();
 					break;
 				case ZNeg:
-					GL11.glVertex3d(-0.5, -0.5, -0.5);
-					GL11.glVertex3d(-0.5, 0.5, -0.5);
-					GL11.glVertex3d(0.5, 0.5, -0.5);
-					GL11.glVertex3d(0.5, -0.5, -0.5);
+					buffer.pos(matrix, -0.5f, -0.5f, -0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, -0.5f, 0.5f, -0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, 0.5f, 0.5f, -0.5f).color(r, g, b, a).endVertex();
+					buffer.pos(matrix, 0.5f, -0.5f, -0.5f).color(r, g, b, a).endVertex();
 					break;
 				default:
 					break;
 			}
 		}
-		GL11.glEnd();
+		Tessellator.getInstance().draw();
 
 		GlStateManager.disableBlend();
 		GlStateManager.enableDepthTest();
 		GlStateManager.enableTexture();
+		GlStateManager.enableCull();
 	}
 
 	private void toggleSide(Direction side) {
 		boolean wasntPresent = !selectedSides.remove(side);
-		if (wasntPresent) selectedSides.add(side);
+		if (wasntPresent) {
+			selectedSides.add(side);
+		}
 		notifyListeners(side, wasntPresent);
 	}
 
 	private void notifyListeners(Direction side, boolean wasntPresent) {
-		if (sideSelectedListener != null) sideSelectedListener.onSideToggled(side, wasntPresent);
-	}
-
-	@Override
-	public void mouseUp(int mouseX, int mouseY, int button) {
-		super.mouseDown(mouseX, mouseY, button);
-		if (button == 0 && lastSideHovered != null) {
-			toggleSide(lastSideHovered);
+		if (sideSelectedListener != null) {
+			sideSelectedListener.onSideToggled(side, wasntPresent);
 		}
 	}
 
 	@Override
-	public void mouseDown(int mouseX, int mouseY, int button) {
-		super.mouseDown(mouseX, mouseY, button);
+	public boolean mouseUp(int mouseX, int mouseY, int button) {
+		boolean result = super.mouseDown(mouseX, mouseY, button);
+		if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+			isDragging = false;
+		} else if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && lastSideHovered != null) {
+			toggleSide(lastSideHovered);
+			return true;
+		}
+		return result;
+	}
+
+	@Override
+	public boolean mouseDown(int mouseX, int mouseY, int button) {
 		lastSideHovered = null;
+		if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+			isDragging = true;
+		} else if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
+			setToInitialPosition = true;
+		}
+		return super.mouseDown(mouseX, mouseY, button);
 	}
 
 	@Override
@@ -235,8 +293,11 @@ public class GuiComponentSideSelector extends BaseComponent implements IValueRec
 	public void setValue(IReadableBitMap<Direction> dirs) {
 		selectedSides.clear();
 
-		for (Direction dir : Direction.values())
-			if (dirs.get(dir)) selectedSides.add(dir);
+		for (Direction dir : Direction.values()) {
+			if (dirs.get(dir)) {
+				selectedSides.add(dir);
+			}
+		}
 	}
 
 	public void setListener(ISideSelectedListener sideSelectedListener) {

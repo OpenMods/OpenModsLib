@@ -1,7 +1,6 @@
 package openmods.proxy;
 
 import com.google.common.base.Optional;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
@@ -10,8 +9,6 @@ import openmods.geometry.IHitboxSupplier;
 public interface IOpenModsProxy {
 
 	World getClientWorld();
-
-	World getServerWorld(final RegistryKey<World> dimension);
 
 	Optional<String> getLanguage();
 

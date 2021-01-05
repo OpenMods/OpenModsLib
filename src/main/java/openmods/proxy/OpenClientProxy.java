@@ -3,7 +3,6 @@ package openmods.proxy;
 import com.google.common.base.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.IReloadableResourceManager;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
@@ -29,14 +28,8 @@ public final class OpenClientProxy implements IOpenModsProxy {
 
 	private final HitboxManager hitboxManager = new HitboxManager();
 
-	@Override
 	public World getClientWorld() {
 		return getClient().world;
-	}
-
-	@Override
-	public World getServerWorld(final RegistryKey<World> id) {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

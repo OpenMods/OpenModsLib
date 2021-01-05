@@ -1,7 +1,8 @@
 package openmods.utils;
 
-import javax.vecmath.Matrix4f;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector3f;
 
 public class MathUtils {
 	public static double lengthSq(double x, double y, double z) {
@@ -13,12 +14,13 @@ public class MathUtils {
 	}
 
 	public static Matrix4f createEntityRotateMatrix(Entity entity) {
-		double yaw = Math.toRadians(entity.rotationYaw - 180);
-		double pitch = Math.toRadians(entity.rotationPitch);
+		float yaw = entity.rotationYaw - 180;
+		float pitch = entity.rotationPitch;
 
 		Matrix4f initial = new Matrix4f();
-		initial.rotX((float)pitch);
-		initial.rotY((float)yaw);
+		initial.setIdentity();
+		initial.mul(Vector3f.XP.rotationDegrees(pitch));
+		initial.mul(Vector3f.YP.rotationDegrees(yaw));
 		return initial;
 	}
 

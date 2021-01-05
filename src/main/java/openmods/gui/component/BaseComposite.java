@@ -23,8 +23,9 @@ public abstract class BaseComposite extends BaseComponent {
 	@Override
 	public void init(IComponentParent parent) {
 		super.init(parent);
-		for (BaseComponent child : components)
+		for (BaseComponent child : components) {
 			child.init(parent);
+		}
 	}
 
 	@Override
@@ -39,7 +40,9 @@ public abstract class BaseComposite extends BaseComponent {
 
 	public BaseComposite addComponent(BaseComponent component) {
 		components.add(component);
-		if (component.isTicking()) tickingComponents.add(component);
+		if (component.isTicking()) {
+			tickingComponents.add(component);
+		}
 		return this;
 	}
 
@@ -51,47 +54,56 @@ public abstract class BaseComposite extends BaseComponent {
 		return isComponentEnabled(component) && component.isMouseOver(mouseX, mouseY);
 	}
 
-	protected void renderComponentBackground(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {}
+	protected void renderComponentBackground(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
+	}
 
-	protected void renderComponentForeground(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {}
+	protected void renderComponentForeground(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
+	}
 
 	@Override
 	public final void render(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		renderComponentBackground(matrixStack, offsetX, offsetY, mouseX, mouseY);
 
-		if (!areChildrenActive()) return;
+		if (!areChildrenActive()) {
+			return;
+		}
 
 		final int ownX = offsetX + this.x;
 		final int ownY = offsetY + this.y;
 		final int relMouseX = mouseX - this.x;
 		final int relMouseY = mouseY - this.y;
 
-		for (BaseComponent component : components)
+		for (BaseComponent component : components) {
 			if (isComponentEnabled(component)) {
 
 				component.render(matrixStack, ownX, ownY, relMouseX, relMouseY);
 			}
+		}
 
 		renderComponentForeground(matrixStack, offsetX, offsetY, mouseX, mouseY);
 	}
 
-	protected void renderComponentOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {}
+	protected void renderComponentOverlay(int offsetX, int offsetY, int mouseX, int mouseY) {
+	}
 
 	@Override
 	public final void renderOverlay(MatrixStack matrixStack, int offsetX, int offsetY, int mouseX, int mouseY) {
 		renderComponentOverlay(offsetX, offsetY, mouseX, mouseY);
 
-		if (!areChildrenActive()) return;
+		if (!areChildrenActive()) {
+			return;
+		}
 
 		final int ownX = offsetX + this.x;
 		final int ownY = offsetY + this.y;
 		final int relMouseX = mouseX - this.x;
 		final int relMouseY = mouseY - this.y;
 
-		for (BaseComponent component : components)
+		for (BaseComponent component : components) {
 			if (isComponentEnabled(component)) {
 				component.renderOverlay(matrixStack, ownX, ownY, relMouseX, relMouseY);
 			}
+		}
 
 	}
 
@@ -99,52 +111,79 @@ public abstract class BaseComposite extends BaseComponent {
 	public void keyTyped(char keyChar, int keyCode) {
 		super.keyTyped(keyChar, keyCode);
 
-		if (!areChildrenActive()) return;
+		if (!areChildrenActive()) {
+			return;
+		}
 
-		for (BaseComponent component : components)
+		for (BaseComponent component : components) {
 			if (isComponentEnabled(component)) {
 				component.keyTyped(keyChar, keyCode);
 			}
+		}
 	}
 
 	// for freezing component list, since element layout may change during listener execution
 	private List<BaseComponent> selectComponentsCapturingMouse(int mouseX, int mouseY) {
 		ImmutableList.Builder<BaseComponent> result = ImmutableList.builder();
 
-		for (BaseComponent component : components)
-			if (isComponentCapturingMouse(component, mouseX, mouseY)) result.add(component);
+		for (BaseComponent component : components) {
+			if (isComponentCapturingMouse(component, mouseX, mouseY)) {
+				result.add(component);
+			}
+		}
 
 		return result.build();
 	}
 
 	@Override
-	public void mouseDown(int mouseX, int mouseY, int button) {
-		super.mouseDown(mouseX, mouseY, button);
+	public boolean mouseDown(int mouseX, int mouseY, int button) {
+		if (super.mouseDown(mouseX, mouseY, button)) {
+			return true;
+		}
 
-		if (!areChildrenActive()) return;
+		if (!areChildrenActive()) {
+			return false;
+		}
 
-		for (BaseComponent component : selectComponentsCapturingMouse(mouseX, mouseY))
-			component.mouseDown(mouseX - component.x, mouseY - component.y, button);
+		boolean result = false;
+		for (BaseComponent component : selectComponentsCapturingMouse(mouseX, mouseY)) {
+			result |= component.mouseDown(mouseX - component.x, mouseY - component.y, button);
+		}
+		return result;
 	}
 
 	@Override
-	public void mouseUp(int mouseX, int mouseY, int button) {
-		super.mouseUp(mouseX, mouseY, button);
+	public boolean mouseUp(int mouseX, int mouseY, int button) {
+		if (super.mouseUp(mouseX, mouseY, button)) {
+			return true;
+		}
 
-		if (!areChildrenActive()) return;
+		if (!areChildrenActive()) {
+			return false;
+		}
 
-		for (BaseComponent component : selectComponentsCapturingMouse(mouseX, mouseY))
-			component.mouseUp(mouseX - component.x, mouseY - component.y, button);
+		boolean result = false;
+		for (BaseComponent component : selectComponentsCapturingMouse(mouseX, mouseY)) {
+			result |= component.mouseUp(mouseX - component.x, mouseY - component.y, button);
+		}
+		return result;
 	}
 
 	@Override
-	public void mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
-		super.mouseDrag(mouseX, mouseY, button, dx, dy);
+	public boolean mouseDrag(int mouseX, int mouseY, int button, int dx, int dy) {
+		if (super.mouseDrag(mouseX, mouseY, button, dx, dy)) {
+			return true;
+		}
 
-		if (!areChildrenActive()) return;
+		if (!areChildrenActive()) {
+			return false;
+		}
 
-		for (BaseComponent component : selectComponentsCapturingMouse(mouseX, mouseY))
-			component.mouseDrag(mouseX - component.x, mouseY - component.y, button, dx, dy);
+		boolean result = false;
+		for (BaseComponent component : selectComponentsCapturingMouse(mouseX, mouseY)) {
+			result |= component.mouseDrag(mouseX - component.x, mouseY - component.y, button, dx, dy);
+		}
+		return result;
 	}
 
 	@Override
@@ -156,8 +195,9 @@ public abstract class BaseComposite extends BaseComponent {
 	public void tick() {
 		super.tick();
 
-		for (BaseComponent component : tickingComponents)
+		for (BaseComponent component : tickingComponents) {
 			component.tick();
+		}
 	}
 
 }

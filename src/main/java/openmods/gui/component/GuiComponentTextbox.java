@@ -26,7 +26,7 @@ public class GuiComponentTextbox extends BaseComponent implements IValueReceiver
 	@Override
 	public void init(IComponentParent parent) {
 		super.init(parent);
-		textfield = new TextFieldWidget( parent.getFontRenderer(), x, y, width, height, StringTextComponent.EMPTY);
+		textfield = new TextFieldWidget(parent.getFontRenderer(), x, y, width, height, StringTextComponent.EMPTY);
 	}
 
 	@Override
@@ -48,13 +48,14 @@ public class GuiComponentTextbox extends BaseComponent implements IValueReceiver
 
 	@Override
 	public void keyTyped(char par1, int par2) {
-		if (textfield.charTyped(par1, par2)) notifyListeners();
+		if (textfield.charTyped(par1, par2)) {
+			notifyListeners();
+		}
 	}
 
 	@Override
-	public void mouseDown(int mouseX, int mouseY, int button) {
-		super.mouseDown(mouseX, mouseY, button);
-		textfield.mouseClicked(mouseX + x, mouseY + y, button);
+	public boolean mouseDown(int mouseX, int mouseY, int button) {
+		return super.mouseDown(mouseX, mouseY, button) | textfield.mouseClicked(mouseX + x, mouseY + y, button);
 	}
 
 	public String getText() {
@@ -72,7 +73,9 @@ public class GuiComponentTextbox extends BaseComponent implements IValueReceiver
 	}
 
 	private void notifyListeners() {
-		if (listener != null) listener.valueChanged(textfield.getText());
+		if (listener != null) {
+			listener.valueChanged(textfield.getText());
+		}
 	}
 
 	public void setListener(IValueChangedListener<String> listener) {

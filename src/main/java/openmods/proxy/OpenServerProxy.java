@@ -4,7 +4,6 @@ import com.google.common.base.Optional;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
@@ -21,11 +20,6 @@ public final class OpenServerProxy implements IOpenModsProxy {
 	@Override
 	public World getClientWorld() {
 		return null;
-	}
-
-	@Override
-	public World getServerWorld(RegistryKey<World> id) {
-		return getServer().getWorld(id);
 	}
 
 	@Override

@@ -58,9 +58,9 @@ public abstract class OpenTileEntity extends TileEntity implements IRpcTargetPro
 
 	public IBlockRotationMode getRotationMode(BlockState state) {
 		final Block block = state.getBlock();
-		if (!(block instanceof OpenBlock)) return BlockRotationMode.NONE;
-		final OpenBlock openBlock = (OpenBlock)block;
-		return openBlock.rotationMode;
+		if (!(block instanceof OpenBlock.Orientable)) return BlockRotationMode.NONE;
+		final OpenBlock.Orientable openBlock = (OpenBlock.Orientable)block;
+		return openBlock.getRotationMode();
 	}
 
 	public Direction getFront() {

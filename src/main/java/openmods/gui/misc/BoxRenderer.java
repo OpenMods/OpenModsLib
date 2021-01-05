@@ -1,6 +1,7 @@
 package openmods.gui.misc;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.gui.AbstractGui;
 import openmods.utils.render.RenderUtils;
 
@@ -95,6 +96,8 @@ public class BoxRenderer {
 		renderBottomLeftCorner(gui, matrixStack, height);
 		renderBottomRightCorner(gui, matrixStack, width, height);
 		matrixStack.pop();
+
+		GlStateManager.color4f(1, 1, 1, 1);
 	}
 
 }

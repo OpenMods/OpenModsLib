@@ -36,7 +36,7 @@ public class OpenGLUtils {
 		matrixBuffer.put(bufferIndex(3, 1), m.m31);
 		matrixBuffer.put(bufferIndex(3, 2), m.m32);
 		matrixBuffer.put(bufferIndex(3, 3), m.m33);
-		matrixBuffer.flip();
+		matrixBuffer.rewind();
 		GL11.glMultMatrixf(matrixBuffer);
 	}
 

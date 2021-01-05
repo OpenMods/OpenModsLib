@@ -53,7 +53,7 @@ public class GenericTank extends FluidTank {
 
 	public GenericTank(int capacity, Fluid... acceptableFluids) {
 		super(capacity);
-		this.filter = filter(CollectionUtils.transform(FluidStack.class, acceptableFluids, input -> new FluidStack(input, 0)));
+		this.filter = filter(CollectionUtils.transform(FluidStack.class, acceptableFluids, input -> new FluidStack(input, 1000)));
 	}
 
 	private static boolean isNeighbourTank(World world, BlockPos coord, Direction dir) {

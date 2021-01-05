@@ -74,6 +74,7 @@ public abstract class PageBase extends BaseComposite {
 			} else {
 				listener.onConfirm();
 			}
+			return true;
 		});
 
 		return result;

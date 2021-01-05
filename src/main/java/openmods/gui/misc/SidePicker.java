@@ -1,15 +1,11 @@
 package openmods.gui.misc;
 
-import com.google.common.collect.Maps;
-import java.util.Map;
+import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Vector3d;
-import openmods.utils.render.ProjectionHelper;
+import net.minecraft.util.math.vector.Vector3f;
 
 public class SidePicker {
-
-	private static final ProjectionHelper projectionHelper = new ProjectionHelper();
-
 	public enum Side {
 		XNeg,
 		XPos,
@@ -60,18 +56,22 @@ public class SidePicker {
 
 	public static class HitCoord {
 		public final Side side;
-		public final Vector3d coord;
+		public final Vector3f coord;
 
-		public HitCoord(Side side, Vector3d coord) {
+		public HitCoord(Side side, Vector3f coord) {
 			this.side = side;
 			this.coord = coord;
 		}
 	}
 
-	private final double negX, negY, negZ;
-	private final double posX, posY, posZ;
+	private final float negX;
+	private final float negY;
+	private final float negZ;
+	private final float posX;
+	private final float posY;
+	private final float posZ;
 
-	public SidePicker(double negX, double negY, double negZ, double posX, double posY, double posZ) {
+	public SidePicker(float negX, float negY, float negZ, float posX, float posY, float posZ) {
 		this.negX = negX;
 		this.negY = negY;
 		this.negZ = negZ;
@@ -80,100 +80,106 @@ public class SidePicker {
 		this.posZ = posZ;
 	}
 
-	public SidePicker(double halfSize) {
+	public SidePicker(float halfSize) {
 		negX = negY = negZ = -halfSize;
 		posX = posY = posZ = +halfSize;
 	}
 
-	private static Vector3d getMouseVector(float z) {
-		// TODO 1.14 supply from caller (was: mouseX, mouseY)
-		return projectionHelper.unproject(0, 0, z);
-	}
+	private Vector3f calculateXPoint(Vector3f near, Vector3f diff, float x) {
+		float p = (x - near.getX()) / diff.getX();
 
-	private Vector3d calculateXPoint(Vector3d near, Vector3d diff, double x) {
-		double p = (x - near.x) / diff.x;
+		float y = near.getY() + diff.getY() * p;
+		float z = near.getZ() + diff.getZ() * p;
 
-		double y = near.y + diff.y * p;
-		double z = near.z + diff.z * p;
-
-		if (negY <= y && y <= posY && negZ <= z && z <= posZ) return new Vector3d(x, y, z);
+		if (negY <= y && y <= posY && negZ <= z && z <= posZ) {
+			return new Vector3f(x, y, z);
+		}
 
 		return null;
 	}
 
-	private Vector3d calculateYPoint(Vector3d near, Vector3d diff, double y) {
-		double p = (y - near.y) / diff.y;
+	private Vector3f calculateYPoint(Vector3f near, Vector3f diff, float y) {
+		float p = (y - near.getY()) / diff.getY();
 
-		double x = near.x + diff.x * p;
-		double z = near.z + diff.z * p;
+		float x = near.getX() + diff.getX() * p;
+		float z = near.getZ() + diff.getZ() * p;
 
-		if (negX <= x && x <= posX && negZ <= z && z <= posZ) return new Vector3d(x, y, z);
-
-		return null;
-	}
-
-	private Vector3d calculateZPoint(Vector3d near, Vector3d diff, double z) {
-		double p = (z - near.z) / diff.z;
-
-		double x = near.x + diff.x * p;
-		double y = near.y + diff.y * p;
-
-		if (negX <= x && x <= posX && negY <= y && y <= posY) return new Vector3d(x, y, z);
+		if (negX <= x && x <= posX && negZ <= z && z <= posZ) {
+			return new Vector3f(x, y, z);
+		}
 
 		return null;
 	}
 
-	private static void addPoint(Map<Side, Vector3d> map, Side side, Vector3d value) {
-		if (value != null) map.put(side, value);
+	private Vector3f calculateZPoint(Vector3f near, Vector3f diff, float z) {
+		float p = (z - near.getZ()) / diff.getZ();
+
+		float x = near.getX() + diff.getX() * p;
+		float y = near.getY() + diff.getY() * p;
+
+		if (negX <= x && x <= posX && negY <= y && y <= posY) {
+			return new Vector3f(x, y, z);
+		}
+
+		return null;
 	}
 
-	private Map<Side, Vector3d> calculateHitPoints(Vector3d near, Vector3d far) {
-		Vector3d diff = far.subtract(near);
-
-		Map<Side, Vector3d> result = Maps.newEnumMap(Side.class);
-		addPoint(result, Side.XNeg, calculateXPoint(near, diff, negX));
-		addPoint(result, Side.XPos, calculateXPoint(near, diff, posX));
-
-		addPoint(result, Side.YNeg, calculateYPoint(near, diff, negY));
-		addPoint(result, Side.YPos, calculateYPoint(near, diff, posY));
-
-		addPoint(result, Side.ZNeg, calculateZPoint(near, diff, negZ));
-		addPoint(result, Side.ZPos, calculateZPoint(near, diff, posZ));
-		return result;
+	private static void addPoint(BiConsumer<Side, Vector3f> map, Side side, Vector3f value) {
+		if (value != null) {
+			map.accept(side, value);
+		}
 	}
 
-	public Map<Side, Vector3d> calculateMouseHits() {
-		projectionHelper.updateMatrices();
-		Vector3d near = getMouseVector(0);
-		Vector3d far = getMouseVector(1);
+	public void calculateHitPoints(Vector3f near, Vector3f far, BiConsumer<Side, Vector3f> output) {
+		Vector3f diff = far.copy();
+		diff.sub(near);
 
-		return calculateHitPoints(near, far);
+		addPoint(output, Side.XNeg, calculateXPoint(near, diff, negX));
+		addPoint(output, Side.XPos, calculateXPoint(near, diff, posX));
+
+		addPoint(output, Side.YNeg, calculateYPoint(near, diff, negY));
+		addPoint(output, Side.YPos, calculateYPoint(near, diff, posY));
+
+		addPoint(output, Side.ZNeg, calculateZPoint(near, diff, negZ));
+		addPoint(output, Side.ZPos, calculateZPoint(near, diff, posZ));
 	}
 
-	public HitCoord getNearestHit() {
-		projectionHelper.updateMatrices();
-		Vector3d near = getMouseVector(0);
-		Vector3d far = getMouseVector(1);
+	private static class ClosestPointFinder implements BiConsumer<Side, Vector3f> {
+		private final Vector3f near;
 
-		Map<Side, Vector3d> hits = calculateHitPoints(near, far);
-
-		if (hits.isEmpty()) return null;
-
-		Side minSide = null;
+		Side minSide;
+		Vector3f minHit;
 		double minDist = Double.MAX_VALUE;
 
-		// yeah, I know there are two entries max, but... meh
-		for (Map.Entry<Side, Vector3d> e : hits.entrySet()) {
-			double dist = e.getValue().subtract(near).length();
-			if (dist < minDist) {
-				minDist = dist;
-				minSide = e.getKey();
+		private ClosestPointFinder(Vector3f near) {
+			this.near = near;
+		}
+
+		@Override
+		public void accept(Side side, Vector3f hit) {
+			final Vector3f dist = hit.copy();
+			dist.sub(near);
+			double distSqr = dist.dot(dist);
+			if (distSqr < minDist) {
+				minDist = distSqr;
+				minSide = side;
+				minHit = hit;
 			}
 		}
 
-		if (minSide == null) return null; // !?
+		@Nullable
+		public HitCoord getClosest() {
+			if (minSide != null && minHit != null) {
+				return new HitCoord(minSide, minHit);
+			}
+			return null;
+		}
+	}
 
-		return new HitCoord(minSide, hits.get(minSide));
+	public HitCoord getNearestHit(Vector3f near, Vector3f far) {
+		ClosestPointFinder finder = new ClosestPointFinder(near);
+		calculateHitPoints(near, far, finder);
+		return finder.getClosest();
 	}
 
 }

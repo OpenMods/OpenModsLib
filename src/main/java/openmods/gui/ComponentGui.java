@@ -106,42 +106,39 @@ public abstract class ComponentGui<T extends Container> extends ContainerScreen<
 	public void tick() {
 		super.tick();
 
-		if (root.isTicking()) root.tick();
+		if (root.isTicking()) {
+			root.tick();
+		}
 	}
 
 	@Override
 	public boolean mouseClicked(double x, double y, int button) {
-		if (!super.mouseClicked(x, y, button)) {
-			// TODO 1.14 double!?
-			if (root.isMouseOver((int)x - this.guiLeft, (int)y - this.guiTop)) {
-				root.mouseDown((int)x - this.guiLeft, (int)y - this.guiTop, button);
+		// TODO 1.14 double!?
+		if (root.isMouseOver((int)x - this.guiLeft, (int)y - this.guiTop)) {
+			if (root.mouseDown((int)x - this.guiLeft, (int)y - this.guiTop, button)) {
 				return true;
 			}
 		}
-		return false;
+		return super.mouseClicked(x, y, button);
 	}
 
 	@Override
 	public boolean mouseReleased(double x, double y, int button) {
-		if (!super.mouseReleased(x, y, button)) {
-			if (root.isMouseOver((int)x - this.guiLeft, (int)y - this.guiTop)) {
-				if (button >= 0) {
-					root.mouseUp((int)x - this.guiLeft, (int)y - this.guiTop, button);
-					return true;
-				}
+		if (root.isMouseOver((int)x - this.guiLeft, (int)y - this.guiTop)) {
+			if (button >= 0) {
+				root.mouseUp((int)x - this.guiLeft, (int)y - this.guiTop, button);
+				return true;
 			}
 		}
-		return false;
+		return super.mouseReleased(x, y, button);
 	}
 
 	@Override
 	public boolean mouseDragged(double x, double y, int button, double dx, double dy) {
-		if (!super.mouseDragged(x, y, button, dx, dy)) {
-			if (root.isMouseOver((int)x - this.guiLeft, (int)y - this.guiTop)) {
-				root.mouseDrag((int)x - this.guiLeft, (int)y - this.guiTop, button, (int)dx, (int)dy);
-			}
+		if (root.isMouseOver((int)x - this.guiLeft, (int)y - this.guiTop)) {
+			root.mouseDrag((int)x - this.guiLeft, (int)y - this.guiTop, button, (int)dx, (int)dy);
 		}
-		return false;
+		return super.mouseDragged(x, y, button, dx, dy);
 	}
 
 	@Override
@@ -153,9 +150,11 @@ public abstract class ComponentGui<T extends Container> extends ContainerScreen<
 		return false;
 	}
 
-	public void preRender(float mouseX, float mouseY) {}
+	public void preRender(float mouseX, float mouseY) {
+	}
 
-	public void postRender(int mouseX, int mouseY) {}
+	public void postRender(int mouseX, int mouseY) {
+	}
 
 	@Override
 	protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float f, int mouseX, int mouseY) {

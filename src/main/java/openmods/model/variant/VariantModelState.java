@@ -44,8 +44,9 @@ public class VariantModelState {
 
 	public VariantModelState withKeys(Set<String> keys) {
 		Map<String, String> copy = Maps.newHashMap(selectors);
-		for (String key : keys)
+		for (String key : keys) {
 			copy.put(key, DEFAULT_MARKER);
+		}
 
 		return new VariantModelState(copy);
 	}
@@ -57,5 +58,11 @@ public class VariantModelState {
 	public boolean testKeyValue(String name, String value) {
 		String v = selectors.get(name);
 		return v != null && v.equals(value);
+	}
+
+	public VariantModelState expand(Evaluator evaluator) {
+		Map<String, String> expanded = Maps.newHashMap(selectors);
+		evaluator.expandVars(expanded);
+		return new VariantModelState(expanded);
 	}
 }

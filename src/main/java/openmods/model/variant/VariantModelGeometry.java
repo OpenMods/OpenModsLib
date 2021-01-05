@@ -1,11 +1,16 @@
 package openmods.model.variant;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -39,11 +44,21 @@ public class VariantModelGeometry implements IModelGeometry<VariantModelGeometry
 	}
 
 	private static class BakedModel extends BakedModelWrapper<IBakedModel> {
-		private final List<Pair<Predicate<VariantModelState>, IBakedModel>> parts;
+		private final LoadingCache<VariantModelState, Collection<IBakedModel>> cache;
 
-		public BakedModel(IBakedModel originalModel, List<Pair<Predicate<VariantModelState>, IBakedModel>> parts) {
+		public BakedModel(IBakedModel originalModel, Evaluator evaluator, List<Pair<Predicate<VariantModelState>, IBakedModel>> parts) {
 			super(originalModel);
-			this.parts = parts;
+
+			cache = CacheBuilder.newBuilder()
+					.expireAfterAccess(5, TimeUnit.MINUTES)
+					.build(
+							new CacheLoader<VariantModelState, Collection<IBakedModel>>() {
+								@Override
+								public Collection<IBakedModel> load(VariantModelState state)  {
+										final VariantModelState full = state.expand(evaluator);
+									return parts.stream().filter(e -> e.getFirst().test(full)).map(Pair::getSecond).collect(ImmutableSet.toImmutableSet());
+								}
+							});
 		}
 
 		@Override
@@ -52,10 +67,8 @@ public class VariantModelGeometry implements IModelGeometry<VariantModelGeometry
 
 			final List<BakedQuad> result = Lists.newArrayList(originalModel.getQuads(state, side, rand, extState));
 
-			for (final Pair<Predicate<VariantModelState>, IBakedModel> part : parts) {
-				if (part.getFirst().test(modelState)) {
-					result.addAll(part.getSecond().getQuads(state, side, rand, extState));
-				}
+			for (final IBakedModel part : cache.getUnchecked(modelState)) {
+				result.addAll(part.getQuads(state, side, rand, extState));
 			}
 			return result;
 		}
@@ -63,8 +76,9 @@ public class VariantModelGeometry implements IModelGeometry<VariantModelGeometry
 		private static VariantModelState getModelSelectors(IModelData state) {
 			if (state != null) {
 				final VariantModelState data = state.getData(VariantModelState.PROPERTY);
-				if (data != null)
+				if (data != null) {
 					return data;
+				}
 			}
 
 			return VariantModelState.EMPTY;
@@ -76,7 +90,7 @@ public class VariantModelGeometry implements IModelGeometry<VariantModelGeometry
 	public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation) {
 		final IBakedModel base = this.base.bakeModel(bakery, spriteGetter, modelTransform, modelLocation);
 		List<Pair<Predicate<VariantModelState>, IBakedModel>> parts = this.parts.stream().map(p -> Pair.of(p.getFirst(), p.getSecond().bakeModel(bakery, spriteGetter, modelTransform, modelLocation))).collect(Collectors.toList());
-		return new BakedModel(base, parts);
+		return new BakedModel(base, evaluator, parts);
 	}
 
 	@Override

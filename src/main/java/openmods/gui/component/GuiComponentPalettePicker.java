@@ -116,13 +116,16 @@ public class GuiComponentPalettePicker extends BaseComponent {
 	}
 
 	@Override
-	public void mouseDown(int mouseX, int mouseY, int button) {
-		super.mouseDown(mouseX, mouseY, button);
+	public boolean mouseDown(int mouseX, int mouseY, int button) {
+		boolean result = super.mouseDown(mouseX, mouseY, button);
 
 		if (listener != null) {
 			final PaletteEntry entry = findEntry(mouseX, mouseY);
 			if (entry != null) listener.valueChanged(entry);
+			return true;
 		}
+
+		return result;
 	}
 
 	private PaletteEntry findEntry(int mouseX, int mouseY) {
