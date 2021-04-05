@@ -182,22 +182,6 @@ minecraft {
     }
 }
 
-processResources {
-    inputs.property "version", mod_version
-    inputs.property "mcversion", mc_version
-
-    // Process mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        include '**/*.info'
-        expand 'version':mod_version, 'mc_version':mc_version
-    }
-
-    // Copy anything else directly
-    from(sourceSets.main.resources.srcDirs) {
-        exclude '**/*.info'
-    }
-}
-
 def fmlManifest = manifest {
 }
 

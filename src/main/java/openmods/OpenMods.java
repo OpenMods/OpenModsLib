@@ -22,6 +22,7 @@ import openmods.entity.DelayedEntityLoadManager;
 import openmods.entity.EntityBlock;
 import openmods.fakeplayer.FakePlayerPool;
 import openmods.integration.Integration;
+import openmods.model.textureditem.ItemTextureCapability;
 import openmods.network.rpc.MethodEntry;
 import openmods.network.rpc.RpcCallDispatcher;
 import openmods.network.rpc.TargetTypeProvider;
@@ -67,7 +68,7 @@ public class OpenMods {
 
 	public static final String MODID = "openmods";
 
-	public static final IOpenModsProxy PROXY = DistExecutor.runForDist(() -> OpenClientProxy::new, () -> OpenServerProxy::new);
+	public static final IOpenModsProxy PROXY = DistExecutor.safeRunForDist(() -> OpenClientProxy::new, () -> OpenServerProxy::new);
 	public static final String ENTITY_BLOCK = MODID + ":block";
 
 	private ClassSourceCollector collector;
@@ -99,8 +100,6 @@ public class OpenMods {
 		// - it's fired synchronously
 		// - before most things (like resource managers) have chance to run
 		PROXY.earlySyncInit();
-
-
 		Registry.register(Registry.LOOT_FUNCTION_TYPE, location("sync_drops"), SYNC_DROPS_TYPE);
 	}
 
@@ -189,6 +188,8 @@ public class OpenMods {
 		collector = new ClassSourceCollector();
 
 		CraftingHelper.register(new EnchantingRecipe.EchantmentExistsConditionSerializer());
+
+		ItemTextureCapability.register();
 	}
 
 	public void clientInit(FMLClientSetupEvent evt) {

@@ -17,6 +17,8 @@ import openmods.OpenMods;
 import openmods.block.BlockSelectionHandler;
 import openmods.geometry.HitboxManager;
 import openmods.geometry.IHitboxSupplier;
+import openmods.model.multipart.MultipartLoader;
+import openmods.model.textureditem.TexturedItemModelLoader;
 import openmods.model.variant.VariantModelLoader;
 import openmods.utils.render.FramebufferBlitter;
 import openmods.utils.render.RenderUtils;
@@ -71,8 +73,8 @@ public final class OpenClientProxy implements IOpenModsProxy {
 
 	private void onModelRegister(ModelRegistryEvent evt) {
 		ModelLoaderRegistry.registerLoader(OpenMods.location("variant"), new VariantModelLoader());
-
-		//ModelLoaderRegistry.registerLoader(OpenMods.location("textureditem"), new TexturedModelLoader());
+		ModelLoaderRegistry.registerLoader(OpenMods.location("textured_item"), new TexturedItemModelLoader());
+		ModelLoaderRegistry.registerLoader(OpenMods.location("multipart"), new MultipartLoader());
 
 		//		ModelLoaderRegistry.registerLoader(MappedModelLoader.builder()
 		//				.put("stateitem", ItemStateModel.EMPTY)
@@ -91,9 +93,9 @@ public final class OpenClientProxy implements IOpenModsProxy {
 		return hitboxManager.get(location);
 	}
 
-//	@Override
-//	public IAnimationStateMachine loadAsm(ResourceLocation location, ImmutableMap<String, ITimeValue> parameters) {
-//		return ModelLoaderRegistry.loadASM(location, parameters);
-//	}
+	//	@Override
+	//	public IAnimationStateMachine loadAsm(ResourceLocation location, ImmutableMap<String, ITimeValue> parameters) {
+	//		return ModelLoaderRegistry.loadASM(location, parameters);
+	//	}
 
 }

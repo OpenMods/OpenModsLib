@@ -32,11 +32,12 @@ public abstract class ContainerBucketFillHandler {
 	private final List<Pair<FluidStack, ItemStack>> buckets = Lists.newArrayList();
 
 	public ContainerBucketFillHandler addFilledBucket(ItemStack filledBucket) {
-		Optional<FluidStack> containedFluid = FluidUtil.getFluidContained(filledBucket);
-		containedFluid.ifPresent(fluidStack -> {
-			buckets.add(Pair.of(fluidStack, filledBucket.copy()));
-		});
+		FluidUtil.getFluidContained(filledBucket).ifPresent(fluidStack -> buckets.add(Pair.of(fluidStack, filledBucket.copy())));
 		return this;
+	}
+
+	public ContainerBucketFillHandler addFilledBucket(Item filledBucketItem) {
+		return addFilledBucket(new ItemStack(filledBucketItem));
 	}
 
 	@SubscribeEvent
@@ -63,7 +64,7 @@ public abstract class ContainerBucketFillHandler {
 				if (!filledBucket.isEmpty()) {
 					FluidUtil.getFluidHandler(filledBucket).ifPresent(c -> {
 						final FluidStack fluidInBucket = c.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.SIMULATE);
-						if (fluidInBucket.isEmpty() && fluidInBucket.isFluidStackIdentical(source.drain(fluidInBucket, IFluidHandler.FluidAction.SIMULATE))) {
+						if (fluidInBucket.isFluidStackIdentical(source.drain(fluidInBucket, IFluidHandler.FluidAction.SIMULATE))) {
 							source.drain(fluidInBucket, IFluidHandler.FluidAction.EXECUTE);
 							evt.setFilledBucket(filledBucket.copy());
 							evt.setResult(Event.Result.ALLOW);

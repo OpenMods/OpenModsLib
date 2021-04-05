@@ -3,19 +3,21 @@ package openmods.model.variant;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import net.minecraftforge.client.model.data.ModelProperty;
 
 public class VariantModelState {
-
 	public static final String DEFAULT_MARKER = "<default>";
 
-	public static final ModelProperty<VariantModelState> PROPERTY = new ModelProperty<>();
+	public static final ModelProperty<Supplier<VariantModelState>> PROPERTY = new ModelProperty<>();
 
 	public static final VariantModelState EMPTY = new VariantModelState();
 
 	private VariantModelState(Map<String, String> selectors) {
 		this.selectors = ImmutableMap.copyOf(selectors);
+		hash = selectors.hashCode();
 	}
 
 	private VariantModelState() {
@@ -31,6 +33,8 @@ public class VariantModelState {
 	}
 
 	private final Map<String, String> selectors;
+
+	private final int hash;
 
 	public VariantModelState withKey(String key, String value) {
 		Map<String, String> copy = Maps.newHashMap(selectors);
@@ -64,5 +68,18 @@ public class VariantModelState {
 		Map<String, String> expanded = Maps.newHashMap(selectors);
 		evaluator.expandVars(expanded);
 		return new VariantModelState(expanded);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		return (o instanceof VariantModelState) && selectors.equals(((VariantModelState)o).selectors);
+	}
+
+	@Override
+	public int hashCode() {
+		return hash;
 	}
 }
